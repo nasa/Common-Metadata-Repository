@@ -50,7 +50,7 @@
     (testing "Associate variable with collections by concept-ids"
       (let [response (au/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
-                                           {:concept-id c3-p2}])]
+                                        {:concept-id c3-p2}])]
         (vu/assert-variable-association-response-ok?
          {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
                                  :revision-id 1}
@@ -67,7 +67,7 @@
     (testing "Associate to collection revision and whole collection at the same time"
       (let [response (au/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
-                                           {:concept-id c1-p1 :revision-id 1}])]
+                                        {:concept-id c1-p1 :revision-id 1}])]
         (au/assert-invalid-data-error
          [(format (str "Unable to create variable association on a collection revision and the whole "
                        "collection at the same time for the following collections: %s.")
@@ -101,7 +101,7 @@
     (testing "Variable association mixed response"
       (let [response (au/associate-by-concept-ids
                       token concept-id [{:concept-id c2-p1}
-                                           {:concept-id "C100-P5"}])]
+                                        {:concept-id "C100-P5"}])]
         (vu/assert-variable-association-response-ok?
          {["C1200000014-PROV1"] {:concept-id "VA1200000028-CMR"
                                  :revision-id 1}
@@ -151,7 +151,6 @@
            (associate-variable-fn token concept-id request-json))
 
         au/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
-
 
 (deftest dissociate-variables-with-collections-by-concept-ids-test
   ;; Create 4 collections in each provider that are identical.
@@ -302,58 +301,69 @@
          response)
         (assert-variable-associated [])))))
 
-;; See CMR-4167, CMR-4168
-; ;; This tests association retention when collections and variables are updated or deleted.
-; (deftest association-retention-test
-;   (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-;   (let [coll (d/ingest "PROV1" (dc/collection))
-;         token (e/login (s/context) "user1")
-;         _ (index/wait-until-indexed)
-;         variable (vu/save-variable token (vu/make-variable {:Name "variable1"}) [coll])
-;         assert-variable-associated (partial vu/assert-variable-associated-with-query nil {:Name "variable1"})
-;         assert-variable-not-associated (fn []
-;                                     (let [refs (search/find-refs :collection {:Name "variable1"})]
-;                                       (is (nil? (:errors refs)))
-;                                       (is (d/refs-match? [] refs))))]
-;     (index/wait-until-indexed)
-;
-;     (testing "Variable initially associated with collection"
-;       (assert-variable-associated [coll]))
-;
-;     (testing "Variable still associated with collection after updating collection"
-;       (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
-;         (is (= 200 (:status updated-coll)))
-;         (index/wait-until-indexed)
-;         (assert-variable-associated [updated-coll])))
-;
-;     (testing "Variable still associated with collection after deleting and recreating the collection"
-;       (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
-;       (let [recreated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
-;         (is (= 200 (:status recreated-coll)))
-;         (index/wait-until-indexed)
-;         (assert-variable-associated [recreated-coll])))
-;
-;     (let [latest-coll (assoc coll :revision-id 4)]
-;
-;       (testing "Variable still associated with collection after updating variable"
-;         (let [updated-variable (vu/save-variable token variable)]
-;           (is (= {:status 200 :revision-id 2} (select-keys updated-variable [:status :revision-id])))
-;           (index/wait-until-indexed)
-;           (assert-variable-associated [latest-coll])))
-;
-;       (testing "Variable not associated with collection after deleting and recreating the variable"
-;         (is (= {:status 200 :concept-id (:concept-id variable) :revision-id 3}
-;                (vu/delete-variable token (:Name variable))))
-;         (index/wait-until-indexed)
-;
-;         (testing "Not associated after variable deleted"
-;           (assert-variable-not-associated))
-;
-;         (is (= {:status 200 :concept-id (:concept-id variable) :revision-id 4}
-;                (vu/create-variable token (vu/make-variable {:Name "variable1"}))))
-;         (index/wait-until-indexed)
-;         (testing "Not associated after being recreated."
-;           (assert-variable-not-associated))))))
+;; This tests association retention when collections and variables are updated or deleted.
+(deftest association-retention-test
+  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
+  (let [token (e/login (s/context) "user1")
+        coll (d/ingest "PROV1" (dc/collection))
+        var-concept (vu/make-variable-concept {:native-id "var123"
+                                               :Name "variable1"})
+        {:keys [concept-id]} (vu/ingest-variable var-concept)
+        _ (index/wait-until-indexed)
+        _ (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id coll)}])
+        assert-variable-associated (partial vu/assert-variable-associated-with-query
+                                            nil {:variable-name "variable1"})
+        assert-variable-not-associated (fn []
+                                         (let [refs (search/find-refs
+                                                     :collection {:variable-name "variable1"})]
+                                           (is (nil? (:errors refs)))
+                                           (is (d/refs-match? [] refs))))]
+    (index/wait-until-indexed)
+
+    (testing "Variable initially associated with collection"
+      (assert-variable-associated [coll]))
+
+    (testing "Variable still associated with collection after updating collection"
+      (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status updated-coll)))
+        (index/wait-until-indexed)
+        (assert-variable-associated [updated-coll])))
+
+    (testing "Variable no longer associated with collection after deleting and recreating the collection"
+      (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
+      (let [update-resp (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status update-resp)))
+        (index/wait-until-indexed)
+        (assert-variable-not-associated)))
+
+    ;; create the association again
+    (let [latest-coll (assoc coll :revision-id 4)]
+      (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id latest-coll)}])
+      (assert-variable-associated [latest-coll])
+
+      (testing "Variable still associated with collection after updating variable"
+        (let [updated-variable (vu/ingest-variable var-concept)]
+          (is (= {:status 200 :concept-id concept-id :revision-id 2}
+                 (select-keys updated-variable [:status :concept-id :revision-id])))
+          (index/wait-until-indexed)
+          (assert-variable-associated [latest-coll])))
+
+      (testing "Variable not associated with collection after deleting and recreating the variable"
+        (is (= {:status 200 :concept-id concept-id :revision-id 3}
+               (select-keys (ingest/delete-concept var-concept {:token token})
+                            [:status :concept-id :revision-id])))
+        (index/wait-until-indexed)
+
+        (testing "Not associated after variable deleted"
+          (assert-variable-not-associated))
+
+        (testing "Not associated after variable is recreated."
+          ;; create a new revision of the variable
+          (is (= {:status 200 :concept-id concept-id :revision-id 4}
+                 (select-keys (vu/ingest-variable var-concept) [:status :concept-id :revision-id])))
+          (index/wait-until-indexed)
+
+          (assert-variable-not-associated))))))
 
 (defn- assert-variable-association
   "Assert the collections are associated with the variable for the given variable-name"

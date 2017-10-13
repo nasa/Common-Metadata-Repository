@@ -668,48 +668,49 @@
                                  variable3-concept-id
                                  [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
-    (testing "variable facets are disabled by default")
-    (let [facets-result (search-and-return-v2-facets
-                         {:variables-h {:0 {:variable "Variable1"}}})]
-      (assert-facet-field-not-exist facets-result "Measurements" "Measurement1")
-      (assert-facet-field-not-exist facets-result "Measurements" "Measurement2"))
-    (testing "variable facets enabled")
-    (dev-sys-util/eval-in-dev-sys
-     `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
-       true))
-    ;; We only check the top level variables facet for convenience since the whole
-    ;; hierarchical structure of variables facet has been covered in all facets test.
-    (testing "search by variables param filters the other facets, but not variables facets"
+    (testing "variable facets are disabled by default"
       (let [facets-result (search-and-return-v2-facets
                            {:variables-h {:0 {:variable "Variable1"}}})]
-        (assert-facet-field facets-result "Measurements" "Measurement1" 2)
-        (assert-facet-field facets-result "Measurements" "Measurement2" 3)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field facets-result "Platforms" "P2" 1)
-        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement1")
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")))
 
-    (testing "search by both variables param and regular param"
-      (let [facets-result (search-and-return-v2-facets
-                           {:short-name "S1"
-                            :variables-h {:0 {:variable "Variable1"}}})]
-        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+    (testing "variable facets enabled"
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+         true))
+      ;; We only check the top level variables facet for convenience since the whole
+      ;; hierarchical structure of variables facet has been covered in all facets test.
+      (testing "search by variables param filters the other facets, but not variables facets"
+        (let [facets-result (search-and-return-v2-facets
+                             {:variables-h {:0 {:variable "Variable1"}}})]
+          (assert-facet-field facets-result "Measurements" "Measurement1" 2)
+          (assert-facet-field facets-result "Measurements" "Measurement2" 3)
+          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field facets-result "Platforms" "P2" 1)
+          (assert-facet-field-not-exist facets-result "Platforms" "P3")))
 
-    (testing "search by both variables param and another facet field param"
-      (let [facets-result (search-and-return-v2-facets
-                           {:platform-h "P1"
-                            :variables-h {:0 {:variable "Variable1"}}})]
-        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field facets-result "Platforms" "P2" 1)
-        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P3"))))
-  (dev-sys-util/eval-in-dev-sys
-   `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
-     false)))
+      (testing "search by both variables param and regular param"
+        (let [facets-result (search-and-return-v2-facets
+                             {:short-name "S1"
+                              :variables-h {:0 {:variable "Variable1"}}})]
+          (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+          (assert-facet-field-not-exist facets-result "Platforms" "P2")
+          (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+
+      (testing "search by both variables param and another facet field param"
+        (let [facets-result (search-and-return-v2-facets
+                             {:platform-h "P1"
+                              :variables-h {:0 {:variable "Variable1"}}})]
+          (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field facets-result "Platforms" "P2" 1)
+          (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+          (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+         false)))))
 
 (comment
  ;; Good for manually testing applying links

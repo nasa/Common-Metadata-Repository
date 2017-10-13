@@ -377,8 +377,8 @@
         ;; Add routes for variable association
         variables-api/variable-api-routes
 
-         ;; Add routes for service association
-         services-api/service-api-routes
+        ;; Add routes for service association
+        services-api/service-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes
@@ -396,71 +396,71 @@
           ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-              {params :params headers :headers ctx :request-context}
-              ;; XXX REMOVE this check and the stubs once the service and
-               ;;     the associations work is complete
-               (if (headers "cmr-prototype-umm")
-                 (stubs/handle-prototype-request
-                  path-w-extension params headers)
-                 (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))
+            {params :params headers :headers ctx :request-context}
+            ;; XXX REMOVE this check and the stubs once the service and
+            ;;     the associations work is complete
+            (if (headers "cmr-prototype-umm")
+              (stubs/handle-prototype-request
+               path-w-extension params headers)
+              (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))
 
         ;; Find concepts
         (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-               {params :params headers :headers ctx :request-context query-string :query-string}
-               ;; XXX REMOVE this check and the stubs once the service and
-               ;;     the associations work is complete
-               (if (headers "cmr-prototype-umm")
-                 (stubs/handle-prototype-request
-                  path-w-extension params headers query-string)
-                 (find-concepts ctx path-w-extension params headers query-string)))
+            {params :params headers :headers ctx :request-context query-string :query-string}
+            ;; XXX REMOVE this check and the stubs once the service and
+            ;;     the associations work is complete
+            (if (headers "cmr-prototype-umm")
+              (stubs/handle-prototype-request
+               path-w-extension params headers query-string)
+              (find-concepts ctx path-w-extension params headers query-string)))
           ;; Find concepts - form encoded or JSON
           (POST "/"
-                {params :params headers :headers ctx :request-context body :body-copy}
-                (find-concepts ctx path-w-extension params headers body)))
+            {params :params headers :headers ctx :request-context body :body-copy}
+            (find-concepts ctx path-w-extension params headers body)))
 
         ;; Granule timeline
         (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-               {params :params headers :headers ctx :request-context query-string :query-string}
-               (get-granules-timeline ctx path-w-extension params headers query-string))
+            {params :params headers :headers ctx :request-context query-string :query-string}
+            (get-granules-timeline ctx path-w-extension params headers query-string))
           (POST "/" {params :params headers :headers ctx :request-context body :body-copy}
             (get-granules-timeline ctx path-w-extension params headers body)))
 
         (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-               {params :params headers :headers ctx :request-context}
-               (get-deleted-collections ctx path-w-extension params headers)))
+            {params :params headers :headers ctx :request-context}
+            (get-deleted-collections ctx path-w-extension params headers)))
 
         (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-               {params :params headers :headers ctx :request-context}
-               (get-deleted-granules ctx path-w-extension params headers)))
+            {params :params headers :headers ctx :request-context}
+            (get-deleted-granules ctx path-w-extension params headers)))
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (POST "/"
-                {params :params headers :headers ctx :request-context body :body-copy}
-                (find-concepts-by-aql ctx path-w-extension params headers body)))
+            {params :params headers :headers ctx :request-context body :body-copy}
+            (find-concepts-by-aql ctx path-w-extension params headers body)))
 
         ;; Provider holdings
         (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
-               {params :params headers :headers ctx :request-context}
-               (get-provider-holdings ctx path-w-extension params headers)))
+            {params :params headers :headers ctx :request-context}
+            (get-provider-holdings ctx path-w-extension params headers)))
 
         ;; Resets the application back to it's initial state.
         (POST "/reset"
-              {ctx :request-context}
-              (acl/verify-ingest-management-permission ctx)
-              (cache/reset-caches ctx)
-              {:status 204})
+          {ctx :request-context}
+          (acl/verify-ingest-management-permission ctx)
+          (cache/reset-caches ctx)
+          {:status 204})
 
         ;; Add routes for retrieving GCMD keywords
         keyword-api/keyword-api-routes
@@ -469,10 +469,10 @@
         (common-routes/job-api-routes
          (routes
            (POST "/refresh-collection-metadata-cache"
-                 {ctx :request-context}
-                 (acl/verify-ingest-management-permission ctx :update)
-                 (metadata-cache/refresh-cache ctx)
-                 {:status 200})))
+             {ctx :request-context}
+             (acl/verify-ingest-management-permission ctx :update)
+             (metadata-cache/refresh-cache ctx)
+             {:status 200})))
 
         ;; add routes for accessing caches
         common-routes/cache-api-routes
@@ -485,5 +485,5 @@
          #(acl/verify-ingest-management-permission % :update))
 
         (GET "/tiles"
-             {params :params ctx :request-context}
-             (find-tiles ctx params))))))
+          {params :params ctx :request-context}
+          (find-tiles ctx params))))))
