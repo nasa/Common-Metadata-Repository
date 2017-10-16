@@ -3,7 +3,8 @@
 # Parameters:
 #  - separate: build and run each microservice separately
 #  - together: build and run dev-system in a container
-#  - default: pass no parameters, and the script will build and run dev-system
+#  - APP_NAME: build and run just the given app, e.g., "cubby"
+#  - NONE: pass no parameters, and the script will build and run dev-system
 
 build-base () {
   cd ../common-app-lib
@@ -14,7 +15,7 @@ build-base () {
 build-and-run-container () {
   lein uberjar
   docker build -t $1 .
-  docker run -d $1 -p $2:$2
+  docker run -d -p $2:$2 $1
 }
 
 build-base
@@ -55,5 +56,5 @@ elif [[ $1 == "together" || -z $1 ]]; then
   exit 0
 else
   cd ../${1}-app
-  build-and-run-container "$1" $2
+  build-and-run-container "cmr-${1}" $2
 fi
