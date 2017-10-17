@@ -1,5 +1,6 @@
 (ns cmr.search.test.api.routes
   (:require [clojure.test :refer :all]
+            [cmr.search.api.core :as core-api]
             [cmr.search.api.routes :as r])
   (:use ring.mock.request))
 
@@ -10,7 +11,7 @@
 (deftest find-concept-id-and-revision-id-from-path-w-extension
   (testing "concept-id"
     (are [path-w-extension concept-id]
-         (= concept-id (r/path-w-extension->concept-id path-w-extension))
+         (= concept-id (core-api/path-w-extension->concept-id path-w-extension))
 
          "C1-PROV1" "C1-PROV1"
          "C1-PROV1.xml" "C1-PROV1"
@@ -18,7 +19,7 @@
 
    (testing "revision-id"
      (are [path-w-extension revision-id]
-          (= revision-id (r/path-w-extension->revision-id path-w-extension))
+          (= revision-id (core-api/path-w-extension->revision-id path-w-extension))
 
           "C1-PROV1/2" 2
           "C1-PROV1/3.echo10" 3))))
@@ -26,7 +27,7 @@
 (deftest get-search-results-format-test
   (testing "format from headers"
     (are [path headers default-mime-type expected-format]
-         (=  expected-format (#'r/get-search-results-format :collection path headers default-mime-type))
+         (=  expected-format (core-api/get-search-results-format :collection path headers default-mime-type))
          ;; Accept header
          "search/collections" {"accept" "application/echo10+xml"} "application/xml" :echo10
          "search/collections" {"accept" "application/dif+xml"} "application/xml" :dif
@@ -68,7 +69,7 @@
 
   (testing "format from extension"
     (are [path headers default-mime-type expected-format]
-         (=  expected-format (#'r/get-search-results-format :collection path headers default-mime-type))
+         (=  expected-format (core-api/get-search-results-format :collection path headers default-mime-type))
          "search/collections.echo10" {"accept" "application/dif+xml"} "application/xml" :echo10
          "search/collections.dif" {"accept" "application/json"} "application/xml" :dif
          "search/collections.dif10" {"accept" "application/json"} "application/xml" :dif10
@@ -83,7 +84,7 @@
 
   (testing "using default format"
     (are [path headers default-mime-type expected-format]
-         (=  expected-format (#'r/get-search-results-format :collection path headers default-mime-type))
+         (=  expected-format (core-api/get-search-results-format :collection path headers default-mime-type))
          "search/collections" {} "application/echo10+xml" :echo10
          "search/collections" {} "application/dif+xml" :dif
          "search/collections" {} "application/dif10+xml" :dif10
