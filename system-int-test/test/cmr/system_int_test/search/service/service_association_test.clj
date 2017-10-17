@@ -178,7 +178,7 @@
         prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
         {:keys [concept-id]} (su/ingest-service-with-attrs {:Name service-name})
         assert-service-associated (partial su/assert-service-associated-with-query
-                                            prov3-token {:service-concept-id concept-id})]
+                                           prov3-token {:service-concept-id concept-id})]
     (index/wait-until-indexed)
     ;; Associate the service with every collection
     (au/associate-by-concept-ids
@@ -187,7 +187,7 @@
      (map #(hash-map :concept-id (:concept-id %)) all-colls))
 
     (testing "Successfully dissociate service with collections"
-      (let [{:keys [status] :as resp} (au/dissociate-by-concept-ids
+      (let [{:keys [status]} (au/dissociate-by-concept-ids
                               token
                               concept-id
                               (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
