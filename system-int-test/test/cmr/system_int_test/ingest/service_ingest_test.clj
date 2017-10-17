@@ -171,3 +171,27 @@
                           "The given concept-id [S1000-PROV1] and native-id "
                           "[other] would conflict with that one.")]]
                [status errors]))))))
+
+(deftest delete-service-ingest-test
+  (testing "delete a service"
+    (let [concept (service-util/make-service-concept)
+          _ (service-util/ingest-service concept)
+          _ (index/wait-until-indexed)
+          {:keys [status concept-id revision-id]}  (ingest/delete-concept concept)
+          fetched (mdb/get-concept concept-id revision-id)]
+      (is (= 200 status))
+      (is (= 2 revision-id))
+      (is (= (:native-id concept)
+             (:native-id fetched)))
+      (is (:deleted fetched))
+      (testing "delete a deleted service"
+        (let [{:keys [status errors]} (ingest/delete-concept concept)]
+          (is (= [status errors]
+                 [404 [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                               (:native-id concept) concept-id)]]))))
+      (testing "create a service over a service's tombstone"
+        (let [response (service-util/ingest-service
+                        (service-util/make-service-concept))
+              {:keys [status concept-id revision-id]} response]
+          (is (= 200 status))
+          (is (= 3 revision-id)))))))

@@ -220,21 +220,23 @@
     (is (= 201 status))))
 
 (deftest delete-variable-ingest-test
-  (testing "Variable ingest:"
+  (testing "delete a variable"
     (let [{token :token} (variable-util/setup-update-acl (s/context) "PROV1")
           concept (variable-util/make-variable-concept)
           _ (variable-util/ingest-variable concept {:token token})
           _ (index/wait-until-indexed)
-          response (ingest/delete-concept concept {:token token})
-          {:keys [status concept-id revision-id errors]} response
+          {:keys [status concept-id revision-id]} (ingest/delete-concept concept {:token token})
           fetched (mdb/get-concept concept-id revision-id)]
-      (testing "delete a variable"
-        (is (= 200 status))
-        (is (= 2 revision-id))
-        (is (:deleted fetched))
-        (is (= (:native-id concept)
-               (:native-id fetched)))
-        (is (:deleted fetched)))
+      (is (= 200 status))
+      (is (= 2 revision-id))
+      (is (= (:native-id concept)
+             (:native-id fetched)))
+      (is (:deleted fetched))
+      (testing "delete a deleted variable"
+        (let [{:keys [status errors]} (ingest/delete-concept concept {:token token})]
+          (is (= [status errors]
+                 [404 [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                               (:native-id concept) concept-id)]]))))
       (testing "create a variable over a variable's tombstone"
         (let [response (variable-util/ingest-variable
                         (variable-util/make-variable-concept) {:token token})
