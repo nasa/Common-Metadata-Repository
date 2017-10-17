@@ -354,7 +354,7 @@ Supported combinations of concept type and parameters:
   * tags with concept-id, native-id
   * tag associations with concept-id, native-id, tag-key, associated-concept-id, associated-revision-id
   * services with concept-id, provider-id, native-id
-  * service associations with concept-id, service-concept-id, associated-concept-id, associated-revision-id
+  * service associations with concept-id, native-id, service-concept-id, associated-concept-id, associated-revision-id
   * variables with concept-id, provider-id, native-id
   * variable associations with concept-id, native-id, variable-concept-id, associated-concept-id, associated-revision-id
 
