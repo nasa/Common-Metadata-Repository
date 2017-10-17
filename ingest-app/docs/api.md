@@ -1,4 +1,4 @@
-## API Documentation
+ API Documentation
 
 See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
@@ -676,7 +676,7 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
                                         "Unit": "Minutes",
                                         "Value": "96.7"}]}}'
 
-<?xml version="1.0" encoding="UTF-8"?
+<?xml version="1.0" encoding="UTF-8"?>
 <result>
     <status>200</status>
     <task-id>4</task-id>
