@@ -266,3 +266,99 @@
            (dissociate-service-fn token concept-id request-json))
 
         au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+
+(deftest dissociate-services-with-mixed-response-test
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (testing "dissociate service with mixed success and failure response"
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
+          coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
+          token (e/login (s/context) "user1")
+          service-name "service1"
+          {:keys [concept-id]} (su/ingest-service-with-attrs {:Name service-name})
+          assert-service-associated (partial su/assert-service-associated-with-query
+                                              token {:service-concept-id concept-id})]
+
+      (index/wait-until-indexed)
+      (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id coll1)}
+                                                        {:concept-id (:concept-id coll2)
+                                                         :revision-id (:revision-id coll2)}])
+      (assert-service-associated [coll1 coll2])
+
+      (let [response (au/dissociate-by-concept-ids
+                      token concept-id
+                      [{:concept-id "C100-P5"} ;; non-existent collection
+                       {:concept-id (:concept-id coll1)} ;; success
+                       {:concept-id (:concept-id coll2) :revision-id 1} ;; success
+                       {:concept-id (:concept-id coll3)}])] ;; no service association
+
+        (su/assert-service-dissociation-response-ok?
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
+          ["C1200000012-PROV1"] {:concept-id "SA1200000016-CMR" :revision-id 2}
+          ["C1200000013-PROV1" 1] {:concept-id "SA1200000017-CMR" :revision-id 2}
+          ["C1200000014-PROV1"]
+          {:warnings [(format "Service [%s] is not associated with collection [C1200000014-PROV1]."
+                              concept-id)]}}
+         response)
+        (assert-service-associated [])))))
+
+(deftest associate-dissociate-service-with-collections-test
+  ;; Grant all collections in PROV1
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
+                                     (d/ingest "PROV1" (dc/collection))))
+        [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
+        token (e/login (s/context) "user1")
+        {service1-concept-id :concept-id} (su/ingest-service-with-attrs {:Name "service1"})
+        {service2-concept-id :concept-id} (su/ingest-service-with-attrs {:Name "service2"})
+        assert-service-association (fn [concept-id colls]
+                                     (su/assert-service-associated-with-query
+                                      token {:service-concept-id concept-id} colls))]
+    (index/wait-until-indexed)
+
+    ;; associate service1 to coll1, service2 to coll2
+    ;; both :concept-id and :concept_id works as keys
+    (au/associate-by-concept-ids token service1-concept-id [{:concept_id coll1-id}])
+    (au/associate-by-concept-ids token service2-concept-id [{:concept-id coll2-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll1])
+    (assert-service-association service2-concept-id [coll2])
+
+    ;; associate service1 to coll1 again
+    (au/associate-by-concept-ids token service1-concept-id [{:concept-id coll1-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll1])
+    (assert-service-association service2-concept-id [coll2])
+
+    ;; associate service1 to coll2
+    (au/associate-by-concept-ids token service1-concept-id [{:concept-id coll2-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll1 coll2])
+    (assert-service-association service2-concept-id [coll2])
+
+    ;; associate service2 to coll1, coll2 and coll3
+    (au/associate-by-concept-ids token service2-concept-id [{:concept-id coll1-id}
+                                                            {:concept-id coll2-id}
+                                                            {:concept-id coll3-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll1 coll2])
+    (assert-service-association service2-concept-id [coll1 coll2 coll3])
+
+    ;; dissociate service1 from coll1
+    (au/dissociate-by-concept-ids token service1-concept-id [{:concept-id coll1-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll2])
+    (assert-service-association service2-concept-id [coll1 coll2 coll3])
+
+    ;; dissociate service2 from coll1 and coll2
+    (au/dissociate-by-concept-ids token service2-concept-id [{:concept-id coll1-id}
+                                                             {:concept-id coll2-id}])
+    (index/wait-until-indexed)
+    ;; verify association
+    (assert-service-association service1-concept-id [coll2])
+    (assert-service-association service2-concept-id [coll3])))
