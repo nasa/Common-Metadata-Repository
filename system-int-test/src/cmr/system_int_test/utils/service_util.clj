@@ -1,12 +1,14 @@
 (ns cmr.system-int-test.utils.service-util
   "This contains utilities for testing services."
   (:require
-   [cmr.common.mime-types :as mt]
    [clojure.test :refer [is]]
+   [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
-   [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.ingest-util :as ingest-util]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.service :as transmit-service]
    [cmr.umm-spec.versioning :as versioning]))
 
 (def schema-version versioning/current-service-version)
@@ -96,3 +98,29 @@
      (is (= [200
              (set (comparable-service-associations expected-sas))]
             [status (set (comparable-service-associations body))])))))
+
+(defn assert-service-dissociation-response-ok?
+  "Assert the service association response when status code is 200 is correct."
+  [coll-service-associations response]
+  (assert-service-association-response-ok? coll-service-associations response false))
+
+(defn- search-for-service-associations
+  "Searches for variables using the given parameters"
+  [params]
+  (search/process-response
+   (transmit-service/search-for-service-associations
+    (s/context) params {:raw? true
+                        :http-options {:accept :json}})))
+
+(defn assert-service-associated-with-query
+  "Assert the collections found by the service query matches the given collection revisions.
+  Temporary using search metadata-db for service associations. Will change to search search-app
+  for collections once that is implemented."
+  [token query expected-colls]
+  (let [{:keys [status body]} (search-for-service-associations (assoc query :latest true))
+        colls (->> body
+                   (filter #(= false (:deleted %)))
+                   (map #(get-in % [:extra-fields :associated-concept-id])))]
+    (is (= 200 status))
+    (is (= (set (map :concept-id expected-colls))
+           (set colls)))))

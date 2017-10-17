@@ -157,6 +157,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Variable dissociation](#variable-dissociation)
   * [Service](#service)
     * [Service association](#service-association)
+    * [Service dissociation](#service-dissociation)
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -3359,7 +3360,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
   {"concept_id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
 [
@@ -3408,13 +3409,13 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000007-PROV1"}]'
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000008-CMR",
+      "concept_id":"VA1200000009-CMR",
       "revision_id":2
     },
     "associated_item":{
@@ -3463,12 +3464,12 @@ A service enables data to be accessed via a universal resource locator, and has 
 A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Here is a sample service association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/V1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
 [
@@ -3493,6 +3494,63 @@ Content-Length: 168
 ```
 
 On occassions when service association cannot be processed at all due to invalid input, service association request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the service with the given concept id does not exist
+* the service with the given concept id has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of service on collection level and collection revision in the same request
+
+#### <a name="service-dissociation"></a> Service Dissociation
+
+A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "service_association":{
+      "concept_id":"SA1200000009-CMR",
+      "revision_id":2
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "warnings":[
+      "Service [S1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code. e.g.
 
 Status code 400 is returned when:
 * content type is unsupported
