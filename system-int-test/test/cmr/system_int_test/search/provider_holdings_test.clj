@@ -1,17 +1,18 @@
 (ns cmr.system-int-test.search.provider-holdings-test
   "Integration tests for provider holdings"
-  (:require [clojure.test :refer :all]
-            [cmr.search.api.routes :as sr]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.api.providers :as providers]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
@@ -182,8 +183,8 @@
             (let [response (search/provider-holdings-in-format format {:provider_id "PROV1"
                                                                         :token user-token})
                   headers (:headers response)
-                  header-granule-count (headers sr/CMR_GRANULE_COUNT_HEADER)
-                  header-collection-count (headers sr/CMR_COLLECTION_COUNT_HEADER)
+                  header-granule-count (headers providers/CMR_GRANULE_COUNT_HEADER)
+                  header-collection-count (headers providers/CMR_COLLECTION_COUNT_HEADER)
                   granule-count (reduce + (map :granule-count (all-holdings "PROV1")))]
               (is (= 200 (:status response)))
               (is (and (= (str prov1-collection-count) header-collection-count)

@@ -12,6 +12,9 @@
    [cmr.search.services.query-service :as query-svc]
    [compojure.core :refer :all]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Constants
+
 (def find-by-concept-id-concept-types
   #{:collection :granule :variable})
 
@@ -40,6 +43,9 @@
    :variable #{mt/any
                mt/xml
                mt/umm-json}})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Support Functions
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and
@@ -91,6 +97,9 @@
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (core-api/search-response
          ctx (query-svc/find-concept-by-id ctx result-format concept-id))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Route Definitions
 
 (def concepts-routes
   ;; Retrieve by cmr concept id or concept id and revision id
