@@ -16,8 +16,7 @@
           concept-id))
 
 (defmulti associations-url
-  "Returns the url to associate a variable based on the association type.
-  Valid association types are :query and :concept-ids."
+  "Returns the url to associate a concept with the given concept id to collections."
   (fn [context concept-id]
     (:concept-type (concepts/parse-concept-id concept-id))))
 
