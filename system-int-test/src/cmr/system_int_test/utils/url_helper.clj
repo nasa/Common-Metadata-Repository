@@ -139,7 +139,14 @@
 (defn mdb-old-revision-cleanup-job-url
   "URL to metadata db old revision cleanup job"
   []
-  (format "http://localhost:%s/jobs/old-revision-concept-cleanup" (transmit-config/metadata-db-port)))
+  (format "http://localhost:%s/jobs/old-revision-concept-cleanup"
+          (transmit-config/metadata-db-port)))
+
+(defn mdb-service-association-search-url
+  "URL to search service associations in metadata db."
+  []
+  (format "http://localhost:%s/concepts/search/service-associations"
+          (transmit-config/metadata-db-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
