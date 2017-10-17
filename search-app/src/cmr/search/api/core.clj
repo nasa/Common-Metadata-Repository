@@ -79,6 +79,26 @@
                      (umm-version/current-version concept-type))}
        result-format))))
 
+(defn process-params
+  "Processes the parameters by removing unecessary keys and adding other keys
+  like result format."
+  [concept-type params ^String path-w-extension headers default-mime-type]
+  (let [result-format (get-search-results-format
+                       concept-type path-w-extension headers default-mime-type)
+        ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
+        ;; to avoid breaking clients
+        result-format (if (.endsWith path-w-extension ".umm-json")
+                        :legacy-umm-json
+                        result-format)
+        ;; For search results umm-json is an alias of umm-json-results since we can't actually return
+        ;; a set of search results that would match the UMM-C JSON schema
+        result-format (if (= :umm-json (:format result-format))
+                        (assoc result-format :format :umm-json-results)
+                        result-format)]
+    (-> params
+        (dissoc :path-w-extension :token)
+        (assoc :result-format result-format))))
+
 (defn search-response
   "Returns the response map for finding concepts"
   [context response]
