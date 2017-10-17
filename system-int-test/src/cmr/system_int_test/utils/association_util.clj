@@ -7,8 +7,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.association :as transmit-assoc]
    [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.variable :as transmit-variable]
    [cmr.umm-spec.versioning :as versioning]))
 
 (defn associate-by-concept-ids
@@ -17,7 +17,7 @@
    (associate-by-concept-ids token concept-id coll-concept-ids nil))
   ([token concept-id coll-concept-ids options]
    (let [options (merge {:raw? true :token token} options)
-         response (transmit-variable/associate-variable
+         response (transmit-assoc/associate-concept
                    (s/context) concept-id coll-concept-ids options)]
      (index/wait-until-indexed)
      (ingest-util/parse-map-response response))))
@@ -28,7 +28,7 @@
    (dissociate-by-concept-ids token concept-id coll-concept-ids nil))
   ([token concept-id coll-concept-ids options]
    (let [options (merge {:raw? true :token token} options)
-         response (transmit-variable/dissociate-variable
+         response (transmit-assoc/dissociate-concept
                    (s/context) concept-id coll-concept-ids options)]
      (index/wait-until-indexed)
      (ingest-util/parse-map-response response))))

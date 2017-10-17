@@ -103,7 +103,7 @@
                       token concept-id [{:concept-id c2-p1}
                                         {:concept-id "C100-P5"}])]
         (su/assert-service-association-response-ok?
-         {[c2-p1] {:concept-id "VA1200000028-CMR"
+         {[c2-p1] {:concept-id "SA1200000028-CMR"
                    :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))))
@@ -112,10 +112,10 @@
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [native-id "var123"
         token (e/login (s/context) "user1")
-        var-concept (su/make-service-concept {:native-id native-id
+        serv-concept (su/make-service-concept {:native-id native-id
                                                :Name "service1"
                                                :provider-id "PROV1"})
-        {:keys [concept-id revision-id]} (su/ingest-service var-concept)
+        {:keys [concept-id revision-id]} (su/ingest-service serv-concept)
         coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
     (testing "Associate service using query sent with invalid content type"
       (are [associate-service-fn request-json]
@@ -144,10 +144,125 @@
         au/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate deleted service"
-      (ingest/delete-concept var-concept {:token token})
+      (ingest/delete-concept serv-concept {:token token})
       (are [associate-service-fn request-json]
         (= {:status 404
             :errors [(format "Service with concept id [%s] was deleted." concept-id)]}
            (associate-service-fn token concept-id request-json))
 
         au/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
+
+(deftest dissociate-services-with-collections-by-concept-ids-test
+  ;; Create 4 collections in each provider that are identical.
+  ;; The first collection will have data:
+  ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        ;; Grant all collections in PROV1 and 2
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+        [c1-p1 c2-p1 c3-p1 c4-p1
+         c1-p2 c2-p2 c3-p2 c4-p2
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (d/ingest p (dc/collection
+                                                        {:short-name (str "S" n)
+                                                         :version-id (str "V" n)
+                                                         :entry-title (str "ET" n)}))))
+        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
+        all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
+        service-name "service1"
+        token (e/login (s/context) "user1")
+        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
+        {:keys [concept-id]} (su/ingest-service-with-attrs {:Name service-name})
+        assert-service-associated (partial su/assert-service-associated-with-query
+                                            prov3-token {:service-concept-id concept-id})]
+    (index/wait-until-indexed)
+    ;; Associate the service with every collection
+    (au/associate-by-concept-ids
+     prov3-token
+     concept-id
+     (map #(hash-map :concept-id (:concept-id %)) all-colls))
+
+    (testing "Successfully dissociate service with collections"
+      (let [{:keys [status] :as resp} (au/dissociate-by-concept-ids
+                              token
+                              concept-id
+                              (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
+        (is (= 200 status))
+        (assert-service-associated (concat all-prov2-colls all-prov3-colls))))
+
+    (testing "Dissociate non-existent collections"
+      (let [response (au/dissociate-by-concept-ids
+                      token concept-id [{:concept-id "C100-P5"}])]
+        (su/assert-service-dissociation-response-ok?
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))
+
+    (testing "Dissociate to deleted collections"
+      (let [c1-p2-concept-id (:concept-id c1-p2)
+            c1-p2-concept (mdb/get-concept c1-p2-concept-id)
+            _ (ingest/delete-concept c1-p2-concept)
+            _ (index/wait-until-indexed)
+            response (au/dissociate-by-concept-ids
+                      token concept-id [{:concept-id c1-p2-concept-id}])]
+        (su/assert-service-dissociation-response-ok?
+         {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                                  c1-p2-concept-id)]}}
+         response)))
+
+    (testing "ACLs are applied to collections found"
+      ;; None of PROV3's collections are visible
+      (let [coll-concept-id (:concept-id c4-p3)
+            response (au/dissociate-by-concept-ids
+                      token concept-id [{:concept-id coll-concept-id}])]
+        (su/assert-service-dissociation-response-ok?
+         {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                                  coll-concept-id)]}}
+         response)))))
+
+(deftest dissociate-service-failure-test
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (let [service-name "service1"
+        token (e/login (s/context) "user1")
+        serv-concept (su/make-service-concept {:Name service-name})
+        {:keys [concept-id revision-id]} (su/ingest-service serv-concept)
+        coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
+
+    (testing "Dissociate service using query sent with invalid content type"
+      (are [dissociate-service-fn request-json]
+        (= {:status 400,
+            :errors
+            ["The mime types specified in the content-type header [application/xml] are not supported."]}
+           (dissociate-service-fn
+            token concept-id request-json {:http-options {:content-type :xml}}))
+
+        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+
+    (testing "Dissociate applies JSON Query validations"
+      (are [dissociate-service-fn request-json message]
+        (= {:status 400
+            :errors [message]}
+           (dissociate-service-fn token concept-id request-json))
+
+        au/dissociate-by-concept-ids {:concept-id coll-concept-id}
+        "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
+
+    (testing "Dissociate service that doesn't exist"
+      (are [dissociate-service-fn request-json]
+        (= {:status 404
+            :errors ["Service could not be found with concept id [S12345-PROV1]"]}
+           (dissociate-service-fn token "S12345-PROV1" request-json))
+
+        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+
+    (testing "Dissociate deleted service"
+      (ingest/delete-concept serv-concept {:token token})
+      (are [dissociate-service-fn request-json]
+        (= {:status 404
+            :errors [(format "Service with concept id [%s] was deleted." concept-id)]}
+           (dissociate-service-fn token concept-id request-json))
+
+        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
