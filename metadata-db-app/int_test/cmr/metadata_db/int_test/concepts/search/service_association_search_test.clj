@@ -20,6 +20,7 @@
         associated-service (util/create-and-save-service "REG_PROV" 1)
         serv-association1 (util/create-and-save-service-association coll1 associated-service 1 3)
         serv-association2 (util/create-and-save-service-association coll2 associated-service 2 2)]
+    
     (testing "find latest revisions"
       (are3 [service-associations params]
         (is (= (set service-associations)
@@ -38,6 +39,10 @@
         "by service-concept-id"
         [serv-association1 serv-association2]
         {:service-concept-id (:concept-id associated-service)}
+
+        "by native-id"
+        [serv-association1]
+        {:native-id (:native-id serv-association1)}
 
         "by service-concept-id not found"
         []

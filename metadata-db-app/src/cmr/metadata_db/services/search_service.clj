@@ -28,7 +28,7 @@
    :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :variable-concept-id}
-   :service-association #{:concept-id :associated-concept-id :associated-revision-id
+   :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :service-concept-id}})
 
 (def granule-supported-parameter-combinations
