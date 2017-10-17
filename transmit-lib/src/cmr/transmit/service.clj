@@ -7,16 +7,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
-(defn- services-url
+(defn- service-associations-url
   [conn]
-  (format "%s/services" (conn/root-url conn)))
+  (format "%s/concepts/search/service-associations" (conn/root-url conn)))
 
-(defn- service-url
-  [conn service-id]
-  (str (services-url conn) "/" service-id))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Request functions
-
-(h/defcreator create-service :ingest services-url {:accept :xml})
-(h/defupdater update-service :ingest service-url {:accept :xml})
+(h/defsearcher search-for-service-associations :metadata-db service-associations-url)
