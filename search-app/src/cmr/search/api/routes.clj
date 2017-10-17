@@ -12,13 +12,14 @@
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.cache :as cache]
-   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.api.community-usage-metrics :as metrics-api]
+   [cmr.search.api.core :as core-api]
+   [cmr.search.api.concepts-lookup :as concepts-lookup-api]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.services :as services-api]
@@ -64,59 +65,12 @@
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
 
-(def search-result-supported-mime-types
-  "The mime types supported by search."
-  #{mt/any
-    mt/xml
-    mt/json
-    mt/umm-json
-    mt/umm-json-results
-    mt/legacy-umm-json
-    mt/echo10
-    mt/dif
-    mt/dif10
-    mt/atom
-    mt/iso19115
-    mt/opendata
-    mt/csv
-    mt/kml
-    mt/native})
-
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
   #{mt/any
     mt/xml
     mt/json
     mt/csv})
-
-(def supported-concept-id-retrieval-mime-types
-  {:collection #{mt/any
-                 mt/html
-                 mt/xml    ; allows retrieving native format
-                 mt/native ; retrieve in native format
-                 mt/atom
-                 mt/json
-                 mt/echo10
-                 mt/iso19115
-                 mt/iso-smap
-                 mt/dif
-                 mt/dif10
-                 mt/umm-json
-                 mt/legacy-umm-json}
-   :granule #{mt/any
-              mt/xml    ; allows retrieving native format
-              mt/native ; retrieve in native format
-              mt/atom
-              mt/json
-              mt/echo10
-              mt/iso19115
-              mt/iso-smap}
-   :variable #{mt/any
-               mt/xml
-               mt/umm-json}})
-
-(def find-by-concept-id-concept-types
-  #{:collection :granule :variable})
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -126,47 +80,10 @@
       second
       keyword))
 
-(defn path-w-extension->concept-id
-  "Parses the path-w-extension to remove the concept id from the beginning"
-  [path-w-extension]
-  (second (re-matches #"([^\.]+?)(?:/[0-9]+)?(?:\..+)?" path-w-extension)))
-
-(defn path-w-extension->revision-id
-  "Parses the path-w-extension to extract the revision id. URL path should be of the form
-  :concept-id[/:revision-id][.:format], e.g., http://localohst:3003/concepts/C120000000-PROV1/2.xml."
-  [path-w-extension]
-  (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
-    (try
-      (when revision-id
-        (Integer/parseInt revision-id))
-      (catch NumberFormatException e
-        (svc-errors/throw-service-error
-          :invalid-data
-          (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
-
-(defn- get-search-results-format
-  "Returns the requested search results format parsed from headers or from the URL extension,
-  The search result format is keyword for any format other than umm-json. For umm-json,
-  it is a map in the format of {:format :umm-json :version \"1.2\"}"
-  ([concept-type path-w-extension headers default-mime-type]
-   (get-search-results-format
-     concept-type path-w-extension headers search-result-supported-mime-types default-mime-type))
-  ([concept-type path-w-extension headers valid-mime-types default-mime-type]
-   (let [result-format (mt/mime-type->format
-                         (or (mt/path->mime-type path-w-extension valid-mime-types)
-                             (mt/extract-header-mime-type valid-mime-types headers "accept" true)
-                             (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
-                         default-mime-type)]
-     (if (contains? #{:umm-json :umm-json-results} result-format)
-       {:format result-format
-        :version (or (mt/version-of (mt/get-header headers "accept"))
-                     (umm-version/current-version concept-type))}
-       result-format))))
-
 (defn- process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
   [concept-type params ^String path-w-extension headers default-mime-type]
-  (let [result-format (get-search-results-format concept-type path-w-extension headers default-mime-type)
+  (let [result-format (core-api/get-search-results-format concept-type path-w-extension headers default-mime-type)
         ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
         ;; to avoid breaking clients
         result-format (if (.endsWith path-w-extension ".umm-json")
@@ -194,24 +111,6 @@
        :not-found
        (format "Scroll session [%s] does not exist" short-scroll-id)))))
 
-(defn- add-scroll-id-to-cache
-  "Adds the given ES scroll-id to the cache and returns the generated key"
-  [context scroll-id]
-  (when scroll-id
-    (let [short-scroll-id (str (hash scroll-id))
-          id-cache (cache/context->cache context search/scroll-id-cache-key)]
-      (cache/set-value id-cache short-scroll-id scroll-id)
-      short-scroll-id)))
-
-(defn- search-response
-  "Returns the response map for finding concepts"
-  [context response]
-  (let [short-scroll-id (add-scroll-id-to-cache context (:scroll-id response))
-        response (-> response
-                     (update :result mt/format->mime-type)
-                     (update :scroll-id (constantly short-scroll-id)))]
-    (common-routes/search-response response)))
-
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
   [ctx path-w-extension params headers json-query]
@@ -221,7 +120,7 @@
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
-    (search-response ctx results)))
+    (core-api/search-response ctx results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
@@ -237,7 +136,7 @@
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (search-response ctx results)))
+    (core-api/search-response ctx results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response.
@@ -282,46 +181,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
-    (search-response ctx results)))
-
-(defn- find-concept-by-cmr-concept-id
-  "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
-  and returns the response"
-  [ctx path-w-extension params headers]
-  (let [concept-id (path-w-extension->concept-id path-w-extension)
-        revision-id (path-w-extension->revision-id path-w-extension)
-        concept-type (concepts/concept-id->type concept-id)
-        concept-type-supported-mime-types (supported-concept-id-retrieval-mime-types concept-type)]
-    (when-not (contains? find-by-concept-id-concept-types concept-type)
-      (svc-errors/throw-service-error
-        :bad-request
-        (format "Retrieving concept by concept id is not supported for concept type [%s]."
-                (name concept-type))))
-
-    (if revision-id
-      ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
-      ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
-      (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)
-            result-format (get-search-results-format concept-type path-w-extension headers
-                                                     supported-mime-types mt/native)
-            ;; XML means native in this case
-            result-format (if (= result-format :xml) :native result-format)]
-        (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
-                      concept-id
-                      revision-id))
-        ;; else, revision-id is nil
-        (search-response ctx (query-svc/find-concept-by-id-and-revision
-                              ctx
-                              result-format
-                              concept-id
-                              revision-id)))
-      (let [result-format (get-search-results-format concept-type path-w-extension headers
-                                                     concept-type-supported-mime-types
-                                                     mt/native)
-            ;; XML means native in this case
-            result-format (if (= result-format :xml) :native result-format)]
-        (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (search-response ctx (query-svc/find-concept-by-id ctx result-format concept-id))))))
+    (core-api/search-response ctx results)))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
@@ -330,7 +190,7 @@
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
-    (search-response ctx (query-svc/get-deleted-collections ctx params))))
+    (core-api/search-response ctx (query-svc/get-deleted-collections ctx params))))
 
 (defn- get-deleted-granules
   "Invokes query service to search for granules that are deleted and returns the response"
@@ -339,7 +199,7 @@
     (info (format "Searching for deleted granules from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
-    (search-response ctx (query-svc/get-deleted-granules ctx params))))
+    (core-api/search-response ctx (query-svc/get-deleted-granules ctx params))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -386,23 +246,8 @@
         ;; Add routes for community usage metrics
         metrics-api/community-usage-metrics-routes
 
-        ;; Retrieve by cmr concept id or concept id and revision id
-        ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],
-        ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
-        ;;       http://localhost:3003/concepts/C120000000-PROV1/2
-        ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
-        (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
-          ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
-          ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
-          (OPTIONS "/" req common-routes/options-response)
-          (GET "/"
-            {params :params headers :headers ctx :request-context}
-            ;; XXX REMOVE this check and the stubs once the service and
-            ;;     the associations work is complete
-            (if (headers "cmr-prototype-umm")
-              (stubs/handle-prototype-request
-               path-w-extension params headers)
-              (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))
+        ;; Add route(s) for the concepts lookup endpoint
+        concepts-lookup-api/concepts-routes
 
         ;; Find concepts
         (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
