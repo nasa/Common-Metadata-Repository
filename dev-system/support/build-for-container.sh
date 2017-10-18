@@ -18,6 +18,10 @@ build-and-run-container () {
   docker run -d -p $2:$2 $1
 }
 
+clean-up () {
+  rm -rf */target
+}
+
 build-base
 
 if [[ $1 == "separate" ]]; then
@@ -58,3 +62,6 @@ else
   cd ../${1}-app
   build-and-run-container "cmr-${1}" $2
 fi
+
+clean-up
+
