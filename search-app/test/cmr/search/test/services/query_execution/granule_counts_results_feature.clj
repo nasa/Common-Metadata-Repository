@@ -1,12 +1,13 @@
 (ns cmr.search.test.services.query-execution.granule-counts-results-feature
-  (:require [clojure.test :refer :all]
-            [cmr.search.test.models.helpers :refer :all]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.models.query :as q]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.spatial.point :as p]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.search.models.query :as q]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.test.models.helpers :refer :all]
+   [cmr.spatial.point :as p]))
 
 (defn spatial-cond
   "Creates a unique spatial condition"
