@@ -57,5 +57,7 @@
         ["start-sqs-sns"]]
     "repl"
       ["shell"
-       "echo" "You need to be in the `dev-system` directory for that."]})
+       "echo" "You need to be in the `dev-system` directory for that."]
+    "test"
+      ["modules" "test-out"]})
 
