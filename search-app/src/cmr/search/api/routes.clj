@@ -47,7 +47,7 @@
         concepts-search-api/granule-timeline-routes
 
         ;; Deleted concepts
-        concepts-search-api/deleted-routes
+        concepts-search-api/find-deleted-concepts-routes
 
         ;; AQL search - xml
         concepts-search-api/aql-search-routes

@@ -29,7 +29,7 @@
     mt/kml
     mt/native})
 
-(defn- add-scroll-id-to-cache
+(defn add-scroll-id-to-cache
   "Adds the given ES scroll-id to the cache and returns the generated key"
   [context scroll-id]
   (when scroll-id
@@ -37,6 +37,19 @@
           id-cache (cache/context->cache context search/scroll-id-cache-key)]
       (cache/set-value id-cache short-scroll-id scroll-id)
       short-scroll-id)))
+
+(defn get-scroll-id-from-cache
+  "Returns the full ES scroll-id from the cache using the short scroll-id as a key. Throws a
+  service error :not-found if the key does not exist in the cache."
+  [context short-scroll-id]
+  (when short-scroll-id
+    (if-let [scroll-id (-> context
+                           (cache/context->cache search/scroll-id-cache-key)
+                           (cache/get-value short-scroll-id))]
+      scroll-id
+      (svc-errors/throw-service-error
+       :not-found
+       (format "Scroll session [%s] does not exist" short-scroll-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Core Functions

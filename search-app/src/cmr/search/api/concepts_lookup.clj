@@ -47,6 +47,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 
+;; XXX too much nested functionality here; this should be refactored into
+;;     additional supporting functions
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and
   possibly revision id) and returns the response"
