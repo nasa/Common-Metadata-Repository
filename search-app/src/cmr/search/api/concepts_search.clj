@@ -34,37 +34,6 @@
       second
       keyword))
 
-(defn- get-scroll-id-from-cache
-  "Returns the full ES scroll-id from the cache using the short scroll-id as a key. Throws a
-  service error :not-found if the key does not exist in the cache."
-  [context short-scroll-id]
-  (when short-scroll-id
-    (if-let [scroll-id (-> context
-                           (cache/context->cache search/scroll-id-cache-key)
-                           (cache/get-value short-scroll-id))]
-      scroll-id
-      (svc-errors/throw-service-error
-       :not-found
-       (format "Scroll session [%s] does not exist" short-scroll-id)))))
-
-(defn- process-params
-  "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  [concept-type params ^String path-w-extension headers default-mime-type]
-  (let [result-format (core-api/get-search-results-format concept-type path-w-extension headers default-mime-type)
-        ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
-        ;; to avoid breaking clients
-        result-format (if (.endsWith path-w-extension ".umm-json")
-                        :legacy-umm-json
-                        result-format)
-        ;; For search results umm-json is an alias of umm-json-results since we can't actually return
-        ;; a set of search results that would match the UMM-C JSON schema
-        result-format (if (= :umm-json (:format result-format))
-                        (assoc result-format :format :umm-json-results)
-                        result-format)]
-    (-> params
-        (dissoc :path-w-extension :token)
-        (assoc :result-format result-format))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 
@@ -73,7 +42,7 @@
   the response."
   [ctx path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        params (process-params concept-type params path-w-extension headers mt/xml)
+        params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
@@ -86,9 +55,9 @@
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
-        scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
+        scroll-id (core-api/get-scroll-id-from-cache ctx short-scroll-id)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
-        params (process-params concept-type params path-w-extension headers mt/xml)
+        params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
@@ -124,7 +93,7 @@
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
   [ctx path-w-extension params headers query-string]
-  (let [params (process-params :granule params path-w-extension headers mt/json)
+  (let [params (core-api/process-params :granule params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id ctx) (pr-str params)))
         search-params (lp/process-legacy-psa params)
@@ -136,7 +105,7 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [ctx path-w-extension params headers aql]
-  (let [params (process-params nil params path-w-extension headers mt/xml)
+  (let [params (core-api/process-params nil params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
@@ -150,13 +119,10 @@
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Route Definitions
-
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
   [ctx path-w-extension params headers]
-  (let [params (process-params :collection params path-w-extension headers mt/xml)]
+  (let [params (core-api/process-params :collection params path-w-extension headers mt/xml)]
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
@@ -165,13 +131,17 @@
 (defn- get-deleted-granules
   "Invokes query service to search for granules that are deleted and returns the response"
   [ctx path-w-extension params headers]
-  (let [params (process-params nil params path-w-extension headers mt/xml)]
+  (let [params (core-api/process-params nil params path-w-extension headers mt/xml)]
     (info (format "Searching for deleted granules from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (core-api/search-response ctx (query-svc/get-deleted-granules ctx params))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Route Definitions
+
 (def search-routes
+  "Routes for /search/granules, /search/collections, etc."
   (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req common-routes/options-response)
     (GET "/"
@@ -188,6 +158,7 @@
       (find-concepts ctx path-w-extension params headers body))))
 
 (def granule-timeline-routes
+  "Routes for /search/granules/timeline."
   (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req common-routes/options-response)
     (GET "/"
@@ -196,7 +167,8 @@
     (POST "/" {params :params headers :headers ctx :request-context body :body-copy}
       (get-granules-timeline ctx path-w-extension params headers body))))
 
-(def deleted-routes
+(def find-deleted-concepts-routes
+  "Routes for finding deleted granules and collections."
   (routes
     (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
       (OPTIONS "/" req common-routes/options-response)
@@ -211,6 +183,7 @@
         (get-deleted-granules ctx path-w-extension params headers)))))
 
 (def aql-search-routes
+  "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."
   (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req common-routes/options-response)
     (POST "/"
@@ -218,6 +191,7 @@
       (find-concepts-by-aql ctx path-w-extension params headers body))))
 
 (def tiles-routes
+  "Routes for /search/tiles."
   (GET "/tiles"
     {params :params ctx :request-context}
     (find-tiles ctx params)))
