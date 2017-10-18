@@ -42,6 +42,9 @@
    [cmr.spatial.codec :as spatial-codec]
    [cmr.spatial.tile :as tile])
   ;; These must be required here to make multimethod implementations available.
+  ;; XXX This is not a good pattern for large software systems; we need to
+  ;;     find a different way to accomplish this goal ... possibly use protocols
+  ;;     instead.
   (:require
     cmr.search.data.complex-to-simple-converters.attribute
     cmr.search.data.complex-to-simple-converters.has-granules
@@ -49,6 +52,7 @@
     cmr.search.data.complex-to-simple-converters.spatial
     cmr.search.data.complex-to-simple-converters.temporal
     cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
+    cmr.search.data.elastic-results-to-query-results
     cmr.search.services.aql.converters.attribute-name
     cmr.search.services.aql.converters.attribute
     cmr.search.services.aql.converters.science-keywords
@@ -146,7 +150,7 @@
    (->> params
         (make-concepts-tag-data)
         (make-concepts-query
-          context concept-type params)))
+         context concept-type params)))
   ([context concept-type params tag-data]
    (->> params
         common-params/sanitize-params

@@ -16,7 +16,31 @@
    [cmr.search.api.variables :as variables-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
-   [compojure.core :refer :all]))
+   [compojure.core :refer :all])
+  (:require
+   ;; These must be required here to make multimethod implementations available.
+   ;; XXX This is not a good pattern for large software systems; we need to
+   ;;     find a different way to accomplish this goal ... possibly use protocols
+   ;;     instead.
+   [cmr.search.data.elastic-results-to-query-results]
+   ;;
+   ;; Result handlers - required here to avoid circular dependency in query service
+   [cmr.search.results-handlers.atom-json-results-handler]
+   [cmr.search.results-handlers.atom-results-handler]
+   [cmr.search.results-handlers.csv-results-handler]
+   [cmr.search.results-handlers.kml-results-handler]
+   [cmr.search.results-handlers.metadata-results-handler]
+   [cmr.search.results-handlers.opendata-results-handler]
+   [cmr.search.results-handlers.reference-results-handler]
+   [cmr.search.results-handlers.tags-json-results-handler]
+   [cmr.search.results-handlers.timeline-results-handler]
+   [cmr.search.results-handlers.umm-json-results-handler]
+   [cmr.search.results-handlers.variables-json-results-handler]
+   [cmr.search.results-handlers.variables-umm-json-results-handler]
+   ;;
+   ;; ACL support - required here to avoid circular dependencies
+   [cmr.search.services.acls.collection-acls]
+   [cmr.search.services.acls.granule-acls]))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
