@@ -19,7 +19,7 @@ build-and-run-container () {
 }
 
 clean-up () {
-  rm -rf */target
+  cd ../ && rm -rf */target
 }
 
 build-base
