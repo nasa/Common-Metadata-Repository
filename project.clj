@@ -4,7 +4,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sample-data "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sample-data "0.2.0-SNAPSHOT"
   :description "Sample Data for the open source NASA Common Metadata Repository (CMR)"
   :url "https://github.com/oubiwann/cmr-sample-data"
   :license {:name "Apache License 2.0"
