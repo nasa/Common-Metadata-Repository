@@ -140,10 +140,10 @@
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
       (let [updated-concept (update-collection-concept context concept bulk-update-params)
             warnings (validate-and-save-collection context updated-concept)]
-        (data-bulk-update/update-bulk-update-task-collection-status context task-id
-         concept-id complete-status (create-success-status-message warnings)))
-      (data-bulk-update/update-bulk-update-task-collection-status context task-id
-       concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
+        (data-bulk-update/update-bulk-update-task-collection-status
+         context task-id concept-id complete-status (create-success-status-message warnings)))
+      (data-bulk-update/update-bulk-update-task-collection-status
+       context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update
