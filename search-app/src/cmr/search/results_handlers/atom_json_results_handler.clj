@@ -1,28 +1,29 @@
 (ns cmr.search.results-handlers.atom-json-results-handler
   "Handles the JSON results format and related functions"
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.common-app.services.search :as qs]
-            [cheshire.core :as json]
-            [clj-time.core :as time]
-            [clojure.string :as str]
-            [cmr.search.services.url-helper :as url]
-            [cmr.search.results-handlers.atom-results-handler :as atom]
-            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
-            [cmr.common.util :as util]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common.joda-time]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common.util :as util]
+   [cmr.search.results-handlers.atom-results-handler :as atom]
+   [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.url-helper :as url]))
 
 (doseq [concept-type [:collection :granule]]
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :json]
     [concept-type query]
-    (elastic-search-index/concept-type+result-format->fields concept-type (assoc query :result-format :atom)))
+    (elastic-search-index/concept-type+result-format->fields
+     concept-type (assoc query :result-format :atom)))
 
   (defmethod elastic-results/elastic-results->query-results [concept-type :json]
     [context query elastic-results]
-    (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results)))
+    (elastic-results/elastic-results->query-results
+     context (assoc query :result-format :atom) elastic-results)))
 
 (defmethod gcrf/query-results->concept-ids :json
   [results]
@@ -48,7 +49,8 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters highlighted-summary-snippets tags organizations]} reference
+                orbit-parameters highlighted-summary-snippets tags organizations
+                has-variables]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -73,6 +75,7 @@
                        :has_granules (when has-granules-map (or (< 0 granule-count)
                                                                 (get has-granules-map id false)))
                        :granule_count (when granule-counts-map granule-count)
+                       :has-variables has-variables
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters

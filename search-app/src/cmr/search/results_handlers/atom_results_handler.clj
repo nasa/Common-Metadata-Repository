@@ -5,7 +5,6 @@
    [clj-time.core :as time]
    [clojure.data.xml :as x]
    [clojure.set :as set]
-   [clojure.string :as str]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
@@ -61,6 +60,7 @@
                      "start-circular-latitude"
                      "ords-info"
                      "ords"
+                     "has-variables"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
                       (conj atom-fields trf/stored-tags-field)
@@ -127,7 +127,8 @@
           [period] :period
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
-          [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
+          [start-circular-latitude] :start-circular-latitude
+          [has-variables] :has-variables} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -164,7 +165,8 @@
                                :inclination-angle inclination-angle
                                :number-of-orbits number-of-orbits
                                :start-circular-latitude start-circular-latitude}
-            :tags (trf/collection-elastic-result->tags elastic-result)}
+            :tags (trf/collection-elastic-result->tags elastic-result)
+            :has-variables has-variables}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
@@ -397,7 +399,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters organizations tags]} reference
+                orbit-parameters organizations tags has-variables]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -427,6 +429,7 @@
                                                      (get has-granules-map id false))))
                (when granule-counts-map
                  (x/element :echo:granuleCount {} granule-count))
+               (x/element :echo:hasVariables {} has-variables)
                (when score (x/element :relevance:score {} score))
                (map tag->xml-element tags))))
 
