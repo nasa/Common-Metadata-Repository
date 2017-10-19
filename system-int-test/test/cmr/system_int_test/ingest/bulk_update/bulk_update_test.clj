@@ -367,10 +367,10 @@
 
 (deftest bulk-update-xml-to-umm-failure-test
   (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
-        concept-id (ingest/ingest-concept
-                    (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
+        concept (ingest/ingest-concept
+                 (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
         _ (index/wait-until-indexed)
-        bulk-update-body {:concept-ids [(:concept-id concept-id)]
+        bulk-update-body {:concept-ids [(:concept-id concept)]
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
