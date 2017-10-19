@@ -13,12 +13,14 @@ build-base () {
 }
 
 build-and-run-container () {
+  echo "Building $1 image ..."
   lein uberjar
   docker build -t $1 .
   docker run -d -p $2:$2 $1
 }
 
 clean-up () {
+  echo "Cleaning up ..."
   cd ../ && rm -rf */target
 }
 
@@ -54,10 +56,15 @@ if [[ $1 == "separate" ]]; then
 
     cd ../dev-system
 elif [[ $1 == "together" || -z $1 ]]; then
+  IMAGE_TAG=cmr-dev-system
+  echo "Building $IMAGE_TAG image ..."
   lein uberjar
-  docker build -t cmr-dev-system .
-  docker run -d -p 2999:2999 -p 3001:3001 -p 3002:3002 -p 3003:3003 -p 3004:3004 -p 3005:3005 -p 3006:3006 -p 3007:3007 -p 3008:3008 -p 3009:3009 -p 3010:3010 -p 3011:3011 -p 9210:9210 cmr-dev-system
-  exit 0
+  docker build -t $IMAGE_TAG .
+  docker run -d \
+    -p 2999:2999 -p 3001:3001 -p 3002:3002 -p 3003:3003 -p 3004:3004 \
+    -p 3005:3005 -p 3006:3006 -p 3007:3007 -p 3008:3008 -p 3009:3009 \
+    -p 3010:3010 -p 3011:3011 -p 9210:9210 \
+    $IMAGE_TAG
 else
   cd ../${1}-app
   build-and-run-container "cmr-${1}" $2
