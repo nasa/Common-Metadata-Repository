@@ -28,7 +28,8 @@
   validation."
   [context collection-concept validation-options]
   (v/validate-concept-request collection-concept)
-  (v/validate-concept-metadata collection-concept)
+  (when-not (:bulk-update? validation-options)
+    (v/validate-concept-metadata collection-concept))
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
         sanitized-collection (spec/parse-metadata context :collection format metadata)

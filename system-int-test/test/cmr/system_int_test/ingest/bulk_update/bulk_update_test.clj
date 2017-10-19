@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [clojure.java.io :as io]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util :refer [are3]]
@@ -363,3 +364,23 @@
                 :VariableLevel1 "EMISSIONS",
                 :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
               (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-xml-to-umm-failure-test
+  (let [coll-metadata (slurp (io/resource "iso-samples/cmr-4125-iso-collection.xml"))
+        concept-id (ingest/ingest-concept
+                    (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids [(:concept-id concept-id)]
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
+    ;; Kick off bulk update
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+        (is (= "COMPLETE" (:task-status collection-response)))))))
