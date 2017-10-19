@@ -29,4 +29,16 @@
         [jonase/eastwood "0.2.5"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.5"]
-        [venantius/yagni "0.1.4"]]}})
+        [venantius/yagni "0.1.4"]]}}
+  :aliases {
+    "ubercompile" ["with-profile" "+ubercompile" "compile"]
+    "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
+    "lint" ["with-profile" "+test" "kibit"]
+    "build" ["with-profile" "+test" "do"
+      ["check-deps"]
+      ["lint"]
+      ["ubercompile"]
+      ["clean"]
+      ["uberjar"]
+      ["clean"]
+      ["test"]]})
