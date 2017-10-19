@@ -104,7 +104,7 @@
   handled in handle-collection-bulk-update-event. Return warnings."
   [context concept]
   (let [{:keys [concept warnings]} (ingest-service/validate-and-prepare-collection
-                                     context concept {:bulk-update? true})]
+                                    context concept {:bulk-update? true})]
     ;; If errors are caught, an error will be thrown and logged to the DB
     ;; If we get warnings back, validation was successful, but will still
     ;; log warnings
