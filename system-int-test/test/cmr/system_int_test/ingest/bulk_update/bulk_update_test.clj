@@ -366,7 +366,7 @@
               (:ScienceKeywords (:umm concept)))))))
 
 (deftest bulk-update-xml-to-umm-failure-test
-  (let [coll-metadata (slurp (io/resource "iso-samples/cmr-4455-collection.xml"))
+  (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
         concept-id (ingest/ingest-concept
                     (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
         _ (index/wait-until-indexed)
