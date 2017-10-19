@@ -11,12 +11,12 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.0"]
-    [clojusc/trifl "0.1.0"]
     [org.clojure/clojure "1.8.0"]]
   :profiles {
     :uberjar {:aot :all}
     :dev {
       :dependencies [
+        [clojusc/trifl "0.1.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
