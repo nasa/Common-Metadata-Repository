@@ -100,7 +100,7 @@
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
-                shapes points boxes polygons lines granule-count has-granules
+                shapes points boxes polygons lines granule-count has-granules has-variables
                 orbit-parameters highlighted-summary-snippets organizations]} json-entry]
     (util/remove-nil-keys
       {:id id
@@ -126,6 +126,7 @@
        :score score
        :granule-count granule-count
        :has-granules has-granules
+       :has-variables has-variables
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets

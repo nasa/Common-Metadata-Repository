@@ -342,6 +342,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:browseFlag                            | true if the data contains browse imagery                                                                             |
 | echo:hasGranules (collections only)        | true if there are granules associated with the collection                                                            |
 | echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
+| echo:hasVariables (collections only)       | true if there are variables associated with the collection                                                           |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -777,6 +778,7 @@ __Example__
       "id" : "C1200000000-PROV1",
       "original_format" : "ECHO10",
       "browse_flag" : false,
+      "has-variables" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}}

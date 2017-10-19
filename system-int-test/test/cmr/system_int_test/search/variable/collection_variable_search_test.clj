@@ -4,6 +4,8 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.atom :as atom]
+   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
@@ -280,3 +282,60 @@
                                                     {:variables-h {:0 {:and "true"}}})]
       (is (= 400 status))
       (is (re-find #"parameter \[and\] is not a valid variable search term." (first errors))))))
+
+(deftest collection-variable-search-atom-json-test
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
+                                                :short-name "S1"
+                                                :version-id "V1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
+                                                :short-name "S2"
+                                                :version-id "V2"}))
+        ;; create variables
+        {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs
+                                            {:native-id "var1"
+                                             :Name "Variable1"})]
+    ;; index the collections so that they can be found during variable association
+    (index/wait-until-indexed)
+    ;; create variable associations
+    ;; Variable1 is associated with coll1
+    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
+    (index/wait-until-indexed)
+
+    (testing "search collections in ATOM format has-variables field"
+      (are3 [coll expected-fields]
+        (let [coll-with-extra-fields (merge coll expected-fields)
+              {:keys [entry-title]} coll
+              coll-atom (atom/collections->expected-atom
+                         [coll-with-extra-fields]
+                         (format "collections.atom?entry_title=%s" entry-title))
+              {:keys [status results]} (search/find-concepts-atom
+                                        :collection {:entry-title entry-title})]
+
+          (is (= [200 coll-atom]
+                 [status results])))
+
+        "has-variables true"
+        coll1 {:has-variables true}
+
+        "has-variables false"
+        coll2 {:has-variables false}))
+
+    (testing "search collections in JSON format has-variables field"
+      (are3 [coll expected-fields]
+        (let [coll-with-extra-fields (merge coll expected-fields)
+              {:keys [entry-title]} coll
+              coll-json (atom/collections->expected-atom
+                         [coll-with-extra-fields]
+                         (format "collections.json?entry_title=%s" entry-title))
+              {:keys [status results]} (search/find-concepts-json
+                                        :collection {:entry-title entry-title})]
+
+          (is (= [200 coll-json]
+                 [status results])))
+
+        "has-variables true"
+        coll1 {:has-variables true}
+
+        "has-variables false"
+        coll2 {:has-variables false}))))
