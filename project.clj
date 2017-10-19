@@ -9,6 +9,7 @@
   :url "https://github.com/oubiwann/cmr-sample-data"
   :license {:name "Apache License 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
+  :exclusions [org.clojure/clojure]
   :dependencies [
     [cheshire "5.8.0"]
     [org.clojure/clojure "1.8.0"]]
@@ -21,4 +22,11 @@
       :source-paths ["dev-resources/src"]
       :repl-options {
         :init-ns cmr.sample-data.dev
-        :prompt ~get-prompt}}})
+        :prompt ~get-prompt}}
+    :test {
+      :plugins [
+        [lein-ancient "0.6.12"]
+        [jonase/eastwood "0.2.5"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.5"]
+        [venantius/yagni "0.1.4"]]}})
