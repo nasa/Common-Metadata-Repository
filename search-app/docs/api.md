@@ -778,7 +778,7 @@ __Example__
       "id" : "C1200000000-PROV1",
       "original_format" : "ECHO10",
       "browse_flag" : false,
-      "has-variables" : false,
+      "has_variables" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}}

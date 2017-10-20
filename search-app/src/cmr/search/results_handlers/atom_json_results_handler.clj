@@ -75,7 +75,7 @@
                        :has_granules (when has-granules-map (or (< 0 granule-count)
                                                                 (get has-granules-map id false)))
                        :granule_count (when granule-counts-map granule-count)
-                       :has-variables has-variables
+                       :has_variables has-variables
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters
