@@ -232,42 +232,6 @@
                 :VariableLevel1 "EMISSIONS"}]
               (:ScienceKeywords (:umm concept)))))))
 
-(deftest bulk-update-remove-all-platforms-test
-  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
-        _ (index/wait-until-indexed)
-        bulk-update-body {:concept-ids concept-ids
-                          :update-type "FIND_AND_REMOVE"
-                          :update-field "PLATFORMS"
-                          :find-value {:Type "Aircraft"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
-      (index/wait-until-indexed)
-      ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
-      (doseq [concept-id concept-ids
-              :let [concept (-> (search/find-concepts-umm-json :collection
-                                                               {:concept-id concept-id})
-                                :results
-                                :items
-                                first)]]
-       (is (= 1 
-              (:revision-id (:meta concept))))
-       (is (= [{:ShortName "a340-600-1"
-                :LongName "airbus a340-600-1"
-                :Type "Aircraft"}
-               {:ShortName "a340-600-2"
-                :LongName "airbus a340-600"
-                :Type "Aircraft"
-                :Instruments [{:ShortName "atm"
-                               :LongName "airborne topographic mapper"
-                               :Technique "testing"
-                               :NumberOfInstruments 0
-                               :OperationalModes ["mode1" "mode2"]}]}
-               {:ShortName "a340-600-3"
-                :LongName "airbus a340-600"
-                :Type "Aircraft"
-                :Instruments [{:ShortName "atm"
-                               :LongName "airborne topographic mapper"}]}]
-              (:Platforms (:umm concept)))))))
-
 (deftest bulk-update-remove-all-instruments-test
   (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
         _ (index/wait-until-indexed)
