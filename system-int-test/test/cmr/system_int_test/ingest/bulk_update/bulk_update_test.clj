@@ -171,22 +171,6 @@
 (deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
-      (testing "Invalid data center update"
-        (let [bulk-update-body {:concept-ids concept-ids
-                                :update-type "ADD_TO_EXISTING"
-                                :update-field "DATA_CENTERS"
-                                :update-value {:ShortName "LARC"}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
-          (index/wait-until-indexed)
-          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
-            (is (= "COMPLETE" (:task-status collection-response)))
-            ;; These error messages all being the same are contingent on the
-            ;; bulk update saving umm-json. If that changes these have to change.
-            (is (every? #(and (= "FAILED" (:status %))
-                              (= "/DataCenters/2 object has missing required properties ([\"Roles\"])"
-                                 (:status-message %)))
-                        (:collection-statuses collection-response))))))
-
       (testing "Data center find and update"
         (let [bulk-update-body {:concept-ids concept-ids
                                 :update-type "FIND_AND_UPDATE"
@@ -206,8 +190,7 @@
                                     :results
                                     :items
                                     first)]]
-           ;; On rev 2, not 3, since previous update failed
-           (is (= 2
+           (is (= 2 
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "NSIDC"
                     :Roles ["ORIGINATOR"]}
@@ -258,13 +241,6 @@
                           :find-value {:Type "Aircraft"}}
         task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
       (index/wait-until-indexed)
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
-            collection-status (first (:collection-statuses collection-response))]
-        (is (= "COMPLETE" (:task-status collection-response)))
-        (not (= nil (:created-at collection-response)))
-        (is (= "FAILED" (:status collection-status)))
-        (is (= "object has missing required properties ([\"Platforms\"])" (:status-message collection-status))))
-
       ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
       (doseq [concept-id concept-ids
               :let [concept (-> (search/find-concepts-umm-json :collection
