@@ -291,10 +291,10 @@
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
                                                 :short-name "S2"
                                                 :version-id "V2"}))
-        ;; create variables
-        {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "var1"
-                                             :Name "Variable1"})]
+        ;; create variable
+        var1-concept (vu/make-variable-concept {:native-id "var1"
+                                                :Name "Variable1"})
+        {variable1-concept-id :concept-id} (vu/ingest-variable var1-concept)]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variable associations
@@ -338,4 +338,26 @@
         coll1 {:has-variables true}
 
         "has-variables false"
-        coll2 {:has-variables false}))))
+        coll2 {:has-variables false}))
+
+    (testing "delete variable affect collection search has-variables field"
+      (let [{:keys [entry-title]} coll1
+            expected-json (atom/collections->expected-atom
+                           [(assoc coll1 :has-variables true)]
+                           (format "collections.json?entry_title=%s" entry-title))
+            {:keys [results]} (search/find-concepts-json
+                               :collection {:entry-title entry-title})]
+        ;; verify has-variables is true before the variable is deleted
+        (is (= expected-json results))
+
+        ;; Delete variable1
+        (ingest/delete-concept var1-concept {:token token})
+        (index/wait-until-indexed)
+        (let [{:keys [entry-title]} coll1
+              expected-json (atom/collections->expected-atom
+                             [(assoc coll1 :has-variables false)]
+                             (format "collections.json?entry_title=%s" entry-title))
+              {:keys [results]} (search/find-concepts-json
+                                 :collection {:entry-title entry-title})]
+          ;; verify has-variables is false after the variable is deleted
+          (is (= expected-json results)))))))
