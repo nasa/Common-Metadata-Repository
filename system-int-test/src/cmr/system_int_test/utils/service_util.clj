@@ -18,6 +18,10 @@
 (def default-opts {:accept-format :json
                    :content-type content-type})
 
+(defn token-opts
+  [token]
+  (merge default-opts {:token token}))
+
 (defn grant-all-service-fixture
   "A test fixture that grants all users the ability to create and modify services."
   [f]
