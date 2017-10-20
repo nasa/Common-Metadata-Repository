@@ -16,7 +16,7 @@
 ;;; Constants
 
 (def find-by-concept-id-concept-types
-  #{:collection :granule :variable})
+  #{:collection :granule :service :variable})
 
 (def supported-concept-id-retrieval-mime-types
   {:collection #{mt/any
@@ -40,6 +40,9 @@
               mt/echo10
               mt/iso19115
               mt/iso-smap}
+   :service #{mt/any
+              mt/xml
+              mt/umm-json}}
    :variable #{mt/any
                mt/xml
                mt/umm-json}})
