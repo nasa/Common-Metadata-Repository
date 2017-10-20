@@ -57,12 +57,12 @@
   ([this concept-id http-options]
    (-> this
        :http-client
-       (http/get (base/get-url this (str "/concept/" concept-id))
+       (http/get (base/get-url this (str "/concepts/" concept-id))
                  http-options)))
   ([this concept-id revision-id http-options]
    (-> this
        :http-client
-       (http/get (base/get-url this (str "/concept/"
+       (http/get (base/get-url this (str "/concepts/"
                                          concept-id
                                          "/"
                                          revision-id))
