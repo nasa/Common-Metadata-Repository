@@ -25,6 +25,10 @@ are registered, modified, discovered, and accessed through programmatic
 interfaces leveraging standard protocols and APIs.
 
 
+## About the CMR Client
+
+TBD
+
 ## Source Code
 
 The source for the CMR client is available on [github][cmr-github]. Note that
