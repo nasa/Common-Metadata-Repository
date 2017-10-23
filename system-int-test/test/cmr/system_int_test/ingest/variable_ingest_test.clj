@@ -209,10 +209,7 @@
   (let [{token :token} (variable-util/setup-update-acl
                           (s/context) "PROV1" "user1" "update-group")
         concept (assoc (variable-util/make-variable-concept)
-                       :format (str (mt/with-version
-                                      variable-util/content-type
-                                      variable-util/schema-version)
-                                    "; charset=utf-8"))
+                       :format variable-util/utf-versioned-content-type)
         {:keys [status]} (ingest/ingest-concept
                           concept
                           (variable-util/token-opts token))]

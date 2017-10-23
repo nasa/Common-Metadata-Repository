@@ -15,13 +15,28 @@
    [cmr.transmit.variable :as transmit-variable]
    [cmr.umm-spec.versioning :as versioning]))
 
-(def schema-version versioning/current-variable-version)
 (def unique-index (atom 0))
-(def content-type "application/vnd.nasa.cmr.umm+json")
-(def default-opts {:accept-format :json
-                   :content-type content-type})
+
+(def content-type
+  "The default content type used in the tests below."
+  "application/vnd.nasa.cmr.umm+json")
+
+(def versioned-content-type
+  "A versioned default content type used in the tests."
+  (mt/with-version content-type versioning/current-service-version))
+
+(def utf-versioned-content-type
+  "A default versioned content type with the charset set to UTF-8."
+  (str versioned-content-type "; charset=utf-8"))
+
+(def default-opts
+  "Default HTTP client options for use in the tests below."
+  {:accept-format :json
+   :content-type content-type})
 
 (defn token-opts
+  "A little testing utility function that adds a user token to the default
+  headers (HTTP client options)."
   [token]
   (merge default-opts {:token token}))
 
@@ -86,12 +101,12 @@
   ([metadata-attrs attrs]
     (-> (merge {:provider-id "PROV1"} metadata-attrs)
         (data-umm-v/variable-concept)
-        (assoc :format (mt/with-version content-type schema-version))
+        (assoc :format versioned-content-type)
         (merge attrs)))
   ([metadata-attrs attrs idx]
     (-> (merge {:provider-id "PROV1"} metadata-attrs)
         (data-umm-v/variable-concept :umm-json idx)
-        (assoc :format (mt/with-version content-type schema-version))
+        (assoc :format versioned-content-type)
         (merge attrs))))
 
 (defn make-unique-variable-concept
