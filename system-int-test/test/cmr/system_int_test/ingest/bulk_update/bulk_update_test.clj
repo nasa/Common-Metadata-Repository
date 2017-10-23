@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [clojure.java.io :as io]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util :refer [are3]]
@@ -170,22 +171,6 @@
 (deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
-      (testing "Invalid data center update"
-        (let [bulk-update-body {:concept-ids concept-ids
-                                :update-type "ADD_TO_EXISTING"
-                                :update-field "DATA_CENTERS"
-                                :update-value {:ShortName "LARC"}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
-          (index/wait-until-indexed)
-          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
-            (is (= "COMPLETE" (:task-status collection-response)))
-            ;; These error messages all being the same are contingent on the
-            ;; bulk update saving umm-json. If that changes these have to change.
-            (is (every? #(and (= "FAILED" (:status %))
-                              (= "/DataCenters/2 object has missing required properties ([\"Roles\"])"
-                                 (:status-message %)))
-                        (:collection-statuses collection-response))))))
-
       (testing "Data center find and update"
         (let [bulk-update-body {:concept-ids concept-ids
                                 :update-type "FIND_AND_UPDATE"
@@ -205,8 +190,7 @@
                                     :results
                                     :items
                                     first)]]
-           ;; On rev 2, not 3, since previous update failed
-           (is (= 2
+           (is (= 2 
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "NSIDC"
                     :Roles ["ORIGINATOR"]}
@@ -247,49 +231,6 @@
                 :Term "AIR QUALITY"
                 :VariableLevel1 "EMISSIONS"}]
               (:ScienceKeywords (:umm concept)))))))
-
-(deftest bulk-update-remove-all-platforms-test
-  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
-        _ (index/wait-until-indexed)
-        bulk-update-body {:concept-ids concept-ids
-                          :update-type "FIND_AND_REMOVE"
-                          :update-field "PLATFORMS"
-                          :find-value {:Type "Aircraft"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
-      (index/wait-until-indexed)
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
-            collection-status (first (:collection-statuses collection-response))]
-        (is (= "COMPLETE" (:task-status collection-response)))
-        (not (= nil (:created-at collection-response)))
-        (is (= "FAILED" (:status collection-status)))
-        (is (= "object has missing required properties ([\"Platforms\"])" (:status-message collection-status))))
-
-      ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
-      (doseq [concept-id concept-ids
-              :let [concept (-> (search/find-concepts-umm-json :collection
-                                                               {:concept-id concept-id})
-                                :results
-                                :items
-                                first)]]
-       (is (= 1 
-              (:revision-id (:meta concept))))
-       (is (= [{:ShortName "a340-600-1"
-                :LongName "airbus a340-600-1"
-                :Type "Aircraft"}
-               {:ShortName "a340-600-2"
-                :LongName "airbus a340-600"
-                :Type "Aircraft"
-                :Instruments [{:ShortName "atm"
-                               :LongName "airborne topographic mapper"
-                               :Technique "testing"
-                               :NumberOfInstruments 0
-                               :OperationalModes ["mode1" "mode2"]}]}
-               {:ShortName "a340-600-3"
-                :LongName "airbus a340-600"
-                :Type "Aircraft"
-                :Instruments [{:ShortName "atm"
-                               :LongName "airborne topographic mapper"}]}]
-              (:Platforms (:umm concept)))))))
 
 (deftest bulk-update-remove-all-instruments-test
   (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
@@ -363,3 +304,23 @@
                 :VariableLevel1 "EMISSIONS",
                 :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
               (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-xml-to-umm-failure-test
+  (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
+        concept (ingest/ingest-concept
+                 (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids [(:concept-id concept)]
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
+    ;; Kick off bulk update
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+        (is (= "COMPLETE" (:task-status collection-response)))))))
