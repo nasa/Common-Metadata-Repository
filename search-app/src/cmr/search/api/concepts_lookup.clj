@@ -42,7 +42,7 @@
               mt/iso-smap}
    :service #{mt/any
               mt/xml
-              mt/umm-json}}
+              mt/umm-json}
    :variable #{mt/any
                mt/xml
                mt/umm-json}})
@@ -66,7 +66,6 @@
         (format (str "Retrieving concept by concept id is not supported for "
                      "concept type [%s].")
                 (name concept-type))))
-
     (if revision-id
       ;; We don't support Atom or JSON (yet) for lookups that include
       ;; revision-id due to limitations of the current transformer
@@ -121,7 +120,5 @@
       ;; XXX REMOVE this check and the stubs once the service and
       ;;     the associations work is complete
       (if (headers "cmr-prototype-umm")
-        (stubs/handle-prototype-request
-         path-w-extension params headers)
-        (find-concept-by-cmr-concept-id
-         ctx path-w-extension params headers)))))
+        (stubs/handle-prototype-request path-w-extension params headers)
+        (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))))

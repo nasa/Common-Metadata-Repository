@@ -23,15 +23,36 @@
   [context acls concept]
   true)
 
+;; When plans solidify around acl checks for service concepts, we'll update this.
+(defmethod acls-match-concept? :service
+  [context acls concept]
+  true)
+
 (defmethod acls-match-concept? :default
   [context acls concept]
   false)
 
+;; XXX This code is a point of contention for adding new concepts: on both
+;;     occasions where we added varible and service support (e.g. to the
+;;     `/search/concepts` route), tests failed with ACL errors due to this ns
+;;     not getting updated both in the function below as well as above in the
+;;     `acls-match-concept?` multimethod.
+;;
+;;     This needs to be taken into account when we plan for refactoring the
+;;     APIs and development process for adding concepts to the CMR. The fact
+;;     that this crucial change is tucked away in this part of the code with no
+;;     logical "pointers" or hints to it anywhere else is deeply problematic ...
+;;     programming by conventions is a slow path to developer insanity and
+;;     software project failure! Instead, all parts of the code that need to be
+;;     touched should be replaced with APIs (e.g., protocols and their impl'ns)
+;;     with each method documented and, all toegher, being the only things a
+;;     developer needs to add/change (in this instance) a new concept.
 (def concept-type->applicable-field
   "A mapping of concept type to the field in the ACL indicating if it is collection or granule
   applicable."
   {:granule :granule-applicable
    :collection :collection-applicable
+   :service :service-applicable
    :variable :variable-applicable})
 
 (defn filter-concepts
