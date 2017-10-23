@@ -88,4 +88,5 @@
   (assoc (rmq-conf/default-config)
          :exchanges [(deleted-concept-revision-exchange-name)
                      (ingest-exchange-name)
-                     (access-control-exchange-name)]))
+                     (access-control-exchange-name)
+                     (deleted-granule-exchange-name)]))
