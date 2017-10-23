@@ -14,10 +14,16 @@
         serv2 (util/create-and-save-service "SMAL_PROV1" 1 2)]
     (testing "find latest revisions"
       (are3 [servs params]
-        (is (= (set servs)
-               (set (->> (util/find-latest-concepts :service params)
-                         :concepts
-                         util/concepts-for-comparison))))
+        (let [found-servs (->> (util/find-latest-concepts :service params)
+                               :concepts
+                               util/concepts-for-comparison)]
+          ;; this verifies the number of services found is correct,
+          ;; we had bug where the same service shows up multiple times in the results
+          (is (= (count servs)
+                 (count found-servs)))
+          ;; this verifies the content of the services found is correct
+          (is (= (set servs)
+                 (set found-servs))))
 
         "with metadata search by provider-id"
         [serv1] {:provider-id "REG_PROV"}

@@ -42,7 +42,7 @@
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
    types must include the provider id as part of the sql params"
-  #{:access-group})
+  #{:access-group :variable :service})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
@@ -102,7 +102,7 @@
         (= :variable concept-type)
         (= :service concept-type))))
 
-;; Execute a query against the small providers table
+;; Execute a query against a single table where provider_id is a column
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
   (let [fields (columns-for-find-concept concept-type params)
@@ -111,10 +111,10 @@
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
-      [conn db]
-      (doall
-        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-              (su/query conn stmt))))))
+     [conn db]
+     (doall
+      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+            (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
