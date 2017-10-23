@@ -13,18 +13,18 @@
   (fn [context acls concept]
     (:concept-type concept)))
 
+;; services currently have no ACLs, so return `true` for all ACL checks
+(defmethod acls-match-concept? :service
+  [context acls concept]
+  true)
+
 ;; tags have no acls so we always assume it matches
 (defmethod acls-match-concept? :tag
   [context acls concept]
   true)
 
-;; When plans solidify around acl checks for variable concepts, we'll update this.
+;; variables currently have no ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :variable
-  [context acls concept]
-  true)
-
-;; When plans solidify around acl checks for service concepts, we'll update this.
-(defmethod acls-match-concept? :service
   [context acls concept]
   true)
 
@@ -32,10 +32,16 @@
   [context acls concept]
   false)
 
-;; XXX This code is a point of contention for adding new concepts: on both
+;; XXX To be fixed with CMR-4394
+;;
+;;     See also:
+;;       * https://wiki.earthdata.nasa.gov/display/CMR/Towards+Improved+CMR+Concept+Creation
+;;       * https://wiki.earthdata.nasa.gov/display/CMR/CMR+Concept+Creation+API
+;;
+;;     This code is a point of contention for adding new concepts: on both
 ;;     occasions where we added varible and service support (e.g. to the
 ;;     `/search/concepts` route), tests failed with ACL errors due to this ns
-;;     not getting updated both in the function below as well as above in the
+;;     not getting updated, both in the function below as well as above in the
 ;;     `acls-match-concept?` multimethod.
 ;;
 ;;     This needs to be taken into account when we plan for refactoring the
@@ -45,7 +51,7 @@
 ;;     programming by conventions is a slow path to developer insanity and
 ;;     software project failure! Instead, all parts of the code that need to be
 ;;     touched should be replaced with APIs (e.g., protocols and their impl'ns)
-;;     with each method documented and, all toegher, being the only things a
+;;     with each method documented and, all together, being the only things a
 ;;     developer needs to add/change (in this instance) a new concept.
 (def concept-type->applicable-field
   "A mapping of concept type to the field in the ACL indicating if it is collection or granule
