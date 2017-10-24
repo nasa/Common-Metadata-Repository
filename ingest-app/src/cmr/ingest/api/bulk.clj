@@ -101,6 +101,7 @@
    :body (xml/emit-str
           (xml/element :result {}
            (xml/element :created-at {} (str (:created-at result)))
+           (xml/element :name {} (str (:name result)))
            (xml/element :task-status {} (:task-status result))
            (xml/element :status-message {} (:status-message result))
            (xml/element :request-json-body {} (:request-json-body result))
