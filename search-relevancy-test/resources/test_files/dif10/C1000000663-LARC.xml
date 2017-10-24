@@ -1,0 +1,199 @@
+<DIF xmlns='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:dif='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd'>
+  <Entry_ID>
+    <Short_Name>TL3H2OM</Short_Name>
+    <Version>004</Version>
+  </Entry_ID>
+  <Version_Description>Not provided</Version_Description>
+  <Entry_Title>TES/Aura L3 H2O Monthly Gridded V004</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Release_Date>Not provided</Dataset_Release_Date>
+    <Online_Resource>http://eosweb.larc.nasa.gov/project/tes/tes_table</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <First_Name>SCOTT</First_Name>
+      <Middle_Name>E</Middle_Name>
+      <Last_Name>GLUCK</Last_Name>
+      <Address>
+        <Street_Address>NASA Jet Propulsion Laboratory</Street_Address>
+        <Street_Address>M/S 168-416</Street_Address>
+        <Street_Address>4800 Oak Grove Drive</Street_Address>
+        <City>Pasadena</City>
+        <State_Province>CA</State_Province>
+        <Postal_Code>91109</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>818-354-0251</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>Scott.Gluck@jpl.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASDC</First_Name>
+      <Last_Name>USER SERVICES</Last_Name>
+      <Address>
+        <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+        <Street_Address>User and Data Services</Street_Address>
+        <Street_Address>NASA Langley Research Center</Street_Address>
+        <Street_Address>Mail Stop 157D</Street_Address>
+        <City>Hampton</City>
+        <State_Province>VA</State_Province>
+        <Postal_Code>23681-2199</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>757-864-8656</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>support-asdc@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords uuid='286d2ae0-9d86-4ef0-a2b4-014843a98532'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+  </Science_Keywords>
+  <Science_Keywords uuid='35e1f93b-99b3-4430-b477-0ecafa80d67a'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC TEMPERATURE</Term>
+  </Science_Keywords>
+  <ISO_Topic_Category uuid='1ebf71bd-d007-42f8-8f9b-8c44a6b65a28'>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <ISO_Topic_Category uuid='81a52fa1-4a8f-4c4d-9736-7aaf0859df9d'>ENVIRONMENT</ISO_Topic_Category>
+  <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+  <Platform uuid='59d2e030-5377-4b5b-92ce-f488d418c45f'>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>AURA</Short_Name>
+    <Long_Name>Earth Observing System, Aura</Long_Name>
+    <Instrument uuid='5207aaad-b875-40ed-b2cc-69c1b112fe37'>
+      <Short_Name>TES</Short_Name>
+      <Long_Name>Tropospheric Emission Spectrometer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>2004-08-22</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>90.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+        <Minimum_Altitude>0</Minimum_Altitude>
+        <Maximum_Altitude>33</Maximum_Altitude>
+        <Altitude_Unit>KM</Altitude_Unit>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location uuid='51e3593f-4b42-4141-972e-96666c479f9c'>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project uuid='4f9e19dc-adc1-4c7e-91ab-5947064737e3'>
+    <Short_Name>TES</Short_Name>
+    <Long_Name>Tropospheric Emission Spectrometer</Long_Name>
+  </Project>
+  <Dataset_Language>English</Dataset_Language>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>ASDC</Short_Name>
+      <Long_Name>Atmospheric Science Data Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://eosweb.larc.nasa.gov</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <First_Name>ASDC</First_Name>
+        <Last_Name>USER SERVICES</Last_Name>
+        <Address>
+          <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+          <Street_Address>User and Data Services</Street_Address>
+          <Street_Address>NASA Langley Research Center</Street_Address>
+          <Street_Address>Mail Stop 157D</Street_Address>
+          <City>Hampton</City>
+          <State_Province>VA</State_Province>
+          <Postal_Code>23681-2199</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>757-864-8656</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Email>support-asdc@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>online</Distribution_Media>
+    <Distribution_Format>HDF - EOS</Distribution_Format>
+    <Fees>none</Fees>
+  </Distribution>
+  <Reference>
+    <Citation> TES publications http://tes.jpl.nasa.gov/documents/publications/ </Citation>
+  </Reference>
+  <Summary>
+    <Abstract>The TES Aura L3 H2O data consist of daily atmospheric temperature and VMR for the atmospheric species. Data are provided at 2 degree latitude X 4 degree longitude spatial grids and at a subset of TES standard pressure levels. The TES Science Data Processing L3 subsystem interpolates the L2 atmospheric profiles collected in a Global Survey onto a global grid uniform in latitude and longitude to provide a 3-D representation of the distribution of atmospheric gasses. Daily and monthly averages of L2 profiles and browse images are available. The L3 standard data products are composed of L3 HDF - EOS-EOS grid data. A separate product file is produced for each different atmospheric species. TES obtains data in two basic observation modes: Limb or Nadir. The product file may contain, in separate folders, limb data, nadir data, or both folders may be present. Specific to L3 processing are the terms Daily and Monthly representing the approximate time coverage of the L3 products. However, the input data granules to the L3 process are complete Global Surveys; in other words a Global Survey will not be split in relation to time when input to the L3 processes even if they exceed the usual understood meanings of a day or month. More specifically, Daily L3 products represent a single Global Survey (approximately 26 hours) and Monthly L3 products represent Global Surveys that are initiated within that calendar month. The data granules defined for L3 standard products are daily and monthly. Details of the format of this product can be found in the TES Data Products Specifications (DPS) which is available from the LaRC ASDC site: http://eosweb.larc.nasa.gov/project/tes/DPS</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type uuid='6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1'>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </URL_Content_Type>
+    <URL>http://tes.jpl.nasa.gov/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/tes/tes_table</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/tes/tes-quality-statements</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eospso.gsfc.nasa.gov/atbd-category/53</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='3779ec72-c1e0-4a0f-aff8-8e2a2a7af486'>
+      <Type>GET DATA</Type>
+      <Subtype>EOSDIS DATA POOL</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://l4ftl01.larc.nasa.gov/TES/TL3ATD.001/</URL>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <DIF_Revision_History>2005-08-17, Updated summary with text provided by TES and corrected reference. 2005-08-19, Moved URL for ATBDs to Related URL field. 2005-05-25, Corrected for Version 3 2008-05-05, S. Ritz updated Publication URL. Added GET DATA and Project URL. 2015-09-23, Updated abstract and platform/instrument information for BEDI review.</DIF_Revision_History>
+  <Metadata_Dates>
+    <Metadata_Creation>2014-11-19</Metadata_Creation>
+    <Metadata_Last_Revision>2015-09-23</Metadata_Last_Revision>
+    <Data_Creation>Not provided</Data_Creation>
+    <Data_Last_Revision>Not provided</Data_Last_Revision>
+  </Metadata_Dates>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Product_Flag>DATA_PRODUCT_FILE</Product_Flag>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.earthdata.cmr.restriction</Group>
+      <Name>Restriction</Name>
+      <Value>5</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

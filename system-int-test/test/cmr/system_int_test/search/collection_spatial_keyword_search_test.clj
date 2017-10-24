@@ -20,7 +20,11 @@
         coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))
         coll-angola (d/ingest "PROV2" (dc/collection {:spatial-keywords ["ANGOLA"]}))
         coll-c-africa (d/ingest "PROV2" (dc/collection {:spatial-keywords ["central africa"]}))
-        coll-gaza (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Gaza Strip"]}))]
+        coll-gaza (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Gaza Strip"]}))
+        coll-iso-sample (d/ingest-concept-with-metadata-file "iso-samples/cmr-4192-iso-collection.xml"
+                                                             {:provider-id "PROV2"
+                                                              :concept-type :collection
+                                                              :format-key :iso19115})]
 
     (index/wait-until-indexed)
 
@@ -31,7 +35,18 @@
            "LA" [coll4]
            ["Detroit"] [coll5 coll7]
            ["LL" "Detroit"] [coll5 coll6 coll7]
-           "BLAH" []))
+           "Gaza Strip" [coll-gaza]
+           "Tuolumne River Basin" [coll-iso-sample]
+           "North America" [coll-iso-sample]
+           "Continent" [coll-iso-sample coll-angola coll-c-africa coll-gaza]))
+    (testing "search by spatial keywords using wildcard * for cmr-4192 collection"
+      (is (d/refs-match? [coll-iso-sample]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "*river*"
+                                            "options[spatial-keyword][pattern]" "true"})))
+      (is (d/refs-match? [coll-iso-sample]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "nOrTh aMEricA"}))))
     (testing "search by spatial keywords using wildcard *."
       (is (d/refs-match? [coll3 coll4 coll5 coll7]
                          (search/find-refs :collection
@@ -91,7 +106,7 @@
            [coll5 coll7] {:and [{:spatial_keyword "Detroit"}]}
            [coll5 coll6 coll7] {:or [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
            [] {:and [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
-           [coll1 coll2 coll5 coll6 coll7 coll-angola coll-c-africa coll-gaza] {:not {:spatial_keyword "DC"}}
+           [coll1 coll2 coll5 coll6 coll7 coll-angola coll-c-africa coll-gaza coll-iso-sample] {:not {:spatial_keyword "DC"}}
            [] {:spatial_keyword "BLAH"}
 
            ;; pattern
@@ -107,7 +122,7 @@
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
            [coll-angola coll-c-africa] {:location_keyword {:subregion_1 "CeNTRAL aFRiCA"}}
-           [coll-gaza coll-angola coll-c-africa] {:location_keyword {:any "Cont*" :pattern true}}
+           [coll-gaza coll-angola coll-c-africa coll-iso-sample] {:location_keyword {:any "Cont*" :pattern true}}
            [coll-gaza] {:location_keyword {:category "CONTINENT"
                                            :type "ASIA"
                                            :subregion_1 "WESTERN ASIA"

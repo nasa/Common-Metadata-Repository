@@ -161,7 +161,8 @@
       (sanitize-umm-record-contacts :ContactGroups)
       (sanitize-umm-record-related-url :CollectionCitations)
       (sanitize-umm-record-related-url :PublicationReferences)
-      (update-in-each [:PublicationReferences] sanitize-online-resource)))
+      (update-in-each [:PublicationReferences] sanitize-online-resource)
+      (update-in-each [:CollectionCitations] sanitize-online-resource)))
 
 (defn- sanitize-umm-number-of-instruments
   "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"
@@ -170,6 +171,26 @@
       (update-in-each [:Platforms] update-in-each [:Instruments]
         #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                          (when (> ct 0) ct))))))
+
+(def valid-uri
+  "http://google.com")
+
+(defn- sanitize-umm-data-presentation-form
+  "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
+   Replace it with a valid URI."
+  [record]
+  (-> record
+      (update-in-each [:CollectionCitations]
+        #(assoc % :DataPresentationForm (when (:DataPresentationForm %)
+                                          valid-uri)))))
+
+(defn- sanitize-umm-online-resource-function
+  "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
+   Replace it with a valid URI."
+  [record]
+  (if (get-in record [:OnlineResource :Function])
+   (assoc-in record [:OnlineResource :Function] valid-uri)
+   record))
 
 (defn sanitized-umm-c-record
   "Returns the sanitized version of the given umm-c record."
@@ -183,14 +204,14 @@
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
       sanitize-umm-record-urls
-      sanitize-umm-number-of-instruments))
+      sanitize-umm-number-of-instruments
+      sanitize-umm-data-presentation-form
+      (update-in-each [:CollectionCitations] sanitize-umm-online-resource-function)))
 
 (defn sanitized-umm-s-record
   "Include only the sanitizers needed for a given umm-s record."
   [record]
-  (-> record
-      (sanitize-science-keywords)
-      (sanitize-umm-record-related-urls)))
+  record)
 
 (defn sanitized-umm-var-record
   "Include only the sanitizers needed for a given umm-var record."

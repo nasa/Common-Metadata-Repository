@@ -160,6 +160,20 @@
                                     </gmd:description>
                                 </gmd:MD_Identifier>
                             </gmd:identifier>
+                            <!-- CollectionDataType -->
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                        <gco:CharacterString>SCIENCE_QUALITY</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                        <gco:CharacterString>gov.nasa.esdis.umm.collectiondatatype</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                        <gco:CharacterString>Collection Data Type</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
                             <gmd:citedResponsibleParty>
                                 <gmd:CI_ResponsibleParty>
                                     <gmd:organisationName>
@@ -975,9 +989,14 @@
                     <gmd:processingLevel>
                         <gmd:MD_Identifier>
                             <gmd:code>
-                                <gco:CharacterString>Level 2</gco:CharacterString>
+                                <gco:CharacterString>3</gco:CharacterString>
                             </gmd:code>
-                            <gmd:description gco:nilReason="missing"/>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Variables mapped on uniform space-time grid scales, usually with some completeness and consistency.</gco:CharacterString>
+                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmd:processingLevel>
                 </gmd:MD_DataIdentification>

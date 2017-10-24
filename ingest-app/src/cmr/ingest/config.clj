@@ -1,18 +1,43 @@
 (ns cmr.ingest.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]
-            [cmr.message-queue.config :as rmq-conf]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as conn]))
 
-(defconfig bulk-update-enabled 
+(defconfig bulk-update-cleanup-minimum-age
+  "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
+  {:default 90
+   :type Long})
+
+(defconfig bulk-update-enabled
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})
 
-(defconfig ingest-accept-umm-version
-  "Defines the latest umm version accepted by ingest - it's the latest official version.
+(defconfig collection-umm-version
+  "Defines the latest collection umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
   {:default "1.9"})
+
+(defconfig variable-umm-version
+  "Defines the latest variable umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.1"})
+
+(defconfig service-umm-version
+  "Defines the latest service umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.0"})
+
+(defn ingest-accept-umm-version
+  "Returns the latest umm version accepted by ingest for the given concept-type."
+  [concept-type]
+  (get
+   {:collection (collection-umm-version)
+    :variable (variable-umm-version)
+    :service (service-umm-version)}
+   concept-type))
 
 (defconfig ingest-username
   "Ingest database username"
@@ -51,9 +76,9 @@
    :type Long})
 
 (defn queue-config
-  "Returns the rabbit mq configuration for the ingest application."
+  "Returns the queue configuration for the ingest application."
   []
-  (assoc (rmq-conf/default-config)
+  (assoc (queue-config/default-config)
          :queues [(ingest-queue-name)]
          :exchanges [(ingest-exchange-name) (provider-exchange-name)]
          :queues-to-exchanges

@@ -3,7 +3,7 @@
   (:require
     [clj-time.core :as t]
     [clj-time.format :as f]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util :refer [update-in-each]]
     [cmr.spatial.mbr :as m]
     [cmr.umm-spec.date-util :as date-util]
@@ -13,26 +13,18 @@
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.related-url :as ru-gen]
+    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+    [cmr.umm-spec.test.iso-shared :as iso-shared]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
-
-(defn split-temporals
-  "Returns a seq of temporal extents with a new extent for each value under key
-  k (e.g. :RangeDateTimes) in each source temporal extent."
-  [k temporal-extents]
-  (reduce (fn [result extent]
-            (if-let [values (get extent k)]
-              (concat result (map #(assoc extent k [%])
-                                  values))
-              (concat result [extent])))
-          []
-          temporal-extents))
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
+    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -43,45 +35,14 @@
     (for [x coll]
       (assoc x k v))))
 
-(defn- sort-by-date-type-iso
-  "Returns temporal extent records to match the order in which they are generated in ISO XML."
-  [extents]
-  (let [ranges (filter :RangeDateTimes extents)
-        singles (filter :SingleDateTimes extents)]
-    (seq (concat ranges singles))))
-
-(defn- fixup-iso-ends-at-present
-  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
-  in RangeDateTimes, otherwise nil."
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (let [ends-at-present (:EndsAtPresentFlag extent)
-          rdts (seq (:RangeDateTimes extent))]
-      (-> extent
-          (update-in-each [:RangeDateTimes]
-                          update-in [:EndingDateTime] (fn [x]
-                                                        (when-not ends-at-present
-                                                          x)))
-          (assoc :EndsAtPresentFlag
-                 (boolean (and rdts ends-at-present)))))))
-
-(defn- fixup-comma-encoded-values
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (update-in extent [:TemporalRangeType] (fn [x]
-                                             (when x
-                                               (str/trim (iso-util/sanitize-value x)))))))
-
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
-       (propagate-first :TemporalRangeType)
-       fixup-comma-encoded-values
-       fixup-iso-ends-at-present
-       (split-temporals :RangeDateTimes)
-       (split-temporals :SingleDateTimes)
-       sort-by-date-type-iso
+       iso-shared/fixup-iso-ends-at-present
+       (iso-shared/split-temporals :RangeDateTimes)
+       (iso-shared/split-temporals :SingleDateTimes)
+       iso-shared/sort-by-date-type-iso
        (#(or (seq %) su/not-provided-temporal-extents))))
 
 (defn- expected-online-resource
@@ -149,7 +110,7 @@
           (-> related-url
               (dissoc :FileSize :MimeType :GetData)
               expected-related-url-get-service
-              (update :Description #(when % (str/trim %))))))))
+              (update :Description #(when % (string/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -158,7 +119,7 @@
                     ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
                     ;; XML, so the values must be updated to match what we expect in the resulting
                     ;; XML document.
-                    (str/trim x)))]
+                    (string/trim x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
@@ -173,15 +134,6 @@
   [mas]
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
     (seq (concat other-types input-types))))
-
-(defn- expected-iso-topic-categories
-  "Update ISOTopicCategories values to a default value if it's not one of the specified values."
-  [categories]
-  (->> categories
-       (map iso-topic-categories/umm->xml-iso-topic-category-map)
-       (map iso-topic-categories/xml->umm-iso-topic-category-map)
-       (remove nil?)
-       seq))
 
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
@@ -273,12 +225,12 @@
        organization-name (if LongName
                           (str ShortName " &gt; " LongName)
                           ShortName)
-       name-split (str/split organization-name #"&gt;|>")]
+       name-split (string/split organization-name #"&gt;|>")]
    (if (> (count name-split) 0)
     (-> data-center
-        (assoc :ShortName (str/trim (first name-split)))
+        (assoc :ShortName (string/trim (first name-split)))
         (assoc :LongName (when (> (count name-split) 1)
-                          (str/join " " (map str/trim (rest name-split))))))
+                          (string/join " " (map string/trim (rest name-split))))))
     (-> data-center
         (assoc :ShortName su/not-provided)
         (assoc :LongName nil)))))
@@ -289,8 +241,8 @@
  as well as leading/trailing spaces."
  [person]
  (let [{:keys [FirstName MiddleName LastName]} person
-       combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
-       names (str/split combined-name #" {1,}")
+       combined-name (string/trim (string/join " " [FirstName MiddleName LastName]))
+       names (string/split combined-name #" {1,}")
        num-names (count names)]
   (if (= 1 num-names)
     (-> person
@@ -299,7 +251,7 @@
         (dissoc :MiddleName))
     (-> person
         (assoc :FirstName (first names))
-        (assoc :MiddleName (str/join " " (subvec names 1 (dec num-names))))
+        (assoc :MiddleName (string/join " " (subvec names 1 (dec num-names))))
         (update :MiddleName #(when (seq %) %)) ; nil if empty
         (assoc :LastName (last names))))))
 
@@ -363,16 +315,25 @@
         role (:Roles data-center)]
    (assoc data-center :Roles [role]))))
 
+(defn- keep-first-collection-citation
+  "Returns collection-citations with only the first collection-citation in it, trimmed.
+   When collection-citations is nil, return [{}]."
+  [collection-citations]
+  (if collection-citations
+    (conj [] (cmn/map->ResourceCitationType
+               (iso-shared/trim-collection-citation (first collection-citations))))
+    [{}]))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
       (assoc :DirectoryNames nil)
       fix-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
+      (update-in [:SpatialExtent :VerticalSpatialDomains]
+                 spatial-conversion/drop-invalid-vertical-spatial-domains)
       (update :TemporalExtents expected-iso-19115-2-temporal)
-      ;; The following platform instrument properties are not supported in ISO 19115-2
       (update :DataDates expected-iso19115-data-dates)
-      (assoc :CollectionDataType nil)
       (update :DataLanguage #(or % "eng"))
       (update :ProcessingLevel su/convert-empty-record-to-nil)
       (update :Distributions expected-iso-19115-2-distributions)
@@ -380,13 +341,25 @@
       (update :RelatedUrls expected-collection-related-urls)
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
-      (update :ISOTopicCategories expected-iso-topic-categories)
+      (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))
+      ;;add contact persons introduced by CollectionCitation.
+      (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation
+                               (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
+                               (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
+      ;; CollectionCitation's Title and UMM's EntryTitle share the same xml element, So do CollectionCitation's
+      ;; Version and UMM's Version. When translate to xml file, we use the UMM's EntryTitle and Version. The values
+      ;; could be different.
+      ;; If the original CollectionCitation is nil, we should expect it to contain Title and Version.
+      ;; If there are multiple CollectionCitations, we should only expect the first one.
+      (assoc :CollectionCitations (map #(assoc % :Title (:EntryTitle umm-coll) :Version (:Version umm-coll))
+                                       (keep-first-collection-citation (:CollectionCitations umm-coll))))
       (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update :CollectionProgress su/with-default)
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       js/parse-umm-c))

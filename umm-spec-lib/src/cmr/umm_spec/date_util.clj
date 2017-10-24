@@ -2,6 +2,7 @@
   "Useful UMM date values and functions."
   (:require
    [clj-time.format :as f]
+   [clj-time.core :as time-core]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
    [cmr.common.time-keeper :as time-keeper]
@@ -61,6 +62,15 @@
        sort
        last))
 
+(defn earliest-date-of-type
+  "Returns :Date value of the least recent UMM DateType map in date-coll with the given type."
+  [date-coll date-type]
+  (->> date-coll
+       (filter #(= date-type (:Type %)))
+       (map :Date)
+       sort
+       first))
+
 (defn sanitize-and-parse-date
   "If sanitize? is enabled make corrections in the date string then parse. If the date string
   cannot be parsed, the f/parse function will return nil. Return the original date instead
@@ -75,10 +85,34 @@
       date)
     date))
 
+(defn valid-date?
+  "When date is valid, return true, otherwise return nil"
+  [date]
+  (let [date (f/parse date)]
+    (try
+      (time-core/equal? date
+                     date)
+      (catch
+        Exception e nil))))
+
+(defn is-in-past?
+  "Parse date and return true if date is in the past, false if not or date is nil"
+  [date]
+  (if date
+    (time-core/before? date (time-keeper/now))
+    false))
+
+(defn is-in-future?
+  "Parse date and return true if date is in the future, false if not or date is nil"
+  [date]
+  (if date
+    (time-core/after? date (time-keeper/now))
+    false))
+
 (defn update-metadata-dates
   "Update the Date to current date, for a given Type: date-type, in MetadataDates of a umm record"
   [umm date-type]
-  (let [new-metadata-dates (concat (remove #(= date-type (:Type %)) (:MetadataDates umm)) 
+  (let [new-metadata-dates (concat (remove #(= date-type (:Type %)) (:MetadataDates umm))
                                    [{:Date (time-keeper/now) :Type date-type}])]
     (assoc umm :MetadataDates new-metadata-dates)))
 

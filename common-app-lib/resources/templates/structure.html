@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% block tophat-js %}{% endblock %}
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -38,10 +39,8 @@
     </header>
 
     <main class="content-section">
-      <div class="container">
         {% block main-content %}
         {% endblock %}
-      </div>
     </main>
 
     <footer>

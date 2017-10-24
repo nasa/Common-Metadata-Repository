@@ -5,12 +5,12 @@
    [cmr.common-app.humanizer :as h]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.cache.cubby-cache :as cubby-cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache :as cache]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.jobs :refer [defjob default-job-start-delay]]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -40,6 +40,25 @@
   "The size of the batches to use to process collections for the humanizer report"
   {:default 500 :type Long})
 
+(defconfig humanizer-report-generator-job-delay
+  "Number of seconds the humanizer-report-generator-job needs to wait after collection
+  cache refresh job starts.
+
+  We want to add the delay so that the collection cache can be populated first.
+  Splunk shows the average time taken for collection cache to be refreshed is around
+  300 seconds"
+  {:default 400 :type Long})
+
+(defconfig humanizer-report-generator-job-wait
+  "Number of milli-seconds humanizer-generator-job waits for the collection cache
+  to be populated in the event when the delay is not long enough."
+  {:default 60000 :type Long}) ;; one minute
+
+(defconfig retry-count
+  "Number of times humanizer-report-generator-job retries to get the collections
+  from collection cache."
+  {:default 20 :type Long})
+
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."
   [context revision-format-map]
@@ -56,16 +75,33 @@
   [context rfms]
   (map #(rfm->umm-collection context %) rfms))
 
+(defn- get-cached-revision-format-maps-with-retry
+  "Get all the collections from cache, if nothing is returned,
+  Wait configurable number of seconds before retrying configurable number of times."
+  [context]
+  (loop [retries (retry-count)]
+    (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+      rfms
+      (when (> retries 0)
+        (info (format (str "Humanizer report generator job is sleeping for %d second(s)"
+                           " before retrying to fetch from collection cache.")
+                      (/ (humanizer-report-generator-job-wait) 1000)))
+        (Thread/sleep (humanizer-report-generator-job-wait))
+        (recur (dec retries))))))
+
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
   humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
   [context]
   ;; Currently not throwing an exception if the cache is empty. May want to
   ;; change in the future to throw an exception.
-  (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+  (if-let [rfms (get-cached-revision-format-maps-with-retry context)]
     (map
-     #(rfms->umm-collections context %)
-     (partition-all (humanizer-report-collection-batch-size) rfms))))
+      #(rfms->umm-collections context %)
+      (partition-all (humanizer-report-collection-batch-size) rfms))
+    (warn (format "Collection cache is not populated after %d seconds of delay and %d times of retry."
+                  (humanizer-report-generator-job-delay)
+                  (retry-count)))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
@@ -139,11 +175,7 @@
     serves, all the content is the same;
   * A single-threaded cache that circumvents potential race conditions
     between HTTP requests for a report and Quartz cluster jobs that save
-    report data.
-
-  Note that in the future this particular cache may be useful for other
-  content we generate via one or more job schedulers, at which point we'll
-  want to move it to a more general ns."
+    report data."
   []
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
@@ -187,4 +219,4 @@
   "The job definition used by the system job scheduler."
   {:job-type HumanizerReportGeneratorJob
    :interval (* 60 60 24) ; every 24 hours
-   :start-delay 0})
+   :start-delay (+ (default-job-start-delay) (humanizer-report-generator-job-delay))})

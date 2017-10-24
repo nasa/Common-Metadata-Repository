@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
@@ -9,17 +9,28 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]))
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
+  {"COMPLETE" "COMPLETE"
+   "COMPLETED" "COMPLETE"
+   "IN WORK" "ACTIVE"
+   "ACTIVE" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
   [doc]
   (for [temporal (select doc "/Collection/Temporal")]
-    {:TemporalRangeType (value-of temporal "TemporalRangeType")
-     :PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
+    {:PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
      :EndsAtPresentFlag (Boolean/valueOf (value-of temporal "EndsAtPresentFlag"))
      :RangeDateTimes (for [rdt (select temporal "RangeDateTime")]
                        (fields-from rdt :BeginningDateTime :EndingDateTime))
@@ -36,7 +47,10 @@
 (defn parse-characteristics
   "Returns a seq of UMM characteristic records from the element's child Characteristics."
   [el]
-  (map parse-characteristic (select el "Characteristics/Characteristic")))
+  (let [elements (select el "Characteristics/Characteristic")
+        parsed-characteristics (remove nil? (map parse-characteristic elements))] 
+    (seq (remove nil?
+           (map char-data-type-normalization/normalize-data-type parsed-characteristics)))))
 
 (defn parse-sensor
   "Returns a UMM Sensor record from an ECHO10 Sensor element."
@@ -61,7 +75,7 @@
     {:EntryId (value-of element "ShortName")
      :Version (u/without-default version-id)
      :Type (some-> (u/without-default assoc-type)
-                   str/upper-case)
+                   string/upper-case)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
@@ -84,11 +98,15 @@
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
   [doc]
-  (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
-    {:TilingIdentificationSystemName (u/without-default
-                                       (value-of sys-el "TwoDCoordinateSystemName"))
-     :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
-     :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
+  (let [tiling-id-systems
+        (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
+         {:TilingIdentificationSystemName (value-of sys-el "TwoDCoordinateSystemName")
+          :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
+          :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)})]
+    (filter
+     #(spatial-conversion/tile-id-system-name-is-valid?
+       (:TilingIdentificationSystemName %))
+     tiling-id-systems)))
 
 (defn- parse-platforms
   "Parses platforms from the ECHO10 collection document."
@@ -156,7 +174,10 @@
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
-   :CollectionProgress (u/with-default (value-of doc "/Collection/CollectionState") sanitize?)
+   :CollectionProgress (get-umm-element/get-collection-progress
+                         coll-progress-mapping
+                         doc
+                         "/Collection/CollectionState")
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
@@ -188,10 +209,12 @@
    :RelatedUrls (ru/parse-related-urls doc sanitize?)
    :ScienceKeywords (parse-science-keywords doc sanitize?)
    :DataCenters (dc/parse-data-centers doc sanitize?)
-   :ContactPersons (dc/parse-data-contact-persons doc sanitize?)})
+   :ContactPersons (dc/parse-data-contact-persons doc sanitize?)
+   :CollectionCitations (when-let [collection-citations (value-of doc "/Collection/CitationForExternalPublication")]
+                          [{:OtherCitationDetails collection-citations}])})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
-  [context metadata options]  
+  [context metadata options]
   (js/parse-umm-c (parse-echo10-xml context metadata options)))

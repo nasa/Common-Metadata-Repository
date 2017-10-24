@@ -6,6 +6,7 @@
    [cmr.system-int-test.data2.collection :as data2-collection]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -66,7 +67,7 @@
         (testing "First search gets expected count and scroll-id"
           (is (= (count coll1-grans) (:hits response)))
           (is (not (nil? scroll-id))))))
-         
+
     (testing "Harvest by collection-concept-id"
       (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
             options {:accept nil
@@ -104,23 +105,26 @@
                                   format-key
                                   {:scroll true}
                                   {:headers {"CMR-Scroll-Id" scroll-id}})))))
-    (testing "Harvest granules by created-at"
-      (let [params {:concept-id [coll1-concept-id coll2-concept-id]
-                    :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
-                    :scroll true
-                    :page-size 2}
-            options {:accept nil
-                     :url-extension "native"}
-            response (search/find-metadata :granule :echo10 params options)
-            scroll-id (:scroll-id response)]
-        (is (not (nil? scroll-id)))
-        (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response)))
-    (testing "Harvest collections by created-at"
-      (let [params {:created_at "2010-01-01T10:00:00Z,2011-01-01T10:00:00Z" :scroll true :page-size 2}
-            options {:accept nil
-                     :url-extension "native"}
-            response (search/find-metadata :collection :echo10 params options)
-            scroll-id (:scroll-id response)]
-        (is (= 1 (:hits response)))
-        (is (not (nil? scroll-id)))
-        (data2-core/assert-metadata-results-match format-key [coll1-echo] response)))))
+    ;; Created-at is controlled by the Oracle database server normally. With the in-memory
+    ;; database we use time-keeper so that we can set created-at dates explicitly
+    (s/only-with-in-memory-database
+      (testing "Harvest granules by created-at"
+        (let [params {:concept-id [coll1-concept-id coll2-concept-id]
+                      :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
+                      :scroll true
+                      :page-size 2}
+              options {:accept nil
+                       :url-extension "native"}
+              response (search/find-metadata :granule :echo10 params options)
+              scroll-id (:scroll-id response)]
+          (is (not (nil? scroll-id)))
+          (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response)))
+      (testing "Harvest collections by created-at"
+        (let [params {:created_at "2010-01-01T10:00:00Z,2011-01-01T10:00:00Z" :scroll true :page-size 2}
+              options {:accept nil
+                       :url-extension "native"}
+              response (search/find-metadata :collection :echo10 params options)
+              scroll-id (:scroll-id response)]
+          (is (= 1 (:hits response)))
+          (is (not (nil? scroll-id)))
+          (data2-core/assert-metadata-results-match format-key [coll1-echo] response))))))

@@ -6,7 +6,7 @@
    [clojure.string :as str]
    [cmr.common.lifecycle :as l]
    [cmr.common.log :refer [info]]
-   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version])
   (:import
@@ -111,7 +111,7 @@
   (let [umm-json (umm-json/umm->json
                   (vm/migrate-umm context
                                   :collection
-                                  umm-version/current-version
+                                  umm-version/current-collection-version
                                   (context->preview-gem-umm-version context)
                                   collection))]
     (render-erb (context->jruby-runtime context)

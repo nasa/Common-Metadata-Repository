@@ -29,23 +29,38 @@
   [context]
   (get-in context [:system :db :conn]))
 
-(defn get-elastic-version
-  "Get the proper elastic document version for the concept based on type."
+(defmulti get-elastic-version
+  "Get the proper elastic document version for the concept based on type.
+  Since this function is also used by bulk indexing, we figure out the concept type based on
+  the concept id if the concept type field does not exist."
+  (fn [concept]
+    (or (:concept-type concept)
+        (cs/concept-id->type (:concept-id concept)))))
+
+(defmethod get-elastic-version :collection
   [concept]
-  (let [concept-type (cs/concept-id->type (:concept-id concept))]
-    (if (= concept-type :collection)
-      (apply max
-             (:transaction-id concept)
-             (concat (map :transaction-id (:tag-associations concept))
-                     (map :transaction-id (:variable-associations concept))))
-      (:revision-id concept))))
+  (apply max
+         (:transaction-id concept)
+         (concat (map :transaction-id (:tag-associations concept))
+                 (map :transaction-id (:variable-associations concept)))))
+
+(defmethod get-elastic-version :variable
+  [concept]
+  (apply max
+         (:transaction-id concept)
+         (map :transaction-id (:variable-associations concept))))
+
+(defmethod get-elastic-version :default
+  [concept]
+  (:revision-id concept))
 
 (defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
   (if (and
-        (= :collection (cs/concept-id->type concept-id))
-        all-revisions-index?)
+       (or (= :collection (cs/concept-id->type concept-id))
+           (= :variable (cs/concept-id->type concept-id)))
+       all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))
 
@@ -96,14 +111,14 @@
 
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
-  [context]
+  [context params]
   (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
-
-    (if (requires-update? existing-index-set expected-index-set)
+    (if (or (= "true" (:force params))
+            (requires-update? existing-index-set expected-index-set))
       (do
         (info "Updating the index set to " (pr-str expected-index-set))
         (idx-set/update context expected-index-set)
@@ -179,7 +194,7 @@
   (get-in context [:system :db :config]))
 
 (defn parse-non-tombstone-associations
-  "Returns the parsed tag associations that are not tombstones"
+  "Returns the parsed associations that are not tombstones"
   [context associations]
   (map #(cp/parse-concept context %) (filter #(not (:deleted %)) associations)))
 

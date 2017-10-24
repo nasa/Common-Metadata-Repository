@@ -20,7 +20,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest delete-concepts-test
-  (doseq [concept-type [:collection :granule]]
+  (doseq [concept-type [:collection :granule :variable :variable-association :service
+                        :service-association]]
     (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-tag-general
@@ -32,23 +33,40 @@
 (deftest delete-group-general
   (cd-spec/general-delete-test :access-group ["REG_PROV" "SMAL_PROV" "CMR"]))
 
-;; test tag delete cascades to tag associations
-(deftest tag-delete-cascades-to-tag-associations
-  (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
-        tag (util/create-and-save-tag 1)
-        tag-association (util/create-and-save-tag-association tag-collection tag 1 1)
-        tag-association-id (:concept-id tag-association)
-        {status :status tag-association-concept :concept} (util/get-concept-by-id tag-association-id)
-        _ (util/delete-concept (:concept-id tag))
-        {tombstone-status :status tombstone :concept} (util/get-concept-by-id tag-association-id)]
+(deftest tag-delete-cascades-associations
+  (testing "delete cascades to tag associations"
+    (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
+          tag (util/create-and-save-tag 1)
+          tag-association (util/create-and-save-tag-association tag-collection tag 1 1)
+          tag-association-id (:concept-id tag-association)
+          {status :status tag-association-concept :concept} (util/get-concept-by-id tag-association-id)
+          _ (util/delete-concept (:concept-id tag))
+          {tombstone-status :status tombstone :concept} (util/get-concept-by-id tag-association-id)]
+      (testing "tag association was saved and is not a tombstone"
+        (is (= 200 status))
+        (is (not (:deleted tag-association-concept))))
+      (testing "tag association is tombstoned after tag is deleted"
+        (is (= 200 tombstone-status))
+        (is (:deleted tombstone))))))
 
-    (testing "tag association was saved and is not a tombstone"
-      (is (= 200 status))
-      (is (not (:deleted tag-association-concept))))
-
-    (testing "tag association is tombstoned after tag is deleted"
-      (is (= 200 tombstone-status))
-      (is (:deleted tombstone)))))
+(deftest variable-delete-cascades-associations
+  (testing "delete cascades to variable associations"
+    (let [variable-collection (util/create-and-save-collection "REG_PROV" 1)
+          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable-association (util/create-and-save-variable-association
+                                variable-collection variable 1 1)
+          variable-association-id (:concept-id variable-association)
+          {status :status variable-association-concept :concept} (util/get-concept-by-id
+                                                                  variable-association-id)
+          _ (util/delete-concept (:concept-id variable))
+          {tombstone-status :status tombstone :concept} (util/get-concept-by-id
+                                                         variable-association-id)]
+      (testing "variable association was saved and is not a tombstone"
+        (is (= 200 status))
+        (is (not (:deleted variable-association-concept))))
+      (testing "variable association is tombstoned after variable is deleted"
+        (is (= 200 tombstone-status))
+        (is (:deleted tombstone))))))
 
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test

@@ -49,8 +49,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
-                           [org.clojure/tools.nrepl "0.2.12"]
+  :dependencies ~(concat '[
                            ;; Add groovy to support groovy scripting in elastic
                            [org.codehaus.groovy/groovy-all "2.4.0"]]
                          project-dependencies)
@@ -123,20 +122,48 @@
       :jvm-opts ["-Dcmr.runmode=in-memory"]}
     :run-external {
       :jvm-opts ["-Dcmr.runmode=external"]}}
-  :aliases {;; Creates the checkouts directory to the local projects
-            "create-checkouts" ~create-checkouts-commands
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
-            ;; Installs the Elasticsearch Marvel plugin locally.
-            ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
-            "install-marvel" ["shell" "./support/install-marvel.sh"]
-            ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
-            "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
-            "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
-            "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
-            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
-            ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]})
+  :aliases {
+    ;; Creates the checkouts directory to the local projects
+    "create-checkouts"
+      ~create-checkouts-commands
+    ;; Alias to test2junit for consistency with lein-test-out
+    "test-out"
+      ["test2junit"]
+    ;; Installs the Elasticsearch Marvel plugin locally.
+    ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
+    "install-marvel"
+      ["shell" "./support/install-marvel.sh"]
+    ;; Linting aliases
+    "kibit"
+      ["do"
+        ["shell" "echo" "== Kibit =="]
+        ["with-profile" "lint" "kibit"]]
+    "eastwood"
+      ["with-profile" "lint"
+       "eastwood" "{:namespaces [:source-paths]}"]
+    "bikeshed"
+      ["with-profile" "lint"
+       "bikeshed" "--max-line-length=100"]
+    "yagni"
+      ["with-profile" "lint" "yagni"]
+    "check-deps"
+      ["with-profile" "lint"
+       "ancient" "all"]
+    "lint"
+      ["do"
+        ["check"] ["kibit"] ["eastwood"]]
+    ;; Placeholder for future docs and enabler of top-level alias
+    "generate-static"
+      ["with-profile" "static"
+       "shell" "echo"]
+    ;; Run a local copy of SQS/SNS
+    "start-sqs-sns"
+      ["shell"
+       "support/start-local-sqs-sns.sh"]
+    "stop-sqs-sns"
+      ["shell"
+       "support/stop-local-sqs-sns.sh"]
+    "restart-sqs-sns"
+      ["do"
+        ["stop-sqs-sns"]
+        ["start-sqs-sns"]]})

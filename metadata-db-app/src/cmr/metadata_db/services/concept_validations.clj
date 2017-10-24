@@ -49,10 +49,13 @@
    :variable {true #{}
               false #{:variable-name :measurement}}
    :variable-association {true #{}
+                          false #{:associated-concept-id :associated-revision-id}}
+   :service-association {true #{}
                           false #{:associated-concept-id :associated-revision-id}}})
 
 (defn extra-fields-missing-validation
-  "Validates that the concept is provided with extra fields and that all of them are present and not nil."
+  "Validates that the concept is provided with extra fields and that all of them are present
+  and not nil."
   [concept]
   (if-let [extra-fields (util/remove-nil-keys (:extra-fields concept))]
     (map #(msg/missing-extra-field %)
@@ -177,18 +180,6 @@
                                   concept-id-matches-concept-fields-validation-no-provider
                                   humanizer-native-id-validation)))
 
-(def variable-concept-validation
-  "Builds a function that validates a concept map that has no provider and returns a list of errors"
-  (util/compose-validations (conj base-concept-validations
-                                  concept-id-matches-concept-fields-validation-no-provider
-                                  extra-fields-missing-validation)))
-
-(def service-concept-validation
-  "Builds a function that validates a concept map that has no provider and returns a list of errors"
-  (util/compose-validations (conj base-concept-validations
-                                  concept-id-matches-concept-fields-validation-no-provider
-                                  extra-fields-missing-validation)))
-
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
@@ -208,14 +199,6 @@
 (def validate-humanizer-concept
   "validates a humanizer concept. Throws an error if invalid."
   (util/build-validator :invalid-data humanizer-concept-validation))
-
-(def validate-variable-concept
-  "validates a variable concept. Throws an error if invalid."
-  (util/build-validator :invalid-data variable-concept-validation))
-
-(def validate-service-concept
-  "validates a service concept. Throws an error if invalid."
-  (util/build-validator :invalid-data service-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -238,17 +221,13 @@
   [concept]
   (validate-humanizer-concept concept))
 
-(defmethod validate-concept :variable
+(defmethod validate-concept :service-association
   [concept]
-  (validate-variable-concept concept))
+  (validate-association-concept concept))
 
 (defmethod validate-concept :variable-association
   [concept]
   (validate-association-concept concept))
-
-(defmethod validate-concept :service
-  [concept]
-  (validate-service-concept concept))
 
 (defmethod validate-concept :default
   [concept]

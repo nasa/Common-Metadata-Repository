@@ -3,6 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojure.test :refer :all]
+   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.date-util :as date]))
 
@@ -25,3 +26,43 @@
 
         "No sanitization"
         "2003/08" false "2003/08"))
+
+(deftest date-in-past
+  (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
+  (are3 [date expected-output]
+    (is (= expected-output (date/is-in-past? (f/parse date))))
+
+    "Date in past"
+    "2015-09-27T13:34:03.000Z" true
+
+    "Date in future"
+    "2017-10-10T00:00:00.000Z" false
+
+    "Same day, no time"
+    "2016-09-27" true
+
+    "Same day, later"
+    "2016-09-27T18:00:00.000Z" false
+
+    "Nil date"
+    nil false))
+
+(deftest date-in-future
+  (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
+  (are3 [date expected-output]
+    (is (= expected-output (date/is-in-future? (f/parse date))))
+
+    "Date in past"
+    "2015-09-27T13:34:03.000Z" false
+
+    "Date in future"
+    "2017-10-10T00:00:00.000Z" true
+
+    "Same day, no time"
+    "2016-09-27" false
+
+    "Same day, earlier"
+    "2016-09-27T12:00:00.000Z" false
+
+    "Nil date"
+    nil false))

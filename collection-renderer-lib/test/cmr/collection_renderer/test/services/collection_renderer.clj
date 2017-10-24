@@ -33,4 +33,9 @@
     (let [^String html (cr/render-collection (renderer-context) umm-record)]
       (and html (.contains html (:EntryTitle umm-record))))))
 
-
+;; Verify that the title of the html is the entry title
+(deftest render-title-as-entry-title
+  (let [coll expected-conversion/example-collection-record
+         ^String html (cr/render-collection (renderer-context) coll)]
+    (is html "Expected a title containing the entry title")
+    (is (.contains html (str "<title>" (:EntryTitle coll) "</title>")))))

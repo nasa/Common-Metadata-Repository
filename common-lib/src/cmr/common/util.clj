@@ -5,8 +5,10 @@
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
    [clojure.java.io :as io]
+   [clojure.pprint :refer [pprint print-table]]
+   [clojure.reflect :refer [reflect]]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.template :as template]
    [clojure.test :as test]
    [clojure.walk :as w]
@@ -113,7 +115,22 @@
 (defn safe-lowercase
   "Returns the given string in lower case safely."
   [v]
-  (when v (str/lower-case v)))
+  (when v (string/lower-case v)))
+
+(defn safe-uppercase
+  "Returns the given string in upper case safely."
+  [v]
+  (when v (string/upper-case v)))
+
+(defn match-enum-case
+  "Given a string and a collection of valid enum values, return the proper-cased
+   value from the enum. The values will not differ, but this ensures that the
+   one returned is the proper case, even if that is a crazy mix"
+  [value enum-values]
+  (->> enum-values
+       (filter #(re-matches (re-pattern (str "(?i)" value)) %))
+       seq
+       first))
 
 (defn sequence->fn
   [vals]
@@ -203,7 +220,7 @@
   "Creates a function that will call f with it's arguments. If f returns any
   errors then it will throw a service error of the type given.
 
-  DEPRECATED: we should use the validations namespace"
+  DEPRECATED: we should use the validations namespace."
   [error-type f]
   (fn [& args]
     (when-let [errors (apply f args)]
@@ -211,10 +228,12 @@
         (errors/throw-service-errors error-type errors)))))
 
 (defn apply-validations
-  "Applies the arguments to each validation concatenating all errors and
-  returning them
+  "Given a list of validation functions, applies the arguments to each
+  validation, concatenating all errors and returning them. As such, validation
+  functions are expected to only return a list; if the list is empty, it is
+  understood that no errors occurred.
 
-  DEPRECATED: we should use the validations namespace"
+  DEPRECATED: we should use the validations namespace."
   [validations & args]
   (reduce (fn [errors validation]
             (if-let [new-errors (apply validation args)]
@@ -225,9 +244,9 @@
 
 (defn compose-validations
   "Creates a function that will compose together a list of validation functions
-  into a single function that will perform all validations together
+  into a single function that will perform all validations together.
 
-  DEPRECATED: we should use the validations namespace"
+  DEPRECATED: we should use the validations namespace."
   [validation-fns]
   (partial apply-validations validation-fns))
 
@@ -804,7 +823,7 @@
   digit and non-digit subsequences. Digits are returned as integers and the
   vector is guaranteed to start with a (potentially empty) string."
   [s]
-  (let [lower-s (str/lower-case s)
+  (let [lower-s (string/lower-case s)
         result (map #(if (re-matches #"\d+" %)
                        (Integer/parseInt % 10)
                        %)
@@ -858,11 +877,11 @@
     :else data))
 
 (defn kebab-case-data
-  "Returns the data with variables converted to kebab case.
+  "Returns the data with keys converted to kebab case.
 
   Alternatively, you can provide a function that takes the data as an argument,
   run before the mapping takes place. This is useful for tests when you want to
-  perform assertion checks upon the raw data, before transofmration."
+  perform assertion checks upon the raw data, before transformation."
   ([data]
     (cond
       (sequential? data) (map map-keys->kebab-case data)
@@ -871,3 +890,45 @@
   ([data fun]
     (fun data)
     (kebab-case-data data)))
+
+(defn show-methods
+  "Display a Java object's public methods."
+  [obj]
+  (print-table
+    (sort-by :name
+      (filter (fn [x]
+                (contains? (:flags x) :public))
+              (:members (reflect obj))))))
+
+(defn show-env
+  "Show the system environment currently available to Clojure.
+
+  Example usage:
+  ```
+  (show-env)
+  (show-env keyword)
+  (show-env (comp keyword string/lower-case))
+  ```"
+  ([]
+   (show-env identity))
+  ([key-fn]
+   (show-env key-fn (constantly true)))
+  ([key-fn filter-fn]
+   (show-env key-fn filter-fn (System/getenv)))
+  ([key-fn filter-fn data]
+   (->> data
+        (filter filter-fn)
+        (map (fn [[k v]] [(key-fn k) v]))
+        (into (sorted-map))
+        (pprint))
+   :ok))
+
+(defn show-cmr-env
+  "Show just the system environment variables with the `CMR_` prefix."
+  []
+  (show-env
+    (comp keyword
+          string/lower-case
+          #(string/replace % "_" "-")
+          #(string/replace % #"^CMR_" ""))
+    #(string/starts-with? %1 "CMR_")))

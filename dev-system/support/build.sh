@@ -31,7 +31,7 @@ if [ $? -ne 0 ] ; then
 fi
 if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
   (cd ../ && dev-system/support/setup-oracle.sh)
-  if [$? -ne 0 ] ; then
+  if [ $? -ne 0 ] ; then
     echo "Failed to setup Oracle" >&2
     exit 1
   fi

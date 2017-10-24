@@ -11,19 +11,18 @@
 (deftest umm-variable-creation
   (is (= [:Characteristics
           :DataType
+          :Definition
           :Dimensions
-          :DimensionsName
-          :FillValue
-          :FillValueDescription
+          :FillValues
           :LongName
+          :Measurements
           :Name
           :Offset
           :Scale
           :ScienceKeywords
-          :ServiceType
-          :Tagging
+          :Sets
           :Units
-          :ValidRange
+          :ValidRanges
           :VariableType]
          (-> {}
              (vm/map->UMM-Var)

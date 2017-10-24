@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>NLDAS_FORA0125_H</Short_Name>
+        <Version>002</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>NLDAS Primary Forcing Data L4 Hourly 0.125 x 0.125 degree V002 (NLDAS_FORA0125_H) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Xia, Y., et al., NCEP/EMC</Dataset_Creator>
+        <Dataset_Editor>David Mocko, NASA/GSFC/HSL</Dataset_Editor>
+        <Dataset_Title>NLDAS Primary Forcing Data L4 Hourly 0.125 x 0.125 degree V002</Dataset_Title>
+        <Dataset_Series_Name>NLDAS_FORA0125_H</Dataset_Series_Name>
+        <Dataset_Release_Date>2009-08-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, Maryland, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>002</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/6J5LHHOHZHN4</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/NLDAS_FORA0125_H_002.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>DAVID</First_Name>
+            <Last_Name>SILBERSTEIN</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5183</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>david.s.silberstein@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PRESSURE</Term>
+        <Variable_Level_1>SURFACE PRESSURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>LONGWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>SHORTWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>EVAPORATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>HUMIDITY</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>CONVECTION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>LIQUID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>RAIN</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SURFACE THERMAL PROPERTIES</Term>
+        <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Hydrology</Ancillary_Keyword>
+    <Platform>
+        <Type>Models/Analyses</Type>
+        <Short_Name>Forcing-LSM</Short_Name>
+        <Long_Name>Forcing data for Land Surface Model</Long_Name>
+        <Instrument>
+            <Short_Name>NOT APPLICABLE</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1979-01-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>25.0</Southernmost_Latitude>
+                <Northernmost_Latitude>53.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-125.0</Westernmost_Longitude>
+                <Easternmost_Longitude>-67.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>GREAT LAKES</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>ALABAMA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>ARIZONA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>ARKANSAS</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>CALIFORNIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>COLORADO</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>CONNECTICUT</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>DELAWARE</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>DISTRICT OF COLUMBIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>FLORIDA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>GEORGIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>IDAHO</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>ILLINOIS</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>INDIANA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>IOWA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>KANSAS</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>KENTUCKY</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>LOUISIANA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MAINE</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MARYLAND</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MASSACHUSETTS</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MICHIGAN</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MINNESOTA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MISSISSIPPI</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MISSOURI</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MONTANA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEBRASKA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEVADA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEW HAMPSHIRE</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEW JERSEY</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEW MEXICO</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEW YORK</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NORTH CAROLINA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NORTH DAKOTA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>OHIO</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>OKLAHOMA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>OREGON</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>PENNSYLVANIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>RHODE ISLAND</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>SOUTH CAROLINA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>SOUTH DAKOTA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>TENNESSEE</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>TEXAS</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>UTAH</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>VERMONT</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>VIRGINIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>WASHINGTON</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>WEST VIRGINIA</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>WISCONSIN</Location_Subregion2>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>WYOMING</Location_Subregion2>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.125 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.125 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 hour</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>NLDAS</Short_Name>
+        <Long_Name>North American Land Data Assimilation System</Long_Name>
+    </Project>
+    <Quality>The data are provisional and subject to change as model improvements are implemented and new input data sets become available.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NASA/GSFC/HSL and NCEP/EMC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2 MB per file</Distribution_Size>
+        <Distribution_Format>GRIB</Distribution_Format>
+        <Fees>No Fee</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>Precipitation</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:54:51 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/hydrology/images/NLDAS_FORA0125_H_002.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddb9e01b045fab4ecf75/file</URL>
+        <Format>PNG</Format>
+        <Caption>Precipitation hourly total</Caption>
+        <Description>NLDAS-2 Primary Forcing Hourly 0.125 degree Precipitation Hourly Total [kg/m^2] at 18Z on July 01, 2007</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Xia, Y., K. Mitchell, M. Ek, J. Sheffield, B. Cosgrove, E. Wood, L. Luo, C. Alonge, H. Wei, J. Meng, B. Livneh, D. Lettenmaier, V. Koren, Q. Duan, K. Mo, Y. Fan, and D. Mocko, (2012), Continental-scale water and energy flux analysis and validation for the North American Land Data Assimilation System project phase 2 (NLDAS-2): 1. Intercomparison and application of model products, J. Geophys. Res., 117, D03109, doi:10.1029/2011JD016048.</Citation>
+        <Author>Xia, Y., K. Mitchell, M. Ek, J. Sheffield, et al.</Author>
+        <Publication_Date>2012</Publication_Date>
+        <Title>Continental-scale water and energy flux analysis and validation for the North American Land Data Assimilation System project phase 2 (NLDAS-2): 1. Intercomparison and application of model products</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2011JD016048</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Cosgrove, B. A., D. Lohmann, K. E. Mitchell, P. R. Houser, E. F. Wood, J. Schaake, A. Robock, C. Marshall, J. Sheffield, L. Luo, Q. Duan, R. T. Pinker, J. D. Tarpley, R. W. Higgins, and J. Meng (2003), Real-time and retrospective forcing in the North American Land Data Assimilation System (NLDAS) project, J. Geophys. Res., 108(D22), 8842, doi:10.1029/2002JD003118.</Citation>
+        <Author>Cosgrove, B. A., D. Lohmann, K. E. Mitchell, et al.</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Real-time and retrospective forcing in the North American Land Data Assimilation System (NLDAS) project</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2002JD003118</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Mahrt L., and M. Ek, 1984: The Influence of Atmospheric Stability on Potential Evaporation.  J. Applied Meteorology, Vol 23, Issue 2, pp. 222-234, DOI: http://dx.doi.org/10.1175/1520-0450(1984)023&lt;0222:TIOASO&gt;2.0.CO;2</Citation>
+        <Author>Mahrt L., and M. Ek</Author>
+        <Publication_Date>1984</Publication_Date>
+        <Title>The Influence of Atmospheric Stability on Potential Evaporation</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>DOI: http://dx.doi.org/10.1175/1520-0450(1984)023&lt;0222:TIOASO&gt;2.0.CO;2</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Pinker, R. T., J. D. Tarpley, I. Laszlo, K. E. Mitchell, P. R. Houser, E. F. Wood, J. C. Schaake, A. Robock, D. Lohmann, B. A. Cosgrove, J. Sheffield, Q. Duan, L. Luo, and R. W. Higgins (2003), Surface radiation budgets in support of the GEWEX Continental-Scale International Project (GCIP) and the GEWEX Americas Prediction Project (GAPP), including the North American Land Data Assimilation System (NLDAS) project, J. Geophys. Res., 108(D22), 8844, doi:10.1029/2002JD003301.</Citation>
+        <Author>Pinker, R. T., J. D. Tarpley, I. Laszlo, et al.</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Surface radiation budgets in support of the GEWEX Continental-Scale International Project (GCIP) and the GEWEX Americas Prediction Project (GAPP), including the North American Land Data Assimilation System (NLDAS) project</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2002JD003301</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>This data set contains the primary forcing data "File A" for Phase 2 of the North American Land Data Assimilation System (NLDAS-2).  The data are in 1/8th degree grid spacing and range from Jan 1979 to the present. The temporal resolution is hourly.  The file format is WMO GRIB-1. 
+
+Details about the generation of the NLDAS-2 forcing data sets can be found in Xia et al. (2012). 
+
+The non-precipitation land surface forcing fields for NLDAS-2 are derived from the analysis fields of the NCEP North American Regional Reanalysis (NARR).  NARR analysis fields are 32-km spatial resolution and 3-hourly temporal frequency.  Those NARR fields that are utilized to generate NLDAS-2 forcing fields are spatially interpolated to the finer resolution of the NLDAS 1/8th-degree grid and then temporally disaggregated to the NLDAS hourly frequency.  Additionally, the fields of surface pressure, surface downward longwave radiation, near-surface air temperature, and near-surface specific humidity are adjusted vertically to account for the vertical difference between the NARR and
+NLDAS fields of terrain height.  This vertical adjustment applies the traditional vertical lapse rate of 6.5 K/km for air temperature.  The details of the spatial interpolation, temporal disaggregation, and vertical adjustment are those employed in NLDAS-1, as presented by Cosgrove et al. (2003).
+
+The surface downward shortwave radiation field in "File A" is a bias-corrected field wherein a bias-correction algorithm was applied to the NARR surface downward shortwave radiation.  This bias correction utilizes five years (1996-2000) of the hourly 1/8th-degree GOES-based surface downward shortwave radiation fields derived by Pinker et al. (2003). The potential evaporation field in "File A" is that computed in NARR using the modified Penman scheme of Mahrt and Ek (1984).
+
+The precipitation field in "File A" is not the NARR precipitation forcing, but is rather a product of a temporal disaggregation of a gauge-only CPC analysis of daily precipitation, performed directly on the NLDAS grid and including an orographic adjustment based on the widely-applied PRISM climatology.  The precipitation is temporally disaggregated into hourly fields by deriving hourly disaggregation weights from either WSR-88D Doppler radar-based precipitation estimates, 8-km CMORPH hourly precipitation analyses, or NARR-simulated precipitation (based on availability, in order).  The latter fields from radar, CMORPH, and NARR are used only to derive disaggregation weights and do not change the daily total precipitation.  The field in "File A" that gives the fraction of total precipitation that is convective is an estimate derived from the following two NARR precipitation fields (which are provided in "File B"): NARR total precipitation and NARR convective precipitation (the latter is less than or equal to the NARR total precipitation and can be zero). The Convective Available Potential Energy (CAPE) is the final variable in the forcing data set, also interpolated from NARR.
+
+The hourly land surface forcing fields for NLDAS-2 are grouped into two GRIB files, "File A" and "File B".  "File A" is the primary (default) forcing file and contains eleven fields.  The data set applies a user-defined parameter table to indicate the contents and parameter number. The GRIBTAB file shows a list of parameters for this data set, along with their Product Definition Section (PDS) IDs and units. 
+
+For more information, please see the README Document.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FORA0125_H.002/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=NLDAS_FORA0125_H</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=NLDAS_FORA0125_H</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=NLDAS_FORA0125_H</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>http://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=NLDAS_FORA0125_H</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GDS</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FORA0125_H.002</URL>
+        <Description>The GrADS Data Server (GDS) is another form of OPeNDAP that provides subsetting and some analysis services across the Internet.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FORA0125_H.002/doc/gribtab_NLDAS_FORA_hourly.002.txt</URL>
+        <Description>The GRIBTAB file contains a list of variables, along with the GRIB Product Definition Section (PDS) ID, variable short name, long names, and unit.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/gds/NLDAS/NLDAS_FORA0125_H.002.ctl</URL>
+        <Description>The Grid Analysis and Display System (GrADS) data descriptor file contains a complete description of the binary data as well as instructions for GrADS on where to find the data and how to read it.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/README.NLDAS2.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://ldas.gsfc.nasa.gov/nldas/</URL>
+        <Description>NLDAS Project Web Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto</URL>
+        <Description>GES DISC Services Cookbook main page</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2014-05-15: Hualan Rui
+                              
+                              Removed the parameter list in the Summary and added a link to the corresponding GRIBTAB; Updated the Data Set Citation, Related URL, and Personnel.
+
+2016-10-13 Hualan:  Changed the Multimedia Sample URL to the image in a central repository.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2009-06-03</Metadata_Creation>
+        <Metadata_Last_Revision>2016-12-19</Metadata_Last_Revision>
+        <Metadata_Future_Review>2015-04-30</Metadata_Future_Review>
+        <Data_Creation>2009-08-01</Data_Creation>
+        <Data_Last_Revision>2009-08-01</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 hour</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>c8c0ea35-de37-464a-a728-8c421ad39a60</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:21:32</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:10Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/6J5LHHOHZHN4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

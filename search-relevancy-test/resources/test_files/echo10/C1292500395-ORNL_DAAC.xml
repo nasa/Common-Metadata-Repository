@@ -1,0 +1,168 @@
+<Collection>
+            <ShortName>CARVE_L2_AtmosGas_NOAA_1401</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2016-07-27T00:00:00Z</InsertTime>
+            <LastUpdate>2016-07-27T00:00:00Z</LastUpdate>
+            <LongName>CARVE: L2 Atmospheric CO2, CO and CH4 Concentrations, NOAA CRDS, Alaska, 2012-2015</LongName>
+            <DataSetId>CARVE: L2 Atmospheric CO2, CO and CH4 Concentrations, NOAA CRDS, Alaska, 2012-2015</DataSetId>
+            <Description>This data set provides atmospheric carbon dioxide (CO2), methane (CH4), carbon monoxide (CO), and water vapor (H2O) concentrations from airborne campaigns over the Alaskan and Canadian arctic for the Carbon in Arctic Reservoirs Vulnerability Experiment (CARVE). The data were collected in situ using a cavity ring-down spectrometer (CRDS; Picarro Inc.) and are presented at 2-second intervals throughout each flight. Aircraft latitude, longitude, and altitude are also provided. Flight campaigns took place from 2012 to 2015 between the months of March and November to enable investigation of both seasonal and inter-annual variability in atmospheric gas content. The measurements included in this data set are crucial for understanding changes in Arctic carbon cycling and the potential threats posed by thawing of Arctic permafrost.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1401</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2016-07-27T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>2</ProcessingLevelId>
+            <ProcessingLevelDescription>Derived geophysical variables at the same resolution as L1 source data</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Sweeney, C., J.B. Miller, A. Karion, S.J. Dinardo, and C.E. Miller. 2016. CARVE: L2 Atmospheric CO2, CO and CH4 Concentrations, NOAA CRDS, Alaska, 2012-2015. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1401</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2012-05-23T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2015-11-12T23:59:59Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>CARBON DIOXIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>CARBON MONOXIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>METHANE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WATER VAPOR</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>WATER VAPOR INDICATORS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WATER VAPOR</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>AIRCRAFT</ShortName>
+                    <LongName> </LongName>
+                    <Type>Aircraft</Type>
+                    <Instruments>
+					</Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>CARVE</ShortName>
+                    <LongName>Carbon in Arctic Reservoirs Vulnerability Experiment</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/carve/campaign/CARVE_L2_AtmosGas_NOAA/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1401</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/CARVE/guides/CARVE_L2_AtmosGas_NOAA.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1401</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/carve/campaign/CARVE_L2_AtmosGas_NOAA/comp/CARVE_L2_AtmosGas_NOAA.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/1401_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/1401/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-168.11</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>71.56</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-131.76</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>60.21</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

@@ -48,14 +48,30 @@
       "concept-type": "service",
       "native-id": "mod10cm",
       "user-id": "user101",
-      "metadata": "service edn here",
-      "format": "application/edn",
+      "metadata": "{\"Name\": \"AIRX3STD\",  \"Type\": \"OPeNDAP\",  \"Version\":
+                   \"1.9\",  \"Description\": \"AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB.\",  \"OnlineResource\": {    \"Linkage\": \"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/\",    \"Name\": \"OPeNDAP Service for AIRS Level-3 retrieval products\",    \"Description\": \"OPeNDAP Service\"  },  \"ServiceOptions\": {\"SubsetType\": [\"Spatial\", \"Variable\"],    \"SupportedProjections\": [\"Geographic\"], \"SupportedFormats\": [      \"netCDF-3\", \"netCDF-4\", \"Binary\", \"ASCII\"]}}",
+      "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
         "service-name": "MOD10CM"
       }
     }
+
+#### Service Association
+
+  {
+    "concept-type": "service-association",
+    "native-id": "S1200000008-PROV1/C1200000005-PROV1",
+    "user-id": "user1",
+    "format": "application/edn",
+    "metadata": "{:service-concept-id \"S1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+    "extra-fields": {
+      "service-concept-id": "S1200000008-PROV1",
+      "associated-concept-id": "C1200000005-PROV1",
+      "associated-revision-id": 1
+    }
+  }
 
 #### Group
 
@@ -115,11 +131,11 @@ The tag association metadata can have "value": "string to be indexed" or "data":
 
   {
   "concept-type": "variable",
-  "native-id": "totcldh2ostderr",
+  "native-id": "MyNumberOneVariable",
   "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
   "user-id": "user1",
   "deleted": false,
-  "format": "application/edn",
+  "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
   "extra-fields": {
     "variable-name": "totCldH2OStdErr",
     "measurement": "totCldH2OStdErrMeasurement"
@@ -130,12 +146,12 @@ The tag association metadata can have "value": "string to be indexed" or "data":
 
   {
     "concept-type": "variable-association",
-    "native-id": "totCldH2OStdErr/C1200000005-PROV1",
+    "native-id": "V1200000006-PROV1/C1200000005-PROV1",
     "user-id": "user1",
     "format": "application/edn",
-    "metadata": "{:variable-name \"totCldH2OStdErr\", :originator-id \"user1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1, :data {:description \"Needs more work\"}}",
+    "metadata": "{:variable-concept-id \"V1200000006-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
     "extra-fields": {
-      "variable-name": "totCldH2OStdErr",
+      "variable-concept-id": "V1200000006-PROV1",
       "associated-concept-id": "C1200000005-PROV1",
       "associated-revision-id": 1
     }
@@ -334,15 +350,19 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags, tag associations, variables, variable associations or humanizers with concept-id or native-id
-  * tag associations or variable associations with associated-concept-id, associated-revision-id
-  * services with concept-id or native-id
+  * humanizers with concept-id, native-id
+  * tags with concept-id, native-id
+  * tag associations with concept-id, native-id, tag-key, associated-concept-id, associated-revision-id
+  * services with concept-id, provider-id, native-id
+  * service associations with concept-id, native-id, service-concept-id, associated-concept-id, associated-revision-id
+  * variables with concept-id, provider-id, native-id
+  * variable associations with concept-id, native-id, variable-concept-id, associated-concept-id, associated-revision-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
-curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule_ur=ur"
-curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id=id"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule-ur=ur"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native-id=id"
 curl "http://localhost:3001/concepts/search/tags"
 curl "http://localhost:3001/concepts/search/tag-associatons?associated-concept-id=C12-PROV1"
 ```

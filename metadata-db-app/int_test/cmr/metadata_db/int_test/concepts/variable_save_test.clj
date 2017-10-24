@@ -7,28 +7,37 @@
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixtures & one-off utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
+(use-fixtures :each (util/reset-database-fixture
+                     {:provider-id "PROV1" :small false}
+                     {:provider-id "PROV2" :small false}))
 
 (defmethod c-spec/gen-concept :variable
-  [_ _ uniq-num attributes]
-  (util/variable-concept uniq-num attributes))
+  [_ provider-id uniq-num attributes]
+  (util/variable-concept provider-id uniq-num attributes))
 
-;; tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save-variable-test
-  (c-spec/general-save-concept-test :variable ["CMR"]))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest save-variable-specific-test
-  (testing "saving new variables"
-    (are3 [variable exp-status exp-errors]
-          (let [{:keys [status errors]} (util/save-concept variable)]
-            (is (= exp-status status))
-            (is (= (set exp-errors) (set errors))))
+(deftest save-variable
+  (c-spec/general-save-concept-test :variable ["PROV1" "PROV2"]))
 
-          "failure when using non system-level provider"
-          (assoc (util/variable-concept 2) :provider-id "REG_PROV")
-          422
-          ["Variable could not be associated with provider [REG_PROV]. Variables are system level entities."])))
+(deftest save-variable-with-missing-required-parameters
+  (c-spec/save-test-with-missing-required-parameters
+    :variable ["PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
+
+(deftest save-variable-created-at
+  (let [concept (util/variable-concept "PROV1" 2)]
+    (util/concept-created-at-assertions "variable" concept)))
+
+(deftest save-variable-with-conflicting-native-id
+  (let [concept (util/variable-concept "PROV1" 1)]
+    (util/concept-with-conflicting-native-id-assertions
+     "variable"
+     :variable-name
+     concept
+     "var-native-different")))

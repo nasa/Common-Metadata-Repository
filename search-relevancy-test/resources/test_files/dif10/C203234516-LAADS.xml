@@ -1,0 +1,596 @@
+<?xml version="1.0"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>MOD08_M3</Short_Name>
+    <Version>6</Version>
+  </Entry_ID>
+  <Version_Description>Terra MODIS Version 6 Data Collection Processing and Reprocessing</Version_Description>
+  <Entry_Title>MODIS/Terra Aerosol Cloud Water Vapor Ozone Monthly L3 Global 1Deg CMG V006</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+    <Dataset_Title>MODIS/Terra Aerosol Cloud Water Vapor Ozone Monthly L3 Global 1Deg CMG V006</Dataset_Title>
+    <Dataset_Release_Date>2012-07-03</Dataset_Release_Date>
+    <Dataset_Release_Place>MODAPS at NASA/GSFC</Dataset_Release_Place>
+    <Dataset_Publisher>L1 and Atmosphere Archive and Distribution System (LAADS)</Dataset_Publisher>
+    <Version>6</Version>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/MODIS/MOD08_M3.006</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=08</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>MODAPS USER SUPPORT TEAM</Name>
+      <Address>
+        <Street_Address>MODAPS User Support Team</Street_Address>
+        <Street_Address>NASA/GSFC</Street_Address>
+        <Street_Address>Mail Code: 619</Street_Address>
+        <City>Greenbelt</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20771</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>1-800-596-8132</Number>
+        <Type>U.S. toll free</Type>
+      </Phone>
+      <Phone>
+        <Number>301-794-7035</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASAD</First_Name>
+      <Last_Name>ULLAH</Last_Name>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL BACKSCATTER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL EXTINCTION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+    <Variable_Level_2>ANGSTROM EXPONENT</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL PARTICLE PROPERTIES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL RADIANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>CARBONACEOUS AEROSOLS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>CLOUD CONDENSATION NUCLEI</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>DUST/ASH/SMOKE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>NITRATE PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>ORGANIC PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>PARTICULATE MATTER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>SULFATE PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC CHEMISTRY</Term>
+    <Variable_Level_1>OXYGEN COMPOUNDS</Variable_Level_1>
+    <Variable_Level_2>OZONE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC CHEMISTRY</Term>
+    <Variable_Level_1>TRACE GASES/TRACE SPECIES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC PHENOMENA</Term>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC PHENOMENA</Term>
+    <Variable_Level_1>STORMS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>ATMOSPHERIC EMITTED RADIATION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>EMISSIVITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>REFLECTANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>TRANSMITTANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC TEMPERATURE</Term>
+    <Variable_Level_1>ATMOSPHERIC STABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>HUMIDITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>PRECIPITABLE WATER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>WATER VAPOR</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD CONDENSATION NUCLEI</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD DROPLET CONCENTRATION/SIZE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD LIQUID WATER/ICE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD OPTICAL DEPTH/THICKNESS</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD PRECIPITABLE WATER</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD CEILING</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD FREQUENCY</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD HEIGHT</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD TOP PRESSURE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD TOP TEMPERATURE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD VERTICAL DISTRIBUTION</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD RADIATIVE TRANSFER</Variable_Level_1>
+    <Variable_Level_2>CLOUD EMISSIVITY</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD RADIATIVE TRANSFER</Variable_Level_1>
+    <Variable_Level_2>CLOUD RADIATIVE FORCING</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD RADIATIVE TRANSFER</Variable_Level_1>
+    <Variable_Level_2>CLOUD REFLECTANCE</Variable_Level_2>
+  </Science_Keywords>
+  <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Characteristics>
+      <Name>EquatorCrossingTime</Name>
+      <Description>Local time of the equator crossing and direction (ascending or descending)</Description>
+      <DataType>Time/direction (descending)</DataType>
+      <Unit>Local Mean Time</Unit>
+      <Value>10:30, descending</Value>
+    </Characteristics>
+    <Instrument>
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+      <Technique>Imaging Spectroradiometry</Technique>
+      <Sensor>
+        <Short_Name>MODIS</Short_Name>
+        <Long_Name>Cross-track Scanning Radiometer</Long_Name>
+        <Technique>Radiometry</Technique>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>1999-12-18T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>1deg</Latitude_Resolution>
+    <Longitude_Resolution>1deg</Longitude_Resolution>
+    <Temporal_Resolution>1 month</Temporal_Resolution>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>EOSDIS</Short_Name>
+    <Long_Name>Earth Observing System Data Information System</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>ESIP</Short_Name>
+    <Long_Name>Earth Science Information Partners Program</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System (EOS), TERRA</Long_Name>
+  </Project>
+  <Quality>See http://modaps.nascom.nasa.gov/services/qa/</Quality>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>None</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>The MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ORIGINATOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>PROCESSOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/LAADS</Short_Name>
+      <Long_Name>L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://ladsweb.nascom.nasa.gov/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>Online (FTP)</Distribution_Media>
+    <Distribution_Format>HDF-EOS</Distribution_Format>
+    <Fees>No Fee</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>MODIS was launched aboard the Terra satellite on December 18, 1999 (10:30 am equator crossing time) as part of NASA's Earth Observing System (EOS) mission.  MODIS with its 2330 km viewing swath width provides almost daily global coverage. It acquires data in 36 high spectral resolution bands between 0.415 to 14.235 micron with spatial resolutions of 250m(2 bands), 500m(5 bands), and 1000m (29 bands). MODIS sensor counts, calibrated radiances, geolocation products and all derived geophysical atmospheric and ocean products are archived at NASA Goddard DAAC and has been made available to
+public since April 2000.
+
+MOD08_M3 is a level-3 MODIS gridded atmosphere monthly global joint product. It contains monthly 1 x 1 degree grid average values of atmospheric parameters related to atmospheric aerosol particle properties, total ozone burden, atmospheric water vapor, cloud optical and physical properties, and atmospheric stability indices. This product also provides standard deviations, quality assurance weighted means and other statistically derived quantities for each parameter. 
+
+The shortname for this level-3 MODIS atmosphere monthly global product is MOD08_M3 and the principal investigators for this product are MODIS scientists:
+
+Dr. Yoram Kaufman for aerosol retrieval over land; Dr. Didier Tanre (didier.tanre@univ-lille1.fr) for aerosol retrieval over ocean; Dr. Bo-Cai Gao (gao@rsd.nrl.navy.mil) for cirrus cloud detection; Dr. Paul Menzel (paulm@ssec.wisc.edu) for cloud top properties; and Dr. Michael King (king@climate.gsfc.nasa.gov) for cloud optical properties. 
+
+The level-3 atmosphere monthly global product (MOD08_M3) consists of approximately 739 parameters that includes all statistically derived quantities. Essentially all level-3 MODIS atmosphere monthly global parameters are derived from the scientific parameters of MODIS Atmosphere Daily Global Joint Product (MOD08_D3). Statistics are computed over a 1 degree equal-angle lat-lon grid that spans a (calendar) monthly interval. Since the grid cells are 1 degree by 1 degree, the output grid is always 360 pixels in width and 180 pixels in length.
+
+MOD08_M3 product files are stored in Hierarchical Data Format (HDF-EOS). Each gridded global parameter is stored as Scientific Data Sets (SDS) within the file. 
+
+MOD08_M3 PARAMETERS
+
+Aerosol over Land and Ocean:
+Optical Depth (0.55 micron)
+
+Aerosol over Land:
+Optical Depth at 0.47 and 0.66 micron (based on Continental Aerosol Model)
+Corrected Optical Depths at 0.47, 0.55, 0.66 micron (based on Dynamic Aerosol Model)
+Corrected Optical Depths at 0.47, 0.55, 0.66 micron for Smoke, Sulfate, and Dust Aerosol
+
+Mass Concentration
+Angstrom Exponents for Smoke, Sulfate, and Dust Aerosol Particles
+
+Aerosol over Ocean:
+Effective Optical Depth at 7 bands (0.47, 0.55, 0.66, 0.87, 1.24, 1.64, 2.13 micron)
+Effective Radius, Mass Concentration, Cloud Condensation Nuclei
+Optical Depth of Small Particles relative to Effective Optical Depth
+Asymmetry Factor &amp;amp; Back Scattering Ratio at 7 bands
+Angstrom Exponents 1 (based on 0.55 and 0.865 micron)  &amp;amp; 2 (based on 0.865 and 2.13 micron)
+
+Ozone:
+Total Column Ozone
+
+
+Water Vapor:
+Total Column Precipitable Water Vapor
+NIR based (clear, cloudy), IR based (lower, upper levels, total)
+
+Cloud:
+Cloud Top Pressure, Temperature, and Effective Emissivity(day, night, all)
+Cloud Particle Phase (day, night, all)
+Cloud Optical Thickness (water, ice, water + ice, undetermined, all phases)
+Effective Radius (water, ice, water + ice, undetermined, all phases)
+Cloud Water Path (liquid, ice, liquid + ice, undetermined, all phases)
+Cloud Fraction based on Visible &amp;amp; SWIR (cirrus, contrail, water, ice, water + ice, undetermined, all phases)
+Cloud Fraction based on IR (day, night, all)
+
+Atmospheric State &amp;amp; Stability Indices:
+Total-Totals, Lifted Index, K Index
+
+Radiation Parameters:
+Cirrus Cloud &amp;amp; Contrail Reflectance
+Mean Surface Reflectance for Land  (5 bands) &amp;amp; Ocean (7 bands)
+Normalized Reflected Flux for Land (0.47 &amp;amp; 0.66 micron) &amp;amp; Ocean (7 bands)
+Normalized Transmitted Flux for Land (0.47 and 0.66 micron), Ocean(7 bands)
+Atmospheric Scattering Angle for Land and Ocean
+
+Quality Assurance (QA) &amp;amp; Statistical Parameters:
+Uncertainty in Derived Parameters, Minimum, Maximum, Number of Pixels, Histograms, Correlation Parameters, QA Weighted, and other Statistically Derived Parameters
+
+More information about the atmospheric parameters and the statistically derived parameters of MOD08_M3 product listed above are available from the MOD08_M3 web site
+
+http://modis-atmos.gsfc.nasa.gov/MOD08_M3/format.html
+
+The MODIS monthly Product will be used in the simultaneously study of clouds, water vapor, aerosol , trace gases, land surface and oceanic properties, as well as the interaction between them and their effect on the Earth's energy budget and climate. This product will also be used to investigate seasonal and inter-annual changes in cirrus (semi-transparent) global cloud cover and cloud phase with multispectral observations at high spatial resolution.
+
+For more information about the MOD08_M3 product, please visit the MODIS-Atmosphere site at:
+
+http://modis-atmos.gsfc.nasa.gov/MOD08_M3/</Abstract>
+    <Purpose>Science Research </Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://modaps.nascom.nasa.gov/services/about/product_descriptions_terra.html</URL>
+    <Description>Overview of MODIS</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>https://ladsweb.nascom.nasa.gov/data/search.html</URL>
+    <Description>Search and order products from LAADS website.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://ladsweb.nascom.nasa.gov/allData/6/MOD08_M3/</URL>
+    <Description>Direct access to the ftp site and directory hosting the MOD08_M3 6 data set.</Description>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2012-07-03</Metadata_Creation>
+    <Metadata_Last_Revision>2016-03-09</Metadata_Last_Revision>
+    <Data_Creation>2015-01-01</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+</DIF>

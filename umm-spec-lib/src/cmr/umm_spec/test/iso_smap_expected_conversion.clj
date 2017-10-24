@@ -3,7 +3,7 @@
  (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -11,32 +11,50 @@
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.iso-shared :as iso-shared]
    [cmr.umm-spec.test.iso19115-expected-conversion :as iso]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact])
+ (:use
+   [cmr.umm-spec.models.umm-collection-models]
+   [cmr.umm-spec.models.umm-common-models]))
+
+(defn- expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
+              [(:URL related-url)]
+              (get-in related-url [:GetService :URI]))]
+      (if (and (= "DistributionURL" (:URLContentType related-url))
+               (= "GET SERVICE" (:Type related-url)))
+          (if (nil? (:GetService related-url))
+            (assoc related-url :GetService (map->GetServiceType
+                                              {:MimeType su/not-provided
+                                               :Protocol su/not-provided
+                                               :FullName su/not-provided
+                                               :DataID su/not-provided
+                                               :DataType su/not-provided
+                                               :URI URI}))
+            (assoc-in related-url [:GetService :URI] URI))
+          related-url)))
 
 (defn- expected-iso-smap-related-urls
-  "The expected RelatedUrl value when converting from umm-C to iso-smap
-   and back to umm-C"
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (-> related-url
-             (update :URL #(url/format-url % true))))))
-
-(defn- expected-collection-related-urls
   "Update the collection top level RelatedUrls. Do processing not applicable
   for data center/data contact RelatedUrls. DataCenter and DataContact URL
   types are not applicable here, so remove."
   [related-urls]
-  (let [related-urls (expected-iso-smap-related-urls related-urls)]
-    (seq (for [related-url
-                (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
-                        related-urls)]
-           (-> related-url
-               (update :Description #(when % (str/trim %))))))))
+  (seq (for [related-url (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %)) related-urls)]
+         (-> related-url
+             (update :URL #(url/format-url % true))
+             (update :Description #(when % (string/trim %)))
+             (expected-related-url-get-service)
+             (assoc :GetData nil)))))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
@@ -150,7 +168,7 @@
   (remove
    (fn [person]
      (let [{:keys [FirstName MiddleName LastName]} person
-           individual-name (str/trim (str/join " " [FirstName MiddleName LastName]))]
+           individual-name (string/trim (string/join " " [FirstName MiddleName LastName]))]
        (if (re-matches #"(?i).*user services|science software development.*" individual-name)
          true
          false)))
@@ -232,33 +250,81 @@
          (map cmn/map->DataCenterType)
          distinct)))
 
+(defn- not-provided-begin-date
+  "Returns the default java epoch zero used for not provided date values.
+   This function returns the def record and not just a map so that
+   it can be compared to the actual round trip translation."
+  []
+  [(map->RangeDateTimeType {:BeginningDateTime du/parsed-default-date})])
+
+(defn- not-provided-temporal-extents
+  "Returns a default temporal extent type def record and not a map so that
+   it can be compared to the actual round trip translation."
+  []
+  [(map->TemporalExtentType {:PrecisionOfSeconds nil
+                             :EndsAtPresentFlag nil
+                             :RangeDateTimes (not-provided-begin-date)
+                             :SingleDateTimes nil
+                             :PeriodicDateTimes nil})])
+
+(defn- expected-temporal
+  "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
+  [temporal-extents]
+  (->> temporal-extents
+       (map #(assoc % :PrecisionOfSeconds nil))
+       iso-shared/fixup-iso-ends-at-present
+       (iso-shared/split-temporals :RangeDateTimes)
+       (iso-shared/split-temporals :SingleDateTimes)
+       iso-shared/sort-by-date-type-iso
+       (#(or (seq %) (not-provided-temporal-extents)))))
+
+(defn- expected-collection-citations
+  "Returns collection-citations with only the first collection-citation in it, trimmed,
+   and if the Title is nil, replace it with Not provided.
+   When collection-citations is nil, return [{:Title \"Not provided\"}]."
+  [collection-citations]
+  (if collection-citations
+    (conj [] (cmn/map->ResourceCitationType
+               (iso-shared/trim-collection-citation
+                 (update (first collection-citations) :Title #(if % % su/not-provided)))))
+    (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
+
 (defn umm-expected-conversion-iso-smap
-  [umm-coll original-brs]
+  "Change the UMM to what is expected when translating from ISO SMAP so that it can
+   be compared to the actual translation."
+  [umm-coll]
   (-> umm-coll
-        (assoc :DirectoryNames nil)
-        (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-        (update-in [:DataDates] expected-smap-data-dates)
-        ;; ISO SMAP does not support the PrecisionOfSeconds field.
-        (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-        ;; Implement this as part of CMR-2057
-        (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-        (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-        (update :DataCenters expected-data-centers)
-        (assoc :VersionDescription nil)
-        (assoc :ContactGroups nil)
-        (update :ContactPersons expected-contact-persons "Technical Contact")
-        (assoc :UseConstraints nil)
-        (assoc :AccessConstraints nil)
-        (assoc :SpatialKeywords nil)
-        (assoc :TemporalKeywords nil)
-        (assoc :CollectionDataType nil)
-        (assoc :AdditionalAttributes nil)
-        (assoc :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id su/not-provided}))
-        (assoc :Distributions nil)
-        (assoc :PublicationReferences nil)
-        (assoc :AncillaryKeywords nil)
-        (update :RelatedUrls expected-collection-related-urls)
-        (update :ScienceKeywords expected-science-keywords)
-        (assoc :PaleoTemporalCoverages nil)
-        (assoc :MetadataDates nil)
-        (update :CollectionProgress su/with-default)))
+      (assoc :DirectoryNames nil)
+      (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
+      (update-in [:SpatialExtent :VerticalSpatialDomains]
+                 spatial-conversion/drop-invalid-vertical-spatial-domains)
+      (update-in [:DataDates] expected-smap-data-dates)
+      (update :DataLanguage #(or % "eng"))
+      (update :TemporalExtents expected-temporal)
+      (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
+      (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
+      (update :DataCenters expected-data-centers)
+      (assoc :VersionDescription nil)
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons (expected-contact-persons
+                               (iso-shared/update-contact-persons-from-collection-citation
+                                 (:ContactPersons umm-coll)
+                                 (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
+                               "Technical Contact"))
+      (update :CollectionCitations expected-collection-citations)
+      (assoc :UseConstraints nil)
+      (assoc :AccessConstraints nil)
+      (assoc :SpatialKeywords nil)
+      (assoc :TemporalKeywords nil)
+      (assoc :AdditionalAttributes nil)
+      (update :ProcessingLevel su/convert-empty-record-to-nil)
+      (assoc :Distributions nil)
+      (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
+      (update :RelatedUrls expected-iso-smap-related-urls)
+      (update :ScienceKeywords expected-science-keywords)
+      (assoc :PaleoTemporalCoverages nil)
+      (assoc :MetadataDates nil)
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))

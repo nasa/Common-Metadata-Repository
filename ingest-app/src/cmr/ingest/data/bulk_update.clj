@@ -6,7 +6,9 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.ingest.config :as config]
    [cmr.oracle.connection]
+   [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su]))
 
 (defn generate-task-status-message
@@ -29,29 +31,40 @@
   (update-bulk-update-collection-status [db task-id concept-id status status-message])
   (reset-bulk-update [db]))
 
+(def bulk_update_task_status
+ "bulk_update_task_status")
+
 ;; Extends the BulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol BulkUpdateStore
   cmr.oracle.connection.OracleStore
 
   (get-provider-bulk-update-status
     [db provider-id]
-    ;; Returns a list of bulk update statuses for the provider
-    (let [statuses (su/query db (su/build (su/select [:task-id :status :status-message :request-json-body]
-                                            (su/from "bulk_update_task_status")
-                                            (su/where `(= :provider-id ~provider-id)))))
-          statuses (map util/map-keys->kebab-case statuses)]
-     (map #(update % :request-json-body util/gzip-blob->string)
-          statuses)))
+    (j/with-db-transaction
+     [conn db]
+     ;; Returns a list of bulk update statuses for the provider
+     (let [stmt (su/build (su/select [:created-at :task-id :status :status-message :request-json-body]
+                          (su/from bulk_update_task_status)
+                          (su/where `(= :provider-id ~provider-id))))
+           ;; Note: the column selected out of the database is created_at, instead of created-at.
+           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn)) 
+                                (su/query conn stmt)))
+           statuses (map util/map-keys->kebab-case statuses)]
+      (map #(update % :request-json-body util/gzip-blob->string)
+           statuses))))
 
   (get-bulk-update-task-status
     [db task-id]
-    ;; Returns a status for the particular task
-    (-> db
-        (su/find-one (su/select [:status :status-message :request-json-body]
-                                (su/from "bulk_update_task_status")
-                                (su/where `(= :task-id ~task-id))))
-        util/map-keys->kebab-case
-        (update :request-json-body util/gzip-blob->string)))
+    (j/with-db-transaction
+     [conn db]
+     ;; Returns a status for the particular task
+     (some-> conn 
+             (su/find-one (su/select [:created-at :status :status-message :request-json-body]
+                          (su/from bulk_update_task_status)
+                          (su/where `(= :task-id ~task-id))))
+             util/map-keys->kebab-case
+             (update :request-json-body util/gzip-blob->string)
+             (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
 
   (get-bulk-update-task-collection-status
     [db task-id]
@@ -172,6 +185,16 @@
   "Clear bulk update db"
   [context]
   (reset-bulk-update (context->db context)))
+
+(defn cleanup-old-bulk-update-status
+  "Delete rows in the bulk-update-task-status table that are older than the configured age"
+  [context]
+  (let [db (context->db context)
+        statement (str "delete from CMR_INGEST.bulk_update_task_status "
+                       "where created_at < (current_timestamp - INTERVAL '"
+                       (config/bulk-update-cleanup-minimum-age)
+                       "' DAY)")]
+    (j/db-do-prepared db statement)))
 
 (comment
   (reset-bulk-update (context->db context))

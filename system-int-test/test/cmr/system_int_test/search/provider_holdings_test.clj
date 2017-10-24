@@ -1,17 +1,18 @@
 (ns cmr.system-int-test.search.provider-holdings-test
   "Integration tests for provider holdings"
-  (:require [clojure.test :refer :all]
-            [cmr.search.api.routes :as sr]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.api.providers :as providers]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
@@ -50,14 +51,14 @@
   "Set up the provider holdings fixtures for tests."
   []
   (let [;; Provider 1
-        prov1-colls (for [_ (range 0 prov1-collection-count)]
-                      (d/ingest "PROV1" (dc/collection)))
+        prov1-colls (doall (for [_ (range 0 prov1-collection-count)]
+                             (d/ingest "PROV1" (dc/collection))))
         prov1-granule-counts (map #(* prov1-grans-increment-count %) (range 1 (inc prov1-collection-count)))
         prov1-holdings (map (partial collection-holding "PROV1") prov1-colls prov1-granule-counts)
 
         ;; Provider 2
-        prov2-colls (for [_ (range 0 prov2-collection-count)]
-                      (d/ingest "PROV2" (dc/collection)))
+        prov2-colls (doall (for [_ (range 0 prov2-collection-count)]
+                             (d/ingest "PROV2" (dc/collection))))
         prov2-granule-counts (map #(* prov2-grans-increment-count %) (range 1 (inc prov2-collection-count)))
         prov2-holdings (map (partial collection-holding "PROV2") prov2-colls prov2-granule-counts)
 
@@ -182,8 +183,8 @@
             (let [response (search/provider-holdings-in-format format {:provider_id "PROV1"
                                                                         :token user-token})
                   headers (:headers response)
-                  header-granule-count (headers sr/CMR_GRANULE_COUNT_HEADER)
-                  header-collection-count (headers sr/CMR_COLLECTION_COUNT_HEADER)
+                  header-granule-count (headers providers/CMR_GRANULE_COUNT_HEADER)
+                  header-collection-count (headers providers/CMR_COLLECTION_COUNT_HEADER)
                   granule-count (reduce + (map :granule-count (all-holdings "PROV1")))]
               (is (= 200 (:status response)))
               (is (and (= (str prov1-collection-count) header-collection-count)

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>LGB_10m_traverse</Entry_ID>
+   <Entry_Title>10 m firn temperature data: LGB traverses 1990-95</Entry_Title>
+   <Personnel>
+      <Role />
+      <Role />
+      <First_Name />
+      <Last_Name />
+      <Email>ian.allison@aad.gov.au</Email>
+      <Phone>+61 3 6226 7648</Phone>
+      <Fax>+61 3 6226 7650</Fax>
+      <Contact_Address>
+         <Address>Australian Antarctic Division</Address>
+         <Address>203 Channel Highway</Address>
+         <City>Kingston</City>
+         <Province_or_State>Tasmania</Province_or_State>
+         <Postal_Code>7050</Postal_Code>
+         <Country>Australia</Country>
+      </Contact_Address>
+   </Personnel>
+   <Discipline uuid="e0b60b65-5850-4165-ba4b-e68adefd249b">
+      <Discipline_Name>EARTH SCIENCE</Discipline_Name>
+   </Discipline>
+   <Parameters uuid="68eed887-8008-4352-b420-949457ab59ab">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>CRYOSPHERE</Topic>
+      <Term>GLACIERS/ICE SHEETS</Term>
+      <Variable_Level_1>GLACIERS</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="99bc6084-32bc-405a-b2e9-efd906fa370b">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>CRYOSPHERE</Topic>
+      <Term>SNOW/ICE</Term>
+      <Variable_Level_1>SNOW/ICE TEMPERATURE</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="0353d44f-2fc2-44df-9143-b1a3b86d5aa1">INLAND WATERS</ISO_Topic_Category>
+   <Keyword>ANTARCTICA</Keyword>
+   <Keyword>CANE</Keyword>
+   <Keyword>DELTA OXYGEN-18</Keyword>
+   <Keyword>DENSITY</Keyword>
+   <Keyword>DEPTH HOAR</Keyword>
+   <Keyword>DISTANCE</Keyword>
+   <Keyword>ELEVATION</Keyword>
+   <Keyword>FIRN</Keyword>
+   <Keyword>GLACIER</Keyword>
+   <Keyword>GRAIN SIZE</Keyword>
+   <Keyword>HEIGHT</Keyword>
+   <Keyword>ICE CRUSTS</Keyword>
+   <Keyword>LATITUTDE</Keyword>
+   <Keyword>LONGITUDE</Keyword>
+   <Keyword>MASS ACCUMULATION</Keyword>
+   <Keyword>TEMPERATURE</Keyword>
+   <Keyword>YEAR</Keyword>
+   <Source_Name uuid="cca1ba09-0595-4ab0-a28f-158f988e9301">
+      <Short_Name>FIELD SURVEYS</Short_Name>
+   </Source_Name>
+   <Temporal_Coverage>
+      <Start_Date>1989-11-01</Start_Date>
+      <Stop_Date>1995-02-28</Stop_Date>
+   </Temporal_Coverage>
+   <Data_Set_Progress>IN WORK</Data_Set_Progress>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>-77.0</Southernmost_Latitude>
+      <Northernmost_Latitude>-69.0</Northernmost_Latitude>
+      <Westernmost_Longitude>54.0</Westernmost_Longitude>
+      <Easternmost_Longitude>78.0</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="70fb5a3b-35b1-4048-a8be-56a0d865281c">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>ANTARCTICA</Location_Type>
+      <Detailed_Location>Lambert Glacier</Detailed_Location>
+   </Location>
+   <Location uuid="3fedcf7c-7b0c-4b51-abd2-2c54de713061">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>POLAR</Location_Type>
+   </Location>
+   <Quality>Small gaps in the data arose from partial steam hole closure over the course of the intervening period (nominally 1 year) precluding the possibility of lowering the probe to the appropriate 10 m depth. The 10 m firn temperatures were measured at sites spaced 30 km apart around the basin using a digital readout from a platinum resistance thermometer placed in a steam hole drilled one season and measured the next. The temperature was recorded from the digital readout after it had stabilised several hours after placement of the thermometer down the (capped) hole. Digital outputs were checked against standard temperature readouts prior to deployment in the field. Geographic locations for 10 m firn temperature readings were situated within 10-30 m of LGB station geodetic GPS survey markers (1-5 m horizontalaccuracy), approximately every 30 km along the 2014 km main traverse route.</Quality>
+   <Access_Constraints>The data are available from the url given below.</Access_Constraints>
+   <Use_Constraints>This data set conforms to the PICCCBY Attribution License                  (http://creativecommons.org/licenses/by/3.0/).                                                           Must be cited properly</Use_Constraints>
+   <Data_Set_Language>ENGLISH</Data_Set_Language>
+   <Originating_Center>AAD</Originating_Center>
+   <Data_Center>
+      <Data_Center_Name uuid="9eda6b65-169a-47cf-bfe9-4cc8596f708b">
+         <Short_Name>AU/AADC</Short_Name>
+         <Long_Name>Australian Antarctic Data Centre, Australia</Long_Name>
+      </Data_Center_Name>
+      <Data_Center_URL>http://data.aad.gov.au</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>DATA OFFICER</First_Name>
+         <Last_Name>AADC</Last_Name>
+         <Email>metadata@aad.gov.au</Email>
+         <Phone>+61 3 6232 3244</Phone>
+         <Fax>+61 3 6232 3351</Fax>
+         <Contact_Address>
+            <Address>Australian Antarctic Division</Address>
+            <Address>203 Channel Highway</Address>
+            <City>Kingston</City>
+            <Province_or_State>Tasmania</Province_or_State>
+            <Postal_Code>7050</Postal_Code>
+            <Country>Australia</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Distribution_Media>HTTP</Distribution_Media>
+      <Distribution_Size>10088 KB</Distribution_Size>
+      <Fees>free</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>The Lambert Glacier Basin (LGB) series of five oversnow traverses were conducted from 1989-95. Ten metre depth (10 m) firn temperatures, as a proxy indicator of annual mean surface temperature at a site, were recorded approximately every 30 km along the 2014 km main traverse route from LGB00 (68.6543 S, 61.1201 E) near Mawson Station, to LGB72 (69.9209 S, 76.4933 E) near Davis Station.10 m depth firn temperatures were recorded manually in field notebooks and the data transferred to spreadsheet files (MS Excel).Summary data (30 km spatial resolution) can be obtained from CRC Research Note No.09 &amp;Surface Mass Balance and Snow Surface Properties from the Lambert Glacier Basin Traverses 1990-94&amp;.This work was completed as part of ASAC projects 3 and 2216.Some of this data have been stored in a very old format.  The majority of files have been updated to current formats, but some files (kaleidograph files in particular) were not able to be modified due to a lack of appropriate software.  However, these files are simply figures, and can be regernerated from the raw data (also provided).The fields in this dataset are:LatitutdeLongitudeHeightCaneDistanceElevationDensityMass AccumulationYearDelta Oxygen-18Grain SizeIce CrustsDepth Hoar</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+         <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://data.aad.gov.au/aadc/portal/download_file.cfm?file_id=1278</URL>
+      <Description>Download point for the data</Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+         <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>https://secure3.aad.gov.au/proms/public/projects/report_project_public.cfm?project_no=3</URL>
+      <Description>Public information for ASAC project 3</Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+         <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>https://secure3.aad.gov.au/proms/public/projects/report_project_public.cfm?project_no=2216</URL>
+      <Description>Public information for ASAC project 2216</Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+         <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://data.aad.gov.au/aadc/metadata/citation.cfm?entry_id=LGB_10m_traverse</URL>
+      <Description>Citation reference for this metadata record and dataset</Description>
+   </Related_URL>
+   <IDN_Node uuid="d7c402cb-af86-46a3-99ec-e507a1a04d2c">
+      <Short_Name>AMD/AU</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="47308f11-79b0-46c2-b0c9-06d0b15ae845">
+      <Short_Name>AMD</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>AADC</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.7</Metadata_Version>
+   <DIF_Creation_Date>1999-10-07</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2015-09-22</Last_DIF_Revision_Date>
+   <Future_DIF_Review_Date>1999-10-07</Future_DIF_Review_Date>
+   <Extended_Metadata>
+      <Metadata>
+         <Group>gov.nasa.gsfc.gcmd</Group>
+         <Name>metadata.uuid</Name>
+         <Value>83e2f872-ce59-4060-95a4-410403d69b80</Value>
+      </Metadata>
+      <Metadata>
+         <Group>gov.nasa.gsfc.gcmd</Group>
+         <Name>metadata.extraction_date</Name>
+         <Value>2015-09-21 14:37:52</Value>
+      </Metadata>
+      <Metadata>
+         <Group>gov.nasa.gsfc.gcmd</Group>
+         <Name>metadata.keyword_version</Name>
+         <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>

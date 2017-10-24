@@ -44,7 +44,7 @@
   ([collection additional-validations]
    (validation-errors->path-errors
     (v/validate (cons vc/collection-validations additional-validations)
-                 collection))))
+                (aa/add-parsed-values collection)))))
 
 (defn validate-collection-warnings
   "Validates the UMM record against the list of warnings - issues that we want
@@ -54,7 +54,7 @@
   ([collection additional-validations]
    (validation-errors->path-errors
     (v/validate (cons vc/collection-validation-warnings additional-validations)
-                 collection))))
+                (aa/add-parsed-values collection)))))
 
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the

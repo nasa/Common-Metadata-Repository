@@ -72,7 +72,7 @@
   (c/set-value cache :foo 1)
   (c/set-value cache :bar 2)
   (c/reset cache)
-  (check-initial-cache-state cache))
+  (is (nil? (c/get-value cache :foo))))
 
 (defn- get-value-with-lookup-fn-test
   "Checks that the lookup function is used correctly when retrieving cache values"
@@ -94,18 +94,26 @@
     (is (= 2 @counter))))
 
 (def ^:private cache-test-fns
-  "Defines the set of test functions that check a cache implementation"
-  [#'check-initial-cache-state
-   #'value-type-support
+  "Defines the minimum set of test functions that check a cache implementation"
+  [#'value-type-support
    #'key-type-support
-   #'clear-cache-test
-   #'get-value-with-lookup-fn-test])
+   #'get-value-with-lookup-fn-test
+   #'clear-cache-test])
+
+(defn- get-cache-test-fns
+  "Returns the functions to test for verifying the cache. Not all caches will delete all values
+  from the cache on calls to reset."
+  [test-initial-state]
+  (if test-initial-state
+    (concat [#'check-initial-cache-state] cache-test-fns [#'check-initial-cache-state])
+    cache-test-fns))
 
 (defn assert-cache
   "Checks a cache implementation to make sure it behaves as expected."
-  [cache]
-  (doseq [test-fn-var cache-test-fns]
-    (c/reset cache)
-    (testing (:name (meta test-fn-var))
-      ((var-get test-fn-var) cache))))
-
+  ([cache]
+   (assert-cache cache true))
+  ([cache test-initial-state]
+   (doseq [test-fn-var (get-cache-test-fns test-initial-state)]
+     (c/reset cache)
+     (testing (:name (meta test-fn-var))
+       ((var-get test-fn-var) cache)))))

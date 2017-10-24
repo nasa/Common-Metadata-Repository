@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -8,6 +9,8 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
@@ -16,6 +19,16 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
+(def coll-progress-mapping
+  "Mapping from values supported for ISO-SMAP ProgressCode to UMM CollectionProgress."
+  {"COMPLETED" "COMPLETE"
+   "HISTORICALARCHIVE" "COMPLETE"
+   "OBSOLETE" "COMPLETE"
+   "ONGOING" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "UNDERDEVELOPMENT" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
+
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
        "/gmd:identificationInfo/gmd:MD_DataIdentification"))
@@ -23,6 +36,11 @@
 (def citation-base-xpath
   (str md-identification-base-xpath
        "/gmd:citation/gmd:CI_Citation"))
+
+(def collection-citation-base-xpath
+  (str citation-base-xpath
+       "[gmd:identifier/gmd:MD_Identifier"
+       "/gmd:description/gco:CharacterString='The ECS Short Name']"))
 
 (def short-name-identification-xpath
   (str md-identification-base-xpath
@@ -66,6 +84,12 @@
 
 (def base-xpath
   "/gmd:DS_Series/gmd:seriesMetadata")
+
+(def collection-data-type-xpath
+  (str citation-base-xpath
+       "/gmd:identifier/gmd:MD_Identifier"
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
 
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
@@ -126,7 +150,10 @@
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
-       :CollectionProgress (u/with-default (value-of data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
+       :CollectionProgress (get-umm-element/get-collection-progress
+                             coll-progress-mapping
+                             data-id-el
+                             "gmd:status/gmd:MD_ProgressCode")
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
@@ -135,9 +162,18 @@
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)
        :LocationKeywords (kws/parse-location-keywords data-id-el)
-       :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
+       :SpatialExtent (spatial/parse-spatial doc data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
+       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
        ;; Required by UMM-C
-       :ProcessingLevel (when sanitize? {:Id u/not-provided})
+       :ProcessingLevel {:Id
+                         (u/with-default
+                          (char-string-value
+                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                          sanitize?)
+                         :ProcessingLevelDescription
+                         (char-string-value
+                          data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
        :RelatedUrls (dru/parse-related-urls doc sanitize?)
+       :CollectionCitations (collection-citation/parse-collection-citation doc collection-citation-base-xpath sanitize?)
        :Projects (project/parse-projects doc projects-xpath sanitize?)}))))

@@ -8,7 +8,7 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojure.core.async :as a]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
@@ -21,17 +21,20 @@
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue])
   (:import
+   (clojure.lang Keyword Reflector)
    (cmr.message_queue.test ExitException)
    (com.amazonaws ClientConfiguration)
+   (com.amazonaws.auth BasicAWSCredentials)
    (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
    (com.amazonaws.auth.policy.actions SQSActions)
    (com.amazonaws.auth.policy.conditions ConditionFactory)
+   (com.amazonaws.regions InMemoryRegionImpl)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
-   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlResult PurgeQueueRequest
-                                     ReceiveMessageRequest SendMessageResult
-                                     SetQueueAttributesRequest)
+   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
+                                     PurgeQueueRequest ReceiveMessageRequest
+                                     SendMessageResult SetQueueAttributesRequest)
    (java.io IOException)
    (java.util ArrayList)
    (java.util HashMap)))
@@ -42,8 +45,8 @@
   :type Long})
 
 (defconfig default-queue-visibility-timeout
-  "Default number of seconds SQS should wait after a message is read before making it visible to other
-  queue readers."
+  "Default number of seconds SQS should wait after a message is read before making it visible to
+  other queue readers."
   {:default 300
    :type Long})
 
@@ -53,14 +56,44 @@
   {:default 3600
    :type Long})
 
+(defconfig default-num-tries
+  "Default number of tries (including initial attempt and all retries) for an individual message
+  before moving the message to the DLQ."
+  {:default 5
+   :type Long})
+
+(defconfig sqs-endpoint
+  "By default the SQS client will not explicitly set the SQS endpoint. This
+  configuration is provided for use in situations where explicitly setting
+  the SQS endpoint is desirable or required."
+  {:default nil
+   :type String})
+
+(defconfig sqs-extend-policy-remaining-exchanges
+  "When subscribing a queue to a topic, one may override the AWS policy or
+  extend it. CMR's default behaviour for AWS is to not extend the policy
+  of the queue that is bound to the first in a set of exchanges, but to do
+  so for the remaining exchanges.
+
+  When running SQS/SNS locally, however, to keep policy handling simple, we
+  do not want to extend the policies."
+  {:default true
+   :type Boolean})
+
+(defconfig sns-endpoint
+  "By default the SNS client will not explicitly set the SNS endpoint. This
+  configuration is provided for use in situations where explicitly setting
+  the SNS endpoint is desirable or required."
+  {:default nil
+   :type String})
+
 (defn queue-visibility-timeout
   "Number of seconds SQS should wait after a message is read from a provider queue before making
   it visible to other readers."
   [queue-name]
-  (-> (if (str/includes? queue-name "provider")
-        (provider-queue-visibility-timeout)
-        (default-queue-visibility-timeout))
-      str))
+  (if (string/includes? queue-name "provider")
+    (provider-queue-visibility-timeout)
+    (default-queue-visibility-timeout)))
 
 (def queue-arn-attribute
   "String used by the AWS SQS API to identify the attribute containing a queue's
@@ -76,7 +109,21 @@
 (defn- arn->name
   "Convert an Amazon Resource Name (ARN) to a name (topic, queue, etc.)."
   [arn]
-  (str/replace arn #".*:" ""))
+  (string/replace arn #".*:" ""))
+
+(defn- http-url->name
+  "Convert an Amazon HTTP queue endpoint URL to a queue name."
+  [endpoint]
+  (last (string/split endpoint #"/")))
+
+(defn- subscription-endpoint->name
+  "Given a subscription endpoint (which may be an ARN or an HTTP URL), convert
+  it to a queue name."
+  [endpoint]
+  (debug "Converting endpoint:" endpoint)
+  (if (string/starts-with? endpoint "http")
+    (http-url->name endpoint)
+    (arn->name endpoint)))
 
 (defn- normalize-queue-name
   "Ensure all queues start with gsfc-eosdis-cmr since the permissions in NGAP specify that CMR
@@ -87,9 +134,9 @@
   (let [prefix (str "gsfc-eosdis-cmr-" (config/app-environment))
         prefix-regex (re-pattern (str "^(" prefix "-)*"))]
     (-> queue-name
-        (str/replace "." "_")
-        (str/replace "cmr_" "")
-        (str/replace prefix-regex (str prefix "-")))))
+        (string/replace "." "_")
+        (string/replace "cmr_" "")
+        (string/replace prefix-regex (str prefix "-")))))
 
 (defn- -get-topic
   "Returns the Topic with the given display name."
@@ -156,34 +203,36 @@
           (catch Throwable t
             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
-            (Thread/sleep 100)))
+            (Thread/sleep 1000)))
         (recur)))))
 
 (defn- create-queue
- "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
- [sqs-client queue-name]
- (let [q-name (normalize-queue-name queue-name)
-       dlq-name (dead-letter-queue q-name)
+  "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
+  [sqs-client queue-name max-tries visibility-timeout]
+  (let [q-name (normalize-queue-name queue-name)
+        dlq-name (dead-letter-queue q-name)
 
-       ;; Create the dead-letter-queue first and get its url
-       dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
-       dlq-arn (get-queue-arn sqs-client dlq-name)
-       create-queue-request (CreateQueueRequest. q-name)
-       ;; the policy that sets retries and what dead-letter-queue to use
-       redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
-       ;; create the primary queue
-       queue-url (.getQueueUrl (.createQueue sqs-client q-name))
-       q-attrs (HashMap. {"RedrivePolicy" redrive-policy
-                          "VisibilityTimeout" (queue-visibility-timeout q-name)})
-       set-queue-attrs-request (doto (SetQueueAttributesRequest.)
-                                     (.setAttributes q-attrs)
-                                     (.setQueueUrl queue-url))]
-    (.setQueueAttributes sqs-client set-queue-attrs-request)))
+        ;; Create the dead-letter-queue first and get its url
+        dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
+        dlq-arn (get-queue-arn sqs-client dlq-name)
+        create-queue-request (CreateQueueRequest. q-name)
+        ;; the policy that sets retries and what dead-letter-queue to use
+        redrive-policy (format "{\"maxReceiveCount\":\"%d\", \"deadLetterTargetArn\": \"%s\"}"
+                               max-tries
+                               dlq-arn)
+        ;; create the primary queue
+        queue-url (.getQueueUrl (.createQueue sqs-client q-name))
+        q-attrs (HashMap. {"RedrivePolicy" redrive-policy
+                           "VisibilityTimeout" (str visibility-timeout)})
+        set-queue-attrs-request (doto (SetQueueAttributesRequest.)
+                                      (.setAttributes q-attrs)
+                                      (.setQueueUrl queue-url))]
+     (.setQueueAttributes sqs-client set-queue-attrs-request)))
 
 (defn- create-exchange
- "Creaete an SNS topic to be used as an exchange."
- [sns-client exchange-name]
- (.createTopic sns-client (normalize-queue-name exchange-name)))
+  "Create an SNS topic to be used as an exchange."
+  [sns-client exchange-name]
+  (.createTopic sns-client (normalize-queue-name exchange-name)))
 
 (defn- topic-conditions
   "Returns a sequence of Conditions allowing the given exchanges access to a queue.
@@ -226,9 +275,17 @@
 (defn- bind-queue-to-exchanges
  "Bind a queue to SNS Topics representing exchanges."
  [sns-client sqs-client exchange-names queue-name]
- (bind-queue-to-exchange sns-client sqs-client (first exchange-names) queue-name false)
+ (bind-queue-to-exchange sns-client
+                         sqs-client
+                         (first exchange-names)
+                         queue-name
+                         false)
  (doseq [exchange-name (rest exchange-names)]
-   (bind-queue-to-exchange sns-client sqs-client exchange-name queue-name true)))
+   (bind-queue-to-exchange sns-client
+                           sqs-client
+                           exchange-name
+                           queue-name
+                           (sqs-extend-policy-remaining-exchanges))))
 
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
@@ -245,8 +302,67 @@
   "Memoized function that returns the queue url for the given name."
   (memoize -get-queue-url))
 
+(defn set-aws-client-attr!
+  "Conditionally configure the AWS client instance with by calling the given
+  method with the given args."
+  [client-obj method args]
+  (when-not (nil? (first args))
+    (debug "\tConfig:" method "=" args)
+    (Reflector/invokeInstanceMethod
+     client-obj (name method) (object-array args))))
+
+(defn configure-aws-client
+  "Configure an AWS service client with values passed pair-wise to the methods
+  they are passed with. This function allows for the configuration of an AWS
+  service object after instantiation by passing it first an AWS service client
+  instance, and then a series of keywords and configuration values, where the
+  keywords are spelled the same as the client object's given setter method
+  and the configuration values are the results of having called a configuration
+  function that will pull a value from the environment or the default, in the
+  event of an undefined environment value.
+
+  Example usage:
+  ```
+  (configure-aws-client
+    (new AmazonSQSClient)
+    :setEndpoint (sqs-endpoint)
+    :setRegion (sqs-region)
+    :setTimeOffset (sqs-time-offset)))
+  ```
+
+  With the understanding, of course, that the configuration functions in the
+  example all have been created.
+
+  Note that since AWS service clients will set service defaults on their own,
+  it is best to define the default configuration value as nil, so as to avoid
+  unexpected client behaviour."
+  [client-obj & args]
+  (debug "Configuring client" client-obj)
+  (doseq [[config-key config-val] (partition 2 args)]
+    (set-aws-client-attr! client-obj config-key [config-val]))
+  client-obj)
+
+(defmulti create-aws-client
+  "Create an AWS service client, conditionally setting any configured values.
+
+  Note that if the configuration calls (e.g., `(sqs-endpoint)`) return `nil`,
+  the configuration operation doesn't actually take place."
+  identity)
+
+(defmethod create-aws-client :sqs
+  [^Keyword type]
+  (configure-aws-client
+    (new AmazonSQSClient)
+    :setEndpoint (sqs-endpoint)))
+
+(defmethod create-aws-client :sns
+  [^Keyword type]
+  (configure-aws-client
+    (new AmazonSNSClient)
+    :setEndpoint (sns-endpoint)))
+
 (defrecord SQSQueueBroker
-  ;; A record containig fields related to accessing SNS/SQS exchanges and queues.
+  ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
   [
    ;; Connection to AWS SNS
    sns-client
@@ -264,7 +380,10 @@
    ;; exchanges (topics) known to this broker
    exchanges
 
-   ;; a map of queues to seqeunces of exchange names to which they should be bound
+   ;; a map of queue names to the retry policies for that queue
+   queues-to-policies
+
+   ;; a map of queues to sequences of exchange names to which they should be bound
    queues-to-exchanges]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -272,21 +391,27 @@
 
   (start
     [this system]
-    (let [sqs-client (AmazonSQSClient.)
-          sns-client (AmazonSNSClient.)
+    (let [sqs-client (create-aws-client :sqs)
+          sns-client (create-aws-client :sns)
           normalized-queue-names (reduce (fn [m queue-name]
                                              (let [nqn (normalize-queue-name queue-name)]
                                                (assoc m nqn queue-name)))
                                          {}
                                          queues)]
       (doseq [queue-name queues]
-        (create-queue sqs-client queue-name))
+        (let [max-tries (get-in queues-to-policies [queue-name :max-tries] (default-num-tries))
+              visibility-timeout (get-in queues-to-policies [queue-name :visibility-timeout-secs]
+                                         (queue-visibility-timeout queue-name))]
+          (create-queue sqs-client queue-name max-tries visibility-timeout)))
       (doseq [exchange-name exchanges]
         (create-exchange sns-client exchange-name))
       (doseq [queue (keys queues-to-exchanges)
               :let [exchanges (get queues-to-exchanges queue)]]
         (bind-queue-to-exchanges sns-client sqs-client exchanges queue))
-      (assoc this :sns-client sns-client :sqs-client sqs-client :normalized-queue-names normalized-queue-names)))
+      (assoc this
+             :sns-client sns-client
+             :sqs-client sqs-client
+             :normalized-queue-names normalized-queue-names)))
 
   (stop
     [this system]
@@ -302,6 +427,7 @@
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
           queue-url (get-queue-url sqs-client queue-name)]
+      (debug "Publishing message" msg "to queue" queue-name)
       (.sendMessage sqs-client queue-url msg)))
 
   (get-queues-bound-to-exchange
@@ -313,7 +439,7 @@
       (map (fn [sub]
                (->> sub
                     .getEndpoint
-                    arn->name
+                    subscription-endpoint->name
                     (normalized-queue-name->original-queue-name this)))
            subs)))
 
@@ -323,6 +449,7 @@
           exchange-name (normalize-queue-name exchange-name)
           topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)]
+      (debug "Publishing message" msg "to exchange" exchange-name)
       (.publish sns-client topic-arn msg)))
 
   (subscribe
@@ -356,8 +483,8 @@
 
 (defn create-queue-broker
   "Creates a broker that uses SNS/SQS"
-  [{:keys [queues exchanges queues-to-exchanges]}]
-  (->SQSQueueBroker nil nil queues nil exchanges queues-to-exchanges))
+  [{:keys [queues exchanges queues-to-policies queues-to-exchanges]}]
+  (->SQSQueueBroker nil nil queues nil exchanges queues-to-policies queues-to-exchanges))
 
 ;; Tests to make sure SNS/SQS is working
 (comment

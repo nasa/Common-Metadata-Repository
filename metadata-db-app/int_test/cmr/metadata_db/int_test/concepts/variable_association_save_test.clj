@@ -13,7 +13,7 @@
   (let [concept-attributes (or (:concept-attributes attributes) {})
         concept (util/create-and-save-collection "REG_PROV" uniq-num 1 concept-attributes)
         variable-attributes (or (:variable-attributes attributes) {})
-        variable (util/create-and-save-variable uniq-num 1 variable-attributes)
+        variable (util/create-and-save-variable "REG_PROV" uniq-num 1 variable-attributes)
         attributes (dissoc attributes :concept-attributes :variable-attributes)]
     (util/variable-association-concept concept variable uniq-num attributes)))
 
@@ -25,7 +25,7 @@
 (deftest save-variable-association-failure-test
   (testing "saving new variable associations on non system-level provider"
     (let [coll (util/create-and-save-collection "REG_PROV" 1)
-          variable (util/create-and-save-variable 1)
+          variable (util/create-and-save-variable "REG_PROV" 1)
           variable-association (-> (util/variable-association-concept coll variable 2)
                                    (assoc :provider-id "REG_PROV"))
           {:keys [status errors]} (util/save-concept variable-association)]

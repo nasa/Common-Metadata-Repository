@@ -45,14 +45,26 @@
    :concept-id concept-id
    :revision-id revision-id})
 
-(defn publish-collection-revision-delete-msg
-  "Publishes a message indicating a collection revision was removed."
+(defn publish-concept-revision-delete-msg
+  "Publishes a message indicating a concept revision was removed."
   [context concept-id revision-id]
   (when (config/publish-messages)
     (let [queue-broker (get-in context [:system :queue-broker])
-          exchange-name (config/deleted-collection-revision-exchange-name)
+          exchange-name (config/deleted-concept-revision-exchange-name)
           ;; Note it's important that the format of this message match the ingest event format.
           msg {:action :concept-revision-delete
+               :concept-id concept-id
+               :revision-id revision-id}]
+      (queue/publish-message queue-broker exchange-name msg))))
+
+(defn publish-tombstone-delete-msg
+  "Publishes a message indicating a tombstone was removed/overwritten with updated concept"
+  [context concept-type concept-id revision-id]
+  (when (config/publish-messages)
+    (let [queue-broker (get-in context [:system :queue-broker])
+          exchange-name (config/deleted-granule-exchange-name)
+          ;; Note it's important that the format of this message match the ingest event format.
+          msg {:action :tombstone-delete
                :concept-id concept-id
                :revision-id revision-id}]
       (queue/publish-message queue-broker exchange-name msg))))

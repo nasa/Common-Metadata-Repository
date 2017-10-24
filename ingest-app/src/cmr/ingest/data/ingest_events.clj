@@ -1,9 +1,8 @@
 (ns cmr.ingest.data.ingest-events
   "Allows broadcast of ingest events via the message queue"
-  (:require [cmr.ingest.config :as config]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.message-queue.services.queue :as queue]))
+  (:require
+   [cmr.ingest.config :as config]
+   [cmr.message-queue.services.queue :as queue]))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."

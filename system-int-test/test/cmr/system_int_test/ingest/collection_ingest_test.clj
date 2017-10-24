@@ -1,35 +1,39 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
-  "CMR collection ingest integration tests"
-  (:require
-    [clj-http.client :as client]
-    [clj-time.core :as t]
-    [clojure.java.io :as io]
-    [clojure.string :as string]
-    [clojure.test :refer :all]
-    [cmr.access-control.test.util :as ac]
-    [cmr.common-app.test.side-api :as side]
-    [cmr.common.date-time-parser :as p]
-    [cmr.common.log :as log :refer (debug info warn error)]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.util :as util]
-    [cmr.ingest.config :as config]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.test.expected-conversion :as exc]
-    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]))
+  "CMR collection ingest integration tests.
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+  For collection permissions tests, see `provider-ingest-permissions-test`."
+  (:require
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.access-control.test.util :as ac]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.ingest.config :as config]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.test.expected-conversion :as exc]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
+                                           "provguid2" "PROV2"}))
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -52,11 +56,6 @@
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
-(defn- assert-user-id
-  "Assert concept with the given concept-id and revision-id in metadata db has user id equal to expected-user-id"
-  [concept-id revision-id expected-user-id]
-  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
-
 ;; Verify that user-id is saved from User-Id or token header
 (deftest collection-ingest-user-id-test
   (testing "ingest of new concept"
@@ -64,7 +63,7 @@
       (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
         (index/wait-until-indexed)
-        (assert-user-id concept-id revision-id expected-user-id))
+        (ingest/assert-user-id concept-id revision-id expected-user-id))
 
       "user id from token"
       {:token (e/login (s/context) "user1")} "user1"
@@ -89,10 +88,10 @@
         (ingest/delete-concept concept ingest-header3)
         (ingest/ingest-concept concept ingest-header4)
         (index/wait-until-indexed)
-        (assert-user-id concept-id revision-id expected-user-id1)
-        (assert-user-id concept-id (inc revision-id) expected-user-id2)
-        (assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
-        (assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
+        (ingest/assert-user-id concept-id revision-id expected-user-id1)
+        (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
+        (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
+        (ingest/assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
 
       "user id from token"
       {:token (e/login (s/context) "user1")} "user1"
@@ -324,13 +323,15 @@
                                                    :LongName "L4"
                                                    :Abstract (name coll-format)
                                            ;; The following fields are needed for DIF to pass xml validation
-                                                   :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
-                                                                                                  :Topic "Cool"
-                                                                                                  :Term "Mild"})]
-                                                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
-                                                                                          :ShortName "Larc"})]
+                                                   :ScienceKeywords [(data-umm-cmn/science-keyword
+                                                                      {:Category "upcase"
+                                                                       :Topic "Cool"
+                                                                       :Term "Mild"})]
+                                                   :DataCenters [(data-umm-cmn/data-center
+                                                                  {:Roles ["DISTRIBUTOR"]
+                                                                   :ShortName "Larc"})]
                                            ;; The following fields are needed for DIF10 to pass xml validation
-                                                   :TemporalExtents [(data-umm-c/temporal-extent
+                                                   :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                        {:beginning-date-time "1965-12-12T12:00:00Z"
                                                                         :ending-date-time "1967-12-12T12:00:00Z"})]})
                            {:format coll-format})]
@@ -570,7 +571,7 @@
 (deftest schema-validation-test
   (are [concept-format validation-errors]
        (let [concept (data-umm-c/collection-concept
-                       {:TemporalExtents [(data-umm-c/temporal-extent
+                       {:TemporalExtents [(data-umm-cmn/temporal-extent
                                             {:beginning-date-time "2010-12-12T12:00:00Z"})]}
                        concept-format)
              {:keys [status errors]}
@@ -657,15 +658,15 @@
     (is (= 201 (:status response)))))
 
 (deftest ingest-higher-than-accepted-umm-version
-  (let [accepted-version (config/ingest-accept-umm-version)
-        _ (side/eval-form `(config/set-ingest-accept-umm-version! "1.8"))
+  (let [accepted-version (config/collection-umm-version)
+        _ (side/eval-form `(config/set-collection-umm-version! "1.8"))
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
                   :format       "application/vnd.nasa.cmr.umm+json;version=1.9"
                   :metadata     "{\"foo\":\"bar\"}"}
         response (ingest/ingest-concept coll-map {:accept-format :json})
-        _ (side/eval-form `(config/set-ingest-accept-umm-version! ~accepted-version))]
+        _ (side/eval-form `(config/set-collection-umm-version! ~accepted-version))]
     (is (= 400 (:status response)))
     (is (= [(str "UMM JSON version 1.8 or lower can be ingested. Any version above that is considered in-development and cannot be ingested at this time.")]
            (:errors response)))))
@@ -683,8 +684,9 @@
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
-  (let [project (data-umm-c/project "p1" (str "A long name longer than eighty characters should not result"
-                                          " in a schema validation error"))
+  (let [project (data-umm-cmn/project "p1"
+                                      (str "A long name longer than eighty characters should not result"
+                                           " in a schema validation error"))
         concept (assoc (data-umm-c/collection-concept {:projects [project]})
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]

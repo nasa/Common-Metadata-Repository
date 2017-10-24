@@ -28,18 +28,21 @@
    :tag-association (into common-columns
                           [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
-   :service (into common-columns [:service_name :user_id])
+   :service (into common-columns [:provider_id :service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
-   :variable (into common-columns [:variable_name :measurement :user_id])
+   :variable (into common-columns [:provider_id :variable_name :measurement :user_id])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
-                                :variable_name :user_id])})
+                                :variable_concept_id :user_id])
+   :service-association (into common-columns
+                               [:associated_concept_id :associated_revision_id
+                                :service_concept_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
    types must include the provider id as part of the sql params"
-  #{:access-group})
+  #{:access-group :variable :service})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
@@ -95,9 +98,11 @@
   "Retrieve concept maps from the given table, handling small providers separately from
   normal providers."
   (fn [db table concept-type providers params]
-    (:small (first providers))))
+    (or (:small (first providers))
+        (= :variable concept-type)
+        (= :service concept-type))))
 
-;; Execute a query against the small providers table
+;; Execute a query against a single table where provider_id is a column
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
   (let [fields (columns-for-find-concept concept-type params)
@@ -106,10 +111,10 @@
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
-      [conn db]
-      (doall
-        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-              (su/query conn stmt))))))
+     [conn db]
+     (doall
+      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+            (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default

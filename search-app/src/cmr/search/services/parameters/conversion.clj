@@ -18,96 +18,110 @@
 
 (defmethod common-params/param-mappings :collection
   [_]
-  {:entry-title :string
-   :doi :string
-   :entry-id :string
-   :native-id :string
-   :provider :string
+  {:archive-center :string
    :attribute :attribute
-   :short-name :string
-   :version :string
-   :updated-since :updated-since
-   :revision-date :multi-date-range
-   :created-at :multi-date-range
-   :processing-level-id :string
-   :processing-level-id-h :humanizer
-   :collection-data-type :collection-data-type
-   :temporal :temporal
-   :concept-id :string
-   :platform :string
-   :platform-h :humanizer
-   :instrument :string
-   :instrument-h :humanizer
-   :sensor :string
-   :project :string
-   :project-h :humanizer
-   :data-center :string
-   :archive-center :string
-   :data-center-h :humanizer ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
-   :spatial-keyword :string
-   :two-d-coordinate-system-name :string
-   :two-d-coordinate-system :two-d-coordinate-system
-   :science-keywords :science-keywords
-   :science-keywords-h :science-keywords
-   :downloadable :boolean
-   :browsable :boolean
-   :polygon :polygon
+   :author :string
    :bounding-box :bounding-box
-   :point :point
-   :keyword :keyword
-   :line :line
+   :browsable :boolean
+   :collection-data-type :collection-data-type
+   :concept-id :string
+   :created-at :multi-date-range
+   :data-center :string
+   :data-center-h :humanizer ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
+   :doi :string
+   :downloadable :boolean
+   :entry-id :string
+   :entry-title :string
    :exclude :exclude
    :has-granules :has-granules
+   :has-granules-created-at :multi-date-range
+   :has-granules-revised-at :multi-date-range
+   :instrument :string
+   :instrument-h :humanizer
+   :keyword :keyword
+   :line :line
+   :native-id :string
+   :platform :string
+   :platform-h :humanizer
+   :point :point
+   :polygon :polygon
+   :processing-level-id :string
+   :processing-level-id-h :humanizer
+   :project :string
+   :project-h :humanizer
+   :provider :string
+   :revision-date :multi-date-range
+   :science-keywords :science-keywords
+   :science-keywords-h :science-keywords
+   :sensor :string
+   :short-name :string
+   :spatial-keyword :string
+   :temporal :temporal
+   :two-d-coordinate-system :two-d-coordinate-system
+   :two-d-coordinate-system-name :string
+   :updated-since :updated-since
+   :version :string
 
    ;; Tag parameters
+   :tag-data :tag-query
    :tag-key :tag-query
    :tag-originator-id :tag-query
-   :tag-data :tag-query
 
    ;; Variable parameters
-   :variable-name :string
    :measurement :string
-   :variables-h :variables})
+   :variable-name :string
+   :variable-native-id :string
+   :variables-h :variables-h})
 
 (defmethod common-params/param-mappings :granule
   [_]
-  {:native-id :string
-   :granule-ur :string
-   :concept-id :granule-concept-id
-   :collection-concept-id :string
-   :producer-granule-id :string
-   :day-night :string
-   :readable-granule-name :readable-granule-name
-   :provider :collection-query
-   :entry-title :collection-query
-   :attribute :attribute
-   :short-name :collection-query
-   :orbit-number :orbit-number
-   :equator-crossing-longitude :equator-crossing-longitude
-   :equator-crossing-date :equator-crossing-date
-   :version :collection-query
-   :updated-since :updated-since
-   :revision-date :multi-date-range
-   :created-at :multi-date-range
-   :temporal :temporal
-   :platform :inheritance
-   :instrument :inheritance
-   :sensor :inheritance
-   :project :string
-   :cloud-cover :num-range
-   :exclude :exclude
-   :downloadable :boolean
-   :polygon :polygon
+  {:attribute :attribute
    :bounding-box :bounding-box
-   :point :point
-   :line :line
    :browsable :boolean
-   :two-d-coordinate-system :two-d-coordinate-system})
+   :cloud-cover :num-range
+   :collection-concept-id :string
+   :concept-id :granule-concept-id
+   :created-at :multi-date-range
+   :day-night :string
+   :downloadable :boolean
+   :entry-title :collection-query
+   :equator-crossing-date :equator-crossing-date
+   :equator-crossing-longitude :equator-crossing-longitude
+   :exclude :exclude
+   :granule-ur :string
+   :instrument :inheritance
+   :line :line
+   :native-id :string
+   :orbit-number :orbit-number
+   :platform :inheritance
+   :point :point
+   :polygon :polygon
+   :producer-granule-id :string
+   :project :string
+   :provider :collection-query
+   :readable-granule-name :readable-granule-name
+   :revision-date :multi-date-range
+   :sensor :inheritance
+   :short-name :collection-query
+   :temporal :temporal
+   :two-d-coordinate-system :two-d-coordinate-system
+   :updated-since :updated-since
+   :version :collection-query})
 
 (defmethod common-params/param-mappings :tag
   [_]
   {:tag-key :string
    :originator-id :string})
+
+(defmethod common-params/param-mappings :variable
+  [_]
+  {:variable-name :string
+   :name :string
+   :measurement :string
+   :provider :string
+   :native-id :string
+   :concept-id :string
+   :keyword :keyword})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
@@ -116,6 +130,25 @@
 (defmethod common-params/parameter->condition :keyword
   [_ _ _ value _]
   (cqm/text-condition :keyword (str/lower-case value)))
+
+(def collection-only-params
+  "List of parameters that are valid in collection query models, but not in granule query models."
+  (let [granule-param-mappings (common-params/param-mappings :granule)
+        collection-param-mappings (common-params/param-mappings :collection)
+        do-not-exist-for-granules (set/difference (set (keys collection-param-mappings))
+                                                  (set (keys granule-param-mappings)))
+        collection-query-params (keep (fn [[k v]]
+                                        (when (= v :collection-query)
+                                          k))
+                                      granule-param-mappings)]
+    (concat do-not-exist-for-granules collection-query-params)))
+
+(def collection-to-granule-params
+  "Mapping of parameter names in a collection query to the parameter name to use in the granule
+  query."
+  {:concept-id :collection-concept-id
+   :has-granules-created-at :created-at
+   :has-granules-revised-at :revision-date-doc-values})
 
 (defmulti tag-param->condition
   "Convert tag param and value into query condition"
@@ -145,7 +178,7 @@
                    (common-params/pattern-field? concept-type param options))]
     (tag-param->condition param value pattern?)))
 
-(defmethod common-params/parameter->condition :variables
+(defmethod common-params/parameter->condition :variables-h
   [_context concept-type param value options]
   (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
         pattern? (common-params/pattern-field? concept-type param options)
@@ -304,10 +337,14 @@
                                     [:facets-v2])
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
+                                (when (:has-granules-created-at params)
+                                  [:has-granules-created-at])
+                                (when (:has-granules-revised-at params)
+                                  [:has-granules-revised-at])
                                 (when-not (str/blank? (:include-tags params))
                                   [:tags])
-                                ;; Always include temporal, the processor will see if any temporal conditions exist
-                                ;; Not specific to relevancy, but currently used for temporal relevancy
+                                ;; Always include temporal, the processor will see if any temporal
+                                ;; conditions exist
                                 [:temporal-conditions])
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
@@ -337,6 +374,12 @@
     [(dissoc params :echo-compatible)
      (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))
 
+(defmethod common-params/parse-query-level-params :variable
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :variable params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

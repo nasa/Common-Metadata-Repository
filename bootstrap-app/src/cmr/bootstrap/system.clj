@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.core.async :as ca :refer [chan]]
    [cmr.access-control.system :as ac-system]
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.routes :as routes]
@@ -11,6 +10,7 @@
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
    [cmr.bootstrap.data.virtual-products :as vp]
+   [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -25,6 +25,7 @@
    [cmr.common.system :as common-sys]
    [cmr.indexer.data.concepts.granule :as g]
    [cmr.indexer.system :as idx-system]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.oracle.connection :as oracle]
@@ -40,7 +41,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :scheduler :web :nrepl])
+  [:log :caches :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -63,37 +64,15 @@
         access-control (-> (ac-system/create-system)
                            (dissoc :log :web :queue-broker)
                            (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
+        queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer
                                 :access-control access-control}
              :db-batch-size (db-batch-size)
-
-             ;; Channel for requesting full provider migration - provider/collections/granules.
-             ;; Takes single provider-id strings.
-             :provider-db-channel (chan 10)
-             ;; Channel for requesting single collection/granules migration.
-             ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-             :collection-db-channel (chan 100)
-
-             ;; Channel for requesting full provider indexing - collections/granules
-             :provider-index-channel (chan 10)
-
-             ;; Channel for processing collections to index.
-             :collection-index-channel (chan 100)
-
-             ;; Channel for processing data newer than a given date-time.
-             :data-index-channel (chan 10)
-
-             ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
-             :system-concept-channel (chan 10)
-
-             ;; channel for processing bulk index requests by concept-id
-             :concept-id-channel (chan 10)
-
-             ;; Channel for bootstrapping virtual products
-             vp/channel-name (chan)
-
+             :core-async-dispatcher (dispatch/create-backend :async)
+             :synchronous-dispatcher (dispatch/create-backend :sync)
+             :message-queue-dispatcher (dispatch/create-backend :message-queue)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -102,7 +81,8 @@
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
-             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])}]
+             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])
+             :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
                                                   :indexer])))
 
@@ -110,26 +90,31 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   [this]
-  (info "bootstrap System starting")
+  (info "Bootstrap system starting")
   (let [;; Need to start indexer first so the connection will be in the context of synchronous
         ;; bulk index requests
         started-system (update-in this [:embedded-systems :indexer] idx-system/start)
         started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
+        started-system (update-in started-system [:embedded-systems :access-control]
+                                  ac-system/start)
         started-system (common-sys/start started-system component-order)]
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
-    (info "Bootstrap System started")
+    (when (:queue-broker this)
+      (dispatch/subscribe-to-events {:system started-system}))
+    (info "Bootstrap system started")
     started-system))
-
 
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   [this]
-  (info "bootstrap System shutting down")
+  (info "Bootstrap system shutting down")
   (let [stopped-system (common-sys/stop this component-order)
         stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)
-        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)]
-    (info "bootstrap System stopped")
+        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)
+        stopped-system (update-in stopped-system [:embedded-systems :access-control]
+                                  ac-system/stop)]
+    (info "Bootstrap system stopped")
     stopped-system))

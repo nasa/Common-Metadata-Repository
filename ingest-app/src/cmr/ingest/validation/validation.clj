@@ -23,7 +23,8 @@
   valid-concept-mime-types
   {:collection #{mt/echo10 mt/iso-smap mt/iso19115 mt/dif mt/dif10 mt/umm-json}
    :granule #{mt/echo10 mt/iso-smap}
-   :variable #{mt/umm-json}})
+   :variable #{mt/umm-json}
+   :service #{mt/umm-json}})
 
 
 (defn- validate-format
@@ -87,9 +88,9 @@
      :LocationKeywords (match-kms-keywords-validation
                         kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
      :DataCenters (match-kms-keywords-validation
-                   kms-index :providers msg/datacenter-not-matches-kms-keywords)
+                   kms-index :providers msg/data-center-not-matches-kms-keywords)
      :DirectoryNames (match-kms-keywords-validation
-                      kms-index :concepts msg/directoryname-not-matches-kms-keywords)
+                      kms-index :concepts msg/directory-name-not-matches-kms-keywords)
      :ISOTopicCategories (match-kms-keywords-validation
                           kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)}))
 
@@ -98,7 +99,7 @@
   (if-errors-throw :bad-request
                    (if (mt/umm-json? (:format concept))
                      (let [umm-version (mt/version-of (:format concept))
-                           accept-version (config/ingest-accept-umm-version)]
+                           accept-version (config/ingest-accept-umm-version (:concept-type concept))]
                        (if (>= 0 (compare umm-version accept-version))
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)

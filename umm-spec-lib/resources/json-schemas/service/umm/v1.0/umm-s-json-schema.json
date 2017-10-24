@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "ServiceOptionsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object describes service options, data transformations and output formats.",
+      "properties": {
+        "SubsetType": {
+          "description": "This element is used to identify the list of supported subsetting requests.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubsetTypeEnum"
+          },
+          "minItems": 1
+        },
+        "SupportedProjections": {
+          "description": "This element is used to identify the list of supported projections types.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectionTypeEnum"
+          },
+          "minItems": 1
+        },
+        "InterpolationType": {
+          "description": "This element is used to identify the list of supported interpolation types.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InterpolationTypeEnum"
+          },
+          "minItems": 1
+        },
+        "SupportedFormats": {
+          "description": "This project element describes the list of names of the formats supported by the service.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FormatTypeEnum"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "SubsetTypeEnum": {
+      "description": "This element is used to identify the subset type of the variable.",
+      "type": "string",
+      "enum": ["Spatial", "Temporal", "Variable"]
+    },
+    "ProjectionTypeEnum": {
+      "description": "This element is used to identify the projection type of the variable.",
+      "type": "string",
+      "enum": ["Geographic", "Sinusoidal", "Mercator", "Transverse Mercator", "Universal Transverse Mercator",  "UTM Northern Hemisphere", "UTM Southern Hemisphere", "State Plane Coordinates", "Albers Equal-Area Conic",  "Lambert Conic Conformal", "Lambert Azimuthal Equal Area", "Cylindrical Equal Area", "Polar Stereographic", "EASE-Grid", "EASE-Grid 2.0", "WGS 84 / UPS North (N,E)", "WGS84 - World Geodetic System 1984", "NSIDC EASE-Grid North", "NSIDC EASE-Grid Global", "NSIDC Sea Ice Polar Stereographic North", "WGS 84 / NSIDC Sea Ice Polar Stereographic North", "WGS 84 / North Pole LAEA Bering Sea", "WGS 84 / North Pole LAEA Alaska", "WGS 84 / North Pole LAEA Canada", "WGS 84 / North Pole LAEA Atlantic", "WGS 84 / North Pole LAEA Europe", "WGS 84 / North Pole LAEA Russia", "WGS 84 / NSIDC EASE-Grid North", "WGS 84 / NSIDC EASE-Grid Global", "WGS 84 / UTM zone 24N", "WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI", "Google Maps Global Mercator -- Spherical Mercator", "WGS 84 / Antarctic Polar Stereographic", "NSIDC EASE-Grid South", "NSIDC Sea Ice Polar Stereographic South", "WGS 84 / NSIDC EASE-Grid South", "WGS 84 / NSIDC Sea Ice Polar Stereographic South", "WGS 84 / UPS South (N,E)"]
+    },
+    "InterpolationTypeEnum": {
+      "description": "This element is used to identify the interpolation type of the variable.",
+      "type": "string",
+      "enum": ["Bilinear Interpolation", "Bicubic Interpolation", "Distance-weighted average resampling", "Nearest Neighbor"]
+    },
+    "FormatTypeEnum": {
+     "description": "This element contains a list of file formats supported by the service.",
+     "type": "string",
+     "enum": ["HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "netCDF-3", "netCDF-4", "Binary", "ASCII", "PNG", "JPEG", "GeoTIFF", "image/png", "image/tiff", "image/gif", "image/png; mode=24bit", "image/jpeg", "image/vnd.wap.wbmp"]
+    },
+    "LayerType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element describes layer information.",
+      "properties": {
+        "Name": {
+          "description": "The name of the layer available from the service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "RelativePath": {
+          "description": "Path relative to the root universal resource locator for the layer.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    }
+  },
+    "title": "UMM-S",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "Name": {
+        "description": "The name of the service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "Type": {
+        "description": "Specification of the type of the service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "Version": {
+        "description": "Specification of the version of the Service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "Description": {
+        "description": "A brief description of the service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "OnlineResource": {
+        "description": "This element describes the service root universal resource locator.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
+      },
+      "Layer": {
+        "description": "This element contains important information about the Unique Resource Locator for the service.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/LayerType"
+        },
+        "minItems": 1
+      },
+      "ServiceOptions": {
+        "description": "This element contains important information about the Unique Resource Locator for the service.",
+        "$ref": "#/definitions/ServiceOptionsType"
+      }
+    },
+    "required": [
+      "Name",
+      "Type",
+      "Version",
+      "Description",
+      "OnlineResource"
+    ]
+}

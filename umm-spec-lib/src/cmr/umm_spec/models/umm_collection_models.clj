@@ -67,7 +67,12 @@
    ;; Describes key bibliographic citations pertaining to the collection.
    PublicationReferences
 
-   ;; This element describes the digital object identifier, and who created it.
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
+   ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
+   ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
+   ;; not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible
+   ;; for creating the DOI is described in the Authority element. For ESDIS records the value of
+   ;; http://dx.doi.org/ should be used.
    DOI
 
    ;; This element describes any data/service related URLs that include project home pages,
@@ -118,13 +123,18 @@
    ;; this collection.
    Distributions
 
-   ;; Describes the production status of the data set. There are three choices: PLANNED refers to
-   ;; data sets to be collected in the future and are thus unavailable at the present time. For
-   ;; Example: The Hydro spacecraft has not been launched, but information on planned data sets may
-   ;; be available. IN WORK refers to data sets currently in production or data that is continuously
-   ;; being collected or updated. For Example: data from the AIRS instrument on Aqua is being
-   ;; collected continuously. COMPLETE refers to data sets in which no updates or further data
-   ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
+   ;; This element describes the production status of the data set. There are four choices for Data
+   ;; Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable
+   ;; at the present time. For Example: The Hydro spacecraft has not been launched, but information
+   ;; on planned data sets may be available. ACTIVE refers to data sets currently in production or
+   ;; data that is continuously being collected or updated. For Example: data from the AIRS
+   ;; instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no
+   ;; updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection
+   ;; has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not
+   ;; applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that
+   ;; should not be used by a data provider. It is currently being used as a value when a correct
+   ;; translation cannot be done with the current valid values, or when the value is not provided by
+   ;; the data provider.
    CollectionProgress
 
    ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
@@ -281,6 +291,25 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
+;; The reference frame or system from which altitude is measured. The term 'altitude' is used
+;; instead of the common term 'elevation' to conform to the terminology in Federal Information
+;; Processing Standards 70-1 and 173. The information contains the datum name, distance units and
+;; encoding method, which provide the definition for the system.
+(defrecord AltitudeSystemDefinitionType
+  [
+   ;; The identification given to the level surface taken as the surface of reference from which
+   ;; measurements are compared.
+   DatumName
+
+   ;; The units in which measurements are recorded.
+   DistanceUnits
+
+   ;; The minimum distance possible between two adjacent values, expressed in distance units of
+   ;; measure for the collection.
+   Resolutions
+  ])
+(record-pretty-printer/enable-record-pretty-printing AltitudeSystemDefinitionType)
+
 ;; This element contains the Processing Level Id and the Processing Level Description
 (defrecord ProcessingLevelType
   [
@@ -313,28 +342,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GeographicCoordinateSystemType)
 
-;; The reference frame or system from which altitude or depths are measured. The term 'altitude' is
-;; used instead of the common term 'elevation' to conform to the terminology in Federal Information
-;; Processing Standards 70-1 and 173. The information contains the datum name, distance units and
-;; encoding method, which provide the definition for the system.
-(defrecord VerticalSystemDefinitionType
-  [
-   ;; The identification given to the level surface taken as the surface of reference from which
-   ;; measurements are compared.
-   DatumName
-
-   ;; The units in which measurements are recorded.
-   DistanceUnits
-
-   ;; The means used to encode measurements.
-   EncodingMethod
-
-   ;; The minimum distance possible between two adjacent values, expressed in distance units of
-   ;; measure for the collection.
-   Resolutions
-  ])
-(record-pretty-printer/enable-record-pretty-printing VerticalSystemDefinitionType)
-
 (defrecord GeodeticModelType
   [
    ;; The identification given to the reference system used for defining the coordinates of points.
@@ -350,6 +357,23 @@
    DenominatorOfFlatteningRatio
   ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticModelType)
+
+;; The reference frame or system from which depth is measured. The information contains the datum
+;; name, distance units and encoding method, which provide the definition for the system.
+(defrecord DepthSystemDefinitionType
+  [
+   ;; The identification given to the level surface taken as the surface of reference from which
+   ;; measurements are compared.
+   DatumName
+
+   ;; The units in which measurements are recorded.
+   DistanceUnits
+
+   ;; The minimum distance possible between two adjacent values, expressed in distance units of
+   ;; measure for the collection.
+   Resolutions
+  ])
+(record-pretty-printer/enable-record-pretty-printing DepthSystemDefinitionType)
 
 ;; This entity stores the reference frame or system from which horizontal and vertical spatial
 ;; domains are measured. The horizontal reference frame includes a Geodetic Model, Geographic

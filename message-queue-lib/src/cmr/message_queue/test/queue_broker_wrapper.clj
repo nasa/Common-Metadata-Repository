@@ -113,13 +113,13 @@
   (let [{:keys [id-sequence-atom timeout?-atom queue-broker]} broker
         msg-id (swap! id-sequence-atom inc)
         tagged-msg (assoc msg :id msg-id)]
-
     ;; Set the initial state of the message to :initial
     (update-message-queue-history broker queue-name :enqueue tagged-msg :initial)
-
+    (debug "Updated message queue history")
     ;; Mark the enqueue as failed if we are timing things out or it fails
     (if (or @timeout?-atom (not (queue-protocol/publish-to-queue queue-broker queue-name tagged-msg)))
       (do
+        (debug "Published; preparing to update history ...")
         (update-message-queue-history broker queue-name :enqueue tagged-msg :failure)
         false)
       true)))
@@ -128,7 +128,8 @@
   "Publishes a message to the exchange and captures the actions with the queue history of the
   exchanges associated queues."
   [broker exchange-name msg]
-  (let [queues (queue-protocol/get-queues-bound-to-exchange (:queue-broker broker) exchange-name)
+  (let [queues (queue-protocol/get-queues-bound-to-exchange
+                (:queue-broker broker) exchange-name)
         results (for [queue-name queues]
                   (publish-to-queue broker queue-name msg))]
     (every? identity results)))

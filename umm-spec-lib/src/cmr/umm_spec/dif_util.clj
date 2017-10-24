@@ -63,8 +63,8 @@
   ["GET DATA" "REVERB"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "REVERB"}
   ["GET DATA" "SSW"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SSW"}
   ["GET DATA" "SUBSETTER"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SUBSETTER"}
-  ["GET DATA" "THREDDS CATALOG"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREADS CATALOG"}
-  ["GET DATA" "THREDDS DATA"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREADS DATA"}
+  ["GET DATA" "THREDDS CATALOG"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS CATALOG"}
+  ["GET DATA" "THREDDS DATA"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DATA"}
   ["GET DATA" "THREDDS DIRECTORY"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DIRECTORY"}
   ["GET RELATED DATA SET METADATA" nil] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "DIF"}
   ["GET RELATED SERVICE METADATA" nil] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SERF"}

@@ -7,10 +7,12 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.umm-spec.additional-attribute :as aa]))
+   [cmr.umm-spec.additional-attribute :as aa]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -18,15 +20,15 @@
                        hu/save-sample-humanizers-fixture]))
 
 (deftest collection-update-additional-attributes-general-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "string" :DataType "STRING"})
-        a2 (data-umm-c/additional-attribute {:Name "boolean" :DataType "BOOLEAN"})
-        a3 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :value 5})
-        a4 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
-        a5 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"})
-        a6 (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"})
-        a7 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"})
-        a8 (data-umm-c/additional-attribute {:Name "dts" :DataType "DATETIME_STRING"})
-        a9 (data-umm-c/additional-attribute {:Name "moo" :DataType "STRING"})
+  (let [a1 (data-umm-cmn/additional-attribute {:Name "string" :DataType "STRING"})
+        a2 (data-umm-cmn/additional-attribute {:Name "boolean" :DataType "BOOLEAN"})
+        a3 (data-umm-cmn/additional-attribute {:Name "int" :DataType "INT" :value 5})
+        a4 (data-umm-cmn/additional-attribute {:Name "float" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (data-umm-cmn/additional-attribute {:Name "datetime" :DataType "DATETIME"})
+        a6 (data-umm-cmn/additional-attribute {:Name "date" :DataType "DATE"})
+        a7 (data-umm-cmn/additional-attribute {:Name "time" :DataType "TIME"})
+        a8 (data-umm-cmn/additional-attribute {:Name "dts" :DataType "DATETIME_STRING"})
+        a9 (data-umm-cmn/additional-attribute {:Name "moo" :DataType "STRING"})
 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
@@ -75,28 +77,28 @@
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
 
         "Add an additional attribute is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (data-umm-c/additional-attribute {:Name "alpha" :DataType "INT"})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (data-umm-cmn/additional-attribute {:Name "alpha" :DataType "INT"})]
 
         "Removing an additional attribute that is not referenced by any granule is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8]
 
         "Changing the type of an additional attribute that is not referenced by any granule is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 (data-umm-c/additional-attribute {:Name "moo" :DataType "INT"})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 (data-umm-cmn/additional-attribute {:Name "moo" :DataType "INT"})]
 
         "Changing the value of an additional attribute is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :Value 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (data-umm-cmn/additional-attribute {:Name "int" :DataType "INT" :Value 10}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute value to a range is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (data-umm-cmn/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) a4 a5 a6 a7 a8 a9]
 
         "Removing the value/range of an additional attribute is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT"}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (data-umm-cmn/additional-attribute {:Name "int" :DataType "INT"}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute range to a value is OK."
-        [a1 a2 a3 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :Value 1.0}) a5 a6 a7 a8 a9]
+        [a1 a2 a3 (data-umm-cmn/additional-attribute {:Name "float" :DataType "FLOAT" :Value 1.0}) a5 a6 a7 a8 a9]
 
         "Extending additional attribute range is OK."
-        [a1 a2 a3 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 0.0 :ParameterRangeEnd 99.0})
+        [a1 a2 a3 (data-umm-cmn/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 0.0 :ParameterRangeEnd 99.0})
          a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
@@ -116,7 +118,7 @@
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Multiple validation errors."
-        [(data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 5.0 :ParameterRangeEnd 10.0})]
+        [(data-umm-cmn/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 5.0 :ParameterRangeEnd 10.0})]
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
@@ -127,7 +129,7 @@
          "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
-        [(data-umm-c/additional-attribute {:Name "string" :DataType "INT"}) a2 a3 a4 a5 a6 a7 a8 a9]
+        [(data-umm-cmn/additional-attribute {:Name "string" :DataType "INT"}) a2 a3 a4 a5 a6 a7 a8 a9]
         ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]. Found 1 granules."]))
 
     (testing "Delete the existing collection, then re-create it with any additional attributes is OK."
@@ -142,7 +144,7 @@
         (is (= [200 nil] [status errors]))))))
 
 (deftest collection-update-additional-attributes-int-range-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10})
+  (let [a1 (data-umm-cmn/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -162,7 +164,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "int"
                                                                                              :DataType "INT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]}))
@@ -186,7 +188,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "int"
                                                                                              :DataType "INT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]})
@@ -201,7 +203,7 @@
         "invalid min & max" [3 4] 2))))
 
 (deftest collection-update-additional-attributes-float-range-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin -10.0 :ParameterRangeEnd 10.0})
+  (let [a1 (data-umm-cmn/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin -10.0 :ParameterRangeEnd 10.0})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -221,7 +223,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "float"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "float"
                                                                                              :DataType "FLOAT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]}))
@@ -244,7 +246,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "float"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "float"
                                                                                              :DataType "FLOAT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]})
@@ -262,7 +264,7 @@
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial aa/parse-value "DATETIME")
-        a1 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"
+        a1 (data-umm-cmn/additional-attribute {:Name "datetime" :DataType "DATETIME"
                                              :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -284,7 +286,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "datetime"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "datetime"
                                                                                              :DataType "DATETIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]}))
@@ -307,7 +309,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "datetime"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "datetime"
                                                                                              :DataType "DATETIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
@@ -323,7 +325,7 @@
 
 (deftest collection-update-additional-attributes-date-range-test
   (let [parse-fn (partial aa/parse-value "DATE")
-        a1 (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"
+        a1 (data-umm-cmn/additional-attribute {:Name "date" :DataType "DATE"
                                              :ParameterRangeBegin (parse-fn "2012-02-02Z")
                                              :ParameterRangeEnd (parse-fn "2012-11-02Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -345,7 +347,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "date"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "date"
                                                                                              :DataType "DATE"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]}))
@@ -368,7 +370,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "date"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "date"
                                                                                              :DataType "DATE"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
@@ -384,7 +386,7 @@
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial aa/parse-value "TIME")
-        a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"
+        a1 (data-umm-cmn/additional-attribute {:Name "time" :DataType "TIME"
                                              :ParameterRangeBegin (parse-fn "01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "11:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -406,7 +408,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "time"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "time"
                                                                                              :DataType "TIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]}))
@@ -429,7 +431,7 @@
                                    {:EntryTitle "parent-collection"
                                     :ShortName "S1"
                                     :Version "V1"
-                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "time"
+                                    :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "time"
                                                                                              :DataType "TIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
@@ -448,10 +450,10 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :Projects (data-umm-c/projects "p1" "p2" "p3" "p4")}))
+                                                     :Projects (data-umm-cmn/projects "p1" "p2" "p3" "p4")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
-                                                      :Projects (data-umm-c/projects "p4")}))
+                                                      :Projects (data-umm-cmn/projects "p4")}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
@@ -466,7 +468,7 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :Projects (apply data-umm-c/projects projects)}))
+                                                               :Projects (apply data-umm-cmn/projects projects)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -483,7 +485,7 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :Projects (apply data-umm-c/projects projects)})
+                                                               :Projects (apply data-umm-cmn/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -497,7 +499,7 @@
                     (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle entry-title
                                                                                   :ShortName (d/unique-str "short-name")
                                                                                   :SpatialExtent (when spatial-params
-                                                                                                   (data-umm-c/spatial spatial-params))})))
+                                                                                                   (data-umm-cmn/spatial spatial-params))})))
         make-gran (fn [coll spatial]
                     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
                                                                                             (when spatial (dg/spatial spatial))})))
@@ -528,7 +530,7 @@
                             (let [updated-coll (dissoc coll :revision-id)
                                   updated-coll (assoc updated-coll
                                                       :SpatialExtent (when new-spatial-params
-                                                                       (data-umm-c/spatial new-spatial-params)))]
+                                                                       (data-umm-cmn/spatial new-spatial-params)))]
                               (d/ingest-umm-spec-collection "PROV1" updated-coll {:allow-failure? true})))]
 
     (index/wait-until-indexed)
@@ -601,25 +603,25 @@
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Entry-Title "Dataset1"
                                                                             :ShortName "S1"
-                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                            :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                                                 {:beginning-date-time "2001-01-01T12:00:00Z"
                                                                                                  :ending-date-time "2010-05-11T12:00:00Z"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
                                                                             :ShortName "S2"
-                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                            :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                                                 {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset3"
                                                                             :ShortName "S3"
-                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                            :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                                                 {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset4"
                                                                             :ShortName "S4"
-                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                            :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                                                 {:beginning-date-time "2001-01-01T12:00:00Z"
                                                                                                  :ending-date-time "2010-05-11T12:00:00Z"})]}))
         collNoGranule (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset-No-Granule"
                                                                                     :ShortName "SNo"
-                                                                                    :TemporalExtents [(data-umm-c/temporal-extent
+                                                                                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                                                                                         {:beginning-date-time "1999-01-02T12:00:00Z"
                                                                                                          :ending-date-time "1999-05-01T12:00:00Z"})]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"
@@ -646,7 +648,7 @@
                                                (assoc :TemporalExtents
                                                       (when (not= {:beginning-date-time nil :ending-date-time nil}
                                                                   new-temporal-params)
-                                                        [(data-umm-c/temporal-extent new-temporal-params)])))]
+                                                        [(data-umm-cmn/temporal-extent new-temporal-params)])))]
                               (d/ingest-umm-spec-collection "PROV1" new-coll {:allow-failure? true})))]
     (index/wait-until-indexed)
 
@@ -726,12 +728,12 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :Platforms (data-umm-c/platforms "p1" "p2" "AM-1" "p4")}))
+                                                     :Platforms (data-umm-cmn/platforms "p1" "p2" "AM-1" "p4")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
                                                       :ShortName "S2"
                                                       :Version "V2"
-                                                      :Platforms (data-umm-c/platforms "p4" "Terra")}))]
+                                                      :Platforms (data-umm-cmn/platforms "p4" "Terra")}))]
     ;; CMR-3926 We need to make sure granules with no platfrom ref do not inherit their parent collection's instrument
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
@@ -748,7 +750,7 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :Platforms (apply data-umm-c/platforms platforms)}))
+                                                               :Platforms (apply data-umm-cmn/platforms platforms)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -768,7 +770,7 @@
                                                               {:EntryTitle "parent-collection2"
                                                                :ShortName "S2"
                                                                :Version "V2"
-                                                               :Platforms (apply data-umm-c/platforms platforms)})
+                                                               :Platforms (apply data-umm-cmn/platforms platforms)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -787,10 +789,10 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
+                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
@@ -799,15 +801,15 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
+                                                               :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
         "Adding an additional new tile is OK"
-        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo" "New_Tile"]
+        ["MISR" "CALIPSO" "WRS-1" "WRS-2" "WELD Alaska Tile"]
 
         "Removing a tile not referenced by any granule in the collection is OK"
-        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "New_Tile"]
+        ["MISR" "CALIPSO" "WRS-1" "WRS-2"])
 
         "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
         ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
@@ -819,18 +821,18 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S2"
                                                                :Version "V2"
-                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
+                                                               :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
 
         "Removing a tile that is referenced by a granule is invalid."
-        ["Replacement_Tile"]
-        ["Collection TilingIdentificationSystemName [another_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["CALIPSO"]
+        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
-        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile"]
-        ["Collection TilingIdentificationSystemName [replacement_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
+        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."])))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
@@ -838,13 +840,13 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :Platforms [(data-umm-c/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
-                                                                 (data-umm-c/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+                                                     :Platforms [(data-umm-cmn/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
+                                                                 (data-umm-cmn/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
                                                       :ShortName "S2"
                                                       :Version "V2"
-                                                      :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+                                                      :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
     ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
@@ -860,8 +862,8 @@
                                                               {:EntryTitle "parent-collection"
                                                                 :ShortName "S1"
                                                                 :Version "V1"
-                                                                :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
-                                                                            (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
+                                                                :Platforms [(apply data-umm-cmn/platform-with-instruments plat-instruments-1)
+                                                                            (apply data-umm-cmn/platform-with-instruments plat-instruments-2)]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -889,7 +891,7 @@
                                                               {:EntryTitle "parent-collection2"
                                                                :ShortName "S2"
                                                                :Version "V2"
-                                                               :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
+                                                               :Platforms [(apply data-umm-cmn/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
                                                      {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -903,24 +905,24 @@
         ["Collection Child Instrument [gps receivers] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-case-insensitivity-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "STRING" :DataType "STRING"})
-        a2 (data-umm-c/additional-attribute {:Name "BOOLEAN" :DataType "BOOLEAN"})
-        a3 (data-umm-c/additional-attribute {:Name "INT" :DataType "INT" :value 5})
-        a4 (data-umm-c/additional-attribute {:Name "FLOAT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
-        a5 (data-umm-c/additional-attribute {:Name "DATETIME" :DataType "DATETIME"})
-        a6 (data-umm-c/additional-attribute {:Name "DATE" :DataType "DATE"})
-        a7 (data-umm-c/additional-attribute {:Name "TIME" :DataType "TIME"})
-        a8 (data-umm-c/additional-attribute {:Name "DTS" :DataType "DATETIME_STRING"})
+  (let [a1 (data-umm-cmn/additional-attribute {:Name "STRING" :DataType "STRING"})
+        a2 (data-umm-cmn/additional-attribute {:Name "BOOLEAN" :DataType "BOOLEAN"})
+        a3 (data-umm-cmn/additional-attribute {:Name "INT" :DataType "INT" :value 5})
+        a4 (data-umm-cmn/additional-attribute {:Name "FLOAT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (data-umm-cmn/additional-attribute {:Name "DATETIME" :DataType "DATETIME"})
+        a6 (data-umm-cmn/additional-attribute {:Name "DATE" :DataType "DATE"})
+        a7 (data-umm-cmn/additional-attribute {:Name "TIME" :DataType "TIME"})
+        a8 (data-umm-cmn/additional-attribute {:Name "DTS" :DataType "DATETIME_STRING"})
         collection-map {:EntryTitle "parent-collection"
                         :ShortName "S1"
                         :Version "V1"
-                        :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
-                        :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "SOURCE_TILE")
-                        :Projects (data-umm-c/projects "PROJECT")
+                        :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                        :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR")
+                        :Projects (data-umm-cmn/projects "PROJECT")
                         :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
-                        
+
         granule-map {:project-refs ["PROJECT"]
-                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
+                     :two-d-coordinate-system (dg/two-d "MISR")
                      :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
                      :product-specific-attributes [(dg/psa "STRING" ["alpha"])
                                                    (dg/psa "BOOLEAN" ["true"])
@@ -943,26 +945,26 @@
         (is (= [201 nil] [(:status response2) (:errors response2)])))
 
       "Projects"
-      (assoc collection-map :Projects (data-umm-c/projects "ProJecT"))
+      (assoc collection-map :Projects (data-umm-cmn/projects "ProJecT"))
       (assoc granule-map :project-refs ["prOJecT"])
 
       "Tiling Identification Systems"
-      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "sOUrce_tIle"))
-      (assoc granule-map :two-d-coordinate-system (dg/two-d "SOURCE_tile"))
+      (assoc collection-map :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR"))
+      (assoc granule-map :two-d-coordinate-system (dg/two-d "MISR"))
 
       "Platforms Instruments Child Instruments"
-      (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])
+      (assoc collection-map :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])
       (assoc granule-map :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "platFORM" "instRUMENT" "childINSTRUMENT")])
 
       "Additional Attributes"
-      (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "strinG" :DataType "STRING"})
-                                                   (data-umm-c/additional-attribute {:Name "booleaN" :DataType "BOOLEAN"})
-                                                   (data-umm-c/additional-attribute {:Name "inT" :DataType "INT" :value 5})
-                                                   (data-umm-c/additional-attribute {:Name "floaT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
-                                                   (data-umm-c/additional-attribute {:Name "datetimE" :DataType "DATETIME"})
-                                                   (data-umm-c/additional-attribute {:Name "datE" :DataType "DATE"})
-                                                   (data-umm-c/additional-attribute {:Name "timE" :DataType "TIME"})
-                                                   (data-umm-c/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})])
+      (assoc collection-map :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "strinG" :DataType "STRING"})
+                                                   (data-umm-cmn/additional-attribute {:Name "booleaN" :DataType "BOOLEAN"})
+                                                   (data-umm-cmn/additional-attribute {:Name "inT" :DataType "INT" :value 5})
+                                                   (data-umm-cmn/additional-attribute {:Name "floaT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+                                                   (data-umm-cmn/additional-attribute {:Name "datetimE" :DataType "DATETIME"})
+                                                   (data-umm-cmn/additional-attribute {:Name "datE" :DataType "DATE"})
+                                                   (data-umm-cmn/additional-attribute {:Name "timE" :DataType "TIME"})
+                                                   (data-umm-cmn/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})])
       (assoc granule-map :product-specific-attributes [(dg/psa "strING" ["alpha"])
                                                        (dg/psa "booLEAN" ["true"])
                                                        (dg/psa "inT" ["2"])

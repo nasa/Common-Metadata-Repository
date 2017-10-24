@@ -2,7 +2,6 @@
   "Contains utility functions for database migrations"
   (:require [cmr.metadata-db.data.oracle.concept-tables :as tables]))
 
-
 (defn catalog-rest-user
   [system]
   (get-in system [:catalog-rest-user]))

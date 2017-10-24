@@ -118,33 +118,10 @@
                                               {:relative-root-url :context})]
     (format "%s/collections.json" (conn/root-url public-search-config))))
 
-(defconfig include-service-facets
-  "Controls whether or not to display service facets. Feature toggle needed while prototyping
+(defconfig include-variable-facets
+  "Controls whether or not to display variable facets. Feature toggle needed while prototyping
   with EDSC in certain environments."
   {:type Boolean :default false})
-
-(defn- dummy-service-filter-node
-  "Creates a dummy service filter node"
-  [term count links]
-  {:title term
-   :type :filter
-   :applied false
-   :links links
-   :count count
-   :has_children false})
-
-(defn- generate-service-placeholder-facets
-  "Returns dummy service facets for EDSC services prototype."
-  [base-url query-params]
-  (let [links-with-no-change [{:apply (lh/generate-query-string base-url query-params)}]
-        output-formats [(dummy-service-filter-node "ASCII" 4 links-with-no-change)
-                        (dummy-service-filter-node "GeoTIFF" 15 links-with-no-change)
-                        (dummy-service-filter-node "NetCDF4-CF" 8 links-with-no-change)]
-        reprojection-options [(dummy-service-filter-node "Geographic" 14 links-with-no-change)
-                              (dummy-service-filter-node "Lambert Conic Conformal" 1 links-with-no-change)
-                              (dummy-service-filter-node "Universal Transverse Mercator" 3 links-with-no-change)]]
-    [(v2h/generate-group-node "Output File Formats" false output-formats)
-     (v2h/generate-group-node "Reprojections" false reprojection-options)]))
 
 (defn- create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
@@ -156,19 +133,15 @@
         science-keywords-facets (when (facet-fields-set :science-keywords)
                                   (hv2/create-hierarchical-v2-facets
                                    aggs base-url query-params :science-keywords-h))
-        variables-facets (when (facet-fields-set :variables)
+        variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
         v2-facets (concat science-keywords-facets
                           (create-prioritized-v2-facets
                            aggs flat-facet-fields base-url query-params)
-                          variables-facets)
-        facets (if (include-service-facets)
-                 (concat v2-facets
-                         (generate-service-placeholder-facets base-url query-params))
-                 v2-facets)]
-    (if (seq facets)
-      (assoc v2-facets-root :has_children true :children facets)
+                          variables-facets)]
+    (if (seq v2-facets)
+      (assoc v2-facets-root :has_children true :children v2-facets)
       (assoc v2-facets-root :has_children false))))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2

@@ -21,7 +21,7 @@
 
 (defmethod parse-concept :variable
   [context concept]
-  (edn/read-string (:metadata concept)))
+  (umm/parse-metadata context concept))
 
 (defmethod parse-concept :variable-association
   [context concept]

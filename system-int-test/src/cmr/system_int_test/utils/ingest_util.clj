@@ -10,7 +10,6 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as icfg]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -18,6 +17,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
@@ -26,6 +26,12 @@
    [cmr.umm.echo10.granule :as g])
   (:import
    [java.lang.NumberFormatException]))
+
+(defn assert-user-id
+  "Assert concept with the given concept-id and revision-id in metadata db has
+  user id equal to expected-user-id"
+  [concept-id revision-id expected-user-id]
+  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
 
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."
@@ -48,26 +54,6 @@
                 :throw-exceptions false
                 :connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
-
-(defn- create-variable-through-url
-  "Create the variable by http POST on the given url"
-  [variable endpoint-url]
-  (client/post endpoint-url
-              {:body (json/generate-string variable)
-               :content-type :json
-               :throw-exceptions false
-               :connection-manager (s/conn-mgr)
-               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
-
-(defn- create-service-through-url
-  "Create the service by http POST on the given url"
-  [service endpoint-url]
-  (client/post endpoint-url
-              {:body (json/generate-string service)
-               :content-type :json
-               :throw-exceptions false
-               :connection-manager (s/conn-mgr)
-               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
@@ -230,9 +216,10 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:concept-id (cx/string-at-path xml-elem [:concept-id])
-         :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
-         :warnings (cx/string-at-path xml-elem [:warnings])}))
+        (util/remove-nil-keys
+         {:concept-id (cx/string-at-path xml-elem [:concept-id])
+          :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
+          :warnings (cx/string-at-path xml-elem [:warnings])})))
 
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
@@ -249,8 +236,12 @@
   [response options]
   (if (get options :raw? false)
     response
-    (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
-           :status (:status response))))
+    (let [response-format (or (:accept-format options)
+                              (if-let [header-format (get-in response [:headers "Content-Type"])]
+                                (mt/mime-type->format header-format)
+                                :xml))]
+      (assoc (parse-ingest-body response-format response)
+             :status (:status response)))))
 
 (defmulti parse-validate-body
   "Parse the validate response body as a given format"
@@ -477,7 +468,8 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:task-id (cx/long-at-path xml-elem [:task-id])}))
+        {:task-id (cx/string-at-path xml-elem [:task-id])
+         :status (:status response)}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -525,7 +517,8 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
-                      {:task-id (cx/long-at-path task [:task-id])
+                      {:created-at (cx/string-at-path task [:created-at])
+                       :task-id (cx/string-at-path task [:task-id])
                        :status (cx/string-at-path task [:status])
                        :status-message (cx/string-at-path task [:status-message])
                        :request-json-body (cx/string-at-path task [:request-json-body])}))}))
@@ -574,7 +567,8 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:task-status (cx/string-at-path xml-elem [:task-status])
+        {:created-at (cx/string-at-path xml-elem [:created-at])
+         :task-status (cx/string-at-path xml-elem [:task-status])
          :status-message (cx/string-at-path xml-elem [:status-message])
          :request-json-body (cx/string-at-path xml-elem [:request-json-body])
          :collection-statuses
@@ -645,8 +639,7 @@
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
-         grant-all-access-control (get options :grant-all-access-control? true)]
-
+         grant-all-access-control? (get options :grant-all-access-control? true)]
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
                            :cmr-only cmr-only
@@ -665,13 +658,14 @@
      (when grant-all-ingest?
        (echo-util/grant-all-ingest (s/context) provider-id))
 
-     (when grant-all-access-control
+     (when grant-all-access-control?
        (echo-util/grant-system-group-permissions-to-all (s/context))
        (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true
-   :grant-all-ingest? true})
+   :grant-all-ingest? true
+   :grant-all-access-control? true})
 
 (defn setup-providers
   "Creates the given providers in CMR. Providers can be passed in
@@ -684,7 +678,7 @@
   ([providers]
    (setup-providers providers nil))
   ([providers options]
-   (let [{:keys [grant-all-search? grant-all-ingest?]}
+   (let [{:keys [grant-all-search? grant-all-ingest? grant-all-access-control?]}
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
                        providers
@@ -695,7 +689,8 @@
         (create-provider
          provider-map
          {:grant-all-search? grant-all-search?
-          :grant-all-ingest? grant-all-ingest?})))))
+          :grant-all-ingest? grant-all-ingest?
+          :grant-all-access-control? grant-all-access-control?})))))
 
 (defn reset-fixture
   "Resets all the CMR systems then uses the `setup-providers` function to

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schemas/Collection.xsd">
+	<ShortName>VIIRSN_L3b_CHL</ShortName>
+	<VersionId>2014</VersionId>
+	<InsertTime>2015-09-18T22:00:00Z</InsertTime>
+	<LastUpdate>2015-09-18T17:00:00Z</LastUpdate>
+	<LongName>Visible and Infrared Imager/Radiometer Suite NPP Level-3 Binned Chlorophyll (CHL)</LongName>
+	<DataSetId>VIIRSN_L3b_CHL</DataSetId>
+	<Description>The Visible and Infrared Imager/Radiometer Suite (VIIRS) is a multi-disciplinary
+instrument that is being flown on the Joint Polar Satellite System (JPSS) series of
+spacecraft, including the Suomi National Polar-orbiting Partnership (S-NPP) that
+launched in October 2011.  JPSS is a multi-platform, multi-agency program that
+consolidates the polar orbiting spacecraft of NASA and the National Oceanic and
+Atmospheric Administration (NOAA).  S-NPP is the initial spacecraft in this series,
+and VIIRS is the successor to MODIS for Earth science data product generation.  VIIRS
+has 22 spectral bands ranging from 412 nm to 12 nm.  There are 16 moderate-resolution
+bands (750m at nadir), 5 image-resolution bands (375m), and one day-night band (DNB).</Description>
+	<Orderable>false</Orderable>
+	<Visible>true</Visible>
+	<ProcessingLevelId>3</ProcessingLevelId>
+	<ArchiveCenter>OB.DAAC</ArchiveCenter>
+	<CollectionState>Complete</CollectionState>
+	<DataFormat>netCDF4</DataFormat>
+	<SpatialKeywords>
+		<Keyword>Global</Keyword>
+	</SpatialKeywords>
+	<Temporal>
+		<RangeDateTime>
+			<BeginningDateTime>2012-01-01T00:00:00Z</BeginningDateTime>
+		</RangeDateTime>
+	</Temporal>
+	<Contacts>
+		<Contact>
+			<Role>Archive</Role>
+			<OrganizationName>Ocean Biology Distributed Active Archive Center (OB.DAAC)</OrganizationName>
+			<OrganizationEmails>
+				<Email>sdps@oceancolor.gsfc.nasa.gov</Email>
+			</OrganizationEmails>
+		</Contact>
+	</Contacts>
+	<ScienceKeywords>
+		<ScienceKeyword>
+			<CategoryKeyword>Earth Science</CategoryKeyword>
+			<TopicKeyword>Oceans</TopicKeyword>
+			<TermKeyword>Ocean Optics</TermKeyword>
+			<VariableLevel1Keyword>
+				<Value>Chlorophyll</Value>
+			</VariableLevel1Keyword>
+		</ScienceKeyword>
+	</ScienceKeywords>
+	<Platforms>
+		<Platform>
+			<ShortName>NPP</ShortName>
+			<LongName>NPOESS Preparatory Project</LongName>
+			<Type>Spacecraft</Type>
+			<Instruments>
+				<Instrument>
+					<ShortName>VIIRS</ShortName>
+					<LongName>Visible and Infrared Imager/Radiometer Suite</LongName>
+				</Instrument>
+			</Instruments>
+		</Platform>
+	</Platforms>
+	<AdditionalAttributes>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi</Name>
+			<DataType>STRING</DataType>
+			<Description>Digital Object Identifier (DOI) that uniquely describes this data product</Description>
+			<Value>10.5067/NPP/VIIRS/L3B/CHL/2014</Value>
+		</AdditionalAttribute>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi_authority</Name>
+			<DataType>STRING</DataType>
+			<Description>URL of the DOI resolving authority</Description>
+			<Value>http://dx.doi.org</Value>
+		</AdditionalAttribute>
+	</AdditionalAttributes>
+	<OnlineAccessURLs>
+		<OnlineAccessURL>
+			<URL>https://oceandata.sci.gsfc.nasa.gov/VIIRS/L3BIN</URL>
+			<URLDescription>OB.DAAC Data Distribution Website for VIIRS L3B Chlorophyll (CHL) Product</URLDescription>
+			<MimeType>GET DATA</MimeType>
+		</OnlineAccessURL>
+	</OnlineAccessURLs>
+	<OnlineResources>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/</URL>
+			<Description>Ocean Biology Processing Group (OBPG) Homepage</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/viirs-snpp</URL>
+			<Description>OB.DAAC VIIRS Description Website</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/10.5067/NPP/VIIRS/L3B/CHL/2014</URL>
+			<Description>OB.DAAC NPP VIIRS Landing Page</Description>
+			<Type>Landing Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/forum/oceancolor/forum_show.pl
+			</URL>
+			<Description>Ocean Biology Processing Group User Support Forum
+			</Description>
+			<Type>User Support</Type>
+		</OnlineResource>
+	</OnlineResources>
+	<Spatial>
+		<SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+		<HorizontalSpatialDomain>
+			<Geometry>
+				<CoordinateSystem>CARTESIAN</CoordinateSystem>
+				<BoundingRectangle>
+					<WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+					<NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+					<EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+					<SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+				</BoundingRectangle>
+			</Geometry>
+		</HorizontalSpatialDomain>
+		<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+	</Spatial>
+</Collection>

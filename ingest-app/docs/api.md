@@ -16,6 +16,12 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/granules/\<native-id>
     * [PUT - Create or update a granule.](#create-update-granule)
     * [DELETE - Delete a granule.](#delete-granule)
+  * /providers/\<provider-id>/variables/\<native-id>
+    * [PUT - Create or update a variable.](#create-update-variable)
+    * [DELETE - Delete a variable.](#delete-variable)
+  * /providers/\<provider-id>/services/\<native-id>
+    * [PUT - Create or update a service.](#create-update-service)
+    * [DELETE - Delete a service.](#delete-service)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
 
@@ -390,6 +396,133 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 ```
 
 
+### <a name="create-update-variable"></a> Create / Update a Variable
+
+Variable metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 -d \
+"{\"ValidRange\":{},
+  \"Dimensions\":\"11\",
+  \"Scale\":\"1.0\",
+  \"Offset\":\"0.0\",
+  \"FillValue\":\"-9999.0\",
+  \"Units\":\"m\",
+  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+                        \"Topic\":\"sk-B\",
+                        \"Term\":\"sk-C\"}],
+  \"Name\":\"A-name\",
+  \"VariableType\":\"SCIENCE_VARIABLE\",
+  \"LongName\":\"A long UMM-Var name\",
+  \"DimensionsName\":\"H2OFunc\",
+  \"DataType\":\"float32\"}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>V1200000012-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"V1200000012-PROV1","revision-id":1}
+```
+
+### <a name="delete-variable"></a> Delete a Variable
+
+Variable metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>V1200000012-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"V1200000012-PROV1","revision-id":2}
+```
+
+### <a name="create-update-service"></a> Create / Update a Service
+
+Service concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/services/service123 -d \
+"{\"Name\": \"AIRX3STD\",  \"Type\": \"OPeNDAP\",  \"Version\": \"1.9\",  \"Description\": \"AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB.\",  \"OnlineResource\": {    \"Linkage\": \"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/\",    \"Name\": \"OPeNDAP Service for AIRS Level-3 retrieval products\",    \"Description\": \"OPeNDAP Service\"  },  \"ServiceOptions\": {\"SubsetType\": [\"Spatial\", \"Variable\"],    \"SupportedProjections\": [\"Geographic\"], \"SupportedFormats\": [\"netCDF-3\", \"netCDF-4\", \"Binary\", \"ASCII\"]}}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>S1200000015-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"S1200000015-PROV1","revision-id":1}
+```
+
+### <a name="delete-service"></a> Delete a Service
+
+Service metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/services/service123
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>S1200000015-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"S1200000015-PROV1","revision-id":2}
+```
+
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
@@ -485,7 +618,7 @@ Example output:
 
 The bulk update API is used perform the same collection update to multiple concepts in one call. Bulk update is currently for collections only, granules are not supported.
 
-Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created. 
+Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created.
 
 Updated collections are validated through ingest validation and the updates will not be saved if the updated collection is not valid UMM or fails business rule validation. The error will be recorded in the individual collection status, which can be queried via the status endpoint. Collection validation warnings will not prevent saving the updated collection and the warnings will be recorded in the individual collection status.
 
@@ -497,8 +630,6 @@ Bulk update currently supports updating the following fields:
   * Instruments
   * Platforms
 
-Instruments are nested within platforms so instrument updates are applied to all platforms in the collection.
-
 The following update types are supported:
 
   * Add to existing - the update value is added to the existing list. An update value is required.
@@ -507,9 +638,20 @@ The following update types are supported:
   * Find and update - merge update value into any instance in the list that matches the find value.
   * Find and remove - remove any instance from the list that matches the find value.
 
-Update types that include a find will match on the fields supplied. For example, for a science keyword update with a find value of {"Category": "EARTH SCIENCES"}, any science keyword with a category of "EARTH SCIENCES" will be considered a match regardless of the values of the science keyword topic, term, etc.
+Bulk update post request takes the following parameters:
 
-When a value is replaced by bulk update, only the field(s) specified in the update value will be replaced with the rest of the original value retained. For example, with a platform update value of {"ShortName": "A340-600"}, only the short name will be updated during a find and replace, while the long name, instruments, and other fields retain their values.
+  * Concept-ids (required) - a list of concept ids to update
+  * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
+  * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
+  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make
+  * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
+
+Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc.  It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches. Please also note that update value can not be an array - say you want to use `ADD_TO_EXISTING` to add a list of platforms, you can only add one platform at a time. If you want to use `CLEAR_ALL_AND_REPLACE` to replace the existing platforms with a list of new platforms, it can NOT be achieved currently. You can only replace the existing platforms with one new platform.  
+
+The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
+
+Instruments are nested within platforms so instrument updates are applied to all platforms in the collection, when applying
+`ADD_TO_EXISTING` and `CLEAR_ALL_AND_REPLACE` bulk updates to the instruments.
 
 If multiple bulk updates are run at the same time with the same concept-ids, there is no guarantee of the order that the updates will be performed on a collection. For example, if a clear all and replace is initiated, then an add to existing on the same collection, the clear all and replace could happen after the add to existing. Because of this, it is best to not run bulk update operations in parallel on overlapping collections.
 
@@ -517,35 +659,27 @@ If multiple bulk updates are run at the same time with the same concept-ids, the
 
 Bulk update can be initiated by sending an HTTP POST request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/collections`
 
-The POST request takes the following parameters:
-
-  * Concept-ids (required) - a list of concept ids to update
-  * Update type (required) - choose from the enumeration: ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_REMOVE, FIND_AND_UPDATE
-  * Update field (required) - choose from the enumeration: SCIENCE_KEYWORDS, LOCATION_KEYWORDS, DATA_CENTERS, PLATFORMS, INSTRUMENTS
-  * Update value (required when update type is ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_UPDATE) - UMM-JSON representation of the update to make
-  * Find value (required when update type is FIND_AND_REPLACE, FIND_AND_UPDATE or  FIND_AND_REMOVE) - UMM-JSON representation of the data to find
-
 The return value includes a status code indicating that the bulk update was successfully initiated, any errors if not successful, and on success a task-id that can be used for querying the bulk update status. The bulk update will be run asynchronously and the status of the overall bulk update task as well as the status of individual collection updates can be queried using the task id.
 
-Example: Initiate a bulk update of 3 collections. Find science keywords that have category "EARTH SCIENCE", Topic "HUMAN DIMENSIONS", Term "ENVIRONMENTAL IMPACTS", and "HEAVY METALS" and replace Variable Level 1 of those science keywords with "HEAVY METALS CONCENTRATION"
+Example: Initiate a bulk update of 3 collections. Find platforms that have Type being "Aircraft" and replace the LongName and Characteristics of these platforms with "new long name" and new Characteristics in the update-value, or add the fields specified in the update-value if they don't exist in the matched platforms.
 
 ```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
-  "update-type": "FIND_AND_REMOVE",
-  "update-field": "SCIENCE_KEYWORDS",
-  "find-value": {
-      "Category": "EARTH SCIENCE",
-      "Topic": "HUMAN DIMENSIONS",
-      "Term": "ENVIRONMENTAL IMPACTS",
-      "VariableLevel1": "HEAVY METALS"},
-  "update-value": {
-      "VariableLevel1": "HEAVY METALS CONCENTRATION"}}'
+  "update-type": "FIND_AND_UPDATE",
+  "update-field": "PLATFORMS",
+  "find-value": {"Type": "Aircraft"},
+  "update-value": {"LongName": "new long name"
+                   "Characteristics": [{"Name": "nested field is allowed in update-value",
+                                        "Description": "Orbital period in decimal minutes.",
+                                        "DataType": "time/Direction (ascending)",
+                                        "Unit": "Minutes",
+                                        "Value": "96.7"}]}}'
 
-<?xml version="1.0" encoding="UTF-8"?
+<?xml version="1.0" encoding="UTF-8"?>
 <result>
-    <status200</status>
-    <task-id4</task-id>
+    <status>200</status>
+    <task-id>4</task-id>
 </result>
 ```
 
@@ -624,3 +758,4 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
     </collection-statuses>
 </result>
 ```
+Bulk update status and results are available for 90 days.

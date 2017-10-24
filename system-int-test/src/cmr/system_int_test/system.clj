@@ -1,15 +1,16 @@
 (ns cmr.system-int-test.system
   "Defines a system for system integration tests. The system will maintain anything stateful during
   system integration tests."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.bootstrap.config :as bootstrap-config]
-            [cmr.oracle.connection :as oracle]
-            [clj-http.conn-mgr :as conn-mgr]
-            [cmr.transmit.config :as transmit-config]
-            [cheshire.core :as json]
-            [clj-http.client :as client]
-            [cmr.system-int-test.utils.url-helper :as url]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-http.conn-mgr :as conn-mgr]
+   [cmr.bootstrap.config :as bootstrap-config]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.oracle.connection :as oracle]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (def ^:private component-order
   "Defines the order to start the components."

@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.services.messages
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [cmr.common.validations.core :as validations]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -26,7 +27,9 @@
     expected-id received-id concept-id))
 
 (defn concept-id-and-revision-id-conflict [concept-id revision-id]
-  (format "Conflict with existing concept-id [%s] and revision-id [%s]" concept-id revision-id))
+  (format "Conflict with existing concept-id [%s] and revision-id [%s]"
+          concept-id
+          revision-id))
 
 (defn missing-concept-type []
   "Concept must include concept-type.")
@@ -86,8 +89,9 @@
     given-concept-id
     given-native-id))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn duplicate-field-msg
   "Returns an error message to use for concepts which violate the given unique field constraint.
@@ -106,8 +110,41 @@
       (str/replace (csk/->snake_case_string field) #"_" " ")
       (str/join ", " (map :concept-id concepts)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provider Messages
+(defn concept-higher-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is higher than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
+
+(defn concept-lower-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is lower than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
+
+(defn pfn-equality-failure
+  [field-type concept]
+  (let [humanized-field (validations/humanize-field field-type)]
+    (format (str "The Provider Id [%s] and %s [%s] combination must be "
+                 "unique for a given native-id. The following concept "
+                 "with the same Provider Id and %s was found: [%s].")
+            (:provider-id concept)
+            humanized-field
+            (get-in concept [:extra-fields field-type])
+            humanized-field
+            (:concept-id concept))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Provider Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn provider-id-parameter-required []
   "A provider parameter was required but was not provided.")
@@ -135,11 +172,12 @@
 (defn provider-with-short-name-exists [provider]
   (let [{:keys [provider-id short-name]} provider]
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
-            short-name provider-id)))
+            short-name
+            provider-id)))
 
 (defn granule-collection-cannot-change [old-concept-id new-concept-id]
   (format "Granule's parent collection cannot be changed, was [%s], now [%s]."
-          old-concept-id, new-concept-id))
+          old-concept-id new-concept-id))
 
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
@@ -150,28 +188,47 @@
 (defn invalid-provider-id [provider-id]
   (format "%%s [%s] is invalid" provider-id))
 
-(defn tags-only-system-level [provider-id]
+(defn tags-only-system-level
+  [provider-id]
   (format "Tag could not be associated with provider [%s]. Tags are system level entities."
           provider-id))
 
-(defn tag-associations-only-system-level [provider-id]
+(defn tag-associations-only-system-level
+  [provider-id]
   (format (str "Tag association could not be associated with provider [%s]. Tag associations are "
                "system level entities.")
           provider-id))
 
-(defn humanizers-only-system-level [provider-id]
+(defn humanizers-only-system-level
+  [provider-id]
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
 
-(defn services-only-system-level [provider-id]
+(defn services-only-system-level
+  [provider-id]
   (format "Service could not be associated with provider [%s]. Services are system level entities."
           provider-id))
 
-(defn variables-only-system-level [provider-id]
+(defn variables-only-system-level
+  [provider-id]
   (format "Variable could not be associated with provider [%s]. Variables are system level entities."
           provider-id))
 
-(defn variable-associations-only-system-level [provider-id]
+(defn variable-associations-only-system-level
+  [provider-id]
   (format (str "Variable association could not be associated with provider [%s]. "
                "Variable associations are system level entities.")
           provider-id))
+
+(defn service-associations-only-system-level
+  [provider-id]
+  (format (str "Service association could not be associated with provider [%s]. "
+               "Service associations are system level entities.")
+          provider-id))
+
+(defn concept-not-found
+  [provider-id field-name field-value]
+  (format "Unable to find saved concept for provider [%s] and %s [%s]"
+          provider-id
+          field-name
+          field-value))

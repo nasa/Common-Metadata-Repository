@@ -1,119 +1,132 @@
 (ns cmr.system-int-test.utils.service-util
   "This contains utilities for testing services."
   (:require
-   [clojure.string :as string]
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.service :as transmit-service]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.versioning :as versioning]))
+
+(def schema-version versioning/current-service-version)
+(def content-type "application/vnd.nasa.cmr.umm+json")
+(def default-opts {:accept-format :json
+                   :content-type content-type})
 
 (defn grant-all-service-fixture
-  "A test fixture that grants all users the ability to create and modify
-  services."
+  "A test fixture that grants all users the ability to create and modify services."
   [f]
   (echo-util/grant-all-service (s/context))
   (f))
 
-(def sample-service
-  {:Name "A name"
-   :Description "A UMM-S description"
-   :Type "Web Mapping Service"
-   :Version "1.1.1"})
-
-(defn make-service
-  "Makes a valid service based on the given input."
+(defn make-service-concept
   ([]
-   (make-service {}))
-  ([attrs]
-   (merge sample-service attrs))
-  ([index attrs]
-   (merge
-    sample-service
-    {:Name (str "name" index)
-     :Version (str "V" index)
-     :Description (str "UMM-S description " index)}
-    attrs)))
+    (make-service-concept {}))
+  ([metadata-attrs]
+    (make-service-concept metadata-attrs {}))
+  ([metadata-attrs attrs]
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
+        (data-umm-s/service-concept)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs)))
+  ([metadata-attrs attrs idx]
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
+        (data-umm-s/service-concept idx)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs))))
 
-(defn create-service
-  "Creates a service."
-  ([token service]
-   (create-service token service nil))
-  ([token service options]
-   (let [options (merge {:raw? true :token token} options)]
-     (ingest-util/parse-map-response
-      (transmit-service/create-service (s/context) service options)))))
+(defn ingest-service
+  "A convenience function for ingesting a service during tests."
+  ([]
+    (ingest-service (make-service-concept)))
+  ([service-concept]
+    (ingest-service service-concept default-opts))
+  ([service-concept opts]
+    (let [result (ingest-util/ingest-concept service-concept opts)
+          attrs (select-keys service-concept
+                             [:provider-id :native-id :metadata])]
+      (merge result attrs))))
 
-(defn update-service
-  "Updates a service."
-  ([token service]
-   (update-service token (:service-id service) service nil))
-  ([token service-id service]
-   (update-service token service-id service nil))
-  ([token service-id service options]
-   (let [options (merge {:raw? true :token token} options)]
-     (ingest-util/parse-map-response
-      (transmit-service/update-service (s/context) service-id service options)))))
+(defn ingest-service-with-attrs
+  "Helper function to ingest a service with the given service attributes"
+  ([metadata-attrs]
+   (ingest-service (make-service-concept metadata-attrs)))
+  ([metadata-attrs attrs]
+   (ingest-service (make-service-concept metadata-attrs attrs)))
+  ([metadata-attrs attrs idx]
+   (ingest-service (make-service-concept metadata-attrs attrs idx))))
 
-(defn save-service
-  "A helper function for creating or updating services for search tests.
 
-   If the service does not have a :concept-id, it saves it. If the service has
-   a :concept-id, it updates the service. Returns the saved service along
-   with :concept-id, :revision-id, :errors, and :status."
-  [token service]
-  (let [service-to-save (select-keys service [:service-name :description :revision-date])
-        response (if-let [concept-id (:concept-id service)]
-                   (update-service token (:service-name service) service-to-save)
-                   (create-service token service-to-save))
-        service (-> service
-                    (update :service-name string/lower-case)
-                    (into (select-keys response [:status :errors :concept-id :revision-id])))]
-    (if (= (:revision-id service) 1)
-      ;; Get the originator id for the service
-      (assoc service :originator-id (tokens/get-user-id (s/context) token))
-      service)))
+(defn- coll-service-association->expected-service-association
+  "Returns the expected service association for the given collection concept id to
+  service association mapping, which is in the format of, e.g.
+  {[C1200000000-CMR 1] {:concept-id \"SA1200000005-CMR\" :revision-id 1}}."
+  [coll-service-association error?]
+  (let [[[coll-concept-id coll-revision-id] service-association] coll-service-association
+        {:keys [concept-id revision-id]} service-association
+        associated-item (if coll-revision-id
+                      {:concept-id coll-concept-id :revision-id coll-revision-id}
+                      {:concept-id coll-concept-id})
+        errors (select-keys service-association [:errors :warnings])]
+    (if (seq errors)
+      (merge {:associated-item associated-item} errors)
+      {:service-association {:concept-id concept-id :revision-id revision-id}
+       :associated-item associated-item})))
 
-(defn expected-concept
-  "Create an expected concept given a service, its concept-id, a revision-id,
-  and a user-id."
-  [service concept-id revision-id user-id]
-  (let [native-id (string/lower-case (:Name service))]
-    {:concept-type :service
-     :native-id native-id
-     :provider-id "CMR"
-     :format mt/edn
-     :metadata (pr-str (assoc (util/kebab-case-data service)
-                              :originator-id user-id
-                              :native-id native-id))
-     :user-id user-id
-     :deleted false
-     :concept-id concept-id
-     :revision-id revision-id}))
+(defn- comparable-service-associations
+  "Returns the service associations with the concept_id removed from the service_association field.
+  We do this to make comparision of created service associations possible, as we can't assure
+  the order of which the service associations are created."
+  [service-associations]
+  (let [fix-sa-fn (fn [sa]
+                    (if (:service-association sa)
+                      (update sa :service-association dissoc :concept-id)
+                      sa))]
+    (map fix-sa-fn service-associations)))
 
-(defn assert-service-saved
-  "Checks that a service was persisted correctly in metadata db. The service
-  should already have originator id set correctly. The user-id indicates which
-  user updated this revision."
-  [service user-id concept-id revision-id]
-  (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= (expected-concept service concept-id revision-id user-id)
-           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
+(defn assert-service-association-response-ok?
+  "Assert the service association response when status code is 200 is correct."
+  ([coll-service-associations response]
+   (assert-service-association-response-ok? coll-service-associations response true))
+  ([coll-service-associations response error?]
+   (let [{:keys [status body errors]} response
+         expected-sas (map #(coll-service-association->expected-service-association % error?)
+                           coll-service-associations)]
+     (is (= [200
+             (set (comparable-service-associations expected-sas))]
+            [status (set (comparable-service-associations body))])))))
 
-(defn sort-expected-services
-  "Sorts the services using the expected default sort key."
-  [services]
-  (sort-by identity
-           (fn [t1 t2]
-             (compare (:service-name t1) (:service-name t2)))
-           services))
+(defn assert-service-dissociation-response-ok?
+  "Assert the service association response when status code is 200 is correct."
+  [coll-service-associations response]
+  (assert-service-association-response-ok? coll-service-associations response false))
 
-(def service-names-in-expected-response
-  [:concept-id :revision-id :service-name :description :originator-id])
+(defn- search-for-service-associations
+  "Searches for service associations in metadata db using the given parameters."
+  [params]
+  (let [response (client/request {:url (url/mdb-service-association-search-url)
+                                  :method :get
+                                  :accept :json
+                                  :throw-exceptions false
+                                  :connection-manager (s/conn-mgr)
+                                  :query-params  params})]
+    (search/process-response
+     (update-in response [:body] #(json/decode % true)))))
+
+(defn assert-service-associated-with-query
+  "Assert the collections found by the service query matches the given collection revisions.
+  Temporary using search metadata-db for service associations. Will change to search search-app
+  for collections once that is implemented in issues like CMR-4280."
+  [token query expected-colls]
+  (let [{:keys [status body]} (search-for-service-associations (assoc query :latest true))
+        colls (->> body
+                   (filter #(= false (:deleted %)))
+                   (map #(get-in % [:extra-fields :associated-concept-id])))]
+    (is (= 200 status))
+    (is (= (set (map :concept-id expected-colls))
+           (set colls)))))

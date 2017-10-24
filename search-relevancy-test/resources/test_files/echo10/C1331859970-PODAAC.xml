@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>JPL-L4UHblend-NCAMERICA-RTO_SST_Tn</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2010-11-16T20:01:56.722Z</InsertTime>
+    <LastUpdate>2011-01-21T17:10:13.000Z</LastUpdate>
+    <LongName>GHRSST Level 4 RTO Terra MODIS-AMSRE Night North America Regional Blended Sea Surface Temperature Analysis</LongName>
+    <DataSetId>PODAAC-GHRTN-4FJ01</DataSetId>
+    <Description>A Group for High Resolution Sea Surface Temperature (GHRSST) Level 4 sea surface temperature analysis produced daily on an operational basis at the JPL Physical Oceanography DAAC using weighted averages on a regional 0.011 degree grid over the oceans off North and Central America (62N- 20S, 165W - 30W).  This Research to Operations (RTO) analysis is based upon a composite of either nighttime or daytime GHRSST L2P skin SST from the Moderate Resolution Imaging Spectroradiometer (MODIS) on the NASA Aqua and Terra platforms, and subskin SST observations from the Advanced Microwave Scanning Radiometer-EOS (AMSRE). Four unique products (composites) are created: MODIS Terra/AMSRE day and night, and MODIS Aqua/AMSRE  day and night. This particular dataset represents a MODIS Terra and AMSRE composite using nighttime data.  The algorithm is based on a weighting scheme and compositing wherby MODIS data are used if they exist to preserve the highest resolution possible. The product is categorized as blended because no attempt is made to correct for foundation or skin temperature.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-05T21:54:09.136Z</RevisionDate>
+    <ProcessingCenter>Jet Propulsion Laboratory</ProcessingCenter>
+    <ProcessingLevelId>4</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Atlantic and Pacific</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2010-09-27T14:30:00.000Z</BeginningDateTime>
+            <EndingDateTime>2012-09-20T12:30:00.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 354-6980</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>jorge.vazquez@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Jorge</FirstName>
+                    <LastName>Vazquez</LastName>
+                    <JobPosition>Investigator</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>818-393-6710</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>edward.m.armstrong@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Edward</FirstName>
+                    <MiddleName>none</MiddleName>
+                    <LastName>Armstrong</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Blended Sea Surface Temperature</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>AQUA</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR-E</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR-E</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/L4/NCAMERICA/JPL/RTO_SST_Tn</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/L4/NCAMERICA/JPL/RTO_SST_Tn/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ghrsst/data/L4/NCAMERICA/JPL/RTO_SST_Tn</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://data.nodc.noaa.gov/cgi-bin/nph-dods/ghrsst/L4/NCAMERICA/JPL/RTO_SST_Tn/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://www.ghrsst.org</URL>
+            <Description>GHRSST Project homepage</Description>
+            <Type>Project Home Page</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHRTN-4FJ01&amp;apidoc</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Description>Portal to the GHRSST Global Data Assembly Center and data access</Description>
+            <Type>Get Data</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-165.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>62</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>-30.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-20</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

@@ -10,35 +10,67 @@
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
+   [cmr.metadata-db.data.oracle.concepts.variable :as variable]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
 
-(defn after-save
-  "Handler for save calls. It will be passed the list of concepts and the concept that was just
-  saved. It should manipulate anything required and return the new list of concepts."
+(defmulti after-save
+  "Handler for save calls. It will be passed the list of concepts and the
+  concept that was just saved. Implementing mehods should manipulate anything
+  required and return the new list of concepts."
+  (fn [db concepts concept]
+    (:concept-type concept)))
+
+(defmethod after-save :collection
   [db concepts concept]
-  (cond (and (= :collection (:concept-type concept))
-             (:deleted concept))
-        (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
-                concepts)
+  (if-not (:deleted concept)
+    concepts
+    (filter #(not= (:concept-id concept)
+                   (get-in % [:extra-fields :parent-collection-id]))
+            concepts)))
 
-        ;; CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
-        (and (= :tag (:concept-type concept))
-             (:deleted concept))
-        (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
-              tombstones (map (fn [ta] (-> ta
-                                           (assoc :metadata "" :deleted true)
-                                           (update :revision-id inc)))
-                              tag-associations)]
-          ;; publish tag-association delete events
-          (doseq [tombstone tombstones]
-            (ingest-events/publish-event
-              (:context db)
-              (ingest-events/concept-delete-event tombstone)))
-          (concat concepts tombstones))
+;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
+(defmethod after-save :tag
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
+          tombstones (map (fn [ta] (-> ta
+                                       (assoc :metadata "" :deleted true)
+                                       (update :revision-id inc)))
+                          tag-associations)]
+      ;; publish tag-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+          (:context db)
+          (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
 
-        :else concepts))
+;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
+(defmethod after-save :variable
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [variable-associations (concepts/find-latest-concepts
+                                 db
+                                 {:provider-id "CMR"}
+                                 {:concept-type :variable-association
+                                  :variable-concept-id (:concept-id concept)})
+          tombstones (map (fn [ta] (-> ta
+                                       (assoc :metadata "" :deleted true)
+                                       (update :revision-id inc)))
+                          variable-associations)]
+      ;; publish variable-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
+
+(defmethod after-save :default
+  [db concepts concept]
+  concepts)
 
 (defn- concept->tuple
   "Converts a concept into a concept id revision id tuple"
@@ -250,6 +282,13 @@
            concept (update-in concept
                               [:revision-date]
                               #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+           ;; Set the created-at time to the current timekeeper time for concepts which have
+           ;; the created-at field and do not already have a :created-at time set.
+           concept (if (some #{concept-type} [:collection :granule :service :variable])
+                     (update-in concept
+                                [:created-at]
+                                #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+                     concept)
            concept (assoc concept :transaction-id (swap! next-transaction-id-atom inc))
            concept (if (= concept-type :granule)
                      (-> concept
@@ -355,12 +394,28 @@
    ;; Cascade to delete the concepts
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts db [provider] nil)]
      (concepts/force-delete db concept-type provider concept-id revision-id))
+
+   ; Cascade to delete the variable associations, this is a hacky way of doing things
+   (doseq [var-association (concepts/find-concepts db
+                                                   [{:provider-id "CMR"}]
+                                                   {:concept-type :variable-association})]
+     (let [{:keys [concept-id revision-id variable-concept-id extra-fields]} var-association
+           {:keys [associated-concept-id variable-concept-id]} extra-fields
+           referenced-providers (map (comp :provider-id cc/parse-concept-id)
+                                     [associated-concept-id variable-concept-id])]
+       ;; If the variable association references the deleted provider through
+       ;; either collection or variable, delete the variable association
+       (when (some #{(:provider-id provider)} referenced-providers)
+         (concepts/force-delete
+           db :variable-association {:provider-id "CMR"} concept-id revision-id))))
+
    ;; to find items that reference the provider that should be deleted (e.g. ACLs)
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts
                                                           db
                                                           [pv/cmr-provider]
                                                           {:target-provider-id (:provider-id provider)})]
      (concepts/force-delete db concept-type pv/cmr-provider concept-id revision-id))
+   ;; finally delete the provider
    (swap! providers-atom dissoc (:provider-id provider)))
 
   (reset-providers

@@ -11,6 +11,7 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
+    [cmr.ingest.config :as ingest-config]
     [cmr.search.validators.opendata :as opendata-json]
     [cmr.spatial.codec :as codec]
     [cmr.spatial.line-string :as l]
@@ -91,6 +92,7 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -168,7 +170,8 @@
         (testing "All collections and formats cached after cache is refreshed"
           (search/refresh-collection-metadata-cache)
           ;; All formats excludes dif since we configured it above to not be cached
-          (let [all-formats [:dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
+          (let [all-formats [:dif10 :echo10 :iso19115
+                              {:format :umm-json :version umm-version/current-collection-version}]]
             (assert-cache-state {c1-r2-echo all-formats
                                  c2-echo all-formats
                                  c3-dif (conj all-formats :dif)
@@ -189,7 +192,7 @@
               "DIF10" [c8-dif10] :dif10
               "ISO MENDS" [c5-iso] :iso19115
               "SMAP ISO" [c7-smap] :iso-smap
-              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-version}))
+              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-collection-version}))
 
           (testing "Retrieving all in specified format"
             (are3 [format-key]
@@ -199,9 +202,11 @@
               "ECHO10" :echo10
               "DIF" :dif
               "DIF10" :dif10
-              "ISO" :iso19115)))))))
+              "ISO" :iso19115))))))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
 
 (deftest collection-umm-json-metadata-cache-test
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -213,7 +218,7 @@
                                exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
-        latest-umm-format {:format :umm-json :version umm-version/current-version}]
+        latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
     (index/wait-until-indexed)
 
     (testing "Initial cache state is empty"
@@ -224,7 +229,7 @@
       (assert-cache-state {}))
 
     (testing "Fetching newest UMM json not in cache will cache it"
-      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] umm-version/current-version)
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] umm-version/current-collection-version)
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]}))
@@ -237,10 +242,13 @@
 
     (testing "Older revisions found are not cached"
       (assert-umm-json-found
-       [c1-r1-echo c1-r2-echo c2-echo c10-umm-json] umm-version/current-version {:all-revisions true})
+       [c1-r1-echo c1-r2-echo c2-echo c10-umm-json]
+       umm-version/current-collection-version
+       {:all-revisions true})
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
-                           c10-umm-json [latest-umm-format]}))))
+                           c10-umm-json [latest-umm-format]})))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test

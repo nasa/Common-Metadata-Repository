@@ -16,6 +16,7 @@
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
     [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
     [cmr.indexer.data.concepts.collection.data-center :as data-center]
     [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
@@ -50,8 +51,8 @@
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
-(defn- apply-function-to-all-values-in-map 
-  "Applies function f to all the values in map m." 
+(defn- apply-function-to-all-values-in-map
+  "Applies function f to all the values in map m."
   [m f]
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
 
@@ -137,11 +138,12 @@
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls temporal-extents :TemporalExtents} collection
+         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents} collection
+        parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
-        spatial-keywords (lk/location-keywords->spatial-keywords
+        spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
@@ -177,6 +179,11 @@
                                  (map str/trim))
         project-long-names (->> (keep :LongName (:Projects collection))
                                 (map str/trim))
+        ;; Pull author info from both creator and other citation details
+        authors (->> (concat
+                      (keep :Creator (:CollectionCitations collection))
+                      (keep :OtherCitationDetails (:CollectionCitations collection)))
+                     (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         meaningful-short-name-fn (fn [c]
@@ -189,14 +196,20 @@
         archive-center-names (keep meaningful-short-name-fn archive-centers)
         data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                           (map str/trim (data-center/extract-data-center-names collection)))
-        ;; returns a list of {:start-date xxx :end-date yyy} 
-        temporal-extents (->> temporal-extents
-                              ;; converts temporal-extents into a list of many 
+        ;; returns a list of {:start-date xxx :end-date yyy}
+        temporal-extents (->> collection-temporal-extents
+                              ;; converts temporal-extents into a list of many
                               ;; {:BeginningDateTime xxx :EndingDateTime xxx}
                               (mapcat spec-time/temporal-ranges)
-                              (map #(set/rename-keys % {:BeginningDateTime :start-date 
+                              (map #(set/rename-keys % {:BeginningDateTime :start-date
                                                         :EndingDateTime :end-date}))
                               (map #(apply-function-to-all-values-in-map % index-util/date->elastic)))
+        temporal-extents-ranges (->> collection-temporal-extents
+                                     (map #(dissoc % :SingleDateTimes))
+                                     (mapcat spec-time/temporal-ranges)
+                                     (map #(set/rename-keys % {:BeginningDateTime :start-date
+                                                               :EndingDateTime :end-date}))
+                                     (map #(apply-function-to-all-values-in-map % index-util/date->elastic)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
@@ -216,8 +229,8 @@
                            ;; the collection has no end date. This allows NRT collections to be
                            ;; found even if the collection has been reindexed recently.
                            ;; otherwise, use granule-end-date
-                           granule-end-date)]
-
+                           granule-end-date)
+        humanized-values (humanizer/collection-humanizers-elastic context collection)]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -239,6 +252,7 @@
             :short-name.lowercase (util/safe-lowercase short-name)
             :version-id version-id
             :version-id.lowercase (util/safe-lowercase version-id)
+            :parsed-version-id.lowercase (util/safe-lowercase parsed-version-id)
             :deleted (boolean deleted)
             :revision-date2 revision-date
             :access-value access-value
@@ -258,13 +272,17 @@
             :archive-centers archive-centers
             :data-centers data-centers
             :temporals temporal-extents
-            ;; added so that we can respect all collection temporal ranges in search 
+            :temporal-ranges (mapcat (fn [extent]
+                                       [(:start-date extent)
+                                        (:end-date extent)])
+                                 temporal-extents-ranges)
+            ;; added so that we can respect all collection temporal ranges in search
             ;; when limit_to_granules is set and there are no granules for the collection.
-            :limit-to-granules-temporals 
+            :limit-to-granules-temporals
               (if granule-start-date
                 [{:start-date (index-util/date->elastic granule-start-date)
                   :end-date (index-util/date->elastic granule-end-date)}]
-                temporal-extents) 
+                temporal-extents)
             :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))
             :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
@@ -274,6 +292,8 @@
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
             :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
+            :authors authors
+            :authors.lowercase (map str/lower-case authors)
             :project-sn2 project-short-names
             :project-sn2.lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
@@ -323,14 +343,20 @@
                               (pr-str
                                (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))}
+                                                          {:data (:data ta)})])))))
+
+            :processing-level-id.lowercase.humanized (-> humanized-values
+                                                         :processing-level-id.humanized2
+                                                         first
+                                                         :value.lowercase)}
+
            (variable/variable-associations->elastic-doc context variable-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
-           (humanizer/collection-humanizers-elastic context collection)
-           (metrics/collection-community-usage-score context collection))))
+           humanized-values
+           (metrics/collection-community-usage-score context collection parsed-version-id))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."

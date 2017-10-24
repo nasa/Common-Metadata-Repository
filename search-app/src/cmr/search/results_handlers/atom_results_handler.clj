@@ -1,28 +1,28 @@
 (ns cmr.search.results-handlers.atom-results-handler
   "Handles the ATOM results format and related functions"
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.tags-results-feature :as trf]
-            [clojure.data.xml :as x]
-            [clojure.walk :as walk]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clj-time.core :as time]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.util :as spec-util]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.spatial.serialize :as srl]
-            [cmr.search.models.query :as q]
-            [cmr.search.services.url-helper :as url]
-            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
-            [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
-            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [clojure.data.xml :as x]
+   [clojure.set :as set]
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as util]
+   [cmr.search.models.query :as q]
+   [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
+   [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+   [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.query-execution.tags-results-feature :as trf]
+   [cmr.search.services.url-helper :as url]
+   [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.util :as spec-util]))
 
 (def metadata-format->atom-original-format
   "Defines the concept metadata format to atom original-format mapping"
@@ -60,6 +60,7 @@
                      "start-circular-latitude"
                      "ords-info"
                      "ords"
+                     "has-variables"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
                       (conj atom-fields trf/stored-tags-field)
@@ -126,7 +127,8 @@
           [period] :period
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
-          [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
+          [start-circular-latitude] :start-circular-latitude
+          [has-variables] :has-variables} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -163,7 +165,8 @@
                                :inclination-angle inclination-angle
                                :number-of-orbits number-of-orbits
                                :start-circular-latitude start-circular-latitude}
-            :tags (trf/collection-elastic-result->tags elastic-result)}
+            :tags (trf/collection-elastic-result->tags elastic-result)
+            :has-variables has-variables}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
@@ -244,8 +247,8 @@
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
-    (r/map->Results {:hits hits 
-                     :items items 
+    (r/map->Results {:hits hits
+                     :items items
                      :result-format (:result-format query)
                      :scroll-id scroll-id})))
 
@@ -396,7 +399,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters organizations tags]} reference
+                orbit-parameters organizations tags has-variables]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -426,6 +429,7 @@
                                                      (get has-granules-map id false))))
                (when granule-counts-map
                  (x/element :echo:granuleCount {} granule-count))
+               (x/element :echo:hasVariables {} has-variables)
                (when score (x/element :relevance:score {} score))
                (map tag->xml-element tags))))
 

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>ML2CO</Short_Name>
+        <Version>004</Version>
+    </Entry_ID>
+    <Version_Description>2015-02-19</Version_Description>
+    <Entry_Title>MLS/Aura Level 2 Carbon Monoxide (CO) Mixing Ratio V004 (ML2CO) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Schwartz, M., Pumphrey, H., Livesey, N. and Read, W.</Dataset_Creator>
+        <Dataset_Title>MLS/Aura Level 2 Carbon Monoxide (CO) Mixing Ratio V004</Dataset_Title>
+        <Dataset_Series_Name>ML2CO</Dataset_Series_Name>
+        <Dataset_Release_Date>2015-02-19</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>004</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/AURA/MLS/DATA2005</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/ML2CO_004.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <Last_Name>MLS SCIENCE TEAM</Last_Name>
+            <Address>
+                <Street_Address>Mail Stop 183-701, Jet Propulsion Laboratory</Street_Address>
+                <Street_Address>4800 Oak Grove Drive</Street_Address>
+                <City>Pasadena</City>
+                <State_Province>CA</State_Province>
+                <Postal_Code>91109-8099</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>818-354-6716</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>data@mls.jpl.nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>NATHANIEL</First_Name>
+            <Last_Name>LIVESEY</Last_Name>
+            <Address>
+                <Street_Address>Mail Stop 183-701, Jet Propulsion Laboratory, 4800 Oak Grove Drive</Street_Address>
+                <City>Pasadena</City>
+                <State_Province>CA</State_Province>
+                <Postal_Code>91109-8099</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Email>livesey@mls.jpl.nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JAMES</First_Name>
+            <Middle_Name>EDWARD</Middle_Name>
+            <Last_Name>JOHNSON</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5121</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>James.Johnson@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>CARBON AND HYDROCARBON COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>CARBON MONOXIDE</Variable_Level_2>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>CO</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System, Aura</Long_Name>
+        <Instrument>
+            <Short_Name>MLS</Short_Name>
+            <Long_Name>Microwave Limb Sounder</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2004-08-02</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-82.0</Southernmost_Latitude>
+                <Northernmost_Latitude>82.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+                <Minimum_Altitude>215</Minimum_Altitude>
+                <Maximum_Altitude>0.00464</Maximum_Altitude>
+                <Altitude_Unit>hPa</Altitude_Unit>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>STRATOSPHERE</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>MESOSPHERE</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>165 km at limb tangent point (along-track)</Latitude_Resolution>
+        <Longitude_Resolution>3 km at limb tangent point (cross-track)</Longitude_Resolution>
+        <Vertical_Resolution>3 - 6 km</Vertical_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System (EOS), AURA</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>MLS Science Investigator Processing System (SIPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>1.03 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>ML2CO.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:46:34 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/Aura/data-holdings/MLS/images/ML2CO.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dda6e01b045fab4ecd75/file</URL>
+        <Format>PNG</Format>
+        <Caption>MLS Sample Image</Caption>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>ML2CO is the EOS Aura Microwave Limb Sounder (MLS) standard product for carbon monoxide derived from radiances measured by the 640 GHz radiometer. The current version is 4.2. Data coverage is complete from August 8, 2004 to current. Spatial coverage is near-global (-82 deg. to +82 deg. latitude), with each profile spaced 1.5 deg. or ~165 km along the orbit track (roughly 15 orbits per day). The recommended useful vertical range is between 215 and 0.00464 hPa, and the vertical resolution is about 6 km. Users of the ML2CO data product should read section 3.7 of the EOS MLS Level 2 Version 4 Quality Document for more information.The data are stored in the version 5 EOS Hierarchical Data Format (HDF-EOS5), which is based on the version 5 Hierarchical Data Format, or HDF-5. Each file contains two swath objects (profile and column data), each with a set of data and geolocation fields, swath attributes, and metadata.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_MLS_Level2/ML2CO.004/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=ML2CO+004</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DIRECTORY (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>http://acdisc.gesdisc.eosdis.nasa.gov/opendap/HDF-EOS5/Aura_MLS_Level2/ML2CO.004/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>http://search.earthdata.nasa.gov/search?q=ML2CO+004</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://mls.jpl.nasa.gov/data/v4-2_data_quality_document.pdf</URL>
+        <Description>Data Quality and Description Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PUBLICATIONS</Subtype>
+        </URL_Content_Type>
+        <URL>http://mls.jpl.nasa.gov/publications.php</URL>
+        <Description>List of publications.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://mls.jpl.nasa.gov/forms/reguser.php</URL>
+        <Title>MLS Data User Registration</Title>
+        <Description>Users are encouraged to register with the MLS science team to obtain updates and information about this data product.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)</Subtype>
+        </URL_Content_Type>
+        <URL>http://mls.jpl.nasa.gov/data/eos_algorithm_atbd.pdf</URL>
+        <Description>EOS MLS Retrieval Process Algorithm Theoretical Basis</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://mls.jpl.nasa.gov/</URL>
+        <Description>MLS Science Team Home Page.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2015-02-19: Added data quality and description document to related URL and updated vertical range as needed.      2015-06-04, J. Johnson cleaned up Science Keywords, Project and Privacy.2016-04-15, J. Johnson upgraded metadata to DIF10 format.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2014-10-16</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-28</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-04-30</Metadata_Future_Review>
+        <Data_Creation>2015-02-19</Data_Creation>
+        <Data_Last_Revision>2015-02-19</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>ccb30a40-663a-4166-89d0-593954c15b04</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:27:25</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:02Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/AURA/MLS/DATA2005</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

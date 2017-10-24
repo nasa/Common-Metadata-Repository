@@ -1,9 +1,10 @@
 (ns cmr.search.test.services.query-execution
   "This tests the query-execution namespace. The main point of this is to make sure that specific
   queries are given the correct execution strategy."
-  (:require [clojure.test :refer :all]
-            [cmr.common-app.services.search.params :as pc]
-            [cmr.common-app.services.search.query-execution :as qe]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common-app.services.search.params :as pc]
+   [cmr.common-app.services.search.query-execution :as qe]))
 
 
 (defn- params->query-execution-strategy

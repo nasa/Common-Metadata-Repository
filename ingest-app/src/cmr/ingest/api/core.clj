@@ -1,9 +1,7 @@
 (ns cmr.ingest.api.core
   "Supports the ingest API definitions."
   (:require
-   [cheshire.core :as json]
    [clojure.data.xml :as xml]
-   [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -12,7 +10,6 @@
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
@@ -241,3 +238,23 @@
                           {:type type
                            :errors errors
                            :default-format default-response-format})))))))
+
+(defn delete-concept
+  "Delete the given concept by its concept type, provider id and native id."
+  [concept-type provider-id native-id request]
+  (let [{:keys [request-context params headers]} request
+        concept-attribs (-> {:provider-id provider-id
+                             :native-id native-id
+                             :concept-type concept-type}
+                            (set-revision-id headers)
+                            (set-user-id request-context headers))]
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (info (format "Deleting %s %s from client %s"
+                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+    (generate-ingest-response headers
+                              (contextualize-warnings
+                               (ingest/delete-concept
+                                request-context
+                                concept-attribs)))))

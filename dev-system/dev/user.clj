@@ -1,8 +1,8 @@
 (ns user
   (:require
    [alex-and-georges.debug-repl]
-   [clojure.main]
    [clojure.java.io :as io]
+   [clojure.main]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
    [clojure.string :as string]
@@ -18,9 +18,13 @@
    [cmr.common.test.runners.ltest :as ltest]
    [cmr.common.test.runners.util :as runner-util]
    [cmr.common.util :as u]
+   [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.ingest.system :as ingest-system]
+   [cmr.message-queue.config :as q-config]
+   [cmr.search.services.content-service :as content-service]
+   [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.system :as search-system]
    [cmr.system-int-test.system :as sit-sys]
    [cmr.transmit.config :as transmit-config]
@@ -81,8 +85,19 @@
 
   Examples:
   ```
-  => (set-mode! :db :external)
+  => (set-modes! :db :external)
+  ```
+  ```
   => (set-modes! :elastic :in-memory :echo :external)
+  ```
+
+  Note that you can also pass these parameters to the `reset` function, which
+  will call `set-modes!` as shown above. Examples:
+  ```
+  => (reset :db :external)
+  ```
+  ```
+  => (reset :elastic :in-memory :echo :external)
   ```"
   ;; Note that the keys are listed below as a means of self-documentation; they
   ;; are not actually used individually, but rather as a whole with the
@@ -93,6 +108,7 @@
        (remove #(nil? (val %)))
        (into {})
        (merge @settings/run-modes)
+       ((fn [x] (println "Resetting with the run modes:" x) x))
        (reset! settings/run-modes)))
 
 (defn reset-modes!
@@ -110,7 +126,21 @@
   "Passing `true` to this function will cause AWS queues to be used during
   starts/resets."
   [bool]
-  (reset! settings/aws? bool))
+  (reset! settings/aws? bool)
+  (if bool
+    (q-config/set-queue-type! "aws")
+    (q-config/set-queue-type! "local")))
+
+;; If the ENV var was set, let's make it a keyword, which is what the config
+;; for dev-system expects.
+(when (string? (dev-config/dev-system-queue-type))
+  (dev-config/set-dev-system-queue-type!
+    (keyword (dev-config/dev-system-queue-type))))
+
+;; If the ENV var for the dev queue type was set to use AWS, let's make the
+;; `set-aws` call.
+(when (= :aws (dev-config/dev-system-queue-type))
+  (set-aws true))
 
 (defn set-logging-level!
   "Sets the logging level to the given setting. Puts the level in refresh-persistent-settings
@@ -150,7 +180,15 @@
 
   If a run mode for a particular component is not passed, its value is taken
   from what is already in the `run-modes` global data structure. If no mode has
-  been set, the default from initialization will be used."
+  been set, the default from initialization will be used.
+
+  Examples:
+  ```
+  => (start :db :external)
+  ```
+  ```
+  => (start :elastic :in-memory :echo :external)
+  ```"
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
   [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
@@ -159,6 +197,11 @@
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
+  ;; Prevent jobs from blocking calls to reset
+  (humanizer-report-service/set-retry-count! 0)
+  (humanizer-report-service/set-humanizer-report-generator-job-wait! 0)
+  (content-service/set-static-content-generation-interval! 60)
+
   ;; uncomment this line to start gorilla repl.
   ;;(system/set-gorilla-repl-port! 8090)
 
@@ -166,17 +209,18 @@
     (when-not (empty? new-modes)
       (apply set-modes! (mapcat seq new-modes)))
 
-    (system/set-dev-system-elastic-type! (:elastic run-modes))
+    (dev-config/set-dev-system-elastic-type! (:elastic run-modes))
 
-    (system/set-dev-system-echo-type! (:echo run-modes))
+    (dev-config/set-dev-system-echo-type! (:echo run-modes))
     ;; IMPORTANT: MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE
     ;; TESTS WITH EXTERNAL DB (re-enable them when you're done)
-    (system/set-dev-system-db-type! (:db run-modes))
+    (dev-config/set-dev-system-db-type! (:db run-modes))
     ;; If you would like to run CMR with :aws instead of :in-memory or :external,
     ;; be sure to call `(set-aws true)` in the REPL.
-    (if @settings/aws?
-      (system/set-dev-system-message-queue-type! :aws)
-      (system/set-dev-system-message-queue-type! (:messaging run-modes))))
+    (if (or @settings/aws?
+            (= "aws" (q-config/queue-type)))
+      (dev-config/set-dev-system-queue-type! :aws)
+      (dev-config/set-dev-system-queue-type! (:messaging run-modes))))
 
   (sit-sys/set-logging-level @settings/logging-level)
 
@@ -215,8 +259,12 @@
   "Resets the development environment, taking optional keyword arguments for
   various run modes, e.g.:
   ```
-  (reset :db :external)
+  => (reset :db :external)
   ```
+  ```
+  => (reset :elastic :in-memory :echo :external)
+  ```
+
   See the docstring for `set-modes!` for more details.
 
   Environment resetting includes the reloading of any changed namespaces and

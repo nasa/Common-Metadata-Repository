@@ -45,7 +45,7 @@
     :dif10
     ;; Note that when upgrading umm version we should also cache the previous version of UMM.
     {:format :umm-json
-     :version umm-version/current-version}})
+     :version umm-version/current-collection-version}})
 
 (defn cached-formats
   "This is a set of formats that are cached."
@@ -160,9 +160,10 @@
 (defn all-cached-revision-format-maps
   "Returns a sequence of all revision format maps in the cache sorted by concept id"
   [context]
-  (let [cache (deref (:cache-atom (c/context->cache context cache-key)))]
-    (for [concept-id (sort (keys cache))]
-      (get cache concept-id))))
+  (let [cache (deref (:cache-atom (c/context->cache context cache-key)))
+        maps (for [concept-id (sort (keys cache))]
+               (get cache concept-id))]
+    (seq maps)))
 
 (defconfig refresh-collection-metadata-cache-interval
   "The number of seconds between refreshes of the collection metadata cache"

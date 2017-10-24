@@ -11,10 +11,6 @@
     [c]
     "Extract provider-ids"))
 
-(defn- concept-id->provider-id
-  [concept-id]
-  (:provider-id (concepts/parse-concept-id concept-id)))
-
 (extend-protocol ExtractProviderIds
   cmr.common_app.services.search.query_model.Query
   (extract-provider-ids
@@ -43,8 +39,8 @@
       [:any]
       (case field
         :provider [value]
-        :collection-concept-id [(concept-id->provider-id value)]
-        :concept-id [(concept-id->provider-id value)]
+        :collection-concept-id [(concepts/concept-id->provider-id value)]
+        :concept-id [(concepts/concept-id->provider-id value)]
         ;;else
         [:any])))
 
@@ -53,8 +49,8 @@
     [{:keys [field values]}]
     (case field
       :provider values
-      :collection-concept-id (map concept-id->provider-id values)
-      :concept-id (map concept-id->provider-id values)
+      :collection-concept-id (map concepts/concept-id->provider-id values)
+      :concept-id (map concepts/concept-id->provider-id values)
       ;;else
       [:any]))
 

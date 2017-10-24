@@ -28,6 +28,7 @@
    [cmr.search.models.query :as q]
    [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
+   [cmr.search.services.content-service :as content-service]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]))
@@ -84,8 +85,14 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches collection-renderer/system-key orbits-runtime/system-key :search-index :scheduler
-   :web :nrepl])
+  [:log
+   :caches
+   collection-renderer/system-key
+   orbits-runtime/system-key
+   :search-index
+   :scheduler
+   :web
+   :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -121,7 +128,8 @@
                       metadata-cache/cache-key (metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      hrs/report-cache-key (hrs/create-report-cache)}
+                      hrs/report-cache-key (hrs/create-report-cache)
+                      content-service/cache-key (content-service/create-cache)}
              :public-conf (public-conf)
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
@@ -135,7 +143,8 @@
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job
-                          hrs/humanizer-report-generator-job])}]
+                          hrs/humanizer-report-generator-job
+                          content-service/static-content-generator-job])}]
     (transmit-config/system-with-connections
       sys
       [:index-set :echo-rest :metadata-db :kms :cubby :access-control])))
@@ -144,20 +153,20 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   [this]
-  (info "System starting")
+  (info "search System starting")
   (let [started-system (-> this
                            (update-in [:embedded-systems :metadata-db] mdb-system/start)
                            (common-sys/start component-order))]
-    (info "System started")
+    (info "search System started")
     started-system))
 
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   [this]
-  (info "System shutting down")
+  (info "search System shutting down")
   (let [stopped-system (-> this
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
-    (info "System stopped")
+    (info "search System stopped")
     stopped-system))

@@ -41,17 +41,17 @@
   (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
           (:ShortName project-map) (:LongName project-map)))
 
-(defn datacenter-not-matches-kms-keywords
-   "Error msg when DataCenter's ShortName, LongName are not in the KMS."
-   [datacenter]
-   (format "Data center short name [%s] and long name [%s] was not a valid keyword combination."
-          (:ShortName datacenter) (:LongName datacenter)))
+(defn data-center-not-matches-kms-keywords
+   "Error msg when DataCenter's ShortName is not in the KMS."
+   [data-center]
+   (format "Data center short name [%s] was not a valid keyword."
+          (:ShortName data-center)))
 
-(defn directoryname-not-matches-kms-keywords
+(defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
-   [directoryname]
+   [directory-name]
    (format "Directory name short name [%s] was not a valid keyword."
-          (:ShortName directoryname)))
+          (:ShortName directory-name)))
 
 (defn iso-topic-category-not-matches-kms-keywords
    "Error msg when ISOTopicCategory is not in the KMS."
@@ -96,12 +96,12 @@
   "Variables cannot be modified without a valid user token.")
 
 (defn variable-deleted
-  [variable-name]
-  (format "Variable with variable-name '%s' was deleted." variable-name))
+  [native-id]
+  (format "Variable with native-id '%s' was deleted." native-id))
 
 (defn variable-does-not-exist
-  [variable-name]
-  (format "Variable could not be found with variable-name '%s'" variable-name))
+  [native-id]
+  (format "Variable could not be found with native-id '%s'" native-id))
 
 (defn variable-already-exists
   [variable concept-id]

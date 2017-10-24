@@ -3,6 +3,7 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
+  [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
@@ -76,8 +77,15 @@
   "Returns the expected DIF parsed spatial extent for the given spatial extent."
   [spatial]
   (let [vertical-domains (expected-dif-vertical-domains spatial)
+        horizontal-domains (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
+        spatial-coverage (when (or horizontal-domains (not-empty vertical-domains))
+                           (if (and horizontal-domains (not-empty vertical-domains))
+                             "HORIZONTAL_VERTICAL"
+                             (if horizontal-domains
+                               "HORIZONTAL"
+                               "VERTICAL")))
         spatial (-> spatial
-                    (assoc :SpatialCoverageType "HORIZONTAL"
+                    (assoc :SpatialCoverageType spatial-coverage
                            :OrbitParameters nil
                            :VerticalSpatialDomains vertical-domains)
                     (update-in [:HorizontalSpatialDomain] assoc
@@ -87,9 +95,9 @@
                                :Points nil
                                :Lines nil
                                :GPolygons nil))]
-    (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
+    (if horizontal-domains
       spatial
-      (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
+      (assoc spatial :HorizontalSpatialDomain nil))))
 
 (defn- expected-dif-contact-mechanisms
   "Returns the expected DIF contact mechanisms"
@@ -247,6 +255,23 @@
    (remove nil? [(conversion-util/create-date-type (date/metadata-create-date umm-coll) "CREATE")
                  (conversion-util/create-date-type (date/metadata-update-date umm-coll) "UPDATE")])))
 
+(defn- expected-collection-citations
+  "Adds OnlineResource Name and Description to CollectionCitations"
+  [collection-citations version]
+  (if (empty? collection-citations)
+    [{:Version version
+      :OnlineResource {:Linkage su/not-provided-url
+                       :Name "Data Set Citation"
+                       :Description "Data Set Citation"}}]
+    (for [collection-citation collection-citations
+          :let [linkage (get-in collection-citation [:OnlineResource :Linkage])]]
+      (-> collection-citation
+          (assoc-in [:OnlineResource :Name] "Data Set Citation")
+          (assoc-in [:OnlineResource :Description] "Data Set Citation")
+          (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
+          (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol)
+          (assoc :Version version)))))
+
 (defn umm-expected-conversion-dif9
   [umm-coll]
   (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
@@ -281,5 +306,6 @@
         ;; DIF 9 does not support VersionDescription
         (assoc :VersionDescription nil)
         (update :DataLanguage conversion-util/dif-expected-data-language)
-        (update :CollectionProgress su/with-default)
+        (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+        (update-in [:CollectionCitations] expected-collection-citations (:Version umm-coll))
         js/parse-umm-c)))

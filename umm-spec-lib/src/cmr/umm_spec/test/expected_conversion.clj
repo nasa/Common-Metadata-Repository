@@ -26,7 +26,7 @@
                  :Type "Aircraft"
                  :Characteristics [{:Name "OrbitalPeriod"
                                     :Description "Orbital period in decimal minutes."
-                                    :DataType "float"
+                                    :DataType "FLOAT"
                                     :Unit "Minutes"
                                     :Value "96.7"}]
                  :Instruments [{:ShortName "An Instrument"
@@ -36,19 +36,18 @@
                                 :OperationalModes ["on" "off"]
                                 :Characteristics [{:Name "Signal to Noise Ratio"
                                                    :Description "Is that necessary?"
-                                                   :DataType "float"
+                                                   :DataType "FLOAT"
                                                    :Unit "dB"
                                                    :Value "10"}]
                                 :ComposedOf [{:ShortName "ABC"
                                               :LongName "Long Range Sensor"
                                               :Characteristics [{:Name "Signal to Noise Ratio"
                                                                  :Description "Is that necessary?"
-                                                                 :DataType "float"
+                                                                 :DataType "FLOAT"
                                                                  :Unit "dB"
                                                                  :Value "10"}]
                                               :Technique "Drunken Fist"}]}]}]
-    :TemporalExtents [{:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
+    :TemporalExtents [{:PrecisionOfSeconds 3
                        :EndsAtPresentFlag false
                        :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
                                          :EndingDateTime (t/date-time 2001)}
@@ -68,21 +67,20 @@
                        {:Category "CONTINENT"
                         :Type "Somewhereville"
                         :DetailedLocation "Detailed Somewhereville"}]
-    :SpatialKeywords ["ANGOLA" "Somewhereville"]
     :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                     :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
-                    :VerticalSpatialDomains [{:Type "Some kind of type"
+                    :VerticalSpatialDomains [{:Type "Atmosphere Layer"
                                               :Value "Some kind of value"}
-                                             {:Type "Some kind of type2"
+                                             {:Type "Maximum Depth"
                                               :Value "Some kind of value2"}]
                     :OrbitParameters {:SwathWidth 2.0
                                       :Period 96.7
                                       :InclinationAngle 94.0
                                       :NumberOfOrbits 2.0
                                       :StartCircularLatitude 50.0}}
-    :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
+    :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
                                     :Coordinate1 {:MinimumValue 1.0
                                                   :MaximumValue 10.0}
                                     :Coordinate2 {:MinimumValue 1.0
@@ -309,7 +307,21 @@
                                     :GroupName "NSIDC_IceBridge"}]}
                   {:Roles ["PROCESSOR"]
                    :ShortName "Processing Center"
-                   :LongName "processor.processor"}]}))
+                   :LongName "processor.processor"}]
+    :CollectionCitations [{:Creator "Bob"
+                           :Editor "Larry"
+                           :Title "This is a title"
+                           :SeriesName "Series Name"
+                           :ReleaseDate (t/date-time 2000)
+                           :ReleasePlace "Release Place"
+                           :Publisher "Moe"
+                           :Version "1"
+                           :IssueIdentification "Issue Identification"
+                           :DataPresentationForm "Data Presentation Form"
+                           :OtherCitationDetails "Other Citation Details"
+                           :OnlineResource {:Linkage "http://www.foo.com"
+                                            :Name "Data Set Citation"
+                                            :Description "Data Set Citation"}}]}))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -339,21 +351,13 @@
 
 (defmethod umm->expected-convert :iso-smap
   [umm-coll _]
-  (let [original-brs (get-in umm-coll conversion-util/bounding-rectangles-path)
-        original-cps (get umm-coll :ContactPersons)
-        original-dcs (get umm-coll :DataCenters)
-        umm-coll (umm->expected-convert umm-coll :iso19115)
-        ;;add back the original platform info taken away from the iso19115 convert.
-        umm-coll (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)
-        umm-coll (assoc umm-coll :ContactPersons original-cps)
-        umm-coll (assoc umm-coll :DataCenters original-dcs)]
-   (iso-smap/umm-expected-conversion-iso-smap umm-coll original-brs)))
+  (iso-smap/umm-expected-conversion-iso-smap umm-coll))
 
 ;;; Unimplemented Fields
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataLanguage :SpatialInformation})
+  #{:MetadataLanguage :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

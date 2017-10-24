@@ -156,6 +156,11 @@
   [_]
   [{:field :tag-key :order :asc}])
 
+(defmethod common-qm/default-sort-keys :variable
+  [_]
+  [{:field :variable-name :order :asc}
+   {:field :provider-id :order :asc}])
+
 (defmethod common-qm/default-sort-keys :collection
   [_]
   [{:field :entry-title :order :asc}
@@ -171,6 +176,15 @@
    :all-revisions? false})
 
 (defmethod common-qm/concept-type->default-query-attribs :tag
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :result-format :json
+   :echo-compatible? false
+   :all-revisions? false})
+
+(defmethod common-qm/concept-type->default-query-attribs :variable
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size

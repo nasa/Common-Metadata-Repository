@@ -1,0 +1,273 @@
+<Collection>
+            <ShortName>LPJ-WHYME_v1-3-1_1150</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2013-04-09T00:00:00Z</InsertTime>
+            <LastUpdate>2013-04-09T00:00:00Z</LastUpdate>
+            <LongName>Lund-Potsdam-Jena Wetland Hydrology and Methane DGV Model (LPJ-WHyMe v1.3.1)</LongName>
+            <DataSetId>Lund-Potsdam-Jena Wetland Hydrology and Methane DGV Model (LPJ-WHyMe v1.3.1)</DataSetId>
+            <Description>This model product provides the Fortran 77 source code for the Lund-Potsdam-Jena (LPJ) Wetland Hydrology and Methane Dynamic Global Vegetation Model (LPJ-WHyMe v1.3.1), auxiliary C++ routines, ASCII and NetCDF input data, and NetCDF example output data. LPJ-WHyMe v1.3.1 simulates peatland hydrology, permafrost dynamics, peatland vegetation, and methane emissions.The model processes can be simulated on an area-averaged 0.5 or 1.0 degree grid cell basis at global, regional, or site scales and on a daily, monthly, or annual time step as appropriate. Input driver data are monthly mean air temperature, total precipitation, percentage of full sunshine, annual atmospheric CO2 concentration, and soil texture class. The simulation for each grid cell begins from "bare ground", requiring a "spin up" (under non-transient climate) of ca. 1,000 years to develop equilibrium vegetation, carbon, and soil structure. Model simulations compare favorably, with some exceptions, to field observations collected from peatland sites (e.g., Degero, Sweden; Lakkasuo, Finland; BOREAS Northern Study Area, Canada; and others) and non-peatland sites (e.g., Point Barrow, Alaska, and Spasskaya, Siberia). LPJ-WHyMe is a further development of LPJ-WHy, which dealt with the introduction of permafrost and peatlands into LPJ. Implementing peatlands in LPJ required the addition of two new plant functional types (PFTs) (flood tolerant C3 graminoids and Sphagnum mosses) to the already existing ten PFTs, the introduction of inundation stress for non-peatland PFTs, a slow-down in decomposition under inundation, and the addition of a root exudates pool. LPJ-WHyMe v1.3.1 adds a methane model subroutine. This model product has one compressed data file (*.zip) and seven companion files.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1150</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2013-04-09T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>4</ProcessingLevelId>
+            <ProcessingLevelDescription>model products</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Wania, R., I. Ross, and I.C. Prentice. 2013. Lund-Potsdam-Jena Wetland Hydrology and Methane DGV Model (LPJ-WHyMe v1.3.1). ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1150</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1972-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2010-10-15T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOLOGICAL CLASSIFICATION</TopicKeyword>
+                    <TermKeyword>PLANTS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ANGIOSPERMS (FLOWERING PLANTS)</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOLOGICAL CLASSIFICATION</TopicKeyword>
+                    <TermKeyword>PLANTS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>MOSSES/HORNWORTS/LIVERWORTS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOSYSTEMS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>TERRESTRIAL ECOSYSTEMS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WETLANDS</Value>
+                            <VariableLevel3Keyword>PEATLANDS</VariableLevel3Keyword>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOSYSTEMS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>TERRESTRIAL ECOSYSTEMS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WETLANDS</Value>
+                            <VariableLevel3Keyword>SWAMPS</VariableLevel3Keyword>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CLIMATE INDICATORS</TopicKeyword>
+                    <TermKeyword>TERRESTRIAL HYDROSPHERE INDICATORS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST MELT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LAND USE/LAND COVER CLASSIFICATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+                    <TermKeyword>GROUND WATER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>GROUND WATER FEATURES</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WATER TABLE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>model archive</ShortName>
+                    <LongName>Model Archive</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/MODELS/guides/LPJ-WHyMe_v1-3-1.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1150</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/ferret.jnl</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/LPJ-WHyMe_v1-3-1.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/Readme.dtx</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/Readme.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/Readme.tex</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/LPJ-WHyMe_v1-3-1//comp/Using-The-netCDF-Driver.txt</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-60.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

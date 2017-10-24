@@ -139,7 +139,14 @@
 (defn mdb-old-revision-cleanup-job-url
   "URL to metadata db old revision cleanup job"
   []
-  (format "http://localhost:%s/jobs/old-revision-concept-cleanup" (transmit-config/metadata-db-port)))
+  (format "http://localhost:%s/jobs/old-revision-concept-cleanup"
+          (transmit-config/metadata-db-port)))
+
+(defn mdb-service-association-search-url
+  "URL to search service associations in metadata db."
+  []
+  (format "http://localhost:%s/concepts/search/service-associations"
+          (transmit-config/metadata-db-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
@@ -239,30 +246,6 @@
   provider-id
   task-id))
 
-(defn ingest-create-variable-url
-  "Get the variable ingest URL"
-  []
-  (format "http://localhost:%s/variables" (transmit-config/ingest-port)))
-
-(defn ingest-update-variable-url
-  "Get the variable ingest URL"
-  [variable-id]
-  (format "http://localhost:%s/variables/%s"
-          (transmit-config/ingest-port)
-          variable-id))
-
-(defn ingest-create-service-url
-  "Get the service ingest URL"
-  []
-  (format "http://localhost:%s/services" (transmit-config/ingest-port)))
-
-(defn ingest-update-service-url
-  "Get the service ingest URL"
-  [service-id]
-  (format "http://localhost:%s/services/%s"
-          (transmit-config/ingest-port)
-          service-id))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
@@ -321,6 +304,11 @@
   "URL to search for deleted collections"
   []
   (format "http://localhost:%s/deleted-collections" (transmit-config/search-port)))
+
+(defn search-deleted-granules-url
+  "URL to search for deleted granules"
+  []
+  (format "http://localhost:%s/deleted-granules" (transmit-config/search-port)))
 
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
@@ -397,6 +385,12 @@
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
+
+(defn bulk-index-variables-url
+  ([]
+   (format "http://localhost:%s/bulk_index/variables" (transmit-config/bootstrap-port)))
+  ([provider-id]
+   (format "%s/%s" (bulk-index-variables-url) provider-id)))
 
 (defn bulk-index-collection-url
   []

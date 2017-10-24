@@ -1,0 +1,220 @@
+<Collection>
+            <ShortName>LAI_MAPS_30M_VALERISITE_829</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2006-04-14T00:00:00Z</InsertTime>
+            <LastUpdate>2006-04-14T00:00:00Z</LastUpdate>
+            <LongName>Leaf Area Index Maps at 30-m Resolution, VALERI Site, Larose, Canada</LongName>
+            <DataSetId>Leaf Area Index Maps at 30-m Resolution, VALERI Site, Larose, Canada</DataSetId>
+            <Description>This data set provide local LAI maps for the Larose (Ontario) site in Canada. These derived maps may also be useful for validating other LAI maps over this same site given that the area is protected from disturbance. The maps should be used for the given period of validity. The LAI data are suitable for use in modeling the carbon, water, energy, energy and trace gas exchange between the land surface and the atmosphere at regional scales. The dataset may also be useful for monitoring changes in the land surface. A complete description of producing the maps for the Larose site and the ground measurement campaign is provided in the companion document Larose2003FTReport.pdf.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/829</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2006-04-14T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Fernandes, R.A., A. Abduelgasim, L. Sylvain., S.K. Khurshid, and C. Butson. 2006. Leaf Area Index Maps at 30-m Resolution, VALERI Site, Larose, Canada. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/829</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2003-05-08T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2003-08-19T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CANOPY CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LEAF CHARACTERISTICS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>LEAF AREA INDEX (LAI)</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LAND USE/LAND COVER CLASSIFICATION</Value>
+                        <VariableLevel2Keyword>
+                            <Value>VEGETATION INDEX</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SURFACE RADIATIVE PROPERTIES</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>REFLECTANCE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>FIELD INVESTIGATION</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>CAMERA</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>CAMERA</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>LANDSAT-5</ShortName>
+                    <LongName> </LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>TM</ShortName>
+                            <LongName>Thematic Mapper</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>TM</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>LANDSAT-7</ShortName>
+                    <LongName> </LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>ETM+</ShortName>
+                            <LongName>Enhanced Thematic Mapper Plus</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>ETM+</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>SPOT-4</ShortName>
+                    <LongName>Systeme Probatoire Pour l'Observation de la Terre-4</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>HRVIR</ShortName>
+                            <LongName>High Resolution Visible and Infrared</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>HRVIR</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>EOS LAND VAL</ShortName>
+                    <LongName>EOS Land Validation</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/eos_land_val/LAI_VALERI_Canada/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/LAND_VAL/guides/Fernandes_LAI_Valeri.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/829</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/eos_land_val/LAI_VALERI_Canada/comp/Fernandes_LAI_Valeri.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/eos_land_val/LAI_VALERI_Canada/comp/Larose2003FTReport.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/829_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=829</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-75.24</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>45.39</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-75.20</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>45.37</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

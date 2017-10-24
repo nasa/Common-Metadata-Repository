@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-timeline-test
   "This tests the granule timeline feature of the search api."
-  (:require 
+  (:require
     [cheshire.core :as json]
     [clj-time.coerce :as c]
     [clj-time.core :as t]
@@ -11,6 +11,7 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -37,13 +38,13 @@
                                                                             :ShortName "S1"
                                                                             :Version "V1"
                                                                             :TemporalExtents
-                                                                             [(data-umm-c/temporal-extent
+                                                                             [(data-umm-cmn/temporal-extent
                                                                                 {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
                                                                             :ShortName "S2"
                                                                             :Version "V2"
                                                                             :TemporalExtents
-                                                                             [(data-umm-c/temporal-extent
+                                                                             [(data-umm-cmn/temporal-extent
                                                                                 {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
         ;; Coll1 granules
         ;; Date range granules

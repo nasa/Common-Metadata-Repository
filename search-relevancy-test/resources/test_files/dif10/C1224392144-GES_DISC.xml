@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>OCO2_L1B_Calibration</Short_Name>
+        <Version>7r</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>OCO-2 Level 1B calibrated, geolocated calibration spectra, Retrospective Processing (OCO2_L1B_Calibration) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>OCO-2 Science Team/Michael Gunson, Annmarie Eldering</Dataset_Creator>
+        <Dataset_Title>OCO-2 Level 1B calibrated, geolocated calibration spectra, Retrospective Processing V7r</Dataset_Title>
+        <Dataset_Series_Name>OCO2_L1B_Calibration</Dataset_Series_Name>
+        <Dataset_Release_Date>2015-04-30</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>7r</Version>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OCO2_L1B_Calibration_7r.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JENNIFER</First_Name>
+            <Middle_Name>C.</Middle_Name>
+            <Last_Name>WEI, PH. D</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6558</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>jennifer.c.wei@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>CARBON AND HYDROCARBON COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>CARBON DIOXIDE</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL/ENGINEERING</Topic>
+        <Term>INFRARED WAVELENGTHS</Term>
+        <Variable_Level_1>INFRARED RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>OCO-2</Short_Name>
+        <Long_Name>Orbiting Carbon Observatory-2</Long_Name>
+        <Instrument>
+            <Short_Name>OCO SPECTROMETERS</Short_Name>
+            <Long_Name>Orbiting Carbon Observatory Spectrometers</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2014-09-05T00:00:00</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>PLANNED</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>2.25 km</Latitude_Resolution>
+        <Longitude_Resolution>1.29 km</Longitude_Resolution>
+        <Temporal_Resolution>16 days</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>OCO</Short_Name>
+        <Long_Name>Orbiting Carbon Observatory</Long_Name>
+    </Project>
+    <Quality>Biases in OCO-2 data are still studied. The project recommends using the Lite products.</Quality>
+    <Access_Constraints>None currently</Access_Constraints>
+    <Use_Constraints>Calibration and diagnostic of radiance spectra</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Science Data Operations System at JPL</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>80 MB</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None currently</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:50:39 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/OCO-2/images/OCO2_L1B_Calibration_v7r.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddbbe01b045fab4ecfd8/file</URL>
+        <Format>PNG</Format>
+        <Caption>radiance_strong_co2 (Ph/sec/m2/sr/micron),OCO2_L1B_Calibration orbit 03112a</Caption>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>The Orbiting Carbon Observatory is the first NASA missiondesigned to collect space-based measurements of atmospheric carbon dioxidewith the precision, resolution, and coverage needed to characterize theprocesses controlling its buildup in the atmosphere. The OCO-2 project uses the LEOStar-2 spacecraft that carries a single instrument. It incorporates three high-resolution spectrometers that make coincident measurements ofreflected sunlight in the near-infrared CO2 near 1.61 and 2.06 micrometers and inmolecular oxygen (O2) A-Band at 0.76 micrometers. The three spectrometers have different characteristics and are calibrated independently. Their raw data numbers (DN) are delivered correlated in time tothe Level 1B process as Level 1A products. Each band has 1016 spectralelements, although some are masked out in the L2 retrieval.This L1B product results from calibration mode measurements (e.g., Lunar,Solar, Dark observations), and thus it differs from the OCO2_L1B_Science(L1bSc) product. The differences in the product formats are only in the geolocation information provided. Whereas the L1bSc products report geolocation data for each sounding, calibration products report the directionof the boresight vector.This is the retrospective processing where the calibration data is estimated from the full timeseries of data (before, during, and after the measurements), and is expected to be of slightly higher quality.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=OCO2_L1B_Calibration</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=OCO2_L1B_Calibration</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://oco2.gesdisc.eosdis.nasa.gov/opendap/OCO2_L1B_Calibration.7r/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://oco2.gesdisc.eosdis.nasa.gov/data/s4pa/OCO2_DATA/OCO2_L1B_Calibration.7r/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OCO/OCO2_L1B_ATBD.V7.pdf</URL>
+        <Description>Level  1B Algorithm Theoretical Basis (ATBD)</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OCO/README.OCO2_V7.pdf</URL>
+        <Description>README document.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OCO/OCO2_DUG.V7.pdf</URL>
+        <Description>USER'S GUIDE</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto?title=How%20to%20download%20a%20spatial%20and%20variable%20subset%20of%20Level%201B%20data%20using%20OPeNDAP</URL>
+        <Description>Subset recipe using OPeNDAP</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OCO/SDOS_SIS_L1b.V7.pdf</URL>
+        <Description>Level 1B Software Interface Specification containing description of all data objects in data files</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET SOFTWARE PACKAGE</Subtype>
+        </URL_Content_Type>
+        <URL>https://github.com/nasa/RtRetrievalFramework</URL>
+        <Description>This software (NASA NTR-49044) retrieves a set of atmospheric/surface/instrument parameters from a simultaneous fit to spectra from multiple absorption bands. The software uses an iterative, non-linear retrieval technique (optimal estimation). After the retrieval process has converged, the software performs an error analysis. The products of the software include all quantities needed to understand the information content of the measurement, its uncertainty, and its dependence on interfering atmospheric properties.
+
+Jet Propulsion Laboratory, California Institute of Technology.
+Copyright 2016 California Institute of Technology.
+U.S. Government sponsorship acknowledged.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://oco.jpl.nasa.gov/science/publications/</URL>
+        <Description>Publications from the Science Team</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OCO/KnownDataIssues.html</URL>
+        <Description>OCO-2 Data Gaps</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2015-04-08</Metadata_Creation>
+        <Metadata_Last_Revision>2016-12-14</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-07-01</Metadata_Future_Review>
+        <Data_Creation>2014-04-01</Data_Creation>
+        <Data_Last_Revision>2016-01-10</Data_Last_Revision>
+    </Metadata_Dates>
+    <Private>True</Private>
+    <Product_Level_Id>1B</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>sun-lit orbit (45 minutes)</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>8799bdee-6cb3-47af-9746-7002a0cad0ac</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2015-12-22 13:33:13</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2015-12-28T18:07:39Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

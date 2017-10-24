@@ -1,18 +1,19 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cs]
-            [cmr.transmit.metadata-db :as meta-db]
-            [cmr.transmit.index-set :as index-set]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.connection :as transmit-conn]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-            [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg :refer [defconfig]]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as cs]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.connection :as transmit-conn]
+   [cmr.transmit.index-set :as index-set]
+   [cmr.transmit.metadata-db :as meta-db]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
@@ -33,8 +34,16 @@
   "Number of shards to use for the small collections granule index."
   {:default 20 :type Long})
 
+(defconfig elastic-deleted-granule-index-num-shards
+  "Number of shards to use for the deleted granules index."
+  {:default 5 :type Long})
+
 (defconfig elastic-tag-index-num-shards
   "Number of shards to use for the tags index."
+  {:default 5 :type Long})
+
+(defconfig elastic-variable-index-num-shards
+  "Number of shards to use for the variables index."
   {:default 5 :type Long})
 
 (defconfig collections-index-alias
@@ -59,6 +68,16 @@
                   {:number_of_shards (elastic-tag-index-num-shards)
                    :number_of_replicas 1,
                    :refresh_interval "1s"}})
+
+(def deleted-granule-setting {:index
+                              {:number_of_shards (elastic-deleted-granule-index-num-shards)
+                               :number_of_replicas 1,
+                               :refresh_interval "1s"}})
+
+(def variable-setting {:index
+                       {:number_of_shards (elastic-variable-index-num-shards)
+                        :number_of_replicas 1,
+                        :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
@@ -190,7 +209,7 @@
 (defnestedmapping temporal-mapping
   "Defines mappings for TemporalExtents."
   {:start-date m/date-field-mapping
-   :end-date m/date-field-mapping}) 
+   :end-date m/date-field-mapping})
 
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
@@ -267,6 +286,7 @@
           :short-name.lowercase  m/string-field-mapping
           :version-id            (m/stored m/string-field-mapping)
           :version-id.lowercase  m/string-field-mapping
+          :parsed-version-id.lowercase m/string-field-mapping
 
           ;; Stored to allow retrieval for implementing granule acls
           :access-value                   (m/stored m/float-field-mapping)
@@ -282,12 +302,15 @@
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
 
+          :temporal-ranges                m/date-field-mapping
+
           ;; Temporal range of min and max granule values or the same as collection start and end date
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping
           :granule-end-date               m/date-field-mapping
 
           :has-granules (m/stored m/bool-field-mapping)
+          :has-variables (m/stored m/bool-field-mapping)
 
           :platform-sn                    m/string-field-mapping
           :platform-sn.lowercase          m/string-field-mapping
@@ -316,6 +339,8 @@
           :two-d-coord-name.lowercase     m/string-field-mapping
           :attributes                     attributes-field-mapping
           :downloadable                   (m/stored m/bool-field-mapping)
+          :authors                        (m/doc-values m/string-field-mapping)
+          :authors.lowercase              (m/doc-values m/string-field-mapping)
 
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
@@ -330,15 +355,15 @@
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.
           :data-centers data-center-hierarchical-mapping
-         
+
           ;; nested mapping containing all the temporal ranges within a collection.
           :temporals temporal-mapping
 
-          ;; nested mapping for limit_to_granules case. 
+          ;; nested mapping for limit_to_granules case.
           ;; it either contains [{:start-date granule-start-date :end-date granule-end-date}]
           ;; or when there're no granules, contains all the temporal ranges within the collection
-          :limit-to-granules-temporals temporal-mapping         
- 
+          :limit-to-granules-temporals temporal-mapping
+
           ;; Facet fields
           ;; We can run aggregations on the above science keywords as a
           ;; nested document. However the counts that come back are counts
@@ -402,6 +427,8 @@
           ;; associated variables
           :variable-names m/string-field-mapping
           :variable-names.lowercase m/string-field-mapping
+          :variable-native-ids (m/doc-values m/string-field-mapping)
+          :variable-native-ids.lowercase (m/doc-values m/string-field-mapping)
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
           :variables variables-mapping
@@ -409,6 +436,14 @@
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))
+
+(defmapping deleted-granule-mapping :deleted-granule
+  "Defines the elasticsearch mapping for storing granules"
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
+   :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
 
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
@@ -505,10 +540,8 @@
      :end-date (m/stored m/date-field-mapping)
      :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
 
-     ;; granule temporal search is not nested but it shares the same code
-     ;; with the collection temporal search which is nested. So we need
-     ;; a nested index structure even though for granules it's just using one 
-     ;; start-date, end-date.
+     ;; No longer indexing to :temporals due to performance issues, but cannot
+     ;; delete from elastic index
      :temporals temporal-mapping
      :size (m/stored m/float-field-mapping)
      :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
@@ -574,6 +607,30 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
+(defmapping variable-mapping :variable
+  "Defines the elasticsearch mapping for storing variables."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+   ;; This is used explicitly for sorting. The values take up less space in the
+   ;; fielddata cache.
+   :concept-seq-id (m/doc-values m/int-field-mapping)
+   :native-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id.lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id.lowercase (m/doc-values m/string-field-mapping)
+   :variable-name (-> m/string-field-mapping m/stored m/doc-values)
+   :variable-name.lowercase (m/doc-values m/string-field-mapping)
+   :measurement (-> m/string-field-mapping m/stored m/doc-values)
+   :measurement.lowercase (m/doc-values m/string-field-mapping)
+   :keyword m/text-field-mapping
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
+   ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
+   :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
+
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
@@ -605,15 +662,16 @@
                              {:name "all-collection-revisions"
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
-               ;; The granule configuration here initially only specifies a single collection indexes
-               ;; Additional granule indexes are created over time via the index set application.
+               :deleted-granule {:indexes
+                                 [{:name "deleted_granules"
+                                   :settings deleted-granule-setting}]
+                                 :mapping deleted-granule-mapping}
                :granule {:indexes
                          (cons {:name "small_collections"
                                 :settings granule-settings-for-small-collections-index}
                                (for [idx extra-granule-indexes]
                                  {:name idx
                                   :settings granule-settings-for-individual-indexes}))
-
                          ;; This specifies the settings for new granule indexes that contain data for a single collection
                          ;; This allows the index set application to know what settings to use when creating
                          ;; a new granule index.
@@ -622,7 +680,15 @@
                :tag {:indexes
                      [{:name "tags"
                        :settings tag-setting}]
-                     :mapping tag-mapping}}})
+                     :mapping tag-mapping}
+               :variable {:indexes
+                          [{:name "variables"
+                            :settings variable-setting}
+                           ;; This index contains all the revisions (including tombstones) and
+                           ;; is used for all-revisions searches.
+                           {:name "all-variable-revisions"
+                            :settings variable-setting}]
+                          :mapping variable-mapping}}})
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -702,10 +768,16 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
-     {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
-      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))
-      :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))})))
+   (let [fetched-index-set (index-set/get-index-set context index-set-id)
+         get-concept-mapping-fn (fn [concept-type]
+                                  (-> (get-in fetched-index-set [:index-set concept-type :mapping])
+                                      keys
+                                      first
+                                      name))]
+     {:collection (get-concept-mapping-fn :collection)
+      :granule (get-concept-mapping-fn :granule)
+      :tag (get-concept-mapping-fn :tag)
+      :variable (get-concept-mapping-fn :variable)})))
 
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
@@ -754,7 +826,8 @@
    * all-revisions-index? - true indicates we should target the all collection revisions index."
   ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
-         concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
+         concept (when (= :granule concept-type)
+                   (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)
@@ -766,12 +839,17 @@
          all-revisions-index? [(get indexes :all-collection-revisions)]
          ;; Else index to all collection indexes except for the all-collection-revisions index.
          :else (keep (fn [[k v]]
-                      (when-not (= :all-collection-revisions (keyword k))
-                        v))
+                       (when-not (= :all-collection-revisions (keyword k))
+                         v))
                      indexes))
 
        :tag
        [(get indexes (or target-index-key :tags))]
+
+       :variable
+       (if all-revisions-index?
+         [(get indexes :all-variable-revisions)]
+         [(get indexes (or target-index-key :variables))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

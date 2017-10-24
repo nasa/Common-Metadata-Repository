@@ -17,7 +17,7 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 date && echo "Running tests" &&
-lein modules test-out
+lein test
 if [ $? -ne 0 ] ; then
   echo "Failed Tests" >&2
   cat */testreports.xml */test2junit/xml/*.xml

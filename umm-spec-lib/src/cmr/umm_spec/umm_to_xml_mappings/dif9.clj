@@ -14,6 +14,13 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
     [cmr.umm-spec.util :as u]))
 
+(def coll-progress-mapping
+  "Mapping from known collection progress values to values supported for DIF9 Data_Set_Progress."
+  {"COMPLETE" "COMPLETE"
+   "ACTIVE" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
+
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -38,6 +45,29 @@
   [platforms]
   (generate-short-name-long-name-elements :Source_Name platforms))
 
+(defn generate-dataset-citation
+  "Returns the dif9 Data_Set_Citations from UMM-C."
+  [c]
+  (if (empty? (:CollectionCitations c))
+    [:Data_Set_Citation
+     [:Version (:Version c)]
+     [:Dataset_DOI (get-in c [:DOI :DOI])]]
+    (for [collection-citation (:CollectionCitations c)]
+      [:Data_Set_Citation
+       [:Dataset_Creator (:Creator collection-citation)]
+       [:Dataset_Editor (:Editor collection-citation)]
+       [:Dataset_Title (:Title collection-citation)]
+       [:Dataset_Series_Name (:SeriesName collection-citation)]
+       [:Dataset_Release_Date (:ReleaseDate collection-citation)]
+       [:Dataset_Release_Place (:ReleasePlace collection-citation)]
+       [:Dataset_Publisher (:Publisher collection-citation)]
+       [:Version (:Version c)]
+       [:Issue_Identification (:IssueIdentification collection-citation)]
+       [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
+       [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
+       [:Dataset_DOI (get-in c [:DOI :DOI])]
+       [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]])))
+
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
@@ -49,9 +79,7 @@
                  (:ShortName c)
                  (str (:ShortName c) "_" (:Version c)))]
     [:Entry_Title (:EntryTitle c)]
-    [:Data_Set_Citation
-     [:Version (:Version c)]
-     [:Dataset_DOI (get-in c [:DOI :DOI])]]
+    (generate-dataset-citation c)
     (contact/generate-personnel c)
     (if-let [sks (:ScienceKeywords c)]
       (for [sk sks]
@@ -97,7 +125,9 @@
           [:Epoch Epoch]
           [:Stage Stage]
           [:Detailed_Classification DetailedClassification]])])
-    [:Data_Set_Progress (:CollectionProgress c)]
+  (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                          (get coll-progress-mapping (string/upper-case coll-progress)))]
+    [:Data_Set_Progress c-progress])
     (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
       [:Spatial_Coverage
        [:Southernmost_Latitude (:SouthBoundingCoordinate mbr)]

@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>GPM_3IMERGHHE</Short_Name>
+        <Version>04</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>GPM IMERG Early Precipitation L3 Half Hourly 0.1 degree x 0.1 degree V04 (GPM_3IMERGHHE) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>George Huffman</Dataset_Creator>
+        <Dataset_Title>GPM IMERG Early Precipitation L3 Half Hourly 0.1 degree x 0.1 degree V04</Dataset_Title>
+        <Dataset_Series_Name>GPM_3IMERGHHE</Dataset_Series_Name>
+        <Dataset_Release_Date>2015-04-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>04</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/GPM_3IMERGHHE_04.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>GEORGE</First_Name>
+            <Last_Name>HUFFMAN</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 612</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6308</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5492</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>George.J.Huffman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>CYCLONES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>DROUGHT</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>HURRICANES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>MONSOONS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>STORMS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+        <Variable_Level_1>TYPHOONS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>PRECIPITATION AMOUNT</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>PRECIPITATION RATE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>SOLID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>SNOW</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>LIQUID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>RAIN</Variable_Level_2>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Atmosphere, Precipitation, Hydrology</Ancillary_Keyword>
+    <Platform>
+        <Type>Not provided</Type>
+        <Short_Name>GPM</Short_Name>
+        <Long_Name>Global Precipitation Measurement</Long_Name>
+        <Instrument>
+            <Short_Name>GMI</Short_Name>
+            <Long_Name>Global Precipitation Measurement Microwave Imager</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>DPR</Short_Name>
+            <Long_Name>Dual-frequency Precipitation Radar</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>PR</Short_Name>
+            <Long_Name>TRMM Precipitation Radar</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>TMI</Short_Name>
+            <Long_Name>TRMM Microwave Imager</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>AMSR-E</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer-EOS</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>AMSR2</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer 2</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>ATMS</Short_Name>
+            <Long_Name>Advanced Technology Microwave Sounder</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>MHS</Short_Name>
+            <Long_Name>Microwave Humidity Sounder</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>SAPHIR</Short_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>SSM/I</Short_Name>
+            <Long_Name>Special Sensor Microwave/Imager</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2014-03-12</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL LAND</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL OCEAN</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.1 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.1 degree</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+        <Temporal_Resolution>30 minutes</Temporal_Resolution>
+        <Temporal_Resolution_Range>1 minute - &lt; 1 hour</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>GPM</Short_Name>
+        <Long_Name>Global Precipitation Measurement</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>EOSDIS</Short_Name>
+        <Long_Name>Earth Observing System Data Information System</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>ESIP</Short_Name>
+        <Long_Name>Earth Science Information Partners Program</Long_Name>
+    </Project>
+    <Quality>Quality is discussed in detial in the Technical Documentation (IMERG_doc.pdf)</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>The *data access policy* is "freely available" with three common-sense caveats:
+
+1.   The data set source should be acknowledged when the data are used, in the form:
+"The IMERG data were provided by the NASA/Goddard Space Flight Center's Mesoscale Atmospheric Processes Laboratory and PPS, which develop and compute IMERG as a contribution to GPM, and archived at the NASA [enter PPS or GES DISC]."
+
+2.   New users are urged to obtain their own current, clean copy from an official archive, rather than taking a version from a third party that might be damaged or out of date.
+
+3.   Errors and difficulties in the original datasets should be reported to the dataset creators.  Access and format issues at third-party sites should be directed to their contacts.</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Precipitation Processing System (PPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2.8 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>GPM</File>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/GPM/browse/3B-HHR-E.MS.MRG.3IMERG.20150101-S000000-E002959.0000.V04A.PNG</URL>
+        <Format>PNG</Format>
+        <Caption>Surface Precipitation</Caption>
+        <Description>Surface Precipitation  (Early) from GPM IMERG (0.1 degree x 0.1 degree)  (GPM_3IMERGHHE)</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Hong, Y., K. L. Hsu, S. Sorooshian, and X. Gao, 2004: Precipitation Estimation from Remotely Sensed Imagery Using an Artificial Neural Network Cloud Classification System. J. Appl. Meteorol. 43, 1834-1852.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Huffman, G. J., R. F. Adler, D. T. Bolvin, G. Gu, E. J. Nelkin, K. P. Bowman, Y. Hong, E. F. Stocker, and D. B. Wolff, 2007: The TRMM Multi-satellite Precipitation Analysis: Quasi-Global, Multi-Year, Combined-Sensor Precipitation Estimates at Fine Scale. J. Hydrometeor., 8(1), 38-55.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Joyce, R. J., P. Xie, and J. E. Janowiak, 2011: Kalman Filter Based CMORPH. J. Hydrometeor., 12, doi:10.1175/JHM-D-11-022.1, 1547-1563.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Rudolf, B., and U. Schneider, 2005: Calculation of Gridded Precipitation Data for the Global Land-Surface Using In-Situ Gauge Observations. Proc. of the 2nd Internat. Precip. Working Group Workshop, 25-28 October 2004, Monterey, CA, 231-247.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>This is the Level 3 IMERG  Early Half Hourly 10 x 10 km V04 (GPM_3IMERGHHE).
+
+ The Integrated Multi-satelliE Retrievals for GPM (IMERG) is the unified U.S. algorithm that provides  the  Day-1  multi-satellite  precipitation  product  for  the  U.S.  GPM  team.
+
+ The precipitation  estimates  from  the  various  precipitation-relevant  satellite  passive  microwave (PMW) sensors comprising the GPM constellation are computed using the 2014 version of the Goddard Profiling Algorithm (GPROF2014), then gridded, intercalibrated to the GPM Combined Instrument product, and combined into half-hourly 10x10 km fields.
+
+ These are provided to both the Climate Prediction Center (CPC) Morphing-Kalman Filter  (CMORPH-KF) Lagrangian time interpolation scheme and the Precipitation Estimation from Remotely Sensed Information using Artificial Neural Networks Cloud Classification System (PERSIANN-CCS) re-calibration scheme.  In parallel, CPC assembles the zenith-angle-corrected, intercalibrated "even-odd" geo- IR fields and forward them to PPS for use in the CMORPH-KF Lagrangian time interpolation scheme and the PERSIANN-CCS computation routines.   The PERSIANN-CCS estimates are computed (supported by an asynchronous re-calibration cycle) and sent to the CMORPH-KF Lagrangian time interpolation scheme.   The CMORPH-KF Lagrangian time interpolation (supported by an asynchronous KF weights updating cycle) uses the PMW and IR estimates to create half-hourly estimates.
+
+The IMERG system is run twice in near-real time
+
+"Early" multi-satellite product ~4 hr after observation time and
+"Late" multi-satellite product ~12 hr after observation time,
+
+and once after the monthly gauge analysis is received,
+"Final",  satellite-gauge product ~2 months after the observation month.
+
+ The baseline is for the (near-)real-time Early and Late half-hour estimates to be calibrated with climatological coefficients that vary by month and location, while in the Final post-real-time run the multi-satellite half-hour estimates are adjusted so that they sum to a monthly satellite-gauge combination.   In all cases the output contains multiple fields that provide information on the input data, selected intermediate fields, and estimation quality.
+
+ In brief, the input precipitation estimates computed from the various satellite passive microwave sensors are intercalibrated to the GPM Combined Instrument product (because it is presumed to be the best snapshot GPM estimate), then "morphed" and combined with microwave precipitation-calibrated geo-IR fields, and adjusted with monthly surface precipitation gauge analysis data (where available) to provide half-hourly and monthly precipitation estimates on a 10-km grid over the domain 60 deg N-S. Precipitation phase is diagnosed using analyses of surface temperature, humidity, and pressure. The current period of record is mid-March 2014 to the present (delayed by about 2 months).</Abstract>
+        <Purpose>The Integrated Multi-Satellite Retrievals for GPM (IMERG) algorithm is designed to leverage the international constellation of precipitation-relevant satellites to create a long record of uniformly time/space gridded precipitation estimates for the globe. The algorithm is focused on creating the best estimate at each time step, meaning that it is not a Climate Data Record, although the ideal is as homogenous a record as possible.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/GPM_L3/GPM_3IMERGHHE.04/</URL>
+        <Description>Access the data via http</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=GPM_3IMERGHHE%2004</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=GPM_3IMERGHHE</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>https://giovanni.gsfc.nasa.gov/#service=TmAvMp&amp;dataKeyword=IMERGHHE</URL>
+        <Description>Online visualization and analysis</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/opendap/hyrax/GPM_L3/GPM_3IMERGHHE.04/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>THREDDS DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/opendap/ncml/aggregation/GPM_3IMERGHHE.04/</URL>
+        <Description>Access the data via the THREDDS.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=GPM_3IMERGHHE</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://pmm.gsfc.nasa.gov/GPM</URL>
+        <Description>GPM Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/doc/README.GPM.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/GPM/IMERG_doc.pdf</URL>
+        <Description>IMERG Technical Documentation</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>IMPORTANT NOTICE</Subtype>
+        </URL_Content_Type>
+        <URL>https://pmm.nasa.gov/sites/default/files/document_files/IMERG_EarlyLateRun_V04_release_notes.pdf</URL>
+        <Description>IMERG Release Notes</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2017-03-15</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-12</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-12-01</Metadata_Future_Review>
+        <Data_Creation>2017-03-15</Data_Creation>
+        <Data_Last_Revision>2017-03-15</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>4c24dd2c-a43c-48c4-9452-dc30162a7380</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:30:53</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:09Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

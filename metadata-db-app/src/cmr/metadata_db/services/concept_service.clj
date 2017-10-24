@@ -6,7 +6,7 @@
    [clojure.string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug error info warn trace)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as time-keeper]
@@ -28,6 +28,7 @@
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.service-association]
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
@@ -48,7 +49,8 @@
    :access-group 10
    :humanizer 10
    :variable 10
-   :variable-association 10})
+   :variable-association 10
+   :service-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -61,7 +63,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :service :variable :variable-association})
+  #{:tag :tag-association :humanizer :variable-association :service-association})
 
 ;;; utility methods
 
@@ -77,9 +79,9 @@
                       :tag (msg/tags-only-system-level provider-id)
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
-                      :service (msg/services-only-system-level provider-id)
-                      :variable (msg/variables-only-system-level provider-id)
                       :variable-association (msg/variable-associations-only-system-level
+                                             provider-id)
+                      :service-association (msg/service-associations-only-system-level
                                              provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
@@ -124,44 +126,49 @@
          :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
         (assoc concept :concept-id concept-id)))))
 
-(defn- set-or-generate-created-at-for-concept
-  "Set the created-at of the given concept to the value of its previous revision if exists;
-   otherwise, set it to the current datetime."
+(defn- set-created-at-for-concept
+  "Set the created-at of the given concept to the value of its previous revision if exists."
   [db provider concept]
   (let [{:keys [concept-id concept-type]} concept
         existing-created-at (:created-at
-                             (c/get-concept db concept-type provider concept-id))
-        created-at (if existing-created-at existing-created-at (time-keeper/now))]
-    (assoc concept :created-at created-at)))
+                             (c/get-concept db concept-type provider concept-id))]
+    (if existing-created-at
+      (assoc concept :created-at existing-created-at)
+      concept)))
 
-(defmulti set-or-generate-created-at
-  "Get the existing created-at value for the given concept and set it or set it to the
-  current datetime if it has never been saved."
+(defmulti set-created-at
+  "Get the existing created-at value for the given concept and set it if it exists. Otherwise
+  created-at will be set when saving to the Oracle database."
   (fn [db provider concept]
     (:concept-type concept)))
 
-(defmethod set-or-generate-created-at :collection
+(defmethod set-created-at :collection
   [db provider concept]
-  (set-or-generate-created-at-for-concept db provider concept))
+  (set-created-at-for-concept db provider concept))
 
-(defmethod set-or-generate-created-at :granule
+(defmethod set-created-at :granule
   [db provider concept]
-  (set-or-generate-created-at-for-concept db provider concept))
+  (set-created-at-for-concept db provider concept))
 
-(defmethod set-or-generate-created-at :variable
+(defmethod set-created-at :service
   [db provider concept]
-  (set-or-generate-created-at-for-concept db provider concept))
+  (set-created-at-for-concept db provider concept))
 
-(defmethod set-or-generate-created-at :granule
+(defmethod set-created-at :variable
+  [db provider concept]
+  (set-created-at-for-concept db provider concept))
+
+(defmethod set-created-at :granule
   [db provider concept & previous-revision]
   (let [{:keys [concept-id concept-type]} concept
         previous-revision (first previous-revision)
         existing-created-at (:created-at (or previous-revision
-                                             (c/get-concept db concept-type provider concept-id)))
-        created-at (if existing-created-at existing-created-at (time-keeper/now))]
-    (assoc concept :created-at created-at)))
+                                             (c/get-concept db concept-type provider concept-id)))]
+    (if existing-created-at
+      (assoc concept :created-at existing-created-at)
+      concept)))
 
-(defmethod set-or-generate-created-at :default
+(defmethod set-created-at :default
   [_db _provider concept]
   concept)
 
@@ -427,6 +434,63 @@
   (fn [context concept]
     (boolean (:deleted concept))))
 
+(defn- tombstone-associations
+  "Tombstone the associations that matches the given search params,
+  skip-publication? flag controls if association deletion event should be generated,
+  skip-publication? true means no association deletion event should be generated."
+  [context assoc-type search-params skip-publication?]
+  (let [associations (search/find-concepts context search-params)]
+    (doseq [association associations]
+      (save-concept-revision context {:concept-type assoc-type
+                                      :concept-id (:concept-id association)
+                                      :deleted true
+                                      :user-id "cmr"
+                                      :skip-publication skip-publication?}))))
+
+(defn- delete-associations-for-collection-concept
+  "Delete the associations associated with the given collection revision and association type,
+  no association deletion event is generated."
+  [context assoc-type coll-concept-id coll-revision-id]
+  (let [search-params (cutil/remove-nil-keys
+                       {:concept-type assoc-type
+                        :associated-concept-id coll-concept-id
+                        :associated-revision-id coll-revision-id
+                        :exclude-metadata true
+                        :latest true})]
+    (tombstone-associations context assoc-type search-params true)))
+
+(defmulti delete-associated-variable-associations
+  "Delete the variable associations associated with the given concept type and concept id."
+  (fn [context concept-type concept-id revision-id]
+    concept-type))
+
+(defmethod delete-associated-variable-associations :default
+  [context concept-type concept-id revision-id]
+  ;; does nothing by default
+  nil)
+
+(defmethod delete-associated-variable-associations :collection
+  [context concept-type concept-id revision-id]
+  ;; only delete the associated variable associations
+  ;; if the given revision-id is the latest revision of the collection
+  (let [[latest-coll] (search/find-concepts context {:concept-type :collection
+                                                     :concept-id concept-id
+                                                     :exclude-metadata true
+                                                     :latest true})]
+    (when (or (nil? revision-id)
+              (= revision-id (:revision-id latest-coll)))
+      (delete-associations-for-collection-concept context :variable-association concept-id nil))))
+
+(defmethod delete-associated-variable-associations :variable
+  [context concept-type concept-id revision-id]
+  (let [search-params (cutil/remove-nil-keys
+                       {:concept-type :variable-association
+                        :variable-concept-id concept-id
+                        :exclude-metadata true
+                        :latest true})]
+    ;; create variable association tombstones and queue the variable association delete events
+    (tombstone-associations context :variable-association search-params false)))
+
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
@@ -456,19 +520,26 @@
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
-            ;; skip publication flag is only set for tag association when its associated collection
-            ;; revision is force deleted. In this case, the tag association is no longer needed to
-            ;; be indexed, so we don't publish the deletion event.
+            ;; delete the associated variable associations if applicable
+            (delete-associated-variable-associations context concept-type concept-id nil)
+
+            ;; skip publication flag is set for tag association when its associated
+            ;; collection revision is force deleted. In this case, the association is no longer
+            ;; needed to be indexed, so we don't publish the deletion event.
             ;; We can't let the message get published because by the time indexer get the message,
             ;; the associated collection revision is gone and indexer won't be able to find it.
-            ;; The tag association is potentially created by a different user than the provider,
-            ;; so a collection revision is force deleted doesn't necessarily mean that the tag
-            ;; association is no longer needed. People might want to see what is in the old tag
+            ;; The association is potentially created by a different user than the provider,
+            ;; so a collection revision is force deleted doesn't necessarily mean that the
+            ;; association is no longer needed. People might want to see what is in the old
             ;; association potentially and force deleting it seems to run against the rationale
             ;; that we introduced revisions in the first place.
+            ;; skip publication flag is also set for variable association when its associated
+            ;; collection revision is deleted. Indexer will index the variables associated with
+            ;; the collection through the collection delete event. Not the variable association
+            ;; delete event.
             (when-not skip-publication
               (ingest-events/publish-event
-                context (ingest-events/concept-delete-event revisioned-tombstone)))
+               context (ingest-events/concept-delete-event revisioned-tombstone)))
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -481,6 +552,8 @@
 
 (defmethod save-concept-revision false
   [context concept]
+  (trace "concept:" (keys concept))
+  (trace "provider id:" (:provider-id concept))
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)
@@ -492,12 +565,20 @@
         _ (validate-system-level-concept concept provider)
         concept (->> concept
                      (set-or-generate-concept-id db provider)
-                     (set-or-generate-created-at db provider))]
+                     (set-created-at db provider))]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
-                       (try-to-save db provider))]
+                       (try-to-save db provider))
+          concept-type (:concept-type concept)
+          concept-id (:concept-id concept)
+          revision-id (:revision-id concept)]
+      (when (and (= :granule concept-type)
+                 (> revision-id 1))
+        (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
+          (when (util/is-tombstone? previous-concept)
+            (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id))))
       (ingest-events/publish-event
         context
         (ingest-events/concept-update-event concept))
@@ -507,16 +588,31 @@
   "Delete the tag associations associated with the given collection revision,
   no tag association deletion event is generated."
   [context coll-concept-id coll-revision-id]
-  (doseq [ta (search/find-concepts context {:concept-type :tag-association
-                                            :associated-concept-id coll-concept-id
-                                            :associated-revision-id coll-revision-id
-                                            :exclude-metadata true
-                                            :latest true})]
-    (save-concept-revision context {:concept-type :tag-association
-                                    :concept-id (:concept-id ta)
-                                    :deleted true
-                                    :user-id "cmr"
-                                    :skip-publication true})))
+  (delete-associations-for-collection-concept
+   context :tag-association coll-concept-id coll-revision-id))
+
+(defmulti force-delete-cascading-events
+  "Performs the cascading events of the force deletion of a concept"
+  (fn [context concept-type concept-id revision-id]
+    concept-type))
+
+(defmethod force-delete-cascading-events :collection
+  [context concept-type concept-id revision-id]
+  ;; delete the related tag associations and variable associations
+  (delete-associated-tag-associations context concept-id revision-id)
+  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :variable
+  [context concept-type concept-id revision-id]
+  ;; delete the related variable associations
+  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :default
+  [context concept-type concept-id revision-id]
+  ;; does nothing in default
+  nil)
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
@@ -527,10 +623,7 @@
         concept (c/get-concept db concept-type provider concept-id revision-id)]
     (if concept
       (do
-        (when (= :collection concept-type)
-          ;; delete the related tag associations
-          (delete-associated-tag-associations context concept-id revision-id)
-          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id))
+        (force-delete-cascading-events context concept-type concept-id revision-id)
         (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
                        msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -630,18 +723,21 @@
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
   to find concept id revision id tuples to delete. Stops once the function returns an empty set."
-  [context provider concept-type concept-id-revision-id-tuple-finder]
+  [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder]
   (let [db (util/context->db context)]
     (cutil/while-let
-      [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-      (info "Deleting" (count concept-id-revision-id-tuples)
-            "old concept revisions for provider" (:provider-id provider))
-      (when (= :collection concept-type)
-        (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-          ;; delete the related tag associations
-          (delete-associated-tag-associations context concept-id (long revision-id))
-          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
-      (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
+     [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+     (info "Deleting" (count concept-id-revision-id-tuples)
+           "old concept revisions for provider" (:provider-id provider))
+     (when (and tombstone-delete?
+                (= :granule concept-type))
+       ;; Remove any reference to granule from deleted-granule index
+       (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+         (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
+     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+       ;; performs the cascading delete actions first
+       (force-delete-cascading-events context concept-type concept-id (long revision-id)))
+     (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
@@ -651,9 +747,12 @@
         concept-type-name (str (name concept-type) "s")
         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
 
+    ;; We only want to publish the deleted-tombstone event in the case where a granule tombstone is
+    ;; being cleaned up, not when an old revision is being removed, because the case of old revision,
+    ;; a deleted-tombstone even would have been published already.
     (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      context provider concept-type
+      context provider concept-type false
       #(c/get-old-concept-revisions
          db
          provider
@@ -664,7 +763,7 @@
 
     (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      context provider concept-type
+      context provider concept-type true
       #(c/get-tombstoned-concept-revisions
          db
          provider

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schemas/Collection.xsd">
+	<ShortName>MODIST_L3b_SST</ShortName>
+	<VersionId>2014</VersionId>
+	<InsertTime>2017-01-11T22:00:00Z</InsertTime>
+	<LastUpdate>2017-01-10T17:00:00Z</LastUpdate>
+	<LongName>Moderate Resolution Imaging Spectroradiometer (MODIS) Terra Level-3 Binned Sea Surface Temperature (SST)</LongName>
+	<DataSetId>MODIST_L3b_SST</DataSetId>
+	<Description>MODIS (or Moderate Resolution Imaging Spectroradiometer) is a key instrument aboard the
+Terra (EOS AM) and Aqua (EOS PM) satellites. Terra's orbit around the Earth is timed so
+that it passes from north to south across the equator in the morning, while Aqua passes
+south to north over the equator in the afternoon. Terra MODIS and Aqua MODIS are viewing
+the entire Earth's surface every 1 to 2 days, acquiring data in 36 spectral bands, or
+groups of wavelengths (see MODIS Technical Specifications). These data will improve our
+understanding of global dynamics and processes occurring on the land, in the oceans, and
+in the lower atmosphere. MODIS is playing a vital role in the development of validated,
+global, interactive Earth system models able to predict global change accurately enough
+to assist policy makers in making sound decisions concerning the protection of our
+environment.</Description>
+	<Orderable>false</Orderable>
+	<Visible>true</Visible>
+	<ProcessingLevelId>3</ProcessingLevelId>
+	<ArchiveCenter>OB.DAAC</ArchiveCenter>
+	<CollectionState>Complete</CollectionState>
+	<DataFormat>netCDF4</DataFormat>
+	<SpatialKeywords>
+		<Keyword>Global</Keyword>
+	</SpatialKeywords>
+	<Temporal>
+		<RangeDateTime>
+			<BeginningDateTime>2000-02-24T00:00:00Z</BeginningDateTime>
+		</RangeDateTime>
+	</Temporal>
+	<Contacts>
+		<Contact>
+			<Role>Archive</Role>
+			<OrganizationName>Ocean Biology Distributed Active Archive Center (OB.DAAC)</OrganizationName>
+			<OrganizationEmails>
+				<Email>sdps@oceancolor.gsfc.nasa.gov</Email>
+			</OrganizationEmails>
+		</Contact>
+	</Contacts>
+	<ScienceKeywords>
+		<ScienceKeyword>
+			<CategoryKeyword>Oceans</CategoryKeyword>
+			<TopicKeyword>Ocean Optics</TopicKeyword>
+			<TermKeyword>Ocean Color</TermKeyword>
+		</ScienceKeyword>
+	</ScienceKeywords>
+	<Platforms>
+		<Platform>
+			<ShortName>Terra</ShortName>
+			<LongName>Terra</LongName>
+			<Type>Spacecraft</Type>
+			<Instruments>
+				<Instrument>
+					<ShortName>MODIS</ShortName>
+					<LongName>Moderate Resolution Imaging Spectroradiometer</LongName>
+				</Instrument>
+			</Instruments>
+		</Platform>
+	</Platforms>
+	<AdditionalAttributes>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi</Name>
+			<DataType>STRING</DataType>
+			<Description>Digital Object Identifier (DOI) that uniquely describes this data product</Description>
+			<Value>10.5067/TERRA/MODIS/L3B/SST/2014</Value>
+		</AdditionalAttribute>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi_authority</Name>
+			<DataType>STRING</DataType>
+			<Description>URL of the DOI resolving authority</Description>
+			<Value>http://dx.doi.org</Value>
+		</AdditionalAttribute>
+	</AdditionalAttributes>
+	<OnlineAccessURLs>
+		<OnlineAccessURL>
+			<URL>https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/L3BIN/</URL>
+			<URLDescription>OB.DAAC Data Distribution Website for MODIS-Terra L3B Sea Surface Temperature (SST) Product</URLDescription>
+			<MimeType>GET DATA</MimeType>
+		</OnlineAccessURL>
+	</OnlineAccessURLs>
+	<OnlineResources>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/</URL>
+			<Description>Ocean Biology Processing Group (OBPG) Homepage</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/terra</URL>
+			<Description>OB.DAAC MODIS-Terra Description Website</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/10.5067/TERRA/MODIS/L3B/SST/2014</URL>
+			<Description>OB.DAAC MODIS Landing Page</Description>
+			<Type>Landing Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/forum/oceancolor/forum_show.pl
+			</URL>
+			<Description>Ocean Biology Processing Group User Support Forum
+			</Description>
+			<Type>User Support</Type>
+		</OnlineResource>
+	</OnlineResources>
+	<Spatial>
+		<SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+		<HorizontalSpatialDomain>
+			<Geometry>
+				<CoordinateSystem>CARTESIAN</CoordinateSystem>
+				<BoundingRectangle>
+					<WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+					<NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+					<EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+					<SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+				</BoundingRectangle>
+			</Geometry>
+		</HorizontalSpatialDomain>
+		<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+	</Spatial>
+</Collection>

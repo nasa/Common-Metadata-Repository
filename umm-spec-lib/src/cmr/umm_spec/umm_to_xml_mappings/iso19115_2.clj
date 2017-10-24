@@ -2,16 +2,19 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
@@ -201,7 +204,7 @@
       [:gmd:associationType
        [:gmd:DS_AssociationTypeCode
         {:codeList (str (:ngdc iso/code-lists) "#DS_AssociationTypeCode")
-         :codeListValue "Input Collection"} "Input Collection"]]]]))
+         :codeListValue "crossReference"} "crossReference"]]]]))
 
 (defn extent-description-string
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
@@ -210,11 +213,10 @@
   (let [temporal (first (:TemporalExtents c))
         m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
-           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)
-           "Temporal Range Type" (:TemporalRangeType temporal)}]
-    (str/join "," (for [[k v] m
+           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)}]
+    (string/join "," (for [[k v] m
                         :when (some? v)]
-                    (str k "=" (str/replace v #"[,=]" ""))))))
+                    (str k "=" (string/replace v #"[,=]" ""))))))
 
 (defn- generate-user-constraints
   "Returns the constraints appropriate for the given metadata."
@@ -234,184 +236,192 @@
           [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
 
-
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
   (let [platforms (platform/platforms-with-id (:Platforms c))
         {additional-attributes :AdditionalAttributes
          abstract :Abstract
-         version-description :VersionDescription} c]
+         version-description :VersionDescription
+         processing-level :ProcessingLevel} c]
     (xml
-      [:gmi:MI_Metadata
-       iso19115-2-xml-namespaces
-       [:gmd:fileIdentifier (char-string (:EntryTitle c))]
-       [:gmd:language (char-string "eng")]
-       [:gmd:characterSet
-        [:gmd:MD_CharacterSetCode {:codeList (str (:ngdc iso/code-lists) "#MD_CharacterSetCode")
-                                   :codeListValue "utf8"} "utf8"]]
-       [:gmd:hierarchyLevel
-        [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
-                            :codeListValue "series"} "series"]]
-       (data-contact/generate-data-center-metadata-author-contact-persons (:DataCenters c))
-       (data-contact/generate-metadata-author-contact-persons (:ContactPersons c))
-       (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
+     [:gmi:MI_Metadata
+      iso19115-2-xml-namespaces
+      [:gmd:fileIdentifier (char-string (:EntryTitle c))]
+      [:gmd:language (char-string "eng")]
+      [:gmd:characterSet
+       [:gmd:MD_CharacterSetCode {:codeList (str (:ngdc iso/code-lists) "#MD_CharacterSetCode")
+                                  :codeListValue "utf8"} "utf8"]]
+      [:gmd:hierarchyLevel
+       [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
+                           :codeListValue "series"} "series"]]
+      (data-contact/generate-data-center-metadata-author-contact-persons (:DataCenters c))
+      (data-contact/generate-metadata-author-contact-persons (:ContactPersons c))
+      (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
         archive-centers
         [:gmd:contact {:gco:nilReason "missing"}])
-       (generate-datestamp c)
-       [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
-       [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
-       (spatial/coordinate-system-element c)
-       (generate-metadata-dates c)
-       [:gmd:identificationInfo
+      (generate-datestamp c)
+      [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
+      [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
+      (spatial/coordinate-system-element c)
+      (generate-metadata-dates c)
+      [:gmd:identificationInfo
         [:gmd:MD_DataIdentification
-         [:gmd:citation
-          [:gmd:CI_Citation
-           [:gmd:title (char-string (:EntryTitle c))]
-           (generate-data-dates c)
-           [:gmd:edition (char-string (:Version c))]
-           [:gmd:identifier
-            [:gmd:MD_Identifier
-             [:gmd:code (char-string (:ShortName c))]
-             [:gmd:version (char-string (:Version c))]]]
-           (when-let [doi (:DOI c)]
-             [:gmd:identifier
+          [:gmd:citation
+           [:gmd:CI_Citation
+            [:gmd:title (char-string (:EntryTitle c))]
+            (generate-data-dates c)
+            [:gmd:edition (char-string (:Version c))]
+            (collection-citation/convert-date c)
+            [:gmd:identifier
               [:gmd:MD_Identifier
-               (when-let [authority (:Authority doi)]
-                 [:gmd:authority
-                  [:gmd:CI_Citation
-                   [:gmd:title [:gco:CharacterString ""]]
-                   [:gmd:date ""]
-                   [:gmd:citedResponsibleParty
-                    [:gmd:CI_ResponsibleParty
-                     [:gmd:organisationName [:gco:CharacterString authority]]
-                     [:gmd:role
-                      [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                         :codeListValue ""} "authority"]]]]]])
-               [:gmd:code [:gco:CharacterString (:DOI doi)]]
-               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-               [:gmd:description [:gco:CharacterString "DOI"]]]])]]
-         [:gmd:abstract (char-string (if (or abstract version-description)
-                                       (str abstract iso/version-description-separator version-description)
-                                       su/not-provided))]
-         [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-         [:gmd:status
-          (when-let [collection-progress (:CollectionProgress c)]
-            [:gmd:MD_ProgressCode
-             {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
-              :codeListValue (str/lower-case collection-progress)}
-             collection-progress])]
-         (data-contact/generate-data-centers (:DataCenters c))
-         (data-contact/generate-data-center-contact-persons (:DataCenters c))
-         (data-contact/generate-data-center-contact-groups (:DataCenters c))
-         (data-contact/generate-contact-persons (:ContactPersons c))
-         (data-contact/generate-contact-groups (:ContactGroups c))
-         (sdru/generate-browse-urls c)
-         (generate-projects-keywords (:Projects c))
-         (kws/generate-iso19115-descriptive-keywords
-          kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
-         (kws/generate-iso19115-descriptive-keywords
-          kws/location-keyword-type (map kws/location-keyword->iso-keyword-string (:LocationKeywords c)))
-         (kws/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
-         (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
-         (platform/generate-platform-keywords platforms)
-         (platform/generate-instrument-keywords platforms)
-         (generate-user-constraints c)
-         (ma/generate-non-source-metadata-associations c)
-         (generate-publication-references (:PublicationReferences c))
-         (sdru/generate-publication-related-urls c)
-         [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
-         (iso-topic-categories/generate-iso-topic-categories c)
-         (when (:TilingIdentificationSystems c)
+                [:gmd:code (char-string (:ShortName c))]
+                [:gmd:version (char-string (:Version c))]]]
+            (when-let [doi (:DOI c)]
+              [:gmd:identifier
+                [:gmd:MD_Identifier
+                  (when-let [authority (:Authority doi)]
+                    [:gmd:authority
+                     [:gmd:CI_Citation
+                      [:gmd:title [:gco:CharacterString ""]]
+                      [:gmd:date ""]
+                      [:gmd:citedResponsibleParty
+                       [:gmd:CI_ResponsibleParty
+                        [:gmd:organisationName [:gco:CharacterString authority]]
+                        [:gmd:role
+                         [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                            :codeListValue ""} "authority"]]]]]])
+                  [:gmd:code [:gco:CharacterString (:DOI doi)]]
+                  [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+                  [:gmd:description [:gco:CharacterString "DOI"]]]])
+            (when-let [collection-data-type (:CollectionDataType c)]
+              [:gmd:identifier
+                [:gmd:MD_Identifier
+                  [:gmd:code [:gco:CharacterString collection-data-type]]
+                  [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+                  [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (collection-citation/convert-creator c)
+            (collection-citation/convert-editor c)
+            (collection-citation/convert-publisher c)
+            (collection-citation/convert-release-place c)
+            (collection-citation/convert-online-resource c)
+            (collection-citation/convert-data-presentation-form c)
+            (collection-citation/convert-series-name-and-issue-id c)
+            (collection-citation/convert-other-citation-details c)]]
+          [:gmd:abstract (char-string (if (or abstract version-description)
+                                        (str abstract iso/version-description-separator version-description)
+                                        su/not-provided))]
+          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
+          (collection-progress/generate-collection-progress c)
+          (data-contact/generate-data-centers (:DataCenters c))
+          (data-contact/generate-data-center-contact-persons (:DataCenters c))
+          (data-contact/generate-data-center-contact-groups (:DataCenters c))
+          (data-contact/generate-contact-persons (:ContactPersons c))
+          (data-contact/generate-contact-groups (:ContactGroups c))
+          (sdru/generate-browse-urls c)
+          (generate-projects-keywords (:Projects c))
+          (kws/generate-iso19115-descriptive-keywords
+           kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+          (kws/generate-iso19115-descriptive-keywords
+           kws/location-keyword-type (map kws/location-keyword->iso-keyword-string (:LocationKeywords c)))
+          (kws/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
+          (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
+          (platform/generate-platform-keywords platforms)
+          (platform/generate-instrument-keywords platforms)
+          (generate-user-constraints c)
+          (ma/generate-non-source-metadata-associations c)
+          (generate-publication-references (:PublicationReferences c))
+          (sdru/generate-publication-related-urls c)
+          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
+          (iso-topic-categories/generate-iso-topic-categories c)
+          (when (:TilingIdentificationSystems c)
+            [:gmd:extent
+             [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+              [:gmd:description
+               [:gco:CharacterString "Tiling Identitfication System"]]
+              (tiling/tiling-system-elements c)]])
           [:gmd:extent
-           [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+           [:gmd:EX_Extent {:id "boundingExtent"}
             [:gmd:description
-             [:gco:CharacterString "Tiling Identitfication System"]]
-            (tiling/tiling-system-elements c)]])
-         [:gmd:extent
-          [:gmd:EX_Extent {:id "boundingExtent"}
-           [:gmd:description
-            [:gco:CharacterString (extent-description-string c)]]
-           (spatial/generate-zone-identifier c)
-           (spatial/spatial-extent-elements c)
-           (spatial/generate-vertical-domain c)
-           (spatial/generate-orbit-parameters c)
-           (for [temporal (:TemporalExtents c)
-                 rdt (:RangeDateTimes temporal)]
-             [:gmd:temporalElement
-              [:gmd:EX_TemporalExtent
-               [:gmd:extent
-                [:gml:TimePeriod {:gml:id (su/generate-id)}
-                 [:gml:beginPosition (:BeginningDateTime rdt)]
-                 (if (:EndsAtPresentFlag temporal)
-                   [:gml:endPosition {:indeterminatePosition "now"}]
-                   [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
-           (for [temporal (:TemporalExtents c)
-                 date (:SingleDateTimes temporal)]
-             [:gmd:temporalElement
-              [:gmd:EX_TemporalExtent
-               [:gmd:extent
-                [:gml:TimeInstant {:gml:id (su/generate-id)}
-                 [:gml:timePosition date]]]]])]]
-         [:gmd:processingLevel
-          [:gmd:MD_Identifier
-           [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
-           [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (sdru/generate-service-related-url (:RelatedUrls c))
-       (aa/generate-content-info-additional-attributes additional-attributes)
+             [:gco:CharacterString (extent-description-string c)]]
+            (spatial/generate-zone-identifier c)
+            (spatial/spatial-extent-elements c)
+            (spatial/generate-vertical-domain c)
+            (spatial/generate-orbit-parameters c)
+            (for [temporal (:TemporalExtents c)
+                  rdt (:RangeDateTimes temporal)]
+              [:gmd:temporalElement
+               [:gmd:EX_TemporalExtent
+                [:gmd:extent
+                 [:gml:TimePeriod {:gml:id (su/generate-id)}
+                  [:gml:beginPosition (:BeginningDateTime rdt)]
+                  (if (:EndsAtPresentFlag temporal)
+                    [:gml:endPosition {:indeterminatePosition "now"}]
+                    [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
+            (for [temporal (:TemporalExtents c)
+                  date (:SingleDateTimes temporal)]
+              [:gmd:temporalElement
+               [:gmd:EX_TemporalExtent
+                [:gmd:extent
+                 [:gml:TimeInstant {:gml:id (su/generate-id)}
+                  [:gml:timePosition date]]]]])]]
+          (when processing-level
+            [:gmd:processingLevel
+             (proc-level/generate-iso-processing-level processing-level)])]]
+      (sdru/generate-service-related-url (:RelatedUrls c))
+      (aa/generate-content-info-additional-attributes additional-attributes)
+      (when processing-level
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
          [:gmd:attributeDescription ""]
          [:gmd:contentType ""]
          [:gmd:processingLevelCode
-          [:gmd:MD_Identifier
-           [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
-           [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (let [related-url-distributions (sdru/generate-distributions c)
-             data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
+           (proc-level/generate-iso-processing-level processing-level)]]])
+      (let [related-url-distributions (sdru/generate-distributions c)
+            data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
         (when (or related-url-distributions data-center-distributors)
-         [:gmd:distributionInfo
-          [:gmd:MD_Distribution
-           related-url-distributions
-           data-center-distributors]]))
-       [:gmd:dataQualityInfo
-        [:gmd:DQ_DataQuality
-         [:gmd:scope
-          [:gmd:DQ_Scope
-           [:gmd:level
-            [:gmd:MD_ScopeCode
-             {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
-              :codeListValue "series"}
-             "series"]]]]
-         [:gmd:report
-          [:gmd:DQ_AccuracyOfATimeMeasurement
-           [:gmd:measureIdentification
+          [:gmd:distributionInfo
+           [:gmd:MD_Distribution
+            related-url-distributions
+            data-center-distributors]]))
+      [:gmd:dataQualityInfo
+       [:gmd:DQ_DataQuality
+        [:gmd:scope
+         [:gmd:DQ_Scope
+          [:gmd:level
+           [:gmd:MD_ScopeCode
+            {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
+             :codeListValue "series"}
+            "series"]]]]
+        [:gmd:report
+         [:gmd:DQ_AccuracyOfATimeMeasurement
+          [:gmd:measureIdentification
             [:gmd:MD_Identifier
-             [:gmd:code
-              (char-string "PrecisionOfSeconds")]]]
-           [:gmd:result
-            [:gmd:DQ_QuantitativeResult
-             [:gmd:valueUnit ""]
-             [:gmd:value
-              [:gco:Record {:xsi:type "gco:Real_PropertyType"}
-               [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
-         (when-let [quality (:Quality c)]
-           [:gmd:report
-            [:gmd:DQ_QuantitativeAttributeAccuracy
-             [:gmd:evaluationMethodDescription (char-string quality)]
-             [:gmd:result {:gco:nilReason "missing"}]]])
-         [:gmd:lineage
-          [:gmd:LI_Lineage
-           (aa/generate-data-quality-info-additional-attributes additional-attributes)
-           (when-let [processing-centers (data-contact/generate-processing-centers (:DataCenters c))]
+              [:gmd:code
+               (char-string "PrecisionOfSeconds")]]]
+          [:gmd:result
+           [:gmd:DQ_QuantitativeResult
+            [:gmd:valueUnit ""]
+            [:gmd:value
+             [:gco:Record {:xsi:type "gco:Real_PropertyType"}
+              [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
+        (when-let [quality (:Quality c)]
+          [:gmd:report
+           [:gmd:DQ_QuantitativeAttributeAccuracy
+            [:gmd:evaluationMethodDescription (char-string quality)]
+            [:gmd:result {:gco:nilReason "missing"}]]])
+        [:gmd:lineage
+         [:gmd:LI_Lineage
+          (aa/generate-data-quality-info-additional-attributes additional-attributes)
+          (when-let [processing-centers (data-contact/generate-processing-centers (:DataCenters c))]
             [:gmd:processStep
              [:gmd:LI_ProcessStep
               [:gmd:description {:gco:nilReason "missing"}]
               processing-centers]])
-           (ma/generate-source-metadata-associations c)]]]]
-       [:gmi:acquisitionInformation
-        [:gmi:MI_AcquisitionInformation
-         (platform/generate-instruments platforms)
-         (platform/generate-child-instruments platforms)
-         (project/generate-projects (:Projects c))
-         (platform/generate-platforms platforms)]]])))
+          (ma/generate-source-metadata-associations c)]]]]
+      [:gmi:acquisitionInformation
+       [:gmi:MI_AcquisitionInformation
+        (platform/generate-instruments platforms)
+        (platform/generate-child-instruments platforms)
+        (project/generate-projects (:Projects c))
+        (platform/generate-platforms platforms)]]])))

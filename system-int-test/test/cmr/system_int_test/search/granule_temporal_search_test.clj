@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.search.granule-temporal-search-test
   "Integration test for CMR granule temporal search"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -13,7 +14,7 @@
 
 (deftest search-by-temporal
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:TemporalExtents
-                                                                            [(data-umm-c/temporal-extent 
+                                                                            [(data-umm-cmn/temporal-extent
                                                                               {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00Z"

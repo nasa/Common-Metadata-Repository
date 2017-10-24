@@ -1,0 +1,268 @@
+<DIF xmlns='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:dif='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd'>
+  <Entry_ID>
+    <Short_Name>MOP03JM</Short_Name>
+    <Version>6</Version>
+  </Entry_ID>
+  <Version_Description>Not provided</Version_Description>
+  <Entry_Title>MOPITT Gridded Monthly CO Retrievals (Near and Thermal Infrared Radiances) V006</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Release_Date>2013</Dataset_Release_Date>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/TERRA/MOPITT/DATA301</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://eosweb.larc.nasa.gov/project/mopitt/mopitt_table</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASDC</First_Name>
+      <Last_Name>USER SERVICES</Last_Name>
+      <Address>
+        <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+        <Street_Address>User and Data Services</Street_Address>
+        <Street_Address>NASA Langley Research Center</Street_Address>
+        <Street_Address>Mail Stop 157D</Street_Address>
+        <City>Hampton</City>
+        <State_Province>VA</State_Province>
+        <Postal_Code>23681-2199</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>757-864-8656</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>support-asdc@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>JOHN</First_Name>
+      <Middle_Name>C.</Middle_Name>
+      <Last_Name>GILLE</Last_Name>
+      <Address>
+        <Street_Address>National Center for Atmospheric Research</Street_Address>
+        <Street_Address>PO Box 3000</Street_Address>
+        <City>Boulder</City>
+        <State_Province>Colorado</State_Province>
+        <Postal_Code>80307</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>303-497-8062</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>gille@ucar.edu</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>JAMES</First_Name>
+      <Middle_Name>R.</Middle_Name>
+      <Last_Name>DRUMMOND</Last_Name>
+      <Address>
+        <Street_Address>Physics Department, University of Toronto, 60 St.</Street_Address>
+        <City>Toronto</City>
+        <State_Province>Ontario</State_Province>
+        <Postal_Code>M5S 1A7</Postal_Code>
+        <Country>Canada</Country>
+      </Address>
+      <Phone>
+        <Number>(416) 978-4723</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>(416) 978-8905</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>jim@atmosp.physics.utoronto.ca</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <First_Name>DALLAS</First_Name>
+      <Last_Name>MASTERS</Last_Name>
+      <Address>
+        <Street_Address>University of Colorado</Street_Address>
+        <Street_Address>CB 431/ CCAR</Street_Address>
+        <Street_Address>PO Box 3000</Street_Address>
+        <City>Boulder</City>
+        <State_Province>CO</State_Province>
+        <Postal_Code>80309-0431</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>303.492.4075</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>303.492.2825</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>mastersd@ucar.edu</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords uuid='080389c4-68d4-41ee-ab89-070794038c8e'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AIR QUALITY</Term>
+    <Variable_Level_1>CARBON MONOXIDE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords uuid='88a1b416-1589-45a4-9923-452975ec35c7'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC CHEMISTRY</Term>
+    <Variable_Level_1>CARBON AND HYDROCARBON COMPOUNDS</Variable_Level_1>
+    <Variable_Level_2>CARBON MONOXIDE</Variable_Level_2>
+  </Science_Keywords>
+  <ISO_Topic_Category uuid='1ebf71bd-d007-42f8-8f9b-8c44a6b65a28'>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <ISO_Topic_Category uuid='81a52fa1-4a8f-4c4d-9736-7aaf0859df9d'>ENVIRONMENT</ISO_Topic_Category>
+  <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+  <Platform uuid='80eca755-c564-4616-b910-a4c4387b7c54'>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Instrument uuid='3d148e55-a196-4779-ad6e-71a6acb5ec92'>
+      <Short_Name>MOPITT</Short_Name>
+      <Long_Name>Measurements of Pollution In The Troposphere</Long_Name>
+      <Sensor>
+        <Short_Name>Scanning Gas Correlated Radiometer</Short_Name>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>2000-03-03T00:00:00Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>90.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location uuid='51e3593f-4b42-4141-972e-96666c479f9c'>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project uuid='ea8d8915-bce6-4f31-855c-e1a9085acbc2'>
+    <Short_Name>MOPITT</Short_Name>
+    <Long_Name>Measurements Of Pollution In The Troposphere</Long_Name>
+  </Project>
+  <Dataset_Language>English</Dataset_Language>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>ASDC</Short_Name>
+      <Long_Name>Atmospheric Science Data Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://eosweb.larc.nasa.gov</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <First_Name>ASDC</First_Name>
+        <Last_Name>USER SERVICES</Last_Name>
+        <Address>
+          <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+          <Street_Address>User and Data Services</Street_Address>
+          <Street_Address>NASA Langley Research Center</Street_Address>
+          <Street_Address>Mail Stop 157D</Street_Address>
+          <City>Hampton</City>
+          <State_Province>VA</State_Province>
+          <Postal_Code>23681-2199</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>757-864-8656</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Email>support-asdc@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>online</Distribution_Media>
+    <Fees>no fees</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>The MOPITT L3 files contain daily and monthly mean gridded versions of the daily L2 CO profile and total column retrievals. The averaging kernels associated with each retrieval are also gridded and included in the L3 files. For a description of the file contents, refer to the File Spec Document. Please see the MOPITT L2 Data Quality Statement for additional information about the quality and the limitations of the retrievals. [From the MOPITT V3 Level 3 Data Quality Summary]Measurements Of Pollution In The Troposphere (MOPITT) was successfully launched into sun-synchronous polar orbit aboard Terra, NASA's first Earth Observing System spacecraft on December 18, 1999. The MOPITT instrument was constructed by a consortium of Canadian companies and funded by the Space Science Division of the Canadian Space Agency.</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type uuid='6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1'>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </URL_Content_Type>
+    <URL>http://www.atmosp.physics.utoronto.ca/MOPITT/home.html</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1'>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </URL_Content_Type>
+    <URL>http://www.acd.ucar.edu/mopitt/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/mopitt/mopitt_table</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/mopitt/mopitt-quality-statements</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='3779ec72-c1e0-4a0f-aff8-8e2a2a7af486'>
+      <Type>GET DATA</Type>
+      <Subtype>EOSDIS DATA POOL</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://l5eil01.larc.nasa.gov/MOPITT/MOP03JM.006</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5cb9c24e-1afe-471d-9f1a-808d390ab623'>
+      <Type>GET DATA</Type>
+      <Subtype>REVERB</Subtype>
+    </URL_Content_Type>
+    <URL>http://reverb.echo.nasa.gov/reverb/#utf8=%E2%9C%93&amp;spatial_map=satellite&amp;spatial_type=rectangle&amp;keywords=MOP03</URL>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <DIF_Revision_History>2006-04-24, S. Ritz added this DIF as place-holder. Please replace DIF. 2007-06-18, Removed Orginating Center, Distribution Info, Use Constraints, Data Set Language, Quality, Data Resolusotion, and Data Set Citation. Updated Data Set ID, Related URL, Entry Title, and Personnel. 2008-05-29, S. Ritz updated data pool link. 2015-09-11, Updated platform and instrument information for Bedi review.</DIF_Revision_History>
+  <Metadata_Dates>
+    <Metadata_Creation>2013-06-10</Metadata_Creation>
+    <Metadata_Last_Revision>2015-09-11</Metadata_Last_Revision>
+    <Data_Creation>Not provided</Data_Creation>
+    <Data_Last_Revision>Not provided</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>identifier_product_doi</Name>
+    <DataType>STRING</DataType>
+    <Description>Digital object identifier that uniquely identifies this data product</Description>
+    <Value>10.5067/TERRA/MOPITT/DATA301</Value>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>identifier_product_doi_authority</Name>
+    <DataType>STRING</DataType>
+    <Description>URL of the digital object identifier resolving authority</Description>
+    <Value>http://dx.doi.org</Value>
+  </Additional_Attributes>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Product_Flag>DATA_PRODUCT_FILE</Product_Flag>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.earthdata.cmr.restriction</Group>
+      <Name>Restriction</Name>
+      <Value>5</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

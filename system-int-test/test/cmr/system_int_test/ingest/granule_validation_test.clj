@@ -14,6 +14,7 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.url-helper :as url]
@@ -29,8 +30,8 @@
 
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                       {:AdditionalAttributes
-                       [(data-umm-c/additional-attribute {:Name "bool" :DataType :boolean :value true})
-                        (data-umm-c/additional-attribute {:Name "bool" :DataType :boolean :Value true})]})))
+                       [(data-umm-cmn/additional-attribute {:Name "bool" :DataType :boolean :value true})
+                        (data-umm-cmn/additional-attribute {:Name "bool" :DataType :boolean :Value true})]})))
 
 
 
@@ -61,7 +62,7 @@
              (let [collection (data-umm-c/collection {:EntryTitle "correct"
                                               :ShortName "S1"
                                               :Version "V1"
-                                              :TemporalExtents [(data-umm-c/temporal-extent
+                                              :TemporalExtents [(data-umm-cmn/temporal-extent
                                                           {:beginning-date-time "2009-03-08T00:00:00Z"
                                                            :ending-date-time "2121-11-04T00:00:00Z"
                                                            :ends-at-present? true})]})
@@ -305,7 +306,7 @@
    (assert-invalid-spatial coord-sys umm-c-coord-sys shapes errors :echo10))
   ([coord-sys umm-c-coord-sys shapes errors metadata-format]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-     (assert-invalid {:SpatialExtent (data-umm-c/spatial {:gsr umm-c-coord-sys})}
+     (assert-invalid {:SpatialExtent (data-umm-cmn/spatial {:gsr umm-c-coord-sys})}
                      {:spatial-coverage (apply dg/spatial shapes)}
                      ["SpatialCoverage" "Geometries" 0]
                      errors
@@ -314,7 +315,7 @@
 (defn assert-valid-spatial
   [coord-sys umm-c-coord-sys shapes]
   (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-    (assert-valid {:SpatialExtent (data-umm-c/spatial {:gsr umm-c-coord-sys})}
+    (assert-valid {:SpatialExtent (data-umm-cmn/spatial {:gsr umm-c-coord-sys})}
                   {:spatial-coverage (apply dg/spatial shapes)})))
 
 (defn assert-conflict
@@ -379,7 +380,7 @@
   (testing "granule with spatial but parent collection does not"
     (are2 [coll-gsr]
           (assert-invalid
-            {:SpatialExtent (when coll-gsr (data-umm-c/spatial {:gsr coll-gsr}))}
+            {:SpatialExtent (when coll-gsr (data-umm-cmn/spatial {:gsr coll-gsr}))}
             {:spatial-coverage
              (dg/spatial
                (umm-s/set-coordinate-system
@@ -397,7 +398,7 @@
           "NO_SPATIAL")))
 
 (deftest missing-spatial-coverage-test
-  (let [collection-attrs {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}
+  (let [collection-attrs {:SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})}
         granule-attrs {:format "application/echo10+xml; charset=utf-8"}]
     (assert-invalid collection-attrs
                     granule-attrs

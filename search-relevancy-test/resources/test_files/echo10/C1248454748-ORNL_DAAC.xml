@@ -1,0 +1,347 @@
+<Collection>
+            <ShortName>Wildfires_2014_NWT_Canada_1307</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2016-05-11T00:00:00Z</InsertTime>
+            <LastUpdate>2016-05-11T00:00:00Z</LastUpdate>
+            <LongName>ABoVE: Burn Severity, Fire Progression, Landcover and Field Data, NWT, Canada, 2014</LongName>
+            <DataSetId>ABoVE: Burn Severity, Fire Progression, Landcover and Field Data, NWT, Canada, 2014</DataSetId>
+            <Description>This data set provides peatland landcover classification maps, fire progression maps, and vegetation community biophysical data collected from areas that were burned by wildfire in 2014 in the Northwest Territories, Canada. The peatland maps include peatland type (bog, fen, marsh, swamp) and level of biomass (open, forested). The fire progression maps enabled an assessment of wildfire progression rates at a daily time scale. Field data, collected in 2015, include an estimate of burn severity, woody seedling/sprouting data, soil moisture, and tree diameter and height of burned sites and similar vegetation characterization at landcover validation sites.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1307</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2016-05-11T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Bourgeau-Chavez, L.L., N.H.F. French, S. Endres, L. Jenkins, M. Battaglia, E. Serocki, and M. Billmire. 2016. ABoVE: Burn Severity, Fire Progression, Landcover and Field Data, NWT, Canada, 2014. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1307</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1997-07-07T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2015-07-15T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>FIRE ECOLOGY</Value>
+                        <VariableLevel2Keyword>
+                            <Value>FIRE OCCURRENCE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>BIOMASS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>DOMINANT SPECIES</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PLANT CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION COVER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LAND USE/LAND COVER CLASSIFICATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE/WATER CONTENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>FIELD SURVEYS</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>SOIL MOISTURE PROBE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>SOIL MOISTURE PROBE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>SOIL TEMPERATURE PROBE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>SOIL TEMPERATURE PROBE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>AQUA</ShortName>
+                    <LongName>Earth Observing System, AQUA</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>ABoVE</ShortName>
+                    <LongName>Arctic-Boreal Vulnerability Experiment</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/ABOVE/guides/Wildfires_2014_NWT_Canada.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1307</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/2014_NWT_fireprogression.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_1326.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_1326_field_of_view.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_1326_photos.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_1326_photo_locations.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_eastern.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_eastern_field_of_view.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_eastern_photos.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/july_eastern_photo_locations.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1326.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1326_field_of_view.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1326_photos.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1326_photo_locations.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1327.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1327_field_of_view.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1327_photos.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_1327_photo_locations.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_eastern.kmz</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_eastern_field_of_view.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_eastern_photos.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/june_eastern_photo_locations.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/NWT_CANADA_Wildfires_2014_generaltable.csv</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/Wildfires_2014_NWT_Canada/comp/Wildfires_2014_NWT_Canada.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/1307_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=1307</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-121.60</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>64.25</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-110.68</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>60.33</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

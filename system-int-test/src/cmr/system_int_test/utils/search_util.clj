@@ -158,6 +158,15 @@
     (get-search-failure-data
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
+(defn process-response
+  "Returns the response body with response status added."
+  [{:keys [status body]}]
+  (let [body (util/kebab-case-data body)]
+    (if (map? body)
+      (assoc body :status status)
+      {:status status
+       :body body})))
+
 (defn retrieve-concept
   "Returns the concept metadata through the search concept retrieval endpoint using the cmr
   concept-id and optionally revision-id."
@@ -170,11 +179,12 @@
          url (url/retrieve-concept-url concept-type concept-id revision-id)
          url (if url-extension
                (str url "." url-extension)
-               url)]
-     (client/get url (merge {:accept (when-not url-extension format-mime-type)
-                             :throw-exceptions false
-                             :connection-manager (s/conn-mgr)}
-                            options)))))
+               url)
+         args (merge {:accept (when-not url-extension format-mime-type)
+                      :throw-exceptions false
+                      :connection-manager (s/conn-mgr)}
+                     options)]
+     (client/get url args))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -630,6 +640,19 @@
                                :connection-manager (s/conn-mgr)
                                :accept accept})]
      (parse-reference-response false response))))
+
+(defn find-deleted-granules
+  "Returns the references that are found by searching deleted granules"
+  ([params]
+   (find-deleted-granules params :json))
+  ([params format-key]
+   (let [accept (when format-key
+                  (mime-types/format->mime-type format-key))
+         response (client/get (url/search-deleted-granules-url)
+                              {:query-params params
+                               :connection-manager (s/conn-mgr)
+                               :accept accept})]
+     response)))
 
 (defn clear-caches
   "Clears caches in the search application"

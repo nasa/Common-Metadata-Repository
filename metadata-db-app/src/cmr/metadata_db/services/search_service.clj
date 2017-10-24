@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.services.search-service
   "Contains functions for retrieving concepts using parameter search"
-  (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.services.util :as db-util]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.services.messages :as msg]
-            [clojure.set :as set]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.metadata-db.services.util :as db-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
@@ -20,13 +21,15 @@
   {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
    :tag #{:concept-id :native-id}
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
-   :service #{:concept-id :native-id}
+   :service #{:provider-id :concept-id :native-id}
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}
-   :variable #{:concept-id :native-id}
+   :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                           :variable-name}})
+                           :variable-concept-id}
+   :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                           :service-concept-id}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -114,7 +117,7 @@
   [context params]
   (validate-find-params params)
   (cond
-    (contains? #{:tag :tag-association :service :acl :humanizer :variable :variable-association}
+    (contains? #{:tag :tag-association :acl :humanizer :variable-association :service-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 

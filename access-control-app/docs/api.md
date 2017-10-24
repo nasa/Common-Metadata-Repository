@@ -190,7 +190,7 @@ Content-Type: application/json
 The members in a group can be added by sending a POST request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames. The concept id and updated revision number is returned.
 
 ```
-curl -i -XPOST -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+curl -i -XPOST -H "Echo-Token: XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
 '["user1", "user2", "user3"]'
 
 HTTP/1.1 200 OK
@@ -204,7 +204,7 @@ Content-Type: application/json
 The members in a group can be removed by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames to remove. The concept id and updated revision number is returned.
 
 ```
-curl -i -XDELETE -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+curl -i -XDELETE -H "Echo-Token: XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
 '["user1", "user2", "user3"]'
 
 HTTP/1.1 200 OK

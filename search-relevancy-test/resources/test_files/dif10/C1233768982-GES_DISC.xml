@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>AIRIBRAD_NRT</Short_Name>
+        <Version>005</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>AIRS/Aqua L1B Near Real Time (NRT) Infrared (IR) geolocated and calibrated radiances V005 (AIRIBRAD_NRT) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>AIRS Science Team/Moustafa Chahine</Dataset_Creator>
+        <Dataset_Title>AIRS/Aqua L1B Near Real Time (NRT) Infrared (IR) geolocated and calibrated radiances V005</Dataset_Title>
+        <Dataset_Series_Name>AIRIBRAD_NRT</Dataset_Series_Name>
+        <Dataset_Release_Date>2007-07-26</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>005</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/AIRIBRAD_NRT_005.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ED</First_Name>
+            <Last_Name>ESFANDIARI</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5960</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>asghar.e.esfandiari@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>DUST/ASH/SMOKE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL/ENGINEERING</Topic>
+        <Term>INFRARED WAVELENGTHS</Term>
+        <Variable_Level_1>INFRARED RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>SULFUR COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>SULFUR DIOXIDE</Variable_Level_2>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <ISO_Topic_Category>IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+    <Ancillary_Keyword>Dust Flag</Ancillary_Keyword>
+    <Ancillary_Keyword>Dust Score</Ancillary_Keyword>
+    <Ancillary_Keyword>Volcanic Sulfur Dioxide Indicator</Ancillary_Keyword>
+    <Ancillary_Keyword>FLUX</Ancillary_Keyword>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Ancillary_Keyword>NRT</Ancillary_Keyword>
+    <Ancillary_Keyword>RELATIVE_START_DATE: -7</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System, AQUA</Long_Name>
+        <Instrument>
+            <Short_Name>AIRS</Short_Name>
+            <Long_Name>Atmospheric Infrared Sounder</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2015-12-15</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>OCEAN</Location_Category>
+        <Location_Type>ATLANTIC OCEAN</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>OCEAN</Location_Category>
+        <Location_Type>INDIAN OCEAN</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>OCEAN</Location_Category>
+        <Location_Type>PACIFIC OCEAN</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL LAND</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL OCEAN</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>13.5 km FOV at nadir</Latitude_Resolution>
+        <Longitude_Resolution>13.5 km FOV at nadir</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+        <Temporal_Resolution>Twice per day; day and night; Orbital repeat cycle 16 days</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System (EOS), AQUA</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>LANCE</Short_Name>
+        <Long_Name>Land, Atmosphere Near real-time Capability for EOS</Long_Name>
+    </Project>
+    <Access_Constraints>You must register using the EOSDIS User Registration System in order to access LANCE NRT AIRS data. You can register at https://urs.eosdis.nasa.gov/users/new</Access_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GES DAAC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>1.6 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:50:47 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/AIRS/data-holdings/by-data-product/images/airsibrad.jpg"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dd3ee01b045fab4ec041/file</URL>
+        <Description>Sample image of AIRIBRAD</Description>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>The AIRS Level 1B Near Real Time (NRT) product (AIRIBRAD_NRT_005) differs from the routine product (AIRIBRAD_005) in 2 ways to meet the three hour latency requirements of the Land Atmosphere NRT Capability Earth Observing System (LANCE): (1) The NRT granules are produced without previous or subsequent granules if those granules are not available within 5 minutes, (2) the predictive ephemeris/attitude data are used rather than the definitive ephemeris/attitude. The consequences of these differences are described in the AIRS Near Real Time (NRT) data products document. The Atmospheric Infrared Sounder (AIRS) is a grating spectrometer (R = 1200) aboard the second Earth Observing System (EOS) polar-orbiting platform, EOS Aqua. In combination with the Advanced Microwave Sounding Unit (AMSU) and the Humidity Sounder for Brazil (HSB), AIRS constitutes an innovative atmospheric sounding group of visible, infrared, and microwave sensors. The AIRS Infrared (IR) level 1B data set contains AIRS calibrated and geolocated radiances in milliWatts/m^2/cm^-1/steradian for 2378 infrared channels in the 3.74 to 15.4 micron region of t he spectrum. The AIRS instrument is co-aligned with AMSU-A so that successive blocks of 3 x 3 AIRS footprints are contained within one AMSU-A footprint. The AIRIBRAD_NRT_005 products are stored in files (often referred to as "granules") that contain 6 minutes of data, 90 footprints across track by 135 lines along track.</Abstract>
+        <Purpose>The Near Real Time (NRT) product is for users whose primary interest is the low latency for data availability. While standard data products are available within 3 days of observation, NRT data are usually available within 3 hours of observation.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://discnrt1.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_NRT/AIRIBRAD_NRT.005/</URL>
+        <Description>Access the data via HTTP. User registration is required. Register for a username and password at https://urs.eosdis.nasa.gov/users/new</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://discnrt1.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_NRT/AIRIBRAD_NRT.005/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>DATACAST URL</Subtype>
+        </URL_Content_Type>
+        <URL>https://discnrt1.gesdisc.eosdis.nasa.gov/datacasting/AIRIBRAD_NRT.005.datacast-feed.xml</URL>
+        <Description>Access the data via datacasting.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=AIRIBRAD_NRT+005</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://airs.jpl.nasa.gov/index.html</URL>
+        <Description>AIRS home page at NASA/JPL. General information on the AIRS instrument suite, algorithms, and other AIRS-related activities can be found.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/documents?title=AIRS%20Documentation</URL>
+        <Description>AIRS Documentation Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/datacollection/AIRIBRAD_NRT_005.html</URL>
+        <Description>AIRIBRAD_NRT information page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRIBRAD.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.5_ProductQuality/nrt_memo_v6.pdf</URL>
+        <Description>Memo on NRT vs Standard Product</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.7_ScienceDataProductValidation/V5_CalVal_Status_Summary.pdf</URL>
+        <Description>Summary of validation status of products</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2006-06-22, S. Ritz restored dods url content type.
+      2006-10-12, M. Morahan updated from version 2 to version 3.
+      2009-06-10, Y.-I. Won modified the image, related link, and removed blank characters in summary.
+      2010-06-16, Y.-I. Won modified for updating "Progress" and "Quality" fields
+      2012-10-17, Ed Esfandiari - Updated hosts and Related_URL GET_DATA types.
+      2013-01-04, Ed Esfandiari - Updated Dataset_Creator and Personnel.
+      2013-09-11, Ed Esfandiari - Updated Online Resource URL and AIRS home page URLs. Added sci to all disc URLs.
+      2013-09-11, Ed Esfandiari - Corrected LANCE user registration URL.
+      2013-10-18, Ed Esfandiari - Added Dataset_Series_Name to Data_Set_Citation.
+      2014-01-31, Ed Esfandiari - Modified Access_Constraints.
+      2014-04-21, Ed Esfandiari - Modified LANCE user registration in ON-LINE archive.
+      2014-04-28, Ed Esfandiari - Updated Temporal_Resolution, Added Future_DIF_Review_Date.
+      2014-06-12, Ed Esfandiari - Changed ECHO to REVERB in Get Data Subtype.
+      2014-12-12, Ed Esfandiari - Updated JPL URL (changed www-airs to airs).
+      2015-02-20, Ed Esfandiari - Add Lance Project field.
+      2016-02-17, Ed Esfandiari - Modified fields for DIF10.2 compatibility.
+      2016-03-14, Ed Esfandiari - Point document urls to Fedora docserver.
+      2016-03-21, Ed Esfandiari - Updated Summary (Abstract and Purpose).
+      2016-03-30, Ed Esfandiari - Added index.html to http://airs.jpl.nasa.gov/ to avoid broken link.
+      2016-03-30, Ed Esfandiari - Added Data Granularity as Extended_Metadata.
+      2016-03-30, Ed Esfandiari - Changed _V005.html to _005.html (landing page).
+      2016-03-31, Ed Esfandiari - Removed "sci" from "disc.sci.gsfc.nasa.gov" links.
+      2016-03-31, Ed Esfandiari - Added NRT Memo document as Related_URL.
+      2016-04-04, Ed Esfandiari - Moved Quality field to Related_URL.
+      2016-12-06, Ed Esfandiari - Changed Plone document links to docserver.
+      2017-05-25, Feng Ding - Added CollectionDataType field.
+    </DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2010-07-20</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-25</Metadata_Last_Revision>
+        <Metadata_Future_Review>2018-05-01</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>1B</Product_Level_Id>
+    <Collection_Data_Type>NEAR_REAL_TIME</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>6 minutes</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>e9b8c4f8-17c2-42d8-b282-63249834b574</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2015-12-22 13:24:01</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2015-12-28T18:07:02Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>EARTH SCIENCE</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

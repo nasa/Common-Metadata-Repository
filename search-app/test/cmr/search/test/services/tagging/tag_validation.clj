@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.search.services.tagging.tag-validation :as tv]
             [cmr.common.validations.core :as v]
+            [cmr.common.validations.messages :as v-msg]
             [cmr.search.services.tagging.tagging-service-messages :as msg]))
 
 (def update-tag-validations (var-get #'tv/update-tag-validations))
@@ -23,14 +24,14 @@
                     :description "anything"}}))
 
     (testing "tag-key can't change"
-      (is (= {[:tag-key] [(v/field-cannot-be-changed-msg "current" "update")]}
+      (is (= {[:tag-key] [(v-msg/field-cannot-be-changed "current" "update")]}
              (v/validate
                update-tag-validations
                {:tag-key "update"
                 :existing {:tag-key "current"}}))))
 
     (testing "Originator id can't change"
-      (is (= {[:originator-id] [(v/field-cannot-be-changed-msg "current" "update")]}
+      (is (= {[:originator-id] [(v-msg/field-cannot-be-changed "current" "update")]}
              (v/validate
                update-tag-validations
                {:tag-key "foo" :originator-id "update"

@@ -13,9 +13,6 @@
 (def all-metadata-formats
   #{:echo10 :iso19115 :dif :dif10 {:format :umm-json :version "1.3"}})
 
-(def revision-format-map-with-all-formats
-  (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats))
-
 (defn lz4-compressed?
   [lz4-info]
   (and (map? lz4-info)
@@ -23,7 +20,7 @@
           #{:compressed :decompressed-length})))
 
 (deftest compression-test
-  (let [uncompressed revision-format-map-with-all-formats
+  (let [uncompressed (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
         compressed (r/compress uncompressed)
         decompressed (r/decompress compressed)]
     (testing "Compress"
@@ -34,7 +31,7 @@
           (testing (str metadata-format)
             (is (lz4-compressed? (get compressed metadata-format))))))
       (testing "Non metadata fields are not compressed"
-        (is (= (select-keys revision-format-map-with-all-formats
+        (is (= (select-keys uncompressed
                             [:concept-id :revision-id :native-format])
                (select-keys compressed
                             [:concept-id :revision-id :native-format])))))
@@ -42,7 +39,7 @@
       (is (not (:compressed? decompressed)))
       (is (not (contains? decompressed :size)))
       (testing "Metadata fields are decompressed"
-        (is (= revision-format-map-with-all-formats
+        (is (= uncompressed
                (dissoc decompressed :compressed?)))))))
 
 (defn- concept-match?
@@ -55,21 +52,22 @@
     (is (= expected actual))))
 
 (deftest revision-format-map-to-concept-test
-  (testing "With Decompressed revision format maps"
-    (doseq [metadata-format all-metadata-formats]
-      (testing (str "To " metadata-format)
-        (concept-match? (tm/concept-in-format metadata-format)
-               (r/revision-format-map->concept
-                metadata-format (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats))))))
-  (testing "With Compressed revision format map"
-    (is (= (tm/concept-in-format :echo10)
-           (r/revision-format-map->concept
-            :echo10 (r/compress (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats))))))
-  (testing "With native target format"
-    ;; DIF was the native format for sample revision format metadata
-    (is (= tm/dif-concept
-           (r/revision-format-map->concept
-            :native revision-format-map-with-all-formats)))))
+  (let [revision-format-map (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)]
+    (testing "With Decompressed revision format maps"
+      (doseq [metadata-format all-metadata-formats]
+        (testing (str "To " metadata-format)
+          (concept-match? (tm/concept-in-format metadata-format)
+                          (r/revision-format-map->concept
+                           metadata-format revision-format-map)))))
+    (testing "With Compressed revision format map"
+      (is (= (tm/concept-in-format :echo10)
+             (r/revision-format-map->concept
+              :echo10 (r/compress revision-format-map)))))
+    (testing "With native target format"
+      ;; DIF was the native format for sample revision format metadata
+      (is (= tm/dif-concept
+             (r/revision-format-map->concept
+              :native revision-format-map))))))
 
 (deftest concept-to-revision-format-map
   (testing "Convert with native"
@@ -105,7 +103,7 @@
 (defn test-rfm
   "Creates a revision format map with the specified formats."
   [concept-id revision-id formats]
-  (-> revision-format-map-with-all-formats
+  (-> (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
       (select-keys (concat formats [:native-format]))
       (assoc :concept-id concept-id
              :revision-id revision-id)))
@@ -140,8 +138,8 @@
           rfm2 (test-rfm "C2-PROV1" 2 [:echo10])
           existing-cache-map {"C1-PROV1" rfm1
                               "C2-PROV1" rfm2}
-          new-rfm (test-rfm "C2-PROV1" 2 [:dif10 :iso19115])
-          merged-rfm (test-rfm "C2-PROV1" 2 [:dif10 :iso19115 :echo10])]
+          new-rfm (test-rfm "C2-PROV1" 2 [:dif10 {:format :umm-json :version "1.3"}])
+          merged-rfm (test-rfm "C2-PROV1" 2 [:dif10 {:format :umm-json :version "1.3"} :echo10])]
       (is (= {"C1-PROV1" rfm1
               "C2-PROV1" merged-rfm}
              (r/merge-into-cache-map existing-cache-map new-rfm))))))

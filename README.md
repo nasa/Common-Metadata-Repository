@@ -189,6 +189,10 @@ Those tests will take much longer to run than when done with the in-memory
 database (~25m vs. ~6m). To switch back to using the in-memory database,
 simply call `(reset :db :in-memory)`.
 
+There is also a different, optional test runner you can use. For more details
+see the docstring for `run-suites` in `dev-system/dev/user.clj` for usage
+instructions.
+
 ## Code structure
 
 The CMR is made up of several small services called microservices. These are

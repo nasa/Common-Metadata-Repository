@@ -4,6 +4,7 @@
    [clojure.edn :as edn]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [defn-timed] :as util]
    [cmr.ingest.data.bulk-update :as bulk-update]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
@@ -31,14 +32,14 @@
     [this provider-id]
     (some->> @task-status-atom
              (filter #(= provider-id (:provider-id %)))
-             (map #(select-keys % [:task-id :status :status-message :request-json-body]))))
+             (map #(select-keys % [:created-at :task-id :status :status-message :request-json-body]))))
 
   (get-bulk-update-task-status
     [this task-id]
     (let [task-status (some->> @task-status-atom
                                (some #(when (= task-id (str (:task-id %)))
                                             %)))]
-      (select-keys task-status [:task-id :status :status-message :request-json-body])))
+      (select-keys task-status [:created-at :task-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-collection-status
     [this task-id]
@@ -58,8 +59,9 @@
   (create-and-save-bulk-update-status
     [this provider-id json-body concept-ids]
     (swap! task-id-atom inc)
-    (let [task-id @task-id-atom]
-     (swap! task-status-atom conj {:task-id task-id
+    (let [task-id (str @task-id-atom)]
+     (swap! task-status-atom conj {:created-at (str (time-keeper/now))
+                                   :task-id task-id 
                                    :provider-id provider-id
                                    :request-json-body json-body
                                    :status "IN_PROGRESS"})

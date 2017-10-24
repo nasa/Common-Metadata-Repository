@@ -8,7 +8,7 @@
   "Migrates the database up to version 11."
   []
   (println "migrations.011-add-entry-id-to-collection-tables up...")
-  (doseq [t (h/get-collection-tablenames)]
+  (doseq [t (h/get-regular-provider-collection-tablenames)]
     (h/sql (format "alter table %s add entry_id VARCHAR(255)" t))
     (h/sql (format "update %s set entry_id = concat(concat(short_name, '_'), version_id) where format != 'DIF'" t))
     (h/sql (format "update %s set entry_id = short_name where version_id is null or format = 'DIF'" t))
@@ -19,6 +19,5 @@
   "Migrates the database down from version 11."
   []
   (println "migrations.011-add-entry-id-to-collection-tables down.")
-  (doseq [t (h/get-collection-tablenames)]
+  (doseq [t (h/get-regular-provider-collection-tablenames)]
     (h/sql (format "alter table %s drop column entry_id" t))))
-

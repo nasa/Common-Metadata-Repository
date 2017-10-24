@@ -102,7 +102,8 @@
   [context existing-concept]
   (let [deleted-concept (-> existing-concept
                             ;; Remove fields not allowed when creating a tombstone.
-                            (dissoc :metadata :format :provider-id :native-id :revision-date :transaction-id)
+                            (dissoc :metadata :format :provider-id :native-id :revision-date
+                                    :transaction-id)
                             (assoc :deleted true
                                    :user-id (context->user-id context))
                             (update :revision-id inc))

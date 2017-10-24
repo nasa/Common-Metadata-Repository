@@ -1,12 +1,12 @@
 (ns cmr.indexer.data.concepts.collection.keyword
   "Contains functions to create keyword fields"
   (:require
-    [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.collection.data-center :as data-center]
-    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
+    [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 
@@ -15,19 +15,9 @@
 ;;    SuggestedUsage (ECHO10)
 ;;
 
-;; Regex to split strings with special characters into multiple words for keyword searches
-(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
-
 ;; Aliases for NEAR_REAL_TIME
 (def nrt-aliases
   ["near_real_time","nrt","near real time","near-real time","near-real-time","near real-time"])
-
-(defn prepare-keyword-field
-  [field-value]
-  "Convert a string to lowercase then separate it into keywords"
-  (when field-value
-    (let [field-value (str/lower-case field-value)]
-      (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 (defn get-contact-persons
   "Return a collection of personnel names and contact mechanisms out of:
@@ -37,7 +27,6 @@
    (concat ContactPersons ContactGroups
     (mapcat :ContactGroups DataCenters)
     (mapcat :ContactPersons DataCenters))))
-
 
 (defn create-keywords-field
   [concept-id collection other-fields]
@@ -57,7 +46,7 @@
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         detailed-locations (map :DetailedLocation (:LocationKeywords collection))
-        spatial-keywords (lk/location-keywords->spatial-keywords
+        spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
         projects (for [{:keys [ShortName LongName]} (:Projects collection)]
                    {:short-name ShortName :long-name LongName})
@@ -89,16 +78,21 @@
         instr-characteristics (mapcat :characteristics instruments)
         instr-char-names (keep :name instr-characteristics)
         instr-char-descs (keep :description instr-characteristics)
-        instr-char-values (keep :value instr-characteristics)  
+        instr-char-values (keep :value instr-characteristics)
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         data-centers (map :ShortName (:DataCenters collection))
-        science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
+        science-keywords (mapcat science-keyword-util/science-keyword->keywords
+                                 (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/aa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))
         related-url-urls (map :URL related-urls)
         related-url-titles (map :Title related-urls)
         related-url-descriptions (map :Description related-urls)
+        ;; Pull author info from both creator and other citation details
+        authors (concat
+                 (keep :Creator (:CollectionCitations collection))
+                 (keep :OtherCitationDetails (:CollectionCitations collection)))
         all-fields (flatten (conj [concept-id]
                                   ancillary-keywords
                                   attrib-keywords
@@ -140,6 +134,6 @@
                                   temporal-keywords
                                   two-d-coord-names
                                   version-description
-                                  version-id))
-        split-fields (set (mapcat prepare-keyword-field all-fields))]
-    (str/join " " split-fields)))
+                                  version-id
+                                  authors))]
+    (keyword-util/field-values->keyword-text all-fields)))

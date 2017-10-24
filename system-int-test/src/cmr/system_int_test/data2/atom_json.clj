@@ -1,5 +1,6 @@
 (ns cmr.system-int-test.data2.atom-json
-  "Contains helper functions for converting granules into the expected map of parsed json results."
+  "Contains helper functions for converting concepts into the expected map of
+  parsed json results."
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
@@ -99,7 +100,7 @@
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
-                shapes points boxes polygons lines granule-count has-granules
+                shapes points boxes polygons lines granule-count has-granules has-variables
                 orbit-parameters highlighted-summary-snippets organizations]} json-entry]
     (util/remove-nil-keys
       {:id id
@@ -125,6 +126,7 @@
        :score score
        :granule-count granule-count
        :has-granules has-granules
+       :has-variables has-variables
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets

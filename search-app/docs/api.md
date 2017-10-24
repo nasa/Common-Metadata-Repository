@@ -44,6 +44,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
     * [Collections with new Granules](#c-with-new-granules)
+    * [Collections with revised Granules](#c-with-revised-granules)
     * [Processing level id](#c-processing-level-id)
     * [Platform](#c-platform)
     * [Instrument](#c-instrument)
@@ -70,6 +71,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Point](#c-point)
         * [Line](#c-line)
     * [Additional Attribute](#c-additional-attribute)
+    * [Author](#c-author)
     * [With/without granules](#c-has-granules)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
@@ -130,6 +132,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
   * [Find collections that have been deleted after a given date](#deleted-collections)
+  * [Find granules that have been deleted after a given date](#deleted-granules)
   * [Tagging](#tagging)
     * [Tag Access Control](#tag-access-control)
     * [Creating a Tag](#creating-a-tag)
@@ -144,9 +147,17 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Dissociating a Tag from Collections by collection concept ids](#dissociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
   * [Variable](#variable)
+    * [Searching for Variables](#searching-for-variables)
+        * [Variable Search Parameters](#variable-search-params)
+        * [Variable Search Response](#variable-search-response)
+    * [Retrieving All Revisions of a Variable](#retrieving-all-revisions-of-a-variable)
+    * [Sorting Variable Results](#sorting-variable-results)
     * [Variable Access Control](#variable-access-control)
     * [Variable association](#variable-association)
     * [Variable dissociation](#variable-dissociation)
+  * [Service](#service)
+    * [Service association](#service-association)
+    * [Service dissociation](#service-dissociation)
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -331,6 +342,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:browseFlag                            | true if the data contains browse imagery                                                                             |
 | echo:hasGranules (collections only)        | true if there are granules associated with the collection                                                            |
 | echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
+| echo:hasVariables (collections only)       | true if there are variables associated with the collection                                                           |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -766,6 +778,7 @@ __Example__
       "id" : "C1200000000-PROV1",
       "original_format" : "ECHO10",
       "browse_flag" : false,
+      "has_variables" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}}
@@ -776,7 +789,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection and variable searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
@@ -1189,7 +1202,7 @@ Find collections that match all of the 'project' param values
 
  Find collections which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-   curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-with-new-granules"></a> Find collections with new granules
 
@@ -1197,7 +1210,15 @@ Find collections that match all of the 'project' param values
 
   Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/collections?has_granules_created_at\[\]=2015-01-01T10:00:00Z,"
+
+#### <a name="c-with-revised-granules"></a> Find collections with granules revised inside of a given range
+
+  This supports option `and`.
+
+  Find collections containing granules created or updated within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+    curl "%CMR-ENDPOINT%/collections?has_granules_revised_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 
@@ -1359,10 +1380,11 @@ The following fields are indexed for keyword search:
     * Sensor short names, long names, and techniques
     * Characteristic names, descriptions and values
     * TwoD coordinate system names
+    * Author
 
 #### <a name="c-provider"></a> Find collections by provider
 
-This parameter supports `pattern`, `ignore_case` and option `and`.
+This parameter supports `pattern` and `ignore_case`.
 
 Find collections matching 'provider' param value
 
@@ -1439,16 +1461,16 @@ Collections can be found by searching for associated variables. The following va
 
 * variable_name
   * supports `pattern`, `ignore_case` and option `and`
-* measurement
+* variable_native_id
   * supports `pattern`, `ignore_case` and option `and`
 
 Find collections matching variable name.
 
     curl "%CMR-ENDPOINT%/collections?variable_name=totcldh2ostderr"
 
-Find collections matching measurement.
+Find collections matching variable native id.
 
-    curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
+    curl "%CMR-ENDPOINT%/collections?variable_native_id\[\]=var1&variable_native_id\[\]=var2"
 
 #### <a name="c-variables"></a> Find collections by hierarchical variables
 
@@ -1520,17 +1542,31 @@ Multiple attributes can be provided. The default is for collections to match all
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
 
+#### <a name="c-author"></a> Find collections by author
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching the given 'author' values
+
+    curl "%CMR-ENDPOINT%/collections?author=*JPL*&options[author][pattern]=true"
+
 #### <a name="c-has-granules"></a> Find collections with or without granules
 
 When `has_granules` is set to "true" or "false", results will be restricted to collections with or without granules, respectively.
 
-    curl "%CMR_ENDPOINT%/collections?has_granules=true"
+    curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
 
-If a keyword search is performed then the search results will be sorted by relevance (score descending), then by temporal overlap if one or more temporal ranges are provided with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+If a keyword search is performed then the search results will be sorted by:
+
+  * Relevance Score (descending), binned to the nearest 0.2. For example a score of 0.75 and 0.85 will be considered equal for sorting purposes.
+  * Temporal Overlap (descending), if one or more temporal ranges are provided.
+  * EMS Community Usage Score (descending), binned to the nearest 400. For example, usage of 400 and 500 will be considered equal for sorting purposes. The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+  * Collection End Date (descending), with ongoing collections defaulting to today.
+  * Humanized processing level Id (descending)
 
 If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
 
@@ -1557,9 +1593,6 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date"
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=%2Bstart_date"
-
-
-
 
 #### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
 
@@ -1962,7 +1995,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections and granules. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, and variables. If no format is specified the native format of the metadata will be returned.
 
 By concept id
 
@@ -1972,18 +2005,35 @@ By concept id and revision id
 
     curl -i "%CMR-ENDPOINT%/concepts/:concept-id/:revision-id"
 
+Plain examples, with and without revision ids:
+
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
-    curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i -H 'Accept: application/metadata+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
     curl -i "%CMR-ENDPOINT%/concepts/C100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2"
+
+File extension examples:
+
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json_v1_9"
+
+MIME-type examples:
+
+    curl -i -H 'Accept: application/xml' \
+        "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H 'Accept: application/metadata+xml' \
+        "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.9" \
+        "%CMR-ENDPOINT%/concepts/V100000-PROV1"
 
 Note that attempting to retrieve a revision that is a tombstone is an error and will return a 400 status code.
 
-The following extensions and MIME types are supported by the
-`/concepts/` resource:
+The following extensions and MIME types are supported by the `/concepts/` resource for collection and granule concept types:
 
   * `html`      "text/html" (Collections only)
   * `json`      "application/json"
@@ -1995,6 +2045,10 @@ The following extensions and MIME types are supported by the
   * `dif`       "application/dif+xml"
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
+
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable concept type:
+
+  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.1"
 
 ### <a name="search-with-post"></a> Search with POST
 
@@ -2293,7 +2347,7 @@ curl "%CMR-ENDPOINT%/humanizers/report"
 
 Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
 
-An administrator with INGEST\_MANAGEMENT\_ACL update permission can force the report to be regenerated by passing in a query parameter `regenerate=true`.
+An administrator with system object INGEST\_MANAGEMENT\_ACL update permission can force the report to be regenerated by passing in a query parameter `regenerate=true`.
 
 #### <a name="facets-in-xml-responses"></a> Facets in XML Responses
 
@@ -2634,6 +2688,32 @@ CMR-Hits: 3
 </results>
 ```
 
+### <a name="deleted-granules"></a> Find granules that have been deleted after a given date
+
+To support metadata harvesting, a harvesting client can search CMR for granules that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular granule search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is json. The revision_date is limited to 1 year in the past.
+
+Additionally, deleted granules search can be filtered by the provider parameter, which takes the provider id, and parent_collection_id which takes the granule's parent collection concept id.
+
+The following search will return the concept-id, parent-collection-id, granule-ur, revision-date, and provider-id of the granules that are deleted since 01/20/2017.
+
+    curl -i "%CMR-ENDPOINT%/deleted-granules.json?revision_date=2017-01-20T00:00:00Z&pretty=true"
+
+__Example Response__
+
+```
+HTTP/1.1 200 OK
+Date: Thu, 07 Sep 2017 18:52:04 GMT
+Content-Type: ; charset=utf-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 4
+CMR-Request-Id: 03da8f3d-57b3-4ce8-bbc0-29970a4a8b30
+Content-Length: 653
+Server: Jetty(9.2.10.v20150310)
+
+[{"granule-ur":["ur2"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G2-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur1"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G1-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur3"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000010-PROV1"],"concept-id":["G3-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur4"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000011-PROV2"],"concept-id":["G4-PROV2"],"provider-id":["PROV2"]}]
+```
+
 ### <a name="tagging"></a> Tagging
 
 Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
@@ -2719,7 +2799,7 @@ Content-Length: 48
 
 #### <a name="tag-association"></a> Tag Association
 
-A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
@@ -3041,13 +3121,232 @@ Content-Length: 292
 
 ### <a name="variable"></a> Variable
 
-Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service.
+Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
 
-Variable have the following fields:
+#### <a name="searching-for-variables"></a> Searching for Variables
 
-* variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character. Variable name is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case.
-* measurement (REQUIRED): the measurement that the variable belongs to.
-* originator_id (REQUIRED): the Earthdata Login ID of the person who created the variable.
+Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`. XML reference, JSON and UMM JSON response formats are supported for variables search.
+
+Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
+
+##### <a name="variable-search-params"></a> Variable Search Parameters
+
+The following parameters are supported when searching for variables.
+
+##### Standard Parameters
+* page_size
+* page_num
+* pretty
+
+##### Variable Matching Parameters
+
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* concept_id
+* keyword (free text)
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
+
+##### <a name="variable-search-response"></a> Variable Search Response
+
+##### XML Reference
+The XML reference response format is used for returning references to search results. It consists of the following fields:
+
+|   Field    |                    Description                     |
+| ---------- | -------------------------------------------------- |
+| hits       | the number of results matching the search query    |
+| took       | time in milliseconds it took to perform the search |
+| references | identifying information about each search result   |
+
+The `references` field may contain multiple `reference` entries, each consisting of the following fields:
+
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the provider's unique identifier for the item. This is Granule UR for granules and Entry Title for collections. |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
+
+__Example__
+```
+curl -i "%CMR-ENDPOINT%/variables?pretty=true&name=Variable1"
+
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 393
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>1</hits>
+    <took>17</took>
+    <references>
+        <reference>
+            <name>Variable1</name>
+            <id>V1200000007-PROV1</id>
+            <location>http://localhost:3003/concepts/V1200000007-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+##### JSON
+The JSON response includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of variables with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * name
+  * long_name
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/variables.json?pretty=true&name=Var*&options[name][pattern]=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 292
+
+{
+  "hits" : 2,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "V1200000007-PROV1",
+    "revision_id" : 3,
+    "provider_id" : "PROV1",
+    "native_id" : "var1",
+    "name" : "Variable1",
+    "long_name" : "A long UMM-Var name"
+  }, {
+    "concept_id" : "V1200000008-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "var2",
+    "name" : "Variable2",
+    "long_name" : "A long UMM-Var name"
+  } ]
+}
+```
+##### UMM JSON
+The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
+HTTP/1.1 200 OK
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf-8
+Content-Length: 1177
+
+{
+  "hits" : 1,
+  "took" : 14,
+  "items" : [ {
+    "meta" : {
+      "revision-id" : 2,
+      "deleted" : false,
+      "format" : "application/vnd.nasa.cmr.umm+json",
+      "provider-id" : "PROV1",
+      "native-id" : "var1",
+      "concept-id" : "V1200000009-PROV1",
+      "revision-date" : "2017-08-14T20:12:43Z",
+      "concept-type" : "variable"
+    },
+    "umm" : {
+      "VariableType" : "SCIENCE_VARIABLE",
+      "DataType" : "float32",
+      "Offset" : 0.0,
+      "ScienceKeywords" : [ {
+        "Category" : "sk-A",
+        "Topic" : "sk-B",
+        "Term" : "sk-C"
+      } ],
+      "Scale" : 1.0,
+      "FillValues" : [ {
+        "Value" : -9999.0,
+        "Type" : "Science"
+      } ],
+      "Sets" : [ {
+        "Name" : "Data_Fields",
+        "Type" : "Science",
+        "Size" : 2,
+        "Index" : 2
+      } ],
+      "Dimensions" : [ {
+        "Name" : "Solution_3_Land",
+        "Size" : 3
+      } ],
+      "Definition" : "Defines the variable",
+      "Name" : "Variable1234",
+      "Units" : "m",
+      "LongName" : "A long UMM-Var name"
+    },
+    "associations" : {
+      "collections" : [ {
+        "concept-id" : "C1200000007-PROV1"
+      } ]
+    }
+  } ]
+}
+```
+
+##### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
+
+In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/variables?concept_id=V1200000010-PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+      <hits>3</hits>
+      <took>3</took>
+      <references>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <location>%CMR-ENDPOINT%/concepts/V1200000010-PROV1/3</location>
+              <revision-id>3</revision-id>
+          </reference>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <deleted>true</deleted>
+              <revision-id>2</revision-id>
+          </reference>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <location>%CMR-ENDPOINT%/concepts/V1200000010-PROV1/1</location>
+              <revision-id>1</revision-id>
+          </reference>
+      </references>
+  </results>
+```
+
+##### <a name="sorting-variable-results"></a> Sorting Variable Results
+
+By default, variable results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Variable Sort Keys
+  * `name`
+  * `long_name`
+  * `provider_id`
+  * `revision_date`
+
+Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
@@ -3055,15 +3354,15 @@ Access to variable and variable association is granted through the INGEST_MANAGE
 
 #### <a name="variable-association"></a> Variable Association
 
-A variable can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has a `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
+A variable identified by its concept id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
 [
@@ -3094,8 +3393,8 @@ Status code 400 is returned when:
 * request body is invalid json
 
 Status code 404 is returned when:
-* the variable with the given variable name does not exist
-* the variable with the given variable name has been deleted
+* the variable with the given concept id does not exist
+* the variable with the given concept id has been deleted
 
 Status code 422 is returned when:
 * request body is empty
@@ -3103,22 +3402,22 @@ Status code 422 is returned when:
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to variable association requests.
+A variable identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000008-CMR",
+      "concept_id":"VA1200000009-CMR",
       "revision_id":2
     },
     "associated_item":{
@@ -3127,7 +3426,7 @@ Content-Length: 168
   },
   {
     "warnings":[
-      "Variable [totcldh2ostderr] is not associated with collection [C1200000006-PROV1]."
+      "Variable [V1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
     ],
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
@@ -3151,12 +3450,121 @@ Status code 400 is returned when:
 * request body is invalid json
 
 Status code 404 is returned when:
-* the variable with the given variable name does not exist
-* the variable with the given variable name has been deleted
+* the variable with the given concept id does not exist
+* the variable with the given concept id has been deleted
 
 Status code 422 is returned when:
 * request body is empty
 * there are conflicts of variable on collection level and collection revision in the same request
+
+### <a name="service"></a> Service
+
+A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).
+
+#### <a name="service-association"></a> Service Association
+
+A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Here is a sample service association request and its response:
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "service_association":{
+      "concept_id":"SA1200000009-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000006-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  }
+]
+```
+
+On occassions when service association cannot be processed at all due to invalid input, service association request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the service with the given concept id does not exist
+* the service with the given concept id has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of service on collection level and collection revision in the same request
+
+#### <a name="service-dissociation"></a> Service Dissociation
+
+A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "service_association":{
+      "concept_id":"SA1200000009-CMR",
+      "revision_id":2
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "warnings":[
+      "Service [S1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the service with the given concept id does not exist
+* the service with the given concept id has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of service on collection level and collection revision in the same request
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 

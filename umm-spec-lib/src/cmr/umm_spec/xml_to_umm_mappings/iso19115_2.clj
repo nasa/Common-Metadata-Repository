@@ -3,7 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojure.data :as data]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
@@ -15,6 +15,8 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
@@ -24,6 +26,16 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for ISO19115 ProgressCode to UMM CollectionProgress."
+  {"COMPLETED" "COMPLETE"
+   "HISTORICALARCHIVE" "COMPLETE"
+   "OBSOLETE" "COMPLETE"
+   "ONGOING" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "UNDERDEVELOPMENT" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -75,6 +87,10 @@
   (str "/gmi:MI_Metadata/gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation"
        "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
+(def collection-data-type-xpath
+  (str identifier-base-xpath "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
+
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -97,7 +113,7 @@
                            ;; entire matching string is returned and if there is a group in the regular
                            ;; expression, the first group of the matching string is returned.
                            (if (string? match) match (second match))))]
-      (str/join matches))))
+      (string/join matches))))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -113,7 +129,6 @@
   (for [temporal (select md-data-id-el temporal-xpath)]
     {:PrecisionOfSeconds (value-of doc precision-xpath)
      :EndsAtPresentFlag (temporal-ends-at-present? temporal)
-     :TemporalRangeType (get extent-info "Temporal Range Type")
      :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                        {:BeginningDateTime (value-of period "gml:beginPosition")
                         :EndingDateTime    (value-of period "gml:endPosition")})
@@ -143,8 +158,8 @@
   DataIdentification element"
   [md-data-id-el sanitize?]
   (if-let [value (char-string-value md-data-id-el "gmd:abstract")]
-    (let [[abstract version-description](str/split
-                                         value (re-pattern iso-util/version-description-separator))
+    (let [[abstract version-description] (string/split
+                                          value (re-pattern iso-util/version-description-separator))
           abstract (when (seq abstract) abstract)]
       [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
     [(su/with-default nil sanitize?)]))
@@ -216,7 +231,10 @@
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-      :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
+      :CollectionProgress (get-umm-element/get-collection-progress
+                            coll-progress-mapping
+                            md-data-id-el 
+                            "gmd:status/gmd:MD_ProgressCode")
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (parse-access-constraints doc sanitize?)
@@ -234,6 +252,7 @@
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
       :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
+      :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
       :ProcessingLevel {:Id
                         (su/with-default
                          (char-string-value
@@ -253,7 +272,7 @@
                                                         (char-string-value publication
                                                                            (str (format role-xpath name) xpath)))]
                                     :when (or (nil? (:Description online-resource))
-                                              (not (str/includes? (:Description online-resource) "PublicationURL")))]
+                                              (not (string/includes? (:Description online-resource) "PublicationURL")))]
                                {:Author (select-party "author" "/gmd:organisationName")
                                 :PublicationDate (date/sanitize-and-parse-date
                                                   (str (date-at publication
@@ -276,6 +295,7 @@
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
       :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
       :RelatedUrls (dru/parse-related-urls doc sanitize?)
+      :CollectionCitations (collection-citation/parse-collection-citation doc citation-base-xpath sanitize?)
       :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
       :MetadataDates (parse-metadata-dates doc)})))
 

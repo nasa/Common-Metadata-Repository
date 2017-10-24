@@ -5,6 +5,7 @@
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -14,11 +15,11 @@
 (deftest search-by-campaign-short-names
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
 
-        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))
-        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}))
-        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}))]
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}))
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}))]
 
     (index/wait-until-indexed)
 
@@ -46,15 +47,15 @@
                          (search/find-refs :collection {:campaign "E*", "options[campaign][pattern]" "true"}))))
 
     (doseq [field [:campaign :project-h]]
-      (testing (str "search by " (name field) "sn terms ORed") 
+      (testing (str "search by " (name field) "sn terms ORed")
         (are3 [campaign-kvs items] (d/refs-match? items (search/find-refs :collection campaign-kvs))
               "searching for collections containing all the values"
               {(str (name field) "[]") ["ESI" "EPI" "EVI"], (str "options[" (name field) "][and]") "true"} [coll6]
-             
+
               "searching for collections containg either of the values"
               {(str (name field) "[]") ["ESI" "EPI" "EVI"], (str "options[" (name field) "][and]") "false"} [coll3 coll4 coll5 coll6]
 
-              "searching for collections containing any of the values default case" 
+              "searching for collections containing any of the values default case"
               {(str (name field) "[]") ["ESI" "EPI" "EVI"]} [coll3 coll4 coll5 coll6])))
 
     (testing "search campaign by AQL."

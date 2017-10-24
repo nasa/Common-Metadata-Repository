@@ -1,15 +1,20 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
@@ -27,15 +32,6 @@
    :xmlns:srv "http://www.isotc211.org/2005/srv"
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
-
-(defn- generate-collection-progress
-  "Returns ISO SMAP CollectionProgress element from UMM-C collection c."
-  [c]
-  (when-let [collection-progress (:CollectionProgress c)]
-    [:gmd:MD_ProgressCode
-     {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-      :codeListValue (str/lower-case collection-progress)}
-     collection-progress]))
 
 (defn- generate-spatial-extent
   "Returns ISO SMAP SpatialExtent content generator instructions"
@@ -79,7 +75,8 @@
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))
+        {processing-level :ProcessingLevel} c]
     (xml
      [:gmd:DS_Series
       iso-smap-xml-namespaces
@@ -95,8 +92,10 @@
          [:gmd:MD_DataIdentification
           [:gmd:citation
            [:gmd:CI_Citation
-            [:gmd:title (char-string "SMAP Level 1A Parsed Radar Instrument Telemetry")]
+            (smap-collection-citation/convert-title c)
             (generate-data-dates c)
+            (smap-collection-citation/convert-version c)
+            (collection-citation/convert-date c)
             [:gmd:identifier
              [:gmd:MD_Identifier
               [:gmd:code (char-string (:ShortName c))]
@@ -121,10 +120,24 @@
                                            :codeListValue ""} "authority"]]]]]])
                  [:gmd:code [:gco:CharacterString (:DOI doi)]]
                  [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-                 [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+                 [:gmd:description [:gco:CharacterString "DOI"]]]])
+            (when-let [collection-data-type (:CollectionDataType c)]
+             [:gmd:identifier
+              [:gmd:MD_Identifier
+               [:gmd:code [:gco:CharacterString collection-data-type]]
+               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (collection-citation/convert-creator c)
+            (collection-citation/convert-editor c)
+            (collection-citation/convert-publisher c)
+            (collection-citation/convert-release-place c)
+            (collection-citation/convert-online-resource c)
+            (collection-citation/convert-data-presentation-form c)
+            (collection-citation/convert-series-name-and-issue-id c)
+            (collection-citation/convert-other-citation-details c)]]
           [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-          [:gmd:status (generate-collection-progress c)]
+          (collection-progress/generate-collection-progress c)
           (data-contact/generate-data-centers c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-data-centers-contact-persons c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-contact-persons (:ContactPersons c))
@@ -152,6 +165,7 @@
          [:gmd:extent
           [:gmd:EX_Extent
            (generate-spatial-extent (:SpatialExtent c))
+           (iso19115-spatial-conversion/generate-vertical-domain c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
              [:gmd:temporalElement
@@ -171,7 +185,11 @@
               [:gmd:EX_TemporalExtent
                [:gmd:extent
                 [:gml:TimeInstant {:gml:id (su/generate-id)}
-                 [:gml:timePosition date]]]]])]]]]
+                 [:gml:timePosition date]]]]])]]
+
+        (when processing-level
+         [:gmd:processingLevel
+          (proc-level/generate-iso-processing-level processing-level)])]]
         [:gmd:identificationInfo
          [:gmd:MD_DataIdentification
           [:gmd:citation
@@ -195,6 +213,13 @@
           (sdru/generate-publication-related-urls c)
           [:gmd:language (char-string "eng")]]]
         (sdru/generate-service-related-url (:RelatedUrls c))
+        (when processing-level
+         [:gmd:contentInfo
+          [:gmd:MD_ImageDescription
+           [:gmd:attributeDescription ""]
+           [:gmd:contentType ""]
+           [:gmd:processingLevelCode
+             (proc-level/generate-iso-processing-level processing-level)]]])
         (let [related-url-distributions (sdru/generate-distributions c)]
          (when related-url-distributions
           [:gmd:distributionInfo

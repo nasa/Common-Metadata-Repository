@@ -43,6 +43,11 @@
   and \"aws\""
   {:default "rabbit-mq"})
 
+(defconfig messaging-retry-delay
+  "This configuration value is used to determine how long to wait before
+  retrying a messaging operation."
+  {:default 2000 :type Long})
+
 (defn default-config
   "Returns a default config map for connecting to the message queue"
   []
@@ -76,4 +81,5 @@
                              (format "Queue was mapped to two different exchange sets: %s %s"
                                      (pr-str v1) (pr-str v2)))))
                        q-to-e
-                       (:queues-to-exchanges config2)))))))
+                       (:queues-to-exchanges config2))))
+        (update-in [:queues-to-policies] merge (:queues-to-policies config2)))))

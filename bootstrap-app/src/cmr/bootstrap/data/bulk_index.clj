@@ -4,7 +4,7 @@
     [cheshire.core :as json]
     [clj-http.client :as client]
     [clj-time.coerce :as time-coerce]
-    [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
+    [clojure.core.async :as ca :refer [<!!]]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as access-control-index]
@@ -20,7 +20,6 @@
     [cmr.metadata-db.services.provider-service :as provider-service]
     [cmr.oracle.connection :as oc]
     [cmr.transmit.config :as transmit-config]))
-
 
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
@@ -51,12 +50,6 @@
         params {:concept-type :collection}
         collections (db/find-concepts db [provider] params)]
     (map :concept-id collections)))
-
-(defn get-provider-by-id
-  "Returns the metadata db provider that matches the given provider id."
-  [context provider-id]
-  (let [db (helper/get-metadata-db-db (:system context))]
-    (p/get-provider db provider-id)))
 
 (defn get-collection
   "Get specified collection from cmr."
@@ -120,6 +113,40 @@
             gran-count
             provider-id)))
 
+(defn- bulk-index-variable-batches
+  "Bulk index the given variable batches in both regular index and all revisions index."
+  [system concept-batches]
+  (let [indexer-context {:system (helper/get-indexer system)}]
+    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches {})))
+
+(defn- index-variables-by-provider
+  "Bulk index variables for the given provider."
+  [system provider]
+  (info "Indexing variables for provider" (:provider-id provider))
+  (let [db (helper/get-metadata-db-db system)
+        concept-batches (db/find-concepts-in-batches
+                         db provider
+                         {:concept-type :variable}
+                         (:db-batch-size system))
+        num-variables (bulk-index-variable-batches system concept-batches)]
+    (info (format "Indexing of %s variables completed." num-variables))))
+
+(defn index-variables
+  "Bulk index variables for the given provider-id."
+  [system provider-id]
+  (->> provider-id
+       (helper/get-provider system)
+       (index-variables-by-provider system)))
+
+(defn index-all-variables
+  "Bulk index all CMR variables."
+  [system]
+  (info "Indexing all variables")
+  (doseq [provider (helper/get-providers system)]
+    (index-variables-by-provider system provider))
+  (info "Indexing of all variables completed."))
+
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
@@ -179,14 +206,14 @@
 (defn index-concepts-by-id
   "Index concepts of the given type for the given provider with the given concept-ids."
   [system provider-id concept-type concept-ids]
-  (let [db-conn (helper/get-metadata-db-db system)
-        provider (get-provider-by-id {:system system} provider-id)
+  (let [db (helper/get-metadata-db-db system)
+        provider (helper/get-provider system provider-id)
         ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
         ;; to prevent exceeding that. This should probably be done in the db namespace,
         ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
         concept-id-batches (partition-all 1000 concept-ids)
         concept-batches (for [batch concept-id-batches
-                              concept-batch (db/find-concepts-in-batches db-conn
+                              concept-batch (db/find-concepts-in-batches db
                                                                          provider
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
@@ -227,8 +254,7 @@
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
   (info "Indexing concepts with revision-date later than " date-time "started.")
-  (let [db (helper/get-metadata-db-db system)
-        providers (p/get-providers db)
+  (let [providers (helper/get-providers system)
         provider-response-map (for [provider providers
                                     concept-type [:collection :granule]]
                                 (fetch-and-index-new-concepts
@@ -257,40 +283,41 @@
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
-  (let [channel (:data-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [date-time]} (<!! channel)]
-                     (index-data-later-than-date-time system date-time))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:provider-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [provider-id start-index]} (<!! channel)]
-                     (index-provider system provider-id start-index))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:collection-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
-                     (index-granules-for-collection system provider-id collection-id options))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:system-concept-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [start-index]} (<!! channel)]
-                     (index-system-concepts system start-index))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:concept-id-channel system)]
-    (ca/thread (while true
-                (try ; log errors but keep the thread alive)
-                  (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
-                    (if (= request :delete)
-                      (delete-concepts-by-id system provider-id concept-type concept-ids)
-                      (index-concepts-by-id system provider-id concept-type concept-ids)))
-                  (catch Throwable e
-                    (error e (.getMessage e))))))))
+  (let [core-async-dispatcher (:core-async-dispatcher system)]
+    (let [channel (:data-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [date-time]} (<!! channel)]
+                       (index-data-later-than-date-time system date-time))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:provider-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [provider-id start-index]} (<!! channel)]
+                       (index-provider system provider-id start-index))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:collection-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
+                       (index-granules-for-collection system provider-id collection-id options))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:system-concept-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [start-index]} (<!! channel)]
+                       (index-system-concepts system start-index))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:concept-id-channel core-async-dispatcher)]
+      (ca/thread (while true
+                  (try ; log errors but keep the thread alive)
+                    (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
+                      (if (= request :delete)
+                        (delete-concepts-by-id system provider-id concept-type concept-ids)
+                        (index-concepts-by-id system provider-id concept-type concept-ids)))
+                    (catch Throwable e
+                      (error e (.getMessage e)))))))))

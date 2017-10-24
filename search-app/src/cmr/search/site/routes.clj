@@ -5,6 +5,7 @@
    [cmr.collection-renderer.api.routes :as collection-renderer-routes]
    [cmr.common-app.static :as static]
    [cmr.search.site.pages :as pages]
+   [cmr.search.services.content-service :as content-service]
    [cmr.transmit.config :as config]
    [compojure.core :refer [GET context routes]]
    [ring.swagger.ui :as ring-swagger-ui]
@@ -23,23 +24,36 @@
              {ctx :request-context}
              (pages/home ctx))
         (GET "/sitemap.xml"
-             {ctx :request-context}
-             (pages/sitemap-master ctx))
+             {ctx :request-context params :params}
+             (content-service/retrieve-page ctx params "/sitemap.xml"))
         (GET "/site/sitemap.xml"
-             {ctx :request-context}
-             (pages/sitemap-top-level ctx))
+             {ctx :request-context params :params}
+             (content-service/retrieve-page ctx params "/site/sitemap.xml"))
         (GET "/site/collections/directory"
              {ctx :request-context}
              (pages/collections-directory ctx))
         (GET "/site/collections/directory/eosdis"
-             {ctx :request-context}
-             (pages/eosdis-collections-directory ctx))
+             {ctx :request-context params :params}
+             (content-service/retrieve-page
+              ctx params "/site/collections/directory/eosdis"))
         (GET "/site/collections/directory/:provider-id/:tag"
-             [provider-id tag :as {ctx :request-context}]
-             (pages/provider-tag-directory ctx provider-id tag))
+             [provider-id tag :as {ctx :request-context params :params}]
+             (content-service/retrieve-page
+              ctx
+              params
+              (format "/site/collections/directory/%s/%s" provider-id tag)
+              provider-id
+              tag))
         (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
-             [provider-id tag :as {ctx :request-context}]
-             (pages/sitemap-provider-tag ctx provider-id tag))
+             [provider-id tag :as {ctx :request-context params :params}]
+             (content-service/retrieve-page
+              ctx
+              params
+              (format "/site/collections/directory/%s/%s/sitemap.xml"
+                      provider-id
+                      tag)
+              provider-id
+              tag))
         ;; Backwards comapatibility for old docs URLs
         (GET "/site/search_api_docs.html"
              {ctx :request-context}

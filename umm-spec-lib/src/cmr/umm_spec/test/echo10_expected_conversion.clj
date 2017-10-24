@@ -3,18 +3,20 @@
  (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (defn- fixup-echo10-data-dates
   [data-dates]
@@ -108,12 +110,12 @@
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
-  (let [spatial-extent (conversion-util/prune-empty-maps spatial-extent)]
-    (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry])
-      (update-in spatial-extent
-                 [:HorizontalSpatialDomain :Geometry]
-                 conversion-util/geometry-with-coordinate-system)
-      spatial-extent)))
+ (as-> spatial-extent se
+       (conversion-util/prune-empty-maps se)
+       (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
+       (if (get-in se [:HorizontalSpatialDomain :Geometry])
+         (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
+         se)))
 
 (defn- expected-echo10-platform-longname-with-default-value
   "Returns the expected ECHO10 LongName with default value."
@@ -236,8 +238,7 @@
   (let [range-date-times (mapcat :RangeDateTimes temporal-extents)
         single-date-times (mapcat :SingleDateTimes temporal-extents)
         periodic-date-times (mapcat :PeriodicDateTimes temporal-extents)
-        temporal-extent {:TemporalRangeType (:TemporalRangeType (first temporal-extents))
-                         :PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
+        temporal-extent {:PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
                          :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))}]
     (cond
       (seq range-date-times)
@@ -248,6 +249,15 @@
 
       (seq periodic-date-times)
       [(cmn/map->TemporalExtentType (assoc temporal-extent :PeriodicDateTimes periodic-date-times))])))
+
+(defn- expected-collection-citations
+  "Returns expected CollectionCitations, should only include there first CollectionCitation with
+   a OtherCitationDetails value"
+  [collection-citations]
+  (when-not (empty? collection-citations)
+    (when-let [other-citation-details (first (map :OtherCitationDetails collection-citations))]
+      [(cmn/map->ResourceCitationType
+        {:OtherCitationDetails other-citation-details})])))
 
 (defn umm-expected-conversion-echo10
   [umm-coll]
@@ -281,10 +291,13 @@
       ;; CMR 3253 This is added because it needs to support DIF10 umm. when it does roundtrip,
       ;; dif10umm-echo10(with default)-umm(without default needs to be removed)
       (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update :CollectionCitations expected-collection-citations)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update :CollectionProgress su/with-default)))
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))))

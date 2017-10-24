@@ -9,66 +9,7 @@
     [cmr.umm-spec.additional-attribute :as aa]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.temporal :as umm-spec-temporal]
     [cmr.umm-spec.util :as u]))
-
-(defn additional-attribute
-  "Creates an AdditionalAttribute"
-  [aa]
-  (let [{:keys [Name Group Description DataType Value ParameterRangeBegin ParameterRangeEnd]} aa]
-    (if (or (some? ParameterRangeBegin) (some? ParameterRangeEnd))
-      (umm-cmn/map->AdditionalAttributeType
-        {:Name Name
-         :Group Group
-         :Description (or Description "Generated")
-         :DataType DataType
-         :ParameterRangeBegin (aa/gen-value DataType ParameterRangeBegin)
-         :ParameterRangeEnd (aa/gen-value DataType ParameterRangeEnd)})
-      (umm-cmn/map->AdditionalAttributeType
-        {:Name Name
-         :Group Group
-         :Description (or Description "Generated")
-         :DataType DataType
-         :Value (aa/gen-value DataType Value)}))))
-
-(defn tiling-identification-system
-  "Creates TilingIdentificationSystem specific attribute"
-  [name]
-  (umm-cmn/map->TilingIdentificationSystemType
-    {:TilingIdentificationSystemName name
-     :Coordinate1 {:MinimumValue 0.0 :MaximumValue 0.0}
-     :Coordinate2 {:MinimumValue 0.0 :MaximumValue 0.0}}))
-
-(defn tiling-identification-systems
-  "Returns a sequence of tiling-identification-systems with the given names"
-  [& names]
-  (map tiling-identification-system names))
-
-(defn data-dates
-  "Returns DataDates field of umm-spec collection"
-  [datadates]
-  (for [datadate datadates]
-    (umm-cmn/map->DateType {:Date (p/parse-datetime (:Date datadate))
-                            :Type (:Type datadate)})))
-
-(defn temporal-extent
-  "Return a temporal extent with the given date times"
-  [attribs]
-  (let [{:keys [beginning-date-time ending-date-time single-date-time ends-at-present?]} attribs
-        begin (when beginning-date-time (p/parse-datetime beginning-date-time))
-        end (when ending-date-time (p/parse-datetime ending-date-time))
-        single (when single-date-time (p/parse-datetime single-date-time))]
-    (cond
-      (or begin end)
-      (umm-spec-temporal/temporal {:RangeDateTimes [(umm-cmn/->RangeDateTimeType begin end)]
-                                   :EndsAtPresentFlag ends-at-present?})
-      single
-      (umm-spec-temporal/temporal {:SingleDateTimes [single]}))))
-
-(defn science-keyword
-  "Return a science keyword based on the given attributes."
-  [attribs]
-  (umm-cmn/map->ScienceKeywordType attribs))
 
 (defn location-keyword
   "Return a location keyword based on the given attributes."
@@ -290,6 +231,18 @@
    (collection-missing-properties {}))
   ([attribs]
    (umm-c/map->UMM-C (merge umm-c-missing-properties-dif10 attribs))))
+
+(defn collection-without-minimal-attribs
+  "Return a UMM Collection that hasn't been merged with the minimal values.
+   Used only for testing purposes"
+  [index attribs]
+  (umm-c/map->UMM-C
+   (merge
+    {:ShortName (str "Short Name " index)
+     :Version (str "V" index)
+     :EntryTitle (str "Entry Title " index)}
+    attribs)))
+
 
 (defn collection
   "Returns a UmmCollection from the given attribute map."

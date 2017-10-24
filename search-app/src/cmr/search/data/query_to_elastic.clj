@@ -11,9 +11,8 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.search.data.keywords-to-elastic :as k2e]
-   [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
-   [cmr.search.services.query-execution.temporal-conditions-results-feature :as temporal-conditions]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor])
   (:require
    ;; require it so it will be available
@@ -23,22 +22,6 @@
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
   cache fields will be used. This is a temporary configuration to toggle the feature off if there
   are issues."
-  {:type Boolean
-   :default true})
-
-(defconfig sort-use-relevancy-score
-  "Indicates whether in keyword search sorting if the community usage relevancy score should be used
-  to sort collections. If true, consider the usage score as a tie-breaker when keyword relevancy
-  scores or the same. If false, no tie-breaker is applied.
-  This config is here to allow for the usage score to be turned off until elastic indexes are updated-since
-  so keyword search will not be broken"
-  {:type Boolean
-   :default true})
-
-(defconfig sort-use-temporal-relevancy
-  "Indicates whether when searching using a temporal range if we should use temporal overlap
-  relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
-  temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
    :default true})
 
@@ -72,7 +55,9 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
-                          :measurement :measurements}]
+                          :variable-native-id :variable-native-ids
+                          :measurement :measurements
+                          :author :authors}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -111,6 +96,11 @@
   {:tag-key :tag-key.lowercase
    :originator-id :originator-id.lowercase})
 
+(defmethod q2e/concept-type->field-mappings :variable
+  [_]
+  {:provider :provider-id
+   :name :variable-name})
+
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:project-sn2 :project-sn
@@ -125,7 +115,9 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
-   :measurements :measurement})
+   :variable-native-ids :variable-native-id
+   :measurements :measurement
+   :authors :author})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
@@ -150,7 +142,14 @@
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"
    :variable-name "variable-names.lowercase"
-   :measurement "measurements.lowercase"})
+   :variable-native-id "variable-native-ids.lowercase"
+   :measurement "measurements.lowercase"
+   :author "authors.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :variable
+  [_]
+  {:provider "provider-id.lowercase"
+   :name "variable-name.lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -262,7 +261,7 @@
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
   {:short-name :short-name.lowercase
-   :version-id :version-id.lowercase
+   :version-id :parsed-version-id.lowercase ; Use parsed for sorting
    :entry-title :entry-title.lowercase
    :entry-id :entry-id.lowercase
    :provider :provider-id.lowercase
@@ -276,6 +275,13 @@
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
   {:tag-key :tag-key.lowercase})
+
+(defmethod q2e/concept-type->sort-key-map :variable
+  [_]
+  {:variable-name :variable-name.lowercase
+   :name :variable-name.lowercase
+   :long-name :measurement.lowercase
+   :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
@@ -312,48 +318,24 @@
                                :cloud-cover :cloud-cover-doc-values})
       default-mappings)))
 
-(def collection-all-revision-sub-sort-fields
-  "This defines the sub sort fields for an all revisions search."
-  [{(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
-   {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
+(defn- all-revision-sub-sort-fields
+  "This defines the sub sort fields of an all revisions search for the given concept type."
+  [concept-type]
+  [{(q2e/query-field->elastic-field :concept-seq-id concept-type) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id concept-type) {:order "desc"}}])
 
 (def collection-latest-sub-sort-fields
   "This defines the sub sort fields for a latest revision collection search. Short name and version id
    are included for better relevancy with search results where all the other sort keys were identical."
   [{(q2e/query-field->elastic-field :short-name :collection) {:order "asc"}}
-   {(q2e/query-field->elastic-field :version-id :collection) {:order "desc"}}
+   {(q2e/query-field->elastic-field :parsed-version-id.lowercase :collection) {:order "desc"}}
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
-(defn- score-sort-order
-  "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
-   of temporal range parameters in the query"
-  [query]
-  (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
-        use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
-                                (sort-use-temporal-relevancy))]
-    (seq
-     (concat
-       (when use-keyword-sort?
-         [{:_score {:order :desc}}])
-       (when use-temporal-sort?
-         [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
-       ;; We only include this if one of the others is present
-       (when (and (or use-temporal-sort? use-keyword-sort?)
-                  (sort-use-relevancy-score))
-         [{:usage-relevancy-score {:order :desc :missing 0}}])))))
-
-(defn- temporal-sort-order
-  "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
-  define the temporal sort order based on the sort-usage-relevancy-score. If sort-use-temporal-relevancy
-  is turned off, return nil so the default sorting gets used."
-  [query]
-  (when (and (temporal-conditions/contains-temporal-conditions? query)
-             (sort-use-temporal-relevancy))
-    (if (sort-use-relevancy-score)
-      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
-       {:usage-relevancy-score {:order :desc :missing 0}}]
-      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])))
+(def variable-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision variable search."
+  [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
@@ -364,16 +346,26 @@
   [query]
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
-        score-sort-order (score-sort-order query)
+        score-sort-order (elastic-relevancy-scoring/score-sort-order query)
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
-                          collection-all-revision-sub-sort-fields
+                          (all-revision-sub-sort-fields :collection)
                           collection-latest-sub-sort-fields)
         ;; We want the specified sort then to sub-sort by the score.
         ;; Only if neither is present should it then go to the default sort.
         specified-score-combined (seq (concat specified-sort score-sort-order))]
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
+
+(defmethod q2e/query->sort-params :variable
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          (all-revision-sub-sort-fields :variable)
+                          variable-latest-sub-sort-fields)]
+    (concat (or specified-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition

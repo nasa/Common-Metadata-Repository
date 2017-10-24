@@ -68,28 +68,17 @@
     (is (= "http://dx.doi.org/doi6"
            (data/make-href cmr-base-url coll-data-2)))))
 
-(deftest get-entry-title
-  (testing "with an entry title"
-    (is (= "coll3"
-           (data/get-entry-title coll-data-1)))))
-
-(deftest get-short-name
-  (testing "short name"
-    (is (= "s3"
-           (data/get-short-name coll-data-1)))))
-
 (deftest make-holding-data
   (testing "with an entry title and short name"
     (let [data (data/make-holding-data cmr-base-url coll-data-1)]
       (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
              (:link-href data)))
-      (is (= "coll3" (:link-text data)))
+      (is (= "coll3" (get-in data [:umm "EntryTitle"])))
       (is (= "s3" (get-in data [:umm "ShortName"])))
       (is (= "6" (get-in data [:umm "Version"])))))
   (testing "with an entry title, short name, and doi"
     (let [data (data/make-holding-data cmr-base-url coll-data-2)]
       (is (= "http://dx.doi.org/doi6" (:link-href data)))
-      (is (= "coll3" (:link-text data)))
       (is (= "s3" (get-in data [:umm "ShortName"])))
       (is (= "7" (get-in data [:umm "Version"]))))))
 
@@ -99,10 +88,8 @@
                   (vec))]
     (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
            (get-in data [0 :link-href])))
-    (is (= "coll3" (get-in data [0 :link-text])))
     (is (= "s3" (get-in data [0 :umm "ShortName"])))
     (is (= "6" (get-in data [0 :umm "Version"])))
     (is (= "http://dx.doi.org/doi6" (get-in data [1 :link-href])))
-    (is (= "coll3" (get-in data [1 :link-text])))
     (is (= "s3" (get-in data [1 :umm "ShortName"])))
     (is (= "7" (get-in data [1 :umm "Version"])))))

@@ -102,20 +102,6 @@
      ["Tag could not be associated with provider [PROV1]. Tags are system level entities."]
      (cs/validate-system-level-concept tag prov1))))
 
-(deftest validate-system-level-variable-concept-test
-  (let [variable {:concept-type :variable
-             :variable-name "var123"}
-        cmr-provider pv/cmr-provider
-        prov1 {:provider-id "PROV1"
-               :variable-name "PROV1"
-               :cmr-only true
-               :small false}]
-    (is (= nil (cs/validate-system-level-concept variable cmr-provider)))
-    (tu/assert-exception-thrown-with-errors
-     :invalid-data
-     ["Variable could not be associated with provider [PROV1]. Variables are system level entities."]
-     (cs/validate-system-level-concept variable prov1))))
-
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
   (testing "must be called with a revision-id"
@@ -166,7 +152,7 @@
         ;; went through
         (is (= [expired-2]
                (for [concept (c/get-expired-concepts db {:provider-id "PROV1"} :collection)]
-                 (dissoc concept :revision-date))))
+                 (dissoc concept :revision-date :created-at))))
 
         ;; run it again, this time without the conflict...
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)

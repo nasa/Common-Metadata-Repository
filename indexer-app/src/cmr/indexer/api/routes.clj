@@ -64,16 +64,16 @@
         {:status 204})
 
       ;; Sends an update to the index set to update mappings and index settings.
-      (POST "/update-indexes" {:keys [request-context params headers]}
+      (POST "/update-indexes" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/update-indexes request-context)
+        (index-svc/update-indexes request-context params)
         {:status 200})
 
       ;; This is just an alias for /update-indexes to make it easy to update indexes
       ;; after a deployment using the same deployment code that other apps use for db-migrate.
-      (POST "/db-migrate" {:keys [request-context]}
+      (POST "/db-migrate" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/update-indexes request-context)
+        (index-svc/update-indexes request-context params)
         {:status 200})
 
       ;; add routes for accessing caches

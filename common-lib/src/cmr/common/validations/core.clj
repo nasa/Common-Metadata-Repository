@@ -9,7 +9,8 @@
   seq-of-validations."
   (:require [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.common.validations.messages :as msg]))
 
 (comment
 
@@ -116,15 +117,11 @@
   (fn [field-path value]
     (validate validation field-path (prefn value))))
 
-(defn required-msg
-  []
-  "%s is required.")
-
 (defn required
   "Validates that the value is not nil"
   [field-path value]
   (when (nil? value)
-    {field-path [(required-msg)]}))
+    {field-path [(msg/required)]}))
 
 (defn every
   "Validate a validation against every item in a sequence. The field path will
@@ -135,29 +132,17 @@
                        (validate validation (conj field-path idx) value))]
       (apply merge-with concat error-maps))))
 
-(defn integer-msg
-  [value]
-  (format "%%s must be an integer but was [%s]." value))
-
 (defn integer
   "Validates that the value is an integer"
   [field-path value]
   (when (and value (not (integer? value)))
-    {field-path [(integer-msg value)]}))
-
-(defn number-msg
-  [value]
-  (format "%%s must be a number but was [%s]." value))
+    {field-path [(msg/integer value)]}))
 
 (defn number
   "Validates the value is a number"
   [field-path value]
   (when (and value (not (number? value)))
-    {field-path [(number-msg value)]}))
-
-(defn within-range-msg
-  [minv maxv value]
-  (format "%%s must be within [%s] and [%s] but was [%s]." minv maxv value))
+    {field-path [(msg/number value)]}))
 
 (defn within-range
   "Creates a validator within a specified range"
@@ -165,13 +150,7 @@
   (fn [field-path value]
     (when (and value (or (neg? (compare value minv))
                          (pos? (compare value maxv))))
-      {field-path [(within-range-msg minv maxv value)]})))
-
-(defn field-cannot-be-changed-msg
-  [existing-value new-value]
-  (format
-    "%%s cannot be modified. Attempted to change existing value [%s] to [%s]"
-    existing-value new-value))
+      {field-path [(msg/within-range minv maxv value)]})))
 
 (defn field-cannot-be-changed
   "Validation that a field in a object has not been modified. Accepts optional
@@ -188,7 +167,7 @@
        (when (and (not skip-validation?)
                   (not= existing-value new-value))
          {(conj field-path field)
-          [(field-cannot-be-changed-msg existing-value new-value)]})))))
+          [(msg/field-cannot-be-changed existing-value new-value)]})))))
 
 (defn when-present
   "Validation-transformer: Returns a validation which only runs validations
