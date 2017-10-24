@@ -667,6 +667,7 @@ Example: Initiate a bulk update of 3 collections. Find platforms that have Type 
 ```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
+  "name": "TEST NAME"
   "update-type": "FIND_AND_UPDATE",
   "update-field": "PLATFORMS",
   "find-value": {"Type": "Aircraft"},
@@ -730,6 +731,8 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
 
 <?xml version="1.0" encoding="UTF-8"?>
 <result>
+    <created-at>2017-10-24T17:00:03.000Z</created-at>
+    <name>TEST NAME</name>
     <task-status>COMPLETE</task-status>
     <status-message>Task completed with 1 collection update failures out of 5</status-message>
     <request-json-body>{"concept-ids": ["C11984-PROV1","C11991-PROV1","C119916-PROV1","C14432-PROV1","C20000-PROV1"],"update-type": "FIND_AND_REMOVE","update-field": "SCIENCE_KEYWORDS","find-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
