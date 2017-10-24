@@ -39,8 +39,12 @@
     </header>
 
     <main class="content-section">
+      {% block non-container-content %}
+      {% endblock %}
+      <div class="container">
         {% block main-content %}
         {% endblock %}
+      </div>
     </main>
 
     <footer>
