@@ -122,6 +122,7 @@
      headers
      {:status 200
       :created-at (:created-at task-status)
+      :name (:name task-status)
       :task-status (:status task-status)
       :status-message (:status-message task-status)
       :request-json-body (:request-json-body task-status)

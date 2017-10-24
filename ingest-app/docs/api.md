@@ -641,6 +641,7 @@ The following update types are supported:
 Bulk update post request takes the following parameters:
 
   * Concept-ids (required) - a list of concept ids to update
+  * Name (required) - a name used to identify a update task 
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
   * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make
