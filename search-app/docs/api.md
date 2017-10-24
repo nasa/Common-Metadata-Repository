@@ -156,6 +156,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Variable association](#variable-association)
     * [Variable dissociation](#variable-dissociation)
   * [Service](#service)
+    * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
     * [Service dissociation](#service-dissociation)
   * [Community Usage Metrics](#community-usage-metrics)
@@ -2726,7 +2727,7 @@ Tags have the following fields:
 
 #### <a name="tag-access-control"></a> Tag Access Control
 
-Access to tags is granted through the TAG_ACL system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a tag is considered an update.
+Access to tags is granted through the TAG_GROUP system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a tag is considered an update.
 
 #### <a name="creating-a-tag"></a> Creating a Tag
 
@@ -2831,19 +2832,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the tag with the given tag key does not exist
-* the tag with the given tag key has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of tagging on collection level and collection revision in the same request
+On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
@@ -2971,19 +2960,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tag dissociation cannot be processed at all due to invalid input, tag dissociation request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the tag with the given tag key does not exist
-* the tag with the given tag key has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of tagging on collection level and collection revision in the same request
+On occasions when tag dissociation cannot be processed at all due to invalid input, tag dissociation request will return a failure status code with the appropriate error message.
 
 #### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
 
@@ -3350,7 +3327,7 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
-Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.
+Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL provider object identity of the variable concept. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.
 
 #### <a name="variable-association"></a> Variable Association
 
@@ -3386,19 +3363,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when variable association cannot be processed at all due to invalid input, variable association request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the variable with the given concept id does not exist
-* the variable with the given concept id has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of variable on collection level and collection revision in the same request
+On occassions when variable association cannot be processed at all due to invalid input, variable association request will return a failure status code with the appropriate error message.
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
@@ -3443,23 +3408,15 @@ Content-Length: 168
 ]
 ```
 
-On occasions when variable dissociation cannot be processed at all due to invalid input, variable dissociation request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the variable with the given concept id does not exist
-* the variable with the given concept id has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of variable on collection level and collection revision in the same request
+On occasions when variable dissociation cannot be processed at all due to invalid input, variable dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="service"></a> Service
 
 A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).
+
+#### <a name="service-access-control"></a> Service Access Control
+
+Access to service and service association is granted through the INGEST_MANAGEMENT_ACL provider object identity of the service concept. Associating and dissociating collections with a service is considered an update.
 
 #### <a name="service-association"></a> Service Association
 
@@ -3495,19 +3452,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when service association cannot be processed at all due to invalid input, service association request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the service with the given concept id does not exist
-* the service with the given concept id has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of service on collection level and collection revision in the same request
+On occassions when service association cannot be processed at all due to invalid input, service association request will return a failure status code with the appropriate error message.
 
 #### <a name="service-dissociation"></a> Service Dissociation
 
@@ -3552,19 +3497,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code. e.g.
-
-Status code 400 is returned when:
-* content type is unsupported
-* request body is invalid json
-
-Status code 404 is returned when:
-* the service with the given concept id does not exist
-* the service with the given concept id has been deleted
-
-Status code 422 is returned when:
-* request body is empty
-* there are conflicts of service on collection level and collection revision in the same request
+On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
