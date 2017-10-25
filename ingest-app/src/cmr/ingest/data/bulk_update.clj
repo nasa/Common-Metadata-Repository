@@ -93,7 +93,7 @@
               statement (str "INSERT INTO bulk_update_task_status "
                              "(task_id, provider_id, name, request_json_body, status)"
                              "VALUES (?, ?, ?, ?, ?)")
-              name (or (get (json/parse-string json-body) "name") task-ikd) 
+              name (or (get (json/parse-string json-body) "name") task-id) 
               values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
           (j/db-do-prepared db statement values)
           ;; Write a row to collection status for each concept id
