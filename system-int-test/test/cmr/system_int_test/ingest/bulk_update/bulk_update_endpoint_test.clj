@@ -67,13 +67,15 @@
               (is (= error-messages errors)))
 
             "Missing concept-ids"
-            {:update-field "SCIENCE_KEYWORDS"
+            {:name "TEST NAME"
+             :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
             ["object has missing required properties ([\"concept-ids\"])"]
 
             "0 concept-ids"
             {:concept-ids []
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
@@ -82,18 +84,21 @@
 
             "Missing update field"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-type "ADD_TO_EXISTING"}
             400
             ["object has missing required properties ([\"update-field\"])"]
 
             "Missing update type"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"}
             400
             ["object has missing required properties ([\"update-type\"])"]
 
             "Invalid update type"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "REPLACE"}
             400
@@ -101,6 +106,7 @@
 
             "Missing update value"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"}
             400
@@ -108,6 +114,7 @@
 
             "Missing find value"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"
              :update-value {:Category "EARTH SCIENCE"
@@ -119,11 +126,20 @@
 
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "Science keywords"
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"}}
             400
-            ["/update-field instance value (\"Science keywords\") not found in enum (possible values: [\"SCIENCE_KEYWORDS\",\"LOCATION_KEYWORDS\",\"DATA_CENTERS\",\"PLATFORMS\",\"INSTRUMENTS\"])"]))))
+            ["/update-field instance value (\"Science keywords\") not found in enum (possible values: [\"SCIENCE_KEYWORDS\",\"LOCATION_KEYWORDS\",\"DATA_CENTERS\",\"PLATFORMS\",\"INSTRUMENTS\"])"]
+
+            "Missing name value"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"}}
+            400
+            ["object has missing required properties ([\"name\"])"]))))
 
             ;; Short-name/version currently not supported. Support will be added
             ;; back in with CMR-4129

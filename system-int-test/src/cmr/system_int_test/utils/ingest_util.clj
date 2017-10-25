@@ -518,6 +518,7 @@
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
                       {:created-at (cx/string-at-path task [:created-at])
+                       :name (cx/string-at-path task [:name])
                        :task-id (cx/string-at-path task [:task-id])
                        :status (cx/string-at-path task [:status])
                        :status-message (cx/string-at-path task [:status-message])
@@ -545,6 +546,7 @@
  ([provider-id]
   (bulk-update-provider-status provider-id nil))
  ([provider-id options]
+  (println "dbg2:" )
   (let [accept-format (get options :accept-format :xml)
         token (:token options)
         params {:method :get
@@ -568,6 +570,7 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:created-at (cx/string-at-path xml-elem [:created-at])
+         :name (cx/string-at-path xml-elem [:name])
          :task-status (cx/string-at-path xml-elem [:task-status])
          :status-message (cx/string-at-path xml-elem [:status-message])
          :request-json-body (cx/string-at-path xml-elem [:request-json-body])

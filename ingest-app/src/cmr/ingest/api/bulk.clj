@@ -38,13 +38,17 @@
   (generate-xml-status-list result status-list-key status-key id-key nil))
  ([result status-list-key status-key id-key created-at-key]
   (generate-xml-status-list result status-list-key status-key id-key created-at-key nil))
- ([result status-list-key status-key id-key created-at-key additional-keys]
+ ([result status-list-key status-key id-key created-at-key name-key]
+  (generate-xml-status-list result status-list-key status-key id-key created-at-key name-key nil))
+ ([result status-list-key status-key id-key created-at-key name-key additional-keys]
   (xml/element status-list-key {}
     (for [status (get result status-list-key)
           :let [message (:status-message status)]]
      (xml/element status-key {}
       (when created-at-key
         (xml/element created-at-key {} (str (:created-at status))))
+      (when name-key 
+        (xml/element name-key {} (str (:name status))))
       (xml/element id-key {} (get status id-key))
       (xml/element :status {} (:status status))
       (when message
@@ -69,19 +73,20 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
-           (generate-xml-status-list result :tasks :task :task-id :created-at
-             [:request-json-body])))})
+                       (generate-xml-status-list result :tasks :task
+                                                 :task-id :created-at :name
+                                                 [:request-json-body])))})
 
 (defn get-provider-tasks
- "Get all tasks and task statuses for provider."
- [provider-id request]
- (let [{:keys [headers request-context]} request]
-  (api-core/verify-provider-exists request-context provider-id)
-  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-  (generate-provider-tasks-response
-   headers
-   {:status 200
-    :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
+  "Get all tasks and task statuses for provider."
+  [provider-id request]
+  (let [{:keys [headers request-context]} request]
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+    (generate-provider-tasks-response
+     headers
+     {:status 200
+      :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
@@ -109,22 +114,22 @@
             :collection-statuses :collection-status :concept-id)))})
 
 (defn get-provider-task-status
- "Get the status for the given task for the provider including collection statuses"
- [provider-id task-id request]
- (let [{:keys [headers request-context]} request]
-  (api-core/verify-provider-exists request-context provider-id)
-  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
-        collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
-    (when (or (nil? task-status) (nil? (:status task-status)))
-      (srvc-errors/throw-service-error
-        :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
-    (generate-provider-task-status-response
-     headers
-     {:status 200
-      :created-at (:created-at task-status)
-      :name (:name task-status)
-      :task-status (:status task-status)
-      :status-message (:status-message task-status)
-      :request-json-body (:request-json-body task-status)
-      :collection-statuses collection-statuses}))))
+  "Get the status for the given task for the provider including collection statuses"
+  [provider-id task-id request]
+  (let [{:keys [headers request-context]} request]
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+    (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
+          collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
+      (when (or (nil? task-status) (nil? (:status task-status)))
+        (srvc-errors/throw-service-error
+          :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
+      (generate-provider-task-status-response
+       headers
+       {:status 200
+        :created-at (:created-at task-status)
+        :name (:name task-status)
+        :task-status (:status task-status)
+        :status-message (:status-message task-status)
+        :request-json-body (:request-json-body task-status)
+        :collection-statuses collection-statuses}))))

@@ -44,7 +44,7 @@
     (j/with-db-transaction
       [conn db]
       ;; Returns a list of bulk update statuses for the provider
-      (let [stmt (su/build (su/select [:created-at :task-id :name :status :status-message :request-json-body]
+      (let [stmt (su/build (su/select [:created-at :name :task-id :status :status-message :request-json-body]
                                       (su/from bulk_update_task_status)
                                       (su/where `(= :provider-id ~provider-id))))
             ;; Note: the column selected out of the database is created_at, instead of created-at.

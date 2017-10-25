@@ -28,6 +28,7 @@
                                               (generate-concept-id x "PROV1"))))))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -56,12 +57,14 @@
 
         (are3 [accept-format]
           (let [response (ingest/bulk-update-provider-status "PROV1"
-                          {:accept-format accept-format})]
+                                                             {:accept-format accept-format})]
             (is (= (set [{:task-id task-id-1,
+                          :name "TEST NAME"
                           :status-message "All collection updates completed successfully.",
                           :status "COMPLETE",
                           :request-json-body json-body}
                          {:task-id task-id-2,
+                          :name "TEST NAME"
                           :status-message "All collection updates completed successfully.",
                           :status "COMPLETE",
                           :request-json-body json-body}])
@@ -75,6 +78,7 @@
                          {:accept-format accept-format})]
            (is (= {:status-message "All collection updates completed successfully.",
                    :status 200,
+                   :name "TEST NAME"
                    :task-status "COMPLETE",
                    :request-json-body json-body
                    :collection-statuses [{:status-message nil,
@@ -92,6 +96,7 @@
 
 (deftest bulk-update-invalid-concept-id
   (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
+                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -105,6 +110,7 @@
         status-response (dissoc status-response :created-at)]
     (is (= {:status-message "Task completed with 2 collection update failures out of 2",
             :status 200,
+            :name "TEST NAME"
             :request-json-body json-body
             :task-status "COMPLETE",
             :collection-statuses (set [{:status-message "Concept-id [C1200000100-PROV1] is not valid.",

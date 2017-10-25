@@ -118,6 +118,7 @@
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -173,6 +174,7 @@
           _ (index/wait-until-indexed)]
       (testing "Data center find and update"
         (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "NSID"}
@@ -203,6 +205,7 @@
   (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
                           :update-type "FIND_AND_REPLACE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:Topic "ATMOSPHERE"}
@@ -236,6 +239,7 @@
   (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
                           :update-type "FIND_AND_REMOVE"
                           :update-field "INSTRUMENTS"
                           :find-value {:ShortName "atm"}}
@@ -271,6 +275,7 @@
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
                           :update-type "FIND_AND_UPDATE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:Topic "ATMOSPHERE"}
@@ -311,6 +316,7 @@
                  (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids [(:concept-id concept)]
+                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
