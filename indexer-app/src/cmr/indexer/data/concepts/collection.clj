@@ -26,6 +26,7 @@
     [cmr.indexer.data.concepts.collection.opendata :as opendata]
     [cmr.indexer.data.concepts.collection.platform :as platform]
     [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+    [cmr.indexer.data.concepts.service :as service]
     [cmr.indexer.data.concepts.spatial :as spatial]
     [cmr.indexer.data.concepts.tag :as tag]
     [cmr.indexer.data.concepts.variable :as variable]
@@ -133,7 +134,7 @@
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields
-                tag-associations variable-associations]} concept
+                tag-associations variable-associations service-associations]} concept
         collection (remove-index-irrelevant-defaults collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -351,6 +352,7 @@
                                                          :value.lowercase)}
 
            (variable/variable-associations->elastic-doc context variable-associations)
+           (service/service-associations->elastic-doc context service-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)
