@@ -68,6 +68,25 @@
         (is (= 200 tombstone-status))
         (is (:deleted tombstone))))))
 
+(deftest service-delete-cascades-associations
+  (testing "delete cascades to service associations"
+    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+          service (util/create-and-save-service "REG_PROV" 1)
+          service-association (util/create-and-save-service-association
+                                coll service 1 1)
+          service-association-id (:concept-id service-association)
+          {status :status service-association-concept :concept} (util/get-concept-by-id
+                                                                  service-association-id)
+          _ (util/delete-concept (:concept-id service))
+          {tombstone-status :status tombstone :concept} (util/get-concept-by-id
+                                                         service-association-id)]
+      (testing "service association was saved and is not a tombstone"
+        (is (= 200 status))
+        (is (not (:deleted service-association-concept))))
+      (testing "service association is tombstoned after service is deleted"
+        (is (= 200 tombstone-status))
+        (is (:deleted tombstone))))))
+
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]

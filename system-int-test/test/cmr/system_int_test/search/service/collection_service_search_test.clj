@@ -113,4 +113,19 @@
 
       ;; verify has-formats is false after the service with two supported formats is deleted
       (verify-collection-has-formats coll1 false)
-      (verify-collection-has-formats coll2 false))))
+      (verify-collection-has-formats coll2 false))
+
+    (testing "update service affect collection search has-formats field"
+      ;; before update service3, collections' has formats is false
+      (verify-collection-has-formats coll1 false)
+      (verify-collection-has-formats coll2 false)
+      ;; update service3 to have two supported formats
+      (service-util/ingest-service-with-attrs
+       {:native-id "serv3"
+        :Name "service3"
+        :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]}})
+      (index/wait-until-indexed)
+
+      ;; verify has-formats is true after the service is updated with two supported formats
+      (verify-collection-has-formats coll1 true)
+      (verify-collection-has-formats coll2 true))))

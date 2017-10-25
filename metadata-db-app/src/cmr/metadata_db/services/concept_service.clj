@@ -567,6 +567,26 @@
                           msg/concept-does-not-exist
                           concept-id))))))
 
+(defn- update-service-associations
+  "Create a new revision for the non-tombstoned service associations that is related to the
+  given concept; Does noting if the given concept is not a service concept."
+  [context concept-type concept-id]
+  (when (= :service concept-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type :service-association
+                          :service-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})
+          associations (filter #(= false (:deleted %))
+                               (search/find-concepts context search-params))]
+      (doseq [association associations]
+        (save-concept-revision
+         context
+         (-> association
+             (dissoc :revision-id :revision-date :transaction-id)
+             ;; set user-id to cmr to indicate the association is created by CMR
+             (assoc :user-id "cmr")))))))
+
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -592,14 +612,18 @@
           concept-type (:concept-type concept)
           concept-id (:concept-id concept)
           revision-id (:revision-id concept)]
+      ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)
                  (> revision-id 1))
         (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
           (when (util/is-tombstone? previous-concept)
             (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id))))
+      ;; update service associatons if applicable, i.e. when the concept is a service,
+      ;; so that the collections can be updated in elasticsearch with the updated service info
+      (update-service-associations context concept-type concept-id)
       (ingest-events/publish-event
-        context
-        (ingest-events/concept-update-event concept))
+       context
+       (ingest-events/concept-update-event concept))
       concept)))
 
 (defn- delete-associated-tag-associations
