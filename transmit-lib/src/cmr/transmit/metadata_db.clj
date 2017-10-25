@@ -176,8 +176,8 @@
 
 (defn get-associations-by-collection-concept-id
   "Get all the associations of the given type (including tombstones) for a collection
-  with the given concept id and revision id. assoc-type can be either :tag-association
-  or :variable-association."
+  with the given concept id and revision id. assoc-type can be :tag-association,
+  :variable-association or service-association."
   [context coll-concept-id coll-revision-id assoc-type]
   (let [params {:associated-concept-id coll-concept-id
                 :latest true}

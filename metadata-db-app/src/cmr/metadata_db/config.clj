@@ -59,8 +59,8 @@
    :collection ingest-exchange-name
    :tag ingest-exchange-name
    :tag-association ingest-exchange-name
-   ;; Add service when we add service indexing
-   :service nil
+   :service ingest-exchange-name
+   :service-association ingest-exchange-name
    :access-group access-control-exchange-name
    :acl access-control-exchange-name
    :humanizer ingest-exchange-name

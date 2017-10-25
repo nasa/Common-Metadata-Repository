@@ -244,11 +244,12 @@
 
 (defn- get-elastic-version-with-associations
   "Returns the elastic version of the concept and its associations"
-  [context concept tag-associations variable-associations]
+  [context concept tag-associations variable-associations service-associations]
   (es/get-elastic-version
    (-> concept
        (assoc :tag-associations tag-associations)
-       (assoc :variable-associations variable-associations))))
+       (assoc :variable-associations variable-associations)
+       (assoc :service-associations service-associations))))
 
 (defmulti get-elastic-version
   "Returns the elastic version of the concept"
@@ -263,13 +264,16 @@
   [context concept]
   (let [tag-associations (meta-db/get-associations-for-collection context concept :tag-association)
         variable-associations (meta-db/get-associations-for-collection
-                               context concept :variable-association)]
-    (get-elastic-version-with-associations context concept tag-associations variable-associations)))
+                               context concept :variable-association)
+        service-associations (meta-db/get-associations-for-collection
+                              context concept :service-association)]
+    (get-elastic-version-with-associations
+     context concept tag-associations variable-associations service-associations)))
 
 (defmethod get-elastic-version :variable
   [context concept]
   (let [variable-associations (meta-db/get-associations-for-variable context concept)]
-    (get-elastic-version-with-associations context concept nil variable-associations)))
+    (get-elastic-version-with-associations context concept nil variable-associations nil)))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"
@@ -301,6 +305,19 @@
   [context concept]
   (meta-db/get-associations-for-variable context concept))
 
+(defmulti get-service-associations
+  "Returns the service associations of the concept"
+  (fn [context concept]
+    (:concept-type concept)))
+
+(defmethod get-service-associations :default
+  [context concept]
+  nil)
+
+(defmethod get-service-associations :collection
+  [context concept]
+  (meta-db/get-associations-for-collection context concept :service-association))
+
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
    association concept indexes the associated collection conept."
@@ -325,19 +342,24 @@
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (get-tag-associations context concept)
                 variable-associations (get-variable-associations context concept)
+                service-associations (get-service-associations context concept)
                 elastic-version (get-elastic-version-with-associations
-                                  context concept tag-associations variable-associations)
+                                  context concept tag-associations variable-associations
+                                  service-associations)
                 tag-associations (es/parse-non-tombstone-associations
                                   context tag-associations)
                 variable-associations (es/parse-non-tombstone-associations
                                        context variable-associations)
+                service-associations (es/parse-non-tombstone-associations
+                                       context service-associations)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc
                          context
                          (-> concept
                              (assoc :tag-associations tag-associations)
-                             (assoc :variable-associations variable-associations))
+                             (assoc :variable-associations variable-associations)
+                             (assoc :service-associations service-associations))
                          parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
@@ -354,8 +376,8 @@
               elastic-options)))))))
 
 (defn- index-associated-collection
-  "Index the associated collection concept of the given concept. This is used by indexing tag
-   association and variable association. Indexing them is essentially indexing their associated
+  "Index the associated collection concept of the given concept. This is used by indexing
+   tag/variable/service association. Indexing them is essentially indexing their associated
    collection concept."
   [context concept options]
   (let [{{:keys [associated-concept-id associated-revision-id]} :extra-fields} concept
@@ -402,13 +424,22 @@
   (index-associated-variable context concept {})
   (index-associated-variable context concept {:all-revisions-index? true}))
 
+(defmethod index-concept :service
+  [context concept parsed-concept options]
+  ;; We do not index service concepts in elasticsearch for now.
+  )
+
+(defmethod index-concept :service-association
+  [context concept parsed-concept options]
+  (index-associated-collection context concept options))
+
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
   (when-not (and concept-id revision-id)
     (errors/throw-service-error
-      :bad-request
-      (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+     :bad-request
+     (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
 
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
@@ -487,6 +518,17 @@
   [context concept-id revision-id options]
   ;; When variable association is deleted, we want to re-index the associated collection.
   ;; This is the same thing we do when a variable association is update. So we call the same function.
+  (index-association-concept context concept-id revision-id options))
+
+(defmethod delete-concept :service
+  [context concept parsed-concept options]
+  ;; We do not index service concepts in elasticsearch for now.
+  )
+
+(defmethod delete-concept :service-association
+  [context concept-id revision-id options]
+  ;; When service association is deleted, we want to re-index the associated collection.
+  ;; This is the same thing we do when a service association is update. So we call the same function.
   (index-association-concept context concept-id revision-id options))
 
 (defn force-delete-all-concept-revision

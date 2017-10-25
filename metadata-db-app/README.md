@@ -46,7 +46,7 @@
 
   {
       "concept-type": "service",
-      "native-id": "mod10cm",
+      "native-id": "service1",
       "user-id": "user101",
       "metadata": "{\"Name\": \"AIRX3STD\",  \"Type\": \"OPeNDAP\",  \"Version\":
                    \"1.9\",  \"Description\": \"AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB.\",  \"OnlineResource\": {    \"Linkage\": \"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/\",    \"Name\": \"OPeNDAP Service for AIRS Level-3 retrieval products\",    \"Description\": \"OPeNDAP Service\"  },  \"ServiceOptions\": {\"SubsetType\": [\"Spatial\", \"Variable\"],    \"SupportedProjections\": [\"Geographic\"], \"SupportedFormats\": [      \"netCDF-3\", \"netCDF-4\", \"Binary\", \"ASCII\"]}}",
@@ -54,7 +54,7 @@
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
-        "service-name": "MOD10CM"
+        "service-name": "AIRX3STD"
       }
     }
 

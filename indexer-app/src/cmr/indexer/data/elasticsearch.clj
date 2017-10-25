@@ -42,7 +42,8 @@
   (apply max
          (:transaction-id concept)
          (concat (map :transaction-id (:tag-associations concept))
-                 (map :transaction-id (:variable-associations concept)))))
+                 (map :transaction-id (:variable-associations concept))
+                 (map :transaction-id (:service-associations concept)))))
 
 (defmethod get-elastic-version :variable
   [concept]

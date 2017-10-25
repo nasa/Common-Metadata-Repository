@@ -459,18 +459,21 @@
                         :latest true})]
     (tombstone-associations context assoc-type search-params true)))
 
-(defmulti delete-associated-variable-associations
-  "Delete the variable associations associated with the given concept type and concept id."
-  (fn [context concept-type concept-id revision-id]
+(defmulti delete-associations
+  "Delete the associations of the given association type that is associated with
+  the given concept type and concept id.
+  assoc-type can be :variable-association or :service-association,
+  concept-type can be :collection, :variable, or :service."
+  (fn [context concept-type concept-id revision-id assoc-type]
     concept-type))
 
-(defmethod delete-associated-variable-associations :default
-  [context concept-type concept-id revision-id]
+(defmethod delete-associations :default
+  [context concept-type concept-id revision-id assoc-type]
   ;; does nothing by default
   nil)
 
-(defmethod delete-associated-variable-associations :collection
-  [context concept-type concept-id revision-id]
+(defmethod delete-associations :collection
+  [context concept-type concept-id revision-id assoc-type]
   ;; only delete the associated variable associations
   ;; if the given revision-id is the latest revision of the collection
   (let [[latest-coll] (search/find-concepts context {:concept-type :collection
@@ -479,17 +482,29 @@
                                                      :latest true})]
     (when (or (nil? revision-id)
               (= revision-id (:revision-id latest-coll)))
-      (delete-associations-for-collection-concept context :variable-association concept-id nil))))
+      (delete-associations-for-collection-concept context assoc-type concept-id nil))))
 
-(defmethod delete-associated-variable-associations :variable
-  [context concept-type concept-id revision-id]
-  (let [search-params (cutil/remove-nil-keys
-                       {:concept-type :variable-association
-                        :variable-concept-id concept-id
-                        :exclude-metadata true
-                        :latest true})]
-    ;; create variable association tombstones and queue the variable association delete events
-    (tombstone-associations context :variable-association search-params false)))
+(defmethod delete-associations :variable
+  [context concept-type concept-id revision-id assoc-type]
+  (when (= :variable-association assoc-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type assoc-type
+                          :variable-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})]
+      ;; create variable association tombstones and queue the variable association delete events
+      (tombstone-associations context assoc-type search-params false))))
+
+(defmethod delete-associations :service
+  [context concept-type concept-id revision-id assoc-type]
+  (when (= :service-association assoc-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type assoc-type
+                          :service-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})]
+      ;; create variable association tombstones and queue the variable association delete events
+      (tombstone-associations context assoc-type search-params false))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -521,7 +536,9 @@
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
             ;; delete the associated variable associations if applicable
-            (delete-associated-variable-associations context concept-type concept-id nil)
+            (delete-associations context concept-type concept-id nil :variable-association)
+            ;; delete the associated service associations if applicable
+            (delete-associations context concept-type concept-id nil :service-association)
 
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
@@ -550,6 +567,7 @@
                           msg/concept-does-not-exist
                           concept-id))))))
 
+;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
   (trace "concept:" (keys concept))
@@ -600,14 +618,23 @@
   [context concept-type concept-id revision-id]
   ;; delete the related tag associations and variable associations
   (delete-associated-tag-associations context concept-id revision-id)
-  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (delete-associations context concept-type concept-id revision-id :variable-association)
+  (delete-associations context concept-type concept-id revision-id :service-association)
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
 (defmethod force-delete-cascading-events :variable
   [context concept-type concept-id revision-id]
   ;; delete the related variable associations
-  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (delete-associations context concept-type concept-id revision-id :variable-association)
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :service
+  [context concept-type concept-id revision-id]
+  ;; delete the related service associations
+  (delete-associations context concept-type concept-id revision-id :service-association)
+  ;; Do not queue the concept revision deletion event for now.
+  ; (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id)
+  )
 
 (defmethod force-delete-cascading-events :default
   [context concept-type concept-id revision-id]
