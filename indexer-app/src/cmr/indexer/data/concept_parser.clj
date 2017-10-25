@@ -27,6 +27,14 @@
   [context concept]
   (edn/read-string (:metadata concept)))
 
+(defmethod parse-concept :service
+  [context concept]
+  (umm/parse-metadata context concept))
+
+(defmethod parse-concept :service-association
+  [context concept]
+  (edn/read-string (:metadata concept)))
+
 (defmethod parse-concept :collection
   [context concept]
   (umm/parse-metadata context concept))
