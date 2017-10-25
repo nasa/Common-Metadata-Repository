@@ -34,27 +34,30 @@
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format
  {:id :status :status-message}"
- ([result status-list-key status-key id-key]
-  (generate-xml-status-list result status-list-key status-key id-key nil))
- ([result status-list-key status-key id-key created-at-key]
-  (generate-xml-status-list result status-list-key status-key id-key created-at-key nil))
- ([result status-list-key status-key id-key created-at-key name-key]
-  (generate-xml-status-list result status-list-key status-key id-key created-at-key name-key nil))
- ([result status-list-key status-key id-key created-at-key name-key additional-keys]
-  (xml/element status-list-key {}
-    (for [status (get result status-list-key)
-          :let [message (:status-message status)]]
-     (xml/element status-key {}
-      (when created-at-key
-        (xml/element created-at-key {} (str (:created-at status))))
-      (when name-key 
-        (xml/element name-key {} (str (:name status))))
-      (xml/element id-key {} (get status id-key))
-      (xml/element :status {} (:status status))
-      (when message
-       (xml/element :status-message {} message))
-      (for [k additional-keys]
-       (xml/element k {} (get status k))))))))
+ [result status-list-key status-key id-key]
+ (xml/element status-list-key {}
+   (for [status (get result status-list-key)
+         :let [message (:status-message status)]]
+    (xml/element status-key {}
+     (xml/element id-key {} (get status id-key))
+     (xml/element :status {} (:status status))
+     (xml/element :status-message {} message)))))
+
+(defn- generate-xml-provider-tasks-list
+ "Generate XML for a status list with the format
+ {:id :status :status-message}"
+ [result status-list-key status-key id-key name-key created-at-key additional-keys]
+ (xml/element status-list-key {}
+   (for [status (get result status-list-key)
+         :let [message (:status-message status)]]
+    (xml/element status-key {}
+     (xml/element created-at-key {} (str (:created-at status)))
+     (xml/element name-key {} (str (:name status)))
+     (xml/element id-key {} (get status id-key))
+     (xml/element :status {} (:status status))
+     (xml/element :status-message {} message)
+     (for [k additional-keys]
+      (xml/element k {} (get status k)))))))
 
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
@@ -73,9 +76,9 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
-                       (generate-xml-status-list result :tasks :task
-                                                 :task-id :created-at :name
-                                                 [:request-json-body])))})
+                       (generate-xml-provider-tasks-list result :tasks :task
+                                                         :task-id :name :created-at 
+                                                         [:request-json-body])))})
 
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
