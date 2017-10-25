@@ -50,7 +50,7 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
-                has-variables]} reference
+                has-variables has-formats]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -76,6 +76,7 @@
                                                                 (get has-granules-map id false)))
                        :granule_count (when granule-counts-map granule-count)
                        :has_variables has-variables
+                       :has_formats has-formats
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters
