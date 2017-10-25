@@ -641,7 +641,7 @@ The following update types are supported:
 Bulk update post request takes the following parameters:
 
   * Concept-ids (required) - a list of concept ids to update
-  * Name (required) - a name used to identify a update task 
+  * Name (optional) - a name used to identify a bulk update task 
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
   * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make
@@ -667,7 +667,8 @@ Example: Initiate a bulk update of 3 collections. Find platforms that have Type 
 ```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
-  "name": "TEST NAME"
+  "name": "TEST NAME",
+  "create-at": "2017-10-24T17:00:03.000Z",
   "update-type": "FIND_AND_UPDATE",
   "update-field": "PLATFORMS",
   "find-value": {"Type": "Aircraft"},

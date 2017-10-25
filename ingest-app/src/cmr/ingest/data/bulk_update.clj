@@ -93,7 +93,7 @@
               statement (str "INSERT INTO bulk_update_task_status "
                              "(task_id, provider_id, name, request_json_body, status)"
                              "VALUES (?, ?, ?, ?, ?)")
-              name (get (json/parse-string json-body) "name") 
+              name (or (get (json/parse-string json-body) "name") task-ikd) 
               values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
           (j/db-do-prepared db statement values)
           ;; Write a row to collection status for each concept id
@@ -124,23 +124,23 @@
     [db task-id concept-id status status-message]
     (try
       (j/with-db-transaction
-        [conn db]
-        (let [statement (str "UPDATE bulk_update_coll_status "
-                             "SET status = ?, status_message = ?"
-                             "WHERE task_id = ? AND concept_id = ?")
-              status-message (util/trunc status-message 255)]
-          (j/db-do-prepared db statement [status status-message task-id concept-id])
-          (let [task-collections (su/query db
-                                           (su/build (su/select
-                                                      [:concept-id :status]
-                                                      (su/from "bulk_update_coll_status")
-                                                      (su/where `(= :task-id ~task-id)))))
-                pending-collections (filter #(= "PENDING" (:status %)) task-collections)
-                failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
-            (when-not (seq pending-collections)
-              (update-bulk-update-task-status db task-id "COMPLETE"
-                                              (generate-task-status-message
-                                               (count failed-collections) (count task-collections)))))))
+       [conn db]
+       (let [statement (str "UPDATE bulk_update_coll_status "
+                            "SET status = ?, status_message = ?"
+                            "WHERE task_id = ? AND concept_id = ?")
+             status-message (util/trunc status-message 255)]
+         (j/db-do-prepared db statement [status status-message task-id concept-id])
+         (let [task-collections (su/query db
+                                          (su/build (su/select
+                                                     [:concept-id :status]
+                                                     (su/from "bulk_update_coll_status")
+                                                     (su/where `(= :task-id ~task-id)))))
+               pending-collections (filter #(= "PENDING" (:status %)) task-collections)
+               failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
+           (when-not (seq pending-collections)
+             (update-bulk-update-task-status db task-id "COMPLETE"
+                                             (generate-task-status-message
+                                              (count failed-collections) (count task-collections)))))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
                                     [(str "Error creating updating bulk update collection status "
