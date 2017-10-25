@@ -8,15 +8,15 @@
   []
   (println "migrations.008-add-name-column-bulk-update-status up...")
   (j/db-do-commands (config/db)
-                    "ALTER TABLE CMR_INGEST.bulk_update_task_status ADD
-                     name VARCHAR(255) DEFAULT '' NOT NULL")
+                    "ALTER TABLE bulk_update_task_status ADD
+                     name VARCHAR(255) DEFAULT NULL")
   (j/db-do-commands (config/db)
-                    "UPDATE CMR_INGEST.bulk_update_task_status SET name = task_id
-                     WHERE name = ''"))
+                    "UPDATE bulk_update_task_status SET name = task_id
+                     WHERE name IS NULL"))
 
 (defn down
-  "Migrates the database up to version 8."
+  "Migrates the database down to version 7."
   []
-  (println "migrations.008-add-name-column-bulk-update-status up...")
+  (println "migrations.008-add-name-column-bulk-update-status down...")
   (j/db-do-commands (config/db)
-                    "ALTER TABLE CMR_INGEST.bulk_update_task_status DROP COLUMN name"))
+                    "ALTER TABLE bulk_update_task_status DROP COLUMN name"))
