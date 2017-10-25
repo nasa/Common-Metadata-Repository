@@ -11,7 +11,7 @@
                     "ALTER TABLE CMR_INGEST.bulk_update_task_status ADD
                      name VARCHAR(255) DEFAULT '' NOT NULL")
   (j/db-do-commands (config/db)
-                    "UPDATE table SET name = task_id
+                    "UPDATE CMR_INGEST.bulk_update_task_status SET name = task_id
                      WHERE name = ''"))
 
 (defn down
