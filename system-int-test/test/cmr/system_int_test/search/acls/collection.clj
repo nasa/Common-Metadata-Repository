@@ -1,12 +1,12 @@
 (ns cmr.system-int-test.search.acls.collection
   "Tests searching for collections with ACLs in place."
   (:require
-   [cmr.common-app.test.side-api :as side]
-   [clojure.test :refer :all]
    [clojure.string :as str]
+   [clojure.test :refer :all]
    [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.services.messages :as msg]
-   [cmr.common.util :refer [are2] :as util]
+   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.collection :as dc]
@@ -62,11 +62,10 @@
     (index/wait-until-indexed)
 
     ;;;;system token sees everything
-    (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso c1-smap]
-                       (search/find-refs :collection {:token (tc/echo-system-token)})))
+    (d/assert-refs-match [c1-echo c1-dif c1-dif10 c1-iso c1-smap]
+                         (search/find-refs :collection {:token (tc/echo-system-token)}))
     ;;guest user sees nothing
-    (is (d/refs-match? []
-                       (search/find-refs :collection {:token guest-token})))))
+    (d/assert-refs-match [] (search/find-refs :collection {:token guest-token}))))
 
 (deftest collection-search-with-restriction-flag-acls-test
   (let [guest-token (e/login-guest (s/context))
@@ -111,8 +110,8 @@
     (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
-    (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso]
-                       (search/find-refs :collection {:token guest-token})))))
+    (d/assert-refs-match [c1-echo c1-dif c1-dif10 c1-iso]
+                         (search/find-refs :collection {:token guest-token}))))
 
 (deftest collection-search-with-acls-test
   (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
@@ -180,47 +179,56 @@
     (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
     (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["notexist"])))
     ;; restriction flag acl grants matches coll4
-    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
+    (e/grant-guest (s/context) (e/coll-catalog-item-id
+                                "PROV1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
 
     ;; Grant undefined access values in prov3
-    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV3" (e/coll-id nil {:include_undefined_value true})))
+    (e/grant-guest (s/context) (e/coll-catalog-item-id
+                                "PROV3" (e/coll-id nil {:include_undefined_value true})))
 
     ;; all collections in prov2 granted to guests
     (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2"))
     ;; grant registered users permission to coll2 and coll4
-    (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2" "coll4"])))
+    (e/grant-registered-users (s/context) (e/coll-catalog-item-id
+                                           "PROV1" (e/coll-id ["coll2" "coll4"])))
     ;; grant specific group permission to coll3, coll6, and coll8
-    (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll3"])))
-    (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll6" "coll8"])))
-    (e/grant-group (s/context) group3-concept-id (e/coll-catalog-item-id "PROV4"
-                                                         (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
+    (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id
+                                                  "PROV1" (e/coll-id ["coll3"])))
+    (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id
+                                                  "PROV2" (e/coll-id ["coll6" "coll8"])))
+    (e/grant-group (s/context) group3-concept-id (e/coll-catalog-item-id
+                                                  "PROV4" (e/coll-id ["coll11-entry-title"
+                                                                      "coll12-entry-title"])))
 
     (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "parameter search acl enforcement"
-      (are [token items]
-        (d/refs-match? items (search/find-refs :collection (when token {:token token})))
+      (util/are3 [token items]
+        (d/assert-refs-match items (search/find-refs :collection (when token {:token token})))
 
-        ;; not logged in should be guest
+        "not logged in should be guest"
         nil guest-permitted-collections
 
-        ;; login and use guest token
+        "login and use guest token"
         guest-token guest-permitted-collections
 
-        ;; test searching as a user
+        "test searching as a user"
         user1-token [coll2 coll4]
 
-        ;; Test searching with users in groups
+        "Test searching with users in groups - user2"
         user2-token [coll2 coll4 coll3]
+
+        "Test searching with users in groups - user3"
         user3-token [coll2 coll4 coll3 coll6 coll8]))
 
     (testing "token can be sent through a header"
-      (is (d/refs-match? [coll2 coll4]
-                         (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
+      (d/assert-refs-match [coll2 coll4]
+                           (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}})))
     (testing "aql search parameter enforcement"
-      (is (d/refs-match? [coll2 coll4]
-                         (search/find-refs-with-aql :collection [] {} {:headers {"Echo-Token" user1-token}}))))
+      (d/assert-refs-match [coll2 coll4]
+                           (search/find-refs-with-aql
+                            :collection [] {} {:headers {"Echo-Token" user1-token}})))
     (testing "Direct transformer retrieval acl enforcement"
       (testing "registered user"
         (d/assert-metadata-results-match
@@ -259,9 +267,10 @@
                          (str "collections.atom?token=" guest-token
                               "&page_size=100&concept_id="
                               (str/join "&concept_id=" concept-ids)))]
-          (is (= coll-atom (:results (search/find-concepts-atom :collection {:token guest-token
-                                                                             :page-size 100
-                                                                             :concept-id concept-ids})))))))
+          (is (= coll-atom (:results (search/find-concepts-atom
+                                      :collection {:token guest-token
+                                                   :page-size 100
+                                                   :concept-id concept-ids})))))))
     (testing "JSON ACL enforcement"
       (testing "all items"
         (let [coll-json (da/collections->expected-atom
@@ -277,9 +286,10 @@
                          (str "collections.json?token=" guest-token
                               "&page_size=100&concept_id="
                               (str/join "&concept_id=" concept-ids)))]
-          (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
-                                                                             :page-size 100
-                                                                             :concept-id concept-ids})))))))
+          (is (= coll-json (:results (search/find-concepts-json
+                                      :collection {:token guest-token
+                                                   :page-size 100
+                                                   :concept-id concept-ids})))))))
 
     (testing "opendata ACL enforcement"
       (testing "all items"
@@ -295,8 +305,8 @@
           (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))
 
     (testing "all_revisions"
-      (are2 [collections params]
-        (d/refs-match? collections (search/find-refs :collection params))
+      (util/are3 [collections params]
+        (d/assert-refs-match collections (search/find-refs :collection params))
 
         ;; only old revisions satisfy ACL - they should not be returned
         "provider-id all-revisions=false"
@@ -334,7 +344,7 @@
       (index/wait-until-indexed)
 
       ;; before acls change
-      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
 
       ;; Grant collection 2
       (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
@@ -342,14 +352,14 @@
       (e/ungrant (s/context) acl2)
 
       ;; Try searching again before the reindexing
-      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
 
       ;; Reindex collection permitted groups
       (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
       (index/wait-until-indexed)
 
       ;; Search after reindexing
-      (is (d/refs-match? [coll1 coll2-2] (search/find-refs :collection {}))))
+      (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {})))
 
     (testing "reindex all collections"
 
@@ -357,15 +367,15 @@
       (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll4"])))
 
       ;; Try before reindexing
-      (is (d/refs-match? [coll1 coll2-2] (search/find-refs :collection {})))
+      (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {}))
 
       ;; Reindex all collections
-      ;; manually check the logs here. It should say it's reindexing provider 1 and provider 3 as well.
+      ;; Manually check the logs. It should say it's reindexing provider 1 and provider 3 as well.
       (ingest/reindex-all-collections)
       (index/wait-until-indexed)
 
       ;; Search after reindexing
-      (is (d/refs-match? [coll1 coll2-2 coll4] (search/find-refs :collection {}))))
+      (d/assert-refs-match [coll1 coll2-2 coll4] (search/find-refs :collection {})))
 
     ;; Tests reindexing using the force current version option
     (testing "Force version reindex all collections"
@@ -384,20 +394,19 @@
       (index/wait-until-indexed)
       (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
 
-      ;; A force reindex all collections will make elastic take the earlier version of the collections.
+      ;; A force reindex all collections will make elastic take the earlier version of the
+      ;; collections.
       (ingest/reindex-all-collections {:force-version true})
       (index/wait-until-indexed)
       (d/assert-refs-match [] (search/find-refs :collection {:short-name "short2"}))
       (d/assert-refs-match [coll2-1] (search/find-refs :collection {:short-name "short1"})))))
 
-
-
-
-;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
-;; This isn't the desired behavior. It's just a side effect that shows it's working.
+;; Verifies that tokens are cached by checking that a logged out token still works after it was
+;; used. This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-        acl1 (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
+        acl1 (e/grant-registered-users
+              (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")]
 
@@ -409,9 +418,9 @@
            (search/find-refs :collection {:token user2-token})))
 
     ;; Use user1-token so it will be cached
-    (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))
+    (d/assert-refs-match [coll1] (search/find-refs :collection {:token user1-token}))
 
     ;; logout
     (e/logout (s/context) user1-token)
     ;; The token should be cached
-    (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))))
+    (d/assert-refs-match [coll1] (search/find-refs :collection {:token user1-token}))))
