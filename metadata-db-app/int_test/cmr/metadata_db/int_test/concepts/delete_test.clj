@@ -74,6 +74,18 @@
         (util/delete-concept (:concept-id service))
         (is (= true (is-association-tombstone? service-association)))))))
 
+(defn- assert-collection-tombstone
+  "Make sure that the saved tombstone has expected concept-id, revision-id, user-id,
+  empty metadata, and deleted = true."
+  [origin-coll deleted-coll revision-id user-id]
+  (is (= (dissoc (assoc origin-coll
+                        :deleted true
+                        :metadata ""
+                        :revision-id revision-id
+                        :user-id user-id)
+                 :revision-date :transaction-id)
+         (dissoc deleted-coll :revision-date :transaction-id))))
+
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -85,7 +97,7 @@
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
           service (util/create-and-save-service provider-id 1)
           service-association (util/create-and-save-service-association coll1 service 1 1)]
-      
+
       ;; variable association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? variable-association)))
       ;; service association is not a tombstone before collection is deleted
@@ -103,13 +115,9 @@
                {:status status
                 :revision-id revision-id}))
 
-        (is (= (dissoc (assoc saved-coll1
-                              :deleted true
-                              :metadata ""
-                              :revision-id revision-id
-                              :user-id nil)
-                       :revision-date :transaction-id)
-               (dissoc deleted-coll1 :revision-date :transaction-id)))
+        ;; Make sure that the saved tombstone has expected concept-id, revision-id,
+        ;; user-id, empty metadata, and deleted = true.
+        (assert-collection-tombstone saved-coll1 deleted-coll1 revision-id nil)
 
         ;; Make sure that a deleted collection gets it's own unique revision date
         (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
@@ -158,15 +166,9 @@
                {:status status
                 :revision-id revision-id}))
 
-        ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
-        ;; and deleted = true.
-        (is (= (dissoc (assoc saved-coll1
-                              :deleted true
-                              :metadata ""
-                              :revision-id revision-id
-                              :user-id "user101")
-                       :revision-date :transaction-id)
-               (dissoc deleted-coll1 :revision-date :transaction-id)))
+        ;; Make sure that the saved tombstone has expected concept-id, revision-id,
+        ;; user-id, empty metadata, and deleted = true.
+        (assert-collection-tombstone saved-coll1 deleted-coll1 revision-id "user101")
 
         ;; make sure that a deleted collection gets it's own unique transaction-id
         (is (> (:transaction-id deleted-coll1) (:transaction-id saved-coll1)))
