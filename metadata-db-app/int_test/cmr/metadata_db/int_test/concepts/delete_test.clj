@@ -33,59 +33,46 @@
 (deftest delete-group-general
   (cd-spec/general-delete-test :access-group ["REG_PROV" "SMAL_PROV" "CMR"]))
 
+(defn- is-association-tombstone?
+  "Returns true if the latest revision of the given association is a tombstone."
+  [association]
+  (let [{:keys [status concept]} (util/get-concept-by-id (:concept-id association))]
+    ;; make sure the call succeeded
+    (is (= 200 status))
+    (:deleted concept)))
+
 (deftest tag-delete-cascades-associations
   (testing "delete cascades to tag associations"
     (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
           tag (util/create-and-save-tag 1)
-          tag-association (util/create-and-save-tag-association tag-collection tag 1 1)
-          tag-association-id (:concept-id tag-association)
-          {status :status tag-association-concept :concept} (util/get-concept-by-id tag-association-id)
-          _ (util/delete-concept (:concept-id tag))
-          {tombstone-status :status tombstone :concept} (util/get-concept-by-id tag-association-id)]
+          tag-association (util/create-and-save-tag-association tag-collection tag 1 1)]
       (testing "tag association was saved and is not a tombstone"
-        (is (= 200 status))
-        (is (not (:deleted tag-association-concept))))
+        (is (= false (is-association-tombstone? tag-association))))
       (testing "tag association is tombstoned after tag is deleted"
-        (is (= 200 tombstone-status))
-        (is (:deleted tombstone))))))
+        (util/delete-concept (:concept-id tag))
+        (is (= true (is-association-tombstone? tag-association)))))))
 
 (deftest variable-delete-cascades-associations
   (testing "delete cascades to variable associations"
-    (let [variable-collection (util/create-and-save-collection "REG_PROV" 1)
+    (let [coll (util/create-and-save-collection "REG_PROV" 1)
           variable (util/create-and-save-variable "REG_PROV" 1)
-          variable-association (util/create-and-save-variable-association
-                                variable-collection variable 1 1)
-          variable-association-id (:concept-id variable-association)
-          {status :status variable-association-concept :concept} (util/get-concept-by-id
-                                                                  variable-association-id)
-          _ (util/delete-concept (:concept-id variable))
-          {tombstone-status :status tombstone :concept} (util/get-concept-by-id
-                                                         variable-association-id)]
+          variable-association (util/create-and-save-variable-association coll variable 1 1)]
       (testing "variable association was saved and is not a tombstone"
-        (is (= 200 status))
-        (is (not (:deleted variable-association-concept))))
+        (is (= false (is-association-tombstone? variable-association))))
       (testing "variable association is tombstoned after variable is deleted"
-        (is (= 200 tombstone-status))
-        (is (:deleted tombstone))))))
+        (util/delete-concept (:concept-id variable))
+        (is (= true (is-association-tombstone? variable-association)))))))
 
 (deftest service-delete-cascades-associations
   (testing "delete cascades to service associations"
     (let [coll (util/create-and-save-collection "REG_PROV" 1)
           service (util/create-and-save-service "REG_PROV" 1)
-          service-association (util/create-and-save-service-association
-                                coll service 1 1)
-          service-association-id (:concept-id service-association)
-          {status :status service-association-concept :concept} (util/get-concept-by-id
-                                                                  service-association-id)
-          _ (util/delete-concept (:concept-id service))
-          {tombstone-status :status tombstone :concept} (util/get-concept-by-id
-                                                         service-association-id)]
+          service-association (util/create-and-save-service-association coll service 1 1)]
       (testing "service association was saved and is not a tombstone"
-        (is (= 200 status))
-        (is (not (:deleted service-association-concept))))
+        (is (= false (is-association-tombstone? service-association))))
       (testing "service association is tombstoned after service is deleted"
-        (is (= 200 tombstone-status))
-        (is (:deleted tombstone))))))
+        (util/delete-concept (:concept-id service))
+        (is (= true (is-association-tombstone? service-association)))))))
 
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
@@ -94,33 +81,52 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
-          {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id coll1))
-          deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
-          saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
+          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable-association (util/create-and-save-variable-association coll1 variable 1 1)
+          service (util/create-and-save-service provider-id 1)
+          service-association (util/create-and-save-service-association coll1 service 1 1)]
+      
+      ;; variable association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? variable-association)))
+      ;; service association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? service-association)))
 
-      (is (= (dissoc (assoc saved-coll1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id nil)
-                     :revision-date :transaction-id)
-             (dissoc deleted-coll1 :revision-date :transaction-id)))
+      ;; now delete coll1
+      (let [{:keys [status revision-id]} (util/delete-concept (:concept-id coll1))
+            deleted-coll1 (:concept (util/get-concept-by-id-and-revision
+                                     (:concept-id coll1) revision-id))
+            saved-coll1 (:concept (util/get-concept-by-id-and-revision
+                                   (:concept-id coll1) (dec revision-id)))]
 
-      ;; Make sure that a deleted collection gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
-          "The deleted collection revision date should be after the previous revisions revision date.")
+        (is (= {:status 201
+                :revision-id 4}
+               {:status status
+                :revision-id revision-id}))
 
-      ;; Verify granule was deleted
-      (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
-      (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
+        (is (= (dissoc (assoc saved-coll1
+                              :deleted true
+                              :metadata ""
+                              :revision-id revision-id
+                              :user-id nil)
+                       :revision-date :transaction-id)
+               (dissoc deleted-coll1 :revision-date :transaction-id)))
 
-      ;; Other data left in database
-      (util/verify-concept-was-saved coll2)
-      (util/verify-concept-was-saved gran3))))
+        ;; Make sure that a deleted collection gets it's own unique revision date
+        (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
+            "The deleted collection revision date should be after the previous revisions revision date.")
+
+        ;; Verify granule was deleted
+        (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
+        (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
+
+        ;; verify variable association is deleted
+        (is (= true (is-association-tombstone? variable-association)))
+        ;; verify service association is deleted
+        (is (= true (is-association-tombstone? service-association)))
+
+        ;; Other data left in database
+        (util/verify-concept-was-saved coll2)
+        (util/verify-concept-was-saved gran3)))))
 
 (deftest delete-collection-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -128,41 +134,59 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
+          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable-association (util/create-and-save-variable-association coll1 variable 1 1)
+          service (util/create-and-save-service provider-id 1)
+          service-association (util/create-and-save-service-association coll1 service 1 1)]
 
-          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
-                                                           :deleted true
-                                                           :user-id "user101"})
-          deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
-          saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
+      ;; variable association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? variable-association)))
+      ;; service association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? service-association)))
 
-      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
-      ;; and deleted = true.
-      (is (= (dissoc (assoc saved-coll1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id "user101")
-                     :revision-date :transaction-id)
-             (dissoc deleted-coll1 :revision-date :transaction-id)))
+      ;; now delete coll1
+      (let [{:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
+                                                             :deleted true
+                                                             :user-id "user101"})
+            deleted-coll1 (:concept (util/get-concept-by-id-and-revision
+                                     (:concept-id coll1) revision-id))
+            saved-coll1 (:concept (util/get-concept-by-id-and-revision
+                                   (:concept-id coll1) (dec revision-id)))]
 
-      ;; make sure that a deleted collection gets it's own unique transaction-id
-      (is (> (:transaction-id deleted-coll1) (:transaction-id saved-coll1)))
+        (is (= {:status 201
+                :revision-id 4}
+               {:status status
+                :revision-id revision-id}))
 
-      ;; Make sure that a deleted collection gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
-          "The deleted collection revision date should be after the previous revisions revision date.")
+        ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
+        ;; and deleted = true.
+        (is (= (dissoc (assoc saved-coll1
+                              :deleted true
+                              :metadata ""
+                              :revision-id revision-id
+                              :user-id "user101")
+                       :revision-date :transaction-id)
+               (dissoc deleted-coll1 :revision-date :transaction-id)))
 
-      ;; Verify granule was deleted
-      (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
-      (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
+        ;; make sure that a deleted collection gets it's own unique transaction-id
+        (is (> (:transaction-id deleted-coll1) (:transaction-id saved-coll1)))
 
-      ;; Other data left in database
-      (util/verify-concept-was-saved coll2)
-      (util/verify-concept-was-saved gran3))))
+        ;; Make sure that a deleted collection gets it's own unique revision date
+        (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
+            "The deleted collection revision date should be after the previous revisions revision date.")
+
+        ;; Verify granule was deleted
+        (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
+        (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
+
+        ;; verify variable association is deleted
+        (is (= true (is-association-tombstone? variable-association)))
+        ;; verify service association is deleted
+        (is (= true (is-association-tombstone? service-association)))
+
+        ;; Other data left in database
+        (util/verify-concept-was-saved coll2)
+        (util/verify-concept-was-saved gran3)))))
 
 (deftest delete-concept-failure-cases
   (let [coll-reg-prov (util/create-and-save-collection "REG_PROV" 1)
