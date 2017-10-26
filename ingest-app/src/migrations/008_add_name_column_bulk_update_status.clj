@@ -12,7 +12,10 @@
                      name VARCHAR(255) DEFAULT NULL")
   (j/db-do-commands (config/db)
                     "UPDATE bulk_update_task_status SET name = task_id
-                     WHERE name IS NULL"))
+                     WHERE name IS NULL")
+  (j/db-do-commands (config/db)
+                    "ALTER TABLE bulk_update_task_status MODIFY
+                     (name VARCHAR(255) NOT NULL)"))
 
 (defn down
   "Migrates the database down to version 7."

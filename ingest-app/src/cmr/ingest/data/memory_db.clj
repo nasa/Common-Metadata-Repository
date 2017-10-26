@@ -61,7 +61,7 @@
     [this provider-id json-body concept-ids]
     (swap! task-id-atom inc)
     (let [task-id (str @task-id-atom)
-          name (get (json/parse-string json-body) "name")]
+          name (get (json/parse-string json-body) "name" task-id)]
      (swap! task-status-atom conj {:created-at (str (time-keeper/now))
                                    :task-id task-id
                                    :name name
