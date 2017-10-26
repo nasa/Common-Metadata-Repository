@@ -1998,7 +1998,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections, granules, and variables. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, and services. If no format is specified the native format of the metadata will be returned.
 
 By concept id
 
