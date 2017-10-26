@@ -3,7 +3,7 @@
   For service permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.log :as log :refer (debug info warn error)]`
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
