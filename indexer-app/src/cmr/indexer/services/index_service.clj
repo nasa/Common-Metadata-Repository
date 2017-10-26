@@ -511,13 +511,13 @@
 (defmethod delete-concept :tag-association
   [context concept-id revision-id options]
   ;; When tag association is deleted, we want to re-index the associated collection.
-  ;; This is the same thing we do when a tag association is update. So we call the same function.
+  ;; This is the same thing we do when a tag association is updated. So we call the same function.
   (index-association-concept context concept-id revision-id options))
 
 (defmethod delete-concept :variable-association
   [context concept-id revision-id options]
   ;; When variable association is deleted, we want to re-index the associated collection.
-  ;; This is the same thing we do when a variable association is update. So we call the same function.
+  ;; This is the same thing we do when a variable association is updated. So we call the same function.
   (index-association-concept context concept-id revision-id options))
 
 (defmethod delete-concept :service
