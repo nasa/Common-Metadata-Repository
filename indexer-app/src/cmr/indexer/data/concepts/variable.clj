@@ -73,8 +73,7 @@
   (let [{:keys [variable-concept-id]} variable-association
         variable-concept (mdb/find-latest-concept
                           context
-                          {:concept-id variable-concept-id
-                           :latest true}
+                          {:concept-id variable-concept-id}
                           :variable)]
     (when-not (:deleted variable-concept)
       ;; associate variable association into variable concept, so we can use it to generate

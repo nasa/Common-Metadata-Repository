@@ -344,36 +344,36 @@
                 variable-associations (get-variable-associations context concept)
                 service-associations (get-service-associations context concept)
                 elastic-version (get-elastic-version-with-associations
-                                  context concept tag-associations variable-associations
-                                  service-associations)
+                                 context concept tag-associations variable-associations
+                                 service-associations)
                 tag-associations (es/parse-non-tombstone-associations
                                   context tag-associations)
                 variable-associations (es/parse-non-tombstone-associations
                                        context variable-associations)
                 service-associations (es/parse-non-tombstone-associations
-                                       context service-associations)
+                                      context service-associations)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc
-                         context
-                         (-> concept
-                             (assoc :tag-associations tag-associations)
-                             (assoc :variable-associations variable-associations)
-                             (assoc :service-associations service-associations))
-                         parsed-concept)
+                        context
+                        (-> concept
+                            (assoc :tag-associations tag-associations)
+                            (assoc :variable-associations variable-associations)
+                            (assoc :service-associations service-associations))
+                        parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
                                     (assoc :ttl (when delete-time
                                                   (t/in-millis (t/interval (tk/now) delete-time)))))]
             (es/save-document-in-elastic
-              context
-              concept-indexes
-              (concept-mapping-types concept-type)
-              es-doc
-              concept-id
-              revision-id
-              elastic-version
-              elastic-options)))))))
+             context
+             concept-indexes
+             (concept-mapping-types concept-type)
+             es-doc
+             concept-id
+             revision-id
+             elastic-version
+             elastic-options)))))))
 
 (defn- index-associated-collection
   "Index the associated collection concept of the given concept. This is used by indexing

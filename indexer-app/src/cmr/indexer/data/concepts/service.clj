@@ -11,8 +11,7 @@
   (let [{:keys [service-concept-id]} service-association
         service-concept (mdb/find-latest-concept
                          context
-                         {:concept-id service-concept-id
-                          :latest true}
+                         {:concept-id service-concept-id}
                          :service)]
     (when-not (:deleted service-concept)
       service-concept)))
