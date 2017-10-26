@@ -81,7 +81,6 @@
             400
             ["/concept-ids array is too short: must have at least 1 elements but instance has 0 elements"]
 
-
             "Missing update field"
             {:concept-ids ["C1", "C2", "C3"]
              :name "TEST NAME"
@@ -131,13 +130,7 @@
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"}}
             400
-            ["/update-field instance value (\"Science keywords\") not found in enum (possible values: [\"SCIENCE_KEYWORDS\",\"LOCATION_KEYWORDS\",\"DATA_CENTERS\",\"PLATFORMS\",\"INSTRUMENTS\"])"]
-            "Invalid update field"
-            {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
-             :update-field "Science keywords"
-             :update-type "ADD_TO_EXISTING"
-             :update-value {:Category "EARTH SCIENCE"}}))))
+            ["/update-field instance value (\"Science keywords\") not found in enum (possible values: [\"SCIENCE_KEYWORDS\",\"LOCATION_KEYWORDS\",\"DATA_CENTERS\",\"PLATFORMS\",\"INSTRUMENTS\"])"]))))
 
             ;; Short-name/version currently not supported. Support will be added
             ;; back in with CMR-4129
