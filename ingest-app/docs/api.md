@@ -698,18 +698,21 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" https:// %CMR-ENDPOINT%/provi
 <result>
     <tasks>
         <task>
+            <created-at>2017-10-26T20:17:13.169Z</created-at>
             <task-id>21</task-id>
             <status>COMPLETE</status>
             <status-message>Task completed with 1 collection update failures out of 5</status-message>
             <request-json-body>{"concept-ids": ["C12807-PROV1","C17995-PROV1","C18002-PROV1","C18016-PROV1"],"update-type": "FIND_AND_REMOVE","update-field": "SCIENCE_KEYWORDS","find-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
         </task>
         <task>
+            <created-at>2017-10-26T20:18:13.169Z</created-at>
             <task-id>22</task-id>
             <status>COMPLETE</status>
             <status-message>Task completed with 1 collection update failures out of 3</status-message>
             <request-json-body>{"concept-ids": ["C13239-PROV1","C13276-PROV1","C13883-PROV1","C13286-PROV1"],"update-type": "CLEAR_ALL_AND_REPLACE","update-field": "SCIENCE_KEYWORDS","update-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
         </task>
         <task>
+            <created-at>2017-10-26T20:19:13.169Z</created-at>    
             <task-id>2</task-id>
             <status>COMPLETE</status>
             <status-message>All collection updates completed successfully.</status-message>
@@ -729,6 +732,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
 
 <?xml version="1.0" encoding="UTF-8"?>
 <result>
+    <created-at>2017-10-26T20:20:13.169Z</created-at>
     <task-status>COMPLETE</task-status>
     <status-message>Task completed with 1 collection update failures out of 5</status-message>
     <request-json-body>{"concept-ids": ["C11984-PROV1","C11991-PROV1","C119916-PROV1","C14432-PROV1","C20000-PROV1"],"update-type": "FIND_AND_REMOVE","update-field": "SCIENCE_KEYWORDS","find-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
