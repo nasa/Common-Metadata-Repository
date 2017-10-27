@@ -668,7 +668,6 @@ Example: Initiate a bulk update of 3 collections. Find platforms that have Type 
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
   "name": "TEST NAME",
-  "create-at": "2017-10-24T17:00:03.000Z",
   "update-type": "FIND_AND_UPDATE",
   "update-field": "PLATFORMS",
   "find-value": {"Type": "Aircraft"},
