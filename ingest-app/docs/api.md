@@ -698,7 +698,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" https:// %CMR-ENDPOINT%/provi
 <result>
     <tasks>
         <task>
-            <created-at>2017-10-26T20:17:13.169Z</created-at>
+            <created-at>2017-10-26T20:17:13.168Z</created-at>
             <task-id>21</task-id>
             <status>COMPLETE</status>
             <status-message>Task completed with 1 collection update failures out of 5</status-message>
