@@ -1,6 +1,7 @@
 (ns cmr.ingest.data.memory-db
   "Stores and retrieves the hashes of the ACLs for a provider."
   (:require
+   [cheshire.core :as json]
    [clojure.edn :as edn]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
@@ -32,14 +33,14 @@
     [this provider-id]
     (some->> @task-status-atom
              (filter #(= provider-id (:provider-id %)))
-             (map #(select-keys % [:created-at :task-id :status :status-message :request-json-body]))))
+             (map #(select-keys % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
   (get-bulk-update-task-status
     [this task-id]
     (let [task-status (some->> @task-status-atom
                                (some #(when (= task-id (str (:task-id %)))
                                             %)))]
-      (select-keys task-status [:created-at :task-id :status :status-message :request-json-body])))
+      (select-keys task-status [:created-at :name :task-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-collection-status
     [this task-id]
@@ -59,9 +60,11 @@
   (create-and-save-bulk-update-status
     [this provider-id json-body concept-ids]
     (swap! task-id-atom inc)
-    (let [task-id (str @task-id-atom)]
+    (let [task-id (str @task-id-atom)
+          name (get (json/parse-string json-body) "name" task-id)]
      (swap! task-status-atom conj {:created-at (str (time-keeper/now))
-                                   :task-id task-id 
+                                   :task-id task-id
+                                   :name name
                                    :provider-id provider-id
                                    :request-json-body json-body
                                    :status "IN_PROGRESS"})

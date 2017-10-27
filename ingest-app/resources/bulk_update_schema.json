@@ -29,6 +29,11 @@
             },
             "minItems": 1
         },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
         "collection-ids": {
           "type": "array",
           "items": {

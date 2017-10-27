@@ -1,6 +1,7 @@
 (ns cmr.ingest.data.bulk-update
   "Stores and retrieves bulk update status and task information."
   (:require
+   [cheshire.core :as json]
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
@@ -41,70 +42,71 @@
   (get-provider-bulk-update-status
     [db provider-id]
     (j/with-db-transaction
-     [conn db]
-     ;; Returns a list of bulk update statuses for the provider
-     (let [stmt (su/build (su/select [:created-at :task-id :status :status-message :request-json-body]
-                          (su/from bulk_update_task_status)
-                          (su/where `(= :provider-id ~provider-id))))
-           ;; Note: the column selected out of the database is created_at, instead of created-at.
-           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn)) 
-                                (su/query conn stmt)))
-           statuses (map util/map-keys->kebab-case statuses)]
-      (map #(update % :request-json-body util/gzip-blob->string)
-           statuses))))
+      [conn db]
+      ;; Returns a list of bulk update statuses for the provider
+      (let [stmt (su/build (su/select [:created-at :name :task-id :status :status-message :request-json-body]
+                                      (su/from bulk_update_task_status)
+                                      (su/where `(= :provider-id ~provider-id))))
+            ;; Note: the column selected out of the database is created_at, instead of created-at.
+            statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn)) 
+                                 (su/query conn stmt)))
+            statuses (map util/map-keys->kebab-case statuses)]
+        (map #(update % :request-json-body util/gzip-blob->string)
+             statuses))))
 
   (get-bulk-update-task-status
     [db task-id]
     (j/with-db-transaction
-     [conn db]
-     ;; Returns a status for the particular task
-     (some-> conn 
-             (su/find-one (su/select [:created-at :status :status-message :request-json-body]
-                          (su/from bulk_update_task_status)
-                          (su/where `(= :task-id ~task-id))))
-             util/map-keys->kebab-case
-             (update :request-json-body util/gzip-blob->string)
-             (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
+      [conn db]
+      ;; Returns a status for the particular task
+      (some-> conn 
+              (su/find-one (su/select [:created-at :name :status :status-message :request-json-body]
+                                      (su/from bulk_update_task_status)
+                                      (su/where `(= :task-id ~task-id))))
+              util/map-keys->kebab-case
+              (update :request-json-body util/gzip-blob->string)
+              (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
 
   (get-bulk-update-task-collection-status
     [db task-id]
     ;; Get statuses for all collections by task id
     (map util/map-keys->kebab-case
-      (su/query db (su/build (su/select [:concept-id :status :status-message]
-                              (su/from "bulk_update_coll_status")
-                              (su/where `(= :task-id ~task-id)))))))
+         (su/query db (su/build (su/select [:concept-id :status :status-message]
+                                           (su/from "bulk_update_coll_status")
+                                           (su/where `(= :task-id ~task-id)))))))
 
   (get-bulk-update-collection-status
     [db task-id concept-id]
     ;; Get the status for a particular collection
     (su/find-one db (su/select [:status :status-message]
-                     (su/from "bulk_update_coll_status")
-                     (su/where `(and (= :task-id ~task-id)
-                                     (= :concept-id ~concept-id))))))
+                               (su/from "bulk_update_coll_status")
+                               (su/where `(and (= :task-id ~task-id)
+                                               (= :concept-id ~concept-id))))))
 
   (create-and-save-bulk-update-status
     [db provider-id json-body concept-ids]
     ;; In a transaction, add one row to the task status table and for each concept
     (try
-     (j/with-db-transaction
-      [conn db]
-      (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
-            statement (str "INSERT INTO bulk_update_task_status "
-                           "(task_id, provider_id, request_json_body, status)"
-                           "VALUES (?, ?, ?, ?)")
-            values [task-id provider-id (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
-       (j/db-do-prepared db statement values)
-       ;; Write a row to collection status for each concept id
-       (apply j/insert! conn
-              "bulk_update_coll_status"
-              ["task_id" "concept_id" "status"]
-              ;; set :transaction? false since we are already inside a transaction
-              (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
-       task-id))
-     (catch Exception e
-      (errors/throw-service-error :invalid-data
-       [(str "Error creating creating bulk update status "
-             (.getMessage e))]))))
+      (j/with-db-transaction
+        [conn db]
+        (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
+              statement (str "INSERT INTO bulk_update_task_status "
+                             "(task_id, provider_id, name, request_json_body, status)"
+                             "VALUES (?, ?, ?, ?, ?)")
+              name (get (json/parse-string json-body) "name" task-id)
+              values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
+          (j/db-do-prepared db statement values)
+          ;; Write a row to collection status for each concept id
+          (apply j/insert! conn
+                 "bulk_update_coll_status"
+                 ["task_id" "concept_id" "status"]
+                 ;; set :transaction? false since we are already inside a transaction
+                 (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
+          task-id))
+      (catch Exception e
+        (errors/throw-service-error :invalid-data
+                                    [(str "Error creating creating bulk update status "
+                                          (.getMessage e))]))))
 
   (update-bulk-update-task-status
     [db task-id status status-message]
@@ -115,8 +117,8 @@
         (j/db-do-prepared db statement [status status-message task-id]))
       (catch Exception e
         (errors/throw-service-error :invalid-data
-         [(str "Error creating updating bulk update task status "
-               (.getMessage e))]))))
+                                    [(str "Error creating updating bulk update task status "
+                                          (.getMessage e))]))))
 
   (update-bulk-update-collection-status
     [db task-id concept-id status status-message]
@@ -129,20 +131,20 @@
              status-message (util/trunc status-message 255)]
          (j/db-do-prepared db statement [status status-message task-id concept-id])
          (let [task-collections (su/query db
-                                 (su/build (su/select
-                                            [:concept-id :status]
-                                            (su/from "bulk_update_coll_status")
-                                            (su/where `(= :task-id ~task-id)))))
+                                          (su/build (su/select
+                                                     [:concept-id :status]
+                                                     (su/from "bulk_update_coll_status")
+                                                     (su/where `(= :task-id ~task-id)))))
                pending-collections (filter #(= "PENDING" (:status %)) task-collections)
                failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
            (when-not (seq pending-collections)
              (update-bulk-update-task-status db task-id "COMPLETE"
-               (generate-task-status-message
-                 (count failed-collections) (count task-collections)))))))
+                                             (generate-task-status-message
+                                              (count failed-collections) (count task-collections)))))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
-         [(str "Error creating updating bulk update collection status "
-               (.getMessage e))]))))
+                                    [(str "Error creating updating bulk update collection status "
+                                          (.getMessage e))]))))
 
   (reset-bulk-update
     [db]

@@ -67,33 +67,37 @@
               (is (= error-messages errors)))
 
             "Missing concept-ids"
-            {:update-field "SCIENCE_KEYWORDS"
+            {:name "TEST NAME"
+             :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
             ["object has missing required properties ([\"concept-ids\"])"]
 
             "0 concept-ids"
             {:concept-ids []
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
             ["/concept-ids array is too short: must have at least 1 elements but instance has 0 elements"]
 
-
             "Missing update field"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-type "ADD_TO_EXISTING"}
             400
             ["object has missing required properties ([\"update-field\"])"]
 
             "Missing update type"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"}
             400
             ["object has missing required properties ([\"update-type\"])"]
 
             "Invalid update type"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "REPLACE"}
             400
@@ -101,6 +105,7 @@
 
             "Missing update value"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"}
             400
@@ -108,6 +113,7 @@
 
             "Missing find value"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"
              :update-value {:Category "EARTH SCIENCE"
@@ -119,6 +125,7 @@
 
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
              :update-field "Science keywords"
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"}}

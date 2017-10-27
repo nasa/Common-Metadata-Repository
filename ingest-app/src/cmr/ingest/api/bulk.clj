@@ -34,23 +34,30 @@
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format
  {:id :status :status-message}"
- ([result status-list-key status-key id-key]
-  (generate-xml-status-list result status-list-key status-key id-key nil))
- ([result status-list-key status-key id-key created-at-key]
-  (generate-xml-status-list result status-list-key status-key id-key created-at-key nil))
- ([result status-list-key status-key id-key created-at-key additional-keys]
-  (xml/element status-list-key {}
-    (for [status (get result status-list-key)
-          :let [message (:status-message status)]]
-     (xml/element status-key {}
-      (when created-at-key
-        (xml/element created-at-key {} (str (:created-at status))))
-      (xml/element id-key {} (get status id-key))
-      (xml/element :status {} (:status status))
-      (when message
-       (xml/element :status-message {} message))
-      (for [k additional-keys]
-       (xml/element k {} (get status k))))))))
+ [result status-list-key status-key id-key]
+ (xml/element status-list-key {}
+   (for [status (get result status-list-key)
+         :let [message (:status-message status)]]
+    (xml/element status-key {}
+     (xml/element id-key {} (get status id-key))
+     (xml/element :status {} (:status status))
+     (xml/element :status-message {} message)))))
+
+(defn- generate-xml-provider-tasks-list
+ "Generate XML for a status list with the format
+ {:id :status :status-message}"
+ [result status-list-key status-key id-key name-key created-at-key additional-keys]
+ (xml/element status-list-key {}
+   (for [status (get result status-list-key)
+         :let [message (:status-message status)]]
+    (xml/element status-key {}
+     (xml/element created-at-key {} (str (:created-at status)))
+     (xml/element name-key {} (str (:name status)))
+     (xml/element id-key {} (get status id-key))
+     (xml/element :status {} (:status status))
+     (xml/element :status-message {} message)
+     (for [k additional-keys]
+      (xml/element k {} (get status k)))))))
 
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
@@ -69,19 +76,20 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
-           (generate-xml-status-list result :tasks :task :task-id :created-at
-             [:request-json-body])))})
+                       (generate-xml-provider-tasks-list result :tasks :task
+                                                         :task-id :name :created-at 
+                                                         [:request-json-body])))})
 
 (defn get-provider-tasks
- "Get all tasks and task statuses for provider."
- [provider-id request]
- (let [{:keys [headers request-context]} request]
-  (api-core/verify-provider-exists request-context provider-id)
-  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-  (generate-provider-tasks-response
-   headers
-   {:status 200
-    :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
+  "Get all tasks and task statuses for provider."
+  [provider-id request]
+  (let [{:keys [headers request-context]} request]
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+    (generate-provider-tasks-response
+     headers
+     {:status 200
+      :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
@@ -101,6 +109,7 @@
    :body (xml/emit-str
           (xml/element :result {}
            (xml/element :created-at {} (str (:created-at result)))
+           (xml/element :name {} (str (:name result)))
            (xml/element :task-status {} (:task-status result))
            (xml/element :status-message {} (:status-message result))
            (xml/element :request-json-body {} (:request-json-body result))
@@ -108,21 +117,22 @@
             :collection-statuses :collection-status :concept-id)))})
 
 (defn get-provider-task-status
- "Get the status for the given task for the provider including collection statuses"
- [provider-id task-id request]
- (let [{:keys [headers request-context]} request]
-  (api-core/verify-provider-exists request-context provider-id)
-  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
-        collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
-    (when (or (nil? task-status) (nil? (:status task-status)))
-      (srvc-errors/throw-service-error
-        :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
-    (generate-provider-task-status-response
-     headers
-     {:status 200
-      :created-at (:created-at task-status)
-      :task-status (:status task-status)
-      :status-message (:status-message task-status)
-      :request-json-body (:request-json-body task-status)
-      :collection-statuses collection-statuses}))))
+  "Get the status for the given task for the provider including collection statuses"
+  [provider-id task-id request]
+  (let [{:keys [headers request-context]} request]
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+    (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
+          collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
+      (when (or (nil? task-status) (nil? (:status task-status)))
+        (srvc-errors/throw-service-error
+          :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
+      (generate-provider-task-status-response
+       headers
+       {:status 200
+        :created-at (:created-at task-status)
+        :name (:name task-status)
+        :task-status (:status task-status)
+        :status-message (:status-message task-status)
+        :request-json-body (:request-json-body task-status)
+        :collection-statuses collection-statuses}))))
