@@ -2729,7 +2729,7 @@ Tags have the following fields:
 
 #### <a name="tag-access-control"></a> Tag Access Control
 
-Access to tags is granted through the TAG_GROUP system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a tag is considered an update.
+Access to tags is granted through the TAG_GROUP system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission. Associating and dissociating collections with a tag is considered an update.
 
 #### <a name="creating-a-tag"></a> Creating a Tag
 
@@ -3329,7 +3329,7 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
-Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL provider object identity of the variable concept. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.
+Access to variable and variable association is granted through the provider via the INGEST_MANAGMENT_ACL. Users can only create, update, or delete a variable if they are granted the appropriate permission. Associating and dissociating collections with a variable is considered an update.
 
 #### <a name="variable-association"></a> Variable Association
 
@@ -3418,7 +3418,7 @@ A service enables data to be accessed via a universal resource locator, and has 
 
 #### <a name="service-access-control"></a> Service Access Control
 
-Access to service and service association is granted through the INGEST_MANAGEMENT_ACL provider object identity of the service concept. Associating and dissociating collections with a service is considered an update.
+Access to service and service association is granted through the provider via the INGEST_MANAGEMENT_ACL. Associating and dissociating collections with a service is considered an update.
 
 #### <a name="service-association"></a> Service Association
 
