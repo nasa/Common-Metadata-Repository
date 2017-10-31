@@ -204,7 +204,7 @@
                           (variable-util/token-opts token))]
     (is (= 201 status))))
 
-(deftest veriable-ingest-schema-validation-test
+(deftest variable-ingest-schema-validation-test
   (let [{token :token} (variable-util/setup-update-acl
                         (s/context) "PROV1" "user1" "update-group")]
     (testing "ingest of variable concept JSON schema validation missing field"
