@@ -14,4 +14,7 @@
 (defn down
   "Migrates the database down to version 8."
   []
-  (println "migrations.009-update-bulk-status-message down..."))
+  (println "migrations.009-update-bulk-status-message down...")
+  (j/db-do-commands (config/db) "TRUNCATE TABLE bulk_update_coll_status")
+  (j/db-do-commands (config/db) "ALTER TABLE bulk_update_coll_status MODIFY
+                                 (status_message VARCHAR(255))"))
