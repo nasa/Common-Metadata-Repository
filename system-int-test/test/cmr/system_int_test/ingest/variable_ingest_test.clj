@@ -204,6 +204,24 @@
                           (variable-util/token-opts token))]
     (is (= 201 status))))
 
+(deftest veriable-ingest-schema-validation-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")]
+    (testing "ingest of variable concept JSON schema validation missing field"
+      (let [concept (variable-util/make-variable-concept {:Name ""})
+            {:keys [status errors]} (ingest/ingest-concept concept
+                                                           (variable-util/token-opts token))]
+        (is (= 400 status))
+        (is (= ["/Name string \"\" is too short (length: 0, required minimum: 1)"]
+               errors))))
+    (testing "ingest of variable concept JSON schema validation invalid field"
+      (let [concept (variable-util/make-variable-concept {:InvalidField "xxx"})
+            {:keys [status errors]} (ingest/ingest-concept concept
+                                                           (variable-util/token-opts token))]
+        (is (= 400 status))
+        (is (= ["object instance has properties which are not allowed by the schema: [\"InvalidField\"]"]
+               errors))))))
+
 (deftest delete-variable-ingest-test
   (testing "delete a variable"
     (let [{token :token} (variable-util/setup-update-acl (s/context) "PROV1")
