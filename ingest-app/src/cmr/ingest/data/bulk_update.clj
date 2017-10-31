@@ -128,7 +128,7 @@
        (let [statement (str "UPDATE bulk_update_coll_status "
                             "SET status = ?, status_message = ?"
                             "WHERE task_id = ? AND concept_id = ?")
-             status-message (util/trunc status-message 255)]
+             status-message (util/trunc status-message 4000)]
          (j/db-do-prepared db statement [status status-message task-id concept-id])
          (let [task-collections (su/query db
                                           (su/build (su/select

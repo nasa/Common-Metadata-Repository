@@ -8,8 +8,8 @@
   []
   (println "migrations.009-update-bulk-status-message up...")
   (j/db-do-commands (config/db)
-                    "ALTER TABLE bulk_update_task_status MODIFY
-                     (status_message VARCHAR(1030))"))
+                    "ALTER TABLE bulk_update_coll_status MODIFY
+                     (status_message VARCHAR(4000))"))
 
 (defn down
   "Migrates the database down to version 8."

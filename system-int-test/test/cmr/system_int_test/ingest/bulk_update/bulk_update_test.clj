@@ -389,7 +389,6 @@
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
-        response (ingest/bulk-update-collections "PROV1" bulk-update-body)
         task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
     (index/wait-until-indexed)
     (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
