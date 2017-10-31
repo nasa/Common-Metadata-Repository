@@ -7,7 +7,6 @@
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]))
@@ -18,13 +17,11 @@
   (testing "ingest of a new service concept"
     (let [concept (service-util/make-service-concept)
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-      (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a service concept with a revision id"
     (let [concept (service-util/make-service-concept {} {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-      (index/wait-until-indexed)
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
@@ -78,7 +75,6 @@
     (are3 [ingest-headers expected-user-id]
       (let [concept (service-util/make-service-concept)
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
-        (index/wait-until-indexed)
         (ingest/assert-user-id concept-id revision-id expected-user-id))
 
       "user id from token"
@@ -103,7 +99,6 @@
         (ingest/ingest-concept concept ingest-header2)
         (ingest/delete-concept concept ingest-header3)
         (ingest/ingest-concept concept ingest-header4)
-        (index/wait-until-indexed)
         (ingest/assert-user-id concept-id revision-id expected-user-id1)
         (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
         (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
@@ -129,20 +124,31 @@
                   :native-id "Atlantic-1"})]
     (testing "ingest of a new service concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-        (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
     (testing "Update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-        (index/wait-until-indexed)
         (is (= [supplied-concept-id 2] [concept-id revision-id]))))
 
     (testing "update the concept without the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept
                                               (dissoc concept :concept-id))]
-        (index/wait-until-indexed)
         (is (= [supplied-concept-id 3] [concept-id revision-id]))))))
+
+(deftest service-ingest-schema-validation-test
+  (testing "ingest of service concept JSON schema validation missing field"
+    (let [concept (service-util/make-service-concept {:Type ""})
+          {:keys [status errors]} (ingest/ingest-concept concept)]
+      (is (= 400 status))
+      (is (= ["/Type string \"\" is too short (length: 0, required minimum: 1)"]
+             errors))))
+  (testing "ingest of service concept JSON schema validation invalid field"
+    (let [concept (service-util/make-service-concept {:InvalidField "xxx"})
+          {:keys [status errors]} (ingest/ingest-concept concept)]
+      (is (= 400 status))
+      (is (= ["object instance has properties which are not allowed by the schema: [\"InvalidField\"]"]
+             errors)))))
 
 (deftest service-update-error-test
   (let [supplied-concept-id "S1000-PROV1"
@@ -153,7 +159,6 @@
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                      (assoc concept :concept-id "S1111-PROV1"))]
-        (index/wait-until-indexed)
         (is (= [409 [(str "A concept with concept-id [S1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:service] provider-id [PROV1]. "
@@ -163,7 +168,6 @@
     (testing "update concept with a different native-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                      (assoc concept :native-id "other"))]
-        (index/wait-until-indexed)
         (is (= [409 [(str "A concept with concept-id [S1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:service] provider-id [PROV1]. "
@@ -175,7 +179,6 @@
   (testing "delete a service"
     (let [concept (service-util/make-service-concept)
           _ (service-util/ingest-service concept)
-          _ (index/wait-until-indexed)
           {:keys [status concept-id revision-id]}  (ingest/delete-concept concept)
           fetched (mdb/get-concept concept-id revision-id)]
       (is (= 200 status))

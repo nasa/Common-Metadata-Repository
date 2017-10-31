@@ -7,7 +7,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.variable-util :as variable-util]))
@@ -23,7 +22,6 @@
             {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                                concept
                                                (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))
     (testing "ingest of a variable concept with a revision id"
@@ -31,7 +29,6 @@
             {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                               concept
                                               (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (= 5 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id 5))))))
 
@@ -44,7 +41,6 @@
           opts (merge variable-util/default-opts {:token token})
           {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                             concept opts)]
-      (index/wait-until-indexed)
       (ingest/assert-user-id concept-id revision-id "user1")))
   (testing (str "both user-id and token in the header results in the revision "
                 "getting user id from user-id header")
@@ -56,7 +52,6 @@
                                                   :token token})
           {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                             concept opts)]
-      (index/wait-until-indexed)
       (ingest/assert-user-id concept-id revision-id "user4")))
   (testing "neither user-id nor token in the header"
     (let [concept (variable-util/make-variable-concept)
@@ -77,7 +72,6 @@
                                             ingest-header2))
       (ingest/ingest-concept concept (merge variable-util/default-opts
                                             ingest-header3))
-      (index/wait-until-indexed)
       (ingest/assert-user-id concept-id revision-id expected-user-id1)
       (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
       (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3))
@@ -109,7 +103,6 @@
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
                                                concept
                                                (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
@@ -117,21 +110,18 @@
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
                                               concept
                                               (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (= [supplied-concept-id 2] [concept-id revision-id]))))
 
     (testing "update the concept without the concept-id"
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
                                               (dissoc concept :concept-id)
                                               (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (= [supplied-concept-id 3] [concept-id revision-id]))))
 
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (variable-util/ingest-variable
                                      (assoc concept :concept-id "V1111-PROV1")
                                      (variable-util/token-opts token))]
-        (index/wait-until-indexed)
         (is (= [409 [(str "A concept with concept-id [V1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:variable] provider-id [PROV1]. "
@@ -200,7 +190,6 @@
                      (variable-util/token-opts token))
           n 4
           created-concepts (take n (repeatedly n ingester))]
-      (index/wait-until-indexed)
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
@@ -213,7 +202,6 @@
         {:keys [status]} (ingest/ingest-concept
                           concept
                           (variable-util/token-opts token))]
-    (index/wait-until-indexed)
     (is (= 201 status))))
 
 (deftest delete-variable-ingest-test
@@ -221,7 +209,6 @@
     (let [{token :token} (variable-util/setup-update-acl (s/context) "PROV1")
           concept (variable-util/make-variable-concept)
           _ (variable-util/ingest-variable concept {:token token})
-          _ (index/wait-until-indexed)
           {:keys [status concept-id revision-id]} (ingest/delete-concept concept {:token token})
           fetched (mdb/get-concept concept-id revision-id)]
       (is (= 200 status))
