@@ -349,3 +349,18 @@
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
         (is (= "COMPLETE" (:task-status collection-response)))))))
+
+(deftest bulk-update-large-status-message-test
+  (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
+        concept (ingest/ingest-concept
+                 (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids [(:concept-id concept)]
+                          :name "TEST NAME"
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]))
+    ;; Kick off bulk update
