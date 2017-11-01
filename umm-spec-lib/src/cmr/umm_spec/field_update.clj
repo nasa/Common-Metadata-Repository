@@ -25,7 +25,7 @@
 
 (defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
-  (if (vector? update-value)
+  (if (sequential? update-value)
     (update-in umm update-field #(concat % update-value))
     (update-in umm update-field #(conj % update-value))))
 

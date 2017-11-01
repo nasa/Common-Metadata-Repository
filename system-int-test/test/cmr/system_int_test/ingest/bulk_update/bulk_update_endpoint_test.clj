@@ -134,7 +134,7 @@
                             :Term "ENVIRONMENTAL IMPACTS"
                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
-            ["An update value can not be an array when the update type [FIND_AND_REPLACE] is not ADD_TO_EXISTING"]
+            ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING update type."]
 
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]

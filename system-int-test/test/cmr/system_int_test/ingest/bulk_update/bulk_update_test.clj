@@ -169,9 +169,9 @@
                    :Term "ENVIRONMENTAL IMPACTS"
                    :Topic "HUMAN DIMENSIONS"}]))))))
 
-(deftest bulk-update-science-keywords-2
+(deftest bulk-update-add-to-existing-multiple-science-keywords 
   ;; This test is the same as the previous bulk-update-science-keywords test except
-  ;; that it shows that update-value could be an array of objects, as well as object, when update-type is "ADD_TO_EXISTING" 
+  ;; that it shows that update-value could be an array of objects. 
   ;; Ingest a collection in each format with science keywords to update
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
@@ -187,19 +187,6 @@
                                           :Topic "HUMAN DIMENSIONS2"
                                           :Term "ENVIRONMENTAL IMPACTS2"
                                           :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
-       (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
-       ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-         (is (= 400 (:status response)))
-         (is (= ["Bulk update is disabled."] (:errors response))))
-       ;; Wait for queueing/indexing to catch up
-       (index/wait-until-indexed)
-       (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-         (is (= 404 (:status collection-response)))
-         (is (= ["Bulk update task with task id [1] could not be found."]
-                (:errors collection-response))))
-
-       (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
        ;; Kick off bulk update
        (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
          (is (= 200 (:status response)))
@@ -215,13 +202,6 @@
                                    :results
                                    :items
                                    first)]]
-          (is (= 2
-                 (:revision-id (:meta concept))))
-          (is (= "2017-01-01T00:00:00Z"
-                 (:revision-date (:meta concept))))
-          (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
-          (is (= "application/vnd.nasa.cmr.umm+json"
-                 (:format (:meta concept))))
           (is (= (:ScienceKeywords (:umm concept))
                  [{:Category "EARTH SCIENCE"
                    :Term "MARINE SEDIMENTS"
