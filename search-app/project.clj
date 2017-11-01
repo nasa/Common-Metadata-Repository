@@ -17,7 +17,7 @@
                                org.clojure/tools.reader
                                org.clojure/java.jdbc
                                ring/ring-codec]]
-                 [gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
+                 [gov.nasa.earthdata/cmr-edsc-stubs "0.2.0-SNAPSHOT"
                   :exclusions [cljs-http
                                clj-http
                                com.google.code.findbugs/jsr305
