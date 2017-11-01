@@ -220,9 +220,6 @@
   ([path-w-extension params headers]
     (handle-prototype-request path-w-extension params headers ""))
   ([path-w-extension params headers query-string]
-    (println "path-w-extension:" path-w-extension)
-    (println "params:" params)
-    (println "headers:" headers)
     (cond
       (string/starts-with? path-w-extension "collections")
         (get-collections path-w-extension params headers)
