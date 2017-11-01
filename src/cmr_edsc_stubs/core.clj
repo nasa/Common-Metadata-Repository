@@ -4,6 +4,7 @@
    [cmr-edsc-stubs.data.fake-response]
    [cmr-edsc-stubs.data.jdbc]
    [cmr-edsc-stubs.data.metadatadb]
+   [cmr.sample-data.const]
    [potemkin :refer [import-vars]]))
 
 (import-vars
@@ -12,7 +13,6 @@
     ingest-ges-disc-airx3std-variables
     associate-ch4-variables-with-ges-disc-airx3std-collection]
   [cmr-edsc-stubs.data.fake-response
-    ges-disc-airx3std-collection-id
     get-ges-disc-services-map
     get-ges-disc-variables-map
     get-umm-json-ges-disc-airx3std-collection
@@ -21,5 +21,7 @@
   [cmr-edsc-stubs.data.jdbc
     ingest-ges-disc-airx3std-opendap-service]
   [cmr-edsc-stubs.data.metadatadb
-    create-ges-disc-provider])
+    create-ges-disc-provider]
+  [cmr.sample-data.const
+    ges-disc-airx3std-collection-id])
 
