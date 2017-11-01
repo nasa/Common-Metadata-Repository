@@ -33,6 +33,22 @@
   "Indicates bulk update operation completed with errors"
   "FAILED")
 
+(def ADD_TO_EXISTING 
+  "Represents ADD_TO_EXISTING update type"
+  "ADD_TO_EXISTING")
+
+(def FIND_AND_REPLACE
+  "Represents FIND_AND_REPLACE update type"
+  "FIND_AND_REPLACE")
+
+(def FIND_AND_REMOVE
+  "Represents FIND_AND_REMOVE update type"
+  "FIND_AND_REMOVE")
+
+(def FIND_AND_UPDATE
+  "Represents FIND_AND_UPDATE update type"
+  "FIND_AND_UPDATE")
+
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
@@ -40,15 +56,20 @@
   (js/validate-json! bulk-update-schema json)
   (let [body (json/parse-string json true)
         {:keys [update-type update-value find-value]} body]
-    (when (and (not= "CLEAR_FIELD" update-type)
-               (not= "FIND_AND_REMOVE" update-type)
+    (when (and (not= FIND_AND_REMOVE update-type)
                (nil? update-value))
       (errors/throw-service-errors :bad-request
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
-    (when (and (or (= "FIND_AND_REPLACE" update-type)
-                   (= "FIND_AND_REMOVE" update-type)
-                   (= "FIND_AND_UPDATE" update-type))
+    (when (and (not= ADD_TO_EXISTING update-type)
+               (sequential? update-value))
+      (errors/throw-service-errors 
+        :bad-request
+        [(str (format "An update value must be a single object for the [%s] update type. " update-type)
+              "Arrays are only supported for the ADD_TO_EXISTING update type.")]))
+    (when (and (or (= FIND_AND_REPLACE update-type)
+                   (= FIND_AND_REMOVE update-type)
+                   (= FIND_AND_UPDATE update-type))
                (nil? find-value))
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"

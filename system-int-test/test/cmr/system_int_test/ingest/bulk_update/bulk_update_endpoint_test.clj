@@ -123,6 +123,19 @@
             400
             ["A find value must be supplied when the update is of type FIND_AND_REPLACE"]
 
+            "update-value can not be an array for update-type not being ADD_TO_EXISTING"
+            {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "FIND_AND_REPLACE"
+             :find-value {:Category "EARTH SCIENCE"}
+             :update-value [{:Category "EARTH SCIENCE"
+                            :Topic "HUMAN DIMENSIONS"
+                            :Term "ENVIRONMENTAL IMPACTS"
+                            :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
+            400
+            ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING update type."]
+
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]
              :name "TEST NAME"
