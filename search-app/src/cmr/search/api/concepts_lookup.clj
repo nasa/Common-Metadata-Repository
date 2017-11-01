@@ -1,7 +1,8 @@
 (ns cmr.search.api.concepts-lookup
   "Defines the API for concepts lookup in the CMR."
   (:require
-   ;; XXX REMOVE the next require once the service and associations work is complete
+   ;; XXX REMOVE the next two requires once the service and associations work is complete
+   [clojure.string :as string]
    [cmr-edsc-stubs.core :as stubs]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
@@ -119,6 +120,9 @@
       {params :params headers :headers ctx :request-context}
       ;; XXX REMOVE this check and the stubs once the service and
       ;;     the associations work is complete
-      (if (headers "cmr-prototype-umm")
-        (stubs/handle-prototype-request path-w-extension params headers)
+      (if (= "true" (string/lower-case (headers "cmr-prototype-umm")))
+        (core-api/search-response
+         ctx
+         {:results (stubs/handle-prototype-request path-w-extension params headers)
+          :result-format :umm-json})
         (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))))

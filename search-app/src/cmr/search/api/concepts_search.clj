@@ -2,7 +2,8 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
-   ;; XXX REMOVE the next require once the service and associations work is complete
+   ;; XXX REMOVE the next two requires once the service and associations work is complete
+   [clojure.string :as string]
    [cmr-edsc-stubs.core :as stubs]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -148,9 +149,15 @@
       {params :params headers :headers ctx :request-context query-string :query-string}
       ;; XXX REMOVE this check and the stubs once the service and
       ;;     the associations work is complete
-      (if (headers "cmr-prototype-umm")
-        (stubs/handle-prototype-request
-         path-w-extension params headers query-string)
+      (if (= "true" (string/lower-case (headers "cmr-prototype-umm")))
+        (core-api/search-response
+         ctx
+         {:results (stubs/handle-prototype-request
+                    path-w-extension
+                    params
+                    (assoc headers "CMR-Hits" 42 "CMR-Took" 42)
+                    query-string)
+          :result-format :json})
         (find-concepts ctx path-w-extension params headers query-string)))
     ;; Find concepts - form encoded or JSON
     (POST "/"
