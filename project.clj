@@ -25,7 +25,7 @@
         :prompt ~get-prompt}}
     :test {
       :plugins [
-        [lein-ancient "0.6.12"]
+        [lein-ancient "0.6.14"]
         [jonase/eastwood "0.2.5"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.5"]
