@@ -33,8 +33,6 @@
 ;;;   Get Data from Sources   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ges-disc-airx3std-collection-id "C1238517344-GES_DISC")
-
 (defn- gen-ids
   [provider-id prefix coll]
   (->> coll
