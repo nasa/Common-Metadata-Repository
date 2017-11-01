@@ -81,12 +81,12 @@ All Rights Reserved.
 
 [logo]: resources/images/logo-250px.png
 [logo-large]: resources/images/logo-2400px.png
-[travis]: https://travis-ci.org/oubiwann/cmr-sample-data
-[travis badge]: https://img.shields.io/travis/oubiwann/cmr-sample-data.svg
-[deps]: http://jarkeeper.com/oubiwann/cmr-sample-data
-[deps-badge]: http://jarkeeper.com/oubiwann/cmr-sample-data/status.svg
-[tag-badge]: https://img.shields.io/github/tag/oubiwann/cmr-sample-data.svg
-[tag]: https://github.com/oubiwann/cmr-sample-data/tags
+[travis]: https://travis-ci.org/cmr-exchange/sample-data
+[travis badge]: https://img.shields.io/travis/cmr-exchange/sample-data.svg
+[deps]: http://jarkeeper.com/cmr-exchange/sample-data
+[deps-badge]: http://jarkeeper.com/cmr-exchange/sample-data/status.svg
+[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/sample-data.svg
+[tag]: https://github.com/cmr-exchange/sample-data/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-sample-data
