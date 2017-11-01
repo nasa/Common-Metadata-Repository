@@ -46,6 +46,11 @@
       (errors/throw-service-errors :bad-request
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
+    (when (and (not= "ADD_TO_EXISTING" update-type)
+               (vector? update-value))
+      (errors/throw-service-errors :bad-request
+                                   [(format "An update value can not be an array when the update type [%s] is not ADD_TO_EXISTING"
+                                            update-type)]))
     (when (and (or (= "FIND_AND_REPLACE" update-type)
                    (= "FIND_AND_REMOVE" update-type)
                    (= "FIND_AND_UPDATE" update-type))
