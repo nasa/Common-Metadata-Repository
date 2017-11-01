@@ -4,7 +4,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-edsc-stubs "0.2.0-SNAPSHOT"
   :description "Various Stubbed Data for CMR / EDSC"
   :url "https://github.com/oubiwann/cmr-edsc-stubs"
   :license {:name "Apache License 2.0"
