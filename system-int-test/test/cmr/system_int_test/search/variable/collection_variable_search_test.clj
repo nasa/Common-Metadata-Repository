@@ -334,8 +334,8 @@
           (is (= [200 coll-json]
                  [status results])))
 
-        "has-variables true"
-        coll1 {:has-variables true}
+        "has-variables true and associations exist in JSON format"
+        coll1 {:has-variables true :variables [variable1-concept-id]}
 
         "has-variables false"
         coll2 {:has-variables false}))
@@ -343,11 +343,11 @@
     (testing "delete variable affect collection search has-variables field"
       (let [{:keys [entry-title]} coll1
             expected-json (atom/collections->expected-atom
-                           [(assoc coll1 :has-variables true)]
+                           [(assoc coll1 :has-variables true :variables [variable1-concept-id])]
                            (format "collections.json?entry_title=%s" entry-title))
             {:keys [results]} (search/find-concepts-json
                                :collection {:entry-title entry-title})]
-        ;; verify has-variables is true before the variable is deleted
+        ;; verify has-variables is true and associations exist before the variable is deleted
         (is (= expected-json results))
 
         ;; Delete variable1

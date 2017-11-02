@@ -434,6 +434,9 @@
           :measurements.lowercase m/string-field-mapping
           :variables variables-mapping
 
+          ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
+          :associations-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
+
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))

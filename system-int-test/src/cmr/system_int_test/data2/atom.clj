@@ -269,7 +269,7 @@
   that will do a conversion to echo10"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id format-key has-variables has-formats]} collection
+         :keys [concept-id format-key has-variables has-formats services variables]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -293,7 +293,10 @@
         associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)
         ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
         organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)
-        temporal (:temporal collection)]
+        temporal (:temporal collection)
+        associations (when (or (seq services) (seq variables))
+                       (util/remove-map-keys empty? {:variables (set variables)
+                                                     :services (set services)}))]
     (util/remove-nil-keys
      {:id concept-id
       :title entry-title
@@ -322,7 +325,8 @@
       :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
       :browse-flag (not (empty? (ru/browse-urls related-urls)))
       :has-variables (boolean has-variables)
-      :has-formats (boolean has-formats)})))
+      :has-formats (boolean has-formats)
+      :associations associations})))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"
