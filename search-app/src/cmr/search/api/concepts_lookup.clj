@@ -1,9 +1,12 @@
 (ns cmr.search.api.concepts-lookup
   "Defines the API for concepts lookup in the CMR."
   (:require
-   ;; XXX REMOVE the next two requires once the service and associations work is complete
+   ;; XXX REMOVE the next three requires once the service and associations work is complete
+   ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
    [clojure.string :as string]
    [cmr-edsc-stubs.core :as stubs]
+   [cmr.common.util :as util]
+   ;; end XXX
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -120,7 +123,8 @@
       {params :params headers :headers ctx :request-context}
       ;; XXX REMOVE this check and the stubs once the service and
       ;;     the associations work is complete
-      (if (= "true" (string/lower-case (headers "cmr-prototype-umm")))
+      ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
+      (if (= "true" (util/safe-lowercase (headers "cmr-prototype-umm")))
         (core-api/search-response
          ctx
          {:results (stubs/handle-prototype-request path-w-extension params headers)
