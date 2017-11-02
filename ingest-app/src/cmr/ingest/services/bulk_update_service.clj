@@ -73,13 +73,14 @@
                (not= DATA_CENTERS update-field))
       (errors/throw-service-errors 
        :bad-request
-      [(str (format "FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [%s] update field. " update-field)
+      [(str "FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [" update-field 
+            "] update field. "
             "It can only be used for the DATA_CENTERS update field.")]))
     (when (and (not= ADD_TO_EXISTING update-type)
                (sequential? update-value))
       (errors/throw-service-errors 
         :bad-request
-        [(str (format "An update value must be a single object for the [%s] update type. " update-type)
+        [(str "An update value must be a single object for the [" update-type "] update type. " 
               "Arrays are only supported for the ADD_TO_EXISTING update type.")]))
     (when (and (or (= FIND_AND_REPLACE update-type)
                    (= FIND_AND_REMOVE update-type)

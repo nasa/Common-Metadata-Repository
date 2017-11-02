@@ -20,45 +20,48 @@
   {[:Instruments] (partial util/update-in-each umm [:Platforms])})
 
 (defn- get-home-page-url
-  "Get data center home page url from a list of related urls."
+  "Get the data center home page url from a list of related urls.
+   If there are more than one returned, arbitrarily choose the first one."
   [related-urls]
-  (when (seq related-urls)
-    (first (for [{:keys [URLContentType Type URL]} related-urls
-                 :when (and (= DataCenterURL URLContentType)
-                            (= HomePage Type))]
-             {:URLContentType DataCenterURL
-              :Type HomePage
-              :URL URL})))) 
+  (first (for [{:keys [URLContentType Type URL]} related-urls
+               :when (and (= DataCenterURL URLContentType)
+                          (= HomePage Type))]
+           {:URLContentType DataCenterURL
+            :Type HomePage
+            :URL URL}))) 
 
 (defn- home-page-url?
   "Check if a related url is a data center home page url."
   [related-url]
-  (let [{:keys [URLContentType Type URL]} related-url]
-    (if (and (= DataCenterURL URLContentType)
-             (= HomePage Type))
-      true
-      false)))
+  (let [{:keys [URLContentType Type]} related-url]
+    (and (= DataCenterURL URLContentType) (= HomePage Type))))
 
 (defn- home-page-url-update
-  "Apply special homepageurl update to data-center using the update-value.
-   1. If the new homepageurl is provided in the update-value.
-      a. If data-center-relatedurls contains homepageurl, update it with the new homepageurl.
-      b. If data-center-relatedurls doesn't contain homepageurl, add the new homepageurl to it.
-      Note: Anything other than the homepageurl in update-value are ignored. 
-   2.  Update the non ContactInformation part for the data center normally(replace or add)."
+  "Apply special home-page-url update to data-center using the update-value.
+   If the new home-page-url is provided in the update-value.
+      a. If data-center-related-urls contains home-page-url, update it with the new home-page-url.
+      b. If data-center-related-urls doesn't contain home-page-url, add the new home-page-url to it.
+      Note: Anything other than the home-page-url in update-value are ignored."
   [data-center update-value]
-  (let [update-value-non-contactinfo-part (dissoc update-value :ContactInformation)
-        update-value-relatedurls (get-in update-value [:ContactInformation :RelatedUrls])
-        update-value-homepageurl (get-home-page-url update-value-relatedurls)
-        data-center-relatedurls (get-in data-center [:ContactInformation :RelatedUrls])]
-    (-> (if (seq update-value-homepageurl)
-          (if (some home-page-url? data-center-relatedurls)
-            (update-in data-center [:ContactInformation :RelatedUrls] 
-               #(map (fn [x] (if (home-page-url? x) update-value-homepageurl x)) %))
-            (let [new-relatedurls (conj data-center-relatedurls update-value-homepageurl)]
-                (assoc-in data-center [:ContactInformation :RelatedUrls] new-relatedurls)))
-          data-center)
-         (merge update-value-non-contactinfo-part))))
+  (let [update-value-related-urls (get-in update-value [:ContactInformation :RelatedUrls])
+        update-value-home-page-url (get-home-page-url update-value-related-urls)
+        data-center-related-urls (get-in data-center [:ContactInformation :RelatedUrls])]
+    (if (seq update-value-home-page-url)
+      (if (some home-page-url? data-center-related-urls)
+        (update-in data-center [:ContactInformation :RelatedUrls]
+          #(map (fn [x] (if (home-page-url? x) update-value-home-page-url x)) %))
+        (let [new-related-urls (conj data-center-related-urls update-value-home-page-url)]
+          (assoc-in data-center [:ContactInformation :RelatedUrls] new-related-urls)))
+      data-center)))
+
+(defn- data-center-update
+  "Apply update to data-center using the update-value. Returns data center.
+   It includes special update to the home page url inside ContactInformation
+   and regular update to everything outside of ContactInformation."
+  [data-center update-value]
+  (let [update-value-non-contact-info-part (dissoc update-value :ContactInformation)
+        data-center-with-updated-home-page-url (home-page-url-update data-center update-value)]
+    (merge data-center-with-updated-home-page-url update-value-non-contact-info-part)))
 
 (defn- value-matches?
   "Return true if the value is a match on find value."
@@ -134,7 +137,7 @@
       ;; ContactInformation part of the update-value. 
       (update-in umm update-field #(distinct (map (fn [x]
                                                     (if (value-matches? find-value x)
-                                                      (home-page-url-update x update-value)
+                                                      (data-center-update x update-value)
                                                       x))
                                                   %))))
     umm)) 
