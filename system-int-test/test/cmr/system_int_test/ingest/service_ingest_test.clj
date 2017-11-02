@@ -119,15 +119,24 @@
 ;; Service with concept-id ingest and update scenarios.
 (deftest service-w-concept-id-ingest-test
   (let [supplied-concept-id "S1000-PROV1"
-        concept (service-util/make-service-concept
-                 {:concept-id supplied-concept-id
-                  :native-id "Atlantic-1"})]
+        metadata {:concept-id supplied-concept-id
+                  :native-id "Atlantic-1"}
+        concept (service-util/make-service-concept metadata)]
     (testing "ingest of a new service concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
+    (testing "ingest of same native id and different providers is allowed"
+      (let [concept2 (service-util/make-service-concept
+                      (assoc metadata :provider-id "PROV2"))
+            {:keys [concept1-id revision1-id]} (ingest/ingest-concept concept)
+            {:keys [concept2-id revision2-id]} (ingest/ingest-concept concept2)]
+        (is (mdb/concept-exists-in-mdb? concept1-id revision1-id))
+        (is (= [supplied-concept-id 1] [concept1-id revision1-id]))
+        (is (mdb/concept-exists-in-mdb? concept2-id revision2-id))
+        (is (= [supplied-concept-id 1] [concept2-id revision2-id]))))
 
-    (testing "Update the concept with the concept-id"
+    (testing "update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (= [supplied-concept-id 2] [concept-id revision-id]))))
 
