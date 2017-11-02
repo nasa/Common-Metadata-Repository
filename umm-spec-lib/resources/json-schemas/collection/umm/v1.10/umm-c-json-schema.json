@@ -142,7 +142,7 @@
         },
         "DistanceUnits": {
           "description": "The units in which measurements are recorded.",
-          "$ref": "#/definitions/AltitudeDistanceUnitsEnum" 
+          "$ref": "#/definitions/AltitudeDistanceUnitsEnum"
         },
         "Resolutions": {
           "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
@@ -167,7 +167,7 @@
         },
         "DistanceUnits": {
           "description": "The units in which measurements are recorded.",
-          "$ref": "#/definitions/DepthDistanceUnitsEnum" 
+          "$ref": "#/definitions/DepthDistanceUnitsEnum"
         },
         "Resolutions": {
           "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
@@ -250,7 +250,7 @@
       "properties": {
         "GeographicCoordinateUnits": {
           "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
-          "$ref": "#/definitions/GeographicCoordinateUnitsEnum" 
+          "$ref": "#/definitions/GeographicCoordinateUnitsEnum"
         },
         "LatitudeResolution": {
           "description": "The minimum difference between two adjacent latitude values in the Geographic Coordinate System,  expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal number, e.g., 0.01",
@@ -286,7 +286,7 @@
       "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "OTHER"]
     },
     "CollectionProgressEnum": {
-      "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.", 
+      "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
       "type": "string",
       "enum": ["ACTIVE", "PLANNED", "COMPLETE", "NOT APPLICABLE", "NOT PROVIDED"]
     },
@@ -352,7 +352,8 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
     },
     "DOI": {
-        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of http://dx.doi.org/ should be used.",
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.
+Authority is the registry that registers the DOI. For ESDIS records the value of http://dx.doi.org should be used. While this element is not required, NASA records should include a DOI when it is applicable.",
         "$ref": "umm-cmn-json-schema.json#/definitions/DoiType"
     },
     "Abstract": {
@@ -415,7 +416,7 @@
     },
     "CollectionProgress": {
       "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
-      "$ref": "#/definitions/CollectionProgressEnum" 
+      "$ref": "#/definitions/CollectionProgressEnum"
     },
     "Quality": {
       "description": "Free text description of the quality of the collection data.  Description may include: 1) succinct description of the quality of data in the collection; 2) Any quality assurance procedures followed in producing the data in the collection; 3) indicators of collection quality or quality flags - both validated or invalidated; 4) recognized or potential problems with quality; 5) established quality control mechanisms; and 6) established quantitative quality measurements.",
