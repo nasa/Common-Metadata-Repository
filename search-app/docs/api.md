@@ -758,7 +758,7 @@ __Example__
 
 #### <a name="json"></a> JSON
 
-The JSON response contains the same fields as the ATOM response.
+The JSON response contains all the fields in the ATOM response, plus the associations field, which contains the concept ids of variables and services that are associated with the collection.
 
 __Example__
 
@@ -784,7 +784,11 @@ __Example__
       "has_formats" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
-                "tag2": {"data" : "cloud cover > 80"}}
+                "tag2": {"data" : "cloud cover > 80"}},
+      "associations" : {
+        "variables" : [ "V1200000007-PROV1" ],
+        "services" : [ "S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1" ]
+      }
     } ]
   }
 }
