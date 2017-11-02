@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-time.core :as time]
    [clojure.data.xml :as x]
+   [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
@@ -62,6 +63,7 @@
                      "ords"
                      "has-variables"
                      "has-formats"
+                     "associations-gzip-b64"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
                       (conj atom-fields trf/stored-tags-field)
@@ -130,7 +132,8 @@
           [number-of-orbits] :number-of-orbits
           [start-circular-latitude] :start-circular-latitude
           [has-variables] :has-variables
-          [has-formats] :has-formats} :fields} elastic-result
+          [has-formats] :has-formats
+          [associations-gzip-b64] :associations-gzip-b64} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -169,7 +172,10 @@
                                :start-circular-latitude start-circular-latitude}
             :tags (trf/collection-elastic-result->tags elastic-result)
             :has-variables has-variables
-            :has-formats has-formats}
+            :has-formats has-formats
+            :associations (some-> associations-gzip-b64
+                                  util/gzip-base64->string
+                                  edn/read-string)}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item

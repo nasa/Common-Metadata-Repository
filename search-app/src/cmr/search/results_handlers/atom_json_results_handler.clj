@@ -50,7 +50,7 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
-                has-variables has-formats]} reference
+                has-variables has-formats associations]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -82,7 +82,8 @@
                        :orbit_parameters (when orbit-parameters
                                            (fix-map-for-echo-json orbit-parameters))
                        :highlighted-summary-snippets highlighted-summary-snippets
-                       :tags tags}
+                       :tags tags
+                       :associations associations}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))

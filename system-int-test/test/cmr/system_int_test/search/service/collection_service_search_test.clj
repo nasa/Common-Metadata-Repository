@@ -12,17 +12,19 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.service-util :as service-util]))
+   [cmr.system-int-test.utils.service-util :as service-util]
+   [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1"})
                 service-util/grant-all-service-fixture]))
 
-(defn- verify-collection-atom-has-formats
-  "Verify the collection ATOM response has-formats field has the given value"
-  [coll has-formats]
-  (let [coll-with-extra-fields (assoc coll :has-formats has-formats)
+(defn- assert-collection-atom-result
+  "Verify the collection ATOM response has-formats has-variables fields have the correct values"
+  [coll has-formats has-variables]
+  (let [coll-with-extra-fields (merge coll {:has-formats has-formats
+                                            :has-variables has-variables})
         {:keys [entry-title]} coll
         coll-atom (atom/collections->expected-atom
                    [coll-with-extra-fields]
@@ -33,10 +35,13 @@
     (is (= [200 coll-atom]
            [status results]))))
 
-(defn- verify-collection-json-has-formats
-  "Verify the collection JSON response has-formats field has the given value"
-  [coll has-formats]
-  (let [coll-with-extra-fields (assoc coll :has-formats has-formats)
+(defn- assert-collection-json-result
+  "Verify the collection JSON response associations related fields have the correct values"
+  [coll has-formats serv-concept-ids var-concept-ids]
+  (let [coll-with-extra-fields (merge coll {:has-formats has-formats
+                                            :has-variables (boolean (seq var-concept-ids))
+                                            :services serv-concept-ids
+                                            :variables var-concept-ids})
         {:keys [entry-title]} coll
         coll-json (atom/collections->expected-atom
                    [coll-with-extra-fields]
@@ -47,11 +52,13 @@
     (is (= [200 coll-json]
            [status results]))))
 
-(defn- verify-collection-has-formats
-  "Verify the collection in ATOM and JSON response has-formats field has the given value"
-  [coll has-formats]
-  (verify-collection-atom-has-formats coll has-formats)
-  (verify-collection-json-has-formats coll has-formats))
+(defn- assert-collection-atom-json-result
+  "Verify collection in ATOM and JSON response has-formats, has-variables and associations fields"
+  ([coll has-formats serv-concept-ids]
+   (assert-collection-atom-json-result coll has-formats serv-concept-ids nil))
+  ([coll has-formats serv-concept-ids var-concept-ids]
+   (assert-collection-atom-result coll has-formats (boolean (seq var-concept-ids)))
+   (assert-collection-json-result coll has-formats serv-concept-ids var-concept-ids)))
 
 (deftest collection-service-search-atom-json-test
   (let [token (e/login (s/context) "user1")
@@ -85,8 +92,8 @@
     (index/wait-until-indexed)
 
     ;; verify collection associated with a service with no supported format, has-formats false
-    (verify-collection-has-formats coll1 false)
-    (verify-collection-has-formats coll2 false)
+    (assert-collection-atom-json-result coll1 false [serv1-concept-id])
+    (assert-collection-atom-json-result coll2 false [serv1-concept-id])
 
     (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
@@ -95,16 +102,18 @@
     (index/wait-until-indexed)
 
     ;; verify collection associated with services with just one supported format, has-formats false
-    (verify-collection-has-formats coll1 false)
-    (verify-collection-has-formats coll2 false)
+    (assert-collection-atom-json-result coll1 false [serv1-concept-id serv2-concept-id serv3-concept-id])
+    (assert-collection-atom-json-result coll2 false [serv1-concept-id serv2-concept-id serv3-concept-id])
 
     (au/associate-by-concept-ids token serv4-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
     (index/wait-until-indexed)
 
     ;; verify collection associated with services with two supported formats, has-formats true
-    (verify-collection-has-formats coll1 true)
-    (verify-collection-has-formats coll2 true)
+    (assert-collection-atom-json-result
+     coll1 true [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
+    (assert-collection-atom-json-result
+     coll2 true [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
 
     (testing "delete service affect collection search has-formats field"
       ;; Delete service4
@@ -112,13 +121,17 @@
       (index/wait-until-indexed)
 
       ;; verify has-formats is false after the service with two supported formats is deleted
-      (verify-collection-has-formats coll1 false)
-      (verify-collection-has-formats coll2 false))
+      (assert-collection-atom-json-result
+       coll1 false [serv1-concept-id serv2-concept-id serv3-concept-id])
+      (assert-collection-atom-json-result
+       coll2 false [serv1-concept-id serv2-concept-id serv3-concept-id]))
 
     (testing "update service affect collection search has-formats field"
       ;; before update service3, collections' has formats is false
-      (verify-collection-has-formats coll1 false)
-      (verify-collection-has-formats coll2 false)
+      (assert-collection-atom-json-result
+       coll1 false [serv1-concept-id serv2-concept-id serv3-concept-id])
+      (assert-collection-atom-json-result
+       coll2 false [serv1-concept-id serv2-concept-id serv3-concept-id])
       ;; update service3 to have two supported formats
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
@@ -127,5 +140,19 @@
       (index/wait-until-indexed)
 
       ;; verify has-formats is true after the service is updated with two supported formats
-      (verify-collection-has-formats coll1 true)
-      (verify-collection-has-formats coll2 true))))
+      (assert-collection-atom-json-result
+       coll1 true [serv1-concept-id serv2-concept-id serv3-concept-id])
+      (assert-collection-atom-json-result
+       coll2 true [serv1-concept-id serv2-concept-id serv3-concept-id]))
+
+    (testing "variable associations together with service associations"
+      (let [{var-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
+                                          {:native-id "var1"
+                                           :Name "Variable1"
+                                           :LongName "Measurement1"})]
+        (au/associate-by-concept-ids token var-concept-id [{:concept-id (:concept-id coll1)}])
+        (index/wait-until-indexed)
+        (assert-collection-atom-json-result
+         coll1 true [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
+        (assert-collection-atom-json-result
+         coll2 true [serv1-concept-id serv2-concept-id serv3-concept-id])))))

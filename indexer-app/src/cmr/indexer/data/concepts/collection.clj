@@ -129,6 +129,17 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
+(defn- associations->gzip-base64-str
+  "Returns the gziped base64 string for the given variable associations and service associations"
+  [variable-associations service-associations]
+  (when (or (seq variable-associations)
+            (seq service-associations))
+    (util/string->gzip-base64
+     (pr-str
+      (util/remove-map-keys empty?
+                            {:variables (mapv :variable-concept-id variable-associations)
+                             :services (mapv :service-concept-id service-associations)})))))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -221,7 +232,7 @@
         insert-time (date-util/data-create-date collection)
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
-                                                       :Geometry :CoordinateSystem])
+                                              :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
         {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
@@ -276,14 +287,14 @@
             :temporal-ranges (mapcat (fn [extent]
                                        [(:start-date extent)
                                         (:end-date extent)])
-                                 temporal-extents-ranges)
+                                     temporal-extents-ranges)
             ;; added so that we can respect all collection temporal ranges in search
             ;; when limit_to_granules is set and there are no granules for the collection.
             :limit-to-granules-temporals
-              (if granule-start-date
-                [{:start-date (index-util/date->elastic granule-start-date)
-                  :end-date (index-util/date->elastic granule-end-date)}]
-                temporal-extents)
+            (if granule-start-date
+              [{:start-date (index-util/date->elastic granule-start-date)
+                :end-date (index-util/date->elastic granule-end-date)}]
+              temporal-extents)
             :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))
             :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
@@ -349,7 +360,9 @@
             :processing-level-id.lowercase.humanized (-> humanized-values
                                                          :processing-level-id.humanized2
                                                          first
-                                                         :value.lowercase)}
+                                                         :value.lowercase)
+            :associations-gzip-b64 (associations->gzip-base64-str
+                                    variable-associations service-associations)}
 
            (variable/variable-associations->elastic-doc context variable-associations)
            (service/service-associations->elastic-doc context service-associations)
