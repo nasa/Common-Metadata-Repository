@@ -11,7 +11,7 @@
         },
         "UpdateTypeEnum": {
             "type": "string",
-            "enum": ["ADD_TO_EXISTING", "CLEAR_FIELD", "CLEAR_ALL_AND_REPLACE", "FIND_AND_REMOVE", "FIND_AND_REPLACE", "FIND_AND_UPDATE"]
+            "enum": ["ADD_TO_EXISTING", "CLEAR_FIELD", "CLEAR_ALL_AND_REPLACE", "FIND_AND_REMOVE", "FIND_AND_REPLACE", "FIND_AND_UPDATE", "FIND_AND_UPDATE_HOME_PAGE_URL"]
         },
         "UpdateFieldEnum": {
           "type": "string",

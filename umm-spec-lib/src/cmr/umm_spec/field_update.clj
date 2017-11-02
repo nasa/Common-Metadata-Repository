@@ -6,10 +6,59 @@
   [cmr.umm-spec.date-util :as date-util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
+(def DataCenterURL
+  "Data center URL's content type."
+  "DataCenterURL")
+
+(def HomePage
+  "Data center URL's type."
+  "HOME PAGE")
+
 (defn field-update-functions
   "Partial update functions for handling specific update cases"
   [umm]
   {[:Instruments] (partial util/update-in-each umm [:Platforms])})
+
+(defn- get-home-page-url
+  "Get data center home page url from a list of related urls."
+  [related-urls]
+  (when (seq related-urls)
+    (first (for [{:keys [URLContentType Type URL]} related-urls
+                 :when (and (= DataCenterURL URLContentType)
+                            (= HomePage Type))]
+             {:URLContentType DataCenterURL
+              :Type HomePage
+              :URL URL})))) 
+
+(defn- home-page-url?
+  "Check if a related url is a data center home page url."
+  [related-url]
+  (let [{:keys [URLContentType Type URL]} related-url]
+    (if (and (= DataCenterURL URLContentType)
+             (= HomePage Type))
+      true
+      false)))
+
+(defn- home-page-url-update
+  "Apply special homepageurl update to data-center using the update-value.
+   1. If the new homepageurl is provided in the update-value.
+      a. If data-center-relatedurls contains homepageurl, update it with the new homepageurl.
+      b. If data-center-relatedurls doesn't contain homepageurl, add the new homepageurl to it.
+      Note: Anything other than the homepageurl in update-value are ignored. 
+   2.  Update the non ContactInformation part for the data center normally(replace or add)."
+  [data-center update-value]
+  (let [update-value-non-contactinfo-part (dissoc update-value :ContactInformation)
+        update-value-relatedurls (get-in update-value [:ContactInformation :RelatedUrls])
+        update-value-homepageurl (get-home-page-url update-value-relatedurls)
+        data-center-relatedurls (get-in data-center [:ContactInformation :RelatedUrls])]
+    (-> (if (seq update-value-homepageurl)
+          (if (some home-page-url? data-center-relatedurls)
+            (update-in data-center [:ContactInformation :RelatedUrls] 
+               #(map (fn [x] (if (home-page-url? x) update-value-homepageurl x)) %))
+            (let [new-relatedurls (conj data-center-relatedurls update-value-homepageurl)]
+                (assoc-in data-center [:ContactInformation :RelatedUrls] new-relatedurls)))
+          data-center)
+         (merge update-value-non-contactinfo-part))))
 
 (defn- value-matches?
   "Return true if the value is a match on find value."
@@ -69,6 +118,26 @@
                                                       x))
                                                   %))))
     umm))
+
+(defmethod apply-umm-list-update :find-and-update-home-page-url
+  ;; This is a special case that applies to DataCenter ContactInformation update only.
+  ;; All other updates outside of ContactInformation remains the same as find-and-update.
+  ;; We only want to update the home page url inside the :ContactInformation :RelatedUrls. 
+  ;; We don't want to replace the :ContactInformation with the new one in update-value.
+  ;; Any information other than the home page url value under :ContactInformation
+  ;; in update-value is not used. 
+  [update-type umm update-field update-value find-value]
+  (if (seq (get-in umm update-field))
+    (let [update-value (util/remove-nil-keys update-value)]
+      ;; For each entry in update-field, if we find it using the find params,
+      ;; update only the fields supplied in update-value with nils removed, except for the
+      ;; ContactInformation part of the update-value. 
+      (update-in umm update-field #(distinct (map (fn [x]
+                                                    (if (value-matches? find-value x)
+                                                      (home-page-url-update x update-value)
+                                                      x))
+                                                  %))))
+    umm)) 
 
 (defn apply-update
   "Apply an update to a umm record. Check for field-specific function and use that

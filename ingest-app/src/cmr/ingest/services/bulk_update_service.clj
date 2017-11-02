@@ -49,18 +49,32 @@
   "Represents FIND_AND_UPDATE update type"
   "FIND_AND_UPDATE")
 
+(def FIND_AND_UPDATE_HOME_PAGE_URL
+  "Represents FIND_AND_UPDATE_HOME_PAGE_URL update type"
+  "FIND_AND_UPDATE_HOME_PAGE_URL")
+
+(def DATA_CENTERS
+  "Represents DATA_CENTERS update field"
+  "DATA_CENTERS")
+
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
   [json]
   (js/validate-json! bulk-update-schema json)
   (let [body (json/parse-string json true)
-        {:keys [update-type update-value find-value]} body]
+        {:keys [update-type update-value find-value update-field]} body]
     (when (and (not= FIND_AND_REMOVE update-type)
                (nil? update-value))
       (errors/throw-service-errors :bad-request
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
+    (when (and (= FIND_AND_UPDATE_HOME_PAGE_URL update-type)
+               (not= DATA_CENTERS update-field))
+      (errors/throw-service-errors 
+       :bad-request
+      [(str (format "FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [%s] update field. " update-field)
+            "It can only be used for the DATA_CENTERS update field.")]))
     (when (and (not= ADD_TO_EXISTING update-type)
                (sequential? update-value))
       (errors/throw-service-errors 
