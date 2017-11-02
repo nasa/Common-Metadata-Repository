@@ -2057,6 +2057,10 @@ The following extensions and MIME types are supported by the `/concepts/` resour
 
   * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.1"
 
+The following extensions and MIME types are supported by the `/concepts/` resource for the service concept type:
+
+  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.0"
+
 ### <a name="search-with-post"></a> Search with POST
 
 Search collections or granules with query parameters encoded form in POST request body.
