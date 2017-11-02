@@ -4,6 +4,7 @@
   :dependencies [[com.github.fge/json-schema-validator "2.2.6"]
                  ;; XXX REMOVE the following deps when the stubbed
                  ;;     responses are replaced with the real ones
+                 ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
                  [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
                   :exclusions [cljs-http
                                clj-http
