@@ -1521,23 +1521,23 @@ Note: A query could consist of multiple spatial parameters of different types, t
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
-Find an attribute attribute with name "PERCENTAGE" only
+Find an additional attribute with name "PERCENTAGE" only
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=PERCENTAGE"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
+Find an additional attribute with name "PERCENTAGE" of type float with value 25.5
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5"
 
-Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
+Find an additional attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5,30"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.
+Find an additional attribute with name "PERCENTAGE" of type float with min value 25.5.
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5,"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.
+Find an additional attribute with name "PERCENTAGE" of type float with max value 30.
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,,30"
 
@@ -1670,23 +1670,23 @@ This condition is encapsulated in a single parameter called readable_granule_nam
 
 #### <a name="g-additional-attribute"></a> Find granules by additional attribute
 
-Find an attribute attribute with name "PERCENTAGE" only
+Find an additional attribute with name "PERCENTAGE" only
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=PERCENTAGE"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
+Find an additional attribute with name "PERCENTAGE" of type float with value 25.5
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5"
 
-Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
+Find an additional attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,30"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.
+Find an additional attribute with name "PERCENTAGE" of type float with min value 25.5.
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,"
 
-Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.
+Find an additional attribute with name "PERCENTAGE" of type float with max value 30.
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,,30"
 
