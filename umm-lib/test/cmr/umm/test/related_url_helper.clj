@@ -16,7 +16,7 @@
           documentation-url (umm-c/map->RelatedURL
                               {:type "VIEW RELATED INFORMATION"
                                :sub-type "USER'S GUIDE"
-                               :mime-type "Text/html"
+                               :mime-type "TeXt/HtMl"
                                :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
           metadata-url (umm-c/map->RelatedURL
                          {:type "GET SERVICE"

@@ -1,11 +1,13 @@
 (ns cmr.umm.related-url-helper
-  "Contains functions for categorizing UMM related urls.")
+  "Contains functions for categorizing UMM related urls."
+  (:require
+   [clojure.string :as string]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
-  ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
-   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
-   "Application/rtf" "Application/wordperfect5.1"])
+  ["text/rtf" "text/richtext" "text/plain" "text/html" "text/example" "text/enriched"
+   "text/directory" "text/csv" "text/css" "text/calendar" "application/http" "application/msword"
+   "application/rtf" "application/wordperfect5.1"])
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
@@ -21,7 +23,7 @@
   "Returns true if the related-url is browse url"
   [related-url]
   (= "GET RELATED VISUALIZATION" (:type related-url)))
-
+ 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
   [related-urls]
@@ -30,7 +32,9 @@
 (defn documentation-url?
   "Returns true if the related-url is documentation url"
   [related-url]
-  (some #{(:mime-type related-url)} DOCUMENTATION_MIME_TYPES))
+  (let [mime-type (:mime-type related-url)]
+    (when (seq mime-type)
+      (some #{(string/lower-case mime-type)} DOCUMENTATION_MIME_TYPES))))
 
 (defn documentation-urls
   "Returns the related-urls that are documentation urls"
