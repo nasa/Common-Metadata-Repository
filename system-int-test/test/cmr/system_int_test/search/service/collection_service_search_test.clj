@@ -39,7 +39,7 @@
   "Verify the collection JSON response associations related fields have the correct values"
   [coll has-formats serv-concept-ids var-concept-ids]
   (let [coll-with-extra-fields (merge coll {:has-formats has-formats
-                                            :has-variables (boolean (seq var-concept-ids))
+                                            :has-variables (some? (seq var-concept-ids))
                                             :services serv-concept-ids
                                             :variables var-concept-ids})
         {:keys [entry-title]} coll
@@ -57,7 +57,7 @@
   ([coll has-formats serv-concept-ids]
    (assert-collection-atom-json-result coll has-formats serv-concept-ids nil))
   ([coll has-formats serv-concept-ids var-concept-ids]
-   (assert-collection-atom-result coll has-formats (boolean (seq var-concept-ids)))
+   (assert-collection-atom-result coll has-formats (some? (seq var-concept-ids)))
    (assert-collection-json-result coll has-formats serv-concept-ids var-concept-ids)))
 
 (deftest collection-service-search-atom-json-test
