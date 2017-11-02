@@ -2053,13 +2053,10 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
 
-The following extensions and MIME types are supported by the `/concepts/` resource for the variable concept type:
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable and service concept types:
 
-  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.1"
+  * `umm_json`     "application/vnd.nasa.cmr.umm+json"
 
-The following extensions and MIME types are supported by the `/concepts/` resource for the service concept type:
-
-  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.0"
 
 ### <a name="search-with-post"></a> Search with POST
 
