@@ -32,9 +32,8 @@
 (defn documentation-url?
   "Returns true if the related-url is documentation url"
   [related-url]
-  (let [mime-type (:mime-type related-url)]
-    (when (seq mime-type)
-      (some #{(string/lower-case mime-type)} DOCUMENTATION_MIME_TYPES))))
+  (when-let [mime-type (:mime-type related-url)]
+    (some #{(string/lower-case mime-type)} DOCUMENTATION_MIME_TYPES)))
 
 (defn documentation-urls
   "Returns the related-urls that are documentation urls"
