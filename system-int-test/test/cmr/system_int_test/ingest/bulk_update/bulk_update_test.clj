@@ -84,6 +84,34 @@
                 :Instruments [{:ShortName "atm"
                                :LongName "airborne topographic mapper"}]}]})
 
+(def large-status-message-umm
+  {:RelatedUrls [{:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "ascii"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}
+                 {:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "ascii"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}
+                 {:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "ascii"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}]})
 
 (defn- generate-concept-id
   [index provider]
@@ -395,3 +423,23 @@
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
         (is (= "COMPLETE" (:task-status collection-response)))))))
+
+(deftest bulk-update-large-status-message-test
+  (let [concept-ids (ingest-collection-in-umm-json-format large-status-message-umm) 
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+    (index/wait-until-indexed)
+    (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
+          collection-status (first (:collection-statuses collection-response))]
+      (is (= "COMPLETE" (:task-status collection-response)))
+      (is (= "COMPLETE" (:status collection-status)))
+      (is (< 255 (count (:status-message collection-status)))))))
+
