@@ -101,7 +101,7 @@
              :update-field "SCIENCE_KEYWORDS"
              :update-type "REPLACE"}
             400
-            ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\",\"FIND_AND_UPDATE\"])"]
+            ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\",\"FIND_AND_UPDATE\",\"FIND_AND_UPDATE_HOME_PAGE_URL\"])"]
 
             "Missing update value"
             {:concept-ids ["C1", "C2", "C3"]
@@ -135,6 +135,19 @@
                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
             ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING update type."]
+
+            "FIND_AND_UPDATE_HOME_PAGE_URL can not be used for update-field not being DATA_CENTERS"
+            {:concept-ids ["C1", "C2", "C3"]
+             :name "TEST NAME"
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
+             :find-value {:Category "EARTH SCIENCE"}
+             :update-value [{:Category "EARTH SCIENCE"
+                            :Topic "HUMAN DIMENSIONS"
+                            :Term "ENVIRONMENTAL IMPACTS"
+                            :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
+            400
+            ["FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [SCIENCE_KEYWORDS] update field. It can only be used for the DATA_CENTERS update field."]
 
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]

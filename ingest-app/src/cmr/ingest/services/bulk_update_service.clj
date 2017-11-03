@@ -33,21 +33,29 @@
   "Indicates bulk update operation completed with errors"
   "FAILED")
 
-(def ADD_TO_EXISTING 
+(def add-to-existing 
   "Represents ADD_TO_EXISTING update type"
   "ADD_TO_EXISTING")
 
-(def FIND_AND_REPLACE
+(def find-and-replace
   "Represents FIND_AND_REPLACE update type"
   "FIND_AND_REPLACE")
 
-(def FIND_AND_REMOVE
+(def find-and-remove
   "Represents FIND_AND_REMOVE update type"
   "FIND_AND_REMOVE")
 
-(def FIND_AND_UPDATE
+(def find-and-update
   "Represents FIND_AND_UPDATE update type"
   "FIND_AND_UPDATE")
+
+(def find-and-update-home-page-url
+  "Represents FIND_AND_UPDATE_HOME_PAGE_URL update type"
+  "FIND_AND_UPDATE_HOME_PAGE_URL")
+
+(def data-centers
+  "Represents DATA_CENTERS update field"
+  "DATA_CENTERS")
 
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
@@ -55,21 +63,28 @@
   [json]
   (js/validate-json! bulk-update-schema json)
   (let [body (json/parse-string json true)
-        {:keys [update-type update-value find-value]} body]
-    (when (and (not= FIND_AND_REMOVE update-type)
+        {:keys [update-type update-value find-value update-field]} body]
+    (when (and (not= find-and-remove update-type)
                (nil? update-value))
       (errors/throw-service-errors :bad-request
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
-    (when (and (not= ADD_TO_EXISTING update-type)
+    (when (and (= find-and-update-home-page-url update-type)
+               (not= data-centers update-field))
+      (errors/throw-service-errors 
+       :bad-request
+      [(str find-and-update-home-page-url " update type can not be used for the [" update-field 
+            "] update field. "
+            "It can only be used for the " data-centers " update field.")]))
+    (when (and (not= add-to-existing update-type)
                (sequential? update-value))
       (errors/throw-service-errors 
         :bad-request
-        [(str (format "An update value must be a single object for the [%s] update type. " update-type)
-              "Arrays are only supported for the ADD_TO_EXISTING update type.")]))
-    (when (and (or (= FIND_AND_REPLACE update-type)
-                   (= FIND_AND_REMOVE update-type)
-                   (= FIND_AND_UPDATE update-type))
+        [(str "An update value must be a single object for the [" update-type "] update type. " 
+              "Arrays are only supported for the " add-to-existing " update type.")]))
+    (when (and (or (= find-and-replace update-type)
+                   (= find-and-remove update-type)
+                   (= find-and-update update-type))
                (nil? find-value))
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
