@@ -345,6 +345,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
 | echo:hasVariables (collections only)       | true if there are variables associated with the collection                                                           |
 | echo:hasFormats (collections only)         | true if there are multiple supported formats for any services associated with the collection                         |
+| echo:hasTransforms (collections only)      | true if there are transformations (subset, interpolation or projection) in any of its associated services            |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -379,6 +380,9 @@ __Example__
       <echo:orbitParameters/>
       <echo:onlineAccessFlag>false</echo:onlineAccessFlag>
       <echo:browseFlag>false</echo:browseFlag>
+      <echo:hasVariables>true</echo:hasVariables>
+      <echo:hasFormats>false</echo:hasFormats>
+      <echo:hasTransforms>false</echo:hasTransforms>
       <echo:tag>
         <echo:tagKey>tag1</echo:tagKey>
         <echo:data>{"status":"Reviewed","score":85}</echo:data>
@@ -780,8 +784,9 @@ __Example__
       "id" : "C1200000000-PROV1",
       "original_format" : "ECHO10",
       "browse_flag" : false,
-      "has_variables" : false,
+      "has_variables" : true,
       "has_formats" : false,
+      "has_transforms" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}},
