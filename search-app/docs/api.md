@@ -573,7 +573,7 @@ __Example__
 
 #### <a name="iso-mends"></a> ISO-MENDS (ISO-19115)
 
-See the [specification](https://www.iso.org/obp/ui/#iso:std:iso:19115:-2:ed-1:v1:en)
+See the [specification](https://cdn.earthdata.nasa.gov/iso/schema/1.0/ISO19115-2_EOS.xsd)
 
 __Example__
 
