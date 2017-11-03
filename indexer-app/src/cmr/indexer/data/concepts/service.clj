@@ -23,10 +23,24 @@
         supported-formats (get-in service [:ServiceOptions :SupportedFormats])]
     (> (count supported-formats) 1)))
 
+(defn- has-transforms?
+  "Returns true if the given service has a defined SubsetType or InterpolationType,
+  or multiple SupportedProjections values."
+  [context service-concept]
+  (let [service (concept-parser/parse-concept context service-concept)
+        {service-options :ServiceOptions} service
+        {subset-type :SubsetType
+         interpolation-type :InterpolationType
+         supported-projections :SupportedProjections} service-options]
+    (or (seq subset-type)
+        (seq interpolation-type)
+        (> (count supported-projections) 1))))
+
 (defn service-associations->elastic-doc
   "Converts the service association into the portion going in the collection elastic document."
   [context service-associations]
   (let [service-concepts (remove nil?
                                  (map #(service-association->service-concept context %)
                                       service-associations))]
-    {:has-formats (boolean (some #(has-formats? context %) service-concepts))}))
+    {:has-formats (boolean (some #(has-formats? context %) service-concepts))
+     :has-transforms (boolean (some #(has-transforms? context %) service-concepts))}))

@@ -101,8 +101,8 @@
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
                 shapes points boxes polygons lines granule-count has-granules has-variables
-                has-formats orbit-parameters highlighted-summary-snippets organizations
-                associations]} json-entry]
+                has-formats has-transforms orbit-parameters highlighted-summary-snippets
+                organizations associations]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -129,6 +129,7 @@
        :has-granules has-granules
        :has-variables has-variables
        :has-formats has-formats
+       :has-transforms has-transforms
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets

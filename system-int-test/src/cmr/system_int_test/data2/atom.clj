@@ -168,6 +168,7 @@
      :has-granules (cx/bool-at-path entry-elem [:hasGranules])
      :has-variables (cx/bool-at-path entry-elem [:hasVariables])
      :has-formats (cx/bool-at-path entry-elem [:hasFormats])
+     :has-transforms (cx/bool-at-path entry-elem [:hasTransforms])
      :tags (when-let [tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))]
              (into {} tags))}))
 
@@ -269,7 +270,8 @@
   that will do a conversion to echo10"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id format-key has-variables has-formats services variables]} collection
+         :keys [concept-id format-key has-variables has-formats has-transforms
+                services variables]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -326,6 +328,7 @@
       :browse-flag (not (empty? (ru/browse-urls related-urls)))
       :has-variables (boolean has-variables)
       :has-formats (boolean has-formats)
+      :has-transforms (boolean has-transforms)
       :associations associations})))
 
 (defn collections->expected-atom
