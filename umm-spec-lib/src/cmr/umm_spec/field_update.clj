@@ -6,11 +6,11 @@
   [cmr.umm-spec.date-util :as date-util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
-(def DataCenterURL
+(def data-center-url
   "Data center URL's content type."
   "DataCenterURL")
 
-(def HomePage
+(def home-page
   "Data center URL's type."
   "HOME PAGE")
 
@@ -24,17 +24,17 @@
    If there are more than one returned, arbitrarily choose the first one."
   [related-urls]
   (first (for [{:keys [URLContentType Type URL]} related-urls
-               :when (and (= DataCenterURL URLContentType)
-                          (= HomePage Type))]
-           {:URLContentType DataCenterURL
-            :Type HomePage
+               :when (and (= data-center-url URLContentType)
+                          (= home-page Type))]
+           {:URLContentType data-center-url
+            :Type home-page
             :URL URL}))) 
 
 (defn- home-page-url?
   "Check if a related url is a data center home page url."
   [related-url]
   (let [{:keys [URLContentType Type]} related-url]
-    (and (= DataCenterURL URLContentType) (= HomePage Type))))
+    (and (= data-center-url URLContentType) (= home-page Type))))
 
 (defn- home-page-url-update
   "Apply special home-page-url update to data-center using the update-value.

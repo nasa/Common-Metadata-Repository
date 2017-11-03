@@ -40,7 +40,8 @@
                   :ContactPersons [{:Roles ["Data Center Contact"]
                                     :LastName "Smith"}]}]})
 
-(def data-centers-url
+(def data-centers-umm-with-home-page-url
+  "Defines data center with home page url."
   {:DataCenters [{:ShortName "ShortName"
                   :LongName "Hydrogeophysics Group, Aarhus University "
                   :Roles ["ARCHIVER", "DISTRIBUTOR"]
@@ -276,7 +277,7 @@
                        (:DataCenters (:umm concept))))))))))
 
 (deftest data-center-url-bulk-update
-    (let [concept-ids (ingest-collection-in-umm-json-format data-centers-url)
+    (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
           _ (index/wait-until-indexed)]
       (testing "Data center find and update home page url"
         (let [bulk-update-body {:concept-ids concept-ids
