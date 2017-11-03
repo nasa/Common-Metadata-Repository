@@ -11,7 +11,8 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
+                                           "provguid2" "PROV2"}))
 
 (deftest service-ingest-test
   (testing "ingest of a new service concept"
@@ -127,14 +128,13 @@
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
     (testing "ingest of same native id and different providers is allowed"
-      (let [concept2 (service-util/make-service-concept
-                      (assoc metadata :provider-id "PROV2"))
-            {:keys [concept1-id revision1-id]} (ingest/ingest-concept concept)
-            {:keys [concept2-id revision2-id]} (ingest/ingest-concept concept2)]
-        (is (mdb/concept-exists-in-mdb? concept1-id revision1-id))
-        (is (= [supplied-concept-id 1] [concept1-id revision1-id]))
-        (is (mdb/concept-exists-in-mdb? concept2-id revision2-id))
-        (is (= [supplied-concept-id 1] [concept2-id revision2-id]))))
+      (let [concept2-id "S1000-PROV2"
+            concept2 (service-util/make-service-concept
+                      (assoc metadata :provider-id "PROV2"
+                                      :concept-id concept2-id))
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept2)]
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= [concept-id 1] [concept-id revision-id]))))
 
     (testing "update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
