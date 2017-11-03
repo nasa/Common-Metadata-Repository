@@ -78,6 +78,10 @@ If this header is set to true then ingest will validate that collection keywords
 * Instruments - short name and long name
 * Projects - short name and long name
 * Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
+* Location Keywords - category, type, subregion 1, subregion 2, subregion 3. 
+* Data Centers - short name
+* Directory Names - short name
+* ISO Topic Categories - iso topic category
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
