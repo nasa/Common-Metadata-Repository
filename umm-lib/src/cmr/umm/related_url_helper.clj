@@ -23,7 +23,7 @@
   "Returns true if the related-url is browse url"
   [related-url]
   (= "GET RELATED VISUALIZATION" (:type related-url)))
- 
+
 (defn browse-urls
   "Returns the related-urls that are browse urls"
   [related-urls]
