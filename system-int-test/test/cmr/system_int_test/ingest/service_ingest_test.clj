@@ -134,7 +134,7 @@
                                       :concept-id concept2-id))
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept2)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= [concept-id 1] [concept-id revision-id]))))
+        (is (= [concept2-id 1] [concept-id revision-id]))))
 
     (testing "update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
