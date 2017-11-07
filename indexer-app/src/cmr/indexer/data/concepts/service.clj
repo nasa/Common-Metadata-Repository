@@ -23,6 +23,15 @@
         supported-formats (get-in service [:ServiceOptions :SupportedFormats])]
     (> (count supported-formats) 1)))
 
+(defn- has-spatial-subsetting?
+  "Returns true if the given service has a defined SubsetType with one of its
+  values being 'spatial'."
+  [context service-concept]
+  (let [service (concept-parser/parse-concept context service-concept)
+        {{subset-type :SubsetType} :ServiceOptions} service]
+    (and (seq subset-type)
+         (contains? (set subset-type) "Spatial"))))
+
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetType or InterpolationType,
   or multiple SupportedProjections values."
@@ -43,4 +52,5 @@
                                  (map #(service-association->service-concept context %)
                                       service-associations))]
     {:has-formats (boolean (some #(has-formats? context %) service-concepts))
+     :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))
      :has-transforms (boolean (some #(has-transforms? context %) service-concepts))}))
