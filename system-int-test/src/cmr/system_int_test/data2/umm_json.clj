@@ -20,8 +20,8 @@
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."
   [collection]
-  (let [{:keys [user-id format-key
-                revision-id concept-id provider-id deleted]} collection]
+  (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
+                has-variables has-formats has-transforms variables services]} collection]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -30,7 +30,13 @@
       :user-id user-id
       :provider-id provider-id
       :format (mt/format->mime-type format-key)
-      :deleted (boolean deleted)})))
+      :deleted (boolean deleted)
+      :has-variables has-variables
+      :has-formats has-formats
+      :has-transforms has-transforms
+      :associations (when (or (seq services) (seq variables))
+                      (util/remove-map-keys empty? {:variables (set variables)
+                                                    :services (set services)}))})))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
@@ -67,6 +73,16 @@
       {:meta (collection->umm-json-meta collection)
        :umm (json/decode umm-json true)})))
 
+(defn- meta-for-comparison
+  "Returns the meta part of UMM JSON for comparision for the given meta"
+  [meta]
+  (util/remove-nil-keys
+   (-> meta
+       (dissoc :revision-date)
+       (update :associations (fn [assocs]
+                               (when (seq assocs)
+                                 (util/map-values set assocs)))))))
+
 (defn assert-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
   [version collections search-result]
@@ -79,7 +95,7 @@
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
-             (set (map #(util/dissoc-in % [:meta :revision-date])
+             (set (map #(update % :meta meta-for-comparison)
                        (get-in search-result [:results :items]))))))))
 
 (defn- variable->umm-json-meta

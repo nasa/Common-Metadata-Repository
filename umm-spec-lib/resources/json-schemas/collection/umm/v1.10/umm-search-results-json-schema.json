@@ -38,9 +38,7 @@
         },
         "concept-id": {
           "description": "The concept id of the item found.",
-          "type": "string",
-          "minLength": 4,
-          "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+          "$ref": "#/definitions/ConceptIdType"
         },
         "revision-id": {
           "description": "A number >= 1 that indicates which revision of the item.",
@@ -64,9 +62,54 @@
           "description": "The mime type of the original metadata",
           "type": "string",
           "minLength": 1
+        },
+        "has-variables": {
+          "description": "Indicates if there are variables associated with the collection",
+          "type": "boolean"
+        },
+        "has-formats": {
+          "description": "Indicates if there are multiple supported formats for any services associated with the collection",
+          "type": "boolean"
+        },
+        "has-transforms": {
+          "description": "Indicates if there are transformations (subset, interpolation or projection) in any services associated with the collection",
+          "type": "boolean"
+        },
+        "associations": {
+          "description": "Contains variables and services associated with the collection",
+          "$ref": "#/definitions/AssociationsType"
         }
       },
-      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date", "has-variables", "has-formats", "has-transforms"]
+    },
+    "AssociationsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Variables and Services associated with the collection.",
+      "properties": {
+        "variables": {
+          "description": "The concept ids of variables assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 0
+        },
+        "services": {
+          "description": "The concept ids of services assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "ConceptIdType": {
+      "description": "The concept id of a concept.",
+      "type": "string",
+      "minLength": 4,
+      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
     }
   },
   "title": "UMM Search Results",
