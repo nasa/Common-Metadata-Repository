@@ -1,6 +1,7 @@
 (ns cmr.search.results-handlers.umm-json-results-helper
   "Helper functions and definitions for handling common umm-json results format."
   (:require
+   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.results-model :as results]
@@ -17,7 +18,11 @@
    "provider-id"
    "metadata-format"
    "revision-date"
-   "deleted"])
+   "deleted"
+   "has-variables"
+   "has-formats"
+   "has-transforms"
+   "associations-gzip-b64"])
 
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
@@ -29,7 +34,11 @@
          [provider-id] :provider-id
          [metadata-format] :metadata-format
          [revision-date] :revision-date
-         [deleted] :deleted} (:fields elastic-result)
+         [deleted] :deleted
+         [has-variables] :has-variables
+         [has-formats] :has-formats
+         [has-transforms] :has-transforms
+         [associations-gzip-b64] :associations-gzip-b64} (:fields elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type concept-type
@@ -40,7 +49,13 @@
       :provider-id provider-id
       :format (mt/format->mime-type (keyword metadata-format))
       :revision-date revision-date
-      :deleted deleted})))
+      :deleted deleted
+      :has-variables has-variables
+      :has-formats has-formats
+      :has-transforms has-transforms
+      :associations (some-> associations-gzip-b64
+                            util/gzip-base64->string
+                            edn/read-string)})))
 
 (defn elastic-result->tuple
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."
