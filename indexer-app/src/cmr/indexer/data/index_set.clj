@@ -313,6 +313,7 @@
           :has-variables (m/stored m/bool-field-mapping)
           :has-formats (m/stored m/bool-field-mapping)
           :has-transforms (m/stored m/bool-field-mapping)
+          :has-spatial-subsetting (m/stored m/bool-field-mapping)
 
           :platform-sn                    m/string-field-mapping
           :platform-sn.lowercase          m/string-field-mapping
