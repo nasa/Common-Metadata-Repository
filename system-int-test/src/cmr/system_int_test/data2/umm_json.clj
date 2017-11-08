@@ -31,9 +31,9 @@
       :provider-id provider-id
       :format (mt/format->mime-type format-key)
       :deleted (boolean deleted)
-      :has-variables has-variables
-      :has-formats has-formats
-      :has-transforms has-transforms
+      :has-variables (when-not deleted (boolean has-variables))
+      :has-formats (when-not deleted (boolean has-formats))
+      :has-transforms (when-not deleted (boolean has-transforms))
       :associations (when (or (seq services) (seq variables))
                       (util/remove-map-keys empty? {:variables (set variables)
                                                     :services (set services)}))})))
