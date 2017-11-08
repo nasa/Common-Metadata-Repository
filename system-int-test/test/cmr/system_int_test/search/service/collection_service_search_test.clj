@@ -279,7 +279,13 @@
         (service-util/ingest-service-with-attrs
          {:native-id "serv9"
           :Name "service9"
-          :ServiceOptions {:InterpolationType ["Bilinear Interpolation"]}})]
+          :ServiceOptions {:InterpolationType ["Bilinear Interpolation"]}})
+
+        {serv10-concept-id :concept-id}
+        (service-util/ingest-service-with-attrs
+         {:native-id "serv10"
+          :Name "service10"
+          :ServiceOptions {:SubsetType ["Variable"]}})]
     (index/wait-until-indexed)
 
     (testing "SubsetType affects has-transforms"
@@ -298,4 +304,13 @@
       (au/associate-by-concept-ids token serv9-concept-id [{:concept-id (:concept-id coll4)}])
       (index/wait-until-indexed)
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))))
+      (assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))
+
+    (testing "Non-spatial SubsetType does not affect has-spatial-subsetting"
+      ;; sanity check before the association is made
+      (assert-collection-search-result coll3 {:has-spatial-subsetting false} [])
+      ;; associate coll3 with a service that has SubsetType
+      (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll3)}])
+      (index/wait-until-indexed)
+      ;; after service association is made, has-transforms is true
+      (assert-collection-search-result coll3 {:has-spatial-subsetting false} [serv10-concept-id]))))
