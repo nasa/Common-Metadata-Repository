@@ -78,7 +78,7 @@
                        :has_variables has-variables
                        :has_formats has-formats
                        :has_transforms has-transforms
-                       :has-spatial-subsetting has-spatial-subsetting
+                       :has_spatial_subsetting has-spatial-subsetting
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters

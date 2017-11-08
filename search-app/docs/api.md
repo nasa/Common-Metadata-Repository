@@ -346,7 +346,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:hasVariables (collections only)       | true if there are variables associated with the collection                                                           |
 | echo:hasFormats (collections only)         | true if there are multiple supported formats for any services associated with the collection                         |
 | echo:hasTransforms (collections only)      | true if there are transformations (subset, interpolation or projection) in any of its associated services            |
-| echo:hasSpatialSubsetting (collections only)| true if the setset contains "Spatial" in any of its associated services            |
+| echo:hasSpatialSubsetting (collections only)| true if any of its associated services support spatial subsetting            |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -788,7 +788,7 @@ __Example__
       "has_variables" : true,
       "has_formats" : false,
       "has_transforms" : false,
-      "has_spatial_subsetting": false
+      "has_spatial_subsetting" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}},
