@@ -75,6 +75,10 @@
           "description": "Indicates if there are transformations (subset, interpolation or projection) in any services associated with the collection",
           "type": "boolean"
         },
+        "has-spatial-subsetting": {
+          "description": "Indicates if any associated services support spatial subsetting",
+          "type": "boolean"
+        },
         "associations": {
           "description": "Contains variables and services associated with the collection",
           "$ref": "#/definitions/AssociationsType"
