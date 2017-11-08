@@ -825,7 +825,14 @@ __Example__
       "native-id" : "et1",
       "concept-id" : "C1200000000-PROV1",
       "revision-date" : "2016-07-27T12:00:17Z",
-      "concept-type" : "collection"
+      "concept-type" : "collection",
+      "has-variables" : true,
+      "has-formats" : false,
+      "has-transforms" : false,
+      "associations" : {
+        "variables" : [ "V1200000007-PROV1" ],
+        "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
+      }
     },
     "umm" : {
       "SpatialExtent" : {
@@ -890,7 +897,10 @@ __Example__
       "user-id" : "user3",
       "deleted" : false,
       "revision-id" : 1,
-      "format" : "application/echo10+xml"
+      "format" : "application/echo10+xml",
+      "has-variables" : false,
+      "has-formats" : false,
+      "has-transforms" : false
     },
     "umm" : {
       "..."

@@ -80,7 +80,7 @@
           "$ref": "#/definitions/AssociationsType"
         }
       },
-      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date", "has-variables", "has-formats", "has-transforms"]
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]
     },
     "AssociationsType": {
       "type": "object",
