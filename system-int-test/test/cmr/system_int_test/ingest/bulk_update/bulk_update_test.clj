@@ -51,13 +51,13 @@
                                                       :URL "http://nsidc.org/daac/index.html"}
                                                      {:URLContentType "DataCenterURL"
                                                       :Type "PROJECT HOME PAGE"
-                                                      :URL "http://nsidc.org/daac/index.html"} ]
+                                                      :URL "http://nsidc.org/daac/index.html"}]
                                        :ContactMechanisms  [{:Type "Telephone"
-                                                             :Value "1 303 492 6199 x" }
+                                                             :Value "1 303 492 6199 x"}
                                                             {:Type  "Fax"
-                                                             :Value "1 303 492 2468 x" }
+                                                             :Value "1 303 492 2468 x"}
                                                             {:Type  "Email"
-                                                             :Value "nsidc@nsidc.org" }]}}
+                                                             :Value "nsidc@nsidc.org"}]}}
                  {:ShortName "ShortName"
                   :LongName "Hydrogeophysics Group, Aarhus University "
                   :Roles ["ARCHIVER"]}
@@ -181,50 +181,60 @@
                           :update-value {:Category "EARTH SCIENCE"
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
-                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
-       (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
-       ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-         (is (= 400 (:status response)))
-         (is (= ["Bulk update is disabled."] (:errors response))))
-       ;; Wait for queueing/indexing to catch up
-       (index/wait-until-indexed)
-       (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-         (is (= 404 (:status collection-response)))
-         (is (= ["Bulk update task with task id [1] could not be found."]
-                (:errors collection-response))))
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
+        ;; CMR-4570 tests that no duplicate science keywords are created.
+        duplicate-body {:concept-ids concept-ids
+                        :name "TEST NAME"
+                        :update-type "ADD_TO_EXISTING"
+                        :update-field "SCIENCE_KEYWORDS"
+                        :update-value {:Category "EARTH SCIENCE"
+                                       :Term "MARINE SEDIMENTS"
+                                       :Topic "OCEANS"}}]
+    (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
+    ;; Kick off bulk update
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+      (is (= 400 (:status response)))
+      (is (= ["Bulk update is disabled."] (:errors response))))
+    ;; Wait for queueing/indexing to catch up
+    (index/wait-until-indexed)
+    (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+      (is (= 404 (:status collection-response)))
+      (is (= ["Bulk update task with task id [1] could not be found."]
+             (:errors collection-response))))
 
-       (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
-       ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-         (is (= 200 (:status response)))
-         ;; Wait for queueing/indexing to catch up
-         (index/wait-until-indexed)
-         (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
-           (is (= "COMPLETE" (:task-status collection-response))))
+    (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+    ;; Kick off bulk update
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+          ;; Initiate bulk update that shouldn't add anything, including duplicates.
+          _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+        (is (= "COMPLETE" (:task-status collection-response))))
 
-         ;; Check that each concept was updated
-         (doseq [concept-id concept-ids
-                 :let [concept (-> (search/find-concepts-umm-json :collection
-                                                                  {:concept-id concept-id})
-                                   :results
-                                   :items
-                                   first)]]
-          (is (= 2
-                 (:revision-id (:meta concept))))
-          (is (= "2017-01-01T00:00:00Z"
-                 (:revision-date (:meta concept))))
-          (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
-          (is (= "application/vnd.nasa.cmr.umm+json"
-                 (:format (:meta concept))))
-          (is (= (:ScienceKeywords (:umm concept))
-                 [{:Category "EARTH SCIENCE"
-                   :Term "MARINE SEDIMENTS"
-                   :Topic "OCEANS"}
-                  {:VariableLevel1 "HEAVY METALS CONCENTRATION"
-                   :Category "EARTH SCIENCE"
-                   :Term "ENVIRONMENTAL IMPACTS"
-                   :Topic "HUMAN DIMENSIONS"}]))))))
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+        (is (= 2
+               (:revision-id (:meta concept))))
+        (is (= "2017-01-01T00:00:00Z"
+               (:revision-date (:meta concept))))
+        (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
+        (is (= "application/vnd.nasa.cmr.umm+json"
+               (:format (:meta concept))))
+        (is (= (:ScienceKeywords (:umm concept))
+               [{:Category "EARTH SCIENCE"
+                 :Term "MARINE SEDIMENTS"
+                 :Topic "OCEANS"}
+                {:VariableLevel1 "HEAVY METALS CONCENTRATION"
+                 :Category "EARTH SCIENCE"
+                 :Term "ENVIRONMENTAL IMPACTS"
+                 :Topic "HUMAN DIMENSIONS"}]))))))
 
 (deftest bulk-update-add-to-existing-multiple-science-keywords 
   ;; This test is the same as the previous bulk-update-science-keywords test except
@@ -341,11 +351,11 @@
                                                         :Type "PROJECT HOME PAGE"
                                                         :URL "http://nsidc.org/daac/index.html"}]
                                          :ContactMechanisms  [{:Type "Telephone"
-                                                               :Value "1 303 492 6199 x" }
+                                                               :Value "1 303 492 6199 x"}
                                                               {:Type  "Fax"
-                                                               :Value "1 303 492 2468 x" }
+                                                               :Value "1 303 492 2468 x"}
                                                               {:Type  "Email"
-                                                               :Value "nsidc@nsidc.org" }]}}
+                                                               :Value "nsidc@nsidc.org"}]}}
                    {:ShortName "New ShortName"
                     :LongName "New LongName"
                     :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
@@ -526,4 +536,3 @@
       (is (= "COMPLETE" (:task-status collection-response)))
       (is (= "COMPLETE" (:status collection-status)))
       (is (< 255 (count (:status-message collection-status)))))))
-
