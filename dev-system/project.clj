@@ -58,7 +58,7 @@
             [test2junit "1.2.1"]]
   :repl-options {
     :init-ns user
-    :timeout 180000
+    :timeout 300000
     :welcome ~(do
                (println (slurp "resources/text/banner.txt"))
                (println (slurp "resources/text/loading.txt")))}
