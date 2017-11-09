@@ -3,6 +3,8 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [clj-time.core :as clj-time]
+   [cmr.common.date-time-parser :as parser]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
@@ -90,10 +92,24 @@
 (defn build-group-and-filter-node
   "Builds a group node with a filter node as a child."
   [context concept-id title parent-value children link-level]
-  (let [group-node (build-group-node title children)
+  (let [group-node [(build-group-node title children)]
         parent-value-node (build-title-type-links-to-remove context concept-id parent-value
                                                             group-node link-level)]
     parent-value-node))
+
+(defn time-ranges->clj-time-interval
+  "Returns the next interval based on the values in the map."
+  [time-ranges]
+  (let [all-keys (set (keys time-ranges))]
+    (if-not (contains? all-keys :year)
+      nil
+      (if-not (contains? all-keys :month)
+        (clj-time/years 1)
+        (if-not (contains? all-keys :day)
+          (clj-time/months 1)
+          (if-not (contains? all-keys :hour)
+            (clj-time/days 1)
+            (clj-time/hours 1)))))))
 
 (defn time-ranges->next-interval
   "Returns the next interval based on the values in the map."
@@ -117,28 +133,28 @@
                                                  (select-keys time-ranges [:year :month]))
                     (if (nil? interval-granularity)
                       (build-group-and-filter-node context concept-id "Hour" day
-                                                   (util/remove-nil-keys
-                                                    (build-title-type-links-to-remove
-                                                     context concept-id hour nil
-                                                     (select-keys time-ranges [:year :month :day])))
+                                                   [(util/remove-nil-keys
+                                                     (build-title-type-links-to-remove
+                                                      context concept-id hour nil
+                                                      (select-keys time-ranges [:year :month :day])))]
                                                    (select-keys time-ranges [:year :month]))
                       (when hour (util/remove-nil-keys (build-group-node "Hour" children)))))
         day-node (if (= :day interval-granularity)
                    (build-group-and-filter-node context concept-id "Day" month children
                                                 (select-keys time-ranges [:year]))
-                   (when day (util/remove-nil-keys (build-group-and-filter-node context concept-id "Day" month hour-node
+                   (when day (util/remove-nil-keys (build-group-and-filter-node context concept-id "Day" month [hour-node]
                                                                                 (select-keys time-ranges [:year])))))
         month-node (if (= :month interval-granularity)
                      (build-group-and-filter-node context concept-id "Month" year children
                                                   {})
                      (when month (util/remove-nil-keys
-                                  (build-group-and-filter-node context concept-id "Month" year day-node
+                                  (build-group-and-filter-node context concept-id "Month" year [day-node]
                                                                {}))))
         year-node (if (= :year interval-granularity)
                     (build-group-node "Year" children)
                     (when year (util/remove-nil-keys
-                                (build-group-node "Year" month-node))))]
-    (util/remove-nil-keys (build-group-node "Temporal" year-node))))
+                                (build-group-node "Year" [month-node]))))]
+    (util/remove-nil-keys (build-group-node "Temporal" [year-node]))))
 
 (defn build-response
   "Parses the Elasticsearch aggregations response to return a map of the years for the given
@@ -154,6 +170,24 @@
                         buckets)]
     (build-top-level-response context concept-id current-level (sort-by :title value-maps))))
 
+(defn get-date-ranges
+  "Returns a tuple of start date and end date based on the passed in time range map."
+  [{:keys [year month day hour] :as time-ranges}]
+  (let [start-date-string (when year
+                            (format "%s-%s-%sT%s:00:00.000Z"
+                                    year (or month "01") (or day "01") (or hour "00")))
+        start-date (when start-date-string (parser/parse-datetime start-date-string))
+        interval (time-ranges->clj-time-interval time-ranges)
+        end-date (when start-date
+                   (clj-time/minus (clj-time/plus start-date interval) (clj-time/millis 1)))]
+    [start-date end-date]))
+
+; (cqm/map->DateRangeCondition
+;   {:field param
+;    :start-date (parser/parse-datetime
+;                  (if (sequential? value) (first value) value))
+;    :end-date nil})
+
 (defn get-directories-by-collection
   "Returns a map containing all of the years for the given collection as well as the number of
   granules for that year."
@@ -162,7 +196,12 @@
         collection-condition (common-params/parameter->condition
                               context :granule :collection-concept-id
                               [concept-id] nil)
-        temporal-condition nil
+        [start-date end-date] (get-date-ranges time-ranges)
+        _ (println "Start date:" start-date "End date: " end-date)
+        temporal-condition (when (and start-date end-date)
+                             (qm/map->DateRangeCondition {:field :start-date
+                                                          :start-date start-date
+                                                          :end-date end-date}))
         query-condition (if temporal-condition
                           (gc/and-conds [temporal-condition collection-condition])
                           collection-condition)
