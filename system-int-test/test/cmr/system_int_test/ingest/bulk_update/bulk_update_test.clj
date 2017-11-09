@@ -220,21 +220,21 @@
                                 :results
                                 :items
                                 first)]]
-        (is (= 2
+        (is (= 3 
                (:revision-id (:meta concept))))
         (is (= "2017-01-01T00:00:00Z"
                (:revision-date (:meta concept))))
         (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
         (is (= "application/vnd.nasa.cmr.umm+json"
                (:format (:meta concept))))
-        (is (= (:ScienceKeywords (:umm concept))
-               [{:Category "EARTH SCIENCE"
+        (is (= [{:Category "EARTH SCIENCE"
                  :Term "MARINE SEDIMENTS"
                  :Topic "OCEANS"}
                 {:VariableLevel1 "HEAVY METALS CONCENTRATION"
                  :Category "EARTH SCIENCE"
                  :Term "ENVIRONMENTAL IMPACTS"
-                 :Topic "HUMAN DIMENSIONS"}]))))))
+                 :Topic "HUMAN DIMENSIONS"}]
+               (:ScienceKeywords (:umm concept))))))))
 
 (deftest bulk-update-add-to-existing-multiple-science-keywords 
   ;; This test is the same as the previous bulk-update-science-keywords test except
@@ -253,10 +253,24 @@
                                          {:Category "EARTH SCIENCE2"
                                           :Topic "HUMAN DIMENSIONS2"
                                           :Term "ENVIRONMENTAL IMPACTS2"
-                                          :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}
+        ;; CMR-4570 tests that no duplicate science keywords are created.
+        duplicate-body {:concept-ids concept-ids
+                        :name "TEST NAME"
+                        :update-type "ADD_TO_EXISTING"
+                        :update-field "SCIENCE_KEYWORDS"
+                        :update-value [{:Category "EARTH SCIENCE"
+                                        :Term "MARINE SEDIMENTS"
+                                        :Topic "OCEANS"}
+                                       {:Category "EARTH SCIENCE2"
+                                        :Topic "HUMAN DIMENSIONS2"
+                                        :Term "ENVIRONMENTAL IMPACTS2"
+                                        :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
        ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-         (is (= 200 (:status response)))
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+             ;; Initiate bulk update that shouldn't add anything, including duplicates.
+             _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
+        (is (= 200 (:status response))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
@@ -280,7 +294,7 @@
                   {:VariableLevel1 "HEAVY METALS CONCENTRATION2"
                    :Category "EARTH SCIENCE2"
                    :Term "ENVIRONMENTAL IMPACTS2"
-                   :Topic "HUMAN DIMENSIONS2"}]))))))
+                   :Topic "HUMAN DIMENSIONS2"}])))))))
 
 (deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)

@@ -29,9 +29,10 @@
 
        "Add to existing"
        :add-to-existing
-       {:Category "EARTH SCIENCE SERVICES"
-        :Topic "DATA ANALYSIS AND VISUALIZATION"
-        :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+       [{:Category "EARTH SCIENCE SERVICES"
+         :Topic "DATA ANALYSIS AND VISUALIZATION"
+         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+        {:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}]
        nil
        {:EntryTitle "Test"
         :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}

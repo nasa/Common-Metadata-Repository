@@ -79,9 +79,8 @@
   [update-type umm update-field update-value find-value]
   (let [umm (if (sequential? update-value)
               (update-in umm update-field #(concat % update-value))
-              (update-in umm update-field #(conj % update-value)))
-        umm (update-in umm update-field distinct)]
-    umm))
+              (update-in umm update-field #(conj % update-value)))]
+    (update-in umm update-field distinct)))
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
