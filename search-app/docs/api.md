@@ -904,7 +904,7 @@ __Example__
       "has-variables" : false,
       "has-formats" : false,
       "has-transforms" : false,
-      "has-spatial-subsetting": false,
+      "has-spatial-subsetting": false
     },
     "umm" : {
       "..."
