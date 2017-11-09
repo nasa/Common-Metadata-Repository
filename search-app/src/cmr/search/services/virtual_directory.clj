@@ -1,17 +1,18 @@
 (ns cmr.search.services.virtual-directory
   "Service functions for performing virtual directory queries."
   (:require
+   [cheshire.core :as json]
+   [clj-time.core :as clj-time]
    [clojure.set :as set]
    [clojure.string :as string]
-   [clj-time.core :as clj-time]
-   [cmr.common.date-time-parser :as parser]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.transmit.connection :as conn]
-   [cmr.common.util :as util]))
+   [cmr.common.date-time-parser :as parser]
+   [cmr.common.util :as util]
+   [cmr.transmit.connection :as conn]))
 
 (defmulti parse-date
   "Returns the value from the date string that matches the provided interval.
@@ -124,9 +125,13 @@
           (when-not (contains? all-keys :hour)
             :hour))))))
 
+(def num-urls
+  "Number of download URLs to return"
+  100)
+
 (defn- build-top-level-response
   "Builds the final JSON response."
-  [context concept-id {:keys [year month day hour] :as time-ranges} children]
+  [context concept-id {:keys [year month day hour] :as time-ranges} children download-urls]
   (let [interval-granularity (time-ranges->next-interval time-ranges)
         hour-node (if (= :hour interval-granularity)
                     (build-group-and-filter-node context concept-id "Hour" day children
@@ -153,14 +158,18 @@
         year-node (if (= :year interval-granularity)
                     (build-group-node "Year" children)
                     (when year (util/remove-nil-keys
-                                (build-group-node "Year" [month-node]))))]
-    (util/remove-nil-keys (build-group-node "Temporal" [year-node]))))
+                                (build-group-node "Year" [month-node]))))
+        download-urls-map {:download_urls (seq download-urls)
+                           :has_more_urls (>= (count download-urls) num-urls)}]
+    (util/remove-nil-keys (merge (build-group-node "Temporal" [year-node]) download-urls-map))))
 
 (defn build-response
   "Parses the Elasticsearch aggregations response to return a map of the years for the given
   collection as well as the number of granules for that year."
   [context response concept-id interval current-level]
-  (let [buckets (get-in response [:aggregations :start-date-intervals :buckets])
+  (let [download-urls (keep #(:href (json/parse-string (:atom-links %) true))
+                            (:items response))
+        buckets (get-in response [:aggregations :start-date-intervals :buckets])
         value-maps (map (fn [bucket]
                           (let [value (parse-date (:key_as_string bucket) interval)]
                             {:title value
@@ -168,7 +177,7 @@
                              :count (:doc_count bucket)
                              :links {:apply (build-link context concept-id value current-level)}}))
                         buckets)]
-    (build-top-level-response context concept-id current-level (sort-by :title value-maps))))
+    (build-top-level-response context concept-id current-level (sort-by :title value-maps) download-urls)))
 
 (defn get-date-ranges
   "Returns a tuple of start date and end date based on the passed in time range map."
@@ -182,12 +191,6 @@
                    (clj-time/minus (clj-time/plus start-date interval) (clj-time/millis 1)))]
     [start-date end-date]))
 
-; (cqm/map->DateRangeCondition
-;   {:field param
-;    :start-date (parser/parse-datetime
-;                  (if (sequential? value) (first value) value))
-;    :end-date nil})
-
 (defn get-directories-by-collection
   "Returns a map containing all of the years for the given collection as well as the number of
   granules for that year."
@@ -197,7 +200,6 @@
                               context :granule :collection-concept-id
                               [concept-id] nil)
         [start-date end-date] (get-date-ranges time-ranges)
-        _ (println "Start date:" start-date "End date: " end-date)
         temporal-condition (when (and start-date end-date)
                              (qm/map->DateRangeCondition {:field :start-date
                                                           :start-date start-date
@@ -217,10 +219,10 @@
                           :interval interval-granularity}}})
         query (qm/query {:concept-type :granule
                          :condition query-condition
-                         :page-size 0
-                         :result-fields []
-                         :aggregations aggregations})
-                        ;  :result-format :query-specified
+                         :page-size num-urls
+                         :result-fields [:atom-links]
+                         :aggregations aggregations
+                         :result-format :query-specified})
                         ;  :skip-acls? skip-acls?
         results (qe/execute-query context query)]
     (build-response context results concept-id interval-granularity time-ranges)))

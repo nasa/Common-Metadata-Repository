@@ -18,7 +18,6 @@
     (context ["/:concept-id/:year/:month/:day/:hour"
               :concept-id #"[^\/]+" :year #"[^\/]+" :month #"[^\/]+" :day #"[^\/]+" :hour #".*$"]
       [concept-id year month day hour]
-      ; (println "Year " year "Month " month "Day " day "Hour " hour)
       (OPTIONS "/" req common-routes/options-response)
       (GET "/"
         {params :params headers :headers context :request-context}
@@ -30,7 +29,6 @@
           (common-routes/search-response {:results results :result-format :json}))))
     (context ["/:concept-id/:year/:month/:day" :concept-id #"[^\/]+" :year #"[^\/]+" :month #"[^\/]+"
                                                :day #".*$"] [concept-id year month day]
-      ; (println "Year " year "Month " month "Day " day)
       (OPTIONS "/" req common-routes/options-response)
       (GET "/"
         {params :params headers :headers context :request-context}
