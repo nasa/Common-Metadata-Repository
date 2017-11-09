@@ -251,7 +251,7 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  (alter-var-root #'system
+  (alter-var-root #'user/system
                   (fn [s]
                     (when s (system/stop s)))))
 
@@ -284,7 +284,7 @@
   ;; Stop the system integration test system
   (sit-sys/stop)
   ; Stops the running code
-  (stop)
+  (user/stop)
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
