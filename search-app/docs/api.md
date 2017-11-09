@@ -576,9 +576,9 @@ __Example__
 </results>
 ```
 
-#### <a name="iso-mends"></a> ISO-MENDS (ISO-19115)
+#### <a name="iso-mends"></a> ISO-MENDS (ISO-19115-2)
 
-See the [specification](https://www.iso.org/obp/ui/#iso:std:iso:19115:-2:ed-1:v1:en)
+See the [specification](https://cdn.earthdata.nasa.gov/iso/)
 
 __Example__
 
@@ -677,7 +677,7 @@ __Example__
 
 #### <a name="iso-smap"></a> ISO-SMAP
 
-See the [specification](https://cdn.earthdata.nasa.gov/iso/schema/1.0/)
+See the [specification](https://cdn.earthdata.nasa.gov/iso/)
 
 __Example__
 
