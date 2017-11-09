@@ -94,13 +94,6 @@
         parent-value-node (build-title-type-links-to-remove context concept-id parent-value
                                                             group-node link-level)]
     parent-value-node))
-    ; (build-filter-node parent-value group-node)))
-
-(defn build-group-and-filter-node-orig
-  "Builds a group node with a filter node as a child."
-  [title parent-value children]
-  (let [group-node (build-group-node title children)]
-    (build-filter-node parent-value group-node)))
 
 (defn time-ranges->next-interval
   "Returns the next interval based on the values in the map."
@@ -143,56 +136,9 @@
                                                                {}))))
         year-node (if (= :year interval-granularity)
                     (build-group-node "Year" children)
-                    ; (when year (util/remove-nil-keys
-                    ;             (build-group-and-filter-node context concept-id "Year" nil month-node
-                    ;                                          {}))))]
                     (when year (util/remove-nil-keys
                                 (build-group-node "Year" month-node))))]
     (util/remove-nil-keys (build-group-node "Temporal" year-node))))
-
-; (defn- build-top-level-response-in-work)
-
-
-
-(defn- build-top-level-response-second-one
-  "Builds the final JSON response."
-  [context concept-id {:keys [year month day hour] :as time-ranges} children]
-  (let [interval-granularity (time-ranges->next-interval time-ranges)
-        hour-node (if (= :hour interval-granularity)
-                    (build-group-and-filter-node context concept-id "Hour" day children
-                                                 (select-keys time-ranges [:year :month :day]))
-                    (when hour (util/remove-nil-keys (build-group-node "Hour" children))))
-        day-node (if (= :day interval-granularity)
-                   (build-group-and-filter-node context concept-id "Day" month children
-                                                (select-keys time-ranges [:year :month]))
-                   (when day (util/remove-nil-keys (build-group-node "Day" hour-node))))
-        month-node (if (= :month interval-granularity)
-                     (build-group-and-filter-node context concept-id "Month" year children
-                                                  (select-keys time-ranges [:year :month]))
-                     (when month (util/remove-nil-keys (build-group-node "Month" day-node))))
-        year-node (if (= :year interval-granularity)
-                    (build-group-node "Year" children)
-                    (when year (util/remove-nil-keys (build-group-node "Year" month-node))))]
-    (util/remove-nil-keys (build-group-node "Temporal" year-node))))
-    ; (build-group-node "Temporal")))
-
-
-(defn- build-top-level-response-works
-; (defn- build-top-level-response
-  "Builds the final JSON response."
-  [context concept-id {:keys [year month day hour] :as time-ranges} children]
-  (if year
-    {:title "Temporal"
-     :type "group"
-     :children [{:title "Year"
-                 :type "group"
-                 :children {:title year
-                            :type "filter"
-                            :links {:remove (build-remove-link context concept-id {})}
-                            :children children}}]}
-    {:title "Temporal"
-     :type "group"
-     :children children}))
 
 (defn build-response
   "Parses the Elasticsearch aggregations response to return a map of the years for the given
@@ -207,18 +153,6 @@
                              :links {:apply (build-link context concept-id value current-level)}}))
                         buckets)]
     (build-top-level-response context concept-id current-level (sort-by :title value-maps))))
-    ; (merge current-level {interval (sort-by :value value-maps)})))
-
-(defn build-response2
-  "Parses the Elasticsearch aggregations response to return a map of the years for the given
-  collection as well as the number of granules for that year."
-  [response interval]
-  (let [buckets (get-in response [:aggregations :start-date-intervals :buckets])]
-    (into {}
-          (map (fn [bucket] [(parse-date (:key_as_string bucket) interval)
-                             (:doc_count bucket)])
-               buckets))))
-
 
 (defn get-directories-by-collection
   "Returns a map containing all of the years for the given collection as well as the number of
