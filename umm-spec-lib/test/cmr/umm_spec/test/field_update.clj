@@ -177,8 +177,13 @@
 
        "Add to existing"
        :add-to-existing
-       {:Category "CONTINENT"
-        :Type "EUROPE"}
+       [{:Category "CONTINENT"
+         :Type "EUROPE"}
+        {:Category "CONTINENT"
+         :Type "ASIA"
+         :Subregion1 "WESTERN ASIA"
+         :Subregion2 "MIDDLE EAST"
+         :Subregion3 "GAZA STRIP"}]
        nil
        {:LocationKeywords [{:Category "CONTINENT"
                             :Type "ASIA"
