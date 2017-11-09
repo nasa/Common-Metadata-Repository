@@ -196,7 +196,7 @@
         (assert-collection-search-result
          coll2 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
-(deftest collection-service-search-has-transforms-test
+(deftest collection-service-search-has-transforms-and-service-deletion-test
   (testing "SupportedProjections affects has-transforms"
     (let [token (e/login (s/context) "user1")
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
@@ -286,20 +286,31 @@
           :Name "service9"
           :ServiceOptions {:InterpolationType ["Bilinear Interpolation"]}})
 
-        {serv10-concept-id :concept-id}
-        (service-util/ingest-service-with-attrs
-         {:native-id "serv10"
-          :Name "service10"
-          :ServiceOptions {:SubsetType ["Variable"]}})]
+        ;; service for testing non-spatial SubsetType and service deletion
+        serv10-concept (service-util/make-service-concept
+                        {:native-id "serv10"
+                         :Name "service10"
+                         :ServiceOptions {:SubsetType ["Variable"]}})
+        {serv10-concept-id :concept-id} (service-util/ingest-service serv10-concept)
+
+        ;; service for testing service deletion affects collection search result
+        serv11-concept (service-util/make-service-concept
+                        {:native-id "serv11"
+                         :Name "service11"
+                         :ServiceOptions {:SubsetType ["Spatial"]
+                                          :SupportedFormats ["image/tiff" "JPEG"]}})
+        {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
 
     (testing "SubsetType affects has-transforms"
       ;; sanity check before the association is made
       (assert-collection-search-result
        coll3 {:has-transforms false :has-spatial-subsetting false} [])
+
       ;; associate coll3 with a service that has SubsetType
       (au/associate-by-concept-ids token serv8-concept-id [{:concept-id (:concept-id coll3)}])
       (index/wait-until-indexed)
+
       ;; after service association is made, has-transforms is true
       (assert-collection-search-result
        coll3 {:has-transforms true :has-spatial-subsetting true} [serv8-concept-id]))
@@ -307,9 +318,11 @@
     (testing "InterpolationType affects has-transforms"
       ;; sanity check before the association is made
       (assert-collection-search-result coll4 {:has-transforms false} [])
+
       ;; associate coll4 with a service that has InterpolationType
       (au/associate-by-concept-ids token serv9-concept-id [{:concept-id (:concept-id coll4)}])
       (index/wait-until-indexed)
+
       ;; after service association is made, has-transforms is true
       (assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))
 
@@ -317,9 +330,42 @@
       ;; sanity check before the association is made
       (assert-collection-search-result
        coll5 {:has-spatial-subsetting false} [])
+
       ;; associate coll5 with a service that has SubsetType
       (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll5)}])
       (index/wait-until-indexed)
+
       ;; after service association is made, has-transforms is true
       (assert-collection-search-result
-       coll5 {:has-spatial-subsetting false :has-transforms true} [serv10-concept-id]))))
+       coll5 {:has-spatial-subsetting false :has-transforms true} [serv10-concept-id])
+
+      (testing "deletion of service affects collection search service association fields"
+        ;; associate coll5 also with service11 to make other service related fields true
+        (au/associate-by-concept-ids token serv11-concept-id [{:concept-id (:concept-id coll5)}])
+        (index/wait-until-indexed)
+
+        ;; sanity check that all service related fields are true and service associations are present
+        (assert-collection-search-result
+         coll5
+         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         [serv10-concept-id serv11-concept-id])
+
+        ;; Delete service11
+        (ingest/delete-concept serv11-concept {:token token})
+        (index/wait-until-indexed)
+
+        ;; verify the service related fields affected by service11 are set properly after deletion
+        (assert-collection-search-result
+         coll5
+         {:has-formats false :has-transforms true :has-spatial-subsetting false}
+         [serv10-concept-id])
+
+        ;; Delete service10
+        (ingest/delete-concept serv10-concept {:token token})
+        (index/wait-until-indexed)
+
+        ;; verify service related has_* fields are false and associations is empty now
+        (assert-collection-search-result
+         coll5
+         {:has-formats false :has-transforms false :has-spatial-subsetting false}
+         [])))))
