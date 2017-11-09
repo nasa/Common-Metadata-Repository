@@ -21,7 +21,8 @@
   "Returns the meta section of umm-json format."
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
-                has-variables has-formats has-transforms variables services]} collection]
+                has-variables has-formats has-transforms has-spatial-subsetting
+                variables services]} collection]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -34,6 +35,7 @@
       :has-variables (when-not deleted (boolean has-variables))
       :has-formats (when-not deleted (boolean has-formats))
       :has-transforms (when-not deleted (boolean has-transforms))
+      :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :associations (when (or (seq services) (seq variables))
                       (util/remove-map-keys empty? {:variables (set variables)
                                                     :services (set services)}))})))

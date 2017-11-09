@@ -22,6 +22,7 @@
    "has-variables"
    "has-formats"
    "has-transforms"
+   "has-spatial-subsetting"
    "associations-gzip-b64"])
 
 (defn elastic-result->meta
@@ -38,6 +39,7 @@
          [has-variables] :has-variables
          [has-formats] :has-formats
          [has-transforms] :has-transforms
+         [has-spatial-subsetting] :has-spatial-subsetting
          [associations-gzip-b64] :associations-gzip-b64} (:fields elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
@@ -53,6 +55,7 @@
       :has-variables has-variables
       :has-formats has-formats
       :has-transforms has-transforms
+      :has-spatial-subsetting has-spatial-subsetting
       :associations (some-> associations-gzip-b64
                             util/gzip-base64->string
                             edn/read-string)})))

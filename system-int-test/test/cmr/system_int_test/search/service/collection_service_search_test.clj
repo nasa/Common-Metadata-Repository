@@ -56,24 +56,26 @@
            [status results]))))
 
 (defn- assert-collection-atom-json-result
-  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms
-  and associations fields"
+  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
+  has-spatial-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [expected-fields (merge {:has-formats false
                                 :has-variables false
-                                :has-transforms false}
+                                :has-transforms false
+                                :has-spatial-subsetting false}
                                {:has-variables (some? (seq var-concept-ids))}
                                expected-fields)]
     (assert-collection-atom-result coll expected-fields)
     (assert-collection-json-result coll expected-fields serv-concept-ids var-concept-ids)))
 
 (defn- assert-collection-umm-json-result
-  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms
-  and associations fields"
+  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
+  has-spatial-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [expected-fields (merge {:has-formats false
                                 :has-variables false
-                                :has-transforms false}
+                                :has-transforms false
+                                :has-spatial-subsetting false}
                                {:has-variables (some? (seq var-concept-ids))}
                                expected-fields)
         coll-with-extra-fields (merge coll
@@ -87,8 +89,8 @@
      umm-version/current-collection-version [coll-with-extra-fields] response)))
 
 (defn- assert-collection-search-result
-  "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables, has-transforms
-  and associations fields"
+  "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
+  has-transforms, has-spatial-subsetting and associations fields"
   ([coll expected-fields serv-concept-ids]
    (assert-collection-search-result coll expected-fields serv-concept-ids nil))
   ([coll expected-fields serv-concept-ids var-concept-ids]
@@ -268,6 +270,9 @@
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "ET4"
                                                 :short-name "S4"
                                                 :version-id "V4"}))
+        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "ET5"
+                                                :short-name "S5"
+                                                :version-id "V5"}))
         ;; create services
         {serv8-concept-id :concept-id}
         (service-util/ingest-service-with-attrs
@@ -290,12 +295,14 @@
 
     (testing "SubsetType affects has-transforms"
       ;; sanity check before the association is made
-      (assert-collection-search-result coll3 {:has-transforms false} [])
+      (assert-collection-search-result
+       coll3 {:has-transforms false :has-spatial-subsetting false} [])
       ;; associate coll3 with a service that has SubsetType
       (au/associate-by-concept-ids token serv8-concept-id [{:concept-id (:concept-id coll3)}])
       (index/wait-until-indexed)
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result coll3 {:has-transforms true} [serv8-concept-id]))
+      (assert-collection-search-result
+       coll3 {:has-transforms true :has-spatial-subsetting true} [serv8-concept-id]))
 
     (testing "InterpolationType affects has-transforms"
       ;; sanity check before the association is made
@@ -308,9 +315,11 @@
 
     (testing "Non-spatial SubsetType does not affect has-spatial-subsetting"
       ;; sanity check before the association is made
-      (assert-collection-search-result coll3 {:has-spatial-subsetting false} [])
-      ;; associate coll3 with a service that has SubsetType
-      (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll3)}])
+      (assert-collection-search-result
+       coll5 {:has-spatial-subsetting false} [])
+      ;; associate coll5 with a service that has SubsetType
+      (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll5)}])
       (index/wait-until-indexed)
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result coll3 {:has-spatial-subsetting false} [serv10-concept-id]))))
+      (assert-collection-search-result
+       coll5 {:has-spatial-subsetting false :has-transforms true} [serv10-concept-id]))))
