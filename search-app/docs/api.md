@@ -831,6 +831,7 @@ __Example__
       "has-variables" : true,
       "has-formats" : false,
       "has-transforms" : false,
+      "has-spatial-subsetting": false,
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
@@ -902,7 +903,8 @@ __Example__
       "format" : "application/echo10+xml",
       "has-variables" : false,
       "has-formats" : false,
-      "has-transforms" : false
+      "has-transforms" : false,
+      "has-spatial-subsetting": false,
     },
     "umm" : {
       "..."
