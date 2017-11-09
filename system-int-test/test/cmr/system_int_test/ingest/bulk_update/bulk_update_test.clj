@@ -270,7 +270,7 @@
        (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
              ;; Initiate bulk update that shouldn't add anything, including duplicates.
              _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
-        (is (= 200 (:status response))
+         (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
@@ -294,7 +294,7 @@
                   {:VariableLevel1 "HEAVY METALS CONCENTRATION2"
                    :Category "EARTH SCIENCE2"
                    :Term "ENVIRONMENTAL IMPACTS2"
-                   :Topic "HUMAN DIMENSIONS2"}])))))))
+                   :Topic "HUMAN DIMENSIONS2"}]))))))
 
 (deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
