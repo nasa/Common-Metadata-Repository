@@ -80,7 +80,9 @@
   (let [umm (if (sequential? update-value)
               (update-in umm update-field #(concat % update-value))
               (update-in umm update-field #(conj % update-value)))]
-    (update-in umm update-field distinct)))
+    (-> umm
+        (util/update-in-each update-field util/remove-nil-keys)
+        (update-in update-field distinct))))
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]

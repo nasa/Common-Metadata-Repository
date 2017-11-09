@@ -206,6 +206,7 @@
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
           ;; Initiate bulk update that shouldn't add anything, including duplicates.
+          _ (index/wait-until-indexed)
           _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
