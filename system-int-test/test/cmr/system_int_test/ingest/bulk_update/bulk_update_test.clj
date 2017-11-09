@@ -68,7 +68,7 @@
                   :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                       :Type "HOME PAGE"
                                                       :URL "http://nsidc.org/daac/index.html"}]}}]})
- 
+
 (def find-update-keywords-umm
   {:ScienceKeywords [{:Category "EARTH SCIENCE"
                       :Topic "ATMOSPHERE"
@@ -160,20 +160,19 @@
 
 (defn- ingest-collection-in-umm-json-format
   "Ingest a collection in UMM Json format and return a list of one concept-id.
-   This is used to test the CMR-4517, on complete removal of platforms/instruments. 
-   Since it's only testing the bulk update part after the ingest, which format to use 
+   This is used to test the CMR-4517, on complete removal of platforms/instruments.
+   Since it's only testing the bulk update part after the ingest, which format to use
    for ingest is irrelevant. So it's easier to just test with one format of ingest."
   [attribs]
   (let [collection (data-umm-c/collection-concept
                      (data-umm-c/collection 1 attribs)
                      :umm-json)]
     [(:concept-id (ingest/ingest-concept
-                   (assoc collection :concept-id (generate-concept-id 1 "PROV1"))))])) 
+                   (assoc collection :concept-id (generate-concept-id 1 "PROV1"))))]))
 
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
-        _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
@@ -204,10 +203,9 @@
 
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
     ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
           ;; Initiate bulk update that shouldn't add anything, including duplicates.
-          _ (index/wait-until-indexed)
-          _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
+      (ingest/bulk-update-collections "PROV1" duplicate-body)
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -221,7 +219,7 @@
                                 :results
                                 :items
                                 first)]]
-        (is (= 3 
+        (is (= 3
                (:revision-id (:meta concept))))
         (is (= "2017-01-01T00:00:00Z"
                (:revision-date (:meta concept))))
@@ -237,9 +235,9 @@
                  :Topic "HUMAN DIMENSIONS"}]
                (:ScienceKeywords (:umm concept))))))))
 
-(deftest bulk-update-add-to-existing-multiple-science-keywords 
+(deftest bulk-update-add-to-existing-multiple-science-keywords
   ;; This test is the same as the previous bulk-update-science-keywords test except
-  ;; that it shows that update-value could be an array of objects. 
+  ;; that it shows that update-value could be an array of objects.
   ;; Ingest a collection in each format with science keywords to update
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
@@ -268,11 +266,11 @@
                                         :Term "ENVIRONMENTAL IMPACTS2"
                                         :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
        ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
              ;; Initiate bulk update that shouldn't add anything, including duplicates.
-             _ (ingest/bulk-update-collections "PROV1" duplicate-body)]
          (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
+         (ingest/bulk-update-collections "PROV1" duplicate-body)
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
            (is (= "COMPLETE" (:task-status collection-response))))
@@ -320,7 +318,7 @@
                                     :results
                                     :items
                                     first)]]
-           (is (= 2 
+           (is (= 2
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "NSIDC"
                     :Roles ["ORIGINATOR"]}
@@ -534,7 +532,7 @@
         (is (= "COMPLETE" (:task-status collection-response)))))))
 
 (deftest bulk-update-large-status-message-test
-  (let [concept-ids (ingest-collection-in-umm-json-format large-status-message-umm) 
+  (let [concept-ids (ingest-collection-in-umm-json-format large-status-message-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
