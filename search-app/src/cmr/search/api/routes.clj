@@ -14,6 +14,7 @@
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.variables :as variables-api]
+   [cmr.search.api.virtual-directory :as virtual-directory-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
    [compojure.core :refer :all])
@@ -78,6 +79,9 @@
 
         ;; Provider holdings
         providers-api/holdings-routes
+
+        ;; Prototype virtual directory routes
+        virtual-directory-api/virtual-directory-routes
 
         ;; Resets the application back to it's initial state.
         (POST "/reset"
