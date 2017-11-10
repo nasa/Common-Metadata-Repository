@@ -1,5 +1,8 @@
 (ns cmr.search.services.virtual-directory
-  "Service functions for performing virtual directory queries."
+  "Service functions for performing virtual directory queries.
+  Disclaimer: This namespace was added as a prototype and is not tested. If we want to expose this
+  capability operationally we need to add tests and documentation, handle edge cases, and clean up
+  and refactor this code into appropriate namespaces."
   (:require
    [cheshire.core :as json]
    [clj-time.core :as clj-time]
@@ -37,7 +40,8 @@
   (second (re-find #"^\d{4}-\d{2}-\d{2}T(\d{2}):\d{2}:\d{2}\+\d+$" datetime)))
 
 (defn- base-url
-  "The root URL for executing a collection search against the CMR."
+  "The root URL for executing a collection search against the CMR. Copy pasted from v2 facets
+  namespace."
   [context]
   (let [public-search-config (set/rename-keys (get-in context [:system :public-conf])
                                               {:relative-root-url :context})]
@@ -61,25 +65,20 @@
 (defn build-link
   "Builds a link to navigate to the next level in the virtual directory structure."
   [context concept-id value current-level]
-  (remove-trailing-slash (format "%s/%s/%s%s" (base-url context) concept-id (level->str current-level) value)))
+  (remove-trailing-slash (format "%s/%s/%s%s" (base-url context) concept-id
+                                 (level->str current-level) value)))
 
 (defn build-remove-link
   "Builds a remove link."
   [context concept-id current-level]
-  (remove-trailing-slash (format "%s/%s/%s" (base-url context) concept-id (level->str current-level))))
+  (remove-trailing-slash (format "%s/%s/%s" (base-url context) concept-id
+                                 (level->str current-level))))
 
 (defn build-group-node
   "Builds a group node."
   [title children]
   {:title title
    :type :group
-   :children children})
-
-(defn build-filter-node
-  "Builds a filter node."
-  [title children]
-  {:title title
-   :type :filter
    :children children})
 
 (defn build-title-type-links-to-remove
@@ -195,8 +194,7 @@
   "Returns a map containing all of the years for the given collection as well as the number of
   granules for that year."
   [context concept-id time-ranges]
-  (let [;query-condition (qm/string-condition :collection-concept-id concept-id)
-        collection-condition (common-params/parameter->condition
+  (let [collection-condition (common-params/parameter->condition
                               context :granule :collection-concept-id
                               [concept-id] nil)
         [start-date end-date] (get-date-ranges time-ranges)
@@ -223,6 +221,5 @@
                          :result-fields [:atom-links]
                          :aggregations aggregations
                          :result-format :query-specified})
-                        ;  :skip-acls? skip-acls?
         results (qe/execute-query context query)]
     (build-response context results concept-id interval-granularity time-ranges)))
