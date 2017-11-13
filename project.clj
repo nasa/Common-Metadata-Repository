@@ -18,7 +18,7 @@
   :exclusions [org.clojure/clojure]
   :dependencies [
     [com.stuartsierra/component "0.3.2"]
-    [leiningen-core "2.8.1"]
+    [leiningen-core "2.8.1" :exclusions [org.slf4j/slf4j-nop]]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/core.async "0.3.443"]]
   :dem {
@@ -33,7 +33,11 @@
         [clojusc/ltest "0.3.0-SNAPSHOT"]
         [clojusc/trifl "0.2.0"]
         [clojusc/twig "0.3.2"]
-        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
+         :exclusions [
+           com.dadrox/quiet-slf4j
+           gorilla-repl
+           org.slf4j/slf4j-nop]]
         [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths [
