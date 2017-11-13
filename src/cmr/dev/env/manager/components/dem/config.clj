@@ -13,7 +13,7 @@
     (log/debug "Started config component.")
     (let [cfg (builder)]
       (log/trace "Built configuration:" cfg)
-      (assoc component :dem cfg)))
+      (merge component cfg)))
 
   (stop [component]
     (log/info "Stopping config component ...")

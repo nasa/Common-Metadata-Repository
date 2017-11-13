@@ -1,5 +1,6 @@
 (ns cmr.dev.env.manager.components.system
   (:require
+    [cmr.dev.env.manager.components.cmr.mock-echo :as mock-echo]
     [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.logging :as logging]
     [cmr.dev.env.manager.config :refer [build] :rename {build build-config}]
@@ -18,6 +19,15 @@
              (logging/create-logging-component)
              [:config])})
 
+(def cubby
+  {:cubby :tbd})
+
+(defn mock-echo
+  [builder]
+  {:mock-echo (component/using
+               (mock-echo/create-mock-echo-component builder)
+               [:config :logging])})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Intilizations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,7 +38,8 @@
   ([config-builder]
     (component/map->SystemMap
       (merge (cfg config-builder)
-             log))))
+             log
+             (mock-echo config-builder)))))
 
 (defn initialize-bare-bones
   ([]
