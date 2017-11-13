@@ -15,12 +15,10 @@
     (log/info "Starting mock-echo component ...")
     (log/debug "Component keys:" (keys component))
     (let [cfg (builder :mock-echo)
-          component (assoc component :config cfg)
-          dir (config/app-dir component)]
+          component (assoc component :config cfg)]
       (log/trace "Built configuration:" cfg)
       (log/debug "Config:" (:config component))
-      (log/debugf "Running `lein` from %s" dir)
-      (let [chan (util/spawn! "lein" "mock-echo" :dir dir)]
+      (let [chan (util/spawn! "lein" "mock-echo")]
         (log/debug "Started mock-echo component.")
         (assoc component :channel chan))))
 
