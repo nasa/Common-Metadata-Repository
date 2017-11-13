@@ -41,5 +41,5 @@ Apache License, Version 2.0.
 [tag]: https://github.com/cmr-exchange/dev-env-manager/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
-[clojars]: https://clojars.org/cmr-exchange/dev-env-manager
-[clojars-badge]: https://img.shields.io/clojars/v/cmr-exchange/dev-env-manager.svg
+[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-dev-env-manager
+[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-dev-env-manager.svg
