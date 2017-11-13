@@ -41,7 +41,6 @@
           com.dadrox/quiet-slf4j
           com.google.code.findbugs/jsr305
           gorilla-repl
-          instaparse
           org.slf4j/slf4j-nop]]
         [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT" :exclusions [
           commons-io]]
