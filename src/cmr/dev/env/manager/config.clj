@@ -8,7 +8,9 @@
     [taoensso.timbre :as log]))
 
 (def config-key :dem)
-(def default-config
+
+(defn default-config
+  []
   {config-key {
     :logging {
       :level :info
@@ -29,32 +31,41 @@
 (defn build
   ""
   ([]
-    (build nil))
+    (build false))
   ([app-key]
     (let [top-level (project/read)]
       (log/debug "top-level keys:" (keys top-level))
       (log/debug "top-level config:" top-level)
       (log/debug "dem config:" (config-key top-level))
-      (log/debug "app-level config:" (app-key top-level))
+      (when app-key
+        (log/debug "app-level config:" (app-key top-level)))
       (util/deep-merge
-       default-config
+       (default-config)
        (util/deep-merge
         {config-key (config-key top-level)}
         (when app-key
          {config-key (get-in top-level [:profiles app-key config-key])}))))))
 
+(defn active-config
+  ""
+  [system config-key & args]
+  (let [base-keys [:config config-key]]
+    (if-not (seq args)
+      (get-in system base-keys)
+      (get-in system (concat base-keys args)))))
+
 (defn app-dir
   [system]
-  (components/get-config system config-key :app-dir))
+  (active-config system config-key :app-dir))
 
 (defn logging
   [system]
-  (components/get-config system config-key :logging))
+  (active-config system config-key :logging))
 
 (defn log-level
   [system]
-  (components/get-config system config-key :logging :level))
+  (active-config system config-key :logging :level))
 
 (defn log-nss
   [system]
-  (components/get-config system config-key :logging :nss))
+  (active-config system config-key :logging :nss))
