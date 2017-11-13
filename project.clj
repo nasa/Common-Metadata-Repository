@@ -18,7 +18,7 @@
   :exclusions [org.clojure/clojure]
   :dependencies [
     [com.stuartsierra/component "0.3.2"]
-    [leiningen-core "2.8.1" :exclusions [
+    [leiningen-core "2.7.1" :exclusions [
       commons-io
       org.apache.httpcomponents/httpcore
       org.slf4j/slf4j-nop]]
