@@ -28,7 +28,7 @@
                           (= home-page Type))]
            {:URLContentType data-center-url
             :Type home-page
-            :URL URL}))) 
+            :URL URL})))
 
 (defn- home-page-url?
   "Check if a related url is a data center home page url."
@@ -77,9 +77,12 @@
 
 (defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
-  (if (sequential? update-value)
-    (update-in umm update-field #(concat % update-value))
-    (update-in umm update-field #(conj % update-value))))
+  (as-> umm umm
+        (if (sequential? update-value)
+          (update-in umm update-field #(concat % update-value))
+          (update-in umm update-field #(conj % update-value)))
+        (util/update-in-each umm update-field util/remove-nil-keys)
+        (update-in umm update-field distinct)))
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
@@ -125,22 +128,22 @@
 (defmethod apply-umm-list-update :find-and-update-home-page-url
   ;; This is a special case that applies to DataCenter ContactInformation update only.
   ;; All other updates outside of ContactInformation remains the same as find-and-update.
-  ;; We only want to update the home page url inside the :ContactInformation :RelatedUrls. 
+  ;; We only want to update the home page url inside the :ContactInformation :RelatedUrls.
   ;; We don't want to replace the :ContactInformation with the new one in update-value.
   ;; Any information other than the home page url value under :ContactInformation
-  ;; in update-value is not used. 
+  ;; in update-value is not used.
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
     (let [update-value (util/remove-nil-keys update-value)]
       ;; For each entry in update-field, if we find it using the find params,
       ;; update only the fields supplied in update-value with nils removed, except for the
-      ;; ContactInformation part of the update-value. 
+      ;; ContactInformation part of the update-value.
       (update-in umm update-field #(distinct (map (fn [x]
                                                     (if (value-matches? find-value x)
                                                       (data-center-update x update-value)
                                                       x))
                                                   %))))
-    umm)) 
+    umm))
 
 (defn apply-update
   "Apply an update to a umm record. Check for field-specific function and use that
