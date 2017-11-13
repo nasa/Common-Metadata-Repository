@@ -4,6 +4,11 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
+(defn print-welcome
+  []
+  (println (slurp "dev-resources/text/banner.txt"))
+  (println (slurp "dev-resources/text/loading.txt")))
+
 (defproject gov.nasa.earthdata/cmr-dev-env-manager "0.1.0-SNAPSHOT"
   :description "An Alternate Development Environment Manager for the CMR"
   :url "https://github.com/cmr-exchange/dev-env-manager"
@@ -37,7 +42,8 @@
         "libs/transmit-lib/src"]
       :repl-options {
         :init-ns cmr.dev.env.manager.repl
-        :prompt ~get-prompt}}
+        :prompt ~get-prompt}
+        :welcome ~(print-welcome)}
     :test {
       :plugins [
         [lein-ancient "0.6.14"]
