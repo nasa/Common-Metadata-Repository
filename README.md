@@ -10,6 +10,17 @@
 *An Alternate Development Environment Manager for the CMR*
 
 
+## Setup
+
+1. Ensure that you have the Common Metadata Repository code base cloned to the
+   same directory that the development environment manager is cloned to:
+    ```
+    $ git clone git@github.com:nasa/Common-Metadata-Repository cmr
+    $ git clone git@github.com:cmr-exchange/dev-env-manager cmr-dev-env-manager
+    ```
+1. Go into the cloned `cmr` directory, and run `lein install-with-content!`.
+
+
 ## Usage
 
 (Forthcoming ...)
