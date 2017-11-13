@@ -204,9 +204,9 @@
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-          ;; Initiate bulk update that shouldn't add anything, including duplicates.
-      (ingest/bulk-update-collections "PROV1" duplicate-body)
       (is (= 200 (:status response)))
+      ;; Initiate bulk update that shouldn't add anything, including duplicates.
+      (ingest/bulk-update-collections "PROV1" duplicate-body)
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
@@ -267,10 +267,10 @@
                                         :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
        ;; Kick off bulk update
        (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-             ;; Initiate bulk update that shouldn't add anything, including duplicates.
          (is (= 200 (:status response)))
-         ;; Wait for queueing/indexing to catch up
+         ;; Initiate bulk update that shouldn't add anything, including duplicates.
          (ingest/bulk-update-collections "PROV1" duplicate-body)
+         ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
            (is (= "COMPLETE" (:task-status collection-response))))
