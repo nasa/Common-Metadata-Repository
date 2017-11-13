@@ -13,21 +13,28 @@
   :exclusions [org.clojure/clojure]
   :dependencies [
     [com.stuartsierra/component "0.3.2"]
-    [leiningen-core "2.7.1"]
-    [org.clojure/clojure "1.8.0"]]
+    [leiningen-core "2.8.1"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/core.async "0.3.443"]]
   :dem {
     :logging {
-      :nss [cmr]
-      :level :info}}
+      :level :debug}}
   :profiles {
+    ;; Tasks
     :ubercompile {:aot :all}
+    ;; Environments
     :dev {
       :dependencies [
         [clojusc/ltest "0.3.0-SNAPSHOT"]
         [clojusc/trifl "0.2.0"]
         [clojusc/twig "0.3.2"]
+        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+        [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
         [org.clojure/tools.namespace "0.2.11"]]
-      :source-paths ["dev-resources/src"]
+      :source-paths [
+        "dev-resources/src"
+        "libs/common-lib/src"
+        "libs/transmit-lib/src"]
       :repl-options {
         :init-ns cmr.dev.env.manager.repl
         :prompt ~get-prompt}}
@@ -37,11 +44,24 @@
         [jonase/eastwood "0.2.5"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}}
+        [venantius/yagni "0.1.4"]]}
+    :lint {
+      :source-paths ^:replace ["src"]}
+    ;; Applications
+    :mock-echo {
+      :main cmr.mock-echo.runner
+      :dem {
+        :app-dir "apps/mock-echo-app"}
+      :source-paths [
+        "apps/mock-echo-app/src"
+        "libs/common-app-lib/src"
+        "libs/common-lib/src"
+        "libs/transmit-lib"]}}
   :aliases {
+    "mock-echo" ["with-profile" "+mock-echo" "run"]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
-    "lint" ["with-profile" "+test" "kibit"]
+    "lint" ["with-profile" "+test,+lint" "kibit"]
     "build" ["with-profile" "+test" "do"
       ["check-deps"]
       ["lint"]
