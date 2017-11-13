@@ -35,8 +35,8 @@ Apache License, Version 2.0.
 
 [travis]: https://travis-ci.org/cmr-exchange/dev-env-manager
 [travis-badge]: https://travis-ci.org/cmr-exchange/dev-env-manager.png?branch=master
-[logo]: resources/images/???.png
-[logo-large]: resources/images/???.png
+[logo]: resources/images/cmr-dev-env-mgr.png
+[logo-large]: resources/images/cmr-dev-env-mgr-large.png
 [tag-badge]: https://img.shields.io/github/tag/cmr-exchange/dev-env-manager.svg
 [tag]: https://github.com/cmr-exchange/dev-env-manager/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
