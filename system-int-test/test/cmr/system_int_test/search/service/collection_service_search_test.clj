@@ -171,30 +171,38 @@
        coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
       (assert-collection-search-result
        coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
-      ;; update service3 to have two supported formats
+      ;; update service3 to have two supported formats and spatial subsetting
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
-        :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]}})
+        :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]
+                         :SubsetType ["Spatial"]}})
       (index/wait-until-indexed)
 
       ;; verify has-formats is true after the service is updated with two supported formats
       (assert-collection-search-result
-       coll1 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id])
+       coll1
+       {:has-formats true :has-transforms true :has-spatial-subsetting true}
+       [serv1-concept-id serv2-concept-id serv3-concept-id])
       (assert-collection-search-result
-       coll2 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id]))
+       coll2
+       {:has-formats true :has-transforms true :has-spatial-subsetting true}
+       [serv1-concept-id serv2-concept-id serv3-concept-id]))
 
     (testing "variable associations together with service associations"
       (let [{var-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
                                           {:native-id "var1"
-                                           :Name "Variable1"
-                                           :LongName "Measurement1"})]
+                                           :Name "Variable1"})]
         (au/associate-by-concept-ids token var-concept-id [{:concept-id (:concept-id coll1)}])
         (index/wait-until-indexed)
         (assert-collection-search-result
-         coll1 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
+         coll1
+         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
         (assert-collection-search-result
-         coll2 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id])))))
+         coll2
+         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
   (testing "SupportedProjections affects has-transforms"
