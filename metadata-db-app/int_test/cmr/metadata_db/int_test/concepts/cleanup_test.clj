@@ -1,16 +1,12 @@
 (ns cmr.metadata-db.int-test.concepts.cleanup-test
   "Tests that old revisions of concepts are cleaned up"
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [clj-time.core :as t]
-            [cmr.common-app.test.side-api :as side]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as messages]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.log :refer (info)])
-  (:import java.io.FileNotFoundException))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.time-keeper :as tk]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.concept-service :as concept-service]))
 
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -223,11 +219,10 @@
 (deftest old-tag-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [tag1 (util/create-and-save-tag 1 13)
-        tag2 (util/create-and-save-tag 2 3)
-        tags [tag1 tag2]]
+        tag2 (util/create-and-save-tag 2 3)]
 
     ;; Verify prior revisions exist
-    (is (every? all-revisions-exist? tags))
+    (is (every? all-revisions-exist? [tag1 tag2]))
 
     (is (= 204 (util/old-revision-concept-cleanup)))
 
@@ -244,11 +239,10 @@
         tag1 (util/create-and-save-tag 1 1)
         tag2 (util/create-and-save-tag 2 1)
         ta1 (util/create-and-save-tag-association coll1 tag1 1 13)
-        ta2 (util/create-and-save-tag-association coll1 tag2 2 3)
-        tas [ta1 ta2]]
+        ta2 (util/create-and-save-tag-association coll1 tag2 2 3)]
 
     ;; Verify prior revisions exist
-    (is (every? all-revisions-exist? tas))
+    (is (every? all-revisions-exist? [ta1 ta2]))
 
     (is (= 204 (util/old-revision-concept-cleanup)))
 
@@ -258,3 +252,77 @@
 
     (is (all-revisions-exist? ta2)))
  (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-variable-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [variable1 (util/create-and-save-variable "REG_PROV" 1 13)
+        variable2 (util/create-and-save-variable "REG_PROV" 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [variable1 variable2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the variable revisions should have been cleaned up
+    (is (revisions-removed? variable1 (range 1 4)))
+    (is (revisions-exist? variable1 (range 4 13)))
+
+    (is (all-revisions-exist? variable2)))
+  (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-variable-association-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
+        variable1 (util/create-and-save-variable "REG_PROV" 1 1)
+        variable2 (util/create-and-save-variable "REG_PROV" 2 1)
+        va1 (util/create-and-save-variable-association coll1 variable1 1 13)
+        va2 (util/create-and-save-variable-association coll1 variable2 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [va1 va2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the variable revisions should have been cleaned up
+    (is (revisions-removed? va1 (range 1 4)))
+    (is (revisions-exist? va1 (range 4 13)))
+
+    (is (all-revisions-exist? va2)))
+  (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-service-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [service1 (util/create-and-save-service "REG_PROV" 1 13)
+        service2 (util/create-and-save-service "REG_PROV" 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [service1 service2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the service revisions should have been cleaned up
+    (is (revisions-removed? service1 (range 1 4)))
+    (is (revisions-exist? service1 (range 4 13)))
+
+    (is (all-revisions-exist? service2)))
+  (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-service-association-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
+        service1 (util/create-and-save-service "REG_PROV" 1 1)
+        service2 (util/create-and-save-service "REG_PROV" 2 1)
+        sa1 (util/create-and-save-service-association coll1 service1 1 13)
+        sa2 (util/create-and-save-service-association coll1 service2 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [sa1 sa2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the service revisions should have been cleaned up
+    (is (revisions-removed? sa1 (range 1 4)))
+    (is (revisions-exist? sa1 (range 4 13)))
+
+    (is (all-revisions-exist? sa2)))
+  (side/eval-form `(tk/clear-current-time!)))

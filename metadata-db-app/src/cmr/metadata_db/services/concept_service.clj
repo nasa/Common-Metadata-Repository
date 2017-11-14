@@ -43,13 +43,13 @@
   of revisions here the oldest ones will be deleted."
   {:collection 10
    :granule 1
-   :service 10
    :tag 10
    :tag-association 10
    :access-group 10
    :humanizer 10
    :variable 10
    :variable-association 10
+   :service 10
    :service-association 10})
 
 (defconfig days-to-keep-tombstone
