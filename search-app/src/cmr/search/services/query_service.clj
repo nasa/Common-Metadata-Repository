@@ -466,7 +466,7 @@
                   (rfh/printable-result-format result-format) (pr-str params)))
     {:results results-str
      :hits (:hits results)
-     :result-format (:result-format result-format)}))
+     :result-format result-format}))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
