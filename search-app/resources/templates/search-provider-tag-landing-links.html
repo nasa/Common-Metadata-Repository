@@ -12,28 +12,30 @@
   Each is linked to the collection's landing page.
 </p>
 
-<table id="data-providers" class="table table-responsive-lg">
-  <thead>
-    <tr>
-      <th>Collection</th>
-      <th>Short Name</th>
-      <th>Version</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for holding in holdings %}
-    <tr>
-      <td>
-        <a href="{{ holding.link-href }}">{{ holding.umm.EntryTitle }}</a>
-      </td>
-      <td>
-        {{ holding.umm.ShortName }}
-      </td>
-      <td>
-        {{ holding.umm.Version }}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="table-container">
+  <table id="data-providers" class="responsive-table">
+    <thead>
+      <tr>
+        <th>Collection</th>
+        <th>Short Name</th>
+        <th>Version</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for holding in holdings %}
+      <tr>
+        <td>
+          <a href="{{ holding.link-href }}">{{ holding.umm.EntryTitle }}</a>
+        </td>
+        <td>
+          {{ holding.umm.ShortName }}
+        </td>
+        <td>
+          {{ holding.umm.Version }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
