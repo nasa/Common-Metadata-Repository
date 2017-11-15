@@ -801,7 +801,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection and variable searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection, variable and service searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
@@ -2007,7 +2007,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, and services. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, and services. If no format is specified the native format(and the native version if exists) of the metadata will be returned.
 
 By concept id
 
