@@ -75,7 +75,6 @@
   ["GET SERVICE" "ACCESS MAP VIEWER"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MAP VIEWER"}
   ["GET SERVICE" "ACCESS MOBILE APP"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MOBILE APP"}
   ["GET SERVICE" "ACCESS WEB SERVICE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS WEB SERVICE"}
-  ["GET SERVICE" "DATA LIST"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "DATA LIST"}
   ["GET SERVICE" "GET MAP SERVICE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "MAP SERVICE"}
   ["GET SERVICE" "GET SOFTWARE PACKAGE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SOFTWARE PACKAGE"}
   ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "WEB COVERAGE SERVICE (WCS)"}
