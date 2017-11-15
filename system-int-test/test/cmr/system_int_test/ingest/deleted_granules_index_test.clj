@@ -108,7 +108,7 @@
       (are3 [params granules]
         (is (= (set (map :concept-id granules))
                (set (find-deleted-granules params))))
-
+        
         "after tomorrow"
         {:revision_date (t/plus- (t/now) (t/days 1))}
         []
@@ -116,6 +116,14 @@
         "after yesterday"
         {:revision_date (t/minus- (t/now) (t/days 1))}
         [granule1-prov1 granule2-prov1 granule3-prov1-2 granule4-prov2]))
+
+    (testing "content-type in search header"
+      (are3 [params]
+        (is (= "application/json; charset=utf-8" 
+               (get-in (search/find-deleted-granules params) [:headers :Content-Type])))
+
+        "deleted granule search header contains application/json content-type."
+        {:revision_date (t/minus- (t/now) (t/days 1))}))
 
     (testing "Search for all after date for provider"
       (are3 [params granules]
@@ -177,3 +185,4 @@
       (is (= (:status response) 400))
       (is (= ["Result format [xml] is not supported by deleted granules search. The only format that is supported is json"]
              (:errors response))))))
+
