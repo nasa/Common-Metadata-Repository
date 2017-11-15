@@ -117,13 +117,10 @@
         {:revision_date (t/minus- (t/now) (t/days 1))}
         [granule1-prov1 granule2-prov1 granule3-prov1-2 granule4-prov2]))
 
-    (testing "content-type in search header"
-      (are3 [params]
-        (is (= "application/json; charset=utf-8" 
-               (get-in (search/find-deleted-granules params) [:headers :Content-Type])))
-
-        "deleted granule search header contains application/json content-type."
-        {:revision_date (t/minus- (t/now) (t/days 1))}))
+    (testing "Deleted granule search header contains application/json content-type"
+      (let [results (search/find-deleted-granules {:revision_date (t/minus- (t/now) (t/days 1))})]
+        (is (= "application/json; charset=utf-8"
+               (get-in results [:headers :content-type])))))
 
     (testing "Search for all after date for provider"
       (are3 [params granules]
