@@ -63,3 +63,22 @@ footer .badge {
     position: relative;
     top: -2px;
 }
+
+.table-container {
+  overflow-x: auto;
+}
+
+.responsive-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table th,
+.responsive-table td {
+  vertical-align: top;
+}
+
+.responsive-table thead th {
+  vertical-align: bottom;
+}
