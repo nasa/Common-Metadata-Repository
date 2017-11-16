@@ -19,15 +19,15 @@
                      {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
                                      :URLContentType "DistributionURL"
                                      :Type "GET DATA"
-                                     :SubType "ECHO"}
+                                     :Subtype "ECHO"}
                                     {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
                                      :URLContentType "PublicationURL"
                                      :Type "VIEW RELATED INFORMATION"
-                                     :SubType "USER'S GUIDE"}
+                                     :Subtype "USER'S GUIDE"}
                                     {:URL "http://www.google.com"
                                      :URLContentType "VisualizationURL"
                                      :Type "GET RELATED VISUALIZATION"
-                                     :SubType "MAP"}]})))
+                                     :Subtype "MAP"}]})))
 
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
@@ -35,27 +35,27 @@
       {:RelatedUrls [{:URL "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"
                       :URLContentType "DistributionURL"
                       :Type "GET DATA"
-                      :SubType "ECHO"}
+                      :Subtype "ECHO"}
                      {:URL "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"
                       :URLContentType "PublicationURL"
                       :Type "VIEW RELATED INFORMATION"
-                      :SubType "USER'S GUIDE"}
+                      :Subtype "USER'S GUIDE"}
                      {:URL "https://www.foo.com"
                       :URLContentType "Bad URLContentType"
                       :Type "VIEW RELATED INFORMATION"
-                      :SubType "USER'S GUIDE"}
+                      :Subtype "USER'S GUIDE"}
                      {:URL "https://www.bar.com"
                       :URLContentType "PublicationURL"
                       :Type "Bad Type"
-                      :SubType "USER'S GUIDE"}
+                      :Subtype "USER'S GUIDE"}
                      {:URL "https://www.foobar.com"
                       :URLContentType "PublicationURL"
                       :Type "VIEW RELATED INFORMATION"
-                      :SubType "Bad SubType"}
+                      :Subtype "Bad Subtype"}
                      {:URL "https://www.baz.com"
                       :URLContentType "PublicationURL"
                       :Type "VIEW RELATED INFORMATION"
-                      :SubType "USER'S GUIDE"
+                      :Subtype "USER'S GUIDE"
                       :GetService {:MimeType "application/html"
                                    :FullName "Not provided"
                                    :DataID "Not provided"
@@ -63,16 +63,16 @@
                      {:URL "https://www.baz.com"
                       :URLContentType "PublicationURL"
                       :Type "VIEW RELATED INFORMATION"
-                      :SubType "USER'S GUIDE"
+                      :Subtype "USER'S GUIDE"
                       :GetData {:Size 10.0
                                 :Unit "MB"
                                 :Format "Not provided"}}]})
      [{:path [:RelatedUrls 4]
-       :errors ["URLContentType: PublicationURL, Type: VIEW RELATED INFORMATION, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: PublicationURL, Type: VIEW RELATED INFORMATION, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:RelatedUrls 3]
-       :errors ["URLContentType: PublicationURL, Type: Bad Type, SubType: USER'S GUIDE is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: PublicationURL, Type: Bad Type, Subtype: USER'S GUIDE is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: VIEW RELATED INFORMATION, SubType: USER'S GUIDE is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: Bad URLContentType, Type: VIEW RELATED INFORMATION, Subtype: USER'S GUIDE is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}
       {:path [:RelatedUrls 0 :URL]
@@ -114,15 +114,15 @@
                         {:URL "https://www.foobar.com"
                          :URLContentType "DataCenterURL"
                          :Type "HOME PAGE"
-                         :SubType "Bad SubType"}]}}]})
+                         :Subtype "Bad Subtype"}]}}]})
      [{:path [:DataCenters 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
       {:path [:DataCenters 0 :ContactInformation :RelatedUrls 3]
-       :errors ["URLContentType: DataCenterURL, Type: Bad Type, SubType: null is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataCenterURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactInformation :RelatedUrls 4]
-       :errors ["URLContentType: DataCenterURL, Type: HOME PAGE, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataCenterURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, SubType: null is not a vaild URLContentType/Type/SubType combination."
+       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataCenterURL for DataCenter RelatedUrls"]}
       {:path [:DataCenters 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}]))
@@ -159,15 +159,15 @@
                           {:URL "https://www.foobar.com"
                            :URLContentType "DataContactURL"
                            :Type "HOME PAGE"
-                           :SubType "Bad SubType"}]}}]}]})
+                           :Subtype "Bad Subtype"}]}}]}]})
      [{:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 3]
-       :errors ["URLContentType: DataContactURL, Type: Bad Type, SubType: null is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 4]
-       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, SubType: null is not a vaild URLContentType/Type/SubType combination."
+       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls"]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}]))
@@ -204,15 +204,15 @@
                           {:URL "https://www.foobar.com"
                            :URLContentType "DataContactURL"
                            :Type "HOME PAGE"
-                           :SubType "Bad SubType"}]}}]}]})
+                           :Subtype "Bad Subtype"}]}}]}]})
      [{:path [:DataCenters 0 :ContactGroups 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
       {:path [:DataCenters 0 :ContactGroups 0 :ContactInformation :RelatedUrls 3]
-       :errors ["URLContentType: DataContactURL, Type: Bad Type, SubType: null is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactGroups 0 :ContactInformation :RelatedUrls 4]
-       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactGroups 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, SubType: null is not a vaild URLContentType/Type/SubType combination."
+       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls"]}
       {:path [:DataCenters 0 :ContactGroups 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
@@ -249,15 +249,15 @@
                         {:URL "https://www.foobar.com"
                          :URLContentType "DataContactURL"
                          :Type "HOME PAGE"
-                         :SubType "Bad SubType"}]}}]})
+                         :Subtype "Bad Subtype"}]}}]})
      [{:path [:ContactPersons 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
       {:path [:ContactPersons 0 :ContactInformation :RelatedUrls 3]
-       :errors ["URLContentType: DataContactURL, Type: Bad Type, SubType: null is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:ContactPersons 0 :ContactInformation :RelatedUrls 4]
-       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:ContactPersons 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, SubType: null is not a vaild URLContentType/Type/SubType combination."
+       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls"]}
       {:path [:ContactPersons 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
@@ -295,32 +295,32 @@
                         {:URL "https://www.foobar.com"
                          :URLContentType "DataContactURL"
                          :Type "HOME PAGE"
-                         :SubType "Bad SubType"}]}}]})
+                         :Subtype "Bad Subtype"}]}}]})
      [{:path [:ContactGroups 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
       {:path [:ContactGroups 0 :ContactInformation :RelatedUrls 3]
-       :errors ["URLContentType: DataContactURL, Type: Bad Type, SubType: null is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:ContactGroups 0 :ContactInformation :RelatedUrls 4]
-       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, SubType: Bad SubType is not a vaild URLContentType/Type/SubType combination."]}
+       :errors ["URLContentType: DataContactURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:ContactGroups 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, SubType: null is not a vaild URLContentType/Type/SubType combination."
+       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls"]}
       {:path [:ContactGroups 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
 
 (deftest collection-related-url-content-type-test
-  (testing "All valid URLContentType/Type/SubType combinations"
+  (testing "All valid URLContentType/Type/Subtype combinations"
     (doseq [URLContentType (keys su/valid-url-content-types-map)
             :let [valid-types (su/valid-types-for-url-content-type URLContentType)]]
       (doseq [Type valid-types
-              ;; Nil is a valid SubType for any URLContentType/Type combination. So we add it to valid-sub-types
+              ;; Nil is a valid Subtype for any URLContentType/Type combination. So we add it to valid-sub-types
               :let [valid-sub-types (conj (su/valid-subtypes-for-type URLContentType Type) nil)]]
-        (doseq [SubType valid-sub-types]
+        (doseq [Subtype valid-sub-types]
           (h/assert-valid (coll/map->UMM-C
                            {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
                                            :URLContentType URLContentType
                                            :Type Type
-                                           :SubType SubType}]})))))))
+                                           :Subtype Subtype}]})))))))
 
 (deftest collection-collection-citations-related-urls-validation
   (testing "Valid related urls"

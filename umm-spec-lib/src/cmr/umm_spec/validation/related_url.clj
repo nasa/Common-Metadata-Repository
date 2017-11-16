@@ -9,7 +9,7 @@
    (org.apache.commons.validator.routines UrlValidator)))
 
 (defn- valid-url-content-types-combo?
-  "Returns true if valid Type and SubType for URLContentType, nil otherwise."
+  "Returns true if valid Type and Subtype for URLContentType, nil otherwise."
   [url-content-type type sub-type]
   (when (and (some #(= type %) (su/valid-types-for-url-content-type url-content-type))
              (or (nil? sub-type)
@@ -17,13 +17,13 @@
     true))
 
 (defn- related-url-type-validation
-  "Validate the Type and SubType being valid for the accompanying URLContentType"
+  "Validate the Type and Subtype being valid for the accompanying URLContentType"
   [field-path value]
-  (let [{:keys [URLContentType Type SubType]} value]
-    (when-not (valid-url-content-types-combo? URLContentType Type SubType)
+  (let [{:keys [URLContentType Type Subtype]} value]
+    (when-not (valid-url-content-types-combo? URLContentType Type Subtype)
       {field-path
-       [(vu/escape-error-string (format "URLContentType: %s, Type: %s, SubType: %s is not a vaild URLContentType/Type/SubType combination."
-                                        URLContentType Type SubType))]})))
+       [(vu/escape-error-string (format "URLContentType: %s, Type: %s, Subtype: %s is not a vaild URLContentType/Type/Subtype combination."
+                                        URLContentType Type Subtype))]})))
 
 (defn- data-center-url-content-type-validation
   "Validates the URLContentType for DataCenter ContactInformation"

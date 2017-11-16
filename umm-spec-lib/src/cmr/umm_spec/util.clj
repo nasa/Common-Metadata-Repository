@@ -107,7 +107,7 @@
   (keys (get valid-url-content-types-map url-content-type)))
 
 (defn valid-subtypes-for-type
-  "Returns all SubTypes for URLContentType/Type combination"
+  "Returns all Subtypes for URLContentType/Type combination"
   [url-content-type type]
   (get-in valid-url-content-types-map [url-content-type type]))
 

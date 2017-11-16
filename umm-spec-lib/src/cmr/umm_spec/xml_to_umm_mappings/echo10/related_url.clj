@@ -35,7 +35,6 @@
   "GET DATA : ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
   "VIEW PROJECT HOME PAGE" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
   "GET RELATED VISUALIZATION" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
-  "GET DATA : SSW" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "SSW"}
   "GET SERVICE : GET WEB MAP SERVICE (WMS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB MAP SERVICE (WMS)"}
   "GET SERVICE : GET WEB COVERAGE SERVICE (WCS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB COVERAGE SERVICE (WCS)"}
   "GET DATA : DATACAST URL" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "DATACAST URL"}
@@ -54,7 +53,6 @@
   "Project Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
   "Get Data" {:URLContentType "DistributionURL", :Type "GET DATA"}
   "Reference Materials" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
-  "GET DATA : THREDDS CATALOG" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "THREDDS CATALOG"}
   "VIEW RELATED INFORMATION : GENERAL DOCUMENTATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "VIEW RELATED INFORMATION : HOW-TO" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "HOW-TO"}
   "Related URLs" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
@@ -81,7 +79,6 @@
   "text/html" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "Anomalies" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "Collection DOI" {:URLContentType "CollectionURL", :Type "DOI"}
-  "GET DATA : EOSDIS DATA POOL" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "EOSDUS DATA POOL"}
   "GET DATA : LANCE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LANCE"}
   "Type:GET DATA Subtype:LANCE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LANCE"}
   "Type:GET DATA Subtype:ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
