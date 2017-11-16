@@ -76,81 +76,51 @@
        (util/is-tag-association-deleted? ta1 false)
        (util/is-tag-association-deleted? ta3 false)))))
 
-(deftest force-delete-service
+(deftest force-delete-service-with-associations
   (let [coll (util/create-and-save-collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        misc-svc (util/create-and-save-service "REG_PROV" 42)
-        misc-svc-assn (util/create-and-save-service-association
-                       coll misc-svc 1)
-        expected-svc-concept-id "S1200000003-REG_PROV"
-        expected-revision-ids [1 2 3]
-        revision-count 3]
-    (testing "delete most recent revision"
-      (let [latest-revision (util/create-and-save-service
-                             "REG_PROV" 1 revision-count)
-            concept-id (:concept-id latest-revision)
-            svc-assn (util/create-and-save-service-association
-                      coll latest-revision 1)]
-        (testing "initial conditions"
-          ;; creation results as expected
-          (is (= expected-svc-concept-id concept-id))
-          (is (= (last expected-revision-ids) (:revision-id latest-revision)))
-          ;; service revisions in db
-          (is (= 4
-                 (count (:concepts (util/find-concepts :service)))))
-          (is (= 200 (:status (util/get-concept-by-id-and-revision
-                               concept-id (last expected-revision-ids)))))
-          (is (= 200 (:status (util/get-concept-by-id-and-revision
-                               concept-id (second expected-revision-ids)))))
-          (is (= 200 (:status (util/get-concept-by-id-and-revision
-                               concept-id (first expected-revision-ids)))))
-          ;; make sure service association in place
-          (is (= "SA1200000004-CMR" (:concept-id svc-assn)))
-          (is (= coll-concept-id
-                 (get-in svc-assn [:extra-fields :associated-concept-id])))
-          (is (= expected-svc-concept-id
-                 (get-in svc-assn [:extra-fields :service-concept-id])))
-          ;; make sure collection associations in place
-          (is (not (:deleted (:concept (util/get-concept-by-id "SA1200000004-CMR"))))))
-        (testing "just the most recent revision is deleted"
-          (util/force-delete-concept concept-id (last expected-revision-ids))
-          (is (= 404 (:status (util/get-concept-by-id-and-revision
-                               concept-id (last expected-revision-ids)))))
-          (is (= 200 (:status (util/get-concept-by-id-and-revision
-                               concept-id (second expected-revision-ids)))))
-          (is (= 200 (:status (util/get-concept-by-id-and-revision
-                               concept-id (first expected-revision-ids))))))
-        (testing "service association has been deleted"
-          (is (:deleted (:concept (util/get-concept-by-id "SA1200000004-CMR")))))))
-    (testing "delete oldest revision"
-      (let [latest-revision (util/create-and-save-service
-                             "REG_PROV" 2 revision-count)
-            concept-id (:concept-id latest-revision)
-            svc-assn (util/create-and-save-service-association
-                      coll latest-revision 2)]
-        (is (= "SA1200000006-CMR" (:concept-id svc-assn)))
-        (util/force-delete-concept concept-id (first expected-revision-ids))
-        (is (= 200 (:status (util/get-concept-by-id-and-revision
-                             concept-id (last expected-revision-ids)))))
-        (is (= 200 (:status (util/get-concept-by-id-and-revision
-                             concept-id (second expected-revision-ids)))))
-        (is (= 404 (:status (util/get-concept-by-id-and-revision
-                             concept-id (first expected-revision-ids)))))
-        (testing "service association has not been deleted"
-          (is (not (:deleted (:concept (util/get-concept-by-id "SA1200000006-CMR"))))))))
-    (testing "delete middle revision"
-      (let [latest-revision (util/create-and-save-service
-                             "REG_PROV" 3 revision-count)
-            concept-id (:concept-id latest-revision)
-            svc-assn (util/create-and-save-service-association
-                      coll latest-revision 3)]
-        (is (= "SA1200000008-CMR" (:concept-id svc-assn)))
-        (util/force-delete-concept concept-id (second expected-revision-ids))
-        (is (= 200 (:status (util/get-concept-by-id-and-revision
-                             concept-id (last expected-revision-ids)))))
-        (is (= 404 (:status (util/get-concept-by-id-and-revision
-                             concept-id (second expected-revision-ids)))))
-        (is (= 200 (:status (util/get-concept-by-id-and-revision
-                             concept-id (first expected-revision-ids)))))
-        (testing "service association has not been deleted"
-          (is (not (:deleted (:concept (util/get-concept-by-id "SA1200000008-CMR"))))))))))
+        svc-concept (util/create-and-save-service "REG_PROV" 1 3)
+        svc-concept-id (:concept-id svc-concept)
+        svc-assn (util/create-and-save-service-association
+                  coll svc-concept 1)
+        svc-assn-concept-id (:concept-id svc-assn)]
+    (testing "initial conditions"
+      ;; creation results as expected
+      (is (= 3 (:revision-id svc-concept)))
+      ;; service revisions in db
+      (is (= 3
+             (count (:concepts (util/find-concepts :service)))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 3))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 2))))
+      ;; make sure service association in place
+      (is (= coll-concept-id
+             (get-in svc-assn [:extra-fields :associated-concept-id])))
+      (is (= svc-concept-id
+             (get-in svc-assn [:extra-fields :service-concept-id])))
+      ;; make sure collection associations in place
+      (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
+    (testing "just the last revision is deleted"
+      (util/force-delete-concept svc-concept-id 2)
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 3))))
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 2))))
+      ;; verify the association hasn't been deleted
+      (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
+    (testing "just the most recent revision is deleted"
+      (util/force-delete-concept svc-concept-id 3)
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 3))))
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 2))))
+      (is (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id)))))
+    (testing "cannot delete non-existing revision"
+      (let [non-extant-revision 4
+            response (util/force-delete-concept svc-concept-id non-extant-revision)]
+        (is (= 404 (:status response)))
+        (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
+                             "does not exist.")
+                        svc-concept-id non-extant-revision)]
+               (:errors response)))))))

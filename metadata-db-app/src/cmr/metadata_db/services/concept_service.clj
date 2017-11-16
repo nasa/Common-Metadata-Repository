@@ -664,9 +664,10 @@
     ;; delete the related service associations
     (delete-associations
      context concept-type concept-id revision-id :service-association)
-      ;; Do not queue the concept revision deletion event for now.
-      (ingest-events/publish-concept-revision-delete-msg
-       context concept-id revision-id)))
+    ;; XXX Do not queue the concept revision deletion event for now.
+    ; (ingest-events/publish-concept-revision-delete-msg
+    ;  context concept-id revision-id)
+    ))
 
 (defmethod force-delete-cascading-events :default
   [context concept-type concept-id revision-id]
