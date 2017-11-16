@@ -1,16 +1,17 @@
 (ns cmr.metadata-db.api.concepts
   "Defines the HTTP URL routes that deal with concepts."
-  (:require [compojure.core :refer :all]
-            [cmr.metadata-db.api.route-helpers :as rh]
-            [clojure.string :as str]
-            [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.services.messages :as msg]
-            [inflections.core :as inf]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.search-service :as search-service]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.api.route-helpers :as rh]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.search-service :as search-service]
+   [compojure.core :refer :all]
+   [inflections.core :as inf]))
 
 (defn as-int
   "Parses the string to return an integer"
@@ -117,7 +118,6 @@
 (def concepts-api-routes
   (routes
     (context "/concepts" []
-
       (context "/search" []
         ;; get multiple concepts by concept-id and revision-id
         (POST "/concept-revisions" {:keys [params request-context body]}
@@ -131,7 +131,6 @@
           (find-concepts request-context params))
         (POST "/:concept-type" {:keys [params request-context]}
           (find-concepts request-context params)))
-
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))

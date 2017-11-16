@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.api.provider
   "Defines the HTTP URL routes for the application."
-  (:require [clojure.walk :as walk]
-            [compojure.core :refer :all]
-            [cmr.acl.core :as acl]
-            [cheshire.core :as json]
-            [cmr.metadata-db.api.route-helpers :as rh]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.walk :as walk]
+   [cmr.acl.core :as acl]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.metadata-db.api.route-helpers :as rh]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [compojure.core :refer :all]))
 
 (defn- save-provider
   "Save a provider."
