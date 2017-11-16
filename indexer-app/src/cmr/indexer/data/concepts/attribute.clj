@@ -58,7 +58,7 @@
                               #(coll-psa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
-        (str field-name ".lowercase") (map (comp str/lower-case
+        (str field-name ".lowercase") (map (comp util/safe-lowercase
                                                  #(value->elastic-value type %)
                                                  #(coll-psa/parse-value type %))
                                            (:values psa-ref))}]
