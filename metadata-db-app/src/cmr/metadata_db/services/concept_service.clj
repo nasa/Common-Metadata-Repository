@@ -305,6 +305,12 @@
                           concept-id
                           revision-id)))))
 
+(defn latest-revision?
+  "Given a concept-id and a revision-id, perform a check whether the
+  revision-id represents the most recent revision of the concept."
+  [context concept-id revision-id]
+  (= revision-id (:revision-id (get-concept context concept-id))))
+
 (defn split-concept-id-revision-id-tuples
   "Divides up concept-id-revision-id-tuples by provider and concept type."
   [concept-id-revision-id-tuples]
@@ -654,11 +660,13 @@
 
 (defmethod force-delete-cascading-events :service
   [context concept-type concept-id revision-id]
-  ;; delete the related service associations
-  (delete-associations context concept-type concept-id revision-id :service-association)
-  ;; Do not queue the concept revision deletion event for now.
-  ; (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id)
-  )
+  (when (latest-revision? context concept-id revision-id)
+    ;; delete the related service associations
+    (delete-associations
+     context concept-type concept-id revision-id :service-association)
+      ;; Do not queue the concept revision deletion event for now.
+      (ingest-events/publish-concept-revision-delete-msg
+       context concept-id revision-id)))
 
 (defmethod force-delete-cascading-events :default
   [context concept-type concept-id revision-id]
