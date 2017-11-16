@@ -3,11 +3,8 @@
   service/collection associations."
   (:require
    [clojure.test :refer :all]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -17,21 +14,38 @@
    [cmr.transmit.config :refer [mock-echo-system-token]
                         :rename {mock-echo-system-token token}]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixtures & one-off utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (use-fixtures
  :each
  (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn- get-collection-services
+  "A utility function for extracting a collection's services associations.
+
+  Note that we used destructuring here instead of `get-in` due to the
+  non-(Clojure)indexing of `clojure.lang.ChunkedCons` of the `entries` which
+  prevented this from working:
+  `(get-in response [:results :entries 0 :associations :services])`."
   []
-  (let [{{[{{services :services} :associations}] :entries} :results}
+  (let [{{[{associations :associations}] :entries} :results}
        (search/find-concepts-json :collection {})]
-    services))
+    (:services associations)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest force-delete-service-with-associations
-  (let [coll (data-umm-c/collection-concept {})
+  (let [coll (data-umm-c/collection-concept {:ShortName "C1"
+                                             :native-id "Force-Delete-C1"})
         {coll-concept-id :concept-id} (ingest/ingest-concept coll)
-        _ (service/ingest-service)
-        svc-concept (service/ingest-service)
+        svc (data-umm-s/service-concept {:Name "S1"
+                                         :native-id "Force-Delete-S1"})
+        ;; Make three revisions, capturing the third
+        svc-concept (last (for [n (range 3)] (service/ingest-service svc)))
         {svc-concept-id :concept-id} svc-concept
         _ (index/wait-until-indexed)
         {[assn-response] :body} (au/associate-by-concept-ids
@@ -40,16 +54,18 @@
                                  [{:concept-id coll-concept-id}])
         {{svc-assn-concept-id :concept-id} :service-association} assn-response]
     (testing "initial conditions"
-      (is (= 2 (:revision-id svc-concept)))
+      (is (= 3 (:revision-id svc-concept)))
+      ;; make sure that the collection's `associations` field is present, that
+      ;; it contains `:services` and that the right service is associated
       (is (= coll-concept-id
              (get-in assn-response [:associated-item :concept-id])))
       (is (contains? (get-collection-services) svc-concept-id)))
     (testing "just the last revision is deleted"
-      (mdb/force-delete-concept svc-concept-id 1)
-      ;; the service association has not been deleted
+      (mdb/force-delete-concept svc-concept-id 2)
+      ;; make sure the service association has not been deleted
       (is (contains? (get-collection-services) svc-concept-id)))
     (testing "just the most recent revision is deleted"
-      ;; now the service association has been deleted
-      (mdb/force-delete-concept svc-concept-id 2)
+      ;; now ensure that the service association has been deleted
+      (mdb/force-delete-concept svc-concept-id 3)
       (index/wait-until-indexed)
       (is (not (contains? (get-collection-services) svc-concept-id))))))
