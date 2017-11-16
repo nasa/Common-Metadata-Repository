@@ -5,6 +5,7 @@
    [clojure.string :as str]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.util :as util]   
    [cmr.umm-spec.util :as spec-util]))
 
 (def default-data-center-values
@@ -69,18 +70,18 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-data-center]
     {:level-0 level-0
-     :level-0.lowercase (str/lower-case level-0)
+     :level-0.lowercase (util/safe-lowercase level-0)
      :level-1 level-1
-     :level-1.lowercase (str/lower-case level-1)
+     :level-1.lowercase (util/safe-lowercase level-1)
      :level-2 level-2
-     :level-2.lowercase (str/lower-case level-2)
+     :level-2.lowercase (util/safe-lowercase level-2)
      :level-3 level-3
-     :level-3.lowercase (str/lower-case level-3)
+     :level-3.lowercase (util/safe-lowercase level-3)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name.lowercase (util/safe-lowercase short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name.lowercase (util/safe-lowercase long-name)
      :url url
-     :url.lowercase (when url (str/lower-case url))
+     :url.lowercase (util/safe-lowercase url)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid.lowercase (util/safe-lowercase uuid)}))

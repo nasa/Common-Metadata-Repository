@@ -1,8 +1,10 @@
 (ns cmr.indexer.data.concepts.collection.platform
   "Contains functions for converting platform hierarchies into elastic documents"
-  (:require [clojure.string :as str]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common-app.services.kms-lookup :as kms-lookup]))
+  (:require 
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
+    [cmr.common.util :as util]))
 
 
 (def default-platform-values
@@ -22,12 +24,12 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category.lowercase (util/safe-lowercase category)
      :series-entity series-entity
-     :series-entity.lowercase (str/lower-case series-entity)
+     :series-entity.lowercase (util/safe-lowercase series-entity)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name.lowercase (util/safe-lowercase short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name.lowercase (util/safe-lowercase long-name)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid.lowercase (util/safe-lowercase uuid)}))
