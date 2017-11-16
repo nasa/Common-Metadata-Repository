@@ -146,7 +146,7 @@
 
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
+  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables))(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req common-routes/options-response)
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
