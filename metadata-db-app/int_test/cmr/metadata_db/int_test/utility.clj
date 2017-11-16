@@ -644,7 +644,9 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= (expected-concept concept) (dissoc stored-concept :revision-date :transaction-id :created-at)))))
+    (is (= (util/remove-nil-keys (expected-concept concept))
+           (util/remove-nil-keys
+            (dissoc stored-concept :revision-date :transaction-id :created-at))))))
 
 (defn is-tag-association-deleted?
   "Returns if the ta is marked as deleted in metadata-db"
