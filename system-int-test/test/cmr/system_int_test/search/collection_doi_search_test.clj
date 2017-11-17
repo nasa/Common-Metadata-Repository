@@ -28,7 +28,15 @@
                             (assoc :DOI (cm/map->DoiType
                                          {:DOI "doi2" :Authority "auth2"})))
                         {:format :umm-json
-                         :accept-format :json})]
+                         :accept-format :json})
+        coll3 (d/ingest-umm-spec-collection "PROV1"
+                              (-> exp-conv/example-collection-record
+                                  (assoc :ShortName "BlankDOI")
+                                  (assoc :EntryTitle "BlankDOIIIIIII")
+                                  (assoc :DOI (cm/map->DoiType
+                                               {:DOI "Not provided" :Authority "auth3"})))
+                              {:format :umm-json
+                               :accept-format :json})]
     (index/wait-until-indexed)
 
     (testing "search collections by doi"
@@ -50,4 +58,15 @@
        [coll1 coll2] ["Doi*"] {:pattern true}
 
        "search for collections with both doi1 and doi2 returns nothing"
-       [] ["Doi1" "doI2"] {:and true}))))
+       [] ["Doi1" "doI2"] {:and true}))
+    (testing "search doi with json query"
+      (let [not-provided-results (search/find-refs-with-json-query
+                                   :collection
+                                   {}
+                                   {:doi {:value "Not provided" :pattern true}})
+            wildcard-results (search/find-refs-with-json-query
+                                         :collection
+                                         {}
+                                         {:doi {:value "*" :pattern true}})]
+        (is (d/refs-match? [coll3] not-provided-results))
+        (is (d/refs-match? [coll1 coll2 coll3] wildcard-results))))))
