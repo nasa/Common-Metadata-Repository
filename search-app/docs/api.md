@@ -3168,7 +3168,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the provider's unique identifier for the item. This is Granule UR for granules and Entry Title for collections. |
+| name        | the value of the Name field in variable metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -3439,6 +3439,68 @@ On occasions when variable dissociation cannot be processed at all due to invali
 ### <a name="service"></a> Service
 
 A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).
+
+#### <a name="searching-for-services"></a> Searching for Services
+
+Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference response formats is supported for services search.
+
+Service search results are paged. See [Paging Details](#paging-details) for more information on how to page through service search results.
+
+##### <a name="service-search-params"></a> Service Search Parameters
+
+The following parameters are supported when searching for services.
+
+##### Standard Parameters
+* page_size
+* page_num
+* pretty
+
+##### Service Matching Parameters
+
+None right now. Coming soon.
+
+##### <a name="service-search-response"></a> Service Search Response
+
+##### XML Reference
+The XML reference response format is used for returning references to search results. It consists of the following fields:
+
+|   Field    |                    Description                     |
+| ---------- | -------------------------------------------------- |
+| hits       | the number of results matching the search query    |
+| took       | time in milliseconds it took to perform the search |
+| references | identifying information about each search result   |
+
+The `references` field may contain multiple `reference` entries, each consisting of the following fields:
+
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the value of the Name field in service metadata.                                                                |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
+
+__Example__
+```
+curl -i "%CMR-ENDPOINT%/services?pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 393
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>1</hits>
+    <took>17</took>
+    <references>
+        <reference>
+            <name>Service1</name>
+            <id>S1200000007-PROV1</id>
+            <location>http://localhost:3003/concepts/S1200000007-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
 
 #### <a name="service-access-control"></a> Service Access Control
 
