@@ -1,8 +1,10 @@
 (ns cmr.indexer.data.concepts.collection.instrument
   "Contains functions for converting instrument hierarchies into elastic documents"
-  (:require [clojure.string :as str]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common-app.services.kms-lookup :as kms-lookup]))
+  (:require 
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
+    [cmr.common.util :as util]))
 
 (def default-instrument-values
   "Default values to use for any platform fields which are nil."
@@ -21,16 +23,16 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name} i-class :class} full-instrument]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category.lowercase (util/safe-lowercase category)
      :class i-class
-     :class.lowercase (str/lower-case i-class)
+     :class.lowercase (util/safe-lowercase i-class)
      :type type
-     :type.lowercase (str/lower-case type)
+     :type.lowercase (util/safe-lowercase type)
      :subtype subtype
-     :subtype.lowercase (str/lower-case subtype)
+     :subtype.lowercase (util/safe-lowercase subtype)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name.lowercase (util/safe-lowercase short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name.lowercase (util/safe-lowercase long-name)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid.lowercase (util/safe-lowercase uuid)}))

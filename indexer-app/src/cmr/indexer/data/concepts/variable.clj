@@ -30,13 +30,13 @@
        :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
-       :variable-name.lowercase (string/lower-case variable-name)
+       :variable-name.lowercase (util/safe-lowercase variable-name)
        :measurement measurement
-       :measurement.lowercase (string/lower-case measurement)
+       :measurement.lowercase (util/safe-lowercase measurement)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id.lowercase (util/safe-lowercase provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id.lowercase (util/safe-lowercase native-id)
        :keyword (keyword-util/field-values->keyword-text keyword-values)
        :user-id user-id
        :revision-date revision-date}
@@ -45,13 +45,13 @@
        :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
-       :variable-name.lowercase (string/lower-case variable-name)
+       :variable-name.lowercase (util/safe-lowercase variable-name)
        :measurement measurement
-       :measurement.lowercase (string/lower-case measurement)
+       :measurement.lowercase (util/safe-lowercase measurement)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id.lowercase (util/safe-lowercase provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id.lowercase (util/safe-lowercase native-id)
        :keyword (keyword-util/field-values->keyword-text keyword-values)
        :user-id user-id
        :revision-date revision-date
@@ -87,9 +87,9 @@
         {:keys [variable-name measurement]} extra-fields
         {:keys [originator-id data]} variable-association]
     {:measurement measurement
-     :measurement.lowercase (string/lower-case measurement)
+     :measurement.lowercase (util/safe-lowercase measurement)
      :variable variable-name
-     :variable.lowercase (string/lower-case variable-name)
+     :variable.lowercase (util/safe-lowercase variable-name)
      :originator-id.lowercase  (util/safe-lowercase originator-id)}))
 
 (defn variable-associations->elastic-doc
@@ -104,9 +104,9 @@
         measurements (map :measurement variable-fields)]
     {:has-variables (some? (seq variable-concepts))
      :variable-names variable-names
-     :variable-names.lowercase (map string/lower-case variable-names)
+     :variable-names.lowercase (map util/safe-lowercase variable-names)
      :variable-native-ids variable-native-ids
-     :variable-native-ids.lowercase (map string/lower-case variable-native-ids)
+     :variable-native-ids.lowercase (map util/safe-lowercase variable-native-ids)
      :measurements measurements
-     :measurements.lowercase (map string/lower-case measurements)
+     :measurements.lowercase (map util/safe-lowercase measurements)
      :variables (map variable-concept->elastic-doc variable-concepts)}))

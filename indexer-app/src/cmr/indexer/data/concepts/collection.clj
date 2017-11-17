@@ -249,17 +249,17 @@
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
-            :native-id.lowercase (str/lower-case native-id)
+            :native-id.lowercase (util/safe-lowercase native-id)
             :user-id user-id
             :permitted-group-ids permitted-group-ids
             ;; If there's an entry in the collection granule aggregates then the collection has granules.
             :has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
             :entry-id entry-id
-            :entry-id.lowercase (str/lower-case entry-id)
+            :entry-id.lowercase (util/safe-lowercase entry-id)
             :entry-title (str/trim entry-title)
-            :entry-title.lowercase (str/trim (str/lower-case entry-title))
+            :entry-title.lowercase (str/trim (util/safe-lowercase entry-title))
             :provider-id provider-id
-            :provider-id.lowercase (str/lower-case provider-id)
+            :provider-id.lowercase (util/safe-lowercase provider-id)
             :short-name short-name
             :short-name.lowercase (util/safe-lowercase short-name)
             :version-id version-id
@@ -271,12 +271,11 @@
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (util/safe-lowercase processing-level-id)
             :collection-data-type collection-data-type
-            :collection-data-type.lowercase (when collection-data-type
-                                              (if (sequential? collection-data-type)
-                                                (map str/lower-case collection-data-type)
-                                                (str/lower-case collection-data-type)))
+            :collection-data-type.lowercase (if (sequential? collection-data-type)
+                                              (map util/safe-lowercase collection-data-type)
+                                              (util/safe-lowercase collection-data-type))
             :platform-sn platform-short-names
-            :platform-sn.lowercase  (map str/lower-case platform-short-names)
+            :platform-sn.lowercase  (map util/safe-lowercase platform-short-names)
 
             ;; hierarchical fields
             :platforms platforms-nested
@@ -301,24 +300,24 @@
                                     (:LocationKeywords collection))
 
             :instrument-sn instrument-short-names
-            :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
+            :instrument-sn.lowercase  (map util/safe-lowercase instrument-short-names)
             :sensor-sn sensor-short-names
-            :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
+            :sensor-sn.lowercase  (map util/safe-lowercase sensor-short-names)
             :authors authors
-            :authors.lowercase (map str/lower-case authors)
+            :authors.lowercase (map util/safe-lowercase authors)
             :project-sn2 project-short-names
-            :project-sn2.lowercase  (map str/lower-case project-short-names)
+            :project-sn2.lowercase  (map util/safe-lowercase project-short-names)
             :two-d-coord-name two-d-coord-names
-            :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
+            :two-d-coord-name.lowercase  (map util/safe-lowercase two-d-coord-names)
             :spatial-keyword spatial-keywords
-            :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
+            :spatial-keyword.lowercase  (map util/safe-lowercase spatial-keywords)
             :attributes (attrib/aas->elastic-docs collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
-            :archive-center.lowercase (map str/lower-case archive-center-names)
+            :archive-center.lowercase (map util/safe-lowercase archive-center-names)
             :data-center data-center-names
-            :data-center.lowercase (map str/lower-case data-center-names)
+            :data-center.lowercase (map util/safe-lowercase data-center-names)
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links
@@ -335,11 +334,11 @@
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
-            :platform-ln.lowercase (map str/lower-case platform-long-names)
-            :instrument-ln.lowercase (map str/lower-case instrument-long-names)
-            :sensor-ln.lowercase (map str/lower-case sensor-long-names)
-            :project-ln.lowercase (map str/lower-case project-long-names)
-            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)
+            :platform-ln.lowercase (map util/safe-lowercase platform-long-names)
+            :instrument-ln.lowercase (map util/safe-lowercase instrument-long-names)
+            :sensor-ln.lowercase (map util/safe-lowercase sensor-long-names)
+            :project-ln.lowercase (map util/safe-lowercase project-long-names)
+            :temporal-keyword.lowercase (map util/safe-lowercase temporal-keywords)
 
             ;; tags
             :tags (map tag/tag-association->elastic-doc tag-associations)

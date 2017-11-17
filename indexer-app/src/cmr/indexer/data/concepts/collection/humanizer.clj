@@ -10,7 +10,7 @@
 (defn- add-humanized-lowercase
   "Adds a :value.lowercase field to a humanized object"
   [obj]
-  (assoc obj :value.lowercase (str/lower-case (:value obj))))
+  (assoc obj :value.lowercase (util/safe-lowercase (:value obj))))
 
 (defn- select-indexable-humanizer-fields
   "Selects the fields from humanizers that can be indexed."

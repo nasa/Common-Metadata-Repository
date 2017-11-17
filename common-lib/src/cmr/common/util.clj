@@ -115,7 +115,7 @@
 (defn safe-lowercase
   "Returns the given string in lower case safely."
   [v]
-  (when v (string/lower-case v)))
+  (when-not (nil? v) (string/lower-case v)))
 
 (defn safe-uppercase
   "Returns the given string in upper case safely."
