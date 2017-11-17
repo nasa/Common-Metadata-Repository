@@ -293,6 +293,10 @@
 					"description": "Specifies a bounding rectangle search.",
 					"$ref": "#/definitions/BoundingBoxCondition"
 				},
+				"doi": {
+					"description": "Specifies a Digital Object Identifier search.",
+					"$ref": "#/definitions/StringCondition"
+				},
 				"temporal": {
 					"description": "Specifies a temporal search.",
 					"type": "object",
