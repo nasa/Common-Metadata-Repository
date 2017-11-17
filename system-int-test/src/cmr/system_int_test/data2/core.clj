@@ -220,11 +220,22 @@
                                           :concept-type (umm-legacy/item->concept-type collection)
                                           :format (mime-types/format->mime-type format-key)})))))
 
+(defn- item->ref-name
+  "Returns the name of the reference for the given item"
+  [item]
+  (let [concept-type (concepts/concept-id->type (:concept-id item))]
+    (if (some #{concept-type} [:service :variable])
+      (-> item
+          :metadata
+          (json/decode true)
+          :Name)
+      (item->native-id item))))
+
 (defn item->ref
   "Converts an item into the expected reference"
   [item]
   (let [{:keys [concept-id revision-id deleted]} item
-        ref {:name (item->native-id item)
+        ref {:name (item->ref-name item)
              :id concept-id
              :location (format "%s%s/%s" (url/location-root) (:concept-id item) revision-id)
              :revision-id revision-id}]

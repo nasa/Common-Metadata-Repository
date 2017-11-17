@@ -26,12 +26,10 @@
   (testing "Unrecognized parameters"
     (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}
            (variables/search {:foo "bar"}))))
-  (testing "Unsupported parameters"
+  (testing "Unsupported sort key"
     (is (= {:status 400
             :errors ["The sort key [concept_id] is not a valid field for sorting variables."]}
-           (variables/search {:sort-key "concept_id"})))
-    (is (= {:status 400, :errors ["Parameter [entry_title] was not recognized."]}
-           (variables/search {:entry_title "foo"}))))
+           (variables/search {:sort-key "concept_id"}))))
 
   (testing "Unsupported options"
     (are [field option]
@@ -96,7 +94,7 @@
     (index/wait-until-indexed)
 
     (are3 [expected-variables query]
-      (variables/assert-variable-search expected-variables (variables/search query))
+      (d/refs-match? expected-variables (search/find-refs :variable query))
 
       "Find all"
       all-variables {}

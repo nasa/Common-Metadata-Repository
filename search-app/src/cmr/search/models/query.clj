@@ -1,10 +1,8 @@
 (ns cmr.search.models.query
   "Defines various query models and conditions specific for searching for collections and granules."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.parameter-parser :as pp]
-            [clojure.string :as s]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-            [cmr.common-app.services.search.query-model :as common-qm]))
+  (:require
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord SpatialCondition
   [
@@ -161,6 +159,11 @@
   [{:field :variable-name :order :asc}
    {:field :provider-id :order :asc}])
 
+(defmethod common-qm/default-sort-keys :service
+  [_]
+  [{:field :service-name :order :asc}
+   {:field :provider-id :order :asc}])
+
 (defmethod common-qm/default-sort-keys :collection
   [_]
   [{:field :entry-title :order :asc}
@@ -185,6 +188,15 @@
    :all-revisions? false})
 
 (defmethod common-qm/concept-type->default-query-attribs :variable
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :result-format :json
+   :echo-compatible? false
+   :all-revisions? false})
+
+(defmethod common-qm/concept-type->default-query-attribs :service
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size

@@ -33,7 +33,7 @@
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
-  (-> #"^([^s]+)s(?:\..+)?"
+  (-> #"^(.+)s(?:\..+)?"
       (re-matches concept-type-w-extension)
       second
       keyword))
@@ -146,7 +146,7 @@
 
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables))(?:\..+)?"] [path-w-extension]
+  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req common-routes/options-response)
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}

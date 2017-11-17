@@ -1,7 +1,7 @@
 (ns cmr.search.data.elastic-search-index
   "Implements the search index protocols for searching against Elasticsearch."
   (:require
-   [clojure.string :as s]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.query :as q]
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
@@ -15,12 +15,13 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as util]
-   ;; Required to be available at runtime.
-   [cmr.search.data.query-to-elastic]
-   [cmr.search.data.elastic-relevancy-scoring]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-   [cmr.transmit.index-set :as index-set]))
+   [cmr.transmit.index-set :as index-set])
+  ;; Required to be available at runtime.
+  (:require
+   [cmr.search.data.elastic-relevancy-scoring]
+   [cmr.search.data.query-to-elastic]))
 
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
@@ -28,7 +29,6 @@
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
-
 
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
@@ -98,7 +98,7 @@
   [context provider-ids]
   (let [indexes (get-granule-index-names context)]
     (cons (get indexes :small_collections)
-          (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
+          (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
                provider-ids))))
 
 (defn all-granule-indexes
@@ -109,7 +109,7 @@
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)
-                                   (str "," (s/join "," (map #(str "-" %) rebalancing-indexes)))
+                                   (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))
                                    "")]
     (format "%d_c*,%d_small_collections,-%d_collections*%s"
             index-set-id index-set-id index-set-id excluded-collections-str)))
@@ -122,11 +122,11 @@
     (cond
       coll-concept-ids
       ;; Use collection concept ids to limit the indexes queried
-      (s/join "," (collection-concept-ids->index-names context coll-concept-ids))
+      (string/join "," (collection-concept-ids->index-names context coll-concept-ids))
 
       provider-ids
       ;; Use provider ids to limit the indexes queried
-      (s/join "," (provider-ids->index-names context provider-ids))
+      (string/join "," (provider-ids->index-names context provider-ids))
 
       :else
       (all-granule-indexes context))))
@@ -154,6 +154,11 @@
                  "1_all_variable_revisions"
                  "1_variables")
    :type-name "variable"})
+
+(defmethod common-esi/concept-type->index-info :service
+  [context _ query]
+  {:index-name "1_services"
+   :type-name "service"})
 
 (defn context->conn
   [context]

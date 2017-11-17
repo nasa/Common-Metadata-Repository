@@ -1,9 +1,48 @@
 (ns cmr.indexer.data.concepts.service
   "Contains functions to parse and convert service and service association concepts."
   (:require
+   [clojure.string :as string]
+   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
    [cmr.indexer.data.concept-parser :as concept-parser]
+   [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
+
+(defmethod es/parsed-concept->elastic-doc :service
+  [context concept parsed-concept]
+  (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
+                revision-date format extra-fields]} concept
+        {:keys [service-name]} extra-fields
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
+    (if deleted
+      ;; This is only called by re-indexing (bulk indexing)
+      ;; Regular deleted variables would have gone through the index-service/delete-concept path.
+      {:concept-id concept-id
+       :revision-id revision-id
+       :concept-seq-id concept-seq-id
+       :deleted deleted
+       :service-name service-name
+       :service-name.lowercase (string/lower-case service-name)
+       :provider-id provider-id
+       :provider-id.lowercase (string/lower-case provider-id)
+       :native-id native-id
+       :native-id.lowercase (string/lower-case native-id)
+       :user-id user-id
+       :revision-date revision-date}
+      {:concept-id concept-id
+       :revision-id revision-id
+       :concept-seq-id concept-seq-id
+       :deleted deleted
+       :service-name service-name
+       :service-name.lowercase (string/lower-case service-name)
+       :provider-id provider-id
+       :provider-id.lowercase (string/lower-case provider-id)
+       :native-id native-id
+       :native-id.lowercase (string/lower-case native-id)
+       :user-id user-id
+       :revision-date revision-date
+       :metadata-format (name (mt/format-key format))})))
 
 (defn- service-association->service-concept
   "Returns the service concept and service association for the given service association."

@@ -274,4 +274,5 @@
         {:collection "collection"
          :granule "granule"
          :tag "tag"
-         :variable "variable"}))))
+         :variable "variable"
+         :service "service"}))))

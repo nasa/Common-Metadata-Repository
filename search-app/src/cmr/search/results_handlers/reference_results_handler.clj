@@ -1,15 +1,16 @@
 (ns cmr.search.results-handlers.reference-results-handler
   "Handles the XML reference format."
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.services.url-helper :as url]
-            [clojure.data.xml :as x]
-            [clojure.set :as set]
-            [cheshire.core :as json]
-            [cmr.search.models.query :as q]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.data.xml :as x]
+   [clojure.set :as set]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.search.models.query :as q]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.url-helper :as url]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
   [concept-type query]
@@ -37,11 +38,21 @@
    "revision-id"
    "_score"])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:service :xml]
+  [concept-type query]
+  ["service-name"
+   "provider-id"
+   "concept-id"
+   "deleted"
+   "revision-id"
+   "_score"])
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
    :granule :granule-ur
-   :variable :variable-name})
+   :variable :variable-name
+   :service :service-name})
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]
@@ -57,7 +68,7 @@
      :name name-value
      :score (q/normalize-score score)}))
 
-(doseq [concept-type [:collection :granule :variable]]
+(doseq [concept-type [:collection :granule :variable :service]]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
     [context query elastic-result]
     (elastic-result->query-result-item context query elastic-result)))
@@ -136,7 +147,7 @@
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
-(doseq [concept-type [:collection :granule :variable]]
+(doseq [concept-type [:collection :granule :variable :service]]
   (defmethod qs/search-results->response [concept-type :xml]
     [context query results]
     (search-results->response context query results)))
