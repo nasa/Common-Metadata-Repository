@@ -36,6 +36,12 @@
                                   (assoc :DOI (cm/map->DoiType
                                                {:DOI "Not provided" :Authority "auth3"})))
                               {:format :umm-json
+                               :accept-format :json})
+        no-doi (d/ingest-umm-spec-collection "PROV1"
+                              (-> exp-conv/example-collection-record
+                                  (assoc :ShortName "noDOI")
+                                  (assoc :EntryTitle "These Are Not The DOIs You're Looking For"))
+                              {:format :umm-json
                                :accept-format :json})]
     (index/wait-until-indexed)
 
@@ -60,13 +66,33 @@
        "search for collections with both doi1 and doi2 returns nothing"
        [] ["Doi1" "doI2"] {:and true}))
     (testing "search doi with json query"
-      (let [not-provided-results (search/find-refs-with-json-query
-                                   :collection
-                                   {}
-                                   {:doi {:value "Not provided" :pattern true}})
-            wildcard-results (search/find-refs-with-json-query
-                                         :collection
-                                         {}
-                                         {:doi {:value "*" :pattern true}})]
-        (is (d/refs-match? [coll3] not-provided-results))
-        (is (d/refs-match? [coll1 coll2 coll3] wildcard-results))))))
+      (are3 [items json-search]
+            (d/refs-match? items (search/find-refs-with-json-query
+                                  :collection {} json-search))
+            "Search for empty values"
+            [coll3] {:doi {:value "Not provided"}}
+
+            "Wildcard search"
+            [coll1 coll2 coll3] {:doi {:value "*" :pattern true}}
+
+            "Search for collections with doi1 or doi2"
+            [coll1 coll2] {:doi {:value "Doi*" :pattern true}}
+
+            "Search for collections with doi1 or doi2"
+            [] {:doi {:value "Doi*" :pattern false}}
+
+            "Search for collections with doi1"
+            [coll1] {:doi {:value "doi1"}}
+
+            "Search for collections with doi1 again, but with a string, not a map"
+            [coll1] {:doi "doi1"}
+
+            "Search for collections with DOI1 to test case sensitivity"
+            [] {:doi {:value "DOI1" :ignore_case false}}
+
+            "Search for collections with no DOIs"
+            [no-doi] {:not {:doi {:value "*" :pattern true}}}
+
+            "Search for collections with DOIs that aren't provided or missing"
+            [coll3 no-doi]
+            {:or [{:not {:doi {:value "*" :pattern true}}} {:doi "Not provided"}]}))))
