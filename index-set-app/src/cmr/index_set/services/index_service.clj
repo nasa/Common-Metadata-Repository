@@ -1,23 +1,22 @@
 (ns cmr.index-set.services.index-service
   "Provide functions to store, retrieve, delete index-sets"
-  (:require [clojure.string :as s]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.index-set.data.elasticsearch :as es]
-            [cmr.elastic-utils.connect :as es-util]
-            [cheshire.core :as json]
-            [camel-snake-kebab.core :as csk]
-            [cmr.acl.core :as acl]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.echo.rest :as echo-rest]
-            [cmr.index-set.services.messages :as m]
-            [clojure.walk :as walk]
-            [cheshire.core :as cheshire]
-            [cmr.index-set.config.elasticsearch-config :as es-config])
-  (:import clojure.lang.ExceptionInfo))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as string]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.connect :as es-util]
+   [cmr.index-set.config.elasticsearch-config :as es-config]
+   [cmr.index-set.data.elasticsearch :as es]
+   [cmr.index-set.services.messages :as m]
+   [cmr.transmit.echo.rest :as echo-rest])
+  (:import
+   (clojure.lang ExceptionInfo)))
 
-;; configured list of cmr concepts
-(def concept-types [:collection :granule :deleted-granule :tag :variable])
+(def searchable-concept-types
+  "Defines the concept types that are indexed in elasticsearch and thus searchable."
+  [:collection :granule :deleted-granule :tag :variable :service])
 
 (defn context->es-store
   [context]
@@ -26,13 +25,13 @@
 (defn gen-valid-index-name
   "Join parts, lowercase letters and change '-' to '_'."
   [prefix-id suffix]
-  (s/lower-case (s/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
+  (string/lower-case (string/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
 
 (defn- build-indices-list-w-config
   "Given an index-set, build list of indices with config."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept-type concept-types
+    (for [concept-type searchable-concept-types
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -44,7 +43,7 @@
   "Given a index set build list of index names."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept-type concept-types
+    (for [concept-type searchable-concept-types
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -62,7 +61,7 @@
   (let [prefix (:id index-set)]
     {:id (:id index-set)
      :name (:name index-set)
-     :concepts (into {} (for [concept-type concept-types]
+     :concepts (into {} (for [concept-type searchable-concept-types]
                           [concept-type
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                       [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))

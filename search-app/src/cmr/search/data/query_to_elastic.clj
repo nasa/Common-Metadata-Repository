@@ -101,6 +101,11 @@
   {:provider :provider-id
    :name :variable-name})
 
+(defmethod q2e/concept-type->field-mappings :service
+  [_]
+  {:provider :provider-id
+   :name :service-name})
+
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:project-sn2 :project-sn
@@ -150,6 +155,11 @@
   [_]
   {:provider "provider-id.lowercase"
    :name "variable-name.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :service
+  [_]
+  {:provider "provider-id.lowercase"
+   :name "service-name.lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -281,6 +291,11 @@
   {:variable-name :variable-name.lowercase
    :name :variable-name.lowercase
    :long-name :measurement.lowercase
+   :provider :provider-id.lowercase})
+
+(defmethod q2e/concept-type->sort-key-map :service
+  [_]
+  {:name :service-name.lowercase
    :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule

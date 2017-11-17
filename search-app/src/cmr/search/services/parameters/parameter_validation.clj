@@ -74,6 +74,15 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+(defmethod cpv/params-config :service
+  [_]
+  (cpv/merge-params-config
+    cpv/basic-params-config
+    {:single-value #{}
+     :multiple-value #{}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}}))
+
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
   {:collection #{:tag-key}
@@ -638,7 +647,8 @@
               collection-concept-id-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
-                     [boolean-value-validation])})
+                     [boolean-value-validation])
+   :service cpv/common-validations})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

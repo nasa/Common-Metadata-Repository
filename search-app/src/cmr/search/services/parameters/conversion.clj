@@ -123,6 +123,10 @@
    :concept-id :string
    :keyword :keyword})
 
+(defmethod common-params/param-mappings :service
+  [_]
+  {})
+
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
   #{:concept-id :collection-concept-id})

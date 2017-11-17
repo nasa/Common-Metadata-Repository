@@ -8,6 +8,8 @@
 (def service-api-routes
   (context "/services" []
 
+    ;; Search for services route is defined in routes.clj
+
     ;; service associations routes
     (context "/:service-concept-id" [service-concept-id]
       (context "/associations" []

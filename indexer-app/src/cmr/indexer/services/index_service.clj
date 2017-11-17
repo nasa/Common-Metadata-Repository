@@ -424,11 +424,6 @@
   (index-associated-variable context concept {})
   (index-associated-variable context concept {:all-revisions-index? true}))
 
-(defmethod index-concept :service
-  [context concept parsed-concept options]
-  ;; We do not index service concepts in elasticsearch for now.
-  )
-
 (defmethod index-concept :service-association
   [context concept parsed-concept options]
   (index-associated-collection context concept options))
@@ -519,11 +514,6 @@
   ;; When variable association is deleted, we want to re-index the associated collection.
   ;; This is the same thing we do when a variable association is updated. So we call the same function.
   (index-association-concept context concept-id revision-id options))
-
-(defmethod delete-concept :service
-  [context concept parsed-concept options]
-  ;; We do not index service concepts in elasticsearch for now.
-  )
 
 (defmethod delete-concept :service-association
   [context concept-id revision-id options]

@@ -46,6 +46,10 @@
   "Number of shards to use for the variables index."
   {:default 5 :type Long})
 
+(defconfig elastic-service-index-num-shards
+  "Number of shards to use for the services index."
+  {:default 5 :type Long})
+
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -76,6 +80,11 @@
 
 (def variable-setting {:index
                        {:number_of_shards (elastic-variable-index-num-shards)
+                        :number_of_replicas 1,
+                        :refresh_interval "1s"}})
+
+(def service-setting {:index
+                       {:number_of_shards (elastic-service-index-num-shards)
                         :number_of_replicas 1,
                         :refresh_interval "1s"}})
 
@@ -637,6 +646,25 @@
    ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
    :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 
+(defmapping service-mapping :service
+  "Defines the elasticsearch mapping for storing services."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+   ;; This is used explicitly for sorting. The values take up less space in the
+   ;; fielddata cache.
+   :concept-seq-id (m/doc-values m/int-field-mapping)
+   :native-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id.lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id.lowercase (m/doc-values m/string-field-mapping)
+   :service-name (-> m/string-field-mapping m/stored m/doc-values)
+   :service-name.lowercase (m/doc-values m/string-field-mapping)
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
@@ -694,7 +722,11 @@
                            ;; is used for all-revisions searches.
                            {:name "all-variable-revisions"
                             :settings variable-setting}]
-                          :mapping variable-mapping}}})
+                          :mapping variable-mapping}
+               :service {:indexes
+                         [{:name "services"
+                           :settings service-setting}]
+                         :mapping service-mapping}}})
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -783,7 +815,8 @@
      {:collection (get-concept-mapping-fn :collection)
       :granule (get-concept-mapping-fn :granule)
       :tag (get-concept-mapping-fn :tag)
-      :variable (get-concept-mapping-fn :variable)})))
+      :variable (get-concept-mapping-fn :variable)
+      :service (get-concept-mapping-fn :service)})))
 
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
@@ -856,6 +889,9 @@
        (if all-revisions-index?
          [(get indexes :all-variable-revisions)]
          [(get indexes (or target-index-key :variables))])
+
+       :service
+       [(get indexes (or target-index-key :services))]
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
