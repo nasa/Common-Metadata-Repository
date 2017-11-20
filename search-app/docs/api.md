@@ -275,8 +275,10 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `opendata`  "application/opendata+json" (only supported for collections)
   * `kml`       "application/vnd.google-earth.kml+xml"
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
-  * `umm_json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
+  * `umm-json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
     * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
+  * `umm_json`   "application/vnd.nasa.cmr.umm_results+json" (only supported for collections)
+    * The UMM JSON extension returns concepts in the latest version of the UMM.
   * `umm_json_vX_Y` "application/vnd.nasa.cmr.umm_results+json; version=X.Y"
     * X and Y should be replaced with a major and minor number of the UMM version requested.
 
@@ -2074,10 +2076,11 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `dif`       "application/dif+xml"
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
+  * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable and service concept types:
 
-  * `umm_json`     "application/vnd.nasa.cmr.umm+json"
+  * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
 
 ### <a name="search-with-post"></a> Search with POST
