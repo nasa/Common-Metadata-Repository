@@ -2,7 +2,9 @@
   "This tests force-deleting a variable concept and the impact on
   variable/collection associations."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.utils.index-util :as index]
@@ -60,22 +62,29 @@
       (is (= coll-concept-id
              (get-in assn-response [:associated-item :concept-id])))
       (is (contains? (get-collection-variables) var-concept-id))
+      ;; revision 3 of the service is found
+      (d/refs-match? [var-concept] (search/find-refs :variable {}))
       (variable/assert-variable-associations
        var-concept {:collections [{:concept-id coll-concept-id}]}
        {:all-revisions true}))
-    (testing "just the second-to-last revision is deleted"
+    (testing "revision 2 is force deleted"
       (mdb/force-delete-concept var-concept-id 2)
       ;; make sure the variable association has not been deleted
       (is (contains? (get-collection-variables) var-concept-id))
+      ;; revision 3 of the service is found
+      (d/refs-match? [var-concept] (search/find-refs :variable {}))
       ;; XXX the follwoing nil result is not what I would expect here ... is
       ;;     there some complex relationship here that we are not accounting
       ;;     for? Do we need to file a bug?
       (variable/assert-variable-associations
        var-concept nil {:all-revisions true}))
-    (testing "just the most recent revision is deleted"
-      ;; now ensure that the variable association has been deleted
-      (mdb/force-delete-concept var-concept-id 3)
-      (index/wait-until-indexed)
-      (is (not (contains? (get-collection-variables) var-concept-id)))
-      (variable/assert-variable-associations
-       var-concept nil {:all-revisions true}))))
+    (testing "Cannot force delete the latest revision"
+      (let [expected-errors [(format (str "Cannot force delete the latest revision of a concept "
+                                          "[%s, %s], use regular delete instead.")
+                                     var-concept-id 3)]
+            {:keys [status body]} (mdb/force-delete-concept var-concept-id 3)
+            errors (-> body
+                       (json/decode true)
+                       :errors)]
+        (is (= 400 status))
+        (is (= expected-errors errors))))))

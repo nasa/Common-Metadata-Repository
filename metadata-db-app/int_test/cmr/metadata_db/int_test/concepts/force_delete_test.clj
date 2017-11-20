@@ -162,7 +162,7 @@
              (get-in var-assn [:extra-fields :variable-concept-id])))
       ;; make sure collection associations in place
       (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id))))))
-    (testing "just the last revision is deleted"
+    (testing "revision 2 is force deleted"
       (util/force-delete-concept var-concept-id 2)
       (is (= 200 (:status (util/get-concept-by-id-and-revision
                            var-concept-id 3))))
@@ -172,15 +172,17 @@
                            var-concept-id 1))))
       ;; verify the association hasn't been deleted
       (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id))))))
-    (testing "just the most recent revision is deleted"
-      (util/force-delete-concept var-concept-id 3)
-      (is (= 404 (:status (util/get-concept-by-id-and-revision
-                           var-concept-id 3))))
-      (is (= 404 (:status (util/get-concept-by-id-and-revision
-                           var-concept-id 2))))
-      (is (= 200 (:status (util/get-concept-by-id-and-revision
-                           var-concept-id 1))))
-      (is (:deleted (:concept (util/get-concept-by-id var-assn-concept-id)))))
+    (testing "Cannot force delete the latest revision of a concept"
+      (let [expected-errors [(format (str "Cannot force delete the latest revision of a concept "
+                                          "[%s, %s], use regular delete instead.")
+                                     var-concept-id 3)]
+            {:keys [status errors]} (util/force-delete-concept var-concept-id 3)]
+        (is (= 400 status))
+        (is (= expected-errors errors))
+        ;; latest revision of the service concept and service associations are not deleted
+        (is (= 200 (:status (util/get-concept-by-id-and-revision
+                             var-concept-id 3))))
+        (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id)))))))
     (testing "cannot delete non-existing revision"
       (let [non-extant-revision 4
             response (util/force-delete-concept var-concept-id non-extant-revision)]
