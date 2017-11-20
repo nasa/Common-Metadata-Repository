@@ -654,9 +654,10 @@
 
 (defmethod force-delete-cascading-events :variable
   [context concept-type concept-id revision-id]
-  ;; delete the related variable associations
-  (delete-associations context concept-type concept-id revision-id :variable-association)
-  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+  (when (latest-revision? context concept-id revision-id)
+    ;; delete the related variable associations
+    (delete-associations context concept-type concept-id revision-id :variable-association)
+    (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id)))
 
 (defmethod force-delete-cascading-events :service
   [context concept-type concept-id revision-id]
