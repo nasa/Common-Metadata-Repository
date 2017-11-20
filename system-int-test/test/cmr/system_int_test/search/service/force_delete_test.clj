@@ -2,7 +2,9 @@
   "This tests force-deleting a service concept and the impact on
   service/collection associations."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.utils.index-util :as index]
@@ -59,13 +61,21 @@
       ;; it contains `:services` and that the right service is associated
       (is (= coll-concept-id
              (get-in assn-response [:associated-item :concept-id])))
-      (is (contains? (get-collection-services) svc-concept-id)))
-    (testing "just the second-to-last revision is deleted"
+      (is (contains? (get-collection-services) svc-concept-id))
+      ;; revision 3 of the service is found
+      (d/refs-match? [svc-concept] (search/find-refs :service {})))
+    (testing "revision 2 is force deleted"
       (mdb/force-delete-concept svc-concept-id 2)
       ;; make sure the service association has not been deleted
-      (is (contains? (get-collection-services) svc-concept-id)))
-    (testing "just the most recent revision is deleted"
-      ;; now ensure that the service association has been deleted
-      (mdb/force-delete-concept svc-concept-id 3)
-      (index/wait-until-indexed)
-      (is (not (contains? (get-collection-services) svc-concept-id))))))
+      (is (contains? (get-collection-services) svc-concept-id))
+      ;; revision 3 of the service is found
+      (d/refs-match? [svc-concept] (search/find-refs :service {})))
+    (testing "Cannot force delete the latest revision"
+      (let [expected-errors [(format "Cannot force delete the latest revision of a concept [%s, %s]."
+                                     svc-concept-id 3)]
+            {:keys [status body]} (mdb/force-delete-concept svc-concept-id 3)
+            errors (-> body
+                       (json/decode true)
+                       :errors)]
+        (is (= 400 status))
+        (is (= expected-errors errors))))))

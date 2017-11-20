@@ -1,8 +1,6 @@
 (ns cmr.metadata-db.int-test.concepts.force-delete-test
   "Contains integration test for emptying database via force-delete."
   (:require
-   [cheshire.core :as cheshire]
-   [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as cs-spec]
@@ -107,7 +105,7 @@
              (get-in svc-assn [:extra-fields :service-concept-id])))
       ;; make sure collection associations in place
       (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
-    (testing "just the last revision is deleted"
+    (testing "revision 2 is force deleted"
       (util/force-delete-concept svc-concept-id 2)
       (is (= 200 (:status (util/get-concept-by-id-and-revision
                            svc-concept-id 3))))
@@ -117,15 +115,16 @@
                            svc-concept-id 1))))
       ;; verify the association hasn't been deleted
       (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
-    (testing "just the most recent revision is deleted"
-      (util/force-delete-concept svc-concept-id 3)
-      (is (= 404 (:status (util/get-concept-by-id-and-revision
-                           svc-concept-id 3))))
-      (is (= 404 (:status (util/get-concept-by-id-and-revision
-                           svc-concept-id 2))))
-      (is (= 200 (:status (util/get-concept-by-id-and-revision
-                           svc-concept-id 1))))
-      (is (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id)))))
+    (testing "Cannot force delete the latest revision of a concept"
+      (let [expected-errors [(format "Cannot force delete the latest revision of a concept [%s, %s]."
+                                     svc-concept-id 3)]
+            {:keys [status errors]} (util/force-delete-concept svc-concept-id 3)]
+        (is (= 400 status))
+        (is (= expected-errors errors))
+        ;; latest revision of the service concept and service associations are not deleted
+        (is (= 200 (:status (util/get-concept-by-id-and-revision
+                             svc-concept-id 3))))
+        (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id)))))))
     (testing "cannot delete non-existing revision"
       (let [non-extant-revision 4
             response (util/force-delete-concept svc-concept-id non-extant-revision)]

@@ -398,6 +398,7 @@ returns: the revision id of the tombstone generated for the concept
 
 ### DELETE /concepts/force-delete/:concept-id/:revision-id
 
+Force delete the given concept revision. Force deleting the latest revision of a concept is not allowed. We should use regular delete for deleting the latest revision of a concept.
 params: none
 returns: nothing (status 204)
 
