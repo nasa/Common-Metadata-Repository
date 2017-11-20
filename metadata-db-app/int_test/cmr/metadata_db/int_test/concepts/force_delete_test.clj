@@ -20,6 +20,10 @@
   [_ provider-id uniq-num attributes]
   (util/service-concept provider-id uniq-num attributes))
 
+(defmethod cs-spec/gen-concept :variable
+  [_ provider-id uniq-num attributes]
+  (util/variable-concept provider-id uniq-num attributes))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -123,4 +127,53 @@
         (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
                              "does not exist.")
                         svc-concept-id non-extant-revision)]
+               (:errors response)))))))
+
+(deftest force-delete-variable-with-associations
+  (let [coll (util/create-and-save-collection "REG_PROV" 1)
+        coll-concept-id (:concept-id coll)
+        var-concept (util/create-and-save-variable "REG_PROV" 1 3)
+        var-concept-id (:concept-id var-concept)
+        var-assn (util/create-and-save-variable-association
+                  coll var-concept 1)
+        var-assn-concept-id (:concept-id var-assn)]
+    (testing "initial conditions"
+      ;; creation results as expected
+      (is (= 3 (:revision-id var-concept)))
+      ;; variable revisions in db
+      (is (= 3
+             (count (:concepts (util/find-concepts :variable)))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 3))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 2))))
+      ;; make sure variable association in place
+      (is (= coll-concept-id
+             (get-in var-assn [:extra-fields :associated-concept-id])))
+      (is (= var-concept-id
+             (get-in var-assn [:extra-fields :variable-concept-id])))
+      ;; make sure collection associations in place
+      (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id))))))
+    (testing "just the last revision is deleted"
+      (util/force-delete-concept var-concept-id 2)
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 3))))
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 2))))
+      ;; verify the association hasn't been deleted
+      (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id))))))
+    (testing "just the most recent revision is deleted"
+      (util/force-delete-concept var-concept-id 3)
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 3))))
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 2))))
+      (is (:deleted (:concept (util/get-concept-by-id var-assn-concept-id)))))
+    (testing "cannot delete non-existing revision"
+      (let [non-extant-revision 4
+            response (util/force-delete-concept var-concept-id non-extant-revision)]
+        (is (= 404 (:status response)))
+        (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
+                             "does not exist.")
+                        var-concept-id non-extant-revision)]
                (:errors response)))))))
