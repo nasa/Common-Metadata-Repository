@@ -675,7 +675,8 @@
       (if (latest-revision? context concept-id revision-id)
         (errors/throw-service-error
          :bad-request
-         (format "Cannot force delete the latest revision of a concept [%s, %s]."
+         (format (str "Cannot force delete the latest revision of a concept "
+                      "[%s, %s], use regular delete instead.")
                  concept-id revision-id))
         (do
           (force-delete-cascading-events context concept-type concept-id revision-id)
