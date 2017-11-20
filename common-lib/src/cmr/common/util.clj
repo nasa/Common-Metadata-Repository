@@ -115,12 +115,12 @@
 (defn safe-lowercase
   "Returns the given string in lower case safely."
   [v]
-  (when v (string/lower-case v)))
+  (when (some? v) (string/lower-case v)))
 
 (defn safe-uppercase
   "Returns the given string in upper case safely."
   [v]
-  (when v (string/upper-case v)))
+  (when (some? v) (string/upper-case v)))
 
 (defn match-enum-case
   "Given a string and a collection of valid enum values, return the proper-cased
