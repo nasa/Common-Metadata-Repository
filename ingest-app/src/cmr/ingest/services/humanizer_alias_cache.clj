@@ -35,7 +35,7 @@
 
   In particular, this function converts the value assciated with
   :replacement_value to upper-case before group-by in order to cover the case
-  in humanizers.json where there are multiple :replacement_value that only
+  in test-humanizers.json where there are multiple :replacement_value that only
   differ in upper-lower cases."
   [v1]
   (group-by
