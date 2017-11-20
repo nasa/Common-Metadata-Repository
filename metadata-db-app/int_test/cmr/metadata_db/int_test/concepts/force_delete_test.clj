@@ -98,6 +98,8 @@
                            svc-concept-id 3))))
       (is (= 200 (:status (util/get-concept-by-id-and-revision
                            svc-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 1))))
       ;; make sure service association in place
       (is (= coll-concept-id
              (get-in svc-assn [:extra-fields :associated-concept-id])))
@@ -111,6 +113,8 @@
                            svc-concept-id 3))))
       (is (= 404 (:status (util/get-concept-by-id-and-revision
                            svc-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 1))))
       ;; verify the association hasn't been deleted
       (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
     (testing "just the most recent revision is deleted"
@@ -119,6 +123,8 @@
                            svc-concept-id 3))))
       (is (= 404 (:status (util/get-concept-by-id-and-revision
                            svc-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           svc-concept-id 1))))
       (is (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id)))))
     (testing "cannot delete non-existing revision"
       (let [non-extant-revision 4
@@ -147,6 +153,8 @@
                            var-concept-id 3))))
       (is (= 200 (:status (util/get-concept-by-id-and-revision
                            var-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 1))))
       ;; make sure variable association in place
       (is (= coll-concept-id
              (get-in var-assn [:extra-fields :associated-concept-id])))
@@ -160,6 +168,8 @@
                            var-concept-id 3))))
       (is (= 404 (:status (util/get-concept-by-id-and-revision
                            var-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 1))))
       ;; verify the association hasn't been deleted
       (is (not (:deleted (:concept (util/get-concept-by-id var-assn-concept-id))))))
     (testing "just the most recent revision is deleted"
@@ -168,6 +178,8 @@
                            var-concept-id 3))))
       (is (= 404 (:status (util/get-concept-by-id-and-revision
                            var-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           var-concept-id 1))))
       (is (:deleted (:concept (util/get-concept-by-id var-assn-concept-id)))))
     (testing "cannot delete non-existing revision"
       (let [non-extant-revision 4

@@ -60,7 +60,7 @@
       (is (= coll-concept-id
              (get-in assn-response [:associated-item :concept-id])))
       (is (contains? (get-collection-services) svc-concept-id)))
-    (testing "just the last revision is deleted"
+    (testing "just the second-to-last revision is deleted"
       (mdb/force-delete-concept svc-concept-id 2)
       ;; make sure the service association has not been deleted
       (is (contains? (get-collection-services) svc-concept-id)))

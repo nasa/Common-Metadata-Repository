@@ -13,44 +13,44 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as metadata-db]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.variable-util :as variables]
+   [cmr.system-int-test.utils.variable-util :as variable]
    [cmr.umm-spec.versioning :as umm-version]))
 
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                variables/grant-all-variable-fixture]))
+                variable/grant-all-variable-fixture]))
 
 (deftest search-variable-all-revisions
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection 1 {})
                                             {:token token})
-        var1-concept (variables/make-variable-concept {:native-id "var1"
+        var1-concept (variable/make-variable-concept {:native-id "var1"
                                                        :Name "Variable1"
                                                        :provider-id "PROV1"})
-        var1-1 (variables/ingest-variable var1-concept)
+        var1-1 (variable/ingest-variable var1-concept)
         var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
                                 var1-concept
                                 {:deleted true
                                  :user-id "user1"})
-        var1-3 (variables/ingest-variable var1-concept)
+        var1-3 (variable/ingest-variable var1-concept)
 
-        var2-1-concept (variables/make-variable-concept {:native-id "var2"
+        var2-1-concept (variable/make-variable-concept {:native-id "var2"
                                                          :Name "Variable2"
                                                          :LongName "LongName2"
                                                          :provider-id "PROV1"})
-        var2-1 (variables/ingest-variable var2-1-concept)
-        var2-2-concept (variables/make-variable-concept {:native-id "var2"
+        var2-1 (variable/ingest-variable var2-1-concept)
+        var2-2-concept (variable/make-variable-concept {:native-id "var2"
                                                          :Name "Variable2-2"
                                                          :LongName "LongName2-2"
                                                          :provider-id "PROV1"})
-        var2-2 (variables/ingest-variable var2-2-concept)
+        var2-2 (variable/ingest-variable var2-2-concept)
         var2-3-tombstone (merge (ingest/delete-concept var2-2-concept {:token token})
                                 var2-2-concept
                                 {:deleted true
                                  :user-id "user1"})
-        var3 (variables/ingest-variable-with-attrs {:native-id "var3"
+        var3 (variable/ingest-variable-with-attrs {:native-id "var3"
                                                     :Name "Variable1"
                                                     :LongName "LongName3"
                                                     :provider-id "PROV2"})]
@@ -59,9 +59,9 @@
       (are3 [variables params]
         (do
           ;; find references with all revisions
-          (variables/assert-variable-references-match variables (search/find-refs :variable params))
+          (variable/assert-variable-references-match variables (search/find-refs :variable params))
           ;; search in JSON with all-revisions
-          (variables/assert-variable-search variables (variables/search params))
+          (variable/assert-variable-search variables (variable/search params))
           ;; search in UMM JSON with all-revisions
           (du/assert-variable-umm-jsons-match
            umm-version/current-variable-version variables

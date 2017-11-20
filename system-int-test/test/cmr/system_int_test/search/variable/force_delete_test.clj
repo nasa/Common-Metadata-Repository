@@ -59,13 +59,23 @@
       ;; it contains `:variables` and that the right variable is associated
       (is (= coll-concept-id
              (get-in assn-response [:associated-item :concept-id])))
-      (is (contains? (get-collection-variables) var-concept-id)))
-    (testing "just the last revision is deleted"
+      (is (contains? (get-collection-variables) var-concept-id))
+      (variable/assert-variable-associations
+       var-concept {:collections [{:concept-id coll-concept-id}]}
+       {:all-revisions true}))
+    (testing "just the second-to-last revision is deleted"
       (mdb/force-delete-concept var-concept-id 2)
       ;; make sure the variable association has not been deleted
-      (is (contains? (get-collection-variables) var-concept-id)))
+      (is (contains? (get-collection-variables) var-concept-id))
+      ;; XXX the follwoing nil result is not what I would expect here ... is
+      ;;     there some complex relationship here that we are not accounting
+      ;;     for? Do we need to file a bug?
+      (variable/assert-variable-associations
+       var-concept nil {:all-revisions true}))
     (testing "just the most recent revision is deleted"
       ;; now ensure that the variable association has been deleted
       (mdb/force-delete-concept var-concept-id 3)
       (index/wait-until-indexed)
-      (is (not (contains? (get-collection-variables) var-concept-id))))))
+      (is (not (contains? (get-collection-variables) var-concept-id)))
+      (variable/assert-variable-associations
+       var-concept nil {:all-revisions true}))))
