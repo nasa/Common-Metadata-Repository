@@ -773,3 +773,15 @@
 
     "Set of numbers"
     #{1 7 52 3} 52))
+
+(deftest safe-lower-upper-case-test
+  (testing "safe-lowercase"
+    (is (= (util/safe-lowercase false) (str/lower-case false)))
+    (is (= (util/safe-lowercase true) (str/lower-case true)))
+    (is (= (util/safe-lowercase "StRing") (str/lower-case "StRing")))
+    (is (= (util/safe-lowercase nil) nil)))
+  (testing "safe-upperrcase"
+    (is (= (util/safe-uppercase false) (str/upper-case false)))
+    (is (= (util/safe-uppercase true) (str/upper-case true)))
+    (is (= (util/safe-uppercase "StRing") (str/upper-case "StRing")))
+    (is (= (util/safe-uppercase nil) nil)))) 
