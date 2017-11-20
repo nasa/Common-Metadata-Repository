@@ -71,7 +71,8 @@
       ;; revision 3 of the service is found
       (d/refs-match? [svc-concept] (search/find-refs :service {})))
     (testing "Cannot force delete the latest revision"
-      (let [expected-errors [(format "Cannot force delete the latest revision of a concept [%s, %s]."
+      (let [expected-errors [(format (str "Cannot force delete the latest revision of a concept "
+                                          "[%s, %s], use regular delete instead.")
                                      svc-concept-id 3)]
             {:keys [status body]} (mdb/force-delete-concept svc-concept-id 3)
             errors (-> body

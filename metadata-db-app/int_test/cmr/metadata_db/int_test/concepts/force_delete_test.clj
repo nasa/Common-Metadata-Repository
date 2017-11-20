@@ -116,7 +116,8 @@
       ;; verify the association hasn't been deleted
       (is (not (:deleted (:concept (util/get-concept-by-id svc-assn-concept-id))))))
     (testing "Cannot force delete the latest revision of a concept"
-      (let [expected-errors [(format "Cannot force delete the latest revision of a concept [%s, %s]."
+      (let [expected-errors [(format (str "Cannot force delete the latest revision of a concept "
+                                          "[%s, %s], use regular delete instead.")
                                      svc-concept-id 3)]
             {:keys [status errors]} (util/force-delete-concept svc-concept-id 3)]
         (is (= 400 status))
