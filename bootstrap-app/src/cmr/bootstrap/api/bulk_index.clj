@@ -88,6 +88,21 @@
     (let [dispatcher (api-util/get-dispatcher context :index-variables)]
       (service/index-variables context dispatcher provider-id))))
 
+(defn index-services
+  "(Re-)Index the services stored in metadata-db. If a provider-id is passed,
+  only the services for that provider will be indexed. With no provider-id,
+  all providers' services are (re-)indexed.
+
+  Note that this function differs from the service function it calls, in that
+  this function extracts dispatcher implementation from the context, while the
+  service function takes the dispatcher as an argument."
+  ([context]
+   (let [dispatcher (api-util/get-dispatcher context :index-services)]
+     (service/index-services context dispatcher)))
+  ([context provider-id]
+    (let [dispatcher (api-util/get-dispatcher context :index-services)]
+      (service/index-services context dispatcher provider-id))))
+
 (defn delete-concepts-by-id
   "Delete concepts from the indexes by concept-id."
   [context request-details-map params]

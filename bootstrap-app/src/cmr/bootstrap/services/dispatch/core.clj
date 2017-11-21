@@ -35,9 +35,14 @@
    "Bulk index all the granules in a collection.")
 
   (index-variables
-    [this context] [this context provider-id]
-    "Bulk index all the variables in CMR. Optionally, pass a provider id, in
+   [this context] [this context provider-id]
+   "Bulk index all the variables in CMR. Optionally, pass a provider id, in
     which case only the variables for that provider will be indexed.")
+
+  (index-services
+   [this context] [this context provider-id]
+   "Bulk index all the services in CMR. Optionally, pass a provider id, in
+    which case only the services for that provider will be indexed.")
 
   (index-system-concepts
    [this context start-index]

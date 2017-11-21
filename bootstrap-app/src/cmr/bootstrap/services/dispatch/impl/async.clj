@@ -113,6 +113,7 @@
    :migrate-collection migrate-collection
    :index-provider index-provider
    :index-variables (partial not-implemented :index-variables)
+   :index-services (partial not-implemented :index-services)
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts
