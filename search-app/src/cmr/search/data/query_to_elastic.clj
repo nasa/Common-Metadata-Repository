@@ -295,7 +295,8 @@
 
 (defmethod q2e/concept-type->sort-key-map :service
   [_]
-  {:name :service-name.lowercase
+  {:service-name :service-name.lowercase
+   :name :service-name.lowercase
    :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
@@ -355,6 +356,11 @@
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
   [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
+
+(defmethod q2e/concept-type->sub-sort-fields :service
+  [_]
+  [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :service) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection

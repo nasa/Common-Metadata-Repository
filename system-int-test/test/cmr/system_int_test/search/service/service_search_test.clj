@@ -107,3 +107,63 @@
     (index/wait-until-indexed)
     ;; Now searching services does not find the deleted services
     (d/refs-match? [] (search/find-refs :service {}))))
+
+(deftest service-search-sort
+  (let [service1 (services/ingest-service-with-attrs {:native-id "svc1"
+                                                      :Name "service"
+                                                      :provider-id "PROV2"})
+        service2 (services/ingest-service-with-attrs {:native-id "svc2"
+                                                      :Name "Service 2"
+                                                      :provider-id "PROV1"})
+        service3 (services/ingest-service-with-attrs {:native-id "svc3"
+                                                      :Name "a service"
+                                                      :provider-id "PROV1"})
+        service4 (services/ingest-service-with-attrs {:native-id "svc4"
+                                                      :Name "service"
+                                                      :provider-id "PROV1"})]
+    (index/wait-until-indexed)
+
+    (are3 [sort-key expected-services]
+      (is (d/refs-match-order?
+           expected-services
+           (search/find-refs :service {:sort-key sort-key})))
+
+      "Default sort"
+      nil
+      [service3 service4 service1 service2]
+
+      "Sort by name"
+      "name"
+      [service3 service4 service1 service2]
+
+      "Sort by name descending order"
+      "-name"
+      [service2 service4 service1 service3]
+
+      "Sort by provider id"
+      "provider_id"
+      [service2 service3 service4 service1]
+
+      "Sort by provider id descending order"
+      "-provider_id"
+      [service1 service2 service3 service4]
+
+      "Sort by revision-date"
+      "revision_date"
+      [service1 service2 service3 service4]
+
+      "Sort by revision-date descending order"
+      "-revision_date"
+      [service4 service3 service2 service1]
+
+      "Sort by name ascending then provider id ascending explicitly"
+      ["name" "provider_id"]
+      [service3 service4 service1 service2]
+
+      "Sort by name ascending then provider id descending order"
+      ["name" "-provider_id"]
+      [service3 service1 service4 service2]
+
+      "Sort by name then provider id descending order"
+      ["-name" "-provider_id"]
+      [service2 service1 service4 service3])))

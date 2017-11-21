@@ -247,6 +247,12 @@
     :revision-date
     :provider})
 
+(defmethod cpv/valid-sort-keys :service
+  [_]
+  #{:name
+    :revision-date
+    :provider})
+
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
   [day tag]
