@@ -159,6 +159,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Searching for Services](#searching-for-services)
         * [Service Search Parameters](#service-search-params)
         * [Service Search Response](#service-search-response)
+    * [Sorting Service Results](#sorting-service-results)
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
     * [Service dissociation](#service-dissociation)
@@ -3507,6 +3508,22 @@ Content-Length: 393
     </references>
 </results>
 ```
+
+##### <a name="sorting-service-results"></a> Sorting Service Results
+
+By default, service results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Service Sort Keys
+  * `name`
+  * `provider_id`
+  * `revision_date`
+
+Examples of sorting by provider_id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider_id"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider_id"
 
 #### <a name="service-access-control"></a> Service Access Control
 
