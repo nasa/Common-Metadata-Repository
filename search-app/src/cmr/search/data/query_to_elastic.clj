@@ -57,7 +57,8 @@
                           :variable-name :variable-names
                           :variable-native-id :variable-native-ids
                           :measurement :measurements
-                          :author :authors}]
+                          :author :authors
+                          :doi :doi-stored}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
