@@ -383,7 +383,7 @@
       (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
 
       ;; Delete the latest version of coll2
-      (is (= 200 (:status (mdb/force-delete-concept (:concept-id coll2-2) 2))))
+      (is (= 200 (:status (mdb/force-delete-concept (:concept-id coll2-2) 2 true))))
       (index/wait-until-indexed)
 
       ;; After deleting the latest version of coll2 we will still find that.

@@ -659,13 +659,14 @@
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
-  [context concept-id revision-id]
+  [context concept-id revision-id force?]
   (let [db (util/context->db context)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         provider (provider-service/get-provider-by-id context provider-id true)
         concept (c/get-concept db concept-type provider concept-id revision-id)]
     (if concept
-      (if (latest-revision? context concept-id revision-id)
+      (if (and (not force?)
+               (latest-revision? context concept-id revision-id))
         (errors/throw-service-error
          :bad-request
          (format (str "Cannot force delete the latest revision of a concept "

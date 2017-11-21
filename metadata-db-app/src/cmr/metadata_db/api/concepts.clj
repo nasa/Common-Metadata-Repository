@@ -95,7 +95,10 @@
 (defn- force-delete
   "Permanently remove a concept version from the database."
   [context params concept-id revision-id]
-  (let [{:keys [revision-id]} (concept-service/force-delete context concept-id (as-int revision-id))]
+  (let [;; force? is only used for testing purpose, should not be used in real operations
+        force? (= "true" (:force params))
+        {:keys [revision-id]} (concept-service/force-delete
+                                context concept-id (as-int revision-id) force?)]
     {:status 200
      :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))

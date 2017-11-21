@@ -66,13 +66,19 @@
 
 (defn force-delete-concept
   "Force deletes a concept revision from Metadata db"
-  [concept-id revision-id]
-  (client/request
-    {:method :delete
-     :url (url/mdb-force-delete-concept-url concept-id revision-id)
-     :accept :json
-     :throw-exceptions false
-     :connection-manager (s/conn-mgr)}))
+  ([concept-id revision-id]
+   (force-delete-concept concept-id revision-id nil))
+  ([concept-id revision-id force?]
+   (let [query-params (if force?
+                        {:force true}
+                        {})]
+     (client/request
+      {:method :delete
+       :url (url/mdb-force-delete-concept-url concept-id revision-id)
+       :query-params query-params
+       :accept :json
+       :throw-exceptions false
+       :connection-manager (s/conn-mgr)}))))
 
 
 (defn concept-exists-in-mdb?
