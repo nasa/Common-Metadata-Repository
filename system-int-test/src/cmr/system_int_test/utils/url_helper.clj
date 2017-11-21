@@ -392,6 +392,12 @@
   ([provider-id]
    (format "%s/%s" (bulk-index-variables-url) provider-id)))
 
+(defn bulk-index-services-url
+  ([]
+   (format "http://localhost:%s/bulk_index/services" (transmit-config/bootstrap-port)))
+  ([provider-id]
+   (format "%s/%s" (bulk-index-services-url) provider-id)))
+
 (defn bulk-index-collection-url
   []
   (format "http://localhost:%s/bulk_index/collections" (transmit-config/bootstrap-port)))

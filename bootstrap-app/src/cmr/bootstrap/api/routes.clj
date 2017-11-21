@@ -44,6 +44,10 @@
           (bulk-index/index-variables request-context))
         (POST "/variables/:provider-id" [provider-id :as {:keys [request-context]}]
           (bulk-index/index-variables request-context provider-id))
+        (POST "/services" {:keys [request-context]}
+          (bulk-index/index-services request-context))
+        (POST "/services/:provider-id" [provider-id :as {:keys [request-context]}]
+          (bulk-index/index-services request-context provider-id))
         (POST "/concepts" {:keys [request-context body params]}
           (bulk-index/index-concepts-by-id request-context body params))
         (DELETE "/concepts" {:keys [request-context body params]}

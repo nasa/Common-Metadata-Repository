@@ -148,6 +148,40 @@
     (index-variables-by-provider system provider))
   (info "Indexing of all variables completed."))
 
+(defn- bulk-index-service-batches
+  "Bulk index the given service batches in both regular index and all revisions index."
+  [system concept-batches]
+  (let [indexer-context {:system (helper/get-indexer system)}]
+    (index/bulk-index indexer-context concept-batches {})))
+
+(defn- index-services-by-provider
+  "Bulk index services for the given provider."
+  [system provider]
+  (info "Indexing services for provider" (:provider-id provider))
+  (let [db (helper/get-metadata-db-db system)
+        concept-batches (db/find-concepts-in-batches
+                         db provider
+                         {:concept-type :service
+                          :provider-id (:provider-id provider)}
+                         (:db-batch-size system))
+        num-services (bulk-index-service-batches system concept-batches)]
+    (info (format "Indexing of %s services completed." num-services))))
+
+(defn index-services
+  "Bulk index services for the given provider-id."
+  [system provider-id]
+  (->> provider-id
+       (helper/get-provider system)
+       (index-services-by-provider system)))
+
+(defn index-all-services
+  "Bulk index all CMR services."
+  [system]
+  (info "Indexing all services")
+  (doseq [provider (helper/get-providers system)]
+    (index-services-by-provider system provider))
+  (info "Indexing of all services completed."))
+
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]

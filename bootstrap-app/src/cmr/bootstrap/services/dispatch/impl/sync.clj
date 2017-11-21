@@ -50,6 +50,14 @@
   ([this context provider-id]
    (bulk-index/index-variables (:system context) provider-id)))
 
+(defn- index-services
+  "Bulk index the services in CMR. If a provider-id is given, only index the
+  services for that provider."
+  ([this context]
+   (bulk-index/index-all-services (:system context)))
+  ([this context provider-id]
+   (bulk-index/index-services (:system context) provider-id)))
+
 (defn- delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this context provider-id concept-type concept-ids]
@@ -69,6 +77,7 @@
    :migrate-collection migrate-collection
    :index-provider index-provider
    :index-variables index-variables
+   :index-services index-services
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts

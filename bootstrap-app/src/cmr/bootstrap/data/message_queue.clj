@@ -20,7 +20,7 @@
    :provider-id provider-id
    :start-index start-index})
 
-(defn publish-bootstrap-variables-event
+(defn publish-bootstrap-concepts-event
   "Put a bootstrap variables event on the message queue."
   [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
@@ -34,3 +34,10 @@
    {:action :index-variables})
   ([provider-id]
    (assoc (bootstrap-variables-event) :provider-id provider-id)))
+
+(defn bootstrap-services-event
+  "Creates an event indicating to bootstrap a service."
+  ([]
+   {:action :index-services})
+  ([provider-id]
+   (assoc (bootstrap-services-event) :provider-id provider-id)))
