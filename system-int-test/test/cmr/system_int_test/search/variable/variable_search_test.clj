@@ -475,12 +475,11 @@
     (index/wait-until-indexed)
 
     (are3 [sort-key expected-variables]
-      (do
-       (variables/assert-variable-search-order
-        expected-variables
-        (variables/search (if sort-key
-                            {:sort-key sort-key}
-                            {}))))
+      (variables/assert-variable-search-order
+       expected-variables
+       (variables/search (if sort-key
+                           {:sort-key sort-key}
+                           {})))
 
       "Default sort"
       nil
@@ -490,18 +489,42 @@
       "name"
       [variable3 variable4 variable1 variable2]
 
+      "Sort by name descending order"
+      "-name"
+      [variable2 variable4 variable1 variable3]
+
       "Sort by provider id"
       "provider_id"
       [variable2 variable3 variable4 variable1]
+
+      "Sort by provider id descending order"
+      "-provider_id"
+      [variable1 variable2 variable3 variable4]
 
       "Sort by revision-date"
       "revision_date"
       [variable1 variable2 variable3 variable4]
 
+      "Sort by revision-date descending order"
+      "-revision_date"
+      [variable4 variable3 variable2 variable1]
+
       "Sort by long name"
       "long-name"
       [variable3 variable4 variable1 variable2]
 
-      "Sort by name then long name"
-      ["name" "long_name"]
-      [variable3 variable4 variable1 variable2])))
+      "Sort by long name descending order"
+      "-long-name"
+      [variable2 variable1 variable4 variable3]
+
+      "Sort by name ascending then provider id ascending explicitly"
+      ["name" "provider_id"]
+      [variable3 variable4 variable1 variable2]
+
+      "Sort by name ascending then provider id descending order"
+      ["name" "-provider_id"]
+      [variable3 variable1 variable4 variable2]
+
+      "Sort by name then provider id descending order"
+      ["-name" "-provider_id"]
+      [variable2 variable1 variable4 variable3])))
