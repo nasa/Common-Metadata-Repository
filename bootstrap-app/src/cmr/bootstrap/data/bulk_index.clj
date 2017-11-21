@@ -127,7 +127,8 @@
   (let [db (helper/get-metadata-db-db system)
         concept-batches (db/find-concepts-in-batches
                          db provider
-                         {:concept-type :variable}
+                         {:concept-type :variable
+                          :provider-id (:provider-id provider)}
                          (:db-batch-size system))
         num-variables (bulk-index-variable-batches system concept-batches)]
     (info (format "Indexing of %s variables completed." num-variables))))
