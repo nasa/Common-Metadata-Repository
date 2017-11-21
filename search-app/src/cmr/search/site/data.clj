@@ -12,6 +12,7 @@
   (:require
    [clj-time.core :as clj-time]
    [clojure.string :as string]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
@@ -69,21 +70,19 @@
 
 (defmethod collection-data :default
   [context tag provider-id]
-  (let [query (query-svc/make-concepts-query
-               context
-               :collection
-               {:tag-key tag
-                :provider provider-id
-                :result-format {:format :umm-json-results}})
+  (let [conditions (query-svc/generate-query-conditions-for-parameters
+                    context
+                    :collection
+                    {:tag-key tag
+                     :provider provider-id})
         query (query-model/query {:concept-type :collection
-                                  :condition (:condition query)
+                                  :condition (gc/and-conds conditions)
                                   :skip-acls? true
                                   :page-size :unlimited
                                   :result-format :query-specified
                                   :result-fields [:concept-id :doi-stored :entry-title :short-name :version-id]})
         result (query-exec/execute-query context query)]
     (sort-by :entry-title (:items result))))
-
 
 (defn provider-data
   "Create a provider data structure suitable for template iteration to

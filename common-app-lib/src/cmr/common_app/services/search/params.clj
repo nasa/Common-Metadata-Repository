@@ -168,6 +168,16 @@
        :sort-keys (parse-sort-key (:sort-key params) aliases)
        :result-format (:result-format params)}])))
 
+(defn generate-param-query-conditions
+  "Generate the search conditions for the query based on the parameters"
+  [context concept-type params]
+  (let [options (u/map-keys->kebab-case (get params :options {}))
+        params (dissoc params :options)]
+    (when (not (empty? params))
+      (map (fn [[param value]]
+             (parameter->condition context concept-type param value options))
+           params))))
+
 (defmulti parse-query-level-params
   "Extracts parameters apply at the query level page-size and result format and returns a tuple of
    leftover parameters and a map as query attributes.
