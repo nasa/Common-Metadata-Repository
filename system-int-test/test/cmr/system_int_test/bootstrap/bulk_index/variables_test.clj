@@ -53,45 +53,45 @@
 (deftest bulk-index-variables
   (testing "Bulk index variables for multiple providers, explicitly"
     (s/only-with-real-database
-      ;; Disable message publishing so items are not indexed.
-      (core/disable-automatic-indexing)
-      ;; The following are saved, but not indexed due to the above call
-      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 3)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 4)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 5)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 6)
-      (is (= 0 (:hits (variable/search {}))))
-      (bootstrap/bulk-index-variables "PROV1")
-      (bootstrap/bulk-index-variables "PROV2")
-      (bootstrap/bulk-index-variables "PROV3")
-      (index/wait-until-indexed)
-      (testing "Variable concepts are indexed."
-        (let [{:keys [hits items]} (variable/search {})]
-          (is (= 6 hits))
-          (is (= 6 (count items)))))
-      ;; Re-enable message publishing.
-      (core/reenable-automatic-indexing))))
+     ;; Disable message publishing so items are not indexed.
+     (core/disable-automatic-indexing)
+     ;; The following are saved, but not indexed due to the above call
+     (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 3)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 4)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 5)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 6)
+     (is (= 0 (:hits (variable/search {}))))
+     (bootstrap/bulk-index-variables "PROV1")
+     (bootstrap/bulk-index-variables "PROV2")
+     (bootstrap/bulk-index-variables "PROV3")
+     (index/wait-until-indexed)
+     (testing "Variable concepts are indexed."
+       (let [{:keys [hits items]} (variable/search {})]
+         (is (= 6 hits))
+         (is (= 6 (count items)))))
+     ;; Re-enable message publishing.
+     (core/reenable-automatic-indexing))))
 
 (deftest bulk-index-all-variables
   (testing "Bulk index variables for multiple providers, implicitly"
     (s/only-with-real-database
-      ;; Disable message publishing so items are not indexed.
-      (core/disable-automatic-indexing)
-      ;; The following are saved, but not indexed due to the above call
-      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 2)
-      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 3)
-      (is (= 0 (:hits (variable/search {}))))
-      (bootstrap/bulk-index-variables)
-      (index/wait-until-indexed)
-      (testing "Variable concepts are indexed."
-        (let [{:keys [hits items]} (variable/search {})]
-          (is (= 3 hits))
-          (is (= 3 (count items)))))
-      ;; Re-enable message publishing.
-      (core/reenable-automatic-indexing))))
+     ;; Disable message publishing so items are not indexed.
+     (core/disable-automatic-indexing)
+     ;; The following are saved, but not indexed due to the above call
+     (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 2)
+     (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 3)
+     (is (= 0 (:hits (variable/search {}))))
+     (bootstrap/bulk-index-variables)
+     (index/wait-until-indexed)
+     (testing "Variable concepts are indexed."
+       (let [{:keys [hits items]} (variable/search {})]
+         (is (= 3 hits))
+         (is (= 3 (count items)))))
+     ;; Re-enable message publishing.
+     (core/reenable-automatic-indexing))))
 
 (deftest bulk-index-variable-revisions
   (testing "Bulk index variables index all revisions index as well"
@@ -136,9 +136,8 @@
        (bootstrap/bulk-index-variables "PROV1")
        (index/wait-until-indexed)
 
-       ;; CMR-4398 does not index variables under a provider correctly, enable the following verification once CMR-4398 is fixed.
        ;; After bulk indexing a provider, search found all variable revisions of that provider
-       #_(variable/assert-variable-references-match
+       (variable/assert-variable-references-match
         [var1-1 var1-2-tombstone var1-3]
         (search/find-refs :variable {:all-revisions true}))
 
