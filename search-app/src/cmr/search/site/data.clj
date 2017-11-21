@@ -13,6 +13,7 @@
    [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
+   [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.log :refer :all]
    [cmr.common.mime-types :as mt]
@@ -68,14 +69,29 @@
 
 (defmethod collection-data :default
   [context tag provider-id]
-  (as-> {:tag-key tag
-         :provider provider-id
-         :result-format {:format :umm-json-results}} data
-        (query-svc/make-concepts-query context :collection data)
-        (assoc data :page-size :unlimited)
-        (query-exec/execute-query context data)
-        (:items data)
-        (sort-by #(get-in % [:umm :EntryTitle]) data)))
+  (let [query (query-svc/make-concepts-query
+               context
+               :collection
+               {:tag-key tag
+                :provider provider-id
+                :result-format {:format :umm-json-results}})
+        query (query-model/query {:concept-type :collection
+                                  :condition (:condition query)
+                                  :skip-acls? true
+                                  :page-size :unlimited
+                                  :result-format :query-specified
+                                  :result-fields [:concept-id :doi-stored :entry-title :short-name :version-id]})
+        result (query-exec/execute-query context query)
+        items (map (fn [item]
+                     (let [doi (:doi-stored item)]
+                       {:umm {:ShortName (:short-name item)
+                              :Version (:version-id item)
+                              :DOI (when doi {:DOI doi})
+                              :EntryTitle (:entry-title item)}
+                        :meta {:concept-id (:concept-id item)}}))
+                   (:items result))]
+    (sort-by :EntryTitle items)))
+
 
 (defn provider-data
   "Create a provider data structure suitable for template iteration to
