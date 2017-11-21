@@ -81,16 +81,8 @@
                                   :page-size :unlimited
                                   :result-format :query-specified
                                   :result-fields [:concept-id :doi-stored :entry-title :short-name :version-id]})
-        result (query-exec/execute-query context query)
-        items (map (fn [item]
-                     (let [doi (:doi-stored item)]
-                       {:umm {:ShortName (:short-name item)
-                              :Version (:version-id item)
-                              :DOI (when doi {:DOI doi})
-                              :EntryTitle (:entry-title item)}
-                        :meta {:concept-id (:concept-id item)}}))
-                   (:items result))]
-    (sort-by :EntryTitle items)))
+        result (query-exec/execute-query context query)]
+    (sort-by :entry-title (:items result))))
 
 
 (defn provider-data
@@ -118,22 +110,10 @@
        (remove #(zero? (get % :collections-count 0)))
        (sort-by :id)))
 
-(defn get-doi
-  "Extract the DOI information from a collection item."
-  [item]
-  (or (get-in item [:umm "DOI"])
-      (get-in item [:umm :DOI])))
-
 (defn has-doi?
   "Determine whether a collection item has a DOI entry."
   [item]
-  (some? (get-doi item)))
-
-(defn doi-link
-  "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
-  link."
-  [doi-data]
-  (format "http://dx.doi.org/%s" (or (doi-data "DOI") (doi-data :DOI))))
+  (some? (:doi-stored item)))
 
 (defn cmr-link
   "Given a CMR host and a concept ID, return the collection landing page for
@@ -145,8 +125,8 @@
   "Create the `href` part of a landing page link."
   [cmr-base-url item]
   (if (has-doi? item)
-    (doi-link (get-doi item))
-    (cmr-link cmr-base-url (get-in item [:meta :concept-id]))))
+    (format "http://dx.doi.org/%s" (:doi-stored item))
+    (cmr-link cmr-base-url (:concept-id item))))
 
 (defn make-holding-data
   "Given a single item from a query's collections, update the item with data
