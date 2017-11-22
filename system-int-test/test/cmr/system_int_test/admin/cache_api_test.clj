@@ -110,7 +110,6 @@
         (url/search-read-caches-url) [
          "acls"
          "collections-for-gran-acls"
-         (name content-service/cache-key)
          "has-granules-map"
          "health"
          "humanizer-report-cache"
