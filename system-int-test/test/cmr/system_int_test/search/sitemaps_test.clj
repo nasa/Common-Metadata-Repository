@@ -192,12 +192,3 @@
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
                 body (format "%s.html</loc>" (first colls))))))))
-
-(deftest regeneration-permissions
-  (site/assert-search-directory-regen-permissions
-   "master sitemap" "sitemap.xml?regenerate=true")
-  (site/assert-search-directory-regen-permissions
-   "content sitemap" "site/sitemap.xml?regenerate=true")
-  (site/assert-search-directory-regen-permissions
-   "provider/tag sitemap"
-   "site/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml?regenerate=true"))
