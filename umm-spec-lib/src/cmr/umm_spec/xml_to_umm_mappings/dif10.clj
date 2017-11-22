@@ -119,12 +119,10 @@
                   :EndingDateTime (parse-dif-end-date edt)}
                  (and bdt-valid?
                       (not edt-valid?))
-                 {:BeginningDateTime (date/with-default bdt sanitize?)
-                  :EndingDateTime nil}
+                 {:BeginningDateTime (date/with-default bdt sanitize?)}
                  (and (not bdt-valid?)
                       edt-valid?)
-                 {:BeginningDateTime nil
-                  :EndingDateTime (parse-dif-end-date edt)}
+                 {:EndingDateTime (parse-dif-end-date edt)}
                  (and (not bdt-valid?)
                       (not edt-valid?))
                  nil))
