@@ -131,7 +131,7 @@
                           :provider-id (:provider-id provider)}
                          (:db-batch-size system))
         num-variables (bulk-index-variable-batches system concept-batches)]
-    (info (format "Indexing of %s variables completed." num-variables))))
+    (info (format "Indexing of %s variable revisions completed." num-variables))))
 
 (defn index-variables
   "Bulk index variables for the given provider-id."
@@ -165,7 +165,7 @@
                           :provider-id (:provider-id provider)}
                          (:db-batch-size system))
         num-services (bulk-index-service-batches system concept-batches)]
-    (info (format "Indexing of %s services completed." num-services))))
+    (info (format "Indexing of %s service revisions completed." num-services))))
 
 (defn index-services
   "Bulk index services for the given provider-id."
