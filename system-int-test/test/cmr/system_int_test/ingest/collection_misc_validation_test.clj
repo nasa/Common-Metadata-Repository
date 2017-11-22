@@ -77,6 +77,17 @@
       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response)))))))
 
+(deftest error-messages-are-friendly
+  (testing "Error messages don't contain regexes"
+    (let [collection (data-umm-c/collection
+                       {:Platforms [(data-umm-cmn/platform {:ShortName "¡El nombre de largo se malo!"
+                                                            :LongName ""})]})
+          ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
+          validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
+      (proto-repl.saved-values/save 16)
+      (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
+      (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response))))))))
+
 (deftest multiple-warnings
  (testing "Schema and UMM-C validation warnings"
   (let [collection (data-umm-c/collection
