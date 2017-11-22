@@ -5,16 +5,16 @@
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.variable-util :as variable]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.transmit.config :refer [mock-echo-system-token]
                         :rename {mock-echo-system-token token}]))
 
