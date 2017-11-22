@@ -203,7 +203,6 @@
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
-  (proto-repl.saved-values/save 1)
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :DOI (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
                               (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
