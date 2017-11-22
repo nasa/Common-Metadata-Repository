@@ -174,7 +174,6 @@
 
 (def collections-fixture
   (fn [f]
-    (search/refresh-collection-metadata-cache)
     (setup-collections)
     (f)))
 
@@ -275,14 +274,6 @@
       (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
       (is (expected-header-link? body)))))
-
-(deftest regeneration-permissions
-  (site/assert-search-directory-regen-permissions
-   "eosdis directory level"
-   "site/collections/directory/eosdis?regenerate=true")
-  (site/assert-search-directory-regen-permissions
-   "provider/tag level"
-   "site/collections/directory/PROV1/gov.nasa.eosdis?regenerate=true"))
 
 ;; Note that the following test was originally in the unit tests for
 ;; cmr-search (thus its similarity to those tests) but had to be moved into
