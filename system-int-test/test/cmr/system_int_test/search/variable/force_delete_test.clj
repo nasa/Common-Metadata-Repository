@@ -96,10 +96,10 @@
           (testing "force delete does not cascade to variable association"
             ;; search collections by variable native-id found the collection
             (d/refs-match? [coll1] (search/find-refs :collection {:variable_native_id "var1"}))
-            ;; force delete the latest revision of the variable cascade to variable association
+            ;; force delete a revision of the variable does not cascade to variable association
             (mdb/force-delete-concept (:concept-id var1-3) (:revision-id var1-3))
             (index/wait-until-indexed)
-            ;; search collections by variable native-id no longer found the collection
+            ;; search collections by variable native-id still find the collection
             (d/refs-match? [coll1] (search/find-refs :collection {:variable_native_id "var1"}))))))
 
     (testing "Cannot force delete the latest revision"
