@@ -9,7 +9,8 @@
 ;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:dynamic *buffer-size* (* 10 1024))
+(def ^:dynamic *byte-buffer-size* 1024)
+(def ^:dynamic *channel-buffer-size* (* 10 1024))
 (def ^:dynamic *read-stream-delay* 5000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,9 +50,15 @@
   [str]
   (io/input-stream (str->bytes str)))
 
+(defn make-byte-array
+  ([]
+    (make-byte-array *byte-buffer-size*))
+  ([buffer-size]
+    (make-array Byte/TYPE buffer-size)))
+
 (defn- read-stream
   [^java.io.InputStream input-stream channel]
-  (let [bytes (make-array Byte/TYPE *buffer-size*)]
+  (let [bytes (make-byte-array)]
     (async/go-loop [stream input-stream
                     bytes-read (.read stream bytes)]
       (when (pos? bytes-read)
@@ -94,17 +101,16 @@
 (defn spawn!
   [& args]
   (let [process (apply shell/proc args)
-        out-chan (async/chan)
-        err-chan (async/chan)]
+        out-chan (async/chan *channel-buffer-size*)
+        err-chan (async/chan *channel-buffer-size*)]
     (log-process process out-chan err-chan)
     (merge process {:out-channel out-chan
                     :err-channel err-chan})))
 
 (defn terminate!
   [process-data]
-  (let [process (:process process-data)
-        exit-code (future (shell/exit-code process))]
-    (shell/destroy process)
+  (let [exit-code (future (shell/exit-code process-data))]
+    (shell/destroy process-data)
     (async/close! (:out-channel process-data))
     (async/close! (:err-channel process-data))
     @exit-code))
