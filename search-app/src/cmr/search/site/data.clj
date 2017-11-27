@@ -109,7 +109,7 @@
   [context tag providers]
   (debug "Using providers:" providers)
   (->> providers
-       (map (partial provider-data context tag))
+       (pmap (partial provider-data context tag))
        ;; Only want to include providers with EOSDIS collections
        (remove #(zero? (get % :collections-count 0)))
        (sort-by :id)))
