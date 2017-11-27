@@ -1912,6 +1912,14 @@
         "order": 0,
         "replacement_value": "National Snow and Ice Data Center Distributed Active Archive Center (NSIDC DAAC)",
         "reportable": true,
+        "source_value": "NASA NSIDC DAAC",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "National Snow and Ice Data Center Distributed Active Archive Center (NSIDC DAAC)",
+        "reportable": true,
         "source_value": "National DAAC at the National Snow and Ice Data Center",
         "type": "alias"
     },
