@@ -1,26 +1,26 @@
-  (ns cmr.umm-spec.xml-to-umm-mappings.dif10
-   "Defines mappings from DIF10 XML into UMM records"
-   (:require
-     [camel-snake-kebab.core :as csk]
-     [clojure.string :as string]
-     [cmr.common.date-time-parser :as dtp]
-     [cmr.common.util :as util]
-     [cmr.common.xml.parse :refer :all]
-     [cmr.common.xml.simple-xpath :refer [select]]
-     [cmr.umm-spec.date-util :as date]
-     [cmr.umm-spec.dif-util :as dif-util]
-     [cmr.umm-spec.json-schema :as js]
-     [cmr.umm-spec.url :as url]
-     [cmr.umm-spec.util :as su :refer [without-default-value-of]]
-     [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
-     [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
-     [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
-     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+(ns cmr.umm-spec.xml-to-umm-mappings.dif10
+ "Defines mappings from DIF10 XML into UMM records"
+ (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.util :as su :refer [without-default-value-of]]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
   "Mapping from values supported for DIF10 Data_Set_Progress to UMM CollectionProgress."
@@ -31,10 +31,10 @@
 (defn- parse-characteristics
   [el]
   (seq (remove nil?
-         (map char-data-type-normalization/normalize-data-type
-           (remove nil?
-             (for [characteristic (select el "Characteristics")]
-               (fields-from characteristic :Name :Description :DataType :Unit :Value)))))))
+        (map char-data-type-normalization/normalize-data-type
+         (remove nil?
+          (for [characteristic (select el "Characteristics")]
+            (fields-from characteristic :Name :Description :DataType :Unit :Value)))))))
 
 (defn- parse-projects-impl
   [doc sanitize?]
@@ -113,7 +113,8 @@
                          edt (value-of rdt "Ending_Date_Time")
                          bdt-valid? (date/valid-date? bdt)
                          edt-valid? (date/valid-date? edt)]]
-               (cond (and bdt-valid?
+               (cond
+                 (and bdt-valid?
                       edt-valid?)
                  {:BeginningDateTime (date/with-default bdt sanitize?)
                   :EndingDateTime (parse-dif-end-date edt)}
@@ -127,9 +128,7 @@
                       (not edt-valid?))
                  nil))
         rdts (remove nil? rdts)]
-    (if (empty? rdts)
-      nil
-      rdts)))
+    (when (seq rdts) rdts)))
 
 (defn- parse-temporal-extent
   "Return a temporal extent from a DIF10 Temporal_Coverage. Remove empty maps which could occur
