@@ -39,7 +39,7 @@
     (init :default))
   ([mode]
     (if (contains? invalid-init-transitions state)
-      (log/error "System has aready been initialized.")
+      (log/warn "System has aready been initialized.")
       (do
         (alter-var-root #'system
           (constantly ((components/init mode))))
@@ -62,7 +62,7 @@
     (when (nil? system)
       (init mode))
     (if (contains? invalid-start-transitions state)
-      (log/error "System has already been started.")
+      (log/warn "System has already been started.")
       (do
         (alter-var-root #'system component/start)
         (alter-var-root #'state (fn [_] :started))))
@@ -71,7 +71,7 @@
 (defn stop
   []
   (if (contains? invalid-stop-transitions state)
-    (log/error "System already stopped.")
+    (log/warn "System already stopped.")
     (do
       (alter-var-root #'system
         (fn [s] (when s (component/stop s))))
@@ -86,7 +86,7 @@
 (defn run
   []
   (if (contains? invalid-run-transitions state)
-    (log/error "System is already running.")
+    (log/warn "System is already running.")
     (do
       (if (not (contains? invalid-init-transitions state))
         (init))
