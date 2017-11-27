@@ -18,6 +18,7 @@
    [cmr.common-app.site.data :as common-data]
    [cmr.common.log :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [defn-timed]]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
    [cmr.transmit.config :as config]
@@ -68,7 +69,7 @@
         (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
-(defmethod collection-data :default
+(defn-timed get-collection-data
   [context tag provider-id]
   (let [conditions (query-svc/generate-query-conditions-for-parameters
                     context
@@ -84,7 +85,11 @@
         result (query-exec/execute-query context query)]
     (sort-by :entry-title (:items result))))
 
-(defn provider-data
+(defmethod collection-data :default
+  [context tag provider-id]
+  (get-collection-data context tag provider-id))
+
+(defn-timed provider-data
   "Create a provider data structure suitable for template iteration to
   generate links.
 
@@ -98,7 +103,7 @@
      :collections collections
      :collections-count (count collections)}))
 
-(defn providers-data
+(defn-timed providers-data
   "Given a list of provider maps, create the nested data structure needed
   for rendering providers in a template."
   [context tag providers]
