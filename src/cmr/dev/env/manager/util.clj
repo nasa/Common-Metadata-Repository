@@ -1,6 +1,6 @@
 (ns cmr.dev.env.manager.util
   (:require
-    [clojure.core.async :as async]
+    [clojure.java.io :as io]
     [taoensso.timbre :as log]))
 
 (declare deep-merge)
@@ -25,3 +25,7 @@
   ""
   [data1 data2]
   (merge-with merge-val data1 data2))
+
+(defn pushback-reader
+  [io-stream]
+  (new java.io.PushbackReader (io/reader io-stream)))

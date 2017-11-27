@@ -1,5 +1,6 @@
 (ns cmr.dev.env.manager.repl
   (:require
+   [clojure.core.async :as async]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.string :as string]

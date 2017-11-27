@@ -1,6 +1,5 @@
 (ns cmr.dev.env.manager.components.cmr.mock-echo
   (:require
-    [clojure.core.async :as async]
     [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.process :as process]
     [com.stuartsierra.component :as component]
@@ -18,18 +17,22 @@
           component (assoc component :config cfg)]
       (log/trace "Built configuration:" cfg)
       (log/debug "Config:" (:config component))
-      (let [chan (process/spawn! "lein" "mock-echo")]
+      (let [process-data (process/spawn! "lein" "mock-echo")]
+        (log/debug )
         (log/debug "Started mock-echo component.")
-        (assoc component :channel chan))))
+        (assoc component :process-data process-data))))
 
   (stop [component]
     (log/info "Stopping mock-echo component ...")
+    (println "componentn keys:" (keys component))
+    (println "process-data:" (:process-data component))
+    (process/terminate! (:process-data component))
     (log/debug "Stopped mock-echo component.")
-    (async/close! (:channel component))
     component))
 
 (defn create-mock-echo-component
   ""
   [config-builder-fn]
   (map->MockEchoRunner
-    {:builder config-builder-fn}))
+    {:builder config-builder-fn
+     :process-data nil}))

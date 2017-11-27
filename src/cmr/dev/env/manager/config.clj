@@ -34,11 +34,11 @@
     (build false))
   ([app-key]
     (let [top-level (project/read)]
-      (log/debug "top-level keys:" (keys top-level))
-      (log/debug "top-level config:" top-level)
-      (log/debug "dem config:" (config-key top-level))
+      (log/trace "top-level keys:" (keys top-level))
+      (log/trace "top-level config:" top-level)
+      (log/trace "dem config:" (config-key top-level))
       (when app-key
-        (log/debug "app-level config:" (app-key top-level)))
+        (log/trace "app-level config:" (app-key top-level)))
       (util/deep-merge
        (default-config)
        (util/deep-merge
