@@ -7,7 +7,8 @@
 
 ;; XXX Maybe generalize this for use by all apps?
 (defrecord MockEchoRunner [
-  builder]
+  builder
+  process-data]
   component/Lifecycle
 
   (start [component]
@@ -24,8 +25,8 @@
 
   (stop [component]
     (log/info "Stopping mock-echo component ...")
-    (println "componentn keys:" (keys component))
-    (println "process-data:" (:process-data component))
+    (log/trace "process-data:" (:process-data component))
+    (log/trace "process:" (get-in component [:process-data :process]))
     (process/terminate! (:process-data component))
     (log/debug "Stopped mock-echo component.")
     component))
