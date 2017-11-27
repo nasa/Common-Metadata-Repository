@@ -74,7 +74,7 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 If this header is set to true then ingest will validate that collection keywords match [known keywords from GCMD KMS](http://gcmd.nasa.gov/learn/keyword_list.html). The following fields are validated.
 
-* Platforms - short name and long name
+* Platforms - short name, long name, and type
 * Instruments - short name and long name
 * Projects - short name and long name
 * Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
