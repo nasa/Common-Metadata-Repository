@@ -110,38 +110,49 @@
   (let [[c1-p1 c2-p1 c3-p1
          c1-p2 c2-p2 c3-p2
          c1-p4 c2-p4 c3-p4] (doall (for [p ["PROV1" "PROV2" "NONEOSDIS"]
-                                  n (range 1 4)]
-                              (d/ingest-umm-spec-collection
-                               p
-                               (assoc exp-conv/example-collection-record
-                                      :ShortName (str "s" n)
-                                      :EntryTitle (str "Collection Item " n))
-                               {:format :umm-json
-                                :accept-format :json})))
+                                         n (range 1 4)]
+                                     (d/ingest-umm-spec-collection
+                                       p
+                                       (assoc exp-conv/example-collection-record
+                                             :ShortName (str "s" n)
+                                             :EntryTitle (str "Collection Item " n))
+                                       {:format :umm-json
+                                        :accept-format :json})))
          _ (index/wait-until-indexed)
          [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
-                               (d/ingest-umm-spec-collection
-                                "PROV3"
-                                (assoc exp-conv/example-collection-record
-                                       :ShortName (str "s" n)
-                                       :EntryTitle (str "Collection Item " n)
-                                       :DOI (cm/map->DoiType
-                                             {:DOI (str "doi" n)
-                                              :Authority (str "auth" n)}))
-                                {:format :umm-json
-                                 :accept-format :json})))
+                                      (d/ingest-umm-spec-collection
+                                       "PROV3"
+                                       (assoc exp-conv/example-collection-record
+                                              :ShortName (str "s" n)
+                                              :EntryTitle (str "Collection Item " n)
+                                              :DOI (cm/map->DoiType
+                                                    {:DOI (str "doi" n)
+                                                     :Authority (str "auth" n)}))
+                                       {:format :umm-json
+                                        :accept-format :json})))
          _ (index/wait-until-indexed)
          ;; Let's create another collection that will put the total over the
          ;; default of 10 values so that we can ensure the :unlimited option
          ;; is being used in the directory page data.
          over-ten-colls (doall (for [n (range 1001 1017)]
-                          (d/ingest-umm-spec-collection
-                           "PROV2"
-                           (assoc exp-conv/example-collection-record
-                                  :ShortName (str "s" n)
-                                  :EntryTitle (str "Collection Item " n))
-                           {:format :umm-json
-                            :accept-format :json})))]
+                                 (d/ingest-umm-spec-collection
+                                  "PROV2"
+                                  (assoc exp-conv/example-collection-record
+                                         :ShortName (str "s" n)
+                                         :EntryTitle (str "Collection Item " n))
+                                  {:format :umm-json
+                                   :accept-format :json})))
+         [admin-1 admin-2] (doall (for [n (range 110 113)]
+                                    (d/ingest-umm-spec-collection
+                                     "ONLYADMIN"
+                                     (assoc exp-conv/example-collection-record
+                                            :ShortName (str "s" n)
+                                            :EntryTitle (str "Collection Item " n)
+                                            :DOI (cm/map->DoiType
+                                                  {:DOI (str "doi" n)
+                                                   :Authority (str "auth" n)}))
+                                     {:format :umm-json
+                                      :accept-format :json})))]
     (reset! test-collections
             {"PROV1" (sort (map :concept-id [c1-p1 c2-p1 c3-p1]))
              "PROV2" (sort (map :concept-id (conj over-ten-colls c1-p2 c2-p2 c3-p2)))
@@ -155,7 +166,7 @@
           doi-colls [c1-p3 c2-p3 c3-p3]
           non-eosdis-provider-colls [c1-p4 c2-p4 c3-p4]
           all-colls (flatten [over-ten-colls nodoi-colls doi-colls non-eosdis-provider-colls])
-          tag-colls (conj over-ten-colls c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3)
+          tag-colls (conj over-ten-colls c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3 admin-1 admin-2)
           tag (tags/save-tag
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
@@ -165,7 +176,7 @@
       (is (= 3 (count notag-colls)))
       (is (= 6 (count nodoi-colls)))
       (is (= 3 (count doi-colls)))
-      (is (= 22 (count tag-colls)))
+      (is (= 24 (count tag-colls)))
       (is (= 28 (count all-colls))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -184,7 +195,12 @@
                                              "provguid2" "PROV2"
                                              "provguid3" "PROV3"
                                              "provguid4" "NONEOSDIS"
-                                             "provguid5" "NOCOLLS"})
+                                             "provguid5" "NOCOLLS"
+                                             "provguid6" "ONLYADMIN"
+                                             "provguid7" "someadmin"}
+                                            {:grant-all-search? false})
+                      (ingest/grant-all-search-fixture ["PROV1" "PROV2" "PROV3" "NONEOSDIS"
+                                                        "NOCOLLS"])
                       tags/grant-all-tag-fixture
                       collections-fixture]))
 
