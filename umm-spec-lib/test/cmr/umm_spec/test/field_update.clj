@@ -255,35 +255,35 @@
                                                                                                :URL "http://nsidc.org/daac/newindex.html"}]}}
         {:ShortName "ShortName"}
         {:DataCenters [{:ShortName "NewShortName"
-                              :LongName "NewLongName"
-                              :Roles ["ARCHIVER", "DISTRIBUTOR"]
-                              :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
-                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
-                                                                  :Type "HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/newindex.html"}
-                                                                 {:URLContentType "DataCenterURL"
-                                                                  :Type "PROJECT HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/index.html"} ]
-                                                   :ContactMechanisms  [{:Type "Telephone"
-                                                                         :Value "1 303 492 6199 x" }
-                                                                        {:Type  "Fax"
-                                                                         :Value "1 303 492 2468 x" }
-                                                                        {:Type  "Email"
-                                                                         :Value "nsidc@nsidc.org" }]}}
-                             {:ShortName "NewShortName"
-                              :LongName "NewLongName"
-                              :Roles ["ARCHIVER"]
-                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
-                                                                  :Type "HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/newindex.html"}]}}
-                             {:ShortName "NewShortName"
-                              :LongName "NewLongName"
-                              :Roles ["PROCESSOR"]
-                              :ContactPersons [{:Roles ["Data Center Contact"]
-                                                :LastName "Smith"}]
-                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
-                                                                  :Type "HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/newindex.html"}]}}]}))) 
+                        :LongName "NewLongName"
+                        :Roles ["ARCHIVER", "DISTRIBUTOR"]
+                        :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}
+                                                           {:URLContentType "DataCenterURL"
+                                                            :Type "PROJECT HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/index.html"} ]
+                                             :ContactMechanisms  [{:Type "Telephone"
+                                                                   :Value "1 303 492 6199 x" }
+                                                                  {:Type  "Fax"
+                                                                   :Value "1 303 492 2468 x" }
+                                                                  {:Type  "Email"
+                                                                   :Value "nsidc@nsidc.org" }]}}
+                       {:ShortName "NewShortName"
+                        :LongName "NewLongName"
+                        :Roles ["ARCHIVER"]
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}
+                       {:ShortName "NewShortName"
+                        :LongName "NewLongName"
+                        :Roles ["PROCESSOR"]
+                        :ContactPersons [{:Roles ["Data Center Contact"]
+                                          :LastName "Smith"}]
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}]}))) 
   (testing "DataCenter home page url updates when home page url is NOT present in the update-value."
     (let [umm {:DataCenters [{:ShortName "ShortName"
                               :LongName "Hydrogeophysics Group, Aarhus University "
