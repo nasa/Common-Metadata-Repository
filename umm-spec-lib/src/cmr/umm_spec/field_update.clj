@@ -40,9 +40,9 @@
   "Apply special home-page-url update to data-center using the update-value.
    If the new home-page-url is provided in the update-value.
       a. If data-center-related-urls contains home-page-url, update it with the new home-page-url.
-         if the new home-page-url is not present in update-value, remove the home-page-url from data center.
       b. If data-center-related-urls doesn't contain home-page-url, add the new home-page-url to it.
-      Note: Anything other than the home-page-url in update-value are ignored."
+   If the new home-page-url is not present in update-value, remove the home-page-url from data center.
+   Note: Anything other than the home-page-url in update-value are ignored."
   [data-center update-value]
   (let [update-value-related-urls (get-in update-value [:ContactInformation :RelatedUrls])
         update-value-home-page-url (get-home-page-url update-value-related-urls)
