@@ -189,7 +189,7 @@
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
                                        :Topic "OCEANS"}}]
-    ;; Initiate bulk update that shouldn't add anything, including duplicates.
+    ;; Initiate bulk update that shouldn't add any duplicates.
     (ingest/bulk-update-collections "PROV1" duplicate-body)
     ;; Wait for queueing/indexing to catch up
     (index/wait-until-indexed)
@@ -265,7 +265,7 @@
                                         :Topic "HUMAN DIMENSIONS1"
                                         :Term "ENVIRONMENTAL IMPACTS1"
                                         :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
-       ;; Initiate bulk update that shouldn't add anything, including duplicates.
+       ;; Initiate bulk update that shouldn't add any duplicates.
        (ingest/bulk-update-collections "PROV1" duplicate-body)
        ;; Wait for queueing/indexing to catch up
        (index/wait-until-indexed)
