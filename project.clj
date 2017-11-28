@@ -73,7 +73,7 @@
         "libs/transmit-lib"]}}
   :aliases {
     ;; Applications
-    "mock-echo" ["with-profile" "+mock-echo" "run"]
+    "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]
     ;; General
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
