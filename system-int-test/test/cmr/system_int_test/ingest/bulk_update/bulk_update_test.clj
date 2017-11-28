@@ -327,10 +327,53 @@
                   (map #(select-keys % [:Roles :ShortName])
                        (:DataCenters (:umm concept))))))))))
 
-(deftest data-center-url-bulk-update
+(deftest data-center-home-page-url-removal
     (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
           _ (index/wait-until-indexed)]
-      (testing "Data center find and update home page url"
+      (testing "Data center find and update home page url - removal case."
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
+                                :update-field "DATA_CENTERS"
+                                :find-value {:ShortName "ShortName"}
+                                :update-value {:ShortName "New ShortName"
+                                               :LongName "New LongName"}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "New ShortName"
+                    :LongName "New LongName"
+                    :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                        :Type "PROJECT HOME PAGE"
+                                                        :URL "http://nsidc.org/daac/index.html"}]
+                                         :ContactMechanisms  [{:Type "Telephone"
+                                                               :Value "1 303 492 6199 x"}
+                                                              {:Type  "Fax"
+                                                               :Value "1 303 492 2468 x"}
+                                                              {:Type  "Email"
+                                                               :Value "nsidc@nsidc.org"}]}}
+                   {:ShortName "New ShortName"
+                    :LongName "New LongName"}
+                   {:ShortName "New ShortName"
+                    :LongName "New LongName"}]
+                  (map #(select-keys % [:ShortName :LongName :ContactInformation])
+                       (:DataCenters (:umm concept))))))))))
+
+(deftest data-center-home-page-url-update
+    (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
+          _ (index/wait-until-indexed)]
+      (testing "Data center find and update home page url - update case."
         (let [bulk-update-body {:concept-ids concept-ids
                                 :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"

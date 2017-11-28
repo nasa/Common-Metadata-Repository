@@ -40,6 +40,7 @@
   "Apply special home-page-url update to data-center using the update-value.
    If the new home-page-url is provided in the update-value.
       a. If data-center-related-urls contains home-page-url, update it with the new home-page-url.
+         if the new home-page-url is not present in update-value, remove the home-page-url from data center.
       b. If data-center-related-urls doesn't contain home-page-url, add the new home-page-url to it.
       Note: Anything other than the home-page-url in update-value are ignored."
   [data-center update-value]
@@ -52,7 +53,22 @@
           #(map (fn [x] (if (home-page-url? x) update-value-home-page-url x)) %))
         (let [new-related-urls (conj data-center-related-urls update-value-home-page-url)]
           (assoc-in data-center [:ContactInformation :RelatedUrls] new-related-urls)))
-      data-center)))
+      (update-in data-center [:ContactInformation :RelatedUrls]
+          #(remove home-page-url? %)))))
+
+(defn- remove-data-center-empty-related-urls
+  "Remove RelatedUrls from data center's ContactInformation if it's empty"
+  [data-center]
+  (if (seq (get-in data-center [:ContactInformation :RelatedUrls]))
+    data-center
+    (update-in data-center [:ContactInformation] dissoc :RelatedUrls))) 
+
+(defn- remove-data-center-empty-contact-info
+  "Remove data center's ContactInformation if it's empty"
+  [data-center]
+  (if (seq (:ContactInformation data-center))
+    data-center
+    (dissoc data-center :ContactInformation))) 
 
 (defn- data-center-update
   "Apply update to data-center using the update-value. Returns data center.
@@ -60,7 +76,10 @@
    and regular update to everything outside of ContactInformation."
   [data-center update-value]
   (let [update-value-non-contact-info-part (dissoc update-value :ContactInformation)
-        data-center-with-updated-home-page-url (home-page-url-update data-center update-value)]
+        data-center-with-updated-home-page-url (-> data-center
+                                                   (home-page-url-update update-value)
+                                                   remove-data-center-empty-related-urls
+                                                   remove-data-center-empty-contact-info)]
     (merge data-center-with-updated-home-page-url update-value-non-contact-info-part)))
 
 (defn- value-matches?
