@@ -18,6 +18,8 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; type-related functions
+
 (defn newline?
   ""
   [byte]
@@ -50,6 +52,14 @@
   ""
   [str]
   (io/input-stream (str->bytes str)))
+
+(defn str->int
+  [str]
+  (if (= "" str)
+    nil
+    (Integer/parseInt str)))
+
+;; output/error reading/logging support
 
 (defn make-byte-array
   ([]
@@ -88,9 +98,66 @@
   [ch]
   (channel-log ch :debug))
 
+;; process table/info support
+
+(defn get-cmd-output
+  [& cmd-args]
+  (shell/stream-to-string (apply shell/proc cmd-args) :out))
+
+(defn output-format->keys
+  [output-fields]
+  (->> #","
+       (string/split output-fields)
+       (mapv (comp keyword string/trim))))
+
+(defn parse-output-line
+  [output-format output-line]
+  (case output-format
+    "pid,ppid,pgid,comm"
+    (let [[pid ppid pgid & cmd] (string/split output-line #"\s")]
+      (conj
+        (mapv str->int [pid ppid pgid])
+        (string/join " " cmd)))))
+
+(defn output-line->map
+  [output-format output-line]
+  (zipmap (output-format->keys output-format)
+          (parse-output-line output-format output-line)))
+
+(defn output-lines->ps-info
+  [output-format output-lines]
+  (map (partial output-line->map output-format) output-lines))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Process API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-ps-info
+  ([]
+    (get-ps-info "pid,ppid,pgid,comm"))
+  ([output-format]
+    (->> output-format
+         (get-cmd-output "ps" "--no-headers" "-eo")
+         (string/split-lines)
+         (output-lines->ps-info output-format))))
+
+(defn get-pid
+  "Linux only!"
+  [process-data]
+  (let [process (:process process-data)
+        process-field (.getDeclaredField (.getClass process) "pid")]
+    (.setAccessible process-field true)
+    (.getInt process-field process)))
+
+(defn get-children
+  [process-data]
+  (let [parent-pid (get-pid process-data)]
+    ))
+
+(defn terminate-children!
+  [process-data]
+  (let [child-processes (get-children process-data)]
+    ))
 
 (defn log-process-data
   [process-data out-chan err-chan]
@@ -111,8 +178,9 @@
 
 (defn terminate!
   [process-data]
-  ;(async/close! (:out-channel process-data))
-  ;(async/close! (:err-channel process-data))
+  (terminate-children! process-data)
   (shell/flush process-data)
   (shell/done process-data)
+  (async/close! (:out-channel process-data))
+  (async/close! (:err-channel process-data))
   (shell/exit-code process-data *exit-timeout*))
