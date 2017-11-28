@@ -640,6 +640,7 @@ The following update types are supported:
   * Clear all and replace - clear the list and replace with the update value.
   * Find and replace - replace any instance in the list that matches the find value with the update value.
   * Find and update - merge update value into any instance in the list that matches the find value.
+  * Find and update home page url - A special case for Find and update. 
   * Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
@@ -655,7 +656,7 @@ Update types that include a FIND will match on the fields supplied in the find v
 
 The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
 
-`FIND_AND_UPDATE_HOME_PAGE_URL` is a special case for `FIND_AND_UPDATE`. It can only be used with Update field being DATA_CENTERS. It is the same as FIND_AND_UPDATE except that when update value contains ContactInformation, it doesn't replace the ContactInformation, instead it only replaces the datacenter HOME PAGE URL part with the value specified in the RelatedUrls, if it exists, and leave everything else in the ContactInformation untouched. 
+`FIND_AND_UPDATE_HOME_PAGE_URL` is a special case for `FIND_AND_UPDATE`. It can only be used with Update field being `DATA_CENTERS`. It is the same as `FIND_AND_UPDATE` except that when update value contains ContactInformation, it doesn't replace the ContactInformation, instead it only replaces the data center HOME PAGE URL part with the new data center HOME PAGE URL specified in the RelatedUrls, if it exists, and leaves everything else in the ContactInformation untouched. If the new data center HOME PAGE URL is not present in the update value, the HOME PAGE URL of the found data centers will be removed.
 
 Instruments are nested within platforms so instrument updates are applied to all platforms in the collection, when applying
 `ADD_TO_EXISTING` and `CLEAR_ALL_AND_REPLACE` bulk updates to the instruments.
