@@ -12,6 +12,7 @@
 (def ^:dynamic *byte-buffer-size* 1024)
 (def ^:dynamic *channel-buffer-size* (* 10 1024))
 (def ^:dynamic *read-stream-delay* 5000)
+(def ^:dynamic *exit-timeout* 30000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -91,26 +92,27 @@
 ;;;   Process API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn log-process
-  [process out-chan err-chan]
-  (read-stream (:out process) out-chan)
+(defn log-process-data
+  [process-data out-chan err-chan]
+  (shell/flush process-data)
+  (read-stream (:out process-data) out-chan)
   (log-debug out-chan)
-  (read-stream (:err process) err-chan)
+  (read-stream (:err process-data) err-chan)
   (log-error err-chan))
 
 (defn spawn!
   [& args]
-  (let [process (apply shell/proc args)
+  (let [process-data (apply shell/proc args)
         out-chan (async/chan *channel-buffer-size*)
         err-chan (async/chan *channel-buffer-size*)]
-    (log-process process out-chan err-chan)
-    (merge process {:out-channel out-chan
-                    :err-channel err-chan})))
+    (log-process-data process-data out-chan err-chan)
+    (merge process-data {:out-channel out-chan
+                         :err-channel err-chan})))
 
 (defn terminate!
   [process-data]
-  (let [exit-code (future (shell/exit-code process-data))]
-    (shell/destroy process-data)
-    (async/close! (:out-channel process-data))
-    (async/close! (:err-channel process-data))
-    @exit-code))
+  ;(async/close! (:out-channel process-data))
+  ;(async/close! (:err-channel process-data))
+  (shell/flush process-data)
+  (shell/done process-data)
+  (shell/exit-code process-data *exit-timeout*))

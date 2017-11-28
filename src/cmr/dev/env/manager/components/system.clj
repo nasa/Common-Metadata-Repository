@@ -1,6 +1,6 @@
 (ns cmr.dev.env.manager.components.system
   (:require
-    [cmr.dev.env.manager.components.cmr.mock-echo :as mock-echo]
+    [cmr.dev.env.manager.components.common.process :as process]
     [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.logging :as logging]
     [cmr.dev.env.manager.config :refer [build] :rename {build build-config}]
@@ -25,7 +25,7 @@
 (defn mock-echo
   [builder]
   {:mock-echo (component/using
-               (mock-echo/create-mock-echo-component builder)
+               (process/create-process-runner-component builder :mock-echo)
                [:config :logging])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
