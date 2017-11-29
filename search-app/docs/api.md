@@ -3350,7 +3350,7 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 ###### Valid Variable Sort Keys
   * `name`
   * `long_name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
 Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
@@ -3525,13 +3525,13 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Service Sort Keys
   * `name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
-Examples of sorting by provider_id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by provider id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider_id"
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider_id"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider"
 
 #### <a name="service-access-control"></a> Service Access Control
 

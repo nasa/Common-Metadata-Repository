@@ -27,7 +27,7 @@
     (is (= {:status 400
             :errors ["Parameter [foo] was not recognized."]}
            (variables/search {:foo "bar"}))))
-  
+
   (testing "Unsupported sort key"
     (is (= {:status 400
             :errors ["The sort key [concept_id] is not a valid field for sorting variables."]}
@@ -493,11 +493,11 @@
       [variable2 variable4 variable1 variable3]
 
       "Sort by provider id"
-      "provider_id"
+      "provider"
       [variable2 variable3 variable4 variable1]
 
       "Sort by provider id descending order"
-      "-provider_id"
+      "-provider"
       [variable1 variable2 variable3 variable4]
 
       "Sort by revision-date"
@@ -517,13 +517,13 @@
       [variable2 variable1 variable4 variable3]
 
       "Sort by name ascending then provider id ascending explicitly"
-      ["name" "provider_id"]
+      ["name" "provider"]
       [variable3 variable4 variable1 variable2]
 
       "Sort by name ascending then provider id descending order"
-      ["name" "-provider_id"]
+      ["name" "-provider"]
       [variable3 variable1 variable4 variable2]
 
       "Sort by name then provider id descending order"
-      ["-name" "-provider_id"]
+      ["-name" "-provider"]
       [variable2 variable1 variable4 variable3])))

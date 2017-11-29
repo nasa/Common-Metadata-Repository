@@ -281,11 +281,11 @@
       [service2 service4 service1 service3]
 
       "Sort by provider id"
-      "provider_id"
+      "provider"
       [service2 service3 service4 service1]
 
       "Sort by provider id descending order"
-      "-provider_id"
+      "-provider"
       [service1 service2 service3 service4]
 
       "Sort by revision-date"
@@ -297,13 +297,13 @@
       [service4 service3 service2 service1]
 
       "Sort by name ascending then provider id ascending explicitly"
-      ["name" "provider_id"]
+      ["name" "provider"]
       [service3 service4 service1 service2]
 
       "Sort by name ascending then provider id descending order"
-      ["name" "-provider_id"]
+      ["name" "-provider"]
       [service3 service1 service4 service2]
 
       "Sort by name then provider id descending order"
-      ["-name" "-provider_id"]
+      ["-name" "-provider"]
       [service2 service1 service4 service3])))
