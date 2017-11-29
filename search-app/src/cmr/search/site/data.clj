@@ -78,7 +78,7 @@
                      :provider provider-id})
         query (query-model/query {:concept-type :collection
                                   :condition (gc/and-conds conditions)
-                                  :skip-acls? true
+                                  :skip-acls? false
                                   :page-size :unlimited
                                   :result-format :query-specified
                                   :result-fields [:concept-id :doi-stored :entry-title :short-name :version-id]})
