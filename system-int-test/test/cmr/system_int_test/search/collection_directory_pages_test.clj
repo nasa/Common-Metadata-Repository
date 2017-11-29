@@ -47,8 +47,10 @@
       (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
       (string/includes? body (format "%s/%s/%s" url "PROV2" tag))
       (string/includes? body (format "%s/%s/%s" url "PROV3" tag))
+      (string/includes? body (format "%s/%s/%s" url "SOMEADMIN" tag))
       (not (string/includes? body "NOCOLLS"))
-      (not (string/includes? body "NONEOSDIS")))))
+      (not (string/includes? body "NONEOSDIS"))
+      (not (string/includes? body "ONLYADMIN")))))
 
 (defn expected-provider1-level-links?
   [body]
@@ -95,6 +97,19 @@
     (and
       (string/includes? body (format "%s/%s" url (first colls)))
       (string/includes? body "Collection Item 1</a>"))))
+
+(defn expected-someadmin-level-links?
+  "Test that the collections with guest permissions show up on the directory
+  page and the rest do not"
+  [body]
+  (and
+    (string/includes? body "EOSDIS holdings for the SOMEADMIN provider")
+    (string/includes? body "Collection Item 120</a>")
+    (string/includes? body "Collection Item 121</a>")
+    (string/includes? body "Collection Item 122</a>")
+    (not (string/includes? body "Collection Item 130</a>"))
+    (not (string/includes? body "Collection Item 131</a>"))
+    (not (string/includes? body "Collection Item 132</a>"))))
 
 (def expected-over-ten-count
   "<td class=\"align-r\">\n        18\n      </td>")
@@ -152,13 +167,45 @@
                                                   {:DOI (str "doi" n)
                                                    :Authority (str "auth" n)}))
                                      {:format :umm-json
+                                      :accept-format :json})))
+         someadmin-guest-colls (doall (for [n (range 120 123)]
+                                    (d/ingest-umm-spec-collection
+                                     "SOMEADMIN"
+                                     (assoc exp-conv/example-collection-record
+                                            :ShortName (str "s" n)
+                                            :EntryTitle (str "Collection Item " n)
+                                            :DOI (cm/map->DoiType
+                                                  {:DOI (str "doi" n)
+                                                   :Authority (str "auth" n)}))
+                                     {:format :umm-json
+                                      :accept-format :json})))
+         someadmin-invisible-colls (doall (for [n (range 130 133)]
+                                    (d/ingest-umm-spec-collection
+                                     "SOMEADMIN"
+                                     (assoc exp-conv/example-collection-record
+                                            :ShortName (str "s" n)
+                                            :EntryTitle (str "Collection Item " n)
+                                            :DOI (cm/map->DoiType
+                                                  {:DOI (str "doi" n)
+                                                   :Authority (str "auth" n)}))
+                                     {:format :umm-json
                                       :accept-format :json})))]
+
     (reset! test-collections
             {"PROV1" (sort (map :concept-id [c1-p1 c2-p1 c3-p1]))
              "PROV2" (sort (map :concept-id (conj over-ten-colls c1-p2 c2-p2 c3-p2)))
-             "PROV3" (sort (map :concept-id [c1-p3 c2-p3 c3-p3]))})
+             "PROV3" (sort (map :concept-id [c1-p3 c2-p3 c3-p3]))
+             "SOMEADMIN" (sort (map :concept-id someadmin-guest-colls))})
+
+    (e/grant-all (s/context)
+                 (e/coll-catalog-item-id
+                   "SOMEADMIN"
+                   (e/coll-id (map :EntryTitle someadmin-guest-colls))))
+    (ingest/reindex-collection-permitted-groups (transmit-config/echo-system-token))
+
     ;; Wait until collections are indexed so tags can be associated with them
     (index/wait-until-indexed)
+
     ;; Use the following to generate html links that will be matched in tests
     (let [user-token (e/login (s/context) "user")
           notag-colls [c1-p1 c1-p2 c1-p3]
@@ -166,17 +213,19 @@
           doi-colls [c1-p3 c2-p3 c3-p3]
           non-eosdis-provider-colls [c1-p4 c2-p4 c3-p4]
           all-colls (flatten [over-ten-colls nodoi-colls doi-colls non-eosdis-provider-colls])
-          tag-colls (conj over-ten-colls c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3 admin-1 admin-2)
+          tag-colls (conj (concat over-ten-colls someadmin-guest-colls someadmin-invisible-colls)
+                          c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3 admin-1 admin-2)
           tag (tags/save-tag
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                 tag-colls)]
       (index/wait-until-indexed)
+
       ;; Sanity checks
       (is (= 3 (count notag-colls)))
       (is (= 6 (count nodoi-colls)))
       (is (= 3 (count doi-colls)))
-      (is (= 24 (count tag-colls)))
+      (is (= 30 (count tag-colls)))
       (is (= 28 (count all-colls))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -197,7 +246,7 @@
                                              "provguid4" "NONEOSDIS"
                                              "provguid5" "NOCOLLS"
                                              "provguid6" "ONLYADMIN"
-                                             "provguid7" "someadmin"}
+                                             "provguid7" "SOMEADMIN"}
                                             {:grant-all-search? false})
                       (ingest/grant-all-search-fixture ["PROV1" "PROV2" "PROV3" "NONEOSDIS"
                                                         "NOCOLLS"])
@@ -290,6 +339,20 @@
       (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
       (is (expected-header-link? body)))))
+
+;; Create a provider and give certain collections guest permissions. Test that
+;; only the collections with guest permissions show up on the page.
+(deftest someadmin-level-links
+  (let [provider "SOMEADMIN"
+        tag "gov.nasa.eosdis"
+        url-path (format
+                  "site/collections/directory/%s/%s"
+                  provider tag)
+        response (site/get-search-response url-path)
+        body (:body response)]
+    (testing "check the status and links for PROV3"
+      (is (= 200 (:status response)))
+      (is (expected-someadmin-level-links? body)))))
 
 ;; Note that the following test was originally in the unit tests for
 ;; cmr-search (thus its similarity to those tests) but had to be moved into
