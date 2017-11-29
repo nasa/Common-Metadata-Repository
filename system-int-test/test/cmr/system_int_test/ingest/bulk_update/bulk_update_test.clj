@@ -368,6 +368,48 @@
                     :Instruments [{:ShortName "NSIDC"}]}] 
                   (:Platforms (:umm concept)))))))))
 
+(deftest nil-platform-long-name-bulk-update
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "nil platform long name find and update"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE"
+                                :update-field "PLATFORMS"
+                                :find-value {:ShortName "a340-600-1"}
+                                :update-value {:ShortName "NSIDC"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "NSIDC"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"
+                                   :Technique "testing"
+                                   :NumberOfInstruments 0
+                                   :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"}]}]
+                  (:Platforms (:umm concept)))))))))
+
 (deftest data-center-home-page-url-removal
     (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
           _ (index/wait-until-indexed)]
