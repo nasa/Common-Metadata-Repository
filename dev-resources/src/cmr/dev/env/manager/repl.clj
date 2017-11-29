@@ -32,6 +32,18 @@
 
 (logger/set-level! '[cmr] :info)
 
+(defn get-process
+  [service-key]
+  (get-in system [service-key :process-data]))
+
+(defn get-pid
+  [service-key]
+  (process/get-pid (get-process service-key)))
+
+(defn get-children
+  [service-key]
+  (process/get-children (get-process service-key)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

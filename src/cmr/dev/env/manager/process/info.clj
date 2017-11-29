@@ -15,7 +15,7 @@
   [output-format output-line]
   (case output-format
     "pid,ppid,pgid,comm"
-    (let [[pid ppid pgid & cmd] (string/split output-line #"\s")]
+    (let [[pid ppid pgid & cmd] (string/split (string/trim output-line) #"\s+")]
       (conj
         (mapv util/str->int [pid ppid pgid])
         (string/join " " cmd)))))
@@ -28,3 +28,11 @@
 (defn output-lines->ps-info
   [output-format output-lines]
   (map (partial output-line->map output-format) output-lines))
+
+(defn get-children
+  [ps-info acc ps-parents]
+  (if (seq ps-parents)
+    (for [pid ps-parents]
+      (let [child-pids (mapv :pid (filter #(= (:ppid %) pid) ps-info))]
+        (get-children ps-info (concat acc child-pids) child-pids)))
+    acc))

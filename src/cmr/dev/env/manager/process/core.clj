@@ -1,6 +1,7 @@
 (ns cmr.dev.env.manager.process.core
   (:require
     [clojure.core.async :as async]
+    [clojure.java.shell :as clj-shell]
     [clojure.string :as string]
     [cmr.dev.env.manager.process.const :as const]
     [cmr.dev.env.manager.process.info :as info]
@@ -28,20 +29,36 @@
 
 (defn get-children
   [process-data]
-  (let [parent-pid (get-pid process-data)]
-    ))
+  (let [ps-info (get-ps-info)
+        parent-pid (get-pid process-data)]
+    (flatten (info/get-children ps-info [] [parent-pid]))))
+
+(defn terminate-external-process!
+  [pid]
+  (let [result (clj-shell/sh "kill" "-9" (str pid))
+        out (:out result)
+        err (:err result)]
+    (when (seq out)
+      (log/debug out))
+    (when (seq err)
+      (log/error err))
+    (:exit result)))
 
 (defn terminate-children!
   [process-data]
-  (let [child-processes (get-children process-data)]
-    ))
+  (doall
+    (for [pid (reverse (get-children process-data))]
+      (do
+        (log/debugf "Killing child process with pid %s ..." pid)
+        (let [exit-code (terminate-external-process! pid)]
+          (log/debugf "Got exit code %s for child process %s." exit-code pid))))))
 
 (defn log-process-data
   [process-data out-chan err-chan]
   (shell/flush process-data)
-  (io/read-stream (:out process-data) out-chan)
+  (io/stream->channel (:out process-data) out-chan)
   (io/log-debug out-chan)
-  (io/read-stream (:err process-data) err-chan)
+  (io/stream->channel (:err process-data) err-chan)
   (io/log-error err-chan))
 
 (defn spawn!
@@ -55,9 +72,11 @@
 
 (defn terminate!
   [process-data]
-  (terminate-children! process-data)
   (shell/flush process-data)
   (shell/done process-data)
+  (terminate-children! process-data)
   (async/close! (:out-channel process-data))
   (async/close! (:err-channel process-data))
-  (shell/exit-code process-data const/*exit-timeout*))
+  (let [exit (future (shell/exit-code process-data))]
+    (shell/destroy process-data)
+    @exit))
