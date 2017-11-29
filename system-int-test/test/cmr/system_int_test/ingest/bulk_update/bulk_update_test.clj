@@ -194,8 +194,6 @@
     ;; Wait for queueing/indexing to catch up
     (index/wait-until-indexed)
     (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-      ;; Wait for queueing/indexing to catch up
-      (index/wait-until-indexed)
       (is (= "COMPLETE" (:task-status collection-response))))
     (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
     ;; Kick off bulk update
