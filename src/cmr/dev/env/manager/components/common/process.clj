@@ -1,7 +1,7 @@
 (ns cmr.dev.env.manager.components.common.process
   (:require
     [cmr.dev.env.manager.config :as config]
-    [cmr.dev.env.manager.process :as process]
+    [cmr.dev.env.manager.process.core :as process]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 

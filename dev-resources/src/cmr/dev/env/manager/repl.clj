@@ -7,7 +7,7 @@
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
    [cmr.dev.env.manager.components.system :as components]
-   [cmr.dev.env.manager.process :as process]
+   [cmr.dev.env.manager.process.core :as process]
    [com.stuartsierra.component :as component]
    [me.raynes.conch.low-level :as shell]
    [taoensso.timbre :as log]
