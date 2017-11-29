@@ -24,8 +24,10 @@
 
 (deftest search-for-variables-validation-test
   (testing "Unrecognized parameters"
-    (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}
+    (is (= {:status 400
+            :errors ["Parameter [foo] was not recognized."]}
            (variables/search {:foo "bar"}))))
+  
   (testing "Unsupported sort key"
     (is (= {:status 400
             :errors ["The sort key [concept_id] is not a valid field for sorting variables."]}
@@ -40,18 +42,15 @@
       :measurement "and"))
 
   (testing "Search with wildcards in concept_id param not supported."
-    (is (= {:errors
-            ["Concept-id [V*] is not valid."
-             "Option [pattern] is not supported for param [concept_id]"],
-            :status 400}
+    (is (= {:status 400
+            :errors ["Concept-id [V*] is not valid."
+                     "Option [pattern] is not supported for param [concept_id]"]}
            (variables/search {:concept-id "V*" "options[concept-id][pattern]" true}))))
 
   (testing "Search with ignore_case in concept_id param not supported."
-    (is (= {:errors
-            ["Concept-id [V*] is not valid."
-             "Option [ignore_case] is not supported for param [concept_id]"],
-            :status 400}
-           (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true}))))
+    (is (= {:status 400
+            :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
+           (variables/search {:concept-id "V1000-PROV1" "options[concept-id][ignore-case]" true}))))
 
   (testing "Default variable search result format is XML"
     (let [{:keys [status headers]} (search/find-concepts-in-format nil :variable {})]
@@ -59,14 +58,14 @@
       (is (= "application/xml; charset=utf-8" (get headers "Content-Type")))))
 
   (testing "Unsuported result format in headers"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for variables."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format :atom+xml :variable {})))))
 
   (testing "Unsuported result format in url extension"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for variables."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format
              nil :variable {} {:url-extension "atom"}))))))

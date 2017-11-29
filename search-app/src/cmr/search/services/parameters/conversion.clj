@@ -125,7 +125,10 @@
 
 (defmethod common-params/param-mappings :service
   [_]
-  {})
+  {:name :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]

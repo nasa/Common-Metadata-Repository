@@ -3464,7 +3464,15 @@ The following parameters are supported when searching for services.
 
 ##### Service Matching Parameters
 
-None right now. Coming soon.
+These parameters will match fields within a service. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
 
 ##### <a name="service-search-response"></a> Service Search Response
 
@@ -3488,7 +3496,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 __Example__
 ```
-curl -i "%CMR-ENDPOINT%/services?pretty=true"
+curl -i "%CMR-ENDPOINT%/services?name=Service1&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
