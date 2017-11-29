@@ -321,7 +321,9 @@
            "-70.0,120.0" [gran1 gran2 gran3 gran4 gran5]
            ;; Empty cloud cover is allowed.
            ;; It is as if no cloud cover parameter is present and will find everything.
-           "" [gran1 gran2 gran3 gran4 gran5 gran6]))
+           ;; With the new implementation of the parameter validation that doesn't skip 
+           ;; the nil/empty parameter, this will fail validation.
+           "" []))
 
     (testing "search by cloud-cover with min value greater than max value"
       (let [min-value 30.0

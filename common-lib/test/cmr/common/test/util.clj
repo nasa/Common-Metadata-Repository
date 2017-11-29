@@ -780,7 +780,7 @@
     (is (= (util/safe-lowercase true) (str/lower-case true)))
     (is (= (util/safe-lowercase "StRing") (str/lower-case "StRing")))
     (is (= (util/safe-lowercase nil) nil)))
-  (testing "safe-upperrcase"
+  (testing "safe-uppercase"
     (is (= (util/safe-uppercase false) (str/upper-case false)))
     (is (= (util/safe-uppercase true) (str/upper-case true)))
     (is (= (util/safe-uppercase "StRing") (str/upper-case "StRing")))

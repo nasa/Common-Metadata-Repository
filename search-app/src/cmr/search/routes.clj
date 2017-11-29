@@ -5,7 +5,7 @@
   routes that apply to both (e.g., robots.txt)."
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common.api.errors :as errors]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
@@ -29,9 +29,9 @@
   [query-str]
   (when query-str
     (let [query-str (-> query-str
-                        (str/replace #"%5B" "[")
-                        (str/replace #"%5D" "]")
-                        (str/replace #"\[\]" ""))]
+                        (string/replace #"%5B" "[")
+                        (string/replace #"%5D" "]")
+                        (string/replace #"\[\]" ""))]
       (last (some #(re-find % query-str)
                   [#"(^|&)(.*?)=.*?&\2\["
                    #"(^|&)(.*?)\[.*?&\2="])))))
@@ -61,6 +61,21 @@
                 request
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
+
+(defn parameter-without-equal-sign-handler
+  "Add = sign to the query-string that doesn't contain the = sign so that it could make it
+   to the params and get validated."
+  [handler]
+  (fn [request]
+    (let [query-string (:query-string request)
+          query-string (if (and (string? query-string)
+                                (not= "" (string/trim query-string))
+                                (not (string/includes? query-string "=")))
+                         (str query-string "=")
+                         query-string)]
+      (handler (assoc
+                request
+                :query-string query-string)))))
 
 (defn default-error-format
   "Determine the format that errors should be returned in based on the request URI."
@@ -104,4 +119,5 @@
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
+      parameter-without-equal-sign-handler
       copy-of-body-handler))
