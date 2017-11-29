@@ -31,7 +31,7 @@
       (log/trace "process:" (get-in component [:process-data :process]))
       (process/terminate! (:process-data component))
       (log/debugf "Stopped %s component." process-name)
-      component)))
+      (assoc component :process-data nil))))
 
 (defn create-process-runner-component
   ""
