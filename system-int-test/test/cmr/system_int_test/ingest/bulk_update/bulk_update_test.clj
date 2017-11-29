@@ -336,7 +336,7 @@
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "INSTRUMENTS"
                                 :find-value {:ShortName "atm"}
-                                :update-value {:ShortName "NSIDC"
+                                :update-value {:ShortName "LVIS"
                                                :LongName nil}}
               task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
           (index/wait-until-indexed)
@@ -358,14 +358,14 @@
                    {:ShortName "a340-600-2"
                     :LongName "airbus a340-600"
                     :Type "Aircraft"
-                    :Instruments [{:ShortName "NSIDC"
+                    :Instruments [{:ShortName "LVIS"
                                    :Technique "testing"
                                    :NumberOfInstruments 0
                                    :OperationalModes ["mode1" "mode2"]}]}
                    {:ShortName "a340-600-3"
                     :LongName "airbus a340-600"
                     :Type "Aircraft"
-                    :Instruments [{:ShortName "NSIDC"}]}] 
+                    :Instruments [{:ShortName "LVIS"}]}] 
                   (:Platforms (:umm concept)))))))))
 
 (deftest nil-platform-long-name-bulk-update
@@ -377,7 +377,7 @@
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "PLATFORMS"
                                 :find-value {:ShortName "a340-600-1"}
-                                :update-value {:ShortName "NSIDC"
+                                :update-value {:ShortName "SMAP"
                                                :LongName nil}}
               task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
           (index/wait-until-indexed)
@@ -393,7 +393,7 @@
                                     first)]]
            (is (= 2
                   (:revision-id (:meta concept))))
-           (is (= [{:ShortName "NSIDC"
+           (is (= [{:ShortName "SMAP"
                     :Type "Aircraft"}
                    {:ShortName "a340-600-2"
                     :LongName "airbus a340-600"
