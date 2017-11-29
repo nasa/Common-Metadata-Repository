@@ -70,6 +70,8 @@
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defn-timed get-collection-data
+  "Get the collection data from elastic by provider id and tag. Sort results
+  by entry title"
   [context tag provider-id]
   (let [conditions (query-svc/generate-query-conditions-for-parameters
                     context
@@ -81,11 +83,15 @@
                                   :skip-acls? false
                                   :page-size :unlimited
                                   :result-format :query-specified
-                                  :result-fields [:concept-id :doi-stored :entry-title :short-name :version-id]})
+                                  :result-fields [:concept-id
+                                                  :doi-stored
+                                                  :entry-title
+                                                  :short-name
+                                                  :version-id]})
         result (query-exec/execute-query context query)]
     (sort-by :entry-title (:items result))))
 
-(defmethod collection-data :default
+(defn-timed collection-data :default
   [context tag provider-id]
   (get-collection-data context tag provider-id))
 
