@@ -191,6 +191,8 @@
                                        :Topic "OCEANS"}}]
     ;; Initiate bulk update that shouldn't add any duplicates.
     (ingest/bulk-update-collections "PROV1" duplicate-body)
+    ;; Wait for queueing/indexing to catch up
+    (index/wait-until-indexed)
     (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
