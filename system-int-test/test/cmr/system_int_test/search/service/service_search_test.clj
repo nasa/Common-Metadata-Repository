@@ -20,7 +20,8 @@
 
 (deftest search-for-services-validation-test
   (testing "Unrecognized parameters"
-    (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}
+    (is (= {:status 400
+            :errors ["Parameter [foo] was not recognized."]}
            (search/find-refs :service {:foo "bar"}))))
 
   (testing "Unsupported sort-key parameters"
@@ -28,26 +29,38 @@
             :errors ["The sort key [concept_id] is not a valid field for sorting services."]}
            (search/find-refs :service {:sort-key "concept_id"}))))
 
+  (testing "Search with wildcards in concept_id param not supported."
+    (is (= {:status 400
+            :errors ["Concept-id [S*] is not valid."
+                     "Option [pattern] is not supported for param [concept_id]"]}
+           (search/find-refs :service {:concept-id "S*" "options[concept-id][pattern]" true}))))
+
+  (testing "Search with ignore_case in concept_id param not supported."
+    (is (= {:status 400
+            :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
+           (search/find-refs
+            :service {:concept-id "S1000-PROV1" "options[concept-id][ignore-case]" true}))))
+
   (testing "Default service search result format is XML"
     (let [{:keys [status headers]} (search/find-concepts-in-format nil :service {})]
       (is (= 200 status))
       (is (= "application/xml; charset=utf-8" (get headers "Content-Type")))))
 
   (testing "Unsuported result format in headers"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for services."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for services."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format :atom+xml :service {})))))
 
   (testing "Unsuported result format in url extension"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for services."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for services."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format
              nil :service {} {:url-extension "atom"}))))))
 
 (deftest search-for-services-test
-  (let [service1 (services/ingest-service-with-attrs {:native-id "svc1"
+  (let [service1 (services/ingest-service-with-attrs {:native-id "SVC1"
                                                       :Name "Service1"
                                                       :provider-id "PROV1"})
         service2 (services/ingest-service-with-attrs {:native-id "svc2"
@@ -56,8 +69,8 @@
         service3 (services/ingest-service-with-attrs {:native-id "svc3"
                                                       :Name "a sub for service2"
                                                       :provider-id "PROV2"})
-        service4 (services/ingest-service-with-attrs {:native-id "svc4"
-                                                      :Name "v.other"
+        service4 (services/ingest-service-with-attrs {:native-id "serv4"
+                                                      :Name "s.other"
                                                       :provider-id "PROV2"})
         prov1-services [service1 service2]
         prov2-services [service3 service4]
@@ -70,8 +83,135 @@
       "Find all"
       all-services {}
 
-      ;; more search tests on various permitted params go here
-      )))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; name Param
+      "By name case sensitive - exact match"
+      [service1]
+      {:name "Service1"}
+
+      "By name case sensitive, default ignore-case true"
+      [service1]
+      {:name "service1"}
+
+      "By name ignore case false"
+      []
+      {:name "service1" "options[name][ignore-case]" false}
+
+      "By name ignore case true"
+      [service1]
+      {:name "service1" "options[name][ignore-case]" true}
+
+      "By name Pattern, default false"
+      []
+      {:name "*other"}
+
+      "By name Pattern true"
+      [service4]
+      {:name "*other" "options[name][pattern]" true}
+
+      "By name Pattern false"
+      []
+      {:name "*other" "options[name][pattern]" false}
+
+      "By multiple names"
+      [service1 service2]
+      {:name ["Service1" "service2"]}
+
+      "By multiple names with options"
+      [service1 service4]
+      {:name ["Service1" "*other"] "options[name][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; provider Param
+      "By provider - exact match"
+      prov1-services
+      {:provider "PROV1"}
+
+      "By provider, default ignore-case true"
+      prov1-services
+      {:provider "prov1"}
+
+      "By provider ignore case false"
+      []
+      {:provider "prov1" "options[provider][ignore-case]" false}
+
+      "By provider ignore case true"
+      prov1-services
+      {:provider "prov1" "options[provider][ignore-case]" true}
+
+      "By provider Pattern, default false"
+      []
+      {:provider "PROV?"}
+
+      "By provider Pattern true"
+      all-services
+      {:provider "PROV?" "options[provider][pattern]" true}
+
+      "By provider Pattern false"
+      []
+      {:provider "PROV?" "options[provider][pattern]" false}
+
+      "By multiple providers"
+      prov2-services
+      {:provider ["PROV2" "PROV3"]}
+
+      "By multiple providers with options"
+      all-services
+      {:provider ["PROV1" "*2"] "options[provider][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; native-id Param
+      "By native-id case sensitive - exact match"
+      [service1]
+      {:native-id "SVC1"}
+
+      "By native-id case sensitive, default ignore-case true"
+      [service1]
+      {:native-id "svc1"}
+
+      "By native-id ignore case false"
+      []
+      {:native-id "svc1" "options[native-id][ignore-case]" false}
+
+      "By native-id ignore case true"
+      [service1]
+      {:native-id "svc1" "options[native-id][ignore-case]" true}
+
+      "By native-id Pattern, default false"
+      []
+      {:native-id "svc*"}
+
+      "By native-id Pattern true"
+      [service1 service2 service3]
+      {:native-id "svc*" "options[native-id][pattern]" true}
+
+      "By native-id Pattern false"
+      []
+      {:native-id "svc*" "options[native-id][pattern]" false}
+
+      "By multiple native-ids"
+      [service1 service2]
+      {:native-id ["SVC1" "svc2"]}
+
+      "By multiple native-ids with options"
+      [service1 service4]
+      {:native-id ["SVC1" "serv*"] "options[native-id][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; concept-id Param
+      "By concept-id - single"
+      [service1]
+      {:concept-id (:concept-id service1)}
+
+      "By concept-id - multiple"
+      [service1 service2]
+      {:concept-id [(:concept-id service1) (:concept-id service2)]}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Combination of params
+      "Combination of params"
+      [service3]
+      {:native-id "svc*" :provider "PROV2" "options[native-id][pattern]" true})))
 
 (deftest deleted-services-not-found-test
   (let [token (e/login (s/context) "user1")
