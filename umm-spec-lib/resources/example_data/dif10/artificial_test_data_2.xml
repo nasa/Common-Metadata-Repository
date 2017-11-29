@@ -1,0 +1,180 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+    <Entry_ID>
+        <Short_Name>GCOM-W1_Level3_AMSR2_SM</Short_Name>
+        <Version>Not provided</Version>
+    </Entry_ID>
+    <!--added-->
+    <Version_Description>Not provided</Version_Description>
+    <!--Entry_Title was trimmed-->
+    <Entry_Title>Level 3 Soil moisture (AMSR2) product</Entry_Title>
+    <!--renamed from Data_Set_Citation to Dataset_Citation-->
+    <Dataset_Citation>
+        <Dataset_Creator>JAXA</Dataset_Creator>
+        <!--Dataset_Title was trimmed-->
+        <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+    </Dataset_Citation>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SOILS</Term>
+        <Variable_Level_1>SOIL MOISTURE/WATER CONTENT</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+    <!--renamed from Sensor_Name to Instrument-->
+    <!--renamed from Source_Name to Platform-->
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>Not provided</Short_Name>
+        <Instrument>
+            <Short_Name>AMSR2</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer 2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>GCOM-W1</Short_Name>
+        <Long_Name>Global Change Observation Mission 1st-Water</Long_Name>
+        <Instrument>
+            <Short_Name>Not provided</Short_Name>
+        </Instrument>
+    </Platform>
+    <!--renamed from Data_Set_Progress to Dataset_Progress-->
+    <!--added-->
+    <Temporal_Coverage>
+        <!--renamed from Temporal_Coverage to Range_DateTime-->
+        <Range_DateTime>
+            <!--renamed from Start_Date to Beginning_Date_Time-->
+            <Beginning_Date_Time>Not provided</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <!--renamed from Spatial_Coverage to Bounding_Rectangle-->
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Project>
+        <Short_Name>GCOM-W</Short_Name>
+        <Long_Name>Global Change Observation Mission-Water</Long_Name>
+    </Project>
+    <!--renamed from Data_Center to Organization-->
+    <Organization>
+        <!--added - assumption-->
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <!--renamed from Data_Center_Name to Organization_Name-->
+        <Organization_Name>
+            <Short_Name>JP/JAXA/SAOC</Short_Name>
+            <Long_Name>Satellite Applications and Operations Center, Japan Aerospace Exploration Agency, Japan</Long_Name>
+        </Organization_Name>
+        <!--renamed from Data_Center_URL to Organization_URL-->
+        <Organization_URL>http://www.jaxa.jp</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>JAXA/SAOC</Last_Name>
+                <!--renamed from Contact_Address to Address-->
+                <Address>
+                    <!--renamed from Address to Street_Address-->
+                    <Street_Address>2-1-1, Sengen</Street_Address>
+                    <City>Tsukuba-city</City>
+                    <!--renamed from Province_or_State to State_Province-->
+                    <State_Province>Ibaraki</State_Province>
+                    <Postal_Code>305-8505</Postal_Code>
+                    <Country>Japan</Country>
+                </Address>
+                <Email>rd-mos@ml.jaxa.jp</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Summary>
+        <Abstract>The Advanced Microwave Scanning Radiometer 2 (AMSR2) onboard the GCOM-W1 satellite is a remote sensing instrument for measuring weak microwave emission from the surface and the atmosphere of the Earth. From about 700 km above the Earth, AMSR2 will provide us highly accurate measurements of the intensity of microwave emission and scattering.The antenna of AMSR2 rotates once per 1.5 seconds and obtains data over a 1450 km swath. This conical scan mechanism enables AMSR2 to acquire a set of daytime and nighttime data with more than 99% coverage of the Earth every 2 days. Definition of Level3 data processing *  Grid data with 0.1/0.25 degrees (10/25km) resolution* Brightness temperatures and geophysical parameters* Daily and monthly temporal average* Equidistant Cylindrical and Polar Stereo ProjectionFollowing is the detail of product.Procut: Soil moisture      Area  : Land    Grid   : 50  Accuracy          Data relase threshhold: �10 %          Standard: �10 %           Goal: �5 %     Range : 0-40 % Other : Volumetric water content over global land areas including arid and cold regions, except areas covered by vegetation with 2kg/m2 water equivalent. Accuracy is defined as mean absolute error of instantaneous observations.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>https://gcom-w1.jaxa.jp/auth.html</URL>
+        <Description>GCOM-W1 Data Providing Service</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+    </Related_URL>
+    <!--Moved IDN_Node=JAPAN/JAXA to name-value.-->
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2012-08-24</Metadata_Creation>
+        <Metadata_Last_Revision>2017-08-03</Metadata_Last_Revision>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>link_notification.contact</Name>
+            <Value>sekioka_shinichi@restec.or.jp</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>88aa7e31-fa09-474c-905b-2e0f1137b373</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2015-12-01 16:32:06</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2017-08-07T13:42:54Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>JAPAN/JAXA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>
