@@ -250,12 +250,12 @@
 
         "Find and update home page url" 
         :find-and-update-home-page-url
-        {:ShortName "NewShortName" :LongName "NewLongName" :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+        {:ShortName "NewShortName" :LongName nil :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                                                                :Type "HOME PAGE"
                                                                                                :URL "http://nsidc.org/daac/newindex.html"}]}}
         {:ShortName "ShortName"}
         {:DataCenters [{:ShortName "NewShortName"
-                        :LongName "NewLongName"
+                        :LongName nil
                         :Roles ["ARCHIVER", "DISTRIBUTOR"]
                         :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
                         :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
@@ -271,13 +271,13 @@
                                                                   {:Type  "Email"
                                                                    :Value "nsidc@nsidc.org" }]}}
                        {:ShortName "NewShortName"
-                        :LongName "NewLongName"
+                        :LongName nil
                         :Roles ["ARCHIVER"]
                         :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                             :Type "HOME PAGE"
                                                             :URL "http://nsidc.org/daac/newindex.html"}]}}
                        {:ShortName "NewShortName"
-                        :LongName "NewLongName"
+                        :LongName nil
                         :Roles ["PROCESSOR"]
                         :ContactPersons [{:Roles ["Data Center Contact"]
                                           :LastName "Smith"}]
@@ -380,6 +380,19 @@
                                      :LongName "The Full Name of An Instrument v123.4"
                                      :Technique "Two cans and a string"
                                      :NumberOfInstruments 0}]}]}
+        
+        "Find and update nil long name"
+        :find-and-update
+        {:ShortName "A340-600"
+         :LongName nil}
+        {:ShortName "Platform 1"}
+        {:Platforms [{:ShortName "A340-600"
+                      :LongName nil
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "An Instrument"
+                                     :LongName "The Full Name of An Instrument v123.4"
+                                     :Technique "Two cans and a string"
+                                     :NumberOfInstruments 0}]}]}
 
         "Find and replace short name"
         :find-and-replace
@@ -450,20 +463,20 @@
 
         "Find and update - multiple instances"
         :find-and-update
-        {:ShortName "Inst X"}
+        {:ShortName "Inst X" :LongName nil}
         {:ShortName "Inst 1"}
         {:Platforms [{:ShortName "Platform 1"
                       :LongName "Example Platform Long Name 1"
                       :Type "Aircraft"
                       :Instruments [{:ShortName "Inst X"
-                                     :LongName "Instrument 1"}
+                                     :LongName nil}
                                     {:ShortName "Inst 2"
                                      :LongName "Instrument 2"}]}
                      {:ShortName "Platform 2"
                       :LongName "Example Platform Long Name 2"
                       :Type "Aircraft"
                       :Instruments [{:ShortName "Inst X"
-                                     :LongName "Instrument 1"}
+                                     :LongName nil}
                                     {:ShortName "Inst 3"
                                      :LongName "Instrument 3"}]}]}
 

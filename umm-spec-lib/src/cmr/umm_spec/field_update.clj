@@ -134,14 +134,13 @@
 (defmethod apply-umm-list-update :find-and-update
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
       ;; For each entry in update-field, if we find it using the find params,
       ;; update only the fields supplied in update-value with nils removed
       (update-in umm update-field #(distinct (map (fn [x]
                                                     (if (value-matches? find-value x)
                                                       (merge x update-value)
                                                       x))
-                                                  %))))
+                                                  %)))
     umm))
 
 (defmethod apply-umm-list-update :find-and-update-home-page-url
@@ -153,15 +152,14 @@
   ;; in update-value is not used.
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
-      ;; For each entry in update-field, if we find it using the find params,
-      ;; update only the fields supplied in update-value with nils removed, except for the
-      ;; ContactInformation part of the update-value.
-      (update-in umm update-field #(distinct (map (fn [x]
-                                                    (if (value-matches? find-value x)
-                                                      (data-center-update x update-value)
-                                                      x))
-                                                  %))))
+    ;; For each entry in update-field, if we find it using the find params,
+    ;; update only the fields supplied in update-value with nils removed, except for the
+    ;; ContactInformation part of the update-value.
+    (update-in umm update-field #(distinct (map (fn [x]
+                                                  (if (value-matches? find-value x)
+                                                    (data-center-update x update-value)
+                                                    x))
+                                                %)))
     umm))
 
 (defn apply-update

@@ -95,7 +95,7 @@
                       :VariableLevel1 "CLOUD MICROPHYSICS"
                       :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]})
 
-(def find-remove-all-platforms-instruments-umm
+(def platforms-instruments-umm
   {:Platforms [{:ShortName "a340-600-1"
                 :LongName "airbus a340-600-1"
                 :Type "Aircraft"}
@@ -327,6 +327,89 @@
                   (map #(select-keys % [:Roles :ShortName])
                        (:DataCenters (:umm concept))))))))))
 
+(deftest nil-instrument-long-name-bulk-update
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "nil instrument long name find and update"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE"
+                                :update-field "INSTRUMENTS"
+                                :find-value {:ShortName "atm"}
+                                :update-value {:ShortName "LVIS"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "a340-600-1"
+                    :LongName "airbus a340-600-1"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"
+                                   :Technique "testing"
+                                   :NumberOfInstruments 0
+                                   :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"}]}] 
+                  (:Platforms (:umm concept)))))))))
+
+(deftest nil-platform-long-name-bulk-update
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "nil platform long name find and update"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE"
+                                :update-field "PLATFORMS"
+                                :find-value {:ShortName "a340-600-1"}
+                                :update-value {:ShortName "SMAP"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "SMAP"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"
+                                   :Technique "testing"
+                                   :NumberOfInstruments 0
+                                   :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"}]}]
+                  (:Platforms (:umm concept)))))))))
+
 (deftest data-center-home-page-url-removal
     (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
           _ (index/wait-until-indexed)]
@@ -337,7 +420,7 @@
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "ShortName"}
                                 :update-value {:ShortName "New ShortName"
-                                               :LongName "New LongName"}}
+                                               :LongName nil}}
               task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
@@ -353,7 +436,6 @@
            (is (= 2
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "New ShortName"
-                    :LongName "New LongName"
                     :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                         :Type "PROJECT HOME PAGE"
                                                         :URL "http://nsidc.org/daac/index.html"}]
@@ -363,10 +445,8 @@
                                                                :Value "1 303 492 2468 x"}
                                                               {:Type  "Email"
                                                                :Value "nsidc@nsidc.org"}]}}
-                   {:ShortName "New ShortName"
-                    :LongName "New LongName"}
-                   {:ShortName "New ShortName"
-                    :LongName "New LongName"}]
+                   {:ShortName "New ShortName"}
+                   {:ShortName "New ShortName"}]
                   (map #(select-keys % [:ShortName :LongName :ContactInformation])
                        (:DataCenters (:umm concept))))))))))
 
@@ -460,7 +540,7 @@
               (:ScienceKeywords (:umm concept)))))))
 
 (deftest bulk-update-remove-all-instruments-test
-  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
+  (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
