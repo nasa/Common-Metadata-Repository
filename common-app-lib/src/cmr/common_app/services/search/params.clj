@@ -173,7 +173,7 @@
   [context concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
         params (dissoc params :options)]
-    (when (not (empty? params))
+    (when (seq params)
       (map (fn [[param value]]
              (parameter->condition context concept-type param value options))
            params))))
