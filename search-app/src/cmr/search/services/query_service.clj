@@ -144,12 +144,11 @@
   [params]
   (or (:tag-data params) (:tag_data params)))
 
-
 (defn- validate-empty-parameters
   "validate only the empty valued parameters"
   [context concept-type params]
-  (let [empty-params 
-         (some-> params 
+  (let [empty-params
+         (some-> params
                  u/select-blank-keys
                  common-params/sanitize-without-removing-empty-params
                  ;; empty equator crossing start date and end date are not useful
@@ -160,15 +159,14 @@
              (lp/process-legacy-multi-params-conditions concept-type)
              (lp/replace-science-keywords-or-option concept-type)
              (psn/replace-provider-short-names context)
-             (pv/validate-empty-parameters concept-type)))) 
+             (pv/validate-empty-parameters concept-type))))
 
-(defn make-concepts-query
-  "Utility function for generating an elastic-ready query."
+(defn- create-and-validate-concepts-query-parameters
   ([context concept-type params]
    (->> params
         (make-concepts-tag-data)
-        (make-concepts-query
-         context concept-type params)))
+        (create-and-validate-concepts-query-parameters
+          context concept-type params)))
   ([context concept-type params tag-data]
    (validate-empty-parameters context concept-type params)
    (->> params
@@ -181,9 +179,30 @@
         (lp/process-legacy-multi-params-conditions concept-type)
         (lp/replace-science-keywords-or-option concept-type)
         (psn/replace-provider-short-names context)
-        (pv/validate-parameters concept-type)
-        (common-params/parse-parameter-query
-         context concept-type))))
+        (pv/validate-parameters concept-type))))
+
+(defn make-concepts-query
+  "Utility function for generating an elastic-ready query."
+  ([context concept-type params]
+   (common-params/parse-parameter-query
+    context
+    concept-type
+    (create-and-validate-concepts-query-parameters
+     context concept-type params)))
+  ([context concept-type params tag-data]
+   (common-params/parse-parameter-query
+    context
+    concept-type
+    (create-and-validate-concepts-query-parameters
+     context concept-type params tag-data))))
+
+(defn generate-query-conditions-for-parameters
+  "Given the query params, generate the conditions for elastic search. Returns
+  just the search conditions."
+  [context concept-type params]
+  (let [params (create-and-validate-concepts-query-parameters
+                context concept-type params)]
+    (common-params/generate-param-query-conditions context concept-type params)))
 
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with

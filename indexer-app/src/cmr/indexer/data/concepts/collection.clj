@@ -244,7 +244,7 @@
                            granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)]
     (merge {:concept-id concept-id
-            :doi doi
+            :doi-stored doi
             :doi.lowercase doi-lowercase
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))

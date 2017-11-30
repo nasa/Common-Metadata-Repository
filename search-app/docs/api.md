@@ -3350,7 +3350,7 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 ###### Valid Variable Sort Keys
   * `name`
   * `long_name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
 Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
@@ -3464,7 +3464,15 @@ The following parameters are supported when searching for services.
 
 ##### Service Matching Parameters
 
-None right now. Coming soon.
+These parameters will match fields within a service. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
 
 ##### <a name="service-search-response"></a> Service Search Response
 
@@ -3488,7 +3496,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 __Example__
 ```
-curl -i "%CMR-ENDPOINT%/services?pretty=true"
+curl -i "%CMR-ENDPOINT%/services?name=Service1&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -3517,13 +3525,13 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Service Sort Keys
   * `name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
-Examples of sorting by provider_id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by provider id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider_id"
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider_id"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider"
 
 #### <a name="service-access-control"></a> Service Access Control
 
