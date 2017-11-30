@@ -276,6 +276,18 @@
           m
           m))
 
+(defn remove-non-nil-and-non-empty-keys
+  "Removes keys mapping to non-nil and non-empty values in a map."
+  [m]
+  (reduce (fn [m kv]
+            (let [v (val kv)
+                  k (key kv)] 
+              (if (and (some? v) (not (and (string? v) (= "" (string/trim v)))))
+                (dissoc m k)
+                m)))
+          m
+          m))
+
 (defn inflate-nil-keys
   "Occupy nil values with a given default value."
   [m filler]
