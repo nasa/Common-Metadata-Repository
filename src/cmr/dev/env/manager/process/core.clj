@@ -15,7 +15,7 @@
     (get-ps-info "pid,ppid,pgid,comm"))
   ([output-format]
     (->> output-format
-         (util/get-cmd-output "ps" "--no-headers" "-eo")
+         (util/get-cmd-output "ps" "-eo")
          (string/split-lines)
          (info/output-lines->ps-info output-format))))
 
