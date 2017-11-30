@@ -276,8 +276,8 @@
           m
           m))
 
-(defn remove-non-nil-and-non-empty-keys
-  "Removes keys mapping to non-nil and non-empty values in a map."
+(defn remove-non-empty-keys
+  "Removes keys mapping to non-empty values in a map."
   [m]
   (reduce (fn [m kv]
             (let [v (val kv)

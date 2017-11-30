@@ -145,36 +145,22 @@
   (or (:tag-data params) (:tag_data params)))
 
 
-(defn- validate-empty-or-nil-parameters
-  "validate only the empty or nil valued parameters"
+(defn- validate-empty-parameters
+  "validate only the empty valued parameters"
   [context concept-type params]
-  (let [empty-or-nil-params 
+  (let [empty-params 
          (some-> params 
-                 u/remove-non-nil-and-non-empty-keys
+                 u/remove-non-empty-keys
                  common-params/sanitize-without-removing-empty-params
-                 ;; empty or nil equator crossing start date and end date are not useful
+                 ;; empty equator crossing start date and end date are not useful
                  ;; towards the final replacement of equator-crossing-date.
                  (dissoc :equator-crossing-start-date :equator-crossing-end-date))]
-    (some->> empty-or-nil-params
+    (some->> empty-params
              lp/replace-parameter-aliases
              (lp/process-legacy-multi-params-conditions concept-type)
              (lp/replace-science-keywords-or-option concept-type)
              (psn/replace-provider-short-names context)
              (pv/validate-empty-parameters concept-type)))) 
-
-(defn- remove-nil-from-sequential-values
-   "Remove all the nils from all the sequential values in a map.
-    This is used to fix the 500 error when params contain
-    :concept-id [C123-PROV1 nil]."
-  [params]
-  (u/map-values 
-    #(if (sequential? %) 
-       (let [new-v (remove nil? %)]
-         (if (seq new-v)
-           (into [] new-v)
-           nil))
-        %)
-    params)) 
 
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
@@ -184,11 +170,10 @@
         (make-concepts-query
          context concept-type params)))
   ([context concept-type params tag-data]
-   (validate-empty-or-nil-parameters context concept-type params)
+   (validate-empty-parameters context concept-type params)
    (->> params
         common-params/sanitize-params
         (add-tag-data-to-params tag-data)
-        remove-nil-from-sequential-values
         ;; CMR-2553 remove the following line
         drop-ignored-params
         ;; handle legacy parameters

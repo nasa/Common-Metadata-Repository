@@ -319,9 +319,10 @@
            ",0.7" [gran4 gran5]
            "-70.0,31.0" [gran1 gran2 gran4 gran5]
            "-70.0,120.0" [gran1 gran2 gran3 gran4 gran5]
-           ;; Empty cloud cover is allowed.
+           ;; Empty and nil cloud cover is allowed.
            ;; It is as if no cloud cover parameter is present and will find everything.
-           "" [gran1 gran2 gran3 gran4 gran5 gran6]))
+           "" [gran1 gran2 gran3 gran4 gran5 gran6]
+           nil [gran1 gran2 gran3 gran4 gran5 gran6]))
 
     (testing "search by cloud-cover with min value greater than max value"
       (let [min-value 30.0
