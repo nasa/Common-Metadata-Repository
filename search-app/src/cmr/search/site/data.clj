@@ -91,7 +91,7 @@
         result (query-exec/execute-query context query)]
     (sort-by :entry-title (:items result))))
 
-(defn-timed collection-data :default
+(defmethod collection-data :default
   [context tag provider-id]
   (get-collection-data context tag provider-id))
 
