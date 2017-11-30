@@ -741,6 +741,13 @@
               ; We don't want an ExecutionException, we want to get the null pointer exception
               (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))
 
+(deftest select-blank-keys
+  (testing "select-blank-keys function"
+    (is (=  {:a "" :b " " :c nil}
+            (util/select-blank-keys {:a "" :b " " :c nil :d "a" :e [1 2 3]})))
+    (is (= {} 
+           (util/select-blank-keys nil)))))  
+
 (deftest max-compare-test
   (util/are3
     [coll expected-max]

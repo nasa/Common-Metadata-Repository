@@ -150,7 +150,7 @@
   [context concept-type params]
   (let [empty-params 
          (some-> params 
-                 u/remove-non-empty-keys
+                 u/select-blank-keys
                  common-params/sanitize-without-removing-empty-params
                  ;; empty equator crossing start date and end date are not useful
                  ;; towards the final replacement of equator-crossing-date.

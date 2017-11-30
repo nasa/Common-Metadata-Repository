@@ -62,15 +62,17 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
-
 (defn add-equal-sign-to-params-in-list
-  "Add = sign to each parameter in the param-list if it doesn't already exist."
+  "Add = sign to each parameter in the param-list if it is a string
+   and it's not blank and it doesn't already contain = sign"
   [param-list]
-  (map #(if (and (string? %)
-                 (not= "" (string/trim %))
-                 (not (string/includes? % "=")))
-          (str % "=")
-          %) param-list)) 
+  (map (fn [param]
+         (if (and (string? param)
+                  (not (string/blank? param))
+                  (not (string/includes? param "=")))
+           (str param "=")
+           param)) 
+       param-list))
 
 (defn parameter-without-equal-sign-handler
   "Add = sign to each param in the query-string that doesn't contain the = sign so that it could make it

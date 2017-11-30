@@ -276,17 +276,14 @@
           m
           m))
 
-(defn remove-non-empty-keys
-  "Removes keys mapping to non-empty values in a map."
+(defn select-blank-keys 
+  "Keep the keys with blank values in a map."
   [m]
-  (reduce (fn [m kv]
-            (let [v (val kv)
-                  k (key kv)] 
-              (if (and (some? v) (not (and (string? v) (= "" (string/trim v)))))
-                (dissoc m k)
-                m)))
-          m
-          m))
+  (select-keys m 
+    (for [[k v] m 
+      :when (or (nil? v)  
+                (and (string? v) (string/blank? v)))] 
+      k)))
 
 (defn inflate-nil-keys
   "Occupy nil values with a given default value."
