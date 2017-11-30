@@ -326,6 +326,12 @@
      (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
             (search/find-refs :granule {:include-facets true}))))
 
+   (testing "valid include-facets"
+     (is (= 200 
+            (:status (search/find-concepts-json :collection {:include-facets "v2" :concept-id ""}))))
+     (is (= 200
+            (:status (search/find-concepts-json :collection {:include-facets "v2" :concept-id nil})))))
+
    (testing "retreving all facets in different formats"
      (let [expected-facets [{:field "data_center"
                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]}
