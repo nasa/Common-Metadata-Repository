@@ -7,7 +7,7 @@
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
    [cmr.dev.env.manager.components.system :as components]
-   [cmr.dev.env.manager.process :as process]
+   [cmr.dev.env.manager.process.core :as process]
    [com.stuartsierra.component :as component]
    [me.raynes.conch.low-level :as shell]
    [taoensso.timbre :as log]
@@ -31,6 +31,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (logger/set-level! '[cmr] :info)
+
+(defn get-process
+  [service-key]
+  (get-in system [service-key :process-data]))
+
+(defn get-pid
+  [service-key]
+  (process/get-pid (get-process service-key)))
+
+(defn get-children
+  [service-key]
+  (process/get-children (get-process service-key)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

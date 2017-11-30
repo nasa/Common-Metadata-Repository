@@ -1,7 +1,7 @@
 (ns cmr.dev.env.manager.components.common.process
   (:require
     [cmr.dev.env.manager.config :as config]
-    [cmr.dev.env.manager.process :as process]
+    [cmr.dev.env.manager.process.core :as process]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
@@ -29,15 +29,9 @@
       (log/infof "Stopping %s component ..." process-name)
       (log/trace "process-data:" (:process-data component))
       (log/trace "process:" (get-in component [:process-data :process]))
-      (if-let [exit-code (process/terminate! (:process-data component))]
-        (do
-          (log/debugf "Got exit code:" exit-code)
-          (log/debugf "Got exit code:" (str exit-code))
-          (log/debug "Exit code type:" (type exit-code)))
-        (log/errorf (str "The process associated with %s doesn't seem to have "
-                         "exitted properly.")))
+      (process/terminate! (:process-data component))
       (log/debugf "Stopped %s component." process-name)
-      component)))
+      (assoc component :process-data nil))))
 
 (defn create-process-runner-component
   ""
