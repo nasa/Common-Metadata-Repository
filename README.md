@@ -18,12 +18,58 @@
     $ git clone git@github.com:nasa/Common-Metadata-Repository cmr
     $ git clone git@github.com:cmr-exchange/dev-env-manager cmr-dev-env-manager
     ```
-1. Go into the cloned `cmr` directory, and run `lein install-with-content!`.
+1. Go into the cloned `cmr` directory, and set up Oracle libs (see the `README`
+   in `cmr/oracle-lib`).
+1. From the `cmr` directory, run `lein install-with-content!`.
+1, Change to the `cmr-dev-env-manager` directory.
 
 
 ## Usage
 
-(Forthcoming ...)
+Run `lein repl`, at which point you will see output similar to the following:
+
+```
+Development Environment Manager
+.....................................................................................
+::'######::'##::::'##:'########::::::::'##:::::::::::::::::::::::::::::::::::::::::::
+:'##... ##: ###::'###: ##.... ##::::::'##:::dMMMMb::::::::dMMMMMP::::::dMMMMMMMMb::::
+: ##:::..:: ####'####: ##:::: ##:::::'##:::dMP.VMP:::::::dMP....::::::dMP"dMP"dMP::::
+: ##::::::: ## ### ##: ########:::::'##:::dMP:dMP.::::::dMMMP::::::::dMP.dMP.dMP.::::
+: ##::::::: ##. #: ##: ##.. ##:::::'##:::dMP:aMP.:amr::dMP..:::amr::dMP:dMP:dMP.:amr:
+: ##::: ##: ##:.:: ##: ##::. ##:::'##:::dMMMMP.::dMP::dMMMMMP:dMP::dMP:dMP:dMP.:dMP::
+:. ######:: ##:::: ##: ##:::. ##:'##::::......:::..:::......::..:::..::..::..:::..:::
+::......:::..:::::..::..:::::..::..::::::::::::::::::::::::::::::::::::::::::::::::::
+
+for NASA's Earthdata Common Metadata Repository
+
+Loading ...
+```
+
+After a few seconds, the REPL will be loaded and ready to use:
+
+```
+nREPL server started on port 54636 on host 127.0.0.1 - nrepl://127.0.0.1:54636
+REPL-y 0.3.7, nREPL 0.2.12
+Clojure 1.8.0
+Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
+    Docs: (doc function-name-here)
+          (find-doc "part-of-name-here")
+  Source: (source function-name-here)
+ Javadoc: (javadoc java-object-or-class-here)
+    Exit: Control+D or (exit) or (quit)
+ Results: Stored in vars *1, *2, *3, an exception in *e
+
+[cmr.dev.env.manager.repl] λ=>
+```
+
+To bring up a dev system, complete with all running services:
+
+```clj
+[cmr.dev.env.manager.repl] λ=> (run)
+```
+
+Note that each service is started in its own OS process. For more information
+on this, see the architecture section below.
 
 
 ## License
