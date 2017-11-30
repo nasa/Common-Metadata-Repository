@@ -77,6 +77,11 @@ on this, see the architecture section below.
 TBD
 
 
+## Background
+
+For information on what problem this project attempts to define and how it was
+originally planned, see the [wiki pages](../wiki).
+
 
 ## License
 
