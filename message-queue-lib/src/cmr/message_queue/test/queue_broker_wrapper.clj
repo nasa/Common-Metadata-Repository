@@ -183,7 +183,9 @@
         (handler msg)
         (update-message-queue-history broker-wrapper queue-name :process msg :success)
         (catch Exception e
-          (update-message-queue-history broker-wrapper queue-name :process msg :retry)
+          ;; Will return a retry up to the retry count and then a failure afterwards
+          (let [message-state (queue-response->message-state :retry msg)]
+            (update-message-queue-history broker-wrapper queue-name :process msg message-state))
           (throw e))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
