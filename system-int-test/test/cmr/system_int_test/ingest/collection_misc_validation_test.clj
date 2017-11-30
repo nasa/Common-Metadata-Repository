@@ -5,6 +5,7 @@
     [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.ingest.config :as icfg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -79,14 +80,40 @@
 
 (deftest error-messages-are-friendly
   (testing "Error messages don't contain regexes"
-    (let [collection (data-umm-c/collection
-                       {:Platforms [(data-umm-cmn/platform {:ShortName "¡El nombre de largo se malo!"
-                                                            :LongName ""})]})
-          ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
-          validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
-      (proto-repl.saved-values/save 16)
-      (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
-      (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response))))))))
+    ;; Include fields that will fail the regex pattern and ensure that the regexes
+    ;; don't show up in the returned errors
+    (let [platform-collection (data-umm-c/collection
+                               {:Platforms [(data-umm-cmn/platform {:ShortName ""
+                                                                    :LongName ""})]})
+          data-center-collection (data-umm-c/collection
+                                  {:DataCenters [(data-umm-cmn/data-center {:ShortName "asdf"
+                                                                            :Roles ["ARCHIVER"]})]})
+          science-keyword-collection (data-umm-c/collection
+                                      {:ScienceKeywords
+                                       [(data-umm-cmn/science-keyword
+                                         {:VariableLevel1 ""
+                                          :VariableLevel2 ""
+                                          :VariableLevel3 ""
+                                          :Category ""
+                                          :Term ""
+                                          :DetailedVariable ""
+                                          :Topic ""})]})]
+
+      (are3 [collection]
+       (let [ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
+             validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
+         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
+         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response))))))
+       "Invalid platforms"
+       platform-collection
+
+       "Invalid Data Centers"
+       data-center-collection
+
+       "Invalid Science Keywords"
+       science-keyword-collection))))
+
+
 
 (deftest multiple-warnings
  (testing "Schema and UMM-C validation warnings"

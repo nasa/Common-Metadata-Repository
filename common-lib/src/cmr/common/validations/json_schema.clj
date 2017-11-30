@@ -1,16 +1,17 @@
 (ns cmr.common.validations.json-schema
   "Functions used to perform JSON schema validation. See http://json-schema.org/
   for more details."
-  (:require [cheshire.core :as json]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.log :as log :refer (warn)]
-            [clojure.string :as str])
-  (:import [com.github.fge.jsonschema.main
-            JsonSchema
-            JsonSchemaFactory]
-           com.github.fge.jackson.JsonLoader
-           com.github.fge.jsonschema.core.report.ListProcessingReport
-           com.fasterxml.jackson.core.JsonParseException))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.log :as log :refer (warn)]
+   [clojure.string :as str])
+  (:import
+   (com.github.fge.jsonschema.main JsonSchema
+                                   JsonSchemaFactory)
+   (com.github.fge.jackson.JsonLoader)
+   (com.github.fge.jsonschema.core.report.ListProcessingReport)
+   (com.fasterxml.jackson.core.JsonParseException)))
 
 (defn- parse-error-report
   "Parses the error-report to return a human friendly error message.
@@ -37,8 +38,11 @@
 (defn- parse-validation-report
   "Takes a validation report and returns a sequence of any errors contained in
   the report. Returns nil if there are no errors. Takes a
-  com.github.fge.jsonschema.core.report.ListProcessingReport.   See
-  http://fge.github.io/json-schema-validator/2.2.x/index.html for details."
+  com.github.fge.jsonschema.core.report.ListProcessingReport.
+
+  For details, see:
+  * http://fge.github.io/json-schema-validator/2.2.x/index.html
+  * http://java-json-tools.github.io/json-schema-core/1.2.x/index.html"
   [^ListProcessingReport report]
   (flatten
     (for [error-report (seq (.asJson report))
@@ -75,23 +79,19 @@
        json-string->json-schema))
 
 (defn parse-json-schema-from-uri
-
   "Loads a JSON schema from a URI into a com.github.fge.jsonschema.main.JsonSchema
   object. It's necessary to use this one if loading a JSON schema from the
   classpath that references other JSON schemas on the classpath."
-
   [uri]
   (let [factory (JsonSchemaFactory/byDefault)]
     (.getJsonSchema factory (str uri))))
 
 (defn validate-json
-
   "Performs schema validation using the provided JSON schema and the given
   json string to validate. Uses com.github.fge.jsonschema to perform the
   validation. The JSON schema must be provided as a
   com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must
   be a string. Returns a list of the errors found."
-
   [^JsonSchema json-schema json-to-validate]
   (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
     (parse-validation-report validation-report)))
