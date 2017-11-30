@@ -71,7 +71,7 @@
              nil :variable {} {:url-extension "atom"}))))))
 
 (deftest search-for-variables-test
-  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
                                                          :Name "Variable1"
                                                          :LongName "Measurement1"
                                                          :provider-id "PROV1"})
@@ -83,7 +83,7 @@
                                                          :Name "a subsitute for variable2"
                                                          :LongName "variable1"
                                                          :provider-id "PROV2"})
-        variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
+        variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
                                                          :Name "v.other"
                                                          :LongName "m.other"
                                                          :provider-id "PROV2"})
@@ -211,6 +211,44 @@
       "By multiple providers with options"
       all-variables
       {:provider ["PROV1" "*2"] "options[provider][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; native-id Param
+      "By native-id case sensitive - exact match"
+      [variable1]
+      {:native-id "VAR1"}
+
+      "By native-id case sensitive, default ignore-case true"
+      [variable1]
+      {:native-id "var1"}
+
+      "By native-id ignore case false"
+      []
+      {:native-id "var1" "options[native-id][ignore-case]" false}
+
+      "By native-id ignore case true"
+      [variable1]
+      {:native-id "var1" "options[native-id][ignore-case]" true}
+
+      "By native-id Pattern, default false"
+      []
+      {:native-id "var*"}
+
+      "By native-id Pattern true"
+      [variable1 variable2 variable3]
+      {:native-id "var*" "options[native-id][pattern]" true}
+
+      "By native-id Pattern false"
+      []
+      {:native-id "var*" "options[native-id][pattern]" false}
+
+      "By multiple native-ids"
+      [variable1 variable2]
+      {:native-id ["VAR1" "var2"]}
+
+      "By multiple native-ids with options"
+      [variable1 variable4]
+      {:native-id ["VAR1" "special*"] "options[native-id][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; concept-id Param
