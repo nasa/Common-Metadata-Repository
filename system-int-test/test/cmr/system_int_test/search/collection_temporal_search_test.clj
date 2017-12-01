@@ -404,6 +404,22 @@
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-13-12T12:00:00,"})]
       (is (= 400 status))
       (is (re-find #"temporal start datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
+  (testing "search by empty invalid parameter."
+    (let [{:keys [status errors]} (search/find-concepts-json :collection {"tempora" ""})]
+      (is (= 400 status))
+      (is (= "Parameter [tempora] was not recognized." (first errors)))))
+  (testing "search by nil invalid parameter."
+    (let [{:keys [status errors]} (search/find-concepts-json :collection {"tempora" nil})]
+      (is (= 400 status))
+      (is (= "Parameter [tempora] was not recognized." (first errors)))))
+  (testing "search by empty valid parameter."
+    (let [{:keys [status errors]} (search/find-concepts-json :collection {"temporal" ""})]
+      (is (= 200 status))
+      (is (= nil (first errors)))))
+  (testing "search by nil valid parameter."
+    (let [{:keys [status errors]} (search/find-concepts-json :collection {"temporal" nil})]
+      (is (= 200 status))
+      (is (= nil (first errors)))))
   (testing "periodic temporal search that produces empty search ranges."
     (let [{:keys [status errors]} (search/find-refs :collection
                                    {"temporal[]" "2016-05-10T08:18:16Z,2016-05-10T08:34:31Z,131,131"})]

@@ -714,6 +714,14 @@
       concept-type safe-params (parameter-validations concept-type) type-errors))
   params)
 
+(defn validate-empty-parameters
+  "Validates parameters with no values. Only need to validate if the parameter name is valid.
+   Returns parameters if validation was successful so it can be chained with other calls."
+  [concept-type params]
+  (cpv/validate-parameters
+    concept-type params [cpv/unrecognized-params-validation])
+  params)
+
 (defn validate-standard-query-parameters
   "Validates the query parameters passed in with an AQL or JSON search.
   Throws exceptions to send to the user. Returns parameters if validation

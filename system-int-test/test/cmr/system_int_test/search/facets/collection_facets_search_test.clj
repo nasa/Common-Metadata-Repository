@@ -319,8 +319,18 @@
    (testing "invalid include-facets"
      (is (= {:errors ["Parameter include_facets must take value of true, false, or v2, but was [foo]"] :status 400}
             (search/find-refs :collection {:include-facets "foo"})))
+     (is (= {:errors ["Parameter [invalid_param] was not recognized."] :status 400}
+            (search/find-refs :collection {:include-facets "v2" :invalid-param ""})))
+     (is (= {:errors ["Parameter [invalid_param] was not recognized."] :status 400}
+            (search/find-refs :collection {:include-facets "v2" :invalid-param nil})))
      (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
             (search/find-refs :granule {:include-facets true}))))
+
+   (testing "valid include-facets"
+     (is (= 200 
+            (:status (search/find-concepts-json :collection {:include-facets "v2" :concept-id ""}))))
+     (is (= 200
+            (:status (search/find-concepts-json :collection {:include-facets "v2" :concept-id nil})))))
 
    (testing "retreving all facets in different formats"
      (let [expected-facets [{:field "data_center"

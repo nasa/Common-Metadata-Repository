@@ -23,6 +23,15 @@
                             (not (and (string? value) (= "" (string/trim value)))))]
     (into {} (filter (comp not-empty-string? second) params))))
 
+(defn sanitize-without-removing-empty-params
+  "Manipulates the parameters to make them easier to process"
+  [params]
+  (-> params
+      u/map-keys->kebab-case
+      (update-in [:sort-key] #(when % (if (sequential? %)
+                                        (map sanitize-sort-key %)
+                                        (sanitize-sort-key %))))))
+
 (defn sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
