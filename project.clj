@@ -92,6 +92,12 @@
         :doc-paths ["resources/docs"]
         :namespaces [#"^cmr\.dev\.env\.manager\.(?!test)"]
         :metadata {:doc/format :markdown}}}
+    :instrumented {
+      :jvm-opts [
+        "-Dcom.sun.management.jmxremote"
+        "-Dcom.sun.management.jmxremote.ssl=false"
+        "-Dcom.sun.management.jmxremote.authenticate=false"
+        "-Dcom.sun.management.jmxremote.port=43210"]}
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;   Profiles for Managed Aapplications/Services   ;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -216,6 +222,8 @@
       ["uberjar"]
       ["clean"]
       ["test"]]
+    ;; Profiling
+    "instrumented-repl" ["with-profile" "+instrumented" "repl"]
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
