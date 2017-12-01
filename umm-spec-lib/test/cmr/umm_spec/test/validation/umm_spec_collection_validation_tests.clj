@@ -99,77 +99,7 @@
               "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future. "
               "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
               "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
-) 
-
-(deftest collection-temporal-validation
-  (testing "valid temporal"
-    (let [r1 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
-          r2 (h/range-date-time "1999-12-30T19:00:00Z" nil)
-          r3 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")
-          s1 (c/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2014 12 1)]})]
-      (h/assert-valid (h/coll-with-range-date-times [[r1]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r2]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r3]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r1] [r2]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r1 r2] [r3]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r1 r2 r3]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r1]] true)) ; EndsAtPresentFlag = true
-      (h/assert-warnings-valid (h/coll-with-range-date-times [[r1 r2] [r3]]))
-      (h/assert-warnings-valid (coll/map->UMM-C {:TemporalExtents [s1]}))))
-
-  (testing "invalid temporal"
-    (testing "single error"
-      (let [r1 (h/range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
-            r2 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
-        (h/assert-invalid
-         (h/coll-with-range-date-times [[r1]])
-         [:TemporalExtents 0 :RangeDateTimes 0]
-         ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])
-        (h/assert-invalid
-         (h/coll-with-range-date-times [[r2] [r1]])
-         [:TemporalExtents 1 :RangeDateTimes 0]
-         ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
-
-    (testing "multiple errors"
-      (let [r1 (h/range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
-            r2 (h/range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")]
-        (h/assert-multiple-invalid
-         (h/coll-with-range-date-times [[r1 r2]])
-         [{:path [:TemporalExtents 0 :RangeDateTimes 0],
-           :errors
-           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}
-          {:path [:TemporalExtents 0 :RangeDateTimes 1],
-           :errors
-           ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])
-        (h/assert-multiple-invalid
-         (h/coll-with-range-date-times [[r1] [r2]])
-         [{:path [:TemporalExtents 0 :RangeDateTimes 0],
-           :errors
-           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}
-          {:path [:TemporalExtents 1 :RangeDateTimes 0],
-           :errors
-           ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))
-
-    (testing "dates in past"
-      (time-keeper/set-time-override! (time/date-time 2017 8 1))
-      (testing "range date times"
-        (let [r1 (h/range-date-time "2020-12-30T19:00:02Z" "2021-12-30T19:00:01Z")]
-          (h/assert-warnings-multiple-invalid
-           (h/coll-with-range-date-times [[r1]])
-           [{:path [:TemporalExtents 0 :RangeDateTimes 0 :BeginningDateTime],
-             :errors
-             ["Date should be in the past."]}
-            {:path [:TemporalExtents 0 :RangeDateTimes 0 :EndingDateTime],
-             :errors
-             [(str "Ending date should be in the past. Either set ending date to a date "
-                   "in the past or remove end date and set the ends at present flag to true.")]}])))
-      (testing "single date time"
-        (let [c1 (c/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2014 12 1)
-                                                               (time/date-time 2020 12 30)]})]
-          (h/assert-warnings-invalid
-            (coll/map->UMM-C {:TemporalExtents [c1]})
-            [:TemporalExtents 0 :SingleDateTimes 1]
-            ["Date should be in the past."]))))))
+)
 
 (deftest collection-projects-validation
   (time-keeper/set-time-override! (time/date-time 2017 8 1))
