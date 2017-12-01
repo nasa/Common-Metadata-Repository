@@ -281,8 +281,8 @@
   [m]
   (select-keys m 
     (for [[k v] m 
-      :when (or (nil? v)  
-                (and (string? v) (string/blank? v)))] 
+          :when (or (nil? v)  
+                    (and (string? v) (string/blank? v)))] 
       k)))
 
 (defn inflate-nil-keys
