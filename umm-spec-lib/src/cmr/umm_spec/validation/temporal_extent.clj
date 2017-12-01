@@ -21,10 +21,23 @@
     {field-path [(str "Ending date should be in the past. Either set ending date to a date "
                       "in the past or remove end date and set the ends at present flag to true.")]}))
 
+(defn- ends-at-present-validation
+  "Validate that the collection ends at present flag and end date time are
+  not both set"
+  [field-path value]
+  (proto-repl.saved-values/save 16)
+  (when (and (= true (:EndsAtPresentFlag value))
+             (seq (:RangeDateTimes value))
+             (not (some nil? (map :EndingDateTime (:RangeDateTimes value)))))
+    {field-path [(str "Ends at present flag is set to true, but an ending date is "
+                      "specified. Remove the latest ending date or set the ends at "
+                      "present flag to false.")]}))
+
 (def temporal-extent-warning-validation
-  {:RangeDateTimes (validations-core/every {:BeginningDateTime util/date-in-past-validator
-                                            :EndingDateTime temporal-end-date-in-past-validator})
-   :SingleDateTimes (validations-core/every util/date-in-past-validator)})
+  [ends-at-present-validation
+   {:RangeDateTimes (validations-core/every {:BeginningDateTime util/date-in-past-validator
+                                             :EndingDateTime temporal-end-date-in-past-validator})
+    :SingleDateTimes (validations-core/every util/date-in-past-validator)}])
 
 (def temporal-extent-validation
   {:RangeDateTimes (validations-core/every range-date-time-validation)})
