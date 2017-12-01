@@ -25,7 +25,6 @@
   "Validate that the collection ends at present flag and end date time are
   not both set"
   [field-path value]
-  (proto-repl.saved-values/save 16)
   (when (and (= true (:EndsAtPresentFlag value))
              (seq (:RangeDateTimes value))
              (not (some nil? (map :EndingDateTime (:RangeDateTimes value)))))
