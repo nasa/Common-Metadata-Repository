@@ -164,21 +164,19 @@
      "LongName" "totCldH2OStdErr",
      "Units" "",
      "DataType" "float",
-     "DimensionsName" [
-       "H2OFunc",
-       "H2OPressureLay",
-       "MWHingeSurf",
-       "Cloud",
-       "HingeSurf",
-       "H2OPressureLev",
-       "AIRSXTrack",
-       "StdPressureLay",
-       "CH4Func",
-       "StdPressureLev",
-       "COFunc",
-       "O3Func",
-       "AIRSTrack"
-     ],
+     "DimensionsName" ["H2OFunc",
+                       "H2OPressureLay",
+                       "MWHingeSurf",
+                       "Cloud",
+                       "HingeSurf",
+                       "H2OPressureLev",
+                       "AIRSXTrack",
+                       "StdPressureLay",
+                       "CH4Func",
+                       "StdPressureLev",
+                       "COFunc",
+                       "O3Func",
+                       "AIRSTrack"],
      "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
      "ValidRange" nil,
      "Scale" "1.0",
@@ -383,23 +381,23 @@
 (defn variable-association-concept
   "Creates a variable association concept"
   ([assoc-concept variable uniq-num]
-  (variable-association-concept assoc-concept variable uniq-num {}))
+   (variable-association-concept assoc-concept variable uniq-num {}))
   ([assoc-concept variable uniq-num attributes]
-  (let [{:keys [concept-id revision-id]} assoc-concept
-       variable-concept-id (:concept-id variable)
-       user-id (str "user" uniq-num)
-       native-id (string/join "/" [variable-concept-id concept-id revision-id])
-       extra-fields (merge {:associated-concept-id concept-id
-                            :associated-revision-id revision-id
-                            :variable-concept-id variable-concept-id}
-                           (:extra-fields attributes))
-       attributes (merge {:user-id user-id
-                          :format "application/edn"
-                          :native-id native-id
-                          :extra-fields extra-fields}
-                         (dissoc attributes :extra-fields))]
-   ;; no provider-id should be specified for variable associations
-   (dissoc (concept nil :variable-association uniq-num attributes) :provider-id))))
+   (let [{:keys [concept-id revision-id]} assoc-concept
+         variable-concept-id (:concept-id variable)
+         user-id (str "user" uniq-num)
+         native-id (string/join "/" [variable-concept-id concept-id revision-id])
+         extra-fields (merge {:associated-concept-id concept-id
+                              :associated-revision-id revision-id
+                              :variable-concept-id variable-concept-id}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id user-id
+                            :format "application/edn"
+                            :native-id native-id
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+    ;; no provider-id should be specified for variable associations
+    (dissoc (concept nil :variable-association uniq-num attributes) :provider-id))))
 
 (defn assert-no-errors
   [save-result]

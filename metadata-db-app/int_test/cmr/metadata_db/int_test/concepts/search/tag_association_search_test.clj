@@ -10,13 +10,13 @@
 
 (deftest find-tag-associations
   (let [coll1 (util/save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
-                                                            :entry-title "et1"
-                                                            :version-id "v1"
-                                                            :short-name "s1"}})
+                                                                 :entry-title "et1"
+                                                                 :version-id "v1"
+                                                                 :short-name "s1"}})
         coll2 (util/save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                            :entry-title "et2"
-                                                            :version-id "v1"
-                                                            :short-name "s2"}})
+                                                                 :entry-title "et2"
+                                                                 :version-id "v1"
+                                                                 :short-name "s2"}})
         associated-tag (util/create-and-save-tag 1)
         tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
         tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
@@ -34,7 +34,8 @@
         [tag-association1 tag-association2] {}
 
         "exclude metadata"
-        [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)] {:exclude-metadata true}))
+        [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)]
+        {:exclude-metadata true}))
 
     (testing "find all revisions"
       (let [num-of-tag-associations (-> (util/find-concepts :tag-association {})
