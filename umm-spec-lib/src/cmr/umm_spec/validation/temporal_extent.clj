@@ -33,10 +33,12 @@
                       "present flag to false.")]}))
 
 (def temporal-extent-warning-validation
+  "Temporal extent validations that will return warnings"
   [ends-at-present-validation
    {:RangeDateTimes (validations-core/every {:BeginningDateTime util/date-in-past-validator
                                              :EndingDateTime temporal-end-date-in-past-validator})
     :SingleDateTimes (validations-core/every util/date-in-past-validator)}])
 
 (def temporal-extent-validation
+  "Temporal extent validations that will return errors"
   {:RangeDateTimes (validations-core/every range-date-time-validation)})
