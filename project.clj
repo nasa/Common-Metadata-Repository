@@ -35,7 +35,7 @@
     :dev {
       :dependencies [
         [clojusc/ltest "0.3.0-SNAPSHOT"]
-        [clojusc/trifl "0.2.0"]
+        [clojusc/trifl "0.3.0-SNAPSHOT"]
         [clojusc/twig "0.3.2"]
         [me.raynes/conch "0.8.0"]
         [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [
