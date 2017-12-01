@@ -37,12 +37,6 @@
   [str]
   (io/input-stream (str->bytes str)))
 
-(defn str->int
-  [str]
-  (if (= "" str)
-    nil
-    (Integer/parseInt str)))
-
 (defn make-byte-array
   ([]
     (make-byte-array const/*byte-buffer-size*))

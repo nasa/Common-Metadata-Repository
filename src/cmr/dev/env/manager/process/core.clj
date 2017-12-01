@@ -4,34 +4,20 @@
     [clojure.java.shell :as clj-shell]
     [clojure.string :as string]
     [cmr.dev.env.manager.process.const :as const]
-    [cmr.dev.env.manager.process.info :as info]
     [cmr.dev.env.manager.process.io :as io]
     [cmr.dev.env.manager.process.util :as util]
     [me.raynes.conch.low-level :as shell]
-    [taoensso.timbre :as log]))
-
-(defn get-ps-info
-  ([]
-    (get-ps-info "pid,ppid,pgid,comm"))
-  ([output-format]
-    (->> output-format
-         (util/get-cmd-output "ps" "-eo")
-         (string/split-lines)
-         (info/output-lines->ps-info output-format))))
+    [taoensso.timbre :as log]
+    [trifl.ps :as process]))
 
 (defn get-pid
-  "Linux only!"
+  "Linux/Mac only!"
   [process-data]
-  (let [process (:process process-data)
-        process-field (.getDeclaredField (.getClass process) "pid")]
-    (.setAccessible process-field true)
-    (.getInt process-field process)))
+  (process/get-pid (:process process-data)))
 
-(defn get-children
+(defn get-descendants
   [process-data]
-  (let [ps-info (get-ps-info)
-        parent-pid (get-pid process-data)]
-    (flatten (info/get-children ps-info [] [parent-pid]))))
+  (process/get-descendants (get-pid process-data)))
 
 (defn terminate-external-process!
   [pid]
@@ -44,10 +30,10 @@
       (log/error err))
     (:exit result)))
 
-(defn terminate-children!
+(defn terminate-descendants!
   [process-data]
   (doall
-    (for [pid (reverse (get-children process-data))]
+    (for [pid (reverse (get-descendants process-data))]
       (do
         (log/debugf "Killing child process with pid %s ..." pid)
         (let [exit-code (terminate-external-process! pid)]
@@ -74,7 +60,7 @@
   [process-data]
   (shell/flush process-data)
   (shell/done process-data)
-  (terminate-children! process-data)
+  (terminate-descendants! process-data)
   (async/close! (:out-channel process-data))
   (async/close! (:err-channel process-data))
   (let [exit (future (shell/exit-code process-data))]

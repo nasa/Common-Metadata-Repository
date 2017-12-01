@@ -40,9 +40,9 @@
   [service-key]
   (process/get-pid (get-process service-key)))
 
-(defn get-children
+(defn get-descendants
   [service-key]
-  (process/get-children (get-process service-key)))
+  (process/get-descendants (get-process service-key)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
