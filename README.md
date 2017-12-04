@@ -21,7 +21,7 @@
 1. Go into the cloned `cmr` directory, and set up Oracle libs (see the `README`
    in `cmr/oracle-lib`).
 1. From the `cmr` directory, run `lein install-with-content!`.
-1, Change to the `cmr-dev-env-manager` directory.
+1. Change to the `cmr-dev-env-manager` directory.
 
 
 ## Usage
