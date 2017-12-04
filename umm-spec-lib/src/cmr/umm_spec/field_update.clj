@@ -101,6 +101,8 @@
           (update-in umm update-field #(concat % update-value))
           (update-in umm update-field #(conj % update-value)))
         (util/update-in-each umm update-field util/remove-nil-keys)
+        ;; In order to do distinct, convert the list of models to a list of maps
+        (update-in umm update-field #(map (partial into {}) %))
         (update-in umm update-field distinct)))
 
 (defmethod apply-umm-list-update :clear-all-and-replace

@@ -189,6 +189,13 @@
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
                                        :Topic "OCEANS"}}]
+
+    ;; Initiate bulk update that shouldn't add any duplicates.
+    (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
+          _ (index/wait-until-indexed)
+          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+      (is (= "COMPLETE" (:task-status collection-response))))
+
     (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
@@ -196,22 +203,17 @@
       (is (= ["Bulk update is disabled."] (:errors response))))
     ;; Wait for queueing/indexing to catch up
     (index/wait-until-indexed)
-    (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+    (let [collection-response (ingest/bulk-update-task-status "PROV1" 2)]
       (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [1] could not be found."]
+      (is (= ["Bulk update task with task id [2] could not be found."]
              (:errors collection-response))))
-
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
       (is (= 200 (:status response)))
-      ;; Initiate bulk update that shouldn't add anything, including duplicates.
-      (ingest/bulk-update-collections "PROV1" duplicate-body)
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
-        (is (= "COMPLETE" (:task-status collection-response))))
-
       ;; Check that each concept was updated
       (doseq [concept-id concept-ids
               :let [concept (-> (search/find-concepts-umm-json :collection
@@ -219,8 +221,7 @@
                                 :results
                                 :items
                                 first)]]
-        (is (= 3
-               (:revision-id (:meta concept))))
+        (is (= 3 (:revision-id (:meta concept))))
         (is (= "2017-01-01T00:00:00Z"
                (:revision-date (:meta concept))))
         (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
@@ -261,15 +262,17 @@
                         :update-value [{:Category "EARTH SCIENCE"
                                         :Term "MARINE SEDIMENTS"
                                         :Topic "OCEANS"}
-                                       {:Category "EARTH SCIENCE2"
-                                        :Topic "HUMAN DIMENSIONS2"
-                                        :Term "ENVIRONMENTAL IMPACTS2"
-                                        :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
+                                       {:Category "EARTH SCIENCE1"
+                                        :Topic "HUMAN DIMENSIONS1"
+                                        :Term "ENVIRONMENTAL IMPACTS1"
+                                        :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
+       ;; Initiate bulk update that shouldn't add any duplicates.
+       (ingest/bulk-update-collections "PROV1" duplicate-body)
+       ;; Wait for queueing/indexing to catch up
+       (index/wait-until-indexed)
        ;; Kick off bulk update
        (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
          (is (= 200 (:status response)))
-         ;; Initiate bulk update that shouldn't add anything, including duplicates.
-         (ingest/bulk-update-collections "PROV1" duplicate-body)
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
