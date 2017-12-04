@@ -17,8 +17,8 @@
 ;;;   State & Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def state :stopped)
-(def system nil)
+(def ^:dynamic state :stopped)
+(def ^:dynamic system nil)
 (def valid-stop-transitions #{:started :running})
 (def invalid-init-transitions #{:initialized :started :running})
 (def invalid-deinit-transitions #{:started :running})
