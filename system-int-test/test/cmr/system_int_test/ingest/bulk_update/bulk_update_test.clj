@@ -189,12 +189,13 @@
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
                                        :Topic "OCEANS"}}]
+    
     ;; Initiate bulk update that shouldn't add any duplicates.
-    (ingest/bulk-update-collections "PROV1" duplicate-body)
-    ;; Wait for queueing/indexing to catch up
-    (index/wait-until-indexed)
-    (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+    (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
+          _ (index/wait-until-indexed)
+          collection-response (ingest/bulk-update-task-status "PROV1" response)]
       (is (= "COMPLETE" (:task-status collection-response))))
+
     (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
@@ -206,8 +207,8 @@
       (is (= 404 (:status collection-response)))
       (is (= ["Bulk update task with task id [2] could not be found."]
              (:errors collection-response))))
-
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
       (is (= 200 (:status response)))
