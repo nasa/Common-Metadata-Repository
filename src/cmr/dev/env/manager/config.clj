@@ -69,3 +69,11 @@
 (defn log-nss
   [system]
   (active-config system config-key :logging :nss))
+
+(defn enabled-services
+  [system]
+  (active-config system config-key :enabled-services))
+
+(defn service-enabled?
+  [system service-key]
+  (contains? (enabled-services system) service-key))

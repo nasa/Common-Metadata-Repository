@@ -27,7 +27,9 @@
       org.clojure/tools.reader]]]
   :dem {
     :logging {
-      :level :debug}}
+      :level :debug}
+    :enabled-services #{
+      :mock-echo}}
   :profiles {
     ;; Tasks
     :ubercompile {:aot :all}
@@ -63,7 +65,7 @@
         [venantius/yagni "0.1.4"]]}
     :lint {
       :source-paths ^:replace ["src"]}
-    ;; Applications
+    ;; Managed CMR Aapplications/Services
     :mock-echo {
       :autoreload true
       :main cmr.mock-echo.runner

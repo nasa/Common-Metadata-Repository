@@ -14,24 +14,38 @@
   (start [component]
     (let [cfg (builder (:process-keyword component))
           component (assoc component :config cfg)
-          process-name (name (:process-keyword component))]
+          process-key (:process-keyword component)
+          process-name (name process-key)]
       (log/infof "Starting %s component ..." process-name)
       (log/debug "Component keys:" (keys component))
       (log/trace "Built configuration:" cfg)
       (log/debug "Config:" (:config component))
-      (let [process-data (process/spawn! "lein" process-name)]
-        (log/debugf "Started %s component." process-name)
-        (assoc component :process-data process-data))))
+      (if (config/service-enabled? component process-key)
+        (let [process-data (process/spawn! "lein" process-name)]
+          (log/debugf "Started %s component." process-name)
+          (assoc component :process-data process-data
+                           :enabled true))
+        (do
+          (log/debugf "Service %s not enabled; skipping component start-up."
+                      process-key)
+          (assoc component :enabled false)))))
 
   (stop [component]
-    (let [process-name (name (:process-keyword component))]
+    (let [process-key (:process-keyword component)
+          process-name (name process-key)]
       (log/debug "Process name:" process-name)
       (log/infof "Stopping %s component ..." process-name)
-      (log/trace "process-data:" (:process-data component))
-      (log/trace "process:" (get-in component [:process-data :process]))
-      (process/terminate! (:process-data component))
-      (log/debugf "Stopped %s component." process-name)
-      (assoc component :process-data nil))))
+      (if (config/service-enabled? component process-key)
+        (let [process-data (:process-data component)]
+          (log/trace "process-data:" process-data)
+          (log/trace "process:" (:process process-data))
+          (process/terminate! (:process-data component))
+          (log/debugf "Stopped %s component." process-name)
+          (assoc component :process-data nil))
+        (do
+          (log/debugf "Service %s not enabled; skipping component shut-down."
+                      process-key)
+          component)))))
 
 (defn create-process-runner-component
   ""
