@@ -189,11 +189,11 @@
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
                                        :Topic "OCEANS"}}]
-    
+
     ;; Initiate bulk update that shouldn't add any duplicates.
     (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
           _ (index/wait-until-indexed)
-          collection-response (ingest/bulk-update-task-status "PROV1" response)]
+          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
       (is (= "COMPLETE" (:task-status collection-response))))
 
     (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
