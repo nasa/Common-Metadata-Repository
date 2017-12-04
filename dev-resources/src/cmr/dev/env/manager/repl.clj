@@ -18,7 +18,7 @@
 ;;;   State & Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:dynamic state :stopped)
+(def ^:dynamic state (atom {:system :stopped}))
 (def ^:dynamic system nil)
 (def valid-stop-transitions #{:started :running})
 (def invalid-init-transitions #{:initialized :started :running})
@@ -31,7 +31,13 @@
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; The next line is used to set a default log-level before the logging
+;; component has been started (which only happens when the system is started).
 (logger/set-level! '[cmr] :info)
+
+(defn set-log-level!
+  [log-level]
+  (logger/set-level! '[cmr] log-level))
 
 (defn get-process
   [service-key]
@@ -46,8 +52,16 @@
   (process/get-descendants (get-process service-key)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   System State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn set-state!
+  [state-type new-state]
+  (swap! state assoc state-type new-state))
+
+(defn get-state
+  [state-type]
+  (state-type @state))
 
 (defn init
   ([]
@@ -58,8 +72,7 @@
       (do
         (alter-var-root #'system
           (constantly ((components/init mode))))
-        (alter-var-root #'state (fn [_] :initialized))))
-    state))
+        (:system (set-state! :system :initialized))))))
 
 (defn deinit
   []
@@ -67,8 +80,7 @@
     (log/error "System is not stopped; please stop before deinitializing.")
     (do
       (alter-var-root #'system (fn [_] nil))
-      (alter-var-root #'state (fn [_] :uninitialized))))
-  state)
+      (:system (set-state! :system :uninitialized)))))
 
 (defn start
   ([]
@@ -80,8 +92,7 @@
       (log/warn "System has already been started.")
       (do
         (alter-var-root #'system component/start)
-        (alter-var-root #'state (fn [_] :started))))
-    state))
+        (:system (set-state! :system :started))))))
 
 (defn stop
   []
@@ -90,8 +101,7 @@
     (do
       (alter-var-root #'system
         (fn [s] (when s (component/stop s))))
-      (alter-var-root #'state (fn [_] :stopped))))
-  state)
+      (:system (set-state! :system :stopped)))))
 
 (defn restart
   []
@@ -107,8 +117,7 @@
         (init))
       (if (not (contains? invalid-start-transitions state))
         (start))
-      (alter-var-root #'state (fn [_] :running))))
-  state)
+      (:system (set-state! :system :running)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
