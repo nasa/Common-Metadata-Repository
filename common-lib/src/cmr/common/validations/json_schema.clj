@@ -4,14 +4,14 @@
   (:require
    [cheshire.core :as json]
    [cmr.common.services.errors :as errors]
-   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.log :as log :refer (warn info)]
    [clojure.string :as str])
   (:import
    (com.github.fge.jsonschema.main JsonSchema
                                    JsonSchemaFactory)
-   (com.github.fge.jackson.JsonLoader)
-   (com.github.fge.jsonschema.core.report.ListProcessingReport)
-   (com.fasterxml.jackson.core.JsonParseException)))
+   (com.github.fge.jackson JsonLoader)
+   (com.github.fge.jsonschema.core.report ListProcessingReport)
+   (com.fasterxml.jackson.core JsonParseException)))
 
 (defn- parse-error-report
   "Parses the error-report to return a human friendly error message.
@@ -21,10 +21,15 @@
    :message \"object instance has properties which are not allowed by the schema: [\"123\"]\"
   ... other keys ignored}"
   [error-report]
-  (let [pointer (get-in error-report [:instance :pointer])]
+  (let [{:keys [instance message]} error-report
+        pointer (:pointer instance)]
     (str (when-not (str/blank? pointer)
            (str pointer " "))
-         (:message error-report))))
+         (if (re-find #"ECMA" message)
+          (do
+           (info (str "UMM Validation error. Full message: " pointer " " message))
+           (str/replace message #"ECMA.*" "is in an invalid format"))
+          message))))
 
 (defn- parse-nested-error-report
   "Parses nested error messages from within an error report. See comment block
@@ -47,12 +52,6 @@
   (flatten
     (for [error-report (seq (.asJson report))
           :let [json-error-report (json/decode (str ^Object error-report) true)]]
-      ;; XXX DEBUG
-      (warn "DEBUG: error-report")
-      (warn error-report)
-      (warn "DEBUG: error-report (JSON)")
-      (warn json-error-report)
-      ;; XXX END DEBUG
       (conj (parse-nested-error-report (:reports json-error-report))
             (parse-error-report json-error-report)))))
 
