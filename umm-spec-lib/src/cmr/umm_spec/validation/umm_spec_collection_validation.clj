@@ -5,7 +5,7 @@
    [cmr.umm-spec.validation.additional-attribute :as aa]
    [cmr.umm-spec.validation.data-date :as data-date]
    [cmr.umm-spec.validation.platform :as p]
-   [cmr.umm-spec.validation.project :as project]
+   [cmr.umm-spec.validation.coll-project :as project]
    [cmr.umm-spec.validation.related-url :as url]
    [cmr.umm-spec.validation.spatial :as s]
    [cmr.umm-spec.validation.temporal-extent :as temporal-extent]
