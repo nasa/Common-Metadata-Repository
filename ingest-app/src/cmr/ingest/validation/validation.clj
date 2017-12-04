@@ -1,10 +1,10 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
-    [clojure.string :as string]
+    [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.common.log :as log :refer (warn info)]
+    [cmr.common.log :as log :refer (warn)]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.validations.core :as v]
@@ -39,7 +39,7 @@
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
-                                          content-type (string/join ", " valid-types))))))
+                                          content-type (str/join ", " valid-types))))))
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
@@ -94,30 +94,6 @@
      :ISOTopicCategories (match-kms-keywords-validation
                           kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)}))
 
-(defn- log-full-error-message
-  "Log entire validation error message so that information is not lost."
-  [error]
-  (info (str "UMM Validation error. Full message: " error)))
-
-(defn- create-user-friendly-error-message
-  "Remove non user-friendly things like regexes from error message to be returned.
-   The original message should be logged."
-  [error]
-  (let [friendly-error (string/split error #";")]
-    (if (>= (count friendly-error) 1)
-      (do
-       (log-full-error-message error)
-       (first friendly-error))
-      error)))
-
-(defn- sanitize-error-messages
-  "Remove nasty error messages from the collection to be returned.
-   Group errors by path and ensure that end-users don't have to see regexes. The horror!"
-  [error-messages]
-  (->> error-messages
-       (map create-user-friendly-error-message)
-       (remove #(re-find #"(ECMA|regex)" %))))
-
 (defn validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
@@ -125,10 +101,9 @@
                      (let [umm-version (mt/version-of (:format concept))
                            accept-version (config/ingest-accept-umm-version (:concept-type concept))]
                        (if (>= 0 (compare umm-version accept-version))
-                         (sanitize-error-messages
-                          (umm-spec/validate-metadata (:concept-type concept)
-                                                      (:format concept)
-                                                      (:metadata concept)))
+                         (umm-spec/validate-metadata (:concept-type concept)
+                                                     (:format concept)
+                                                     (:metadata concept))
                          [(str "UMM JSON version " accept-version  " or lower can be ingested. "
                                "Any version above that is considered in-development "
                                "and cannot be ingested at this time.")]))
@@ -142,12 +117,9 @@
                               (umm-json/umm->json collection)
                               :collection))]
     (if (or (:validate-umm? validation-options) (config/return-umm-json-validation-errors))
-      (->> err-messages
-           sanitize-error-messages
-           (errors/throw-service-errors :invalid-data))
+      (errors/throw-service-errors :invalid-data err-messages)
       (do
-        (warn "UMM-C JSON-Schema Validation Errors: "
-              (pr-str (vec (sanitize-error-messages err-messages))))
+        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
 (defn umm-spec-validate-collection
@@ -161,12 +133,9 @@
     (if (or (:validate-umm? validation-options)
             (config/return-umm-spec-validation-errors)
             (not warn?))
-      (->> err-messages
-           sanitize-error-messages
-           (errors/throw-service-errors :invalid-data))
+      (errors/throw-service-errors :invalid-data err-messages)
       (do
-        (warn "UMM-C UMM Spec Validation Errors: "
-              (pr-str (vec (sanitize-error-messages err-messages))))
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
 (defn umm-spec-validate-collection-warnings
@@ -177,12 +146,9 @@
                                 collection))]
     (if (or (:validate-umm? validation-options)
             (config/return-umm-spec-validation-errors))
-      (->> err-messages
-           sanitize-error-messages
-           (errors/throw-service-errors :invalid-data))
+      (errors/throw-service-errors :invalid-data err-messages)
       (do
-        (warn "UMM-C UMM Spec Validation Errors: "
-              (pr-str (vec (sanitize-error-messages err-messages))))
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
 (defn validate-granule-umm-spec

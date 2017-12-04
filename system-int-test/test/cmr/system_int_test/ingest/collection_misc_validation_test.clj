@@ -98,12 +98,13 @@
                                           :Term ""
                                           :DetailedVariable ""
                                           :Topic ""})]})]
-
       (are3 [collection]
        (let [ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
              validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
          (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
-         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response))))))
+         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response)))))
+         (is (some? (map #(re-find #"is an invalid format" %) (:errors ingest-response))))
+         (is (some? (map #(re-find #"is an invalid format" %) (:errors validation-response)))))
        "Invalid platforms"
        platform-collection
 
@@ -111,7 +112,16 @@
        data-center-collection
 
        "Invalid Science Keywords"
-       science-keyword-collection))))
+       science-keyword-collection)
+      (testing "Explicitly test error messages - ShorName and LongName should fail the regex"
+        (let [ingest-response (d/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true})
+              validation-response (ingest/validate-concept (data-umm-c/collection-concept platform-collection :umm-json))]
+          (is (= (:errors ingest-response)
+                 ["/Platforms/0/LongName string \"\" is too short (length: 0, required minimum: 1)"
+                  "/Platforms/0/LongName is in an invalid format"
+                  "/Platforms/0/ShortName string \"\" is too short (length: 0, required minimum: 1)"
+                  "/Platforms/0/ShortName is in an invalid format"]))
+          (is (= (:status ingest-response) 400)))))))
 
 
 
