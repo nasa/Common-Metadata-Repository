@@ -65,6 +65,7 @@
       :source-paths ^:replace ["src"]}
     ;; Applications
     :mock-echo {
+      :autoreload true
       :main cmr.mock-echo.runner
       :source-paths [
         "apps/mock-echo-app/src"
