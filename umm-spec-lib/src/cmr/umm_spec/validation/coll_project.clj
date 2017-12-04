@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.validation.project
+(ns cmr.umm-spec.validation.coll-project
   "Defines validations for UMM collection project"
   (:require
    [clj-time.core :as time]
