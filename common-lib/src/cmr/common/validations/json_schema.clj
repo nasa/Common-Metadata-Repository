@@ -41,12 +41,18 @@
   com.github.fge.jsonschema.core.report.ListProcessingReport.
 
   For details, see:
-  * http://fge.github.io/json-schema-validator/2.2.x/index.html
-  * http://java-json-tools.github.io/json-schema-core/1.2.x/index.html"
+  * [ProcessingMessage](http://java-json-tools.github.io/json-schema-core/1.2.x/com/github/fge/jsonschema/core/report/ProcessingMessage.html)
+  * [ListProcessingReport](http://java-json-tools.github.io/json-schema-core/1.2.x/com/github/fge/jsonschema/core/report/ListProcessingReport.html)"
   [^ListProcessingReport report]
   (flatten
     (for [error-report (seq (.asJson report))
           :let [json-error-report (json/decode (str ^Object error-report) true)]]
+      ;; XXX DEBUG
+      (warn "DEBUG: error-report")
+      (warn error-report)
+      (warn "DEBUG: error-report (JSON)")
+      (warn json-error-report)
+      ;; XXX END DEBUG
       (conj (parse-nested-error-report (:reports json-error-report))
             (parse-error-report json-error-report)))))
 
@@ -91,7 +97,10 @@
   json string to validate. Uses com.github.fge.jsonschema to perform the
   validation. The JSON schema must be provided as a
   com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must
-  be a string. Returns a list of the errors found."
+  be a string. Returns a list of the errors found.
+
+  For details, see:
+  * [JsonSchema](http://java-json-tools.github.io/json-schema-validator/2.2.x/com/github/fge/jsonschema/main/JsonSchema.html)"
   [^JsonSchema json-schema json-to-validate]
   (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
     (parse-validation-report validation-report)))
