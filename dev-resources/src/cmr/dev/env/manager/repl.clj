@@ -19,9 +19,14 @@
 ;;;   State & Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:dynamic state (atom {:system :stopped}))
-(def ^:dynamic system nil)
+(def ^:dynamic state
+  (atom {:system {
+           :state :stopped
+           :transition {
+             :begin 0
+             :end 0}}}))
 
+(def ^:dynamic system nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,13 +60,28 @@
   ([new-state]
     (set-state! :system new-state))
   ([state-type new-state]
-    (swap! state assoc state-type new-state)))
+    (swap! state assoc-in [state-type :state] new-state)))
 
 (defn get-state
   ([]
     (get-state :system))
   ([state-type]
-    (state-type @state)))
+    (get-in @state [state-type :state])))
+
+(defn set-time!
+  ([time-point]
+    (set-time! :system time-point))
+  ([state-type time-point]
+    (swap! state assoc-in
+                 [state-type :transition time-point]
+                 (System/currentTimeMillis))))
+
+(defn get-time
+  ([]
+    (get-time :system))
+  ([state-type]
+    (let [transition (get-in @state [state-type :transition])]
+      (/ (- (:end transition) (:begin transition)) 1000.0))))
 
 (defn init
   "Initialize the system in preparation for all-component start-up."
@@ -73,7 +93,8 @@
       (do
         (alter-var-root #'system
           (constantly ((components/init mode))))
-        (:system (set-state! :system :initialized))))))
+        (set-state! :system :initialized)
+        (get-state :system)))))
 
 (defn deinit
   "Reset the system state to pre-initialization value (`nil`)."
@@ -82,7 +103,8 @@
     (log/error "System is not stopped; please stop before deinitializing.")
     (do
       (alter-var-root #'system (fn [_] nil))
-      (:system (set-state! :system :uninitialized)))))
+      (set-state! :system :uninitialized)
+      (get-state :system))))
 
 (defn start
   "Start an initialized system."
@@ -95,7 +117,8 @@
       (log/warn "System has already been started.")
       (do
         (alter-var-root #'system component/start)
-        (:system (set-state! :system :started))))))
+        (set-state! :system :started)
+        (get-state :system)))))
 
 (defn stop
   []
@@ -105,13 +128,18 @@
     (do
       (alter-var-root #'system
         (fn [s] (when s (component/stop s))))
-      (:system (set-state! :system :stopped)))))
+      (set-state! :system :stopped)
+      (get-state :system))))
 
 (defn restart
   []
   "Restart a running system."
+  (set-time! :system :begin)
   (stop)
-  (start))
+  (start)
+  (set-time! :system :end)
+  (log/infof "Time taken to restart system: %s seconds" (get-time))
+  (get-state :system))
 
 (defn run
   []
@@ -121,11 +149,15 @@
   (if (contains? transitions/invalid-run state)
     (log/warn "System is already running.")
     (do
+      (set-time! :system :begin)
       (when (not (contains? transitions/invalid-init state))
         (init))
       (when (not (contains? transitions/invalid-start state))
         (start))
-      (:system (set-state! :system :running)))))
+      (set-state! :system :running)
+      (set-time! :system :end)
+      (log/infof "Time taken to start up system: %s seconds" (get-time))
+      (get-state :system))))
 
 (defn shutdown
   []
@@ -135,10 +167,15 @@
   (if (contains? transitions/invalid-shutdown state)
     (log/warn "System is already shutdown.")
     (do
+      (set-time! :system :begin)
       (when (not (contains? transitions/invalid-stop state))
         (stop))
       (when (not (contains? transitions/invalid-deinit state))
-        (stop)))))
+        (deinit))
+      (set-state! :system :shutdown)
+      (set-time! :system :end)
+      (log/infof "Time taken to shutdown system: %s seconds" (get-time))
+      (get-state :system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -15,9 +15,10 @@
    [trifl.java :refer [show-methods]]))
 
 (def valid-stop #{:started :running})
+
 (def invalid-init #{:initialized :started :running})
 (def invalid-deinit #{:started :running})
 (def invalid-start #{:started :running})
-(def invalid-stop #{:stopped})
+(def invalid-stop #{:stopped :shutdown})
 (def invalid-run #{:running})
-(def invalid-shutdown #{:uninitialized})
+(def invalid-shutdown #{:uninitialized :shutdown})
