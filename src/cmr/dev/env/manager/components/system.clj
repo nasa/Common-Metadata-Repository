@@ -3,11 +3,12 @@
     [cmr.dev.env.manager.components.common.process :as process]
     [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.logging :as logging]
+    [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.config :refer [build] :rename {build build-config}]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Common Configuration Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cfg
@@ -19,6 +20,15 @@
              (logging/create-logging-component)
              [:config])})
 
+(def msg
+  {:messaging (component/using
+               (messaging/create-messaging-component)
+               [:config :logging])})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def cubby
   {:cubby :tbd})
 
@@ -26,7 +36,7 @@
   [builder]
   {:mock-echo (component/using
                (process/create-process-runner-component builder :mock-echo)
-               [:config :logging])})
+               [:config :logging :messaging])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Intilizations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,6 +49,7 @@
     (component/map->SystemMap
       (merge (cfg config-builder)
              log
+             msg
              (mock-echo config-builder)))))
 
 (defn initialize-bare-bones
