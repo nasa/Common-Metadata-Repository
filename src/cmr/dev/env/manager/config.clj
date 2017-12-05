@@ -14,6 +14,8 @@
     :logging {
       :level :info
       :nss '[cmr]}
+    :messaging {
+      :type :pubsub}
     :ports {
       :access-control (transmit/access-control-port)
       :bootstrap (transmit/bootstrap-port)
@@ -76,3 +78,7 @@
 (defn service-enabled?
   [system service-key]
   (contains? (enabled-services system) service-key))
+
+(defn messaging-type
+  [system]
+  (active-config system config-key :messaging :type))

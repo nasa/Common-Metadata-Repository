@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
+   [cmr.dev.env.manager.components.dem.messaging :as messaging]
    [cmr.dev.env.manager.components.system :as components]
    [cmr.dev.env.manager.config :as config]
    [cmr.dev.env.manager.process.core :as process]
@@ -40,6 +41,10 @@
   [log-level]
   (logger/set-level! '[cmr] log-level))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Process Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn get-process
   [service-key]
   (get-in system [service-key :process-data]))
@@ -51,6 +56,20 @@
 (defn get-process-descendants
   [service-key]
   (process/get-descendants (get-process service-key)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Messaging Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn publish-message
+  [topic content]
+  (messaging/publish system topic content)
+  :ok)
+
+(defn subscribe-message
+  [topic func]
+  (messaging/subscribe system topic func)
+  :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State data getters/setters   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
