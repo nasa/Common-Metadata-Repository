@@ -77,13 +77,13 @@ on this, see the architecture section below.
 
 ## Architecture Overview
 
-[View docs][arch-overview]
+[View docs][arch-overview].
 
 
 ## Background
 
 For information on what problem this project attempts to define and how it was
-originally planned, see the [background info](background-info).
+originally planned, see the [background info][background-info].
 
 
 ## License
@@ -103,6 +103,6 @@ Apache License, Version 2.0.
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-dev-env-manager
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-dev-env-manager.svg
-[docs]: https://cmr-exchange.github.io/dev-env-manager/]
+[docs]: https://cmr-exchange.github.io/dev-env-manager/
 [arch-overview]: https://cmr-exchange.github.io/dev-env-manager/current/1000-architecture.html
 [background-info]: https://cmr-exchange.github.io/dev-env-manager/current/0000-background.html
