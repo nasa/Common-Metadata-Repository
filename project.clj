@@ -65,6 +65,18 @@
         [venantius/yagni "0.1.4"]]}
     :lint {
       :source-paths ^:replace ["src"]}
+    :docs {
+      :dependencies [[clojang/codox-theme "0.2.0-SNAPSHOT"]]
+      :plugins [
+        [lein-codox "0.10.3"]
+        [lein-simpleton "1.3.0"]]
+      :codox {
+        :project {:name "CMR D.E.M."}
+        :themes [:clojang]
+        :output-path "docs/current"
+        :doc-paths ["resources/docs"]
+        :namespaces [#"^cmr\.dev\.env\.manager\.(?!test)"]
+        :metadata {:doc/format :markdown}}}
     ;; Managed CMR Aapplications/Services
     :mock-echo {
       :autoreload true
@@ -78,12 +90,21 @@
     ;; Applications
     "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]
     ;; General
+    "repl" ["do"
+      ["clean"]
+      ["repl"]]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
     "lint" ["with-profile" "+test,+lint" "kibit"]
+    "docs" ["with-profile" "+docs" "do"
+      ["clean"]
+      ["compile"]
+      ["codox"]
+      ["clean"]]
     "build" ["with-profile" "+test" "do"
       ["check-deps"]
       ["lint"]
+      ["docs"]
       ["ubercompile"]
       ["clean"]
       ["uberjar"]
