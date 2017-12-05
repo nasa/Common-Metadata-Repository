@@ -4,7 +4,8 @@
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as cs-spec]
-   [cmr.metadata-db.int-test.utility :as util]))
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.int-test.concepts.interface :as concepts]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures & one-off utility functions
@@ -20,7 +21,7 @@
 
 (defmethod cs-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
-  (util/variable-concept provider-id uniq-num attributes))
+  (concepts/create-concept :variable provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
@@ -138,7 +139,7 @@
 (deftest force-delete-variable-with-associations
   (let [coll (util/create-and-save-collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        var-concept (util/create-and-save-variable "REG_PROV" 1 3)
+        var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
         var-concept-id (:concept-id var-concept)
         var-assn (util/create-and-save-variable-association
                   coll var-concept 1)

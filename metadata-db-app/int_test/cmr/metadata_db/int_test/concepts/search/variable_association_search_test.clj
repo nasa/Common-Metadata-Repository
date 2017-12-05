@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -17,7 +18,7 @@
                                                                  :entry-title "et2"
                                                                  :version-id "v1"
                                                                  :short-name "s2"}})
-        associated-variable (util/create-and-save-variable "REG_PROV" 1)
+        associated-variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
         var-association1 (util/create-and-save-variable-association coll1 associated-variable 1 3)
         var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
     (testing "find latest revisions"

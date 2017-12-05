@@ -8,6 +8,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :as u]
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
+   [cmr.metadata-db.int-test.concepts.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]
    [cmr.metadata-db.services.messages :as messages]))
 
@@ -55,7 +56,7 @@
 (deftest variable-delete-cascades-associations
   (testing "delete cascades to variable associations"
     (let [coll (util/create-and-save-collection "REG_PROV" 1)
-          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll variable 1 1)]
       (testing "variable association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? variable-association))))
@@ -93,7 +94,7 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
-          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
           service (util/create-and-save-service provider-id 1)
           service-association (util/create-and-save-service-association coll1 service 1 1)]
@@ -142,7 +143,7 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
-          variable (util/create-and-save-variable "REG_PROV" 1)
+          variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
           service (util/create-and-save-service provider-id 1)
           service-association (util/create-and-save-service-association coll1 service 1 1)]
