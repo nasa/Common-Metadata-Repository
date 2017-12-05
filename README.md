@@ -83,7 +83,7 @@ on this, see the architecture section below.
 ## Background
 
 For information on what problem this project attempts to define and how it was
-originally planned, see the [wiki pages](../wiki).
+originally planned, see the [background info](background-info).
 
 
 ## License
@@ -105,3 +105,4 @@ Apache License, Version 2.0.
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-dev-env-manager.svg
 [docs]: https://cmr-exchange.github.io/dev-env-manager/]
 [arch-overview]: https://cmr-exchange.github.io/dev-env-manager/current/1000-architecture.html
+[background-info]: https://cmr-exchange.github.io/dev-env-manager/current/0000-background.html
