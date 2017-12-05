@@ -1,7 +1,6 @@
 (ns cmr.dev.env.manager.config
   (:require
     [clojure.string :as string]
-    [cmr.dev.env.manager.components.core :as components]
     [cmr.dev.env.manager.util :as util]
     [cmr.transmit.config :as transmit]
     [leiningen.core.project :as project]
