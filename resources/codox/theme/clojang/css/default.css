@@ -264,6 +264,10 @@ h3 > a:hover {
     margin: 11px 0 0 0;
 }
 
+ul.topics {
+    list-style-type: none;
+}
+
 .namespace-index .topics li {
     padding: 5px 0;
 }
@@ -582,7 +586,7 @@ blockquote {
     position: relative;
     left: initial !important;
     top: 110px;
-    padding: 0 1em;
+    padding: 1em 1em 0 1em;
   }
 
   #header {
