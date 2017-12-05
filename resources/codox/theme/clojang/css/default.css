@@ -203,6 +203,8 @@ h3 > a:hover {
 .depth-4 .inner { padding-left: 34px; }
 .depth-5 .inner { padding-left: 48px; }
 .depth-6 .inner { padding-left: 62px; }
+.depth-7 .inner { padding-left: 76px; }
+.depth-8 .inner { padding-left: 90px; }
 
 .sidebar li .tree {
     display: block;
