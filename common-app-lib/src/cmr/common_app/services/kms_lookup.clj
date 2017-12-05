@@ -46,7 +46,6 @@
     field-to-compare m
   }"
   [m fields-to-compare]
-  (proto-repl.saved-values/save 2)
   (if (map? m)
     (->> (select-keys m fields-to-compare)
          util/remove-nil-keys
