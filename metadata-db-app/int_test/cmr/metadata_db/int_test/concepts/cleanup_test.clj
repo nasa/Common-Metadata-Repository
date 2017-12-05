@@ -6,7 +6,8 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.services.concept-service :as concept-service]))
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.int-test.concepts.interface :as concepts]))
 
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -255,8 +256,8 @@
 
 (deftest old-variable-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [variable1 (util/create-and-save-variable "REG_PROV" 1 13)
-        variable2 (util/create-and-save-variable "REG_PROV" 2 3)]
+  (let [variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 13)
+        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [variable1 variable2]))
@@ -273,8 +274,8 @@
 (deftest old-variable-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        variable1 (util/create-and-save-variable "REG_PROV" 1 1)
-        variable2 (util/create-and-save-variable "REG_PROV" 2 1)
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 1)
+        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 1)
         va1 (util/create-and-save-variable-association coll1 variable1 1 13)
         va2 (util/create-and-save-variable-association coll1 variable2 2 3)]
 

@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -10,8 +11,10 @@
 
 (deftest find-variables
   (let [;; create two variables with the same native-id on different providers with multiple revisions
-         variable1 (util/create-and-save-variable "REG_PROV" 1 3)
-         variable2 (util/create-and-save-variable "SMAL_PROV1" 1 2)]
+         variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
+         variable2 (concepts/create-and-save-concept :variable "SMAL_PROV1" 1 2)]
+    (println "Variable1 is:" variable1)
+    (println "Variable2 is:" variable2)
     (testing "find latest revsions"
       (are3 [variables params]
         (is (= (set variables)
