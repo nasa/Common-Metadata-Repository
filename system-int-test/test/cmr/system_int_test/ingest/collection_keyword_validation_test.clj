@@ -136,7 +136,10 @@
           "A340-600" "Airbus A340-600" "Aircraft"
 
           "Case Insensitive"
-          "a340-600" "aiRBus A340-600" "aIrCrAfT"))
+          "a340-600" "aiRBus A340-600" "aIrCrAfT"
+
+          "Long name is nil in Platform"
+          "a340-600" nil "Aircraft"))
 
   (testing "DataCenter keyword validation"
     (testing "Invalid short name"
