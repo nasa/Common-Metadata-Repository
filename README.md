@@ -71,10 +71,13 @@ To bring up a dev system, complete with all running services:
 Note that each service is started in its own OS process. For more information
 on this, see the architecture section below.
 
+## Documentation
+
+[Guides and API docs are here][docs].
 
 ## Architecture Overview
 
-TBD
+[View docs][arch-overview]
 
 
 ## Background
@@ -100,3 +103,5 @@ Apache License, Version 2.0.
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-dev-env-manager
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-dev-env-manager.svg
+[docs]: https://cmr-exchange.github.io/dev-env-manager/]
+[arch-overview]: https://cmr-exchange.github.io/dev-env-manager/current/1000-architecture.html
