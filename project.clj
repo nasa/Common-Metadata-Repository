@@ -9,7 +9,7 @@
   (println (slurp "dev-resources/text/banner.txt"))
   (println (slurp "dev-resources/text/loading.txt")))
 
-(defproject gov.nasa.earthdata/cmr-dev-env-manager "0.0.2"
+(defproject gov.nasa.earthdata/cmr-dev-env-manager "0.0.3-SNAPSHOT"
   :description "An Alternate Development Environment Manager for the CMR"
   :url "https://github.com/cmr-exchange/dev-env-manager"
   :license {
