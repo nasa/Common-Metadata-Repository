@@ -16,7 +16,7 @@
    (:provider-id msg)
    (:task-id msg)
    (:bulk-update-params msg)
-   (:headers msg)))
+   (:user-id msg)))
 
 (defmethod handle-provider-event :collection-bulk-update
   [context msg]
@@ -26,7 +26,7 @@
    (:task-id msg)
    (:concept-id msg)
    (:bulk-update-params msg)
-   (:headers msg)))
+   (:user-id msg)))
 
 ;; Default ignores the provider event. There may be provider events we don't care about.
 (defmethod handle-provider-event :default
