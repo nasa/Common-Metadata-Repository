@@ -6,10 +6,10 @@
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
+   [cmr.dev.env.manager.components.common.process :as process]
    [cmr.dev.env.manager.components.dem.messaging :as messaging]
    [cmr.dev.env.manager.components.system :as components]
    [cmr.dev.env.manager.config :as config]
-   [cmr.dev.env.manager.process.core :as process]
    [cmr.dev.env.manager.repl.transitions :as transitions]
    [com.stuartsierra.component :as component]
    [me.raynes.conch.low-level :as shell]
@@ -47,15 +47,15 @@
 
 (defn get-process
   [service-key]
-  (get-in system [service-key :process-data]))
+  (process/get-process system service-key))
 
 (defn get-process-id
   [service-key]
-  (process/get-pid (get-process service-key)))
+  (process/get-process-id system service-key))
 
 (defn get-process-descendants
   [service-key]
-  (process/get-descendants (get-process service-key)))
+  (process/get-process-descendants system service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Messaging Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

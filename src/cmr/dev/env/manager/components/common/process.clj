@@ -1,9 +1,22 @@
 (ns cmr.dev.env.manager.components.common.process
   (:require
+    [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.process.core :as process]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
+
+(defn get-process
+  [system service-key]
+  (get-in system [service-key :process-data]))
+
+(defn get-process-id
+  [system service-key]
+  (process/get-pid (get-process system service-key)))
+
+(defn get-process-descendants
+  [system service-key]
+  (process/get-descendants (get-process system service-key)))
 
 (defrecord ProcessRunner [
   builder
