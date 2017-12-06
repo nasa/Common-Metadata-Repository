@@ -88,7 +88,7 @@
                       process-key)
           component)))))
 
-(defn create-process-runner-component
+(defn create-runner-component
   ""
   [config-builder-fn process-keyword]
   (map->ProcessRunner
