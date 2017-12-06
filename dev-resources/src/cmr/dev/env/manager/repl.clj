@@ -164,7 +164,7 @@
   (log/infof "Time taken to restart system: %s seconds" (get-time))
   (get-state :system))
 
-(defn run
+(defn startup
   []
   "Initialize a system and start all of its components.
 
@@ -237,3 +237,7 @@
 
 (def ^{:doc "This is an alias for `reset`."}
   reload #'reset)
+
+(def ^{:doc (str "This is an alias for `startup`; supports usage from earliest "
+                 "versions of this project.")}
+  run #'startup)
