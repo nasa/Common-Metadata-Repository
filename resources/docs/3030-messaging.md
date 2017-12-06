@@ -18,7 +18,7 @@ the interaction of the messaging system with the rest of D.E.M. components:
 
 ```clj
 :ok
-2017-12-06T13:04:57.455 [async-dispatch-2] WARN cmr.dev.env.manager.components.system:21 - Hey, this is a warning message ...
+2017-12-06T13:04:57.455 [async-dispatch-2] WARN c.d.e.m.c.system:21 - Hey, this is a warning message ...
 ```
 
 ```clj
@@ -27,7 +27,7 @@ the interaction of the messaging system with the rest of D.E.M. components:
 
 ```clj
 :ok
-2017-12-06T13:05:27.254 [async-dispatch-5] FATAL cmr.dev.env.manager.components.system:19 - Look OUT!!!!!
+2017-12-06T13:05:27.254 [async-dispatch-5] FATAL c.d.e.m.c.system:19 - Look OUT!!!!!
 ```
 
 The CMR D.E.M. is a dynamic system, one that you can interact with and update
