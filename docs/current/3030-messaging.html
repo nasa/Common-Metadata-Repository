@@ -7,12 +7,12 @@
 <pre><code class="clj">[cmr.dev.env.manager.repl] λ=&gt; (publish-message :warn "Hey, this is a warning message ...")
 </code></pre>
 <pre><code class="clj">:ok
-2017-12-06T13:04:57.455 [async-dispatch-2] WARN cmr.dev.env.manager.components.system:21 - Hey, this is a warning message ...
+2017-12-06T13:04:57.455 [async-dispatch-2] WARN c.d.e.m.c.system:21 - Hey, this is a warning message ...
 </code></pre>
 <pre><code class="clj">[cmr.dev.env.manager.repl] λ=&gt; (publish-message :fatal "Look OUT!!!!!")
 </code></pre>
 <pre><code class="clj">:ok
-2017-12-06T13:05:27.254 [async-dispatch-5] FATAL cmr.dev.env.manager.components.system:19 - Look OUT!!!!!
+2017-12-06T13:05:27.254 [async-dispatch-5] FATAL c.d.e.m.c.system:19 - Look OUT!!!!!
 </code></pre>
 <p>The CMR D.E.M. is a dynamic system, one that you can interact with and update while it’s running. Either by entering commands in the REPL or by adding new features to the D.E.M., you can change how the D.E.M. behaves by publishing new messages, or subcribing to messages.</p>
 <p>As an example of this, let’s create our own, silly subscriber:</p>
