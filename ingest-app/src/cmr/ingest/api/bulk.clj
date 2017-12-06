@@ -4,7 +4,6 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
-   [cmr.common.cache :as cache]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
@@ -13,22 +12,7 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
-   [cmr.ingest.services.ingest-service :as ingest]
-   [cmr.transmit.echo.tokens :as tokens]))
-
-(def user-id-cache-key
-  "The cache key for the token user id cache"
-  :token-user-ids)
-
-(defn- get-user-id
-  "Get user id based on context and headers"
-  [context headers]
-  (if-let [user-id (get headers "user-id")]
-    user-id
-    (when-let [token (get headers "echo-token")]
-      (cache/get-value (cache/context->cache context user-id-cache-key)
-                       token
-                       (partial tokens/get-user-id context token)))))
+   [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn bulk-update-collections
   "Bulk update collections. Validate provider exists, check ACLs, and validate
@@ -39,7 +23,7 @@
         :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
-          user-id (get-user-id request-context headers)]
+          user-id (api-core/get-user-id request-context headers)]
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
       (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content user-id)]

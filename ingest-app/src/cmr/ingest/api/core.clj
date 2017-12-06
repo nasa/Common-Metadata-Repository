@@ -170,16 +170,20 @@
     {}
     {:threshold 1000}))
 
+(defn get-user-id
+  "Get user id based on context and headers"
+  [context headers]
+  (if-let [user-id (get headers "user-id")]
+    user-id
+    (when-let [token (get headers "echo-token")]
+      (cache/get-value (cache/context->cache context user-id-cache-key)
+                       token
+                       (partial tokens/get-user-id context token)))))
+
 (defn set-user-id
   "Associate user id to concept."
   [concept context headers]
-  (assoc concept :user-id
-         (if-let [user-id (get headers "user-id")]
-           user-id
-           (when-let [token (get headers transmit-config/token-header)]
-             (cache/get-value (cache/context->cache context user-id-cache-key)
-                              token
-                              (partial tokens/get-user-id context token))))))
+  (assoc concept :user-id (get-user-id context headers)))
 
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
