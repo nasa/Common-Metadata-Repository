@@ -756,19 +756,6 @@
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
-; (defn create-and-save-variable
-;   "Creates, saves, and returns a variable concept with its data from metadata-db"
-;   ([provider-id uniq-num]
-;    (create-and-save-variable provider-id uniq-num 1))
-;   ([provider-id uniq-num num-revisions]
-;    (create-and-save-variable provider-id uniq-num num-revisions {}))
-;   ([provider-id uniq-num num-revisions attributes]
-;    (let [concept (variable-concept provider-id uniq-num attributes)
-;          _ (dotimes [n (dec num-revisions)]
-;              (assert-no-errors (save-concept concept)))
-;          {:keys [concept-id revision-id]} (save-concept concept)]
-;      (assoc concept :concept-id concept-id :revision-id revision-id))))
-
 (defn create-and-save-variable-association
   "Creates, saves, and returns a variable association concept with its data from metadata-db"
   ([concept variable uniq-num]
