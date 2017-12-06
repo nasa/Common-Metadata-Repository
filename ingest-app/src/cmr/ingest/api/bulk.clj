@@ -25,7 +25,7 @@
           content (api-core/read-body! body)]
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content)]
+      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content headers)]
         (api-core/generate-ingest-response
           headers
           {:status 200

@@ -173,6 +173,9 @@
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
+        bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
+        bulk-update-options2 {:token (e/login (s/context) "user1")}
+        bulk-update-options3 {:user-id "user2"}
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
@@ -210,7 +213,8 @@
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
 
     ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+    (let [response 
+           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options1)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -222,6 +226,7 @@
                                 :items
                                 first)]]
         (is (= 3 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 3 "user2")
         (is (= "2017-01-01T00:00:00Z"
                (:revision-date (:meta concept))))
         (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
@@ -234,7 +239,36 @@
                  :Category "EARTH SCIENCE"
                  :Term "ENVIRONMENTAL IMPACTS"
                  :Topic "HUMAN DIMENSIONS"}]
-               (:ScienceKeywords (:umm concept))))))))
+               (:ScienceKeywords (:umm concept))))))
+    (let [response
+           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options2)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+        (is (= 4 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 4 "user1")))
+
+    (let [response
+           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options3)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+        (is (= 5 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 5 "user2")))))
 
 (deftest bulk-update-add-to-existing-multiple-science-keywords
   ;; This test is the same as the previous bulk-update-science-keywords test except
