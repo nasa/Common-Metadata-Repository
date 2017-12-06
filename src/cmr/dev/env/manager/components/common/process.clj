@@ -1,9 +1,12 @@
 (ns cmr.dev.env.manager.components.common.process
   (:require
+    [clojure.core.async :as async]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.process.core :as process]
+    [cmr.dev.env.manager.process.util :as util]
     [com.stuartsierra.component :as component]
+    [me.raynes.conch.low-level :as shell]
     [taoensso.timbre :as log]))
 
 (defn get-process
@@ -17,6 +20,31 @@
 (defn get-process-descendants
   [system service-key]
   (process/get-descendants (get-process system service-key)))
+
+(defn stream->message
+  [system topic ^java.io.InputStream input-stream]
+  (let [bytes (util/make-byte-array)]
+    (async/go-loop [stream input-stream
+                    bytes-read (process/read-stream stream bytes)]
+      (when (pos? bytes-read)
+        (messaging/publish system topic (util/bytes->ascii bytes))
+        (recur stream (process/read-stream stream bytes))))))
+
+(defn spawn!
+  [system & args]
+  (let [process-data (apply shell/proc args)]
+    (stream->message system :debug (:out process-data))
+    (stream->message system :error (:err process-data))
+    process-data))
+
+(defn terminate!
+  [system process-data]
+  (shell/flush process-data)
+  (shell/done process-data)
+  (process/terminate-descendants! process-data)
+  (let [exit (future (shell/exit-code process-data))]
+    (shell/destroy process-data)
+    @exit))
 
 (defrecord ProcessRunner [
   builder
@@ -34,7 +62,7 @@
       (log/trace "Built configuration:" cfg)
       (log/debug "Config:" (:config component))
       (if (config/service-enabled? component process-key)
-        (let [process-data (process/spawn! "lein" process-name)]
+        (let [process-data (spawn! component "lein" process-name)]
           (log/debugf "Started %s component." process-name)
           (assoc component :process-data process-data
                            :enabled true))
@@ -52,7 +80,7 @@
         (let [process-data (:process-data component)]
           (log/trace "process-data:" process-data)
           (log/trace "process:" (:process process-data))
-          (process/terminate! (:process-data component))
+          (terminate! component (:process-data component))
           (log/debugf "Stopped %s component." process-name)
           (assoc component :process-data nil))
         (do
