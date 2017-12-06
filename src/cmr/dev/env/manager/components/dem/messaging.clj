@@ -6,6 +6,22 @@
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
+(defn get-messenger
+  [system]
+  (get-in system [:messaging :messenger]))
+
+(defn publish
+  [system topic content]
+  (messaging/publish (get-messenger system)
+                     topic
+                     content))
+
+(defn subscribe
+  [system topic subscriber-fn]
+  (messaging/subscribe (get-messenger system)
+                       topic
+                       subscriber-fn))
+
 (defrecord Messaging [
   messenger]
   component/Lifecycle
@@ -22,7 +38,7 @@
   (stop [component]
     (log/info "Stopping inter-component messaging component ...")
     (log/debug "Stopped inter-component messaging component.")
-    ;; XXX close pub channel
+    (messaging/stop! (:messenger component))
     ;; XXX close all subscribtion channels; but to do this, we'll need to
     ;;     track them all ...
     (assoc component :messenger nil)))
@@ -31,19 +47,3 @@
   ""
   []
   (map->Messaging {}))
-
-(defn get-messenger
-  [system]
-  (get-in system [:messaging :messenger]))
-
-(defn publish
-  [system topic content]
-  (messaging/publish (get-messenger system)
-                     topic
-                     content))
-
-(defn subscribe
-  [system topic subscriber-fn]
-  (messaging/subscribe (get-messenger system)
-                       topic
-                       subscriber-fn))

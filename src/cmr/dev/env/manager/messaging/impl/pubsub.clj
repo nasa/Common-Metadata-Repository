@@ -29,6 +29,11 @@
   (async/>!! (:pub-channel this)
              (message this topic content)))
 
+(defn stop!
+  [this]
+  ;; XXX also `close!` all subscriber channles?
+  (async/close! (:pub-channel this)))
+
 (defn subscribe
   ([this topic subscriber-fn]
     (subscribe this topic subscriber-fn (async/chan)))
@@ -45,7 +50,8 @@
   {:content content
    :message message
    :publish publish
-   :subscribe subscribe})
+   :subscribe subscribe
+   :stop! stop!})
 
 (defn new-messenger
   ([]

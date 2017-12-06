@@ -9,6 +9,7 @@
   (content [this msg])
   (message [this topic content])
   (publish [this topic content])
+  (stop! [this])
   (subscribe [this topic sub-fn] [this topic sub-fn sub-chan]))
 
 (extend PubSubMessenger
