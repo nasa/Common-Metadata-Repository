@@ -6,7 +6,7 @@
 With the setup done, you are ready to run `lein repl`. Having done that, you
 will see output similar to the following:
 
-```
+```text
 Development Environment Manager
 .....................................................................................
 ::'######::'##::::'##:'########::::::::'##:::::::::::::::::::::::::::::::::::::::::::
@@ -25,7 +25,7 @@ Loading ...
 
 After a few seconds, the REPL will be loaded and ready to use:
 
-```
+```clj
 nREPL server started on port 54636 on host 127.0.0.1 - nrepl://127.0.0.1:54636
 REPL-y 0.3.7, nREPL 0.2.12
 Clojure 1.8.0
