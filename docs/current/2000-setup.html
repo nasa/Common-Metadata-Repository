@@ -8,9 +8,12 @@
 $ git clone git@github.com:cmr-exchange/dev-env-manager cmr-dev-env-manager
 </code></pre></li>
   <li>Go into the cloned <code>cmr</code> directory, and set up Oracle libs (see the <code>README</code>  in <code>cmr/oracle-lib</code>).</li>
-  <li>For now, you will need to use a CMR branch that’s been fixed up and hasn’t  been merged to master:</li>
-  <li><code>git remote add oubiwann git@github.com:oubiwann/Common-Metadata-Repository.git</code></li>
-  <li><code>git checkout oubiwann feature/CMR-4590-support-faster-dev-env</code></li>
+  <li>For now, you will need to use a CMR branch that’s been fixed up and hasn’t  been merged to master:
+    <ol>
+      <li><code>git remote add oubiwann git@github.com:oubiwann/Common-Metadata-Repository.git</code></li>
+      <li><code>git checkout oubiwann feature/CMR-4590-support-faster-dev-env</code></li>
+    </ol>
+  </li>
   <li>From the <code>cmr</code> directory, run <code>lein install-with-content!</code>.</li>
   <li>Change to the <code>cmr-dev-env-manager</code> directory.</li>
 </ol></div></div></div></body></html>

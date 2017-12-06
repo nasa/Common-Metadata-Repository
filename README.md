@@ -12,7 +12,7 @@
 
 ## Setup
 
-The the documentation [instructions for setup][setup].
+To get up and running, see the documentation's [instructions for setup][setup].
 
 
 ## Usage

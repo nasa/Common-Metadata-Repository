@@ -5,7 +5,7 @@
 ### Over-arching Principles
 
 This project has been implemented to keep APIs, services, general system-level
-capabilities, and underlying functionality very cleaning separated. No mixing
+capabilities, and underlying functionality very cleanly separated. No mixing
 of concepts. No over-loading of responsibilities.
 
 This is accomplished in the mind through discipline, as well as socially by
@@ -33,7 +33,7 @@ along the following lines:
 * **Configuration** - The D.E.M. `project.clj` file is used for configuration
   of all CMR service processes
 
-For current CMR developers use of this development environment should be
+For current CMR developers, use of this development environment should be
 seamless: the only requirements are that:
 
 * Your CMR repository clone directory be named `cmr`; and,
@@ -52,18 +52,19 @@ TBD
 
 The approach used by this architecture fulfills the following development
 vision:
+
 * knowing each component provides the contributor with an understanding
   of most of the system
 * knowing how each component is connected provides the remaining
   understanding
 * this makes the following much, much easier:
-  * developing new features
-  * debugging existing ones
-  * refactoring some or all of the project is actually possible (and
-    should actually be easy to do)
+    * developing new features
+    * debugging existing ones
+    * refactoring some or all of the project is actually possible (and
+      should actually be easy to do)
 * no hidden anything:
-  * no implicit code or magic
-  * no tribal knowledge/coding by convention
+    * no implicit code or magic
+    * no tribal knowledge/coding by convention
 
 
 ## REPL

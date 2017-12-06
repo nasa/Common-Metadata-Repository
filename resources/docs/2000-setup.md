@@ -10,7 +10,7 @@
    in `cmr/oracle-lib`).
 1. For now, you will need to use a CMR branch that's been fixed up and hasn't
    been merged to master:
-   1. `git remote add oubiwann git@github.com:oubiwann/Common-Metadata-Repository.git`
-   1. `git checkout oubiwann feature/CMR-4590-support-faster-dev-env`
+     1. `git remote add oubiwann git@github.com:oubiwann/Common-Metadata-Repository.git`
+     1. `git checkout oubiwann feature/CMR-4590-support-faster-dev-env`
 1. From the `cmr` directory, run `lein install-with-content!`.
 1. Change to the `cmr-dev-env-manager` directory.
