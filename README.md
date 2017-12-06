@@ -17,55 +17,20 @@ The the documentation [instructions for setup][setup].
 
 ## Usage
 
-With the setup done, you are ready to run `lein repl`. Having done that, you
-will see output similar to the following:
-
-```
-Development Environment Manager
-.....................................................................................
-::'######::'##::::'##:'########::::::::'##:::::::::::::::::::::::::::::::::::::::::::
-:'##... ##: ###::'###: ##.... ##::::::'##:::dMMMMb::::::::dMMMMMP::::::dMMMMMMMMb::::
-: ##:::..:: ####'####: ##:::: ##:::::'##:::dMP.VMP:::::::dMP....::::::dMP"dMP"dMP::::
-: ##::::::: ## ### ##: ########:::::'##:::dMP:dMP.::::::dMMMP::::::::dMP.dMP.dMP.::::
-: ##::::::: ##. #: ##: ##.. ##:::::'##:::dMP:aMP.:amr::dMP..:::amr::dMP:dMP:dMP.:amr:
-: ##::: ##: ##:.:: ##: ##::. ##:::'##:::dMMMMP.::dMP::dMMMMMP:dMP::dMP:dMP:dMP.:dMP::
-:. ######:: ##:::: ##: ##:::. ##:'##::::......:::..:::......::..:::..::..::..:::..:::
-::......:::..:::::..::..:::::..::..::::::::::::::::::::::::::::::::::::::::::::::::::
-
-for NASA's Earthdata Common Metadata Repository
-
-Loading ...
-```
-
-After a few seconds, the REPL will be loaded and ready to use:
-
-```
-nREPL server started on port 54636 on host 127.0.0.1 - nrepl://127.0.0.1:54636
-REPL-y 0.3.7, nREPL 0.2.12
-Clojure 1.8.0
-Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
-    Docs: (doc function-name-here)
-          (find-doc "part-of-name-here")
-  Source: (source function-name-here)
- Javadoc: (javadoc java-object-or-class-here)
-    Exit: Control+D or (exit) or (quit)
- Results: Stored in vars *1, *2, *3, an exception in *e
-
-[cmr.dev.env.manager.repl] λ=>
-```
-
-To bring up a dev system, complete with all enabled running services:
+It's always nice to see some actual usage in the README, so here are some quick
+teasers:
 
 ```clj
-[cmr.dev.env.manager.repl] λ=> (run)
+[cmr.dev.env.manager.repl] λ=> (startup)
 ```
 
-Note that each service is started in its own OS process. For more information
-on this, see the architecture section below.
+For more details, be sure to see the [usage section][usage] of the docs!
+
 
 ## Documentation
 
 [Guides and API docs are here][docs].
+
 
 ## Architecture Overview
 
@@ -99,3 +64,4 @@ Apache License, Version 2.0.
 [arch-overview]: https://cmr-exchange.github.io/dev-env-manager/current/1000-architecture.html
 [background-info]: https://cmr-exchange.github.io/dev-env-manager/current/0000-background.html
 [setup]: https://cmr-exchange.github.io/dev-env-manager/current/2000-setup.html
+[usage]: https://cmr-exchange.github.io/dev-env-manager/current/3000-usage.html
