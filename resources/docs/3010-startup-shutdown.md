@@ -6,7 +6,7 @@
 With the setup done, you are ready to run `lein repl`. Having done that, you
 will see output similar to the following:
 
-```text
+```code
     Development Environment Manager
     .....................................................................................
     ::'######::'##::::'##:'########::::::::'##:::::::::::::::::::::::::::::::::::::::::::
