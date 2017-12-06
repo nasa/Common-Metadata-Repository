@@ -25,10 +25,22 @@
     [org.clojure/clojure "1.8.0"]
     [org.clojure/core.async "0.3.443" :exclusions [
       org.clojure/tools.reader]]]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;   CMR D.E.M. specific configuration   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   :dem {
     :logging {
       :level :debug}
+    :elastic-search {
+      ;:image-id "docker.elastic.co/elasticsearch/elasticsearch:6.0.1"
+      :image-id "elasticsearch:1.6.2"
+      :ports ["9200:9200" "9300:9300"]
+      :env ["discovery.type=single-node"]
+      :container-id-file "/tmp/cmr-dem-elastic-container-id"}
     :enabled-services #{
+      ;; Support services
+      :elastic-search
+      ;; CMR services
       :mock-echo}}
   :profiles {
     ;; Tasks
@@ -77,7 +89,9 @@
         :doc-paths ["resources/docs"]
         :namespaces [#"^cmr\.dev\.env\.manager\.(?!test)"]
         :metadata {:doc/format :markdown}}}
-    ;; Managed CMR Aapplications/Services
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;   Profiles for Managed Aapplications/Services   ;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     :mock-echo {
       :autoreload true
       :main cmr.mock-echo.runner
@@ -87,9 +101,11 @@
         "libs/common-lib/src"
         "libs/transmit-lib"]}}
   :aliases {
-    ;; Applications
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]
-    ;; General
+    ;; General aliases
     "repl" ["do"
       ["clean"]
       ["repl"]]
