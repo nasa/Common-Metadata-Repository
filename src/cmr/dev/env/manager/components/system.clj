@@ -10,7 +10,7 @@
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility Constants, Data Structures, & Functions   ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn log-subscriber
@@ -22,6 +22,14 @@
     :info (fn [content] (log/info content))
     :debug (fn [content] (log/debug content))
     :trace (fn [content] (log/trace content))))
+
+(def default-subscribers
+  [{:topic :fatal :fn (log-subscriber :fatal)}
+   {:topic :error :fn (log-subscriber :error)}
+   {:topic :warn :fn (log-subscriber :warn)}
+   {:topic :info :fn (log-subscriber :info)}
+   {:topic :debug :fn (log-subscriber :debug)}
+   {:topic :trace :fn (log-subscriber :trace)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,14 +48,6 @@
   {:messaging (component/using
                (messaging/create-messaging-component)
                [:config :logging])})
-
-(def default-subscribers
-  [{:topic :fatal :fn (log-subscriber :fatal)}
-   {:topic :error :fn (log-subscriber :error)}
-   {:topic :warn :fn (log-subscriber :warn)}
-   {:topic :info :fn (log-subscriber :info)}
-   {:topic :debug :fn (log-subscriber :debug)}
-   {:topic :trace :fn (log-subscriber :trace)}])
 
 (def sub
   {:subscribers (component/using
