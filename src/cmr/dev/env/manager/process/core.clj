@@ -1,11 +1,9 @@
 (ns cmr.dev.env.manager.process.core
   (:require
     [clojure.core.async :as async]
-    [clojure.java.shell :as clj-shell]
+    [clojure.java.shell :as shell]
     [clojure.string :as string]
-    [cmr.dev.env.manager.process.const :as const]
     [cmr.dev.env.manager.process.util :as util]
-    [me.raynes.conch.low-level :as shell]
     [taoensso.timbre :as log]
     [trifl.ps :as process]))
 
@@ -30,7 +28,7 @@
 
 (defn terminate-external-process!
   [pid]
-  (let [result (clj-shell/sh "kill" "-9" (str pid))
+  (let [result (shell/sh "kill" "-9" (str pid))
         out (:out result)
         err (:err result)]
     (when (seq out)

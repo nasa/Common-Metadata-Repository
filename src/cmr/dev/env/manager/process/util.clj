@@ -1,8 +1,9 @@
 (ns cmr.dev.env.manager.process.util
   (:require
     [clojure.java.io :as io]
-    [cmr.dev.env.manager.process.const :as const]
     [me.raynes.conch.low-level :as shell]))
+
+(def ^:dynamic *byte-buffer-size* 1024)
 
 (defn newline?
   ""
@@ -18,7 +19,6 @@
   ""
   [bytes]
   (.trim (new String bytes "UTF-8")))
-
 
 (defn bytes->int
   ""
@@ -39,7 +39,7 @@
 
 (defn make-byte-array
   ([]
-    (make-byte-array const/*byte-buffer-size*))
+    (make-byte-array *byte-buffer-size*))
   ([buffer-size]
     (make-array Byte/TYPE buffer-size)))
 
