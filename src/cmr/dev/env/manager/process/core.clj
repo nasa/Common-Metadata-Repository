@@ -14,7 +14,7 @@
   (try
     (.read stream bytes)
     (catch Exception ex
-      (log/error "Could not read stream:" (.getMessage ex))
+      (log/warn "Could not read stream:" (.getMessage ex))
       no-bytes)))
 
 (defn get-pid
@@ -26,16 +26,23 @@
   [process-data]
   (process/get-descendants (get-pid process-data)))
 
-(defn terminate-external-process!
-  [pid]
-  (let [result (shell/sh "kill" "-9" (str pid))
+(defn exec
+  "Executes the command and args in a sub-process, returning the result. Will
+  log an error in the event the process writes to `stderr`; will log the result
+  to `stdout` if the D.E.M. log-level is set to `:debug` or lower."
+  [& cmd-and-args]
+  (let [result (apply shell/sh cmd-and-args)
         out (:out result)
         err (:err result)]
     (when (seq out)
       (log/debug out))
     (when (seq err)
       (log/error err))
-    (:exit result)))
+    result))
+
+(defn terminate-external-process!
+  [pid]
+  (:exit (exec "kill" "-9" (str pid))))
 
 (defn terminate-descendants!
   [process-data]
