@@ -30,7 +30,8 @@
 
 ## Usage
 
-Run `lein repl`, at which point you will see output similar to the following:
+With the setup done, you are ready to run `lein repl`. Having done that, you
+will see output similar to the following:
 
 ```
 Development Environment Manager
@@ -66,7 +67,7 @@ Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
 [cmr.dev.env.manager.repl] λ=>
 ```
 
-To bring up a dev system, complete with all running services:
+To bring up a dev system, complete with all enabled running services:
 
 ```clj
 [cmr.dev.env.manager.repl] λ=> (run)
