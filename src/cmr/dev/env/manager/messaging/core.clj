@@ -1,6 +1,7 @@
 (ns cmr.dev.env.manager.messaging.core
   (:require
-    [cmr.dev.env.manager.messaging.impl.pubsub :as pubsub])
+    [cmr.dev.env.manager.messaging.impl.pubsub :as pubsub]
+    [taoensso.timbre :as log])
   (:import
     (cmr.dev.env.manager.messaging.impl.pubsub PubSubMessenger)))
 
@@ -21,7 +22,8 @@
 
 (defn batch-subscribe
   "The passed argument `subscribers` is a list of maps with each map having
-  `:topic` and `:content` keys with corresponding values."
+  `:topic` and `:fn` keys with corresponding values."
   [messenger subscribers]
-  (for [subscriber subscribers]
-    (subscribe messenger (:topic subscriber) (:content subscriber))))
+  (doseq [subscriber subscribers]
+    (log/debugf "Subscribing %s to %s ..." (:fn subscriber) (:topic subscriber))
+    (subscribe messenger (:topic subscriber) (:fn subscriber))))

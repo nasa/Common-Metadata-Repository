@@ -1,7 +1,6 @@
 (ns cmr.dev.env.manager.components.dem.messaging
   "System component for inter-component communications."
   (:require
-    [clojusc.twig :as logger]
     [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.messaging.core :as messaging]
     [com.stuartsierra.component :as component]
@@ -23,6 +22,9 @@
   (stop [component]
     (log/info "Stopping inter-component messaging component ...")
     (log/debug "Stopped inter-component messaging component.")
+    ;; XXX close pub channel
+    ;; XXX close all subscribtion channels; but to do this, we'll need to
+    ;;     track them all ...
     (assoc component :messenger nil)))
 
 (defn create-messaging-component

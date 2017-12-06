@@ -4,8 +4,24 @@
     [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.logging :as logging]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
+    [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
     [cmr.dev.env.manager.config :refer [build] :rename {build build-config}]
-    [com.stuartsierra.component :as component]))
+    [com.stuartsierra.component :as component]
+    [taoensso.timbre :as log]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn log-subscriber
+  [logging-type]
+  (case logging-type
+    :fatal (fn [content] (log/fatal content))
+    :error (fn [content] (log/error content))
+    :warn (fn [content] (log/warn content))
+    :info (fn [content] (log/info content))
+    :debug (fn [content] (log/debug content))
+    :trace (fn [content] (log/trace content))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,6 +41,20 @@
                (messaging/create-messaging-component)
                [:config :logging])})
 
+(def default-subscribers
+  [{:topic :fatal :fn (log-subscriber :fatal)}
+   {:topic :error :fn (log-subscriber :error)}
+   {:topic :warn :fn (log-subscriber :warn)}
+   {:topic :info :fn (log-subscriber :info)}
+   {:topic :debug :fn (log-subscriber :debug)}
+   {:topic :trace :fn (log-subscriber :trace)}])
+
+(def sub
+  {:subscribers (component/using
+                 (subscribers/create-subscribers-component
+                  default-subscribers)
+                 [:config :logging :messaging])})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,7 +66,7 @@
   [builder]
   {:mock-echo (component/using
                (process/create-process-runner-component builder :mock-echo)
-               [:config :logging :messaging])})
+               [:config :logging :messaging :subscribers])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Intilizations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,6 +80,7 @@
       (merge (cfg config-builder)
              log
              msg
+             sub
              (mock-echo config-builder)))))
 
 (defn initialize-bare-bones
