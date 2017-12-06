@@ -11,6 +11,8 @@
 (defn default-config
   []
   {config-key {
+    :elastic-search {}
+    :enabled-services #{}
     :logging {
       :level :info
       :nss '[cmr]}
@@ -82,3 +84,7 @@
 (defn messaging-type
   [system]
   (active-config system config-key :messaging :type))
+
+(defn elastic-search-opts
+  [system]
+  (active-config system config-key :elastic-search))

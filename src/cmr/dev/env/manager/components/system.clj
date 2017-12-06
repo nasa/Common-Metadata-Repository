@@ -1,11 +1,13 @@
 (ns cmr.dev.env.manager.components.system
   (:require
+    [cmr.dev.env.manager.components.common.docker :as docker]
     [cmr.dev.env.manager.components.common.process :as process]
     [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.logging :as logging]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
-    [cmr.dev.env.manager.config :refer [build] :rename {build build-config}]
+    [cmr.dev.env.manager.config :refer [build elastic-search-opts]
+                                :rename {build build-config}]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
@@ -56,6 +58,19 @@
                  [:config :logging :messaging])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Support Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn elastic-search
+  [builder]
+  {:elastic-search (component/using
+                    (docker/create-runner-component
+                      builder
+                      :elastic-search
+                      elastic-search-opts)
+                    [:config :logging :messaging :subscribers])})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -65,7 +80,7 @@
 (defn mock-echo
   [builder]
   {:mock-echo (component/using
-               (process/create-process-runner-component builder :mock-echo)
+               (process/create-runner-component builder :mock-echo)
                [:config :logging :messaging :subscribers])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,6 +96,7 @@
              log
              msg
              sub
+             (elastic-search config-builder)
              (mock-echo config-builder)))))
 
 (defn initialize-bare-bones
