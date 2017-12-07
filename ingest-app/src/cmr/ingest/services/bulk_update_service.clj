@@ -94,7 +94,7 @@
   "Validate the bulk update POST parameters, save rows to the db for task
   and collection statuses, and queueu bulk update. Return task id, which comes
   from the db save."
-  [context provider-id json]
+  [context provider-id json user-id]
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
@@ -104,12 +104,12 @@
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
       context
-      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params))
+      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params user-id))
     task-id))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"
-  [context provider-id task-id bulk-update-params]
+  [context provider-id task-id bulk-update-params user-id]
   (let [{:keys [concept-ids]} bulk-update-params]
     (doseq [concept-id concept-ids]
      (ingest-events/publish-ingest-event
@@ -118,11 +118,12 @@
        provider-id
        task-id
        concept-id
-       bulk-update-params)))))
+       bulk-update-params
+       user-id)))))
 
 (defn- update-collection-concept
   "Perform the update on the collection and update the concept"
-  [context concept bulk-update-params]
+  [context concept bulk-update-params user-id]
   (let [{:keys [update-type update-field find-value update-value]} bulk-update-params
         update-type (csk/->kebab-case-keyword update-type)
         update-field (csk/->PascalCaseKeyword update-field)]
@@ -132,7 +133,8 @@
                                                       update-format))
         (assoc :format update-format)
         (update :revision-id inc)
-        (assoc :revision-date (time-keeper/now)))))
+        (assoc :revision-date (time-keeper/now))
+        (assoc :user-id user-id))))
 
 (defn- validate-and-save-collection
   "Put concept through ingest validation. Attempt save to
@@ -171,10 +173,10 @@
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept
   cannot be found."
-  [context provider-id task-id concept-id bulk-update-params]
+  [context provider-id task-id concept-id bulk-update-params user-id]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (let [updated-concept (update-collection-concept context concept bulk-update-params)
+      (let [updated-concept (update-collection-concept context concept bulk-update-params user-id)
             warnings (validate-and-save-collection context updated-concept)]
         (data-bulk-update/update-bulk-update-task-collection-status
          context task-id concept-id complete-status (create-success-status-message warnings)))
@@ -188,7 +190,8 @@
          (ingest-events/ingest-collection-bulk-update-event provider-id
                                                             task-id
                                                             concept-id
-                                                            bulk-update-params))
+                                                            bulk-update-params
+                                                            user-id))
         (data-bulk-update/update-bulk-update-task-collection-status
           context task-id concept-id failed-status (.getMessage ex-info))))
     (catch Exception e

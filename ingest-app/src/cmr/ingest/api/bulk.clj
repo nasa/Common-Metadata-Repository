@@ -22,10 +22,11 @@
     (srvc-errors/throw-service-error
         :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
-          content (api-core/read-body! body)]
+          content (api-core/read-body! body)
+          user-id (api-core/get-user-id request-context headers)]
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content)]
+      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content user-id)]
         (api-core/generate-ingest-response
           headers
           {:status 200
