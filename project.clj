@@ -93,6 +93,76 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;   Profiles for Managed Aapplications/Services   ;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    :access-control {
+      :main cmr.access-control.runner
+      :source-paths [
+        "apps/access-control-app/src"
+        "apps/metadata-db-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/common-lib/src"
+        "libs/elastic-utils-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/transmit-lib/src"
+        "libs/umm-spec-lib/src"]}
+    :bootstrap {
+      :main cmr.bootstrap.runner
+      :source-paths [
+        "apps/access-control-app/src"
+        "apps/bootstrap-app/src"
+        "apps/indexer-app/src"
+        "apps/metadata-db-app/src"
+        "apps/virtual-product-app/src"
+        "libs/common-app-lib/src"
+        "libs/oracle-lib/src"
+        "libs/transmit-lib/src"]}
+    :cubby {
+      :main cmr.cubby.runner
+      :source-paths [
+        "apps/cubby-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/common-lib/src"
+        "libs/elastic-utils-lib/src"
+        "libs/transmit-lib/src"]}
+    :index-set {
+      :main cmr.index-set.runner
+      :source-paths [
+        "apps/index-set-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/elastic-utils-lib/src"]}
+    :indexer {
+      :main cmr.indexer.runner
+      :source-paths [
+        "apps/indexer-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/elastic-utils-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/transmit-lib/src"
+        "libs/umm-lib/src"
+        "libs/umm-spec-lib/src"]}
+    :ingest {
+      :main cmr.ingest.runner
+      :source-paths [
+        "apps/ingest-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/oracle-lib/src"
+        "libs/transmit-lib/src"
+        "libs/umm-lib/src"
+        "libs/umm-spec-lib/src"]}
+    :metadata-db {
+      :main cmr.metadata-db.runner
+      :source-paths [
+        "apps/metadata-db-app/src"
+        "libs/acl-lib/src"
+        "libs/common-app-lib/src"
+        "libs/common-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/oracle-lib/src"]}
     :mock-echo {
       :autoreload true
       :main cmr.mock-echo.runner
@@ -100,12 +170,29 @@
         "apps/mock-echo-app/src"
         "libs/common-app-lib/src"
         "libs/common-lib/src"
-        "libs/transmit-lib"]}}
+        "libs/transmit-lib/src"]}
+    :search {
+      :main cmr.search.runner
+      :source-paths [
+        "apps/search-app/src"
+        "libs/collection-renderer-lib/src"
+        "libs/common-app-lib/src"
+        "libs/elastic-utils-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/orbits-lib/src"
+        "libs/spatial-lib/src"
+        "libs/umm-lib/src"
+        "libs/umm-spec-lib/src"]}
+    :virtual-product {
+      :main cmr.virtual-product.runner
+      :source-paths [
+        "apps/virtual-product-app/src"
+        "libs/common-app-lib/src"
+        "libs/common-lib/src"
+        "libs/message-queue-lib/src"
+        "libs/transmit-lib/src"
+        "libs/umm-lib/src"]}}
   :aliases {
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]
     ;; General aliases
     "repl" ["do"
       ["clean"]
@@ -126,4 +213,8 @@
       ["clean"]
       ["uberjar"]
       ["clean"]
-      ["test"]]})
+      ["test"]]
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]})
