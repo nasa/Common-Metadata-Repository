@@ -173,9 +173,9 @@
 (defn get-user-id
   "Get user id based on context and headers"
   [context headers]
-  (if-let [user-id (get headers "user-id")]
+  (if-let [user-id (get headers transmit-config/user-id-header)]
     user-id
-    (when-let [token (get headers "echo-token")]
+    (when-let [token (get headers transmit-config/token-header)]
       (cache/get-value (cache/context->cache context user-id-cache-key)
                        token
                        (partial tokens/get-user-id context token)))))
