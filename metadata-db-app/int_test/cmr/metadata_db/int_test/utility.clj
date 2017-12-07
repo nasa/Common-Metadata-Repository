@@ -142,11 +142,6 @@
   (pr-str {:name "Some ACL"
            :etc "TBD"}))
 
-(def service-json
-  (json/generate-string
-   {"Name" "someService"
-    "Other" "TBD"}))
-
 (def service-association-edn
   "Valid EDN for variable association metadata"
   (pr-str {:service-concept-id "S120000008-PROV1"
@@ -172,7 +167,7 @@
    :access-group group-edn
    :acl acl-edn
   ;  :humanizer humanizer-json
-   :service service-json
+  ;  :service service-json
   ;  :variable variable-json
    :variable-association variable-association-edn
    :service-association service-association-edn})
@@ -280,21 +275,6 @@
                             :extra-fields {:acl-identity (str "test-identity:" provider-id ":" uniq-num)}}
                            attributes)]
      (concept provider-id :acl uniq-num attributes))))
-
-(defn service-concept
-  "Creates a service concept"
-  ([provider-id uniq-num]
-   (service-concept provider-id uniq-num {}))
-  ([provider-id uniq-num attributes]
-   (let [native-id (str "svc-native" uniq-num)
-         extra-fields (merge {:service-name (str "svc" uniq-num)}
-                             (:extra-fields attributes))
-         attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/json"
-                            :native-id native-id
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-     (concept provider-id :service uniq-num attributes))))
 
 (defn service-association-concept
   "Creates a service association concept"
@@ -656,19 +636,6 @@
               (assert-no-errors (save-concept concept)))
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
-
-(defn create-and-save-service
-  "Creates, saves, and returns a service concept with its data from metadata-db."
-  ([provider-id uniq-num]
-   (create-and-save-service provider-id uniq-num 1))
-  ([provider-id uniq-num num-revisions]
-   (create-and-save-service provider-id uniq-num num-revisions {}))
-  ([provider-id uniq-num num-revisions attributes]
-   (let [concept (service-concept provider-id uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-service-association
   "Creates, saves, and returns a service association concept with its data from metadata-db"

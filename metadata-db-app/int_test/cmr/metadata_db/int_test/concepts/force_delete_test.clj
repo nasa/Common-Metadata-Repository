@@ -17,7 +17,7 @@
 
 (defmethod cs-spec/gen-concept :service
   [_ provider-id uniq-num attributes]
-  (util/service-concept provider-id uniq-num attributes))
+  (concepts/create-concept :service provider-id uniq-num attributes))
 
 (defmethod cs-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
@@ -82,7 +82,7 @@
 (deftest force-delete-service-with-associations
   (let [coll (util/create-and-save-collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        svc-concept (util/create-and-save-service "REG_PROV" 1 3)
+        svc-concept (concepts/create-and-save-concept :service "REG_PROV" 1 3)
         svc-concept-id (:concept-id svc-concept)
         svc-assn (util/create-and-save-service-association
                   coll svc-concept 1)

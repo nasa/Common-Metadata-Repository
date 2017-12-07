@@ -67,7 +67,7 @@
 (deftest service-delete-cascades-associations
   (testing "delete cascades to service associations"
     (let [coll (util/create-and-save-collection "REG_PROV" 1)
-          service (util/create-and-save-service "REG_PROV" 1)
+          service (concepts/create-and-save-concept :service "REG_PROV" 1)
           service-association (util/create-and-save-service-association coll service 1 1)]
       (testing "service association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? service-association))))
@@ -96,7 +96,7 @@
           gran3 (util/create-and-save-granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
-          service (util/create-and-save-service provider-id 1)
+          service (concepts/create-and-save-concept :service provider-id 1)
           service-association (util/create-and-save-service-association coll1 service 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
@@ -145,7 +145,7 @@
           gran3 (util/create-and-save-granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
-          service (util/create-and-save-service provider-id 1)
+          service (concepts/create-and-save-concept :service provider-id 1)
           service-association (util/create-and-save-service-association coll1 service 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
