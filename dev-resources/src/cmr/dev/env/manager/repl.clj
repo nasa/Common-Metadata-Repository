@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
+   [cmr.dev.env.manager.components.common.docker :as docker]
    [cmr.dev.env.manager.components.common.process :as process]
    [cmr.dev.env.manager.components.dem.messaging :as messaging]
    [cmr.dev.env.manager.components.system :as components]
@@ -71,6 +72,26 @@
   [topic func]
   (messaging/subscribe system topic func)
   :ok)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Docker Service Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-docker-opts
+  [service-key]
+  (docker/get-opts system service-key))
+
+(defn get-docker-container-id
+  [service-key]
+  (docker/get-container-id system service-key))
+
+(defn get-docker-container-data
+  [service-key]
+  (docker/get-container-data system service-key))
+
+(defn get-docker-container-state
+  [service-key]
+  (docker/get-container-state system service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State data getters/setters   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

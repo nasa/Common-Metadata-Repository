@@ -29,13 +29,13 @@
 (defn exec
   "Executes the command and args in a sub-process, returning the result. Will
   log an error in the event the process writes to `stderr`; will log the result
-  to `stdout` if the D.E.M. log-level is set to `:debug` or lower."
+  to `stdout` if the D.E.M. log-level is set to `:trace`."
   [& cmd-and-args]
   (let [result (apply shell/sh cmd-and-args)
         out (:out result)
         err (:err result)]
     (when (seq out)
-      (log/debug out))
+      (log/trace out))
     (when (seq err)
       (log/error err))
     result))

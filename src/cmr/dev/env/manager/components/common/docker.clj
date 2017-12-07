@@ -6,6 +6,22 @@
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
+(defn get-opts
+  [system service-key]
+  (get-in system [service-key :opts]))
+
+(defn get-container-id
+  [system service-key]
+  (docker/read-container-id (get-opts system service-key)))
+
+(defn get-container-data
+  [system service-key]
+  (docker/inspect (get-opts system service-key)))
+
+(defn get-container-state
+  [system service-key]
+  (docker/state (get-opts system service-key)))
+
 (defrecord DockerRunner [
   builder
   process-keyword

@@ -17,6 +17,7 @@
     :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
   :dependencies [
+    [cheshire "5.8.0"]
     [com.stuartsierra/component "0.3.2"]
     [leiningen-core "2.7.1" :exclusions [
       commons-io

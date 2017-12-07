@@ -1,5 +1,6 @@
 (ns cmr.dev.env.manager.process.docker
   (:require
+    [cheshire.core :as json]
     [clojure.java.io :as io]
     [clojure.string :as string]
     [cmr.dev.env.manager.process.core :as process]
@@ -12,8 +13,12 @@
 
 (defn- docker
   [args]
-  (log/debug "Running the `docker` cli with the args:" (vec args))
-  (apply process/exec (concat ["docker"] args)))
+  (log/trace "Running the `docker` cli with the args:" (vec args))
+  (:out (apply process/exec (concat ["docker"] args))))
+
+(defn read-container-id
+  [opts]
+  (string/trim (slurp (:container-id-file opts))))
 
 (defn pull
   [opts]
@@ -21,7 +26,7 @@
 
 (defn stop
   [opts]
-  (docker ["stop" (string/trim (slurp (:container-id-file opts)))])
+  (docker ["stop" (read-container-id opts)])
   (io/delete-file (:container-id-file opts)))
 
 (defn run
@@ -34,3 +39,14 @@
            (multi-flags "-p" (:ports opts))
            (multi-flags "-e" (:env opts))
            [(:image-id opts)])))
+
+(defn inspect
+  [opts]
+  (first
+    (json/parse-string
+      (docker ["inspect" (read-container-id opts)])
+      true)))
+
+(defn state
+  [opts]
+  (:State (inspect opts)))
