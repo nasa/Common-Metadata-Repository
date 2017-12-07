@@ -7,7 +7,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.int-test.utility :as util]
    [cmr.metadata-db.services.concept-service :as concept-service]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]))
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
 
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}

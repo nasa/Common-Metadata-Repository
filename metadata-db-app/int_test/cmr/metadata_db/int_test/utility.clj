@@ -142,11 +142,6 @@
   (pr-str {:name "Some ACL"
            :etc "TBD"}))
 
-(def humanizer-json
-  (json/generate-string
-    [{"type" "trim_whitespace", "field" "platform", "order" -100},
-     {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
-
 (def service-json
   (json/generate-string
    {"Name" "someService"
@@ -176,7 +171,7 @@
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
-   :humanizer humanizer-json
+  ;  :humanizer humanizer-json
    :service service-json
   ;  :variable variable-json
    :variable-association variable-association-edn
@@ -321,35 +316,6 @@
                            (dissoc attributes :extra-fields))]
      ;; no provider-id should be specified for service associations
      (dissoc (concept nil :service-association uniq-num attributes) :provider-id))))
-
-(defn humanizer-concept
- "Creates a humanizer concept"
- ([uniq-num]
-  (humanizer-concept uniq-num {}))
- ([uniq-num attributes]
-  (let [native-id "humanizer"
-        attributes (merge {:user-id (str "user" uniq-num)
-                           :format "application/json"
-                           :native-id native-id}
-                          attributes)]
-    ;; no provider-id should be specified for humanizers
-    (dissoc (concept nil :humanizer uniq-num attributes) :provider-id))))
-
-; (defn variable-concept
-;   "Creates a variabe concept"
-;   ([provider-id uniq-num]
-;    (variable-concept provider-id uniq-num {}))
-;   ([provider-id uniq-num attributes]
-;    (let [native-id (str "var-native" uniq-num)
-;          extra-fields (merge {:variable-name (str "var" uniq-num)
-;                               :measurement (str "measurement" uniq-num)}
-;                              (:extra-fields attributes))
-;          attributes (merge {:user-id (str "user" uniq-num)
-;                             :format "application/json"
-;                             :native-id native-id
-;                             :extra-fields extra-fields}
-;                            (dissoc attributes :extra-fields))]
-;      (concept provider-id :variable uniq-num attributes))))
 
 (defn variable-association-concept
   "Creates a variable association concept"
@@ -738,19 +704,6 @@
    (create-and-save-acl provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions attributes]
    (let [concept (acl-concept provider-id uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
-
-(defn create-and-save-humanizer
-  "Creates, saves, and returns a humanizer concept with its data from metadata-db"
-  ([]
-   (create-and-save-humanizer 1))
-  ([num-revisions]
-   (create-and-save-humanizer num-revisions {}))
-  ([num-revisions attributes]
-   (let [concept (humanizer-concept 1 attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

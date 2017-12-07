@@ -1,9 +1,9 @@
-(ns cmr.metadata-db.int-test.concepts.variable-util
+(ns cmr.metadata-db.int-test.concepts.utils.variable
   "Defines implementations for all of the multi-methods for variables in the metadata-db
   integration tests."
   (:require
    [cheshire.core :as json]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]))
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
 
 (def variable-json
   (json/generate-string

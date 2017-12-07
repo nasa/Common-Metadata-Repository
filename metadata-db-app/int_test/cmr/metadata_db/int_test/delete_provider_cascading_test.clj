@@ -2,7 +2,7 @@
   "Tests that delete a provider cascading delete its concepts."
   (:require
    [clojure.test :refer :all]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (join-fixtures

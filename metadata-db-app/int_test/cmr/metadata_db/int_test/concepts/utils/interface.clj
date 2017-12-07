@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.int-test.concepts.interface
+(ns cmr.metadata-db.int-test.concepts.utils.interface
   "Defines all of the multi-methods for concept specific implementations. When adding a new
   concept type be sure to implement each of the following multi-methods."
   (:require
