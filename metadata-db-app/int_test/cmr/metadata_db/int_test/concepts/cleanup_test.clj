@@ -5,9 +5,9 @@
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.services.concept-service :as concept-service]
-   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
+   [cmr.metadata-db.services.concept-service :as concept-service]))
 
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -293,8 +293,8 @@
 
 (deftest old-service-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [service1 (util/create-and-save-service "REG_PROV" 1 13)
-        service2 (util/create-and-save-service "REG_PROV" 2 3)]
+  (let [service1 (concepts/create-and-save-concept :service "REG_PROV" 1 13)
+        service2 (concepts/create-and-save-concept :service "REG_PROV" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [service1 service2]))
@@ -311,8 +311,8 @@
 (deftest old-service-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        service1 (util/create-and-save-service "REG_PROV" 1 1)
-        service2 (util/create-and-save-service "REG_PROV" 2 1)
+        service1 (concepts/create-and-save-concept :service "REG_PROV" 1 1)
+        service2 (concepts/create-and-save-concept :service "REG_PROV" 2 1)
         sa1 (util/create-and-save-service-association coll1 service1 1 13)
         sa2 (util/create-and-save-service-association coll1 service2 2 3)]
 

@@ -4,6 +4,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
@@ -13,7 +14,7 @@
   (let [concept-attributes (or (:concept-attributes attributes) {})
         concept (util/create-and-save-collection "REG_PROV" uniq-num 1 concept-attributes)
         service-attributes (or (:service-attributes attributes) {})
-        service (util/create-and-save-service "REG_PROV" uniq-num 1 service-attributes)
+        service (concepts/create-and-save-concept :service "REG_PROV" uniq-num 1 service-attributes)
         attributes (dissoc attributes :concept-attributes :service-attributes)]
     (util/service-association-concept concept service uniq-num attributes)))
 
@@ -25,9 +26,9 @@
 (deftest save-service-association-failure-test
   (testing "saving new service associations on non system-level provider"
     (let [coll (util/create-and-save-collection "REG_PROV" 1)
-          service (util/create-and-save-service "REG_PROV" 1)
+          service (concepts/create-and-save-concept :service "REG_PROV" 1)
           service-association (-> (util/service-association-concept coll service 2)
-                                   (assoc :provider-id "REG_PROV"))
+                                  (assoc :provider-id "REG_PROV"))
           {:keys [status errors]} (util/save-concept service-association)]
 
       (is (= 422 status))

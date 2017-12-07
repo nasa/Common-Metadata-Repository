@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -17,10 +18,10 @@
                                                                  :entry-title "et2"
                                                                  :version-id "v1"
                                                                  :short-name "s2"}})
-        associated-service (util/create-and-save-service "REG_PROV" 1)
+        associated-service (concepts/create-and-save-concept :service "REG_PROV" 1)
         serv-association1 (util/create-and-save-service-association coll1 associated-service 1 3)
         serv-association2 (util/create-and-save-service-association coll2 associated-service 2 2)]
-    
+
     (testing "find latest revisions"
       (are3 [service-associations params]
         (is (= (set service-associations)
