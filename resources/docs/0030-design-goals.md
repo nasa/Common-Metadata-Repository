@@ -12,10 +12,10 @@
    * should be immune to errors with namespace reloading (i.e., always available)
  * Don't block the main REPL thread during component start/stop/restart
  * Only load the minimal set of needed projects/deps/namespaces;
-   don't load the entire CMR codebase
+   don't load the entire CMR code ase
    * maximize use of services
    * when reloading code in the REPL, only the loaded code will be reloaded, not the entire CMR
-     codebase
+     code base
  * Don't require calling functions like `(reset)` before running tests
    * instead, simply require that the system be started
    * iow, name things well/sensibly

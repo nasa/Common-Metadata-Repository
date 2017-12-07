@@ -1,6 +1,6 @@
 #  • Inspecting Process-based Services
 
-Once the system is up and running, a develpoer may wish to examine the managed
+Once the system is up and running, a developer may wish to examine the managed
 processes. This can be done with various utility functions provided in the
 default `repl` namespace.
 

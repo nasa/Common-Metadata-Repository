@@ -10,9 +10,9 @@ of concepts. No over-loading of responsibilities.
 
 This is accomplished in the mind through discipline, as well as socially by
 feedback from other developers. This is accomplished in the code itself through
-the use of simple functions and components to do their one declared job. If
-additially features are needed, separate functions and/or components are
-created.
+the use of simple functions and components to do their one declared job. Simply
+put, if additional features are needed, separate functions and/or components
+are created.
 
 
 ### A Peek at the Separation of Concerns

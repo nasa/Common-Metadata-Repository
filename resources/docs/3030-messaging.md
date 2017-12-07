@@ -33,7 +33,7 @@ the interaction of the messaging system with the rest of D.E.M. components:
 The CMR D.E.M. is a dynamic system, one that you can interact with and update
 while it's running. Either by entering commands in the REPL or by adding new
 features to the D.E.M., you can change how the D.E.M. behaves by publishing
-new messages, or subcribing to messages.
+new messages, or subscribing to messages.
 
 As an example of this, let's create our own, silly subscriber:
 
