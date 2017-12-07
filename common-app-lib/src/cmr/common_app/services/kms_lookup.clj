@@ -141,6 +141,8 @@
   (get-in kms-index [:locations-index (str/upper-case location-string)]))
 
 (defn- remove-long-name-from-kms-index
+  "Removes long-name from the umm-c-index keys in order to prevent validation when
+   long-name is not present in the umm-c-keyword.  We only want to validate long-name if it is not nil."
   [kms-index keyword-scheme]
   (into {}
     (for [[k v] (get-in kms-index [:umm-c-index keyword-scheme])]
