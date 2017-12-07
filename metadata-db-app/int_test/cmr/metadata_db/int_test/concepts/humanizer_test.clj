@@ -1,11 +1,13 @@
 (ns cmr.metadata-db.int-test.concepts.humanizer-test
   "Contains integration tests for saving, deleting, force deleting and searching humanizers."
-  (:require [clojure.test :refer :all]
-            [clj-time.core :as t]
-            [cmr.common.util :refer (are3)]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
-            [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.util :refer (are3)]
+   [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,7 +16,8 @@
 
 (defmethod c-spec/gen-concept :humanizer
   [_ _ uniq-num attributes]
-  (util/humanizer-concept uniq-num attributes))
+  (concepts/create-concept :humanizer "CMR" uniq-num attributes))
+  ; (concept uniq-num attributes))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,12 +44,12 @@
             (is (= (set exp-errors) (set errors))))
 
           "humanizer associated with non system-level provider"
-          (assoc (util/humanizer-concept 2) :provider-id "REG_PROV")
+          (assoc (concepts/create-concept :humanizer "CMR" 2) :provider-id "REG_PROV")
           422
           ["Humanizer could not be associated with provider [REG_PROV]. Humanizer is system level entity."]
 
           "humanizer's native-id is not humanizer"
-          (assoc (util/humanizer-concept 2) :native-id "humanizer-1")
+          (assoc (concepts/create-concept :humanizer "CMR" 2) :native-id "humanizer-1")
           422
           ["Humanizer concept native-id can only be [humanizer], but was [humanizer-1]."])))
 
@@ -111,7 +114,7 @@
   (cd-spec/general-force-delete-test :humanizer ["CMR"]))
 
 (deftest find-humanizers
-  (let [humanizer (util/create-and-save-humanizer 5)]
+  (let [humanizer (concepts/create-and-save-concept :humanizer "CMR" 1 5)]
     (testing "find latest revsions"
       (are3 [humanizers params]
             (= (set humanizers)

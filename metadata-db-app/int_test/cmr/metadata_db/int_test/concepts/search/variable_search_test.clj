@@ -3,7 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}

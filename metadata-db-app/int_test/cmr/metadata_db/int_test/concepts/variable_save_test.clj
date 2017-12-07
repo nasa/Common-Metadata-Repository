@@ -5,7 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer (are3)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

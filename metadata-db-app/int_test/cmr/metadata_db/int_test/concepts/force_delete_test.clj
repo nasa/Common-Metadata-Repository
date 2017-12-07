@@ -5,7 +5,7 @@
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as cs-spec]
    [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.int-test.concepts.interface :as concepts]))
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures & one-off utility functions
