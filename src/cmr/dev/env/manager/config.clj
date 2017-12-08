@@ -88,3 +88,7 @@
 (defn elastic-search-opts
   [system]
   (active-config system config-key :elastic-search))
+
+(defn timer-delay
+  [system]
+  (active-config system config-key :timer :delay))
