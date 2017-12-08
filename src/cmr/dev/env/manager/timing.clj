@@ -38,15 +38,21 @@
   (into {} (map (partial get-passed times tracker) (keys times))))
 
 (defn update-interval
-  [times tracker time-key]
-  (if (pos? (get-interval times tracker time-key))
-    (assoc tracker time-key (System/currentTimeMillis))
-    tracker))
+  ([times tracker time-key]
+    (update-interval times tracker time-key (constantly true)))
+  ([times tracker time-key update-fn]
+    (if (pos? (get-interval times tracker time-key))
+      (do
+        (update-fn times tracker time-key)
+        (assoc tracker time-key (System/currentTimeMillis)))
+      tracker)))
 
 (defn update-tracker
-  [times tracker]
-  (loop [[time-key & time-keys] (keys times)
-         t tracker]
-    (if-not time-key
-      t
-      (recur time-keys (update-interval times t time-key)))))
+  ([times tracker]
+    (update-tracker times tracker (constantly true)))
+  ([times tracker update-fn]
+    (loop [[time-key & time-keys] (keys times)
+           t tracker]
+      (if-not time-key
+        t
+        (recur time-keys (update-interval times t time-key update-fn))))))
