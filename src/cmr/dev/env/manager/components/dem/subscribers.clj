@@ -29,7 +29,7 @@
       (log/debug "Stopped default-subscribers component.")
       (assoc component :subscribers nil))))
 
-(defn create-subscribers-component
+(defn create-component
   "The passed argument `subscribers` is a list of maps with each map having
   `:topic` and `:fn` keys with corresponding values."
   [subscribers]

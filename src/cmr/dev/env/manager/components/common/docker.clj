@@ -66,7 +66,7 @@
                       process-key)
           component)))))
 
-(defn create-runner-component
+(defn create-component
   ""
   [config-builder-fn process-keyword docker-opts-fn]
   (map->DockerRunner

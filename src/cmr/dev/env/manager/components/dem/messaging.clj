@@ -43,7 +43,7 @@
     ;;     track them all ...
     (assoc component :messenger nil)))
 
-(defn create-messaging-component
+(defn create-component
   ""
   []
   (map->Messaging {}))

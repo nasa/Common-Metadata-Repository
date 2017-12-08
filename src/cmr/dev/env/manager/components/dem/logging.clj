@@ -23,7 +23,7 @@
     (log/debug "Stopped logging component.")
     component))
 
-(defn create-logging-component
+(defn create-component
   ""
   []
   (->Logging))

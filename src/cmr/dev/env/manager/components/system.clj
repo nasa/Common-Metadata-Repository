@@ -45,28 +45,28 @@
 
 (defn cfg
   [builder]
-  {:config (config/create-config-component builder)})
+  {:config (config/create-component builder)})
 
 (def log
   {:logging (component/using
-             (logging/create-logging-component)
+             (logging/create-component)
              [:config])})
 
 (def msg
   {:messaging (component/using
-               (messaging/create-messaging-component)
+               (messaging/create-component)
                [:config :logging])})
 
 (def sub
   {:subscribers (component/using
-                 (subscribers/create-subscribers-component
+                 (subscribers/create-component
                   default-subscribers)
                  [:config :logging :messaging])})
 
 (defn tmr
   [builder]
   {:timer (component/using
-           (timer/create-timer-component
+           (timer/create-component
             builder
             timer-delay
             default-timer-subscribers)
@@ -79,7 +79,7 @@
 (defn elastic-search
   [builder]
   {:elastic-search (component/using
-                    (docker/create-runner-component
+                    (docker/create-component
                       builder
                       :elastic-search
                       elastic-search-opts)
@@ -95,7 +95,7 @@
 (defn mock-echo
   [builder]
   {:mock-echo (component/using
-               (process/create-runner-component builder :mock-echo)
+               (process/create-component builder :mock-echo)
                [:config :logging :messaging :subscribers])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

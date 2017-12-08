@@ -55,7 +55,7 @@
       (log/debug "Stopped timer component.")
       (assoc component :timer-subscribers nil))))
 
-(defn create-timer-component
+(defn create-component
   "The passed argument `subscribers` is a list of maps with each map having
   `:interval` and `:fn` keys with corresponding values."
   [config-builder-fn loop-interval subscribers]

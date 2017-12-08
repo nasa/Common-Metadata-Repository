@@ -20,7 +20,7 @@
     (log/debug "Stopped config component.")
     (assoc component :dem nil)))
 
-(defn create-config-component
+(defn create-component
   ""
   [config-builder-fn]
   (map->Config
