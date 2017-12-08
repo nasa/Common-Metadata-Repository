@@ -1,7 +1,8 @@
 (ns cmr.dev.env.manager.timing)
 
 (def default-intervals
-  {:min (* 60 1000)
+  {:30sec (* 30 1000)
+   :min (* 60 1000)
    :5min (* 5 60 1000)
    :15min (* 15 60 1000)
    :hr (* 60 60 1000)
@@ -60,15 +61,3 @@
       (if-not time-key
         t
         (recur time-keys (update-interval intervals t time-key update-fn))))))
-
-(defn timer
-  ([]
-    (timer default-intervals))
-  ([intervals]
-    (timer intervals (new-tracker intervals)))
-  ([intervals init-tracker]
-    (timer intervals init-tracker (constantly true)))
-  ([intervals init-tracker update-fn]
-    (async/go-loop [tracker init-tracker]
-      (async/<! (async/timeout 1000))
-      (recur (update-tracker intervals tracker update-fn)))))

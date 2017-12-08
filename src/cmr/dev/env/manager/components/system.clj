@@ -6,7 +6,8 @@
     [cmr.dev.env.manager.components.dem.logging :as logging]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
-    [cmr.dev.env.manager.config :refer [build elastic-search-opts]
+    [cmr.dev.env.manager.components.dem.timer :as timer]
+    [cmr.dev.env.manager.config :refer [build elastic-search-opts timer-delay]
                                 :rename {build build-config}]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
@@ -18,12 +19,14 @@
 (defn log-subscriber
   [logging-type]
   (case logging-type
-    :fatal (fn [content] (log/fatal content))
-    :error (fn [content] (log/error content))
-    :warn (fn [content] (log/warn content))
-    :info (fn [content] (log/info content))
-    :debug (fn [content] (log/debug content))
-    :trace (fn [content] (log/trace content))))
+    :fatal (fn [msg] (log/fatal msg))
+    :error (fn [msg] (log/error msg))
+    :warn (fn [msg] (log/warn msg))
+    :info (fn [msg] (log/info msg))
+    :debug (fn [msg] (log/debug msg))
+    :trace (fn [msg] (log/trace msg))
+    :timer (fn [msg] (log/debugf "The %s interval has passed."
+                                 (:interval msg)))))
 
 (def default-subscribers
   [{:topic :fatal :fn (log-subscriber :fatal)}
@@ -32,6 +35,9 @@
    {:topic :info :fn (log-subscriber :info)}
    {:topic :debug :fn (log-subscriber :debug)}
    {:topic :trace :fn (log-subscriber :trace)}])
+
+(def default-timer-subscribers
+  [{:interval :all :fn (log-subscriber :timer)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,6 +62,15 @@
                  (subscribers/create-subscribers-component
                   default-subscribers)
                  [:config :logging :messaging])})
+
+(defn tmr
+  [builder]
+  {:timer (component/using
+           (timer/create-timer-component
+            builder
+            timer-delay
+            default-timer-subscribers)
+           [:config :logging :messaging :subscribers])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -96,6 +111,7 @@
              log
              msg
              sub
+             (tmr config-builder)
              (elastic-search config-builder)
              (mock-echo config-builder)))))
 
