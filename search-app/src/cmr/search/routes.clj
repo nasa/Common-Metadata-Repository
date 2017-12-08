@@ -5,7 +5,7 @@
   routes that apply to both (e.g., robots.txt)."
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as string]
+   [clojure.string :as str]
    [cmr.acl.core :as acl]
    [cmr.common.api.errors :as errors]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
@@ -29,9 +29,9 @@
   [query-str]
   (when query-str
     (let [query-str (-> query-str
-                        (string/replace #"%5B" "[")
-                        (string/replace #"%5D" "]")
-                        (string/replace #"\[\]" ""))]
+                        (str/replace #"%5B" "[")
+                        (str/replace #"%5D" "]")
+                        (str/replace #"\[\]" ""))]
       (last (some #(re-find % query-str)
                   [#"(^|&)(.*?)=.*?&\2\["
                    #"(^|&)(.*?)\[.*?&\2="])))))
@@ -61,33 +61,6 @@
                 request
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
-
-(defn add-equal-sign-to-params-in-list
-  "Add = sign to each parameter in the param-list if it is a string
-   and it's not blank and it doesn't already contain = sign"
-  [param-list]
-  (map (fn [param]
-         (if (and (string? param)
-                  (not (string/blank? param))
-                  (not (string/includes? param "=")))
-           (str param "=")
-           param)) 
-       param-list))
-
-(defn parameter-without-equal-sign-handler
-  "Add = sign to each param in the query-string that doesn't contain the = sign so that it could make it
-   to the params without nil value and get validated."
-  [handler]
-  (fn [request]
-    (let [query-string (some-> (:query-string request)
-                               (string/split #"&")
-                               add-equal-sign-to-params-in-list)
-          query-string (if (sequential? query-string)
-                         (string/join "&" query-string)
-                         query-string)]
-      (handler (assoc
-                request
-                :query-string query-string)))))
 
 (defn default-error-format
   "Determine the format that errors should be returned in based on the request URI."
@@ -131,5 +104,4 @@
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
-      parameter-without-equal-sign-handler
       copy-of-body-handler))

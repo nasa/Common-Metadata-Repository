@@ -276,15 +276,6 @@
           m
           m))
 
-(defn select-blank-keys 
-  "Keep the keys with blank values in a map."
-  [m]
-  (select-keys m 
-    (for [[k v] m 
-          :when (or (nil? v)  
-                    (and (string? v) (string/blank? v)))] 
-      k)))
-
 (defn inflate-nil-keys
   "Occupy nil values with a given default value."
   [m filler]

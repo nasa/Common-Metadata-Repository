@@ -144,23 +144,6 @@
   [params]
   (or (:tag-data params) (:tag_data params)))
 
-(defn- validate-empty-parameters
-  "validate only the empty valued parameters"
-  [context concept-type params]
-  (let [empty-params
-         (some-> params
-                 u/select-blank-keys
-                 common-params/sanitize-without-removing-empty-params
-                 ;; empty equator crossing start date and end date are not useful
-                 ;; towards the final replacement of equator-crossing-date.
-                 (dissoc :equator-crossing-start-date :equator-crossing-end-date))]
-    (some->> empty-params
-             lp/replace-parameter-aliases
-             (lp/process-legacy-multi-params-conditions concept-type)
-             (lp/replace-science-keywords-or-option concept-type)
-             (psn/replace-provider-short-names context)
-             (pv/validate-empty-parameters concept-type))))
-
 (defn- create-and-validate-concepts-query-parameters
   ([context concept-type params]
    (->> params
@@ -168,7 +151,6 @@
         (create-and-validate-concepts-query-parameters
           context concept-type params)))
   ([context concept-type params tag-data]
-   (validate-empty-parameters context concept-type params)
    (->> params
         common-params/sanitize-params
         (add-tag-data-to-params tag-data)
