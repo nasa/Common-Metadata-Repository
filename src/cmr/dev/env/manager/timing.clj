@@ -60,3 +60,15 @@
       (if-not time-key
         t
         (recur time-keys (update-interval intervals t time-key update-fn))))))
+
+(defn timer
+  ([]
+    (timer default-intervals))
+  ([intervals]
+    (timer intervals (new-tracker intervals)))
+  ([intervals init-tracker]
+    (timer intervals init-tracker (constantly true)))
+  ([intervals init-tracker update-fn]
+    (async/go-loop [tracker init-tracker]
+      (async/<! (async/timeout 1000))
+      (recur (update-tracker intervals tracker update-fn)))))
