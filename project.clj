@@ -42,7 +42,9 @@
       ;; Support services
       :elastic-search
       ;; CMR services
-      :mock-echo}}
+      :mock-echo}
+    :timer {
+      :delay 1000}}
   :profiles {
     ;; Tasks
     :ubercompile {:aot :all}
