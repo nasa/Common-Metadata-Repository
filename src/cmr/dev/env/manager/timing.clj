@@ -1,58 +1,62 @@
 (ns cmr.dev.env.manager.timing)
 
-(def times
+(def default-intervals
   {:min (* 60 1000)
-   :5mins (* 5 60 1000)
-   :15mins (* 15 60 1000)
+   :5min (* 5 60 1000)
+   :15min (* 15 60 1000)
    :hr (* 60 60 1000)
-   :6hrs (* 6 60 60 1000)
-   :12hrs (* 12 60 60 1000)
+   :6hr (* 6 60 60 1000)
+   :12hr (* 12 60 60 1000)
    :day (* 24 60 60 1000)
    :week (* 7 24 60 60 1000)})
 
 (defn new-tracker
-  []
-  (zipmap (keys times)
-          (replicate (count times) (System/currentTimeMillis))))
+  [intervals]
+  (zipmap (keys intervals)
+          (replicate (count intervals) (System/currentTimeMillis))))
 
 (defn get-interval
-  [times tracker time-key]
+  [intervals tracker time-key]
   (- (System/currentTimeMillis)
      (time-key tracker)
-     (time-key times)))
+     (time-key intervals)))
 
-(defn get-interval-key-pair
-  [times tracker time-key]
-  [time-key (get-interval times tracker time-key)])
+(defn make-interval-kv
+  ([intervals tracker time-key]
+    (make-interval-kv intervals tracker identity time-key))
+  ([intervals tracker interval-fn time-key]
+    [time-key (interval-fn (get-interval intervals tracker time-key))]))
+
+(defn do-intervals
+  [intervals tracker interval-fn]
+  (->> (keys intervals)
+       (map (partial make-interval-kv intervals tracker interval-fn))
+       (into {})))
 
 (defn intervals
-  [times tracker]
-  (into {} (map (partial get-interval-key-pair times tracker) (keys times))))
-
-(defn get-passed
-  [times tracker time-key]
-  [time-key (pos? (get-interval times tracker time-key))])
+  [intervals tracker]
+  (do-intervals intervals tracker identity))
 
 (defn passed?
-  [times tracker]
-  (into {} (map (partial get-passed times tracker) (keys times))))
+  [intervals tracker]
+  (do-intervals intervals tracker pos?))
 
 (defn update-interval
-  ([times tracker time-key]
-    (update-interval times tracker time-key (constantly true)))
-  ([times tracker time-key update-fn]
-    (if (pos? (get-interval times tracker time-key))
+  ([intervals tracker time-key]
+    (update-interval intervals tracker time-key (constantly true)))
+  ([intervals tracker time-key update-fn]
+    (if (pos? (get-interval intervals tracker time-key))
       (do
-        (update-fn times tracker time-key)
+        (update-fn intervals tracker time-key)
         (assoc tracker time-key (System/currentTimeMillis)))
       tracker)))
 
 (defn update-tracker
-  ([times tracker]
-    (update-tracker times tracker (constantly true)))
-  ([times tracker update-fn]
-    (loop [[time-key & time-keys] (keys times)
+  ([intervals tracker]
+    (update-tracker intervals tracker (constantly true)))
+  ([intervals tracker update-fn]
+    (loop [[time-key & time-keys] (keys intervals)
            t tracker]
       (if-not time-key
         t
-        (recur time-keys (update-interval times t time-key update-fn))))))
+        (recur time-keys (update-interval intervals t time-key update-fn))))))
