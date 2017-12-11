@@ -2,6 +2,7 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as httpc]
+    [cmr.dev.env.manager.process.docker :as docker]
     [cmr.transmit.config :as transmit]
     [taoensso.timbre :as log]))
 
@@ -15,17 +16,29 @@
   (str (transmit/application-public-root-url service-key)
        "health"))
 
-(defn parse-response
+(defn http-parse-response
   [response]
   (log/trace "HTTP health check response:" response)
   {:status (:status response)
-   :value (json/parse-string (:body response) true)})
+   :details (json/parse-string (:body response) true)})
 
+;; XXX remove system args here once the health component is created
 (defn http
-  ([service-key]
-    (http service-key http-default-opts))
-  ([service-key opts]
-    (http service-key (http-health-resource service-key) opts))
-  ([_service-key health-check-url opts]
-    (parse-response
+  ([system service-key]
+    (http system service-key http-default-opts))
+  ([system service-key opts]
+    (http system service-key (http-health-resource service-key) opts))
+  ([_system _service-key health-check-url opts]
+    (http-parse-response
       (httpc/get health-check-url opts))))
+
+(defn docker-parse-response
+  [response]
+  {:status (keyword (:Status response))
+   :details response})
+
+;; XXX remove system args here once the health component is created
+(defn docker
+  [system service-key]
+  (docker-parse-response
+    (docker/state (docker/system->opts system service-key))))

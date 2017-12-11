@@ -16,6 +16,10 @@
   (log/trace "Running the `docker` cli with the args:" (vec args))
   (:out (apply process/exec (concat ["docker"] args))))
 
+(defn system->opts
+  [system service-key]
+  (get-in system [service-key :opts]))
+
 (defn- container-id-file?
   [opts]
   (fs/exists? (io/file (:container-id-file opts))))
