@@ -7,9 +7,11 @@
     [cmr.dev.env.manager.components.dem.timer :as timer]
     [cmr.dev.env.manager.components.docker :as docker]
     [cmr.dev.env.manager.components.process :as process]
-    [cmr.dev.env.manager.config :refer [build elastic-search-opts
-                                        elastic-search-head-opts timer-delay]
-                                :rename {build build-config}]
+    [cmr.dev.env.manager.config :refer [elastic-search-opts
+                                        elastic-search-head-opts
+                                        memoized-build
+                                        timer-delay]
+                                :rename {memoized-build build-config}]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 

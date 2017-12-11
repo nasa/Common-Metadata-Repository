@@ -8,6 +8,12 @@
 
 (def config-key :dem)
 
+(defn read-project-clj
+  []
+  (project/read))
+
+(def ^:private memoized-read-project-clj (memoize read-project-clj))
+
 (defn default-config
   []
   {config-key {
@@ -31,23 +37,27 @@
       :urs (transmit/urs-port)
       :virtual-product (transmit/virtual-product-port)}}})
 
+(def ^:private memoized-default-config (memoize default-config))
+
 (defn build
   ""
   ([]
     (build false))
   ([app-key]
-    (let [top-level (project/read)]
+    (let [top-level (memoized-read-project-clj)]
       (log/trace "top-level keys:" (keys top-level))
       (log/trace "top-level config:" top-level)
       (log/trace "dem config:" (config-key top-level))
       (when app-key
         (log/trace "app-level config:" (app-key top-level)))
       (util/deep-merge
-       (default-config)
+       (memoized-default-config)
        (util/deep-merge
         {config-key (config-key top-level)}
         (when app-key
          {config-key (get-in top-level [:profiles app-key config-key])}))))))
+
+(def memoized-build (memoize build))
 
 (defn active-config
   ""
