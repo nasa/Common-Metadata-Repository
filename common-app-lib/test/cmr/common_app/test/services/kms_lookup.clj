@@ -109,7 +109,13 @@
                        :subregion-2 "CHAD" :subregion-3 "AOUZOU"} "location1-uuid"
 
     "Lookup works without all matching fields present"
-    :spatial-keywords {:category "CONTINENT" :type "AFRICA"} "location2-uuid"))
+    :spatial-keywords {:category "CONTINENT" :type "AFRICA"} "location2-uuid")
+
+  ;; CMR-4400
+  (testing "Platform Shortname exists but Longname is nil"
+    (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
+           (kms-lookup/lookup-by-umm-c-keyword kms-index :platforms
+                                               {:short-name "Plat1" :long-name nil :type "Aircraft"})))))
 
 (deftest lookup-by-short-name-test
   (testing "Full keyword map is returned by short-name lookup"

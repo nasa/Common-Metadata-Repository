@@ -125,7 +125,11 @@
           "DMSP 5B/F3" "Defense Meteorological Satellite Program-F3" "foo"
 
           "Invalid combination"
-          "DMSP 5B/F3" "Airbus A340-600" "Earth Observation Satellites")
+          "DMSP 5B/F3" "Airbus A340-600" "Earth Observation Satellites"
+
+          ;;CMR-4400
+          "Long name is in Platform and nil in KMS"
+          "ALTUS" "foo" "Aircraft")
 
     (are2 [short-name long-name type]
           (assert-valid-keywords
@@ -136,7 +140,17 @@
           "A340-600" "Airbus A340-600" "Aircraft"
 
           "Case Insensitive"
-          "a340-600" "aiRBus A340-600" "aIrCrAfT"))
+          "a340-600" "aiRBus A340-600" "aIrCrAfT"
+
+          ;; Next three scenarios are for CMR-4400
+          "Long name is in Platform and KMS"
+          "B-200" "Beechcraft King Air B-200" "Aircraft"
+
+          "Long name is nil in Platform and nil in KMS"
+          "CESSNA 188" nil "Aircraft"
+
+          "Long name is nil in Platform and not nil in KMS"
+          "DHC-3" nil "Aircraft"))
 
   (testing "DataCenter keyword validation"
     (testing "Invalid short name"
