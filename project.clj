@@ -116,6 +116,8 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;   Profiles for Managed Aapplications/Services   ;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Note that CMR service port configuration is currently pulled in from
+    ;; the `cmr.transmit.config` ns; see `cmr.dev.env.manager.config`.
     :access-control {
       :main cmr.access-control.runner
       :source-paths [
