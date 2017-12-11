@@ -16,9 +16,17 @@
   (log/trace "Running the `docker` cli with the args:" (vec args))
   (:out (apply process/exec (concat ["docker"] args))))
 
+(defn- container-id-file?
+  [opts]
+  (fs/exists? (io/file (:container-id-file opts))))
+
 (defn read-container-id
   [opts]
-  (string/trim (slurp (:container-id-file opts))))
+  (when (container-id-file? opts)
+    (let [container-id-file (:container-id-file opts)
+          id (string/trim (slurp container-id-file))]
+      (when-not (empty? id)
+        id))))
 
 (defn pull
   [opts]
@@ -26,13 +34,16 @@
 
 (defn stop
   [opts]
-  (docker ["stop" (read-container-id opts)])
-  (io/delete-file (:container-id-file opts)))
+  (let [container-id-file (:container-id-file opts)
+        container-id (read-container-id opts)]
+    (when container-id
+      (docker ["stop" container-id]))
+    (when (container-id-file? opts)
+      (io/delete-file container-id-file))))
 
 (defn run
   [opts]
-  (when (fs/exists? (io/file (:container-id-file opts)))
-    (stop opts))
+  (stop opts)
   (docker (concat
            ["run" "-d"
             (str "--cidfile=" (:container-id-file opts))]
