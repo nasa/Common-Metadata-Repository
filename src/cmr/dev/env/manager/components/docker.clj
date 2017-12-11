@@ -36,9 +36,9 @@
           process-key (:process-keyword component)
           process-name (name process-key)]
       (log/infof "Starting %s docker component ..." process-name)
-      (log/debug "Component keys:" (keys component))
+      (log/trace "Component keys:" (keys component))
       (log/trace "Built configuration:" cfg)
-      (log/debug "Config:" (:config component))
+      (log/trace "Config:" (:config component))
       (log/debug "Docker options:" opts)
       (if (config/service-enabled? component process-key)
         (do
@@ -46,9 +46,9 @@
           (docker/run opts)
           (assoc component :enabled true :opts opts))
         (do
-          (log/debugf (str "Docker service %s not enabled; "
-                           "skipping component start-up.")
-                      process-key)
+          (log/warnf (str "Docker service %s not enabled; "
+                          "skipping component start-up.")
+                     process-key)
           (assoc component :enabled false)))))
 
   (stop [component]
@@ -61,9 +61,9 @@
           (docker/stop (:opts component))
           component)
         (do
-          (log/debugf (str "Docker service %s not enabled; "
-                           "skipping component shut-down.")
-                      process-key)
+          (log/warnf (str "Docker service %s not enabled; "
+                          "skipping component shut-down.")
+                     process-key)
           component)))))
 
 (defn create-component

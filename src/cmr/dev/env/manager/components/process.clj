@@ -58,9 +58,9 @@
           process-key (:process-keyword component)
           process-name (name process-key)]
       (log/infof "Starting %s component ..." process-name)
-      (log/debug "Component keys:" (keys component))
+      (log/trace "Component keys:" (keys component))
       (log/trace "Built configuration:" cfg)
-      (log/debug "Config:" (:config component))
+      (log/trace "Config:" (:config component))
       (if (config/service-enabled? component process-key)
         (let [process-data (spawn! component "lein" process-name)]
           (log/debugf "Started %s component." process-name)
