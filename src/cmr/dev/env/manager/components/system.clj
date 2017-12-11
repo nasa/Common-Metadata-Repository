@@ -100,14 +100,17 @@
 ;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def cubby
-  {:cubby :tbd})
-
 (defn mock-echo
   [builder]
   {:mock-echo (component/using
                (process/create-component builder :mock-echo)
                [:config :logging :messaging :subscribers])})
+
+(defn cubby
+  [builder]
+  {:cubby (component/using
+           (process/create-component builder :cubby)
+           [:config :logging :messaging :subscribers :mock-echo])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Intilizations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,7 +128,8 @@
              (tmr config-builder)
              (elastic-search config-builder)
              (elastic-search-head config-builder)
-             (mock-echo config-builder)))))
+             (mock-echo config-builder)
+             (cubby config-builder)))))
 
 (defn initialize-bare-bones
   ([]

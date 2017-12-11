@@ -52,6 +52,7 @@
       :elastic-search
       :elastic-search-head
       ;; CMR services
+      :cubby
       :mock-echo}
     :timer {
       :delay 1000}}
@@ -142,6 +143,12 @@
         "libs/oracle-lib/src"
         "libs/transmit-lib/src"]}
     :cubby {
+      :dependencies [
+        [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+        [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+        [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+        [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
       :main cmr.cubby.runner
       :source-paths [
         "apps/cubby-app/src"
@@ -243,4 +250,5 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "cubby" ["trampoline" "with-profile" "+dev,+cubby" "run"]
     "mock-echo" ["trampoline" "with-profile" "+dev,+mock-echo" "run"]})
