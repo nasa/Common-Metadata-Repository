@@ -7,7 +7,8 @@
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
     [cmr.dev.env.manager.components.dem.timer :as timer]
-    [cmr.dev.env.manager.config :refer [build elastic-search-opts timer-delay]
+    [cmr.dev.env.manager.config :refer [build elastic-search-opts
+                                        elastic-search-head-opts timer-delay]
                                 :rename {build build-config}]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
@@ -85,6 +86,16 @@
                       elastic-search-opts)
                     [:config :logging :messaging :subscribers])})
 
+(defn elastic-search-head
+  [builder]
+  {:elastic-search-head (component/using
+                         (docker/create-component
+                           builder
+                           :elastic-search-head
+                           elastic-search-head-opts)
+                         [:config :logging :messaging :subscribers
+                          :elastic-search])})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -113,6 +124,7 @@
              sub
              (tmr config-builder)
              (elastic-search config-builder)
+             (elastic-search-head config-builder)
              (mock-echo config-builder)))))
 
 (defn initialize-bare-bones

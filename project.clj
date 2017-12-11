@@ -40,12 +40,17 @@
     :elastic-search {
       ;:image-id "docker.elastic.co/elasticsearch/elasticsearch:6.0.1"
       :image-id "elasticsearch:1.6.2"
-      :ports ["9200:9200" "9300:9300"]
+      :ports ["127.0.0.1:9200:9200" "127.0.0.1:9300:9300"]
       :env ["discovery.type=single-node"]
       :container-id-file "/tmp/cmr-dem-elastic-container-id"}
+    :elastic-search-head {
+      :image-id "mobz/elasticsearch-head:1"
+      :ports ["127.0.0.1:9100:9100"]
+      :container-id-file "/tmp/cmr-dem-elastic-head-container-id"}
     :enabled-services #{
       ;; Support services
       :elastic-search
+      :elastic-search-head
       ;; CMR services
       :mock-echo}
     :timer {
