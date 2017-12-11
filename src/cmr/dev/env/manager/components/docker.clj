@@ -1,4 +1,4 @@
-(ns cmr.dev.env.manager.components.common.docker
+(ns cmr.dev.env.manager.components.docker
   (:require
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.config :as config]

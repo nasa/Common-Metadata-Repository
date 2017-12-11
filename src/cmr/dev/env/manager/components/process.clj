@@ -1,4 +1,4 @@
-(ns cmr.dev.env.manager.components.common.process
+(ns cmr.dev.env.manager.components.process
   (:require
     [clojure.core.async :as async]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
