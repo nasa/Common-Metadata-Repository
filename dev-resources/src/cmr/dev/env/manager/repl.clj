@@ -16,7 +16,7 @@
    [me.raynes.conch.low-level :as shell]
    [taoensso.timbre :as log]
    [trifl.fs :as fs]
-   [trifl.java :refer [show-methods]]))
+   [trifl.java :refer [add-shutdown-handler show-methods]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State & Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,6 +252,8 @@
   []
   (shutdown)
   (refresh :after 'cmr.dev.env.manager.repl/run))
+
+(add-shutdown-handler #'cmr.dev.env.manager.repl/shutdown)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
