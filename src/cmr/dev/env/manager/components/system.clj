@@ -28,7 +28,7 @@
     :info (fn [msg] (log/info msg))
     :debug (fn [msg] (log/debug msg))
     :trace (fn [msg] (log/trace msg))
-    :timer (fn [msg] (log/debugf "The %s interval has passed."
+    :timer (fn [msg] (log/tracef "The %s interval has passed."
                                  (:interval msg)))))
 
 (def default-subscribers

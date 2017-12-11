@@ -1,5 +1,6 @@
 (ns cmr.dev.env.manager.repl
   (:require
+   [clj-http.client :as httpc]
    [clojure.core.async :as async]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
@@ -11,7 +12,9 @@
    [cmr.dev.env.manager.components.process :as process]
    [cmr.dev.env.manager.components.system :as components]
    [cmr.dev.env.manager.config :as config]
+   [cmr.dev.env.manager.health :as health]
    [cmr.dev.env.manager.repl.transitions :as transitions]
+   [cmr.transmit.config :as transmit]
    [com.stuartsierra.component :as component]
    [me.raynes.conch.low-level :as shell]
    [taoensso.timbre :as log]
