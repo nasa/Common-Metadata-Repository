@@ -15,17 +15,28 @@
   :license {
     :name "Apache License 2.0"
     :url "https://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [org.clojure/clojure]
+  :exclusions [
+    commons-codec
+    instaparse
+    org.apache.httpcomponents/httpclient
+    org.apache.maven.wagon/wagon-provider-api
+    org.clojure/clojure
+    org.clojure/tools.macro]
   :dependencies [
     [cheshire "5.8.0"]
     [com.stuartsierra/component "0.3.2"]
+    [commons-codec "1.10"]
+    [instaparse "1.4.0"]
     [leiningen-core "2.7.1" :exclusions [
       commons-io
       org.apache.httpcomponents/httpcore
       org.slf4j/slf4j-nop]]
+    [org.apache.httpcomponents/httpclient "4.5"]
+    [org.apache.maven.wagon/wagon-provider-api "2.10"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/core.async "0.3.443" :exclusions [
-      org.clojure/tools.reader]]]
+      org.clojure/tools.reader]]
+    [org.clojure/tools.macro "0.1.5"]]
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;;   CMR D.E.M. specific configuration   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
