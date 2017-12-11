@@ -1,9 +1,3 @@
-(defn get-prompt
-  [ns]
-  (str "\u001B[35m[\u001B[34m"
-       ns
-       "\u001B[35m]\u001B[33m λ\u001B[m=> "))
-
 (defn print-welcome
   []
   (println (slurp "dev-resources/text/banner.txt"))
@@ -60,11 +54,6 @@
     ;; Tasks
     :ubercompile {:aot :all}
     ;; Environments
-    :custom-repl {
-      :repl-options {
-        ;:prompt ~get-prompt
-        ;:welcome ~(print-welcome)
-        }}
     :dev {
       :dependencies [
         [clojusc/ltest "0.3.0-SNAPSHOT"]
@@ -84,7 +73,14 @@
         "libs/common-lib/src"
         "libs/transmit-lib/src"]
       :repl-options {
-        :init-ns cmr.dev.env.manager.repl}}
+        :init-ns cmr.dev.env.manager.repl
+        :prompt #(str "\u001B[35m[\u001B[34m"
+                      %
+                      "\u001B[35m]\u001B[33m λ\u001B[m=> ")}}
+    :custom-repl {
+      :repl-options {
+        ;:welcome ~(print-welcome)
+        }}
     :test {
       :plugins [
         [lein-ancient "0.6.14"]
@@ -216,9 +212,8 @@
         "libs/umm-lib/src"]}}
   :aliases {
     ;; General aliases
-    "repl" ["with-profile" "+custom-repl" "do"
-      ["clean"]
-      ["repl"]]
+    "repl" ["trampoline" "repl"]
+    "unprotected-repl" ["repl"]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
     "lint" ["with-profile" "+test,+lint" "kibit"]
