@@ -55,13 +55,21 @@
   [service-key]
   (process/get-process system service-key))
 
-(defn get-process-id
+(defn get-process-cpu
   [service-key]
-  (process/get-process-id system service-key))
+  (process/get-process-cpu system service-key))
 
 (defn get-process-descendants
   [service-key]
   (process/get-process-descendants system service-key))
+
+(defn get-process-id
+  [service-key]
+  (process/get-process-id system service-key))
+
+(defn get-process-mem
+  [service-key]
+  (process/get-process-mem system service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Messaging Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -96,6 +104,18 @@
 (defn get-docker-container-state
   [service-key]
   (docker/get-container-state system service-key))
+
+(defn get-docker-container-pid
+  [service-key]
+  (docker/get-container-pid system service-key))
+
+(defn get-docker-container-cpu
+  [service-key]
+  (docker/get-container-cpu system service-key))
+
+(defn get-docker-container-mem
+  [service-key]
+  (docker/get-container-mem system service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Health checks   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
