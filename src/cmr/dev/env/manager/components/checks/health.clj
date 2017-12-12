@@ -5,6 +5,8 @@
     (cmr.dev.env.manager.components.docker DockerRunner)))
 
 (defprotocol Healthful
+  (get-summary [this]
+    "Provides high-level view on health of a component.")
   (get-status [this]
     "Performs a health check on a given component."))
 
