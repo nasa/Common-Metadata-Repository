@@ -128,10 +128,18 @@
   [this]
   (let [process-response nil
         http-response nil
-        ping-response nil]
+        ping-response nil
+        cpu (process/get-cpu (:process-data this))
+        mem (process/get-mem (:process-data this))]
     {:process nil
      :http nil
-     :ping nil}))
+     :ping nil
+     :cpu {
+       :status (if (>= cpu 50) :high :ok)
+       :details {:value cpu :type :percent}}
+     :mem {
+       :status (if (>= mem 20) :high :ok)
+       :details {:value mem :type :percent}}}))
 
 (def healthful-behaviour
   {:get-status get-status})
