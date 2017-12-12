@@ -5,7 +5,8 @@
     [clojure.string :as string]
     [cmr.dev.env.manager.process.core :as process]
     [taoensso.timbre :as log]
-    [trifl.fs :as fs]))
+    [trifl.fs :as fs]
+    [trifl.ps :as ps]))
 
 (defn- multi-flags
   [flag values]
@@ -65,3 +66,15 @@
 (defn pid
   [opts]
   (get-in (inspect opts) [:State :Pid]))
+
+(defn get-cpu-mem
+  [opts]
+  (ps/get-ps-info "%cpu,%mem" (pid opts)))
+
+(defn get-cpu
+  [opts]
+  (:%cpu (get-cpu-mem opts)))
+
+(defn get-mem
+  [opts]
+  (:%mem (get-cpu-mem opts)))
