@@ -51,3 +51,27 @@ Get a managed service's descendant processes:
 Note that when a service is stopped, this is what is used to identify all the
 related service processes that need to be terminated in addition to the main,
 parent process for the service.
+
+Get the current health of managed process:
+
+```clj
+[cmr.dev.env.manager.repl] λ=> (check-health :mock-echo)
+```
+
+```clj
+{:process :ok, :http :ok, :ping :ok, :cpu :ok, :mem :ok}
+```
+
+If you'd like to see the health check details:
+
+```clj
+[cmr.dev.env.manager.repl] λ=> (check-health-details :mock-echo)
+```
+
+```clj
+{:process {:status :ok},
+ :http {:status :ok},
+ :ping {:status :ok},
+ :cpu {:status :ok, :details {:value 1.4, :type :percent}},
+ :mem {:status :ok, :details {:value 1.7, :type :percent}}}
+```
