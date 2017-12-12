@@ -26,6 +26,18 @@
   [process-data]
   (process/get-descendants (get-pid process-data)))
 
+(defn get-cpu-mem
+  [process-data]
+  (process/get-ps-info "%cpu,%mem" (get-pid process-data)))
+
+(defn get-cpu
+  [process-data]
+  (:%cpu (get-cpu-mem process-data)))
+
+(defn get-mem
+  [process-data]
+  (:%mem (get-cpu-mem process-data)))
+
 (defn exec
   "Executes the command and args in a sub-process, returning the result. Will
   log an error in the event the process writes to `stderr`; will log the result
