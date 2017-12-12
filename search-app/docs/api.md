@@ -199,7 +199,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 
 The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
 
-`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page=3&page_size=5` would return the 11th item through the 15th item.
+`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page_num=3&page_size=5` would return the 11th item through the 15th item.
 
 `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
 
