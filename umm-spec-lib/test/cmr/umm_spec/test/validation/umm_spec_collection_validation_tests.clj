@@ -212,3 +212,20 @@
              {:path [:TilingIdentificationSystems 3 :Coordinate2],
               :errors
               ["Coordinate 2 minimum [50.0] must be less than or equal to the maximum [26.0]."]}]))))))
+
+(deftest collection-doi-format-validation
+  (let [doi1 (c/map->DoiType {:DOI "10.1451/DOIID"
+                              :test "Test"
+                              :Authority "Data Center or Creator of the DOI - not the DOI registration service"})
+        doi2 (c/map->DoiType {:DOI "incorrect doi"
+                              :Authority "Data Center or Creator of the DOI - not the DOI registration service"})]
+    
+    (testing "valid doi format"
+      (h/assert-warnings-valid (coll/map->UMM-C {:DOI doi1})))
+
+    (testing "invalid doi format"
+      (let [coll (coll/map->UMM-C {:DOI doi2})]
+        (h/assert-warnings-invalid
+          coll
+          [:DOI :DOI]
+          ["DOI [incorrect doi] is improperly formatted."])))))
