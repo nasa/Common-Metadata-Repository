@@ -51,7 +51,7 @@
     :enabled-services #{
       ;; Support services
       :elastic-search
-      :elastic-search-head
+      ;:elastic-search-head
       ;; CMR services
       :cubby
       :mock-echo}
