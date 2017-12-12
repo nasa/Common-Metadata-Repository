@@ -1,6 +1,7 @@
-(ns cmr.dev.env.manager.components.watcher
+(ns cmr.dev.env.manager.components.dem.watcher
   (:require
     [cmr.dev.env.manager.watcher.core :as watcher]
+    [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
