@@ -17,13 +17,21 @@
   [system service-key]
   (get-in system [service-key :process-data]))
 
-(defn get-process-id
+(defn get-process-cpu
   [system service-key]
-  (process/get-pid (get-process system service-key)))
+  (process/get-cpu (get-process system service-key)))
 
 (defn get-process-descendants
   [system service-key]
   (process/get-descendants (get-process system service-key)))
+
+(defn get-process-id
+  [system service-key]
+  (process/get-pid (get-process system service-key)))
+
+(defn get-process-mem
+  [system service-key]
+  (process/get-mem (get-process system service-key)))
 
 (defn stream->message
   [system topic ^java.io.InputStream input-stream]
