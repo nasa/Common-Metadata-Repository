@@ -37,6 +37,10 @@
   "Represents ADD_TO_EXISTING update type"
   "ADD_TO_EXISTING")
 
+(def clear-all-and-replace
+  "Represents CLEAR_ALL_AND_REPLACE update type"
+  "CLEAR_ALL_AND_REPLACE")
+
 (def find-and-replace
   "Represents FIND_AND_REPLACE update type"
   "FIND_AND_REPLACE")
@@ -77,11 +81,13 @@
             "] update field. "
             "It can only be used for the " data-centers " update field.")]))
     (when (and (not= add-to-existing update-type)
+               (not= clear-all-and-replace update-type)
                (sequential? update-value))
       (errors/throw-service-errors 
         :bad-request
         [(str "An update value must be a single object for the [" update-type "] update type. " 
-              "Arrays are only supported for the " add-to-existing " update type.")]))
+              "Arrays are only supported for the " add-to-existing " and " clear-all-and-replace
+              " update types.")]))
     (when (and (or (= find-and-replace update-type)
                    (= find-and-remove update-type)
                    (= find-and-update update-type))

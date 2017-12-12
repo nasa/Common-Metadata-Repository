@@ -107,7 +107,14 @@
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
-  (assoc-in umm update-field [update-value]))
+  (as-> umm umm
+        (if (sequential? update-value)
+          (assoc-in umm update-field update-value)
+          (assoc-in umm update-field [update-value]))
+        (util/update-in-each umm update-field util/remove-nil-keys)
+        ;; In order to do distinct, convert the list of models to a list of maps
+        (update-in umm update-field #(map (partial into {}) %))
+        (update-in umm update-field distinct)))
 
 (defmethod apply-umm-list-update :find-and-remove
   [update-type umm update-field update-value find-value]
