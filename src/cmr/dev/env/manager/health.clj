@@ -2,6 +2,7 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as httpc]
+    [clojure.java.io :as io]
     [cmr.dev.env.manager.process.docker :as docker]
     [cmr.transmit.config :as transmit]
     [taoensso.timbre :as log]))
@@ -31,3 +32,23 @@
   ([_system _service-key health-check-url opts]
     (http-parse-response
       (httpc/get health-check-url opts))))
+
+(defn tcp-ping
+  [host port]
+  (let [socket (new java.net.Socket host port)
+        writer (io/writer socket)]
+    (.append writer \0)
+    (.flush writer)
+    (.close socket)))
+
+(defn tcp
+  ([port]
+    (tcp "127.0.0.1" port))
+  ([host port]
+    (try
+      (do
+        (tcp-ping host port)
+        {:status :ok})
+      (catch Exception ex
+        {:status :error
+         :details (.getMessage ex)}))))
