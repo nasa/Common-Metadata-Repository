@@ -26,6 +26,18 @@
   [system service-key]
   (docker/state (get-opts system service-key)))
 
+(defn get-container-pid
+  [system service-key]
+  (docker/pid (get-opts system service-key)))
+
+(defn get-container-cpu
+  [system service-key]
+  (docker/get-cpu (get-opts system service-key)))
+
+(defn get-container-mem
+  [system service-key]
+  (docker/get-mem (get-opts system service-key)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
