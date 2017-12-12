@@ -27,8 +27,9 @@
 (defn doi-format-warning-validation
   "Validates that DOI is properly formatted."
   [field-path value]
-  (when-not (re-matches #"\d\d\.\d\d\d\d(\.\d+)*\/.+" value)
-    {field-path [(format "DOI [%s] is improperly formatted." value)]}))
+  (when (seq value)
+    (when-not (re-matches #"\d\d\.\d\d\d\d(\.\d+)*\/.+" value)
+      {field-path [(format "DOI [%s] is improperly formatted." value)]})))
 
 (def tiling-identification-system-coordinate-validations
   "Defines the tiling identification system coordinate validations for collections"
