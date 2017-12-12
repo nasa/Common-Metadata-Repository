@@ -4,6 +4,9 @@ Once the system is up and running, a developer may wish to examine the managed
 processes. This can be done with various utility functions provided in the
 default `repl` namespace.
 
+
+## Managed Process Data
+
 In particular, The D.E.M. REPL provides a means of examining the processes
 associated with a given CMR service. Note, though, that these functions
 are only useful in a running system (since it's only a running system that
@@ -38,6 +41,9 @@ Get a service's PID:
 28046
 ```
 
+
+## Associated Processes
+
 Get a managed service's descendant processes:
 
 ```clj
@@ -51,6 +57,9 @@ Get a managed service's descendant processes:
 Note that when a service is stopped, this is what is used to identify all the
 related service processes that need to be terminated in addition to the main,
 parent process for the service.
+
+
+## Health
 
 Get the current health of managed process:
 

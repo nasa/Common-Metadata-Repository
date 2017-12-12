@@ -3,6 +3,9 @@
 As with the process-based services, there are convenience functions provided
 for docker-based services.
 
+
+## Options and Metadata
+
 Get the configuration options that are passed to the docker functions for
 a given docker service:
 
@@ -24,6 +27,9 @@ Get the container id of a given running docker service:
 ```clj
 "54505c994f9fbb1d4f4f2c94a0ad2079255a59040bbe7417dc3f27cec01a8003"
 ```
+
+
+## State
 
 Get the container state of a given running docker service:
 
@@ -51,6 +57,9 @@ You may also call a function to return all of the docker container's data:
 ```
 
 We haven't listed the output, due to its length.
+
+
+## Health
 
 Get the current health of a docker container:
 
