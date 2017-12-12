@@ -109,10 +109,18 @@
 
 (defn get-status
   [this]
-  (let [response (docker/state (:opts this))]
+  (let [response (docker/state (:opts this))
+        cpu (docker/get-cpu (:opts this))
+        mem (docker/get-mem (:opts this))]
     {:docker {
        :status (keyword (:Status response))
-       :details response}}))
+       :details response}
+     :cpu {
+       :status (if (>= cpu 50) :high :ok)
+       :details {:value cpu :type :percent}}
+     :mem {
+       :status (if (>= mem 20) :high :ok)
+       :details {:value mem :type :percent}}}))
 
 (def healthful-behaviour
   {:get-status get-status})
