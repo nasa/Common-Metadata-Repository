@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
+   [cmr.dev.env.manager.components.checks.health :as health-check]
    [cmr.dev.env.manager.components.dem.messaging :as messaging]
    [cmr.dev.env.manager.components.docker :as docker]
    [cmr.dev.env.manager.components.process :as process]
@@ -95,6 +96,14 @@
 (defn get-docker-container-state
   [service-key]
   (docker/get-container-state system service-key))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Health checks   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn check-health
+  [service-key]
+  (health-check/get-status (service-key system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State data getters/setters   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
