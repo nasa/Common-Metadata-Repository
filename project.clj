@@ -229,7 +229,10 @@
     ;; General aliases
     "repl" ["trampoline" "repl"]
     "unprotected-repl" ["repl"]
-    "ubercompile" ["with-profile" "+ubercompile" "compile"]
+    "ubercompile" ["with-profile" "+ubercompile" "do"
+      ["clean"]
+      ["compile"]
+      ["clean"]]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
     "lint" ["with-profile" "+test,+lint" "kibit"]
     "docs" ["with-profile" "+docs" "do"
