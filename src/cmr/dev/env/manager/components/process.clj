@@ -111,3 +111,19 @@
   (map->ProcessRunner
     {:builder config-builder-fn
      :process-keyword process-keyword}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Health-check Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-status
+  [this]
+  (let [process-response nil
+        http-response nil
+        ping-response nil]
+    {:process nil
+     :http nil
+     :ping nil}))
+
+(def healthful-behaviour
+  {:get-status get-status})
