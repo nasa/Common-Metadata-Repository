@@ -109,12 +109,17 @@
 
 (defn get-status
   [this]
-  (let [response (docker/state (:opts this))
+  ;; XXX http and ping TBD
+  (let [state-response (docker/state (:opts this))
+        http-response nil
+        ping-response nil
         cpu (docker/get-cpu (:opts this))
         mem (docker/get-mem (:opts this))]
     {:docker {
-       :status (keyword (:Status response))
-       :details response}
+       :status (keyword (:Status state-response))
+       :details state-response}
+     :http {:status :ok}
+     :ping {:status :ok}
      :cpu {
        :status (if (>= cpu 50) :high :ok)
        :details {:value cpu :type :percent}}
@@ -122,5 +127,13 @@
        :status (if (>= mem 20) :high :ok)
        :details {:value mem :type :percent}}}))
 
+(defn get-summary
+  [this]
+  (->> this
+       (get-status)
+       (map (fn [[k v]] [k (:status v)]))
+       (into {})))
+
 (def healthful-behaviour
-  {:get-status get-status})
+  {:get-status get-status
+   :get-summary get-summary})

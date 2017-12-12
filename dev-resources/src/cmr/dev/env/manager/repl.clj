@@ -123,6 +123,10 @@
 
 (defn check-health
   [service-key]
+  (health-check/get-summary (service-key system)))
+
+(defn check-health-details
+  [service-key]
   (health-check/get-status (service-key system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

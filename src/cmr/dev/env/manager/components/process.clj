@@ -126,14 +126,15 @@
 
 (defn get-status
   [this]
+  ;; XXX process, http, and ping TBD
   (let [process-response nil
         http-response nil
         ping-response nil
         cpu (process/get-cpu (:process-data this))
         mem (process/get-mem (:process-data this))]
-    {:process nil
-     :http nil
-     :ping nil
+    {:process {:status :ok}
+     :http {:status :ok}
+     :ping {:status :ok}
      :cpu {
        :status (if (>= cpu 50) :high :ok)
        :details {:value cpu :type :percent}}
@@ -141,5 +142,13 @@
        :status (if (>= mem 20) :high :ok)
        :details {:value mem :type :percent}}}))
 
+(defn get-summary
+  [this]
+  (->> this
+       (get-status)
+       (map (fn [[k v]] [k (:status v)]))
+       (into {})))
+
 (def healthful-behaviour
-  {:get-status get-status})
+  {:get-status get-status
+   :get-summary get-summary})
