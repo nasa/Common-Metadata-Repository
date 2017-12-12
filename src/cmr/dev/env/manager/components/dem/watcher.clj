@@ -14,7 +14,9 @@
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord Watcher [])
+(defrecord Watcher
+  [builder
+   watcher-subscribers])
 
 (defn start
   [this]
@@ -38,8 +40,11 @@
 
 (defn create-component
   ""
-  []
-  (->Watcher))
+  [config-builder-fn
+   subscribers]
+  (map->Watcher
+    {:builder config-builder-fn
+     :watcher-subscribers subscribers}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Health-check Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

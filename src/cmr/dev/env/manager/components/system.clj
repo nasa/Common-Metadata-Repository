@@ -5,6 +5,7 @@
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
     [cmr.dev.env.manager.components.dem.timer :as timer]
+    [cmr.dev.env.manager.components.dem.watcher :as watcher]
     [cmr.dev.env.manager.components.docker :as docker]
     [cmr.dev.env.manager.components.process :as process]
     [cmr.dev.env.manager.config :refer [elastic-search-opts
@@ -29,7 +30,8 @@
     :debug (fn [msg] (log/debug msg))
     :trace (fn [msg] (log/trace msg))
     :timer (fn [msg] (log/tracef "The %s interval has passed."
-                                 (:interval msg)))))
+                                 (:interval msg)))
+    :fs (fn [msg] (log/debug "File system got watcher event:" msg))))
 
 (def default-subscribers
   [{:topic :fatal :fn (log-subscriber :fatal)}
@@ -41,6 +43,9 @@
 
 (def default-timer-subscribers
   [{:interval :all :fn (log-subscriber :timer)}])
+
+(def default-watcher-subscribers
+  [{:event :all :fn (log-subscriber :fs)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,6 +70,14 @@
                  (subscribers/create-component
                   default-subscribers)
                  [:config :logging :messaging])})
+
+(defn watch
+  [builder]
+  {:watcher (component/using
+             (watcher/create-component
+              builder
+              default-watcher-subscribers)
+             [:config :logging :messaging :subscribers])})
 
 (defn tmr
   [builder]
@@ -127,6 +140,7 @@
              log
              msg
              sub
+             (watch config-builder)
              (tmr config-builder)
              (elastic-search config-builder)
              (elastic-search-head config-builder)
