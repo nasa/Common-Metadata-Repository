@@ -94,20 +94,30 @@
   (fn [update-type umm update-field update-value find-value]
     update-type))
 
+(defn- remove-duplicates
+  "Remove duplicates in update-field, whoes value is [map(s)] for bulk updates."
+  [umm update-field]
+  (-> umm 
+      (util/update-in-each update-field util/remove-nil-keys)
+      ;; In order to do distinct, convert the list of models to a list of maps
+      (update-in update-field #(map (partial into {}) %))
+      (update-in update-field distinct)))
+
 (defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
   (as-> umm umm
         (if (sequential? update-value)
           (update-in umm update-field #(concat % update-value))
           (update-in umm update-field #(conj % update-value)))
-        (util/update-in-each umm update-field util/remove-nil-keys)
-        ;; In order to do distinct, convert the list of models to a list of maps
-        (update-in umm update-field #(map (partial into {}) %))
-        (update-in umm update-field distinct)))
+        (remove-duplicates umm update-field)))
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
-  (assoc-in umm update-field [update-value]))
+  (as-> umm umm
+        (if (sequential? update-value)
+          (assoc-in umm update-field update-value)
+          (assoc-in umm update-field [update-value]))
+        (remove-duplicates umm update-field)))
 
 (defmethod apply-umm-list-update :find-and-remove
   [update-type umm update-field update-value find-value]

@@ -134,7 +134,7 @@
                             :Term "ENVIRONMENTAL IMPACTS"
                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
-            ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING update type."]
+            ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING and CLEAR_ALL_AND_REPLACE update types."]
 
             "FIND_AND_UPDATE_HOME_PAGE_URL can not be used for update-field not being DATA_CENTERS"
             {:concept-ids ["C1", "C2", "C3"]

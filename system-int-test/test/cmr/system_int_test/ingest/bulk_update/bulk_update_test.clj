@@ -332,6 +332,52 @@
                    :Term "ENVIRONMENTAL IMPACTS2"
                    :Topic "HUMAN DIMENSIONS2"}]))))))
 
+(deftest bulk-update-clear-all-and-replace-with-multiple-science-keywords
+  ;; This test shows that update-value could be an array of objects when doing CLEAR_ALL_AND_REPLACE.
+  ;; Ingest a collection in each format with science keywords to update
+  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "CLEAR_ALL_AND_REPLACE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value [{:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}
+                                         {:Category "EARTH SCIENCE2"
+                                          :Topic "HUMAN DIMENSIONS2"
+                                          :Term "ENVIRONMENTAL IMPACTS2"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION2"}
+                                         {:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 200 (:status response)))
+         ;; Wait for queueing/indexing to catch up
+         (index/wait-until-indexed)
+         (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+           (is (= "COMPLETE" (:task-status collection-response))))
+
+         ;; Check that each concept was updated
+         (doseq [concept-id concept-ids
+                 :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                  {:concept-id concept-id})
+                                   :results
+                                   :items
+                                   first)]]
+          (is (= (:ScienceKeywords (:umm concept))
+                 [{:VariableLevel1 "HEAVY METALS CONCENTRATION1"
+                   :Category "EARTH SCIENCE1"
+                   :Term "ENVIRONMENTAL IMPACTS1"
+                   :Topic "HUMAN DIMENSIONS1"}
+                  {:VariableLevel1 "HEAVY METALS CONCENTRATION2"
+                   :Category "EARTH SCIENCE2"
+                   :Term "ENVIRONMENTAL IMPACTS2"
+                   :Topic "HUMAN DIMENSIONS2"}]))))))
+
 (deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
