@@ -61,3 +61,7 @@
 (defn state
   [opts]
   (:State (inspect opts)))
+
+(defn pid
+  [opts]
+  (get-in (inspect opts) [:State :Pid]))
