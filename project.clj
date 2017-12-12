@@ -21,6 +21,7 @@
     [clj-http "3.7.0"]
     [com.stuartsierra/component "0.3.2"]
     [commons-codec "1.11"]
+    [hawk "0.2.11"]
     [instaparse "1.4.8"]
     [leiningen-core "2.7.1" :exclusions [
       commons-io
