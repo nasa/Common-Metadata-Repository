@@ -31,14 +31,3 @@
   ([_system _service-key health-check-url opts]
     (http-parse-response
       (httpc/get health-check-url opts))))
-
-(defn docker-parse-response
-  [response]
-  {:status (keyword (:Status response))
-   :details response})
-
-;; XXX remove system args here once the health component is created
-(defn docker
-  [system service-key]
-  (docker-parse-response
-    (docker/state (docker/system->opts system service-key))))
