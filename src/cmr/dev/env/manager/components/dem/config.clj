@@ -8,8 +8,53 @@
 ;;;   Process Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; XXX move system-related code from `cmr.dev.env.manager` to here ...
-;;     see issue https://github.com/cmr-exchange/dev-env-manager/issues/28
+(defn active-config
+  ""
+  [system & args]
+  (let [base-keys [:config config/config-key]]
+    (if-not (seq args)
+      (get-in system base-keys)
+      (get-in system (concat base-keys args)))))
+
+(defn app-dir
+  [system]
+  (active-config system :app-dir))
+
+(defn logging
+  [system]
+  (active-config system :logging))
+
+(defn log-level
+  [system]
+  (active-config system :logging :level))
+
+(defn log-nss
+  [system]
+  (active-config system :logging :nss))
+
+(defn enabled-services
+  [system]
+  (active-config system :enabled-services))
+
+(defn service-enabled?
+  [system service-key]
+  (contains? (enabled-services system) service-key))
+
+(defn messaging-type
+  [system]
+  (active-config system :messaging :type))
+
+(defn elastic-search-opts
+  [system]
+  (active-config system :elastic-search))
+
+(defn elastic-search-head-opts
+  [system]
+  (active-config system :elastic-search-head))
+
+(defn timer-delay
+  [system]
+  (active-config system :timer :delay))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

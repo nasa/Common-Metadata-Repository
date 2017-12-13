@@ -2,9 +2,9 @@
   "System component for setting up a timing component."
   (:require
     [clojure.core.async :as async]
+    [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.messaging :as messaging-component]
     [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
-    [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.messaging.core :as messaging]
     [cmr.dev.env.manager.timing :as timing]
     [com.stuartsierra.component :as component]

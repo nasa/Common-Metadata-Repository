@@ -8,10 +8,7 @@
     [cmr.dev.env.manager.components.dem.watcher :as watcher]
     [cmr.dev.env.manager.components.docker :as docker]
     [cmr.dev.env.manager.components.process :as process]
-    [cmr.dev.env.manager.config :refer [elastic-search-opts
-                                        elastic-search-head-opts
-                                        memoized-build
-                                        timer-delay]
+    [cmr.dev.env.manager.config :refer [memoized-build]
                                 :rename {memoized-build build-config}]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
@@ -81,7 +78,7 @@
   {:timer (component/using
            (timer/create-component
             builder
-            timer-delay
+            config/timer-delay
             default-timer-subscribers)
            [:config :logging :messaging :subscribers])})
 
@@ -95,7 +92,7 @@
                     (docker/create-component
                       builder
                       :elastic-search
-                      elastic-search-opts)
+                      config/elastic-search-opts)
                     [:config :logging :messaging :subscribers])})
 
 (defn elastic-search-head
@@ -104,7 +101,7 @@
                          (docker/create-component
                            builder
                            :elastic-search-head
-                           elastic-search-head-opts)
+                           config/elastic-search-head-opts)
                          [:config :logging :messaging :subscribers
                           :elastic-search])})
 

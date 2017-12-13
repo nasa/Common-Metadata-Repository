@@ -1,7 +1,7 @@
 (ns cmr.dev.env.manager.components.docker
   (:require
+    [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
-    [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.process.docker :as docker]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))

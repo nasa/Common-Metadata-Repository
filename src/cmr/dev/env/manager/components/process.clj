@@ -1,8 +1,8 @@
 (ns cmr.dev.env.manager.components.process
   (:require
     [clojure.core.async :as async]
+    [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.components.dem.messaging :as messaging]
-    [cmr.dev.env.manager.config :as config]
     [cmr.dev.env.manager.process.core :as process]
     [cmr.dev.env.manager.process.util :as util]
     [com.stuartsierra.component :as component]

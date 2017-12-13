@@ -1,7 +1,7 @@
 (ns cmr.dev.env.manager.components.dem.logging
   (:require
     [clojusc.twig :as logger]
-    [cmr.dev.env.manager.config :as config]
+    [cmr.dev.env.manager.components.dem.config :as config]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
