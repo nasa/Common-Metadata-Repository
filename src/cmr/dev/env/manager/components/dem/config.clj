@@ -16,13 +16,17 @@
       (get-in system base-keys)
       (get-in system (concat base-keys args)))))
 
-(defn app-dir
+(defn elastic-search-opts
   [system]
-  (active-config system :app-dir))
+  (active-config system :elastic-search))
 
-(defn logging
+(defn elastic-search-head-opts
   [system]
-  (active-config system :logging))
+  (active-config system :elastic-search-head))
+
+(defn enabled-services
+  [system]
+  (active-config system :enabled-services))
 
 (defn log-level
   [system]
@@ -32,25 +36,17 @@
   [system]
   (active-config system :logging :nss))
 
-(defn enabled-services
+(defn logging
   [system]
-  (active-config system :enabled-services))
-
-(defn service-enabled?
-  [system service-key]
-  (contains? (enabled-services system) service-key))
+  (active-config system :logging))
 
 (defn messaging-type
   [system]
   (active-config system :messaging :type))
 
-(defn elastic-search-opts
-  [system]
-  (active-config system :elastic-search))
-
-(defn elastic-search-head-opts
-  [system]
-  (active-config system :elastic-search-head))
+(defn service-enabled?
+  [system service-key]
+  (contains? (enabled-services system) service-key))
 
 (defn timer-delay
   [system]
