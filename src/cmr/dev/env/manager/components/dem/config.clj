@@ -48,6 +48,14 @@
   [system service-key]
   (contains? (enabled-services system) service-key))
 
+(defn service-ports
+  [system]
+  (active-config system :ports))
+
+(defn service-port
+  [system service-key]
+  (service-key (active-config system :ports)))
+
 (defn timer-delay
   [system]
   (active-config system :timer :delay))
