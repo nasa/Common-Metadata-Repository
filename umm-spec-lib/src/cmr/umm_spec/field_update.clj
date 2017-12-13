@@ -132,15 +132,19 @@
 
 (defmethod apply-umm-list-update :find-and-replace
   [update-type umm update-field update-value find-value]
-  (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
-      ;; For each entry in update-field, if we find it using the find params,
-      ;; completely replace with update value
-      (update-in umm update-field #(distinct (map (fn [x]
-                                                    (if (value-matches? find-value x)
-                                                      update-value
-                                                      x))
-                                                  %))))
+  (if (seq (get-in umm update-field)) 
+    (let [update-value (if (sequential? update-value)
+                         (map #(util/remove-nil-keys %) update-value)
+                         (util/remove-nil-keys update-value))
+          ;; For each entry in update-field, if we find it using the find params,
+          ;; completely replace with update value
+          updated-umm (update-in umm update-field #(flatten 
+                                                     (map (fn [x]
+                                                            (if (value-matches? find-value x)
+                                                              update-value
+                                                              x))
+                                                           %)))]
+       (remove-duplicates updated-umm update-field))
     umm))
 
 (defmethod apply-umm-list-update :find-and-update

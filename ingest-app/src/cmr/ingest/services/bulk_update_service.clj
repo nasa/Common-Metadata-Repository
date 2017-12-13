@@ -82,12 +82,13 @@
             "It can only be used for the " data-centers " update field.")]))
     (when (and (not= add-to-existing update-type)
                (not= clear-all-and-replace update-type)
+               (not= find-and-replace update-type)
                (sequential? update-value))
       (errors/throw-service-errors 
         :bad-request
         [(str "An update value must be a single object for the [" update-type "] update type. " 
-              "Arrays are only supported for the " add-to-existing " and " clear-all-and-replace
-              " update types.")]))
+              "Arrays are only supported for the " add-to-existing ", " clear-all-and-replace
+              " and " find-and-replace " update types.")]))
     (when (and (or (= find-and-replace update-type)
                    (= find-and-remove update-type)
                    (= find-and-update update-type))

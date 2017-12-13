@@ -127,14 +127,14 @@
             {:concept-ids ["C1", "C2", "C3"]
              :name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
-             :update-type "FIND_AND_REPLACE"
+             :update-type "FIND_AND_UPDATE"
              :find-value {:Category "EARTH SCIENCE"}
              :update-value [{:Category "EARTH SCIENCE"
                             :Topic "HUMAN DIMENSIONS"
                             :Term "ENVIRONMENTAL IMPACTS"
                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
-            ["An update value must be a single object for the [FIND_AND_REPLACE] update type. Arrays are only supported for the ADD_TO_EXISTING and CLEAR_ALL_AND_REPLACE update types."]
+            ["An update value must be a single object for the [FIND_AND_UPDATE] update type. Arrays are only supported for the ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE and FIND_AND_REPLACE update types."]
 
             "FIND_AND_UPDATE_HOME_PAGE_URL can not be used for update-field not being DATA_CENTERS"
             {:concept-ids ["C1", "C2", "C3"]
