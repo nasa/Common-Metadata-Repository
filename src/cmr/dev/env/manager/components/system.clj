@@ -20,32 +20,29 @@
 ;;;   Utility Constants, Data Structures, & Functions   ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn log-subscriber
-  [logging-type]
-  (case logging-type
-    :fatal (fn [msg] (log/fatal msg))
-    :error (fn [msg] (log/error msg))
-    :warn (fn [msg] (log/warn msg))
-    :info (fn [msg] (log/info msg))
-    :debug (fn [msg] (log/debug msg))
-    :trace (fn [msg] (log/trace msg))
-    :timer (fn [msg] (log/tracef "The %s interval has passed."
-                                 (:interval msg)))
-    :fs (fn [msg] (log/debug "File system got watcher event:" msg))))
+(def log-subscriber
+  {:fatal (fn [msg] (log/fatal msg))
+   :error (fn [msg] (log/error msg))
+   :warn (fn [msg] (log/warn msg))
+   :info (fn [msg] (log/info msg))
+   :debug (fn [msg] (log/debug msg))
+   :trace (fn [msg] (log/trace msg))
+   :timer (fn [msg] (log/tracef "The %s interval has passed." (:interval msg)))
+   :file-event (fn [msg] (log/debug "File system got watcher event:" msg))})
 
 (def default-subscribers
-  [{:topic :fatal :fn (log-subscriber :fatal)}
-   {:topic :error :fn (log-subscriber :error)}
-   {:topic :warn :fn (log-subscriber :warn)}
-   {:topic :info :fn (log-subscriber :info)}
-   {:topic :debug :fn (log-subscriber :debug)}
-   {:topic :trace :fn (log-subscriber :trace)}])
+  [{:topic :fatal :fn (:fatal log-subscriber)}
+   {:topic :error :fn (:error log-subscriber)}
+   {:topic :warn :fn (:warn log-subscriber)}
+   {:topic :info :fn (:info log-subscriber)}
+   {:topic :debug :fn (:debug log-subscriber)}
+   {:topic :trace :fn (:trace log-subscriber)}])
 
 (def default-timer-subscribers
-  [{:interval :all :fn (log-subscriber :timer)}])
+  [{:interval :all :fn (:timer log-subscriber)}])
 
 (def default-watcher-subscribers
-  [{:event :all :fn (log-subscriber :fs)}])
+  [{:topic :file-event :fn (:file-event log-subscriber)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
