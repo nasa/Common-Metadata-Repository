@@ -24,6 +24,14 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(defn- get-granule-parent-collection-id
+  "Returns the concept id of the parent collection of the given granule revision."
+  ([gran]
+   (get-granule-parent-collection-id (:concept-id gran) (:revision-id gran)))
+  ([concept-id revision-id]
+   (get-in (mdb/get-concept concept-id revision-id)
+           [:extra-fields :parent-collection-id])))
+
 ;; Tests that a granule referencing a collection that had multiple concept ids (the native id changed
 ;; but the shortname or dataset id did not) will reference the correct collection.
 ;; See CMR-1104
@@ -48,34 +56,53 @@
     (index/wait-until-indexed)
     ;; Make sure the granules reference the correct collection
     (is (= (:concept-id new-coll)
-           (get-in (mdb/get-concept (:concept-id gran1) (:revision-id gran1))
-                   [:extra-fields :parent-collection-id])))
+           (get-granule-parent-collection-id gran1)))
 
     (is (= (:concept-id new-coll)
-           (get-in (mdb/get-concept (:concept-id gran2) (:revision-id gran2))
-                   [:extra-fields :parent-collection-id])))
+           (get-granule-parent-collection-id gran2)))
     (is (= (:concept-id new-coll)
-           (get-in (mdb/get-concept (:concept-id gran3) (:revision-id gran3))
-                   [:extra-fields :parent-collection-id])))))
+           (get-granule-parent-collection-id gran3)))))
 
 (deftest granule-change-parent-collection-test
   (testing "Cannot change granule's parent collection"
-    (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
-                                                                              :ShortName "short1"
-                                                                              :Version "V1"
-                                                                              :native-id "native1"}))
-          coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll2"
-                                                                              :ShortName "short2"
-                                                                              :Version "V2"
-                                                                              :native-id "native2"}))
-          _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "gran1"}))
-          {:keys [status errors]} (d/ingest "PROV1"
-                                            (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran1"})
-                                            {:allow-failure? true})]
+    (let [coll1 (d/ingest-umm-spec-collection
+                 "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
+                                                 :ShortName "short1"
+                                                 :Version "V1"
+                                                 :native-id "native1"}))
+          coll2 (d/ingest-umm-spec-collection
+                 "PROV1" (data-umm-c/collection {:EntryTitle "coll2"
+                                                 :ShortName "short2"
+                                                 :Version "V2"
+                                                 :native-id "native2"}))
+          gran1 (d/item->concept
+                 (dg/granule-with-umm-spec-collection
+                  coll1
+                  (:concept-id coll1)
+                  {:granule-ur "gran1"
+                   :native-id "gran-native1-1"}))
+          gran2 (d/item->concept
+                 (dg/granule-with-umm-spec-collection
+                  coll2
+                  (:concept-id coll2)
+                  {:granule-ur "gran1"
+                   :native-id "gran-native1-1"}))
+          {:keys [concept-id revision-id]} (ingest/ingest-concept gran1)
+          {:keys [status errors]} (ingest/ingest-concept gran2 {:allow-failure? true})]
       (is (= 422 status))
       (is (= [(format "Granule's parent collection cannot be changed, was [%s], now [%s]."
                       (:concept-id coll1) (:concept-id coll2))]
-             errors)))))
+             errors))
+      (testing "Ingest granule with the same native id as a deleted granule in another collection is OK"
+        (ingest/delete-concept gran1)
+        (let [{:keys [status]} (ingest/ingest-concept gran2 {:allow-failure? true})]
+          (is (= 200 status))
+          ;; revision 1 granule's parent collection is coll1
+          (is (= (:concept-id coll1)
+                 (get-granule-parent-collection-id concept-id revision-id)))
+          ;; revision 3 granule's parent collection is coll2
+          (is (= (:concept-id coll2)
+                 (get-granule-parent-collection-id concept-id (+ 2 revision-id)))))))))
 
 ;; Verify that granule indexing is not being changed too quickly.
 ;; Changes being made to Granule indexed fields should be implemented across two
