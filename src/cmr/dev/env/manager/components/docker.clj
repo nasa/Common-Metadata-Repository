@@ -127,6 +127,10 @@
        :status (if (>= mem 20) :high :ok)
        :details {:value mem :type :percent}}}))
 
+;; XXX move this into ...
+;;     * Option 1: cmr.dev.env.manager.components.common
+;;     * Option 2: cmr.dev.env.manager.components.checks.common
+;;     see ticket https://github.com/cmr-exchange/dev-env-manager/issues/36
 (defn get-summary
   [this]
   (->> this
