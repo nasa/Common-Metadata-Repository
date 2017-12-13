@@ -243,7 +243,6 @@
      :EntryTitle (str "Entry Title " index)}
     attribs)))
 
-
 (defn collection
   "Returns a UmmCollection from the given attribute map."
   ([]

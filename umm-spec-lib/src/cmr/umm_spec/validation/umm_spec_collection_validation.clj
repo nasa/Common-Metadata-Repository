@@ -24,6 +24,13 @@
       {field-path [(format "%%s minimum [%s] must be less than or equal to the maximum [%s]."
                            (str MinimumValue) (str MaximumValue))]})))
 
+(defn doi-format-warning-validation
+  "Validates that DOI is properly formatted."
+  [field-path value]
+  (when (seq value)
+    (when-not (re-matches #"\d\d\.\d\d\d\d(\.\d+)*\/.+" value)
+      {field-path [(format "DOI [%s] is improperly formatted." value)]})))
+
 (def tiling-identification-system-coordinate-validations
   "Defines the tiling identification system coordinate validations for collections"
   {:Coordinate1 coordinate-validator
@@ -63,4 +70,5 @@
   :ContactPersons (v/every url/contact-persons-groups-contact-information-validations)
   :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)
   :DataDates data-date/data-dates-warning-validation
-  :MetadataDates data-date/data-dates-warning-validation})
+  :MetadataDates data-date/data-dates-warning-validation
+  :DOI {:DOI doi-format-warning-validation}})
