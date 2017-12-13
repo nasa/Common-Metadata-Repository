@@ -202,15 +202,16 @@
   (get-granule-concept-ids
    [this provider native-id]
    (let [provider-id (:provider-id provider)
-         concept-ids-fn (fn [gran]
-                          [(:concept-id gran) (get-in gran [:extra-fields :parent-collection-id])])]
-     (->> @concepts-atom
-          (filter (fn [c]
-                    (and (= :granule (:concept-type c))
-                         (= provider-id (:provider-id c))
-                         (= native-id (:native-id c)))))
-          first
-          concept-ids-fn)))
+         matched-gran (->> @concepts-atom
+                           (filter (fn [c]
+                                     (and (= :granule (:concept-type c))
+                                          (= provider-id (:provider-id c))
+                                          (= native-id (:native-id c)))))
+                           (sort-by :revisoin-id)
+                           last)
+         {:keys [concept-id deleted]} matched-gran
+         parent-collection-id (get-in matched-gran [:extra-fields :parent-collection-id])]
+     [concept-id parent-collection-id deleted]))
 
   (get-concept
    [db concept-type provider concept-id]
