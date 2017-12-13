@@ -6,24 +6,31 @@
     [leiningen.core.project :as project]
     [taoensso.timbre :as log]))
 
-(def config-key :dem)
+(def internal-cfg-key :dem)
+(def external-cfg-key :cmr)
 
 (defn read-project-clj
   []
   (project/read))
 
-(def ^:private memoized-read-project-clj (memoize read-project-clj))
+(def memoized-read-project-clj (memoize read-project-clj))
 
 (defn default-config
   []
-  {config-key {
+  {internal-cfg-key {
     :elastic-search {}
     :enabled-services #{}
     :logging {
       :level :info
       :nss '[cmr]}
     :messaging {
-      :type :pubsub}
+      :type :pubsub}}})
+
+(def memoized-default-config (memoize default-config))
+
+(defn default-cmr-config
+  []
+  {external-cfg-key {
     :ports {
       :access-control (transmit/access-control-port)
       :bootstrap (transmit/bootstrap-port)
@@ -37,24 +44,49 @@
       :urs (transmit/urs-port)
       :virtual-product (transmit/virtual-product-port)}}})
 
-(def ^:private memoized-default-config (memoize default-config))
+(def memoized-default-cmr-config (memoize default-cmr-config))
+
+(defn profiles-config
+  []
+  (:profiles (memoized-read-project-clj)))
+
+(def memoized-profiles-config (memoize profiles-config))
+
+(defn cmr-config
+  []
+  (util/deep-merge
+    (memoized-default-cmr-config)
+    {external-cfg-key
+      (dissoc (memoized-profiles-config)
+              :dev :test :docs :ubercompile
+              :instrumented :lint :custom-repl)}))
+
+(def memoized-cmr-config (memoize cmr-config))
+
+(defn service-config
+  [service-key]
+  (get (memoized-profiles-config) service-key))
+
+(def memoized-service-config (memoize service-config))
 
 (defn build
   ""
   ([]
     (build false))
-  ([app-key]
-    (let [top-level (memoized-read-project-clj)]
+  ([service-key]
+    (let [top-level (memoized-read-project-clj)
+          service-level (memoized-service-config service-key)]
       (log/trace "top-level keys:" (keys top-level))
       (log/trace "top-level config:" top-level)
-      (log/trace "dem config:" (config-key top-level))
-      (when app-key
-        (log/trace "app-level config:" (app-key top-level)))
-      (util/deep-merge
-       (memoized-default-config)
-       (util/deep-merge
-        {config-key (config-key top-level)}
-        (when app-key
-         {config-key (get-in top-level [:profiles app-key config-key])}))))))
+      (log/trace "dem config:" (internal-cfg-key top-level))
+      (when service-key
+        (log/trace "service-level config:" service-level))
+      (merge
+        (util/deep-merge
+          (memoized-default-config)
+          {internal-cfg-key (internal-cfg-key top-level)})
+        (when service-key
+          {service-key service-level})
+        (memoized-cmr-config)))))
 
 (def memoized-build (memoize build))

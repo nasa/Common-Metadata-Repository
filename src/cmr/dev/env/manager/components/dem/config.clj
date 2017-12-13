@@ -10,55 +10,64 @@
 
 (defn active-config
   ""
-  [system & args]
-  (let [base-keys [:config config/config-key]]
+  [system cfg-level & args]
+  (let [config-component-key :config
+        base-keys [config-component-key cfg-level]]
     (if-not (seq args)
       (get-in system base-keys)
       (get-in system (concat base-keys args)))))
 
+;; DEM-level config
+
 (defn elastic-search-opts
   [system]
-  (active-config system :elastic-search))
+  (active-config system config/internal-cfg-key :elastic-search))
 
 (defn elastic-search-head-opts
   [system]
-  (active-config system :elastic-search-head))
+  (active-config system config/internal-cfg-key :elastic-search-head))
 
 (defn enabled-services
   [system]
-  (active-config system :enabled-services))
+  (active-config system config/internal-cfg-key :enabled-services))
 
 (defn log-level
   [system]
-  (active-config system :logging :level))
+  (active-config system config/internal-cfg-key :logging :level))
 
 (defn log-nss
   [system]
-  (active-config system :logging :nss))
+  (active-config system config/internal-cfg-key :logging :nss))
 
 (defn logging
   [system]
-  (active-config system :logging))
+  (active-config system config/internal-cfg-key :logging))
 
 (defn messaging-type
   [system]
-  (active-config system :messaging :type))
+  (active-config system config/internal-cfg-key :messaging :type))
 
 (defn service-enabled?
   [system service-key]
   (contains? (enabled-services system) service-key))
 
+(defn timer-delay
+  [system]
+  (active-config system config/internal-cfg-key :timer :delay))
+
+;; Service-level config
+
+;; XXX TBD
+
+;; CMR-level config
+
 (defn service-ports
   [system]
-  (active-config system :ports))
+  (active-config system config/external-cfg-key :ports))
 
 (defn service-port
   [system service-key]
-  (service-key (active-config system :ports)))
-
-(defn timer-delay
-  [system]
-  (active-config system :timer :delay))
+  (active-config system config/external-cfg-key :ports service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
