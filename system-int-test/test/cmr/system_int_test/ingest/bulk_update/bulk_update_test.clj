@@ -29,7 +29,8 @@
                       :Topic "OCEANS"
                       :Term "MARINE SEDIMENTS"}]})
 
-(def science-keywords-umm-1
+(def find-and-replace-multiple-science-keywords-umm
+  "Used to test the case when update-value contains a list of science keywords."
   {:ScienceKeywords [{:Category "EARTH SCIENCE"
                       :Topic "OCEANS"
                       :Term "MARINE SEDIMENTS"}
@@ -390,7 +391,7 @@
 (deftest bulk-update-find-and-replace-with-multiple-science-keywords
   ;; This test shows that update-value could be an array of objects when doing FIND_AND_REPLACE.
   ;; Ingest a collection in each format with science keywords to update
-  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm-1)
+  (let [concept-ids (ingest-collection-in-each-format find-and-replace-multiple-science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
