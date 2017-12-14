@@ -678,7 +678,7 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
   "update-type": "FIND_AND_UPDATE",
   "update-field": "PLATFORMS",
   "find-value": {"Type": "Aircraft"},
-  "update-value": {"LongName": "new long name"
+  "update-value": {"LongName": "new long name",
                    "Characteristics": [{"Name": "nested field is allowed in update-value",
                                         "Description": "Orbital period in decimal minutes.",
                                         "DataType": "time/Direction (ascending)",
@@ -701,7 +701,7 @@ This returns a list of: created-at, name, task id, status (IN_PROGRESS or COMPLE
 
 Example
 ```
-curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" https://%CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status
+curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status
 
 <?xml version="1.0" encoding="UTF-8"?>
 <result>
