@@ -4,8 +4,8 @@
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as cs-spec]
-   [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures & one-off utility functions
@@ -80,7 +80,7 @@
        (util/is-tag-association-deleted? ta3 false)))))
 
 (deftest force-delete-service-with-associations
-  (let [coll (util/create-and-save-collection "REG_PROV" 1)
+  (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
         svc-concept (concepts/create-and-save-concept :service "REG_PROV" 1 3)
         svc-concept-id (:concept-id svc-concept)
@@ -137,7 +137,7 @@
                (:errors response)))))))
 
 (deftest force-delete-variable-with-associations
-  (let [coll (util/create-and-save-collection "REG_PROV" 1)
+  (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
         var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
         var-concept-id (:concept-id var-concept)

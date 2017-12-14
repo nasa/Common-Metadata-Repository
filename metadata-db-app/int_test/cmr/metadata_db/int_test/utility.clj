@@ -104,20 +104,6 @@
     <Orderable>false</Orderable>
   </Granule>")
 
-(def collection-xml
-  "Valid ECHO10 collection for concept generation"
-  "<Collection>
-    <ShortName>MINIMAL</ShortName>
-    <VersionId>1</VersionId>
-    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-    <LongName>A minimal valid collection</LongName>
-    <DataSetId>A minimal valid collection V 1</DataSetId>
-    <Description>A minimal valid collection</Description>
-    <Orderable>true</Orderable>
-    <Visible>true</Visible>
-  </Collection>")
-
 (def tag-edn
   "Valid EDN for tag metadata"
   (pr-str {:tag-key "org.nasa.something.ozone"
@@ -160,7 +146,8 @@
   to look up the metadata for the concepts and parse it. So we need to provide valid
   metadata for each test concept we create. This maps concept-type to dummy data that can be used
   by default."
-  {:collection collection-xml
+  {
+  ;  :collection collection-xml
    :granule granule-xml
    :tag tag-edn
    :tag-association tag-association-edn
@@ -182,29 +169,6 @@
          ;; concept-type and provider-id args take precedence over attributes
          {:provider-id provider-id
           :concept-type concept-type}))
-
-(defn collection-concept
-  "Creates a collection concept"
-  ([provider-id uniq-num]
-   (collection-concept provider-id uniq-num {}))
-  ([provider-id uniq-num attributes]
-   (let [short-name (str "short" uniq-num)
-         version-id (str "V" uniq-num)
-         ;; ensure that the required extra-fields are available but allow them to be
-         ;; overridden in attributes
-         extra-fields (merge {:short-name short-name
-                              :version-id version-id
-                              :entry-id (if version-id
-                                          (str short-name "_" version-id)
-                                          short-name)
-                              :entry-title (str "dataset" uniq-num)
-                              :delete-time nil}
-                             (:extra-fields attributes))
-         attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/echo10+xml"
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-     (concept provider-id :collection uniq-num attributes))))
 
 (defn granule-concept
   "Creates a granule concept"
@@ -575,26 +539,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn save-collection
-  "Save the collection with the given provider-id, unique number, and attribute map."
-  [provider-id uniq-num attributes]
-  (let [concept (collection-concept provider-id uniq-num attributes)
-        {:keys [concept-id revision-id]} (save-concept concept)]
-    (assoc concept :revision-id revision-id :concept-id concept-id)))
-
-(defn create-and-save-collection
-  "Creates, saves, and returns a collection concept with its data from metadata-db. "
-  ([provider-id uniq-num]
-   (create-and-save-collection provider-id uniq-num 1))
-  ([provider-id uniq-num num-revisions]
-   (create-and-save-collection provider-id uniq-num num-revisions {}))
-  ([provider-id uniq-num num-revisions attributes]
-   (let [concept (collection-concept provider-id uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-granule
   "Creates, saves, and returns a granule concept with its data from metadata-db"

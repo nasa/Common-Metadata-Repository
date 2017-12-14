@@ -44,7 +44,7 @@
 
 (deftest tag-delete-cascades-associations
   (testing "delete cascades to tag associations"
-    (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
+    (let [tag-collection (concepts/create-and-save-concept :collection "REG_PROV" 1)
           tag (util/create-and-save-tag 1)
           tag-association (util/create-and-save-tag-association tag-collection tag 1 1)]
       (testing "tag association was saved and is not a tombstone"
@@ -55,7 +55,7 @@
 
 (deftest variable-delete-cascades-associations
   (testing "delete cascades to variable associations"
-    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+    (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll variable 1 1)]
       (testing "variable association was saved and is not a tombstone"
@@ -66,7 +66,7 @@
 
 (deftest service-delete-cascades-associations
   (testing "delete cascades to service associations"
-    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+    (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           service (concepts/create-and-save-concept :service "REG_PROV" 1)
           service-association (util/create-and-save-service-association coll service 1 1)]
       (testing "service association was saved and is not a tombstone"
@@ -90,9 +90,9 @@
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1 3)
+    (let [coll1 (concepts/create-and-save-concept :collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
-          coll2 (util/create-and-save-collection provider-id 2)
+          coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
@@ -139,9 +139,9 @@
 
 (deftest delete-collection-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1 3)
+    (let [coll1 (concepts/create-and-save-concept :collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
-          coll2 (util/create-and-save-collection provider-id 2)
+          coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
@@ -192,8 +192,8 @@
         (util/verify-concept-was-saved gran3)))))
 
 (deftest delete-concept-failure-cases
-  (let [coll-reg-prov (util/create-and-save-collection "REG_PROV" 1)
-        coll-small-prov (util/create-and-save-collection "SMAL_PROV" 1)]
+  (let [coll-reg-prov (concepts/create-and-save-concept :collection "REG_PROV" 1)
+        coll-small-prov (concepts/create-and-save-concept :collection "SMAL_PROV" 1)]
     (testing "Using delete concept end-point"
       (u/are2 [concept-id revision-id expected-status error-messages]
               (let [{:keys [status errors]} (util/delete-concept concept-id revision-id)]

@@ -17,11 +17,11 @@
 ;; or concept type.
 (deftest incrementing-transcation-ids
   (testing "Concepts saved in mixed order get incrementing transaction-ids"
-    (let [coll-reg (util/create-and-save-collection "REG_PROV" 1)
+    (let [coll-reg (concepts/create-and-save-concept :collection "REG_PROV" 1)
           gran-reg (util/create-and-save-granule "REG_PROV" coll-reg 1)
           serv1 (concepts/create-and-save-concept :service "REG_PROV" 1)
           tag1 (util/create-and-save-tag 1)
-          coll-small (util/create-and-save-collection "SMAL_PROV" 2)
+          coll-small (concepts/create-and-save-concept :collection "SMAL_PROV" 2)
           group-small (util/create-and-save-group "SMAL_PROV" 1)
           tag2 (util/create-and-save-tag 2)
           serv2 (concepts/create-and-save-concept :service "REG_PROV" 2)

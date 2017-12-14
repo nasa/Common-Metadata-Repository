@@ -12,7 +12,8 @@
 (defmethod c-spec/gen-concept :service-association
   [_ _ uniq-num attributes]
   (let [concept-attributes (or (:concept-attributes attributes) {})
-        concept (util/create-and-save-collection "REG_PROV" uniq-num 1 concept-attributes)
+        concept (concepts/create-and-save-concept :collection "REG_PROV" uniq-num 1
+                                                  concept-attributes)
         service-attributes (or (:service-attributes attributes) {})
         service (concepts/create-and-save-concept :service "REG_PROV" uniq-num 1 service-attributes)
         attributes (dissoc attributes :concept-attributes :service-attributes)]
@@ -25,7 +26,7 @@
 
 (deftest save-service-association-failure-test
   (testing "saving new service associations on non system-level provider"
-    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+    (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           service (concepts/create-and-save-concept :service "REG_PROV" 1)
           service-association (-> (util/service-association-concept coll service 2)
                                   (assoc :provider-id "REG_PROV"))

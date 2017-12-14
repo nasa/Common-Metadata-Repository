@@ -20,8 +20,8 @@
   (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
 (deftest delete-provider-cascade-delete-concepts
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
-        coll2 (util/create-and-save-collection "PROV1" 1)
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1)
+        coll2 (concepts/create-and-save-concept :collection "PROV1" 1)
         gran1 (util/create-and-save-granule "REG_PROV" coll1 1)
         gran2 (util/create-and-save-granule "PROV1" coll2 1)
         variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1)
