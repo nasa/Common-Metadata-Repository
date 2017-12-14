@@ -27,5 +27,5 @@
 
 (defmethod concepts/create-concept :humanizer
   [concept-type & args]
-  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args args)]
+  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args :humanizer args)]
     (create-humanizer-concept provider-id uniq-num attributes)))

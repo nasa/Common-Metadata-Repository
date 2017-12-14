@@ -29,5 +29,5 @@
 
 (defmethod concepts/create-concept :service
   [concept-type & args]
-  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args args)]
+  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args :service args)]
     (create-service-concept provider-id uniq-num attributes)))

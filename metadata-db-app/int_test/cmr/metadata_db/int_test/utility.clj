@@ -148,7 +148,7 @@
   by default."
   {
   ;  :collection collection-xml
-   :granule granule-xml
+  ;  :granule granule-xml
    :tag tag-edn
    :tag-association tag-association-edn
    :access-group group-edn
@@ -169,21 +169,6 @@
          ;; concept-type and provider-id args take precedence over attributes
          {:provider-id provider-id
           :concept-type concept-type}))
-
-(defn granule-concept
-  "Creates a granule concept"
-  ([provider-id parent-collection uniq-num]
-   (granule-concept provider-id parent-collection uniq-num {}))
-  ([provider-id parent-collection uniq-num attributes]
-   (let [extra-fields (merge {:parent-collection-id (:concept-id parent-collection)
-                              :parent-entry-title (get-in parent-collection [:extra-fields :entry-title])
-                              :delete-time nil
-                              :granule-ur (str "granule-ur " uniq-num)}
-                             (:extra-fields attributes))
-         attributes (merge {:format "application/echo10+xml"
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-     (concept provider-id :granule uniq-num attributes))))
 
 (defn tag-concept
  "Creates a tag concept"
@@ -539,21 +524,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn create-and-save-granule
-  "Creates, saves, and returns a granule concept with its data from metadata-db"
-  ([provider-id parent-collection uniq-num]
-   (create-and-save-granule provider-id parent-collection uniq-num 1))
-  ([provider-id parent-collection uniq-num num-revisions]
-   (create-and-save-granule
-     provider-id parent-collection uniq-num num-revisions {}))
-  ([provider-id parent-collection uniq-num num-revisions attributes]
-   (let [concept (granule-concept provider-id parent-collection uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (-> concept
-         (assoc :concept-id concept-id :revision-id revision-id)))))
 
 (defn create-and-save-tag
   "Creates, saves, and returns a tag concept with its data from metadata-db"

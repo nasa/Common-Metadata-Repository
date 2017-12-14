@@ -22,8 +22,8 @@
 (deftest delete-provider-cascade-delete-concepts
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll2 (concepts/create-and-save-concept :collection "PROV1" 1)
-        gran1 (util/create-and-save-granule "REG_PROV" coll1 1)
-        gran2 (util/create-and-save-granule "PROV1" coll2 1)
+        gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1)
+        gran2 (concepts/create-and-save-concept :granule "PROV1" coll2 1)
         variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1)
         variable2 (concepts/create-and-save-concept :variable "PROV1" 2)
         variable3 (concepts/create-and-save-concept :variable "PROV1" 3)

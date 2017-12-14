@@ -29,7 +29,7 @@
   (let [collection-attributes (or (:parent-attributes attributes) {})
         parent-collection (concepts/create-and-save-concept :collection provider-id uniq-num)
         attributes (dissoc attributes :parent-attributes)]
-    (util/granule-concept provider-id parent-collection uniq-num attributes)))
+    (concepts/create-concept :granule provider-id parent-collection uniq-num attributes)))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,8 +44,10 @@
   (testing "Save granules with the same native-id for two small providers is OK"
     (let [coll1 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1)
           coll2 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2)
-          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1 1 1 {:native-id "foo"})
-          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2 2 1 {:native-id "foo"})
+          gran1 (concepts/create-and-save-concept :granule "SMAL_PROV1" coll1 1 1
+                                                  {:native-id "foo"})
+          gran2 (concepts/create-and-save-concept :granule "SMAL_PROV2" coll2 2 1
+                                                  {:native-id "foo"})
           [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
       (util/verify-concept-was-saved gran1)
       (util/verify-concept-was-saved gran2)
@@ -58,15 +60,15 @@
       (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))
       (let [parent-collection (concepts/create-and-save-concept :collection provider-id 1)
             existing-gran-concept-id (str "G1-" provider-id)
-            existing-granule (util/granule-concept provider-id parent-collection 1
-                                                   {:concept-id existing-gran-concept-id
-                                                    :revision-id 1
-                                                    :extra-fields {:granule-ur "GR-UR1"}})
+            existing-granule (concepts/create-concept :granule provider-id parent-collection 1
+                                                      {:concept-id existing-gran-concept-id
+                                                       :revision-id 1
+                                                       :extra-fields {:granule-ur "GR-UR1"}})
             test-gran-concept-id (str "G2-" provider-id)
-            test-granule (util/granule-concept provider-id parent-collection 2
-                                               {:concept-id test-gran-concept-id
-                                                :revision-id 1
-                                                :extra-fields {:granule-ur "GR-UR1"}})
+            test-granule (concepts/create-concept :granule provider-id parent-collection 2
+                                                  {:concept-id test-gran-concept-id
+                                                   :revision-id 1
+                                                   :extra-fields {:granule-ur "GR-UR1"}})
             _ (util/save-concept existing-granule)
             test-granule-response (util/save-concept test-granule)]
 
@@ -96,14 +98,14 @@
   (testing "duplicate granule urs within multiple small providers is OK"
     (let [coll1 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1)
           coll2 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2)
-          gran1 (util/granule-concept "SMAL_PROV1" coll1 1
-                                      {:concept-id "G1-SMAL_PROV1"
-                                       :revision-id 1
-                                       :extra-fields {:granule-ur "GR-UR1"}})
-          gran2 (util/granule-concept "SMAL_PROV2" coll2 2
-                                      {:concept-id "G2-SMAL_PROV2"
-                                       :revision-id 1
-                                       :extra-fields {:granule-ur "GR-UR1"}})
+          gran1 (concepts/create-concept
+                 :granule "SMAL_PROV1" coll1 1 {:concept-id "G1-SMAL_PROV1"
+                                                :revision-id 1
+                                                :extra-fields {:granule-ur "GR-UR1"}})
+          gran2 (concepts/create-concept
+                 :granule "SMAL_PROV2" coll2 2 {:concept-id "G2-SMAL_PROV2"
+                                                :revision-id 1
+                                                :extra-fields {:granule-ur "GR-UR1"}})
           _ (util/save-concept gran1)
           {:keys [status]} (util/save-concept gran2)]
       (is (= 201 status))

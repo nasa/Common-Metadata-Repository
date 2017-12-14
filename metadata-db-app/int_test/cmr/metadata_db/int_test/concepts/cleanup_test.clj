@@ -93,13 +93,13 @@
 (deftest old-granule-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
-        gran1 (util/create-and-save-granule "REG_PROV" coll1 1 3)
-        gran2 (util/create-and-save-granule "REG_PROV" coll1 2 3)
+        gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1 3)
+        gran2 (concepts/create-and-save-concept :granule "REG_PROV" coll1 2 3)
         coll2 (concepts/create-and-save-concept :collection "SMAL_PROV1" 2 1)
-        gran3 (util/create-and-save-granule "SMAL_PROV1" coll2 1 3 {:native-id "foo"})
-        gran4 (util/create-and-save-granule "SMAL_PROV1" coll2 4 2)
+        gran3 (concepts/create-and-save-concept :granule "SMAL_PROV1" coll2 1 3 {:native-id "foo"})
+        gran4 (concepts/create-and-save-concept :granule "SMAL_PROV1" coll2 4 2)
         coll3 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2 1)
-        gran5 (util/create-and-save-granule "SMAL_PROV2" coll3 1 12 {:native-id "foo"})
+        gran5 (concepts/create-and-save-concept :granule "SMAL_PROV2" coll3 1 12 {:native-id "foo"})
         granules [gran1 gran2 gran3 gran4 gran5]]
 
     ;; Granule 4 has a tombstone
@@ -123,7 +123,7 @@
 
         ;; Creates a granule based on the number with a revision date offset-days in the future
         make-gran (fn [uniq-num offset-days]
-                    (let [gran (assoc (util/granule-concept "REG_PROV" coll1 uniq-num)
+                    (let [gran (assoc (concepts/create-concept :granule "REG_PROV" coll1 uniq-num)
                                       :revision-date (offset->date offset-days))
                           {:keys [concept-id revision-id]} (util/assert-no-errors
                                                              (util/save-concept gran))]
