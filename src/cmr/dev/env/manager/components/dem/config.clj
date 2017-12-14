@@ -61,6 +61,10 @@
 
 ;; CMR-level config
 
+(defn service-paths
+  [system service-key]
+  (active-config system config/external-cfg-key service-key :source-paths))
+
 (defn service-ports
   [system]
   (active-config system config/external-cfg-key :ports))
@@ -68,6 +72,15 @@
 (defn service-port
   [system service-key]
   (active-config system config/external-cfg-key :ports service-key))
+
+;; Mixed-level config
+
+(defn enabled-service-paths
+  [system]
+  (->> (enabled-services system)
+       (map (fn [x] [x (service-paths system x)]))
+       (filter second)
+       (into {})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
