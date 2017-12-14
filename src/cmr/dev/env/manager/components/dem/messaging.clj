@@ -1,7 +1,7 @@
 (ns cmr.dev.env.manager.components.dem.messaging
   "System component for inter-component communications."
   (:require
-    [cmr.dev.env.manager.config :as config]
+    [cmr.dev.env.manager.components.dem.config :as config]
     [cmr.dev.env.manager.messaging.core :as messaging]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
@@ -25,6 +25,11 @@
   (messaging/subscribe (get-messenger system)
                        topic
                        subscriber-fn))
+
+(defn batch-subscribe
+  [system subscribers]
+  (messaging/batch-subscribe (get-messenger system)
+                             subscribers))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
