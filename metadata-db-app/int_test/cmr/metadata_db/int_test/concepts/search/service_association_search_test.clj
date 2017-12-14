@@ -10,14 +10,16 @@
                                                  {:provider-id "SMAL_PROV1" :small true}))
 
 (deftest find-service-associations
-  (let [coll1 (util/save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
-                                                                 :entry-title "et1"
-                                                                 :version-id "v1"
-                                                                 :short-name "s1"}})
-        coll2 (util/save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                                 :entry-title "et2"
-                                                                 :version-id "v1"
-                                                                 :short-name "s2"}})
+  (let [coll1 (concepts/create-and-save-concept
+               :collection "REG_PROV" 1 1 {:extra-fields {:entry-id "entry-1"
+                                                          :entry-title "et1"
+                                                          :version-id "v1"
+                                                          :short-name "s1"}})
+        coll2 (concepts/create-and-save-concept
+               :collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-2"
+                                                          :entry-title "et2"
+                                                          :version-id "v1"
+                                                          :short-name "s2"}})
         associated-service (concepts/create-and-save-concept :service "REG_PROV" 1)
         serv-association1 (util/create-and-save-service-association coll1 associated-service 1 3)
         serv-association2 (util/create-and-save-service-association coll2 associated-service 2 2)]

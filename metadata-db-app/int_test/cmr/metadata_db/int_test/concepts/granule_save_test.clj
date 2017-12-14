@@ -2,17 +2,18 @@
   "Contains integration tests for saving granules. Tests saves with various configurations including
   checking for proper error handling."
   (:require
-   [clojure.test :refer :all]
    [clj-http.client :as client]
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clj-time.local :as l]
-   [cmr.common.log :refer (info)]
+   [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
+   [cmr.common.log :refer (info)]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.concept-constraints :as cc]
-   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec])
+   [cmr.metadata-db.services.messages :as msg])
   (:import java.io.FileNotFoundException))
 
 ;;; fixtures
@@ -26,7 +27,7 @@
 (defmethod c-spec/gen-concept :granule
   [_ provider-id uniq-num attributes]
   (let [collection-attributes (or (:parent-attributes attributes) {})
-        parent-collection (util/create-and-save-collection provider-id uniq-num)
+        parent-collection (concepts/create-and-save-concept :collection provider-id uniq-num)
         attributes (dissoc attributes :parent-attributes)]
     (util/granule-concept provider-id parent-collection uniq-num attributes)))
 
@@ -41,8 +42,8 @@
 
 (deftest save-granule-with-same-native-id-test
   (testing "Save granules with the same native-id for two small providers is OK"
-    (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
-          coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
+    (let [coll1 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1)
+          coll2 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2)
           gran1 (util/create-and-save-granule "SMAL_PROV1" coll1 1 1 {:native-id "foo"})
           gran2 (util/create-and-save-granule "SMAL_PROV2" coll2 2 1 {:native-id "foo"})
           [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
@@ -55,7 +56,7 @@
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
       ;; Turn on enforcement of duplicate granule UR constraint
       (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))
-      (let [parent-collection (util/create-and-save-collection provider-id 1)
+      (let [parent-collection (concepts/create-and-save-concept :collection provider-id 1)
             existing-gran-concept-id (str "G1-" provider-id)
             existing-granule (util/granule-concept provider-id parent-collection 1
                                                    {:concept-id existing-gran-concept-id
@@ -93,8 +94,8 @@
               (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))))))))
 
   (testing "duplicate granule urs within multiple small providers is OK"
-    (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
-          coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
+    (let [coll1 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1)
+          coll2 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2)
           gran1 (util/granule-concept "SMAL_PROV1" coll1 1
                                       {:concept-id "G1-SMAL_PROV1"
                                        :revision-id 1

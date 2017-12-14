@@ -1,12 +1,14 @@
 (ns cmr.metadata-db.int-test.concepts.get-concept-id-test
   "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.common.util :as cutil]
-            [cmr.metadata-db.services.messages :as messages]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.common.util :as cutil]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,7 +20,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-concept-id-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll (util/create-and-save-collection provider-id 1)]
+    (let [coll (concepts/create-and-save-concept :collection provider-id 1)]
       (testing "collection"
         (is (= {:status 200
                 :concept-id (:concept-id coll)
@@ -36,7 +38,7 @@
 
 (deftest fail-to-get-concept-id-for-non-existing-concept
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll (util/create-and-save-collection provider-id 1)
+    (let [coll (concepts/create-and-save-concept :collection provider-id 1)
           gran (util/create-and-save-granule provider-id coll 1)]
       (testing "native-id does not exist"
         (are [concept-type native-id]
@@ -62,4 +64,3 @@
                 (util/get-concept-id concept-type pid native-id))
              :collection "PROV3" (:native-id coll)
              :granule "PROV3" (:native-id gran))))))
-
