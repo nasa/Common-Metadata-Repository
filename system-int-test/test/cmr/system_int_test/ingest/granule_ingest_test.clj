@@ -79,14 +79,12 @@
                  (dg/granule-with-umm-spec-collection
                   coll1
                   (:concept-id coll1)
-                  {:granule-ur "gran1"
-                   :native-id "gran-native1-1"}))
+                  {:native-id "gran-native1-1"}))
           gran2 (d/item->concept
                  (dg/granule-with-umm-spec-collection
                   coll2
                   (:concept-id coll2)
-                  {:granule-ur "gran1"
-                   :native-id "gran-native1-1"}))
+                  {:native-id "gran-native1-1"}))
           {:keys [concept-id revision-id]} (ingest/ingest-concept gran1)
           {:keys [status errors]} (ingest/ingest-concept gran2 {:allow-failure? true})]
       (is (= 422 status))
