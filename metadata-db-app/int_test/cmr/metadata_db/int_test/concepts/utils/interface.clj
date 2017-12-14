@@ -37,20 +37,42 @@
   (fn [concept-type & args]
     concept-type))
 
-(defn parse-create-concept-args
+(defmulti parse-create-concept-args
+  "Parses the create concept arguments to handle multiple arrity or differences between concept
+  types fields needed."
+  (fn [concept-type & args]
+    concept-type))
+
+(defmulti parse-create-and-save-args
+  "Parses the create and save concept arguments to handle multiple arrity or differences between
+  concept types fields needed."
+  (fn [concept-type & args]
+    concept-type))
+
+(defn- default-parse-create-concept-args
   "Function used to parse the arguments sent to the create-concept function."
   [args]
   (let [[provider-id uniq-num attributes] args
         attributes (or attributes {})]
     [provider-id uniq-num attributes]))
 
-(defn parse-create-and-save-args
-  "Function used to parse the arguments sent to the create-and-save-concept function."
+(defn- default-parse-create-and-save-args
+  "Function used to parse the arguments sent to the create-and-save-concept function. Returns a
+  collection of arguments useful for creating a concept and the number of revisions to create for
+  that concept."
   [args]
   (let [[provider-id uniq-num num-revisions attributes] args
         num-revisions (or num-revisions 1)
         attributes (or attributes {})]
-    [provider-id uniq-num num-revisions attributes]))
+    [[provider-id uniq-num attributes] num-revisions]))
+
+(defmethod parse-create-concept-args :default
+  [concept-type args]
+  (default-parse-create-concept-args args))
+
+(defmethod parse-create-and-save-args :default
+  [concept-type args]
+  (default-parse-create-and-save-args args))
 
 (defn create-any-concept
   "Create a concept map for any concept type."
@@ -67,8 +89,8 @@
   "Create a concept map for the concept type and saves the specified number of revisions of that
   concept. Returns the last revision that was saved."
   [concept-type & args]
-  (let [[provider-id uniq-num num-revisions attributes] (parse-create-and-save-args args)
-        concept (create-concept concept-type provider-id uniq-num attributes)
+  (let [[parsed-args num-revisions] (parse-create-and-save-args concept-type args)
+        concept (apply create-concept concept-type parsed-args)
         _ (dotimes [n (dec num-revisions)]
             (util/assert-no-errors (util/save-concept concept)))
         {:keys [concept-id revision-id]} (util/save-concept concept)]

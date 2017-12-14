@@ -2,7 +2,6 @@
   "Defines implementations for all of the multi-methods for collections in the metadata-db
   integration tests."
   (:require
-   [cheshire.core :as json]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
 
 (def collection-xml
@@ -46,5 +45,5 @@
 
 (defmethod concepts/create-concept :collection
   [concept-type & args]
-  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args args)]
+  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args :collection args)]
     (create-collection-concept provider-id uniq-num attributes)))

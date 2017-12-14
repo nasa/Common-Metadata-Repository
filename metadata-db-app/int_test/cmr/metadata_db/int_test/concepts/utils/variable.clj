@@ -52,5 +52,5 @@
 
 (defmethod concepts/create-concept :variable
   [concept-type & args]
-  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args args)]
+  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args :variable args)]
     (create-variable-concept provider-id uniq-num attributes)))
