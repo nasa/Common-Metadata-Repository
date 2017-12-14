@@ -149,12 +149,20 @@
 
 (defn expected-dif-url-type
  "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
- Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
+  Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}
+  Note: The only reason we are doing round trip here for the expected, is to work around
+  the case when certain entries are present in one map and missing in another in the following
+  two maps: umm-url-type->dif-umm-content-type and dif-url-content-type->umm-url-types. In which
+  case, the round trip will give us the default-url-type. "
  [related-url]
  (let [url-type (util/remove-nil-keys
                  (select-keys related-url [:URLContentType :Type :Subtype]))
-       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
-  (get dif-util/dif-url-content-type->umm-url-types dif-content-type su/default-url-type)))
+       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)
+       round-trip-url-type (get dif-util/dif-url-content-type->umm-url-types dif-content-type 
+                                su/default-url-type)]
+   (if-not (= round-trip-url-type su/default-url-type)
+     url-type
+     round-trip-url-type)))
 
 (defn expected-related-urls-for-dif
   "Expected Related URLs for DIF concepts"

@@ -106,7 +106,7 @@
  "Map a combination of UMM URLContentType, Type, and Subtype (optional) to a dif url content type
  type and subtype. This is not dif->umm list flipped."
  {{:URLContentType "CollectionURL" :Type "DATA SET LANDING PAGE"} ["VIEW DATA SET LANDING PAGE" nil]
-  {:URLContentType "CollectionURL" :Type "DOI"} ["VIEW DATA SET LANDING PAGE" nil]
+  {:URLContentType "CollectionURL" :Type "DOI"} ["Erich needs to change this. VIEW DATA SET LANDING PAGE" nil]
   {:URLContentType "CollectionURL" :Type "EXTENDED METADATA"} ["VIEW EXTENDED METADATA" nil]
   {:URLContentType "CollectionURL" :Type "PROFESSIONAL HOME PAGE"} ["VIEW PROFESSIONAL HOME PAGE" nil]
   {:URLContentType "CollectionURL" :Type "PROJECT HOME PAGE"} ["VIEW PROJECT HOME PAGE" nil]

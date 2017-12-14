@@ -163,7 +163,16 @@
                    :URL "http://www.foo.com"
                    :URLContentType "VisualizationURL"
                    :Type "GET RELATED VISUALIZATION"
-                   :Subtype "GIBS"}]
+                   :Subtype "GIBS"}
+                  {:Description "Related url 1 description"
+                   :URL "http://www.foo.com"
+                   :URLContentType "DistributionURL"
+                   :Type "GET DATA"
+                   :Subtype "GDS"
+                   :GetData {:Format "ascii"
+                             :Size 10.0
+                             :Unit "MB"
+                             :Fees "fees"}}]
     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                             :Description "Associated with a collection"
                             :EntryId "AssocEntryId"
