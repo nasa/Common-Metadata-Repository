@@ -1,5 +1,7 @@
 (ns cmr.dev.env.manager.components.dem.watcher
   (:require
+    [cmr.dev.env.manager.components.dem.config :as config]
+    [cmr.dev.env.manager.components.dem.messaging :as messaging]
     [cmr.dev.env.manager.watcher.core :as watcher]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
@@ -16,12 +18,22 @@
 
 (defrecord Watcher
   [builder
-   watcher-subscribers])
+   watcher-subscribers
+   watchers])
 
 (defn start
   [this]
   (log/info "Starting watcher component ...")
-  (log/debug "Started watcher component.")
+  (messaging/batch-subscribe this (:watcher-subscribers this))
+  (doseq [[service-key paths] (config/enabled-service-paths this)]
+    (let [messenger (messaging/get-messenger this)
+          watch (watcher/create-watcher service-key messenger)]
+      ;; XXX track watches and save in component
+      (log/warn "service-key:" service-key)
+      (log/warn "watch:" watch)
+      (log/warn "Adding paths to watch:" (vec paths))
+      (watcher/add-paths watch paths)
+      (log/debug "Started watcher component.")))
   this)
 
 (defn stop
