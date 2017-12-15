@@ -87,67 +87,6 @@
     (and (apply = created-ats)
          (not-any? nil? created-ats))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Concepts
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def variable-association-edn
-  "Valid EDN for variable association metadata"
-  (pr-str {:variable-concept-id "V120000008-PROV1"
-           :associated-concept-id "C120000000-PROV1"
-           :revision-id 1
-           :value "Some Value"}))
-
-(def concept-dummy-metadata
-  "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
-  to look up the metadata for the concepts and parse it. So we need to provide valid
-  metadata for each test concept we create. This maps concept-type to dummy data that can be used
-  by default."
-  {
-  ;  :collection collection-xml
-  ;  :granule granule-xml
-  ;  :tag tag-edn
-  ;  :tag-association tag-association-edn
-  ;  :access-group group-edn
-  ;  :acl acl-edn
-  ;  :humanizer humanizer-json
-  ;  :service service-json
-  ;  :variable variable-json
-   :variable-association variable-association-edn})
-  ;  :service-association service-association-edn})
-
-(defn- concept
-  "Create a concept map for any concept type. "
-  [provider-id concept-type uniq-num attributes]
-  (merge {:native-id (str "native-id " uniq-num)
-          :metadata (concept-type concept-dummy-metadata)
-          :deleted false}
-         attributes
-         ;; concept-type and provider-id args take precedence over attributes
-         {:provider-id provider-id
-          :concept-type concept-type}))
-
-(defn variable-association-concept
-  "Creates a variable association concept"
-  ([assoc-concept variable uniq-num]
-   (variable-association-concept assoc-concept variable uniq-num {}))
-  ([assoc-concept variable uniq-num attributes]
-   (let [{:keys [concept-id revision-id]} assoc-concept
-         variable-concept-id (:concept-id variable)
-         user-id (str "user" uniq-num)
-         native-id (string/join "/" [variable-concept-id concept-id revision-id])
-         extra-fields (merge {:associated-concept-id concept-id
-                              :associated-revision-id revision-id
-                              :variable-concept-id variable-concept-id}
-                             (:extra-fields attributes))
-         attributes (merge {:user-id user-id
-                            :format "application/edn"
-                            :native-id native-id
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-    ;; no provider-id should be specified for variable associations
-    (dissoc (concept nil :variable-association uniq-num attributes) :provider-id))))
-
 (defn assert-no-errors
   [save-result]
   (is (nil? (:errors save-result)))
@@ -405,19 +344,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn create-and-save-variable-association
-  "Creates, saves, and returns a variable association concept with its data from metadata-db"
-  ([concept variable uniq-num]
-   (create-and-save-variable-association concept variable uniq-num 1))
-  ([concept variable uniq-num num-revisions]
-   (create-and-save-variable-association concept variable uniq-num num-revisions {}))
-  ([concept variable uniq-num num-revisions attributes]
-   (let [concept (variable-association-concept concept variable uniq-num attributes)
-          _ (dotimes [n (dec num-revisions)]
-              (assert-no-errors (save-concept concept)))
-          {:keys [concept-id revision-id]} (save-concept concept)]
-      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn get-revisions
   "This is a utility function that returns revisions of interest (given the
