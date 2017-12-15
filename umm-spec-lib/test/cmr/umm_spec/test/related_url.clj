@@ -3,8 +3,14 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.models.umm-common-models :as cmn]
-   [cmr.umm-spec.related-url :as related-url]))
+   [cmr.umm-spec.related-url :as related-url]
+   [cmr.umm-spec.util :as su]))
+
+(deftest related-url-key-value-mapping
+  (is (= {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GDS"}
+         (get dif-util/dif-url-content-type->umm-url-types ["GET DATA" "GDS"] su/default-url-type))))
 
 (deftest related-url-types
   (let [r1 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]

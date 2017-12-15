@@ -51,7 +51,8 @@
   "Convert lists in the umm record to sets so order doesn't matter during comparison"
   [record]
   (-> record
-      (update :ContactPersons set)))
+      (update :ContactPersons set)
+      (update :RelatedUrls set)))
 
 (deftest translate-metadata
   (doseq [input-format valid-formats

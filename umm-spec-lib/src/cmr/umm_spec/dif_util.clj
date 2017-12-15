@@ -46,7 +46,7 @@
   ["GET DATA" "ECHO"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ECHO"}
   ["GET DATA" "EDG"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EDG"}
   ["GET DATA" "EOSDIS DATA POOL"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EOSDIS DATA POOL"}
-  ["GET DATA" "GDS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EOSDIS DATA POOL"}
+  ["GET DATA" "GDS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GDS"}
   ["GET DATA" "GIOVANNI"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GIOVANNI"}
   ["GET DATA" "KML"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "KML"}
   ["GET DATA" "LAADS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LAADS"}
