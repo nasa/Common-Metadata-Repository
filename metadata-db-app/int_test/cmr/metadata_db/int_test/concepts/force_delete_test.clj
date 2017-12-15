@@ -141,7 +141,7 @@
         coll-concept-id (:concept-id coll)
         var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
         var-concept-id (:concept-id var-concept)
-        var-assn (util/create-and-save-variable-association
+        var-assn (concepts/create-and-save-concept :variable-association
                   coll var-concept 1)
         var-assn-concept-id (:concept-id var-assn)]
     (testing "initial conditions"

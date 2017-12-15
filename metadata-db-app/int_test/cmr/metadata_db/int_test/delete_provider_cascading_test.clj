@@ -27,10 +27,10 @@
         variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1)
         variable2 (concepts/create-and-save-concept :variable "PROV1" 2)
         variable3 (concepts/create-and-save-concept :variable "PROV1" 3)
-        variable-association1 (util/create-and-save-variable-association coll1 variable1 1)
-        variable-association2 (util/create-and-save-variable-association coll1 variable2 2)
-        variable-association3 (util/create-and-save-variable-association coll2 variable1 3)
-        variable-association4 (util/create-and-save-variable-association coll2 variable2 4)]
+        variable-association1 (concepts/create-and-save-concept :variable-association coll1 variable1 1)
+        variable-association2 (concepts/create-and-save-concept :variable-association coll1 variable2 2)
+        variable-association3 (concepts/create-and-save-concept :variable-association coll2 variable1 3)
+        variable-association4 (concepts/create-and-save-concept :variable-association coll2 variable2 4)]
 
     ;; Delete REG_PROV
     (util/delete-provider "REG_PROV")

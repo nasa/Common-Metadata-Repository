@@ -57,7 +57,7 @@
   (testing "delete cascades to variable associations"
     (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-          variable-association (util/create-and-save-variable-association coll variable 1 1)]
+          variable-association (concepts/create-and-save-concept :variable-association coll variable 1 1)]
       (testing "variable association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? variable-association))))
       (testing "variable association is tombstoned after variable is deleted"
@@ -95,7 +95,7 @@
           coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (concepts/create-and-save-concept :granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-          variable-association (util/create-and-save-variable-association coll1 variable 1 1)
+          variable-association (concepts/create-and-save-concept :variable-association coll1 variable 1 1)
           service (concepts/create-and-save-concept :service provider-id 1)
           service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 
@@ -144,7 +144,7 @@
           coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (concepts/create-and-save-concept :granule provider-id coll2 2)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-          variable-association (util/create-and-save-variable-association coll1 variable 1 1)
+          variable-association (concepts/create-and-save-concept :variable-association coll1 variable 1 1)
           service (concepts/create-and-save-concept :service provider-id 1)
           service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 

@@ -18,7 +18,7 @@
         variable (concepts/create-and-save-concept :variable "REG_PROV" uniq-num 1
                                                    variable-attributes)
         attributes (dissoc attributes :concept-attributes :variable-attributes)]
-    (util/variable-association-concept concept variable uniq-num attributes)))
+    (concepts/create-concept :variable-association concept variable uniq-num attributes)))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,7 +29,7 @@
   (testing "saving new variable associations on non system-level provider"
     (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-          variable-association (-> (util/variable-association-concept coll variable 2)
+          variable-association (-> (concepts/create-concept :variable-association coll variable 2)
                                    (assoc :provider-id "REG_PROV"))
           {:keys [status errors]} (util/save-concept variable-association)]
 

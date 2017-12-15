@@ -4,26 +4,29 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   ;; It's like it doesn't know about the multi-method definitions
+   [cmr.metadata-db.int-test.concepts.utils.variable-association :as variable-association]
    [cmr.metadata-db.int-test.utility :as util]))
-   
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "SMAL_PROV1" :small true}))
 
 (deftest find-variable-associations
   (let [coll1 (concepts/create-and-save-concept
-               :collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
-                                                        :entry-title "et1"
-                                                        :version-id "v1"
-                                                        :short-name "s1"}})
+               :collection "REG_PROV" 1 1 {:extra-fields {:entry-id "entry-1"
+                                                          :entry-title "et1"
+                                                          :version-id "v1"
+                                                          :short-name "s1"}})
         coll2 (concepts/create-and-save-concept
-               :collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                        :entry-title "et2"
-                                                        :version-id "v1"
-                                                        :short-name "s2"}})
+               :collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-2"
+                                                          :entry-title "et2"
+                                                          :version-id "v1"
+                                                          :short-name "s2"}})
         associated-variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-        var-association1 (util/create-and-save-variable-association coll1 associated-variable 1 3)
-        var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
+        var-association1 (concepts/create-and-save-concept
+                          :variable-association coll1 associated-variable 1 3)
+        var-association2 (concepts/create-and-save-concept
+                          :variable-association coll2 associated-variable 2 2)]
     (testing "find latest revisions"
       (are3 [variable-associations params]
         (is (= (set variable-associations)
