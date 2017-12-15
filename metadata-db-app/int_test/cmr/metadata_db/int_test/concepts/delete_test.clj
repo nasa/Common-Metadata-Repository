@@ -68,7 +68,7 @@
   (testing "delete cascades to service associations"
     (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           service (concepts/create-and-save-concept :service "REG_PROV" 1)
-          service-association (util/create-and-save-service-association coll service 1 1)]
+          service-association (concepts/create-and-save-concept :service-association coll service 1 1)]
       (testing "service association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? service-association))))
       (testing "service association is tombstoned after service is deleted"
@@ -97,7 +97,7 @@
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
           service (concepts/create-and-save-concept :service provider-id 1)
-          service-association (util/create-and-save-service-association coll1 service 1 1)]
+          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? variable-association)))
@@ -146,7 +146,7 @@
           variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
           variable-association (util/create-and-save-variable-association coll1 variable 1 1)
           service (concepts/create-and-save-concept :service provider-id 1)
-          service-association (util/create-and-save-service-association coll1 service 1 1)]
+          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? variable-association)))
