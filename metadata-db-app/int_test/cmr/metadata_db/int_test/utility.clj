@@ -91,25 +91,6 @@
 ;;; Concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def granule-xml
-  "Valid ECHO10 granule for concept generation"
-  "<Granule>
-    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
-    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
-    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
-    <Collection>
-      <EntryId>AQUARIUS_L1A_SSS</EntryId>
-    </Collection>
-    <RestrictionFlag>0.0</RestrictionFlag>
-    <Orderable>false</Orderable>
-  </Granule>")
-
-(def tag-edn
-  "Valid EDN for tag metadata"
-  (pr-str {:tag-key "org.nasa.something.ozone"
-           :description "A very good tag"
-           :originator-id "jnorton"}))
-
 (def tag-association-edn
   "Valid EDN for tag association metadata"
   (pr-str {:tag-key "org.nasa.something.ozone"
@@ -149,7 +130,7 @@
   {
   ;  :collection collection-xml
   ;  :granule granule-xml
-   :tag tag-edn
+  ;  :tag tag-edn
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
@@ -169,19 +150,6 @@
          ;; concept-type and provider-id args take precedence over attributes
          {:provider-id provider-id
           :concept-type concept-type}))
-
-(defn tag-concept
- "Creates a tag concept"
- ([uniq-num]
-  (tag-concept uniq-num {}))
- ([uniq-num attributes]
-  (let [native-id (str "tag-key" uniq-num)
-        attributes (merge {:user-id (str "user" uniq-num)
-                           :format "application/edn"
-                           :native-id native-id}
-                          attributes)]
-    ;; no provider-id should be specified for tags
-    (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
 (defn tag-association-concept
   "Creates a tag association concept"
@@ -524,19 +492,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn create-and-save-tag
-  "Creates, saves, and returns a tag concept with its data from metadata-db"
-  ([uniq-num]
-   (create-and-save-tag uniq-num 1))
-  ([uniq-num num-revisions]
-   (create-and-save-tag uniq-num num-revisions {}))
-  ([uniq-num num-revisions attributes]
-   (let [concept (tag-concept uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-tag-association
   "Creates, saves, and returns a tag concept with its data from metadata-db"

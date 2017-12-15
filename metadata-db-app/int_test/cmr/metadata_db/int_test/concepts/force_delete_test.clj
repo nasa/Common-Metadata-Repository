@@ -54,9 +54,9 @@
    (let [concept (cs-spec/gen-concept :collection "REG_PROV" 1 {})
          saved-concept (util/save-concept concept)
          concept-id (:concept-id saved-concept)
-         tag1 (util/create-and-save-tag 1)
-         tag2 (util/create-and-save-tag 2)
-         tag3 (util/create-and-save-tag 3)]
+         tag1 (concepts/create-and-save-concept :tag "CMR" 1)
+         tag2 (concepts/create-and-save-concept :tag "CMR" 2)
+         tag3 (concepts/create-and-save-concept :tag "CMR" 3)]
      ;; create some collection revisions
      (dorun (repeatedly 3 #(util/save-concept concept)))
      ;; associate tag1 to the whole collection, tag2 to revision 2 and tag3 to revision 3
