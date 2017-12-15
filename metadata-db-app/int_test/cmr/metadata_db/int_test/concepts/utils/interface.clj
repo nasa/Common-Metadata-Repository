@@ -66,6 +66,24 @@
         attributes (or attributes {})]
     [[provider-id uniq-num attributes] num-revisions]))
 
+(defn parse-create-associations-args
+  "Function used to parse the arguments sent to the create-concept function for associations
+  concepts."
+  [args]
+  (let [[associated-concept concept uniq-num attributes] args
+        attributes (or attributes {})]
+    [associated-concept concept uniq-num attributes]))
+
+(defn parse-create-and-save-associations-args
+  "Function used to parse the arguments sent to the create-and-save-concept function for
+  associations concepts. Returns a collection of arguments useful for creating a concept and the
+  number of revisions to create for that concept."
+  [args]
+  (let [[associated-concept concept uniq-num num-revisions attributes] args
+        num-revisions (or num-revisions 1)
+        attributes (or attributes {})]
+    [[associated-concept concept uniq-num attributes] num-revisions]))
+
 (defmethod parse-create-concept-args :default
   [concept-type args]
   (default-parse-create-concept-args args))

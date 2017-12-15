@@ -56,10 +56,10 @@
         tag2 (concepts/create-and-save-concept :tag "CMR" 2)
         tag3 (concepts/create-and-save-concept :tag "CMR" 3)
         tag4 (concepts/create-and-save-concept :tag "CMR" 4)
-        ta1 (util/create-and-save-tag-association (dissoc coll1 :revision-id) tag1 1)
-        ta2 (util/create-and-save-tag-association (assoc coll1 :revision-id 1) tag2 2)
-        ta3 (util/create-and-save-tag-association (assoc coll3 :revision-id 9) tag3 3)
-        ta4 (util/create-and-save-tag-association (assoc coll3 :revision-id 1) tag4 4)]
+        ta1 (concepts/create-and-save-concept :tag-association (dissoc coll1 :revision-id) tag1 1)
+        ta2 (concepts/create-and-save-concept :tag-association (assoc coll1 :revision-id 1) tag2 2)
+        ta3 (concepts/create-and-save-concept :tag-association (assoc coll3 :revision-id 9) tag3 3)
+        ta4 (concepts/create-and-save-concept :tag-association (assoc coll3 :revision-id 1) tag4 4)]
 
     ;; Collection 4 has a tombstone
     (util/delete-concept (:concept-id coll4))
@@ -239,8 +239,8 @@
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
         tag1 (concepts/create-and-save-concept :tag "CMR" 1 1)
         tag2 (concepts/create-and-save-concept :tag "CMR" 2 1)
-        ta1 (util/create-and-save-tag-association coll1 tag1 1 13)
-        ta2 (util/create-and-save-tag-association coll1 tag2 2 3)]
+        ta1 (concepts/create-and-save-concept :tag-association coll1 tag1 1 13)
+        ta2 (concepts/create-and-save-concept :tag-association coll1 tag2 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [ta1 ta2]))
