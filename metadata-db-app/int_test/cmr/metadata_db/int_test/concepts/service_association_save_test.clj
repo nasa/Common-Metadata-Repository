@@ -17,7 +17,7 @@
         service-attributes (or (:service-attributes attributes) {})
         service (concepts/create-and-save-concept :service "REG_PROV" uniq-num 1 service-attributes)
         attributes (dissoc attributes :concept-attributes :service-attributes)]
-    (util/service-association-concept concept service uniq-num attributes)))
+    (concepts/create-concept :service-association concept service uniq-num attributes)))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,7 +28,7 @@
   (testing "saving new service associations on non system-level provider"
     (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
           service (concepts/create-and-save-concept :service "REG_PROV" 1)
-          service-association (-> (util/service-association-concept coll service 2)
+          service-association (-> (concepts/create-concept :service-association coll service 2)
                                   (assoc :provider-id "REG_PROV"))
           {:keys [status errors]} (util/save-concept service-association)]
 

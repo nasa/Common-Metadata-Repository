@@ -313,8 +313,8 @@
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
         service1 (concepts/create-and-save-concept :service "REG_PROV" 1 1)
         service2 (concepts/create-and-save-concept :service "REG_PROV" 2 1)
-        sa1 (util/create-and-save-service-association coll1 service1 1 13)
-        sa2 (util/create-and-save-service-association coll1 service2 2 3)]
+        sa1 (concepts/create-and-save-concept :service-association coll1 service1 1 13)
+        sa2 (concepts/create-and-save-concept :service-association coll1 service2 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [sa1 sa2]))

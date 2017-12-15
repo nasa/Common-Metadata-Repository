@@ -21,8 +21,8 @@
                                                           :version-id "v1"
                                                           :short-name "s2"}})
         associated-service (concepts/create-and-save-concept :service "REG_PROV" 1)
-        serv-association1 (util/create-and-save-service-association coll1 associated-service 1 3)
-        serv-association2 (util/create-and-save-service-association coll2 associated-service 2 2)]
+        serv-association1 (concepts/create-and-save-concept :service-association coll1 associated-service 1 3)
+        serv-association2 (concepts/create-and-save-concept :service-association coll2 associated-service 2 2)]
 
     (testing "find latest revisions"
       (are3 [service-associations params]

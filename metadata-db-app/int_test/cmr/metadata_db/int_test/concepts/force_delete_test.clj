@@ -84,7 +84,7 @@
         coll-concept-id (:concept-id coll)
         svc-concept (concepts/create-and-save-concept :service "REG_PROV" 1 3)
         svc-concept-id (:concept-id svc-concept)
-        svc-assn (util/create-and-save-service-association
+        svc-assn (concepts/create-and-save-concept :service-association
                   coll svc-concept 1)
         svc-assn-concept-id (:concept-id svc-assn)]
     (testing "initial conditions"

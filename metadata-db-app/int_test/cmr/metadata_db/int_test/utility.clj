@@ -91,13 +91,6 @@
 ;;; Concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(def service-association-edn
-  "Valid EDN for variable association metadata"
-  (pr-str {:service-concept-id "S120000008-PROV1"
-           :associated-concept-id "C120000000-PROV1"
-           :revision-id 1}))
-
 (def variable-association-edn
   "Valid EDN for variable association metadata"
   (pr-str {:variable-concept-id "V120000008-PROV1"
@@ -120,8 +113,8 @@
   ;  :humanizer humanizer-json
   ;  :service service-json
   ;  :variable variable-json
-   :variable-association variable-association-edn
-   :service-association service-association-edn})
+   :variable-association variable-association-edn})
+  ;  :service-association service-association-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -133,27 +126,6 @@
          ;; concept-type and provider-id args take precedence over attributes
          {:provider-id provider-id
           :concept-type concept-type}))
-
-(defn service-association-concept
-  "Creates a service association concept"
-  ([assoc-concept service uniq-num]
-   (service-association-concept assoc-concept service uniq-num {}))
-  ([assoc-concept service uniq-num attributes]
-   (let [{:keys [concept-id revision-id]} assoc-concept
-         service-concept-id (:concept-id service)
-         user-id (str "user" uniq-num)
-         native-id (string/join "/" [service-concept-id concept-id revision-id])
-         extra-fields (merge {:associated-concept-id concept-id
-                              :associated-revision-id revision-id
-                              :service-concept-id service-concept-id}
-                             (:extra-fields attributes))
-         attributes (merge {:user-id user-id
-                            :format "application/edn"
-                            :native-id native-id
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-     ;; no provider-id should be specified for service associations
-     (dissoc (concept nil :service-association uniq-num attributes) :provider-id))))
 
 (defn variable-association-concept
   "Creates a variable association concept"
@@ -433,19 +405,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn create-and-save-service-association
-  "Creates, saves, and returns a service association concept with its data from metadata-db"
-  ([concept service uniq-num]
-   (create-and-save-service-association concept service uniq-num 1))
-  ([concept service uniq-num num-revisions]
-   (create-and-save-service-association concept service uniq-num num-revisions {}))
-  ([concept service uniq-num num-revisions attributes]
-   (let [concept (service-association-concept concept service uniq-num attributes)
-          _ (dotimes [n (dec num-revisions)]
-              (assert-no-errors (save-concept concept)))
-          {:keys [concept-id revision-id]} (save-concept concept)]
-      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-variable-association
   "Creates, saves, and returns a variable association concept with its data from metadata-db"
