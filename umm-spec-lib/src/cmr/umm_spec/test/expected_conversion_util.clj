@@ -157,12 +157,8 @@
  [related-url]
  (let [url-type (util/remove-nil-keys
                  (select-keys related-url [:URLContentType :Type :Subtype]))
-       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)
-       round-trip-url-type (get dif-util/dif-url-content-type->umm-url-types dif-content-type 
-                                su/default-url-type)]
-   (if-not (= round-trip-url-type su/default-url-type)
-     url-type
-     round-trip-url-type)))
+       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
+   (get dif-util/dif-url-content-type->umm-url-types dif-content-type su/default-url-type)))
 
 (defn expected-related-urls-for-dif
   "Expected Related URLs for DIF concepts"
