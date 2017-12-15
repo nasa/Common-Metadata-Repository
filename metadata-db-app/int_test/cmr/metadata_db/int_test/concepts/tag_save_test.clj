@@ -5,8 +5,8 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer (are2)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
-
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,7 +15,7 @@
 
 (defmethod c-spec/gen-concept :tag
   [_ _ uniq-num attributes]
-  (util/tag-concept uniq-num attributes))
+  (concepts/create-concept :tag "CMR" uniq-num attributes))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,6 +30,6 @@
             (is (= (set exp-errors) (set errors))))
 
           "failure when using non system-level provider"
-          (assoc (util/tag-concept 2) :provider-id "REG_PROV")
+          (assoc (concepts/create-concept :tag "CMR" 2) :provider-id "REG_PROV")
           422
           ["Tag could not be associated with provider [REG_PROV]. Tags are system level entities."])))

@@ -45,7 +45,7 @@
 (deftest tag-delete-cascades-associations
   (testing "delete cascades to tag associations"
     (let [tag-collection (concepts/create-and-save-concept :collection "REG_PROV" 1)
-          tag (util/create-and-save-tag 1)
+          tag (concepts/create-and-save-concept :tag "CMR" 1)
           tag-association (util/create-and-save-tag-association tag-collection tag 1 1)]
       (testing "tag association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? tag-association))))

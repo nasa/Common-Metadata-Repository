@@ -52,10 +52,10 @@
         coll5 (concepts/create-and-save-concept :collection "SMAL_PROV2" 4 3 {:native-id "foo"})
         collections [coll1 coll2 coll3 coll4 coll5]
         ;; set up tag and tag associations
-        tag1 (util/create-and-save-tag 1)
-        tag2 (util/create-and-save-tag 2)
-        tag3 (util/create-and-save-tag 3)
-        tag4 (util/create-and-save-tag 4)
+        tag1 (concepts/create-and-save-concept :tag "CMR" 1)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2)
+        tag3 (concepts/create-and-save-concept :tag "CMR" 3)
+        tag4 (concepts/create-and-save-concept :tag "CMR" 4)
         ta1 (util/create-and-save-tag-association (dissoc coll1 :revision-id) tag1 1)
         ta2 (util/create-and-save-tag-association (assoc coll1 :revision-id 1) tag2 2)
         ta3 (util/create-and-save-tag-association (assoc coll3 :revision-id 9) tag3 3)
@@ -219,8 +219,8 @@
 
 (deftest old-tag-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [tag1 (util/create-and-save-tag 1 13)
-        tag2 (util/create-and-save-tag 2 3)]
+  (let [tag1 (concepts/create-and-save-concept :tag "CMR" 1 13)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [tag1 tag2]))
@@ -237,8 +237,8 @@
 (deftest old-tag-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
-        tag1 (util/create-and-save-tag 1 1)
-        tag2 (util/create-and-save-tag 2 1)
+        tag1 (concepts/create-and-save-concept :tag "CMR" 1 1)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2 1)
         ta1 (util/create-and-save-tag-association coll1 tag1 1 13)
         ta2 (util/create-and-save-tag-association coll1 tag2 2 3)]
 
