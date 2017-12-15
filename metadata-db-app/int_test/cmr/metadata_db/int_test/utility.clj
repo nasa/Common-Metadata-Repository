@@ -98,10 +98,6 @@
            :revision-id 1
            :value "Some Value"}))
 
-(def acl-edn
-  (pr-str {:name "Some ACL"
-           :etc "TBD"}))
-
 (def service-association-edn
   "Valid EDN for variable association metadata"
   (pr-str {:service-concept-id "S120000008-PROV1"
@@ -126,7 +122,7 @@
   ;  :tag tag-edn
    :tag-association tag-association-edn
   ;  :access-group group-edn
-   :acl acl-edn
+  ;  :acl acl-edn
   ;  :humanizer humanizer-json
   ;  :service service-json
   ;  :variable variable-json
@@ -164,17 +160,6 @@
                            (dissoc attributes :extra-fields))]
      ;; no provider-id should be specified for tag associations
      (dissoc (concept nil :tag-association uniq-num attributes) :provider-id))))
-
-(defn acl-concept
-  "Returns an :acl concept map for use in integration tests."
-  ([provider-id uniq-num]
-   (acl-concept provider-id uniq-num {}))
-  ([provider-id uniq-num attributes]
-   (let [attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
-                            :extra-fields {:acl-identity (str "test-identity:" provider-id ":" uniq-num)}}
-                           attributes)]
-     (concept provider-id :acl uniq-num attributes))))
 
 (defn service-association-concept
   "Creates a service association concept"
@@ -501,19 +486,6 @@
               (assert-no-errors (save-concept concept)))
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
-
-(defn create-and-save-acl
-  "Creates, saves, and returns an ACL concept with its data from metadata-db."
-  ([provider-id uniq-num]
-   (create-and-save-acl provider-id uniq-num 1))
-  ([provider-id uniq-num num-revisions]
-   (create-and-save-acl provider-id uniq-num num-revisions {}))
-  ([provider-id uniq-num num-revisions attributes]
-   (let [concept (acl-concept provider-id uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-variable-association
   "Creates, saves, and returns a variable association concept with its data from metadata-db"
