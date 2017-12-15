@@ -22,11 +22,11 @@
           serv1 (concepts/create-and-save-concept :service "REG_PROV" 1)
           tag1 (concepts/create-and-save-concept :tag "CMR" 1)
           coll-small (concepts/create-and-save-concept :collection "SMAL_PROV" 2)
-          group-small (util/create-and-save-group "SMAL_PROV" 1)
+          group-small (concepts/create-and-save-concept :access-group "SMAL_PROV" 1)
           tag2 (concepts/create-and-save-concept :tag "CMR" 2)
           serv2 (concepts/create-and-save-concept :service "REG_PROV" 2)
           gran-small (concepts/create-and-save-concept :granule "SMAL_PROV" coll-small 2)
-          group-reg (util/create-and-save-group "REG_PROV" 1)
+          group-reg (concepts/create-and-save-concept :access-group "REG_PROV" 1)
           concept-ids (map :concept-id [coll-reg gran-reg serv1 tag1 coll-small group-small
                                         tag2 serv2 gran-small group-reg])
           trans-ids (distinct

@@ -1,18 +1,19 @@
 (ns cmr.metadata-db.int-test.concepts.group-save-test
   "Contains integration tests for saving groups. Tests saves with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [clojure.string :as str]
-            [cmr.common.util :refer (are2)]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
-
+  (:require
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clj-time.local :as l]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.util :refer (are2)]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.concept-constraints :as cc]
+   [cmr.metadata-db.services.messages :as msg]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,7 +25,7 @@
 
 (defmethod c-spec/gen-concept :access-group
   [_ provider-id uniq-num attributes]
-  (util/group-concept provider-id uniq-num attributes))
+  (concepts/create-concept :access-group provider-id uniq-num attributes))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,8 +38,8 @@
 
 (deftest save-group-with-same-native-id-test
   (testing "Save groups with the same native-id for two small providers is OK"
-    (let [serv1 (util/create-and-save-group "SMAL_PROV1" 1 1 {:native-id "foo"})
-          serv2 (util/create-and-save-group "SMAL_PROV2" 2 1 {:native-id "foo"})
+    (let [serv1 (concepts/create-and-save-concept :access-group "SMAL_PROV1" 1 1 {:native-id "foo"})
+          serv2 (concepts/create-and-save-concept :access-group "SMAL_PROV2" 2 1 {:native-id "foo"})
           [serv1-concept-id serv2-concept-id] (map :concept-id [serv1 serv2])]
       (util/verify-concept-was-saved serv1)
       (util/verify-concept-was-saved serv2)
