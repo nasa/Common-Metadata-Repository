@@ -16,7 +16,7 @@
           coll3 (concepts/create-and-save-concept :collection provider-id 3 3)
           gran1 (concepts/create-and-save-concept :granule provider-id coll1 1 2)
           gran2 (concepts/create-and-save-concept :granule provider-id coll2 2 2)
-          group1 (util/create-and-save-group provider-id 4 3)]
+          group1 (concepts/create-and-save-concept :access-group provider-id 4 3)]
       (are [item-revision-tuples]
         (let [tuples (map #(update-in % [0] :concept-id) item-revision-tuples)
               {:keys [status concepts]} (util/get-concepts tuples)
@@ -67,7 +67,7 @@
         coll3 (concepts/create-and-save-concept :collection "SMAL_PROV1" 3 3)
         gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1 2)
         gran2 (concepts/create-and-save-concept :granule "REG_PROV" coll2 2 1)
-        group1 (util/create-and-save-group "REG_PROV" 4 1)]
+        group1 (concepts/create-and-save-concept :access-group "REG_PROV" 4 1)]
     (are [item-revision-tuples]
       (let [ids (map #(:concept-id (first %)) item-revision-tuples)
             {:keys [status concepts]} (util/get-latest-concepts ids)

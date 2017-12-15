@@ -98,13 +98,6 @@
            :revision-id 1
            :value "Some Value"}))
 
-(def group-edn
-  "Valid EDN for group metadata"
-  (pr-str {:name "LPDAAC_ECS Administrators"
-            :provider-id "LPDAAC_ECS"
-            :description "Contains users with permission to manage LPDAAC_ECS holdings."
-            :members ["jsmith" "prevere" "ndrew"]}))
-
 (def acl-edn
   (pr-str {:name "Some ACL"
            :etc "TBD"}))
@@ -132,7 +125,7 @@
   ;  :granule granule-xml
   ;  :tag tag-edn
    :tag-association tag-association-edn
-   :access-group group-edn
+  ;  :access-group group-edn
    :acl acl-edn
   ;  :humanizer humanizer-json
   ;  :service service-json
@@ -171,16 +164,6 @@
                            (dissoc attributes :extra-fields))]
      ;; no provider-id should be specified for tag associations
      (dissoc (concept nil :tag-association uniq-num attributes) :provider-id))))
-
-(defn group-concept
-  "Creates a group concept"
-  ([provider-id uniq-num]
-   (group-concept provider-id uniq-num {}))
-  ([provider-id uniq-num attributes]
-   (let [attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"}
-                           attributes)]
-     (concept provider-id :access-group uniq-num attributes))))
 
 (defn acl-concept
   "Returns an :acl concept map for use in integration tests."
@@ -518,19 +501,6 @@
               (assert-no-errors (save-concept concept)))
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
-
-(defn create-and-save-group
-  "Creates, saves, and returns a group concept with its data from metadata-db."
-  ([provider-id uniq-num]
-   (create-and-save-group provider-id uniq-num 1))
-  ([provider-id uniq-num num-revisions]
-   (create-and-save-group provider-id uniq-num num-revisions {}))
-  ([provider-id uniq-num num-revisions attributes]
-   (let [concept (group-concept provider-id uniq-num attributes)
-         _ (dotimes [n (dec num-revisions)]
-             (assert-no-errors (save-concept concept)))
-         {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-acl
   "Creates, saves, and returns an ACL concept with its data from metadata-db."
