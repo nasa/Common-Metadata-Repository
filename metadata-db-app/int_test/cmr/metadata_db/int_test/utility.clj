@@ -91,12 +91,6 @@
 ;;; Concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def tag-association-edn
-  "Valid EDN for tag association metadata"
-  (pr-str {:tag-key "org.nasa.something.ozone"
-           :associated-concept-id "C120000000-PROV1"
-           :revision-id 1
-           :value "Some Value"}))
 
 (def service-association-edn
   "Valid EDN for variable association metadata"
@@ -120,7 +114,7 @@
   ;  :collection collection-xml
   ;  :granule granule-xml
   ;  :tag tag-edn
-   :tag-association tag-association-edn
+  ;  :tag-association tag-association-edn
   ;  :access-group group-edn
   ;  :acl acl-edn
   ;  :humanizer humanizer-json
@@ -139,27 +133,6 @@
          ;; concept-type and provider-id args take precedence over attributes
          {:provider-id provider-id
           :concept-type concept-type}))
-
-(defn tag-association-concept
-  "Creates a tag association concept"
-  ([assoc-concept tag uniq-num]
-   (tag-association-concept assoc-concept tag uniq-num {}))
-  ([assoc-concept tag uniq-num attributes]
-   (let [{:keys [concept-id revision-id]} assoc-concept
-         tag-id (:native-id tag)
-         user-id (str "user" uniq-num)
-         native-id (string/join "/" [tag-id concept-id revision-id])
-         extra-fields (merge {:associated-concept-id concept-id
-                              :associated-revision-id revision-id
-                              :tag-key tag-id}
-                             (:extra-fields attributes))
-         attributes (merge {:user-id user-id
-                            :format "application/edn"
-                            :native-id native-id
-                            :extra-fields extra-fields}
-                           (dissoc attributes :extra-fields))]
-     ;; no provider-id should be specified for tag associations
-     (dissoc (concept nil :tag-association uniq-num attributes) :provider-id))))
 
 (defn service-association-concept
   "Creates a service association concept"
@@ -460,19 +433,6 @@
   "Removes irrelevant fields from concepts so they can be compared in search tests."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
-
-(defn create-and-save-tag-association
-  "Creates, saves, and returns a tag concept with its data from metadata-db"
-  ([concept tag uniq-num]
-   (create-and-save-tag-association concept tag uniq-num 1))
-  ([concept tag uniq-num num-revisions]
-   (create-and-save-tag-association concept tag uniq-num num-revisions {}))
-  ([concept tag uniq-num num-revisions attributes]
-   (let [concept (tag-association-concept concept tag uniq-num attributes)
-          _ (dotimes [n (dec num-revisions)]
-              (assert-no-errors (save-concept concept)))
-          {:keys [concept-id revision-id]} (save-concept concept)]
-      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-service-association
   "Creates, saves, and returns a service association concept with its data from metadata-db"

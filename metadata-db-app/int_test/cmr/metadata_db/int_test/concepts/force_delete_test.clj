@@ -61,9 +61,9 @@
      (dorun (repeatedly 3 #(util/save-concept concept)))
      ;; associate tag1 to the whole collection, tag2 to revision 2 and tag3 to revision 3
      ;; this set up is not realistic, but will test the scenarios more thoroughly
-     (let [ta1 (util/create-and-save-tag-association (dissoc saved-concept :revision-id) tag1 1)
-           ta2 (util/create-and-save-tag-association (assoc saved-concept :revision-id 2) tag2 2)
-           ta3 (util/create-and-save-tag-association (assoc saved-concept :revision-id 3) tag3 3)]
+     (let [ta1 (concepts/create-and-save-concept :tag-association (dissoc saved-concept :revision-id) tag1 1)
+           ta2 (concepts/create-and-save-concept :tag-association (assoc saved-concept :revision-id 2) tag2 2)
+           ta3 (concepts/create-and-save-concept :tag-association (assoc saved-concept :revision-id 3) tag3 3)]
 
        ;; no tag associations are deleted before the force delete
        (util/is-tag-association-deleted? ta1 false)

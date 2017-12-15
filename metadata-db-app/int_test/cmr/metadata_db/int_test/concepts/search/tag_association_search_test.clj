@@ -21,8 +21,8 @@
                                                           :version-id "v1"
                                                           :short-name "s2"}})
         associated-tag (concepts/create-and-save-concept :tag "CMR" 1)
-        tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
-        tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
+        tag-association1 (concepts/create-and-save-concept :tag-association coll1 associated-tag 1 3)
+        tag-association2 (concepts/create-and-save-concept :tag-association coll2 associated-tag 2 2)]
     (testing "find latest revisions"
       (are3 [tag-associations params]
         (is (= (set tag-associations)
