@@ -133,7 +133,7 @@
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
-  #{:variable-concept-id})
+  #{:concept-id :variable-concept-id})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
