@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.variable.collection-variable-search-test
   "Tests searching for collections by associated variables"
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -23,10 +24,10 @@
 (deftest collection-variable-search-test
   (let [token (e/login (s/context) "user1")
         [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
-                                                (d/ingest-umm-spec-collection
-                                                 "PROV1"
-                                                 (data-umm-c/collection n {})
-                                                 {:token token})))
+                                                 (d/ingest-umm-spec-collection
+                                                  "PROV1"
+                                                  (data-umm-c/collection n {})
+                                                  {:token token})))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         ;; create variables
@@ -41,7 +42,11 @@
         {variable3-concept-id :concept-id} (vu/ingest-variable-with-attrs
                                             {:native-id "somevar"
                                              :Name "SomeVariable"
-                                             :LongName "Measurement2"})]
+                                             :LongName "Measurement2"})
+        {variable4-concept-id :concept-id} (vu/ingest-variable-with-attrs
+                                            {:native-id "v4"
+                                             :Name "Name4"
+                                             :LongName "Measurement4"})]
 
     ;; create variable associations
     ;; Variable1 is associated with coll1 and coll2
@@ -90,6 +95,31 @@
 
         "ignore-case false"
         [] "variable1" {:ignore-case false}))
+
+    (testing "search collections by variable concept-ids"
+      (are3 [items variable options]
+        (let [params (merge {:variable_concept_id variable}
+                            (when options
+                              {"options[variable_concept_id]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single variable search"
+        [coll1 coll2] variable1-concept-id {}
+
+        "variable concept id search is case sensitive"
+        [] (string/lower-case variable1-concept-id) {}
+
+        "no matching variable"
+        [] variable4-concept-id {}
+
+        "multiple variables"
+        [coll1 coll2 coll3] [variable1-concept-id variable2-concept-id] {}
+
+        "AND option false"
+        [coll1 coll2 coll3] [variable1-concept-id variable2-concept-id] {:and false}
+
+        "AND option true"
+        [coll2] [variable1-concept-id variable2-concept-id] {:and true}))
 
     (testing "search collections by variable native-ids"
       (are3 [items variable options]
@@ -272,16 +302,32 @@
         {:or true}))))
 
 (deftest collection-variables-search-error-scenarios
-  (testing "search by invalid format."
+  (testing "search by invalid param"
     (let [{:keys [status errors]} (search/find-refs :collection
                                                     {:variables {:0 {:and "true"}}})]
       (is (= 400 status))
       (is (re-find #"Parameter \[variables\] was not recognized." (first errors)))))
-  (testing "search by invalid format."
+  (testing "search by invalid parameter field"
     (let [{:keys [status errors]} (search/find-refs :collection
                                                     {:variables-h {:0 {:and "true"}}})]
       (is (= 400 status))
-      (is (re-find #"parameter \[and\] is not a valid variable search term." (first errors))))))
+      (is (re-find #"parameter \[and\] is not a valid variable search term." (first errors)))))
+  (testing "search variable concept id does not support ignore-case options"
+    (let [{:keys [status errors]} (search/find-refs
+                                   :collection
+                                   {:variable_concept_id "V123456-PROV1"
+                                    "options[variable_concept_id]" {:ignore-case true}})]
+      (is (= 400 status))
+      (is (re-find #"Option \[ignore_case\] is not supported for param \[variable_concept_id\]"
+                   (first errors)))))
+  (testing "search variable concept id does not support pattern options"
+    (let [{:keys [status errors]} (search/find-refs
+                                   :collection
+                                   {:variable_concept_id "V123456-PROV1"
+                                    "options[variable_concept_id]" {:pattern true}})]
+      (is (= 400 status))
+      (is (re-find #"Option \[pattern\] is not supported for param \[variable_concept_id\]"
+                   (first errors))))))
 
 (deftest collection-variable-search-atom-json-test
   (let [token (e/login (s/context) "user1")

@@ -70,6 +70,7 @@
    ;; Variable parameters
    :measurement :string
    :variable-name :string
+   :variable-concept-id :string
    :variable-native-id :string
    :variables-h :variables-h})
 
@@ -129,6 +130,10 @@
    :provider :string
    :native-id :string
    :concept-id :string})
+
+(defmethod common-params/always-case-sensitive-fields :collection
+  [_]
+  #{:variable-concept-id})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]

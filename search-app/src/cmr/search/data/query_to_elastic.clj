@@ -55,6 +55,7 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
+                          :variable-concept-id :variable-concept-ids
                           :variable-native-id :variable-native-ids
                           :measurement :measurements
                           :author :authors
@@ -121,6 +122,7 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
+   :variable-concept-ids :variable-concept-id
    :variable-native-ids :variable-native-id
    :measurements :measurement
    :authors :author})

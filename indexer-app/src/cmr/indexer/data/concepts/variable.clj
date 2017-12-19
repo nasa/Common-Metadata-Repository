@@ -99,12 +99,14 @@
                                   (map #(variable-association->variable-concept context %)
                                        variable-associations))
         variable-native-ids (map :native-id variable-concepts)
+        variable-concept-ids (map :concept-id variable-concepts)
         variable-fields (map :extra-fields variable-concepts)
         variable-names (map :variable-name variable-fields)
         measurements (map :measurement variable-fields)]
     {:has-variables (some? (seq variable-concepts))
      :variable-names variable-names
      :variable-names.lowercase (map string/lower-case variable-names)
+     :variable-concept-ids variable-concept-ids
      :variable-native-ids variable-native-ids
      :variable-native-ids.lowercase (map string/lower-case variable-native-ids)
      :measurements measurements
