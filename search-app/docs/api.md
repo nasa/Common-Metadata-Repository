@@ -1495,6 +1495,8 @@ Collections can be found by searching for associated variables. The following va
   * supports `pattern`, `ignore_case` and option `and`
 * variable_native_id
   * supports `pattern`, `ignore_case` and option `and`
+* variable_concept_id
+  * supports option `and`
 
 Find collections matching variable name.
 
@@ -1503,6 +1505,10 @@ Find collections matching variable name.
 Find collections matching variable native id.
 
     curl "%CMR-ENDPOINT%/collections?variable_native_id\[\]=var1&variable_native_id\[\]=var2"
+
+Find collections matching variable concept id.
+
+    curl "%CMR-ENDPOINT%/collections?variable_concept_id\[\]=V100000-PROV1"
 
 #### <a name="c-variables"></a> Find collections by hierarchical variables
 
