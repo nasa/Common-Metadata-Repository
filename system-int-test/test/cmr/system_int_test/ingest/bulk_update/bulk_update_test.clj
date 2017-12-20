@@ -218,13 +218,13 @@
     (index/wait-until-indexed)
     (let [collection-response (ingest/bulk-update-task-status "PROV1" 2)]
       (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [2] could not be found."]
+      (is (= ["Bulk update task with task id [2] could not be found for provider id [PROV1]."]
              (:errors collection-response))))
     (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
       (is (= 200 (:status collection-response))))
     (let [collection-response (ingest/bulk-update-task-status "PROV2" 1)]
       (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [1] could not be found."]
+      (is (= ["Bulk update task with task id [1] could not be found for provider id [PROV2]."]
              (:errors collection-response))))
     (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
 

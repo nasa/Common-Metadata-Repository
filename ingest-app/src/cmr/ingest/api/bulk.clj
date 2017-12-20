@@ -127,7 +127,7 @@
           collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
       (when (or (nil? task-status) (nil? (:status task-status)))
         (srvc-errors/throw-service-error
-          :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
+          :not-found (format "Bulk update task with task id [%s] could not be found for provider id [%s]." task-id provider-id)))
       (generate-provider-task-status-response
        headers
        {:status 200
