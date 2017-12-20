@@ -169,7 +169,7 @@
   "Check if the overall bulk update operation is complete and if so, re-index
   provider collections"
   [context provider-id task-id]
-  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id)]
+  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id provider-id)]
     (when (= complete-status (:status task-status))
       (ingest-events/publish-ingest-event
        context

@@ -248,5 +248,5 @@
           response (ingest/bulk-update-task-status "PROV1" 12 {:token token})
           {:keys [status errors]} response]
       (is (= 404 status))
-      (is (= ["Bulk update task with task id [12] could not be found."]
+      (is (= ["Bulk update task with task id [12] could not be found for provider id [PROV1]."]
              errors)))))

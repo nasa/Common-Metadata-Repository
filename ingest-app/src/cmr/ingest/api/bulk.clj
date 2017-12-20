@@ -123,11 +123,11 @@
   (let [{:keys [headers request-context]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-    (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
+    (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id provider-id)
           collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
       (when (or (nil? task-status) (nil? (:status task-status)))
         (srvc-errors/throw-service-error
-          :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
+          :not-found (format "Bulk update task with task id [%s] could not be found for provider id [%s]." task-id provider-id)))
       (generate-provider-task-status-response
        headers
        {:status 200

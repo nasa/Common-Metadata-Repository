@@ -24,7 +24,7 @@
   "Defines a protocol for getting and storing the bulk update status and task-id
   information."
   (get-provider-bulk-update-status [db provider-id])
-  (get-bulk-update-task-status [db task-id])
+  (get-bulk-update-task-status [db task-id provider-id])
   (get-bulk-update-task-collection-status [db task-id])
   (get-bulk-update-collection-status [db task-id concept-id])
   (create-and-save-bulk-update-status [db provider-id json-body concept-ids])
@@ -55,14 +55,15 @@
              statuses))))
 
   (get-bulk-update-task-status
-    [db task-id]
+    [db task-id provider-id]
     (j/with-db-transaction
       [conn db]
       ;; Returns a status for the particular task
       (some-> conn 
               (su/find-one (su/select [:created-at :name :status :status-message :request-json-body]
                                       (su/from bulk_update_task_status)
-                                      (su/where `(= :task-id ~task-id))))
+                                      (su/where `(and (= :task-id ~task-id)
+                                                      (= :provider-id ~provider-id)))))
               util/map-keys->kebab-case
               (update :request-json-body util/gzip-blob->string)
               (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
@@ -163,8 +164,8 @@
   (get-provider-bulk-update-status (context->db context) provider-id))
 
 (defn-timed get-bulk-update-task-status-for-provider
-  [context task-id]
-  (get-bulk-update-task-status (context->db context) task-id))
+  [context task-id provider-id]
+  (get-bulk-update-task-status (context->db context) task-id provider-id))
 
 (defn-timed get-bulk-update-collection-statuses-for-task
   [context task-id]

@@ -36,9 +36,10 @@
              (map #(select-keys % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
   (get-bulk-update-task-status
-    [this task-id]
+    [this task-id provider-id]
     (let [task-status (some->> @task-status-atom
-                               (some #(when (= task-id (str (:task-id %)))
+                               (some #(when (and (= provider-id (str (:provider-id %)))
+                                                 (= task-id (str (:task-id %))))
                                             %)))]
       (select-keys task-status [:created-at :name :task-id :status :status-message :request-json-body])))
 
