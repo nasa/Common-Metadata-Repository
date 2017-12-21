@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.service.collection-service-search-test
   "Tests searching for collections with associated services"
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
@@ -9,6 +10,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
@@ -377,3 +379,99 @@
          coll5
          {:has-formats false :has-transforms false :has-spatial-subsetting false}
          [])))))
+
+(deftest collection-service-search-test
+  (let [token (e/login (s/context) "user1")
+        [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
+                                                 (d/ingest-umm-spec-collection
+                                                  "PROV1"
+                                                  (data-umm-c/collection n {})
+                                                  {:token token})))
+        ;; index the collections so that they can be found during service association
+        _ (index/wait-until-indexed)
+        ;; create services
+        {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "serv1"
+                                         :Name "Service1"})
+        {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "serv2"
+                                         :Name "Service2"})
+        {serv3-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "someServ"
+                                         :Name "SomeService"})
+        {serv4-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "S4"
+                                         :Name "Name4"})]
+
+    ;; create service associations
+    ;; service1 is associated with coll1 and coll2
+    (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}
+                                                         {:concept-id (:concept-id coll2)}])
+    ;; service2 is associated with coll2 and coll3
+    (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll2)}
+                                                         {:concept-id (:concept-id coll3)}])
+    ;; SomeService is associated with coll4
+    (au/associate-by-concept-ids token serv3-concept-id [{:concept-id (:concept-id coll4)}])
+    (index/wait-until-indexed)
+
+    (testing "search collections by service names"
+      (are3 [items service options]
+        (let [params (merge {:service_name service}
+                            (when options
+                              {"options[service_name]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single service search"
+        [coll1 coll2] "service1" {}
+
+        "no matching service"
+        [] "service3" {}
+
+        "multiple services"
+        [coll1 coll2 coll3] ["service1" "service2"] {}
+
+        "AND option false"
+        [coll1 coll2 coll3] ["service1" "service2"] {:and false}
+
+        "AND option true"
+        [coll2] ["service1" "service2"] {:and true}
+
+        "pattern true"
+        [coll1 coll2 coll3] "Serv*" {:pattern true}
+
+        "pattern false"
+        [] "Serv*" {:pattern false}
+
+        "default pattern is false"
+        [] "Serv*" {}
+
+        "ignore-case true"
+        [coll1 coll2] "service1" {:ignore-case true}
+
+        "ignore-case false"
+        [] "service1" {:ignore-case false}))
+
+    (testing "search collections by service concept-ids"
+      (are3 [items service options]
+        (let [params (merge {:service_concept_id service}
+                            (when options
+                              {"options[service_concept_id]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single service search"
+        [coll1 coll2] serv1-concept-id {}
+
+        "service concept id search is case sensitive"
+        [] (string/lower-case serv1-concept-id) {}
+
+        "no matching service"
+        [] serv4-concept-id {}
+
+        "multiple services"
+        [coll1 coll2 coll3] [serv1-concept-id serv2-concept-id] {}
+
+        "AND option false"
+        [coll1 coll2 coll3] [serv1-concept-id serv2-concept-id] {:and false}
+
+        "AND option true"
+        [coll2] [serv1-concept-id serv2-concept-id] {:and true}))))
