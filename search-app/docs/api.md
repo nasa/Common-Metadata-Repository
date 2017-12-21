@@ -65,6 +65,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Tag parameters](#c-tag-parameters)
     * [Variable parameters](#c-variable-parameters)
     * [Variables](#c-variables)
+    * [Service parameters](#c-service-parameters)
     * [Spatial](#c-spatial)
         * [Polygon](#c-polygon)
         * [Bounding Box](#c-bounding-box)
@@ -1521,6 +1522,23 @@ Find collections matching 'variables-h' param value
 Find collections matching multiple 'variables-h' param values, default is :and
 
      curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[measurement\]=M1&variables-h\[0\]\[variable\]=Var1&variables-h\[1\]\[measurement\]=M2"
+
+#### <a name="c-service-parameters"></a> Find collections by service parameters
+
+Collections can be found by searching for associated services. The following service parameters are supported.
+
+* service_name
+  * supports `pattern`, `ignore_case` and option `and`
+* service_concept_id
+  * supports option `and`
+
+Find collections matching service name.
+
+    curl "%CMR-ENDPOINT%/collections?service_name=AtlasNorth"
+
+Find collections matching service concept id.
+
+    curl "%CMR-ENDPOINT%/collections?service_concept_id\[\]=S100000-PROV1&service_concept_id\[\]=S12345-PROV1"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 

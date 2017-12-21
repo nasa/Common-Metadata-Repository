@@ -99,7 +99,7 @@
    (assert-collection-atom-json-result coll expected-fields serv-concept-ids var-concept-ids)
    (assert-collection-umm-json-result coll expected-fields serv-concept-ids var-concept-ids)))
 
-(deftest collection-service-search-test
+(deftest collection-service-search-result-fields-test
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                 :short-name "S1"
