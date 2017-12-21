@@ -41,7 +41,8 @@
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
                        :processing-level-id-h :sensor :data-center-h :measurement :variable-name
-                       :variable-concept-id :variable-native-id :author}
+                       :variable-concept-id :variable-native-id :author :service-name
+                       :service-concept-id}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
 
@@ -139,7 +140,11 @@
    :variable-concept-id cpv/and-option
    :variable-native-id cpv/string-plus-and-options
    :measurement cpv/string-plus-and-options
-   :variables-h cpv/string-plus-or-options})
+   :variables-h cpv/string-plus-or-options
+
+   ;; service related parameters
+   :service-name cpv/string-plus-and-options
+   :service-concept-id cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]

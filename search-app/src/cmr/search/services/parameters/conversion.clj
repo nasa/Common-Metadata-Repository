@@ -72,7 +72,11 @@
    :variable-name :string
    :variable-concept-id :string
    :variable-native-id :string
-   :variables-h :variables-h})
+   :variables-h :variables-h
+
+   ;; service parameters
+   :service-name :string
+   :service-concept-id :string})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -133,7 +137,7 @@
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
-  #{:concept-id :variable-concept-id})
+  #{:concept-id :variable-concept-id :service-concept-id})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
