@@ -207,6 +207,9 @@
     (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
           _ (index/wait-until-indexed)
           {:keys [task-id]} response
+          ;; I am surprised to find out that the task-id returned in the response is a string
+          ;; Here I am just blindly patch this test to work with a string.
+          next-task-id (+ 1 (Integer/parseInt task-id))
           collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
       (is (= "COMPLETE" (:task-status collection-response)))
 
@@ -215,9 +218,10 @@
       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
         (is (= 400 (:status response)))
         (is (= ["Bulk update is disabled."] (:errors response))))
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" 2)]
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" next-task-id)]
         (is (= 404 (:status collection-response)))
-        (is (= ["Bulk update task with task id [2] could not be found for provider id [PROV1]."]
+        (is (= [(format "Bulk update task with task id [%s] could not be found for provider id [PROV1]."
+                        next-task-id)]
                (:errors collection-response))))
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
         (is (= 200 (:status collection-response))))
