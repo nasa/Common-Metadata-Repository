@@ -206,31 +206,30 @@
     ;; Initiate bulk update that shouldn't add any duplicates.
     (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
           _ (index/wait-until-indexed)
-          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
-      (is (= "COMPLETE" (:task-status collection-response))))
+          {:keys [task-id]} response
+          collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+      (is (= "COMPLETE" (:task-status collection-response)))
 
-    (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
-    ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-      (is (= 400 (:status response)))
-      (is (= ["Bulk update is disabled."] (:errors response))))
-    ;; Wait for queueing/indexing to catch up
-    (index/wait-until-indexed)
-    (let [collection-response (ingest/bulk-update-task-status "PROV1" 2)]
-      (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [2] could not be found for provider id [PROV1]."]
-             (:errors collection-response))))
-    (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-      (is (= 200 (:status collection-response))))
-    (let [collection-response (ingest/bulk-update-task-status "PROV2" 1)]
-      (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [1] could not be found for provider id [PROV2]."]
-             (:errors collection-response))))
-    (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+      (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
+      ;; Kick off bulk update when bulk update is disabled is not allowed
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+        (is (= 400 (:status response)))
+        (is (= ["Bulk update is disabled."] (:errors response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" 2)]
+        (is (= 404 (:status collection-response)))
+        (is (= ["Bulk update task with task id [2] could not be found for provider id [PROV1]."]
+               (:errors collection-response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= 200 (:status collection-response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV2" task-id)]
+        (is (= 404 (:status collection-response)))
+        (is (= [(format "Bulk update task with task id [%s] could not be found for provider id [PROV2]."
+                        task-id)]
+               (:errors collection-response))))
+      (side/eval-form `(ingest-config/set-bulk-update-enabled! true)))
 
     ;; Kick off bulk update
-    (let [response 
-           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options1)]
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options1)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -256,8 +255,7 @@
                  :Term "ENVIRONMENTAL IMPACTS"
                  :Topic "HUMAN DIMENSIONS"}]
                (:ScienceKeywords (:umm concept))))))
-    (let [response
-           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options2)]
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options2)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -271,8 +269,7 @@
         (is (= 4 (:revision-id (:meta concept))))
         (ingest/assert-user-id concept-id 4 "user1")))
 
-    (let [response
-           (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options3)]
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options3)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -511,7 +508,7 @@
                    {:ShortName "a340-600-3"
                     :LongName "airbus a340-600"
                     :Type "Aircraft"
-                    :Instruments [{:ShortName "LVIS"}]}] 
+                    :Instruments [{:ShortName "LVIS"}]}]
                   (:Platforms (:umm concept)))))))))
 
 (deftest nil-platform-long-name-bulk-update

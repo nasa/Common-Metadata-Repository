@@ -506,7 +506,7 @@
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
-        params (merge params (when headers {:headers headers})) 
+        params (merge params (when headers {:headers headers}))
         response (client/request params)]
    (parse-bulk-update-response response options))))
 
