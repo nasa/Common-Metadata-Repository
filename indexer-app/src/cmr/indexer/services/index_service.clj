@@ -572,7 +572,15 @@
        context
        index
        (concept-mapping-types :variable)
-       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))))
+       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))
+
+    ;; delete the services
+    (doseq [index (vals (:service index-names))]
+      (es/delete-by-query
+       context
+       index
+       (concept-mapping-types :service)
+       {:term {(query-field->elastic-field :provider-id :service) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
