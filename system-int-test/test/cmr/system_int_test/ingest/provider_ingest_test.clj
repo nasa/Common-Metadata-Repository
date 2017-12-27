@@ -12,10 +12,12 @@
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.association-util :as au]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.service-util :as services]
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.variable-util :as variables]
     [cmr.transmit.config :as transmit-config]))
@@ -125,10 +127,19 @@
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
           variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
                                                            :Name "Variable1"})
-
           variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                            :Name "Variable2"
                                                            :provider-id "PROV2"})
+          service1 (services/ingest-service-with-attrs {:native-id "svc1"
+                                                        :Name "service1"})
+          service2 (services/ingest-service-with-attrs {:native-id "svc2"
+                                                        :Name "service2"
+                                                        :provider-id "PROV2"})
+          _ (index/wait-until-indexed)
+          sa1 (au/make-service-association
+               token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
+          sa2 (au/make-service-association
+               token (:concept-id service2) [{:concept-id (:concept-id coll3)}])
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
@@ -164,8 +175,10 @@
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
       (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
-      (is (= 1 (:hits (variables/search {:name "Variable1"}))))
-      (is (= 1 (:hits (variables/search {:name "Variable2"}))))
+      (d/refs-match? [variable1] (search/find-refs :variable {:name "Variable1"}))
+      (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
+      (d/refs-match? [service1] (search/find-refs :service {:name "service1"}))
+      (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))
 
       ;; ensure PROV1 group is indexed
       (is (= [(:concept-id access-group)]
@@ -194,6 +207,8 @@
         gran2
         gran3
         variable1
+        service1
+        sa1
         access-group
         acl1
         acl2)
@@ -211,7 +226,9 @@
         (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
         coll3
         gran4
-        variable2)
+        variable2
+        service2
+        sa2)
 
       ;; search on PROV1 finds nothing
       (is (d/refs-match?
@@ -229,9 +246,13 @@
            [gran4]
            (search/find-refs :granule {:provider-id "PROV2"})))
       ;; Variable on PROV1 is not found in search
-      (is (= 0 (:hits (variables/search {:name "Variable1"}))))
+      (d/refs-match? [] (search/find-refs :variable {:name "Variable1"}))
       ;; Variable on PROV2 is still found in search
-      (is (= 1 (:hits (variables/search {:name "Variable2"}))))))
+      (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
+      ;; Service on PROV1 is not found in search
+      (d/refs-match? [] (search/find-refs :service {:name "service1"}))
+      ;; Service on PROV2 is still found in search
+      (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))))
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
