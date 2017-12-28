@@ -294,11 +294,27 @@
   (get-granule-concept-ids
    [db provider native-id]
    (let [table (tables/get-table-name provider :granule)
-         result (su/find-one
-                 db (select [:concept-id :parent-collection-id]
-                            (from table)
-                            (where (by-provider :granule provider `(= :native-id ~native-id)))))]
-     [(:concept_id result) (:parent_collection_id result)]))
+         {:keys [provider-id small]} provider
+         stmt (if small
+                [(format "select a.concept_id, a.parent_collection_id, a.deleted
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s where provider_id = '%s'
+                          and native_id = '%s' group by concept_id) b
+                          where a.concept_id = b.concept_id
+                          and a.revision_id = b.revision_id"
+                         table table provider-id native-id)]
+                [(format "select a.concept_id, a.parent_collection_id, a.deleted
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s where native_id = '%s' group by concept_id) b
+                          where a.concept_id = b.concept_id
+                          and a.revision_id = b.revision_id"
+                         table table native-id)])
+         result (first (su/query db stmt))
+         {:keys [concept_id parent_collection_id deleted]} result
+         deleted (when deleted (= 1 (int deleted)))]
+     [concept_id parent_collection_id deleted]))
 
   (get-concept
    ([db concept-type provider concept-id]

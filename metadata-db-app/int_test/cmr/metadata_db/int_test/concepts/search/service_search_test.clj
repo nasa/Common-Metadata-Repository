@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
@@ -10,8 +11,8 @@
 
 (deftest find-services
   (let [;; create two services with the same native-id on different providers with multiple revisions
-        serv1 (util/create-and-save-service "REG_PROV" 1 3)
-        serv2 (util/create-and-save-service "SMAL_PROV1" 1 2)]
+        serv1 (concepts/create-and-save-concept :service "REG_PROV" 1 3)
+        serv2 (concepts/create-and-save-concept :service "SMAL_PROV1" 1 2)]
     (testing "find latest revisions"
       (are3 [servs params]
         (let [found-servs (->> (util/find-latest-concepts :service params)

@@ -17,7 +17,7 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                        (search/freeze-resume-time-fixture)]))
 
 (def collection-formats
@@ -28,6 +28,16 @@
   {:ScienceKeywords [{:Category "EARTH SCIENCE"
                       :Topic "OCEANS"
                       :Term "MARINE SEDIMENTS"}]})
+
+(def find-and-replace-multiple-science-keywords-umm
+  "Used to test the case when update-value contains a list of science keywords."
+  {:ScienceKeywords [{:Category "EARTH SCIENCE"
+                      :Topic "OCEANS"
+                      :Term "MARINE SEDIMENTS"}
+                     {:Category "EARTH SCIENCE2"
+                      :Topic "HUMAN DIMENSIONS2"
+                      :Term "ENVIRONMENTAL IMPACTS2"
+                      :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]})
 
 (def data-centers-umm
   {:DataCenters [{:ShortName "NSID" ;; intentional misspelling for tests
@@ -95,7 +105,7 @@
                       :VariableLevel1 "CLOUD MICROPHYSICS"
                       :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]})
 
-(def find-remove-all-platforms-instruments-umm
+(def platforms-instruments-umm
   {:Platforms [{:ShortName "a340-600-1"
                 :LongName "airbus a340-600-1"
                 :Type "Aircraft"}
@@ -173,6 +183,9 @@
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
+        bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
+        bulk-update-options2 {:token (e/login (s/context) "user1")}
+        bulk-update-options3 {:user-id "user2"}
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
@@ -189,29 +202,41 @@
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
                                        :Topic "OCEANS"}}]
-    (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
-    ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-      (is (= 400 (:status response)))
-      (is (= ["Bulk update is disabled."] (:errors response))))
-    ;; Wait for queueing/indexing to catch up
-    (index/wait-until-indexed)
-    (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-      (is (= 404 (:status collection-response)))
-      (is (= ["Bulk update task with task id [1] could not be found."]
-             (:errors collection-response))))
 
-    (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+    ;; Initiate bulk update that shouldn't add any duplicates.
+    (let [response (ingest/bulk-update-collections "PROV1" duplicate-body)
+          _ (index/wait-until-indexed)
+          {:keys [task-id]} response
+          ;; I am surprised to find out that the task-id returned in the response is a string
+          ;; Here I am just blindly patch this test to work with a string.
+          next-task-id (+ 1 (Integer/parseInt task-id))
+          collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+      (is (= "COMPLETE" (:task-status collection-response)))
+
+      (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
+      ;; Kick off bulk update when bulk update is disabled is not allowed
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+        (is (= 400 (:status response)))
+        (is (= ["Bulk update is disabled."] (:errors response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" next-task-id)]
+        (is (= 404 (:status collection-response)))
+        (is (= [(format "Bulk update task with task id [%s] could not be found for provider id [PROV1]."
+                        next-task-id)]
+               (:errors collection-response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= 200 (:status collection-response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV2" task-id)]
+        (is (= 404 (:status collection-response)))
+        (is (= [(format "Bulk update task with task id [%s] could not be found for provider id [PROV2]."
+                        task-id)]
+               (:errors collection-response))))
+      (side/eval-form `(ingest-config/set-bulk-update-enabled! true)))
+
     ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options1)]
       (is (= 200 (:status response)))
-      ;; Initiate bulk update that shouldn't add anything, including duplicates.
-      (ingest/bulk-update-collections "PROV1" duplicate-body)
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
-        (is (= "COMPLETE" (:task-status collection-response))))
-
       ;; Check that each concept was updated
       (doseq [concept-id concept-ids
               :let [concept (-> (search/find-concepts-umm-json :collection
@@ -219,8 +244,8 @@
                                 :results
                                 :items
                                 first)]]
-        (is (= 3
-               (:revision-id (:meta concept))))
+        (is (= 3 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 3 "user2")
         (is (= "2017-01-01T00:00:00Z"
                (:revision-date (:meta concept))))
         (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
@@ -233,7 +258,34 @@
                  :Category "EARTH SCIENCE"
                  :Term "ENVIRONMENTAL IMPACTS"
                  :Topic "HUMAN DIMENSIONS"}]
-               (:ScienceKeywords (:umm concept))))))))
+               (:ScienceKeywords (:umm concept))))))
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options2)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+        (is (= 4 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 4 "user1")))
+
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options3)]
+      (is (= 200 (:status response)))
+      ;; Wait for queueing/indexing to catch up
+      (index/wait-until-indexed)
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+        (is (= 5 (:revision-id (:meta concept))))
+        (ingest/assert-user-id concept-id 5 "user2")))))
 
 (deftest bulk-update-add-to-existing-multiple-science-keywords
   ;; This test is the same as the previous bulk-update-science-keywords test except
@@ -261,15 +313,17 @@
                         :update-value [{:Category "EARTH SCIENCE"
                                         :Term "MARINE SEDIMENTS"
                                         :Topic "OCEANS"}
-                                       {:Category "EARTH SCIENCE2"
-                                        :Topic "HUMAN DIMENSIONS2"
-                                        :Term "ENVIRONMENTAL IMPACTS2"
-                                        :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}]
+                                       {:Category "EARTH SCIENCE1"
+                                        :Topic "HUMAN DIMENSIONS1"
+                                        :Term "ENVIRONMENTAL IMPACTS1"
+                                        :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
+       ;; Initiate bulk update that shouldn't add any duplicates.
+       (ingest/bulk-update-collections "PROV1" duplicate-body)
+       ;; Wait for queueing/indexing to catch up
+       (index/wait-until-indexed)
        ;; Kick off bulk update
        (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
          (is (= 200 (:status response)))
-         ;; Initiate bulk update that shouldn't add anything, including duplicates.
-         (ingest/bulk-update-collections "PROV1" duplicate-body)
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
          (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
@@ -287,6 +341,99 @@
                    :Term "MARINE SEDIMENTS"
                    :Topic "OCEANS"}
                   {:VariableLevel1 "HEAVY METALS CONCENTRATION1"
+                   :Category "EARTH SCIENCE1"
+                   :Term "ENVIRONMENTAL IMPACTS1"
+                   :Topic "HUMAN DIMENSIONS1"}
+                  {:VariableLevel1 "HEAVY METALS CONCENTRATION2"
+                   :Category "EARTH SCIENCE2"
+                   :Term "ENVIRONMENTAL IMPACTS2"
+                   :Topic "HUMAN DIMENSIONS2"}]))))))
+
+(deftest bulk-update-clear-all-and-replace-with-multiple-science-keywords
+  ;; This test shows that update-value could be an array of objects when doing CLEAR_ALL_AND_REPLACE.
+  ;; Ingest a collection in each format with science keywords to update
+  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "CLEAR_ALL_AND_REPLACE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value [{:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}
+                                         {:Category "EARTH SCIENCE2"
+                                          :Topic "HUMAN DIMENSIONS2"
+                                          :Term "ENVIRONMENTAL IMPACTS2"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION2"}
+                                         {:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 200 (:status response)))
+         ;; Wait for queueing/indexing to catch up
+         (index/wait-until-indexed)
+         (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+           (is (= "COMPLETE" (:task-status collection-response))))
+
+         ;; Check that each concept was updated
+         (doseq [concept-id concept-ids
+                 :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                  {:concept-id concept-id})
+                                   :results
+                                   :items
+                                   first)]]
+          (is (= (:ScienceKeywords (:umm concept))
+                 [{:VariableLevel1 "HEAVY METALS CONCENTRATION1"
+                   :Category "EARTH SCIENCE1"
+                   :Term "ENVIRONMENTAL IMPACTS1"
+                   :Topic "HUMAN DIMENSIONS1"}
+                  {:VariableLevel1 "HEAVY METALS CONCENTRATION2"
+                   :Category "EARTH SCIENCE2"
+                   :Term "ENVIRONMENTAL IMPACTS2"
+                   :Topic "HUMAN DIMENSIONS2"}]))))))
+
+(deftest bulk-update-find-and-replace-with-multiple-science-keywords
+  ;; This test shows that update-value could be an array of objects when doing FIND_AND_REPLACE.
+  ;; Ingest a collection in each format with science keywords to update
+  (let [concept-ids (ingest-collection-in-each-format find-and-replace-multiple-science-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "FIND_AND_REPLACE"
+                          :find-value {:Topic "OCEANS"}
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value [{:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}
+                                         {:Category "EARTH SCIENCE2"
+                                          :Topic "HUMAN DIMENSIONS2"
+                                          :Term "ENVIRONMENTAL IMPACTS2"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION2"}
+                                         {:Category "EARTH SCIENCE1"
+                                          :Topic "HUMAN DIMENSIONS1"
+                                          :Term "ENVIRONMENTAL IMPACTS1"
+                                          :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 200 (:status response)))
+         ;; Wait for queueing/indexing to catch up
+         (index/wait-until-indexed)
+         (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+           (is (= "COMPLETE" (:task-status collection-response))))
+
+         ;; Check that each concept was updated
+         (doseq [concept-id concept-ids
+                 :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                  {:concept-id concept-id})
+                                   :results
+                                   :items
+                                   first)]]
+          (is (= (:ScienceKeywords (:umm concept))
+                 [{:VariableLevel1 "HEAVY METALS CONCENTRATION1"
                    :Category "EARTH SCIENCE1"
                    :Term "ENVIRONMENTAL IMPACTS1"
                    :Topic "HUMAN DIMENSIONS1"}
@@ -327,10 +474,133 @@
                   (map #(select-keys % [:Roles :ShortName])
                        (:DataCenters (:umm concept))))))))))
 
-(deftest data-center-url-bulk-update
+(deftest nil-instrument-long-name-bulk-update
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "nil instrument long name find and update"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE"
+                                :update-field "INSTRUMENTS"
+                                :find-value {:ShortName "atm"}
+                                :update-value {:ShortName "LVIS"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "a340-600-1"
+                    :LongName "airbus a340-600-1"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"
+                                   :Technique "testing"
+                                   :NumberOfInstruments 0
+                                   :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"}]}]
+                  (:Platforms (:umm concept)))))))))
+
+(deftest nil-platform-long-name-bulk-update
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "nil platform long name find and update"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE"
+                                :update-field "PLATFORMS"
+                                :find-value {:ShortName "a340-600-1"}
+                                :update-value {:ShortName "SMAP"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "SMAP"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"
+                                   :Technique "testing"
+                                   :NumberOfInstruments 0
+                                   :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "atm"
+                                   :LongName "airborne topographic mapper"}]}]
+                  (:Platforms (:umm concept)))))))))
+
+(deftest data-center-home-page-url-removal
     (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
           _ (index/wait-until-indexed)]
-      (testing "Data center find and update home page url"
+      (testing "Data center find and update home page url - removal case."
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :name "TEST NAME"
+                                :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
+                                :update-field "DATA_CENTERS"
+                                :find-value {:ShortName "ShortName"}
+                                :update-value {:ShortName "New ShortName"
+                                               :LongName nil}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           (is (= [{:ShortName "New ShortName"
+                    :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                        :Type "PROJECT HOME PAGE"
+                                                        :URL "http://nsidc.org/daac/index.html"}]
+                                         :ContactMechanisms  [{:Type "Telephone"
+                                                               :Value "1 303 492 6199 x"}
+                                                              {:Type  "Fax"
+                                                               :Value "1 303 492 2468 x"}
+                                                              {:Type  "Email"
+                                                               :Value "nsidc@nsidc.org"}]}}
+                   {:ShortName "New ShortName"}
+                   {:ShortName "New ShortName"}]
+                  (map #(select-keys % [:ShortName :LongName :ContactInformation])
+                       (:DataCenters (:umm concept))))))))))
+
+(deftest data-center-home-page-url-update
+    (let [concept-ids (ingest-collection-in-umm-json-format data-centers-umm-with-home-page-url)
+          _ (index/wait-until-indexed)]
+      (testing "Data center find and update home page url - update case."
         (let [bulk-update-body {:concept-ids concept-ids
                                 :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
@@ -417,7 +687,7 @@
               (:ScienceKeywords (:umm concept)))))))
 
 (deftest bulk-update-remove-all-instruments-test
-  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
+  (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"

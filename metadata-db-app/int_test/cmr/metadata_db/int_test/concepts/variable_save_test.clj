@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer (are3)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,7 +18,7 @@
 
 (defmethod c-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
-  (util/variable-concept provider-id uniq-num attributes))
+  (concepts/create-concept :variable provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
@@ -31,11 +32,11 @@
     :variable ["PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
 (deftest save-variable-created-at
-  (let [concept (util/variable-concept "PROV1" 2)]
+  (let [concept (concepts/create-concept :variable "PROV1" 2)]
     (util/concept-created-at-assertions "variable" concept)))
 
 (deftest save-variable-with-conflicting-native-id
-  (let [concept (util/variable-concept "PROV1" 1)]
+  (let [concept (concepts/create-concept :variable "PROV1" 1)]
     (util/concept-with-conflicting-native-id-assertions
      "variable"
      :variable-name

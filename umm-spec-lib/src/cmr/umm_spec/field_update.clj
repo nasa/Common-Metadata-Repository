@@ -41,7 +41,8 @@
    If the new home-page-url is provided in the update-value.
       a. If data-center-related-urls contains home-page-url, update it with the new home-page-url.
       b. If data-center-related-urls doesn't contain home-page-url, add the new home-page-url to it.
-      Note: Anything other than the home-page-url in update-value are ignored."
+   If the new home-page-url is not present in update-value, remove the home-page-url from data center.
+   Note: Anything other than the home-page-url in update-value are ignored."
   [data-center update-value]
   (let [update-value-related-urls (get-in update-value [:ContactInformation :RelatedUrls])
         update-value-home-page-url (get-home-page-url update-value-related-urls)
@@ -52,7 +53,22 @@
           #(map (fn [x] (if (home-page-url? x) update-value-home-page-url x)) %))
         (let [new-related-urls (conj data-center-related-urls update-value-home-page-url)]
           (assoc-in data-center [:ContactInformation :RelatedUrls] new-related-urls)))
-      data-center)))
+      (update-in data-center [:ContactInformation :RelatedUrls]
+          #(remove home-page-url? %)))))
+
+(defn- remove-data-center-empty-related-urls
+  "Remove RelatedUrls from data center's ContactInformation if it's empty"
+  [data-center]
+  (if (seq (get-in data-center [:ContactInformation :RelatedUrls]))
+    data-center
+    (update-in data-center [:ContactInformation] dissoc :RelatedUrls))) 
+
+(defn- remove-data-center-empty-contact-info
+  "Remove data center's ContactInformation if it's empty"
+  [data-center]
+  (if (seq (:ContactInformation data-center))
+    data-center
+    (dissoc data-center :ContactInformation))) 
 
 (defn- data-center-update
   "Apply update to data-center using the update-value. Returns data center.
@@ -60,7 +76,10 @@
    and regular update to everything outside of ContactInformation."
   [data-center update-value]
   (let [update-value-non-contact-info-part (dissoc update-value :ContactInformation)
-        data-center-with-updated-home-page-url (home-page-url-update data-center update-value)]
+        data-center-with-updated-home-page-url (-> data-center
+                                                   (home-page-url-update update-value)
+                                                   remove-data-center-empty-related-urls
+                                                   remove-data-center-empty-contact-info)]
     (merge data-center-with-updated-home-page-url update-value-non-contact-info-part)))
 
 (defn- value-matches?
@@ -75,18 +94,30 @@
   (fn [update-type umm update-field update-value find-value]
     update-type))
 
+(defn- remove-duplicates
+  "Remove duplicates in update-field, whoes value is [map(s)] for bulk updates."
+  [umm update-field]
+  (-> umm 
+      (util/update-in-each update-field util/remove-nil-keys)
+      ;; In order to do distinct, convert the list of models to a list of maps
+      (update-in update-field #(map (partial into {}) %))
+      (update-in update-field distinct)))
+
 (defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
   (as-> umm umm
         (if (sequential? update-value)
           (update-in umm update-field #(concat % update-value))
           (update-in umm update-field #(conj % update-value)))
-        (util/update-in-each umm update-field util/remove-nil-keys)
-        (update-in umm update-field distinct)))
+        (remove-duplicates umm update-field)))
 
 (defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
-  (assoc-in umm update-field [update-value]))
+  (as-> umm umm
+        (if (sequential? update-value)
+          (assoc-in umm update-field update-value)
+          (assoc-in umm update-field [update-value]))
+        (remove-duplicates umm update-field)))
 
 (defmethod apply-umm-list-update :find-and-remove
   [update-type umm update-field update-value find-value]
@@ -101,28 +132,31 @@
 
 (defmethod apply-umm-list-update :find-and-replace
   [update-type umm update-field update-value find-value]
-  (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
-      ;; For each entry in update-field, if we find it using the find params,
-      ;; completely replace with update value
-      (update-in umm update-field #(distinct (map (fn [x]
-                                                    (if (value-matches? find-value x)
-                                                      update-value
-                                                      x))
-                                                  %))))
+  (if (seq (get-in umm update-field)) 
+    (let [update-value (if (sequential? update-value)
+                         (map #(util/remove-nil-keys %) update-value)
+                         (util/remove-nil-keys update-value))
+          ;; For each entry in update-field, if we find it using the find params,
+          ;; completely replace with update value
+          updated-umm (update-in umm update-field #(flatten 
+                                                     (map (fn [x]
+                                                            (if (value-matches? find-value x)
+                                                              update-value
+                                                              x))
+                                                           %)))]
+       (remove-duplicates updated-umm update-field))
     umm))
 
 (defmethod apply-umm-list-update :find-and-update
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
       ;; For each entry in update-field, if we find it using the find params,
       ;; update only the fields supplied in update-value with nils removed
       (update-in umm update-field #(distinct (map (fn [x]
                                                     (if (value-matches? find-value x)
                                                       (merge x update-value)
                                                       x))
-                                                  %))))
+                                                  %)))
     umm))
 
 (defmethod apply-umm-list-update :find-and-update-home-page-url
@@ -134,15 +168,14 @@
   ;; in update-value is not used.
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
-    (let [update-value (util/remove-nil-keys update-value)]
-      ;; For each entry in update-field, if we find it using the find params,
-      ;; update only the fields supplied in update-value with nils removed, except for the
-      ;; ContactInformation part of the update-value.
-      (update-in umm update-field #(distinct (map (fn [x]
-                                                    (if (value-matches? find-value x)
-                                                      (data-center-update x update-value)
-                                                      x))
-                                                  %))))
+    ;; For each entry in update-field, if we find it using the find params,
+    ;; update only the fields supplied in update-value with nils removed, except for the
+    ;; ContactInformation part of the update-value.
+    (update-in umm update-field #(distinct (map (fn [x]
+                                                  (if (value-matches? find-value x)
+                                                    (data-center-update x update-value)
+                                                    x))
+                                                %)))
     umm))
 
 (defn apply-update

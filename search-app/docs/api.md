@@ -65,6 +65,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Tag parameters](#c-tag-parameters)
     * [Variable parameters](#c-variable-parameters)
     * [Variables](#c-variables)
+    * [Service parameters](#c-service-parameters)
     * [Spatial](#c-spatial)
         * [Polygon](#c-polygon)
         * [Bounding Box](#c-bounding-box)
@@ -199,7 +200,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 
 The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
 
-`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page=3&page_size=5` would return the 11th item through the 15th item.
+`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page_num=3&page_size=5` would return the 11th item through the 15th item.
 
 `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
 
@@ -1495,6 +1496,8 @@ Collections can be found by searching for associated variables. The following va
   * supports `pattern`, `ignore_case` and option `and`
 * variable_native_id
   * supports `pattern`, `ignore_case` and option `and`
+* variable_concept_id
+  * supports option `and`
 
 Find collections matching variable name.
 
@@ -1503,6 +1506,10 @@ Find collections matching variable name.
 Find collections matching variable native id.
 
     curl "%CMR-ENDPOINT%/collections?variable_native_id\[\]=var1&variable_native_id\[\]=var2"
+
+Find collections matching variable concept id.
+
+    curl "%CMR-ENDPOINT%/collections?variable_concept_id\[\]=V100000-PROV1"
 
 #### <a name="c-variables"></a> Find collections by hierarchical variables
 
@@ -1515,6 +1522,23 @@ Find collections matching 'variables-h' param value
 Find collections matching multiple 'variables-h' param values, default is :and
 
      curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[measurement\]=M1&variables-h\[0\]\[variable\]=Var1&variables-h\[1\]\[measurement\]=M2"
+
+#### <a name="c-service-parameters"></a> Find collections by service parameters
+
+Collections can be found by searching for associated services. The following service parameters are supported.
+
+* service_name
+  * supports `pattern`, `ignore_case` and option `and`
+* service_concept_id
+  * supports option `and`
+
+Find collections matching service name.
+
+    curl "%CMR-ENDPOINT%/collections?service_name=AtlasNorth"
+
+Find collections matching service concept id.
+
+    curl "%CMR-ENDPOINT%/collections?service_concept_id\[\]=S100000-PROV1&service_concept_id\[\]=S12345-PROV1"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 
@@ -3156,6 +3180,8 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * provider
   * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
   * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
@@ -3350,7 +3376,7 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 ###### Valid Variable Sort Keys
   * `name`
   * `long_name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
 Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
@@ -3464,7 +3490,15 @@ The following parameters are supported when searching for services.
 
 ##### Service Matching Parameters
 
-None right now. Coming soon.
+These parameters will match fields within a service. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
 
 ##### <a name="service-search-response"></a> Service Search Response
 
@@ -3488,7 +3522,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 __Example__
 ```
-curl -i "%CMR-ENDPOINT%/services?pretty=true"
+curl -i "%CMR-ENDPOINT%/services?name=Service1&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -3517,13 +3551,13 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Service Sort Keys
   * `name`
-  * `provider_id`
+  * `provider`
   * `revision_date`
 
-Examples of sorting by provider_id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by provider id in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider_id"
-    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider_id"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider"
+    curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider"
 
 #### <a name="service-access-control"></a> Service Access Control
 

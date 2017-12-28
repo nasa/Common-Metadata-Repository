@@ -3,14 +3,15 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "SMAL_PROV1" :small true}))
 
 (deftest find-tags
-  (let [tag1 (util/create-and-save-tag 1 3)
-        tag2 (util/create-and-save-tag 2 2)]
+  (let [tag1 (concepts/create-and-save-concept :tag "CMR" 1 3)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2 2)]
     (testing "find latest revsions"
       (are3 [tags params]
         (is (= (set tags)

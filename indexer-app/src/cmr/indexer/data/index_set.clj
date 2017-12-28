@@ -286,6 +286,7 @@
           :entry-id           (m/stored m/string-field-mapping)
           :entry-id.lowercase m/string-field-mapping
           :doi           m/string-field-mapping
+          :doi-stored    (m/stored m/string-field-mapping)
           :doi.lowercase m/string-field-mapping
           :entry-title           (m/stored m/string-field-mapping)
           :entry-title.lowercase m/string-field-mapping
@@ -439,11 +440,17 @@
           ;; associated variables
           :variable-names m/string-field-mapping
           :variable-names.lowercase m/string-field-mapping
+          :variable-concept-ids (m/doc-values m/string-field-mapping)
           :variable-native-ids (m/doc-values m/string-field-mapping)
           :variable-native-ids.lowercase (m/doc-values m/string-field-mapping)
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
           :variables variables-mapping
+
+          ;; associated services
+          :service-names (m/doc-values m/string-field-mapping)
+          :service-names.lowercase (m/doc-values m/string-field-mapping)
+          :service-concept-ids (m/doc-values m/string-field-mapping)
 
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
           :associations-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))

@@ -117,11 +117,13 @@
   [db provider concept]
   (if (:concept-id concept)
     concept
-    (let [[existing-concept-id coll-concept-id] (c/get-granule-concept-ids
-                                                 db provider (:native-id concept))
+    (let [[existing-concept-id coll-concept-id deleted] (c/get-granule-concept-ids
+                                                         db provider (:native-id concept))
           concept-id (if existing-concept-id existing-concept-id (c/generate-concept-id db concept))
           parent-concept-id (get-in concept [:extra-fields :parent-collection-id])]
-      (if (and existing-concept-id (not= coll-concept-id parent-concept-id))
+      (if (and existing-concept-id
+               (not= coll-concept-id parent-concept-id)
+               (not deleted))
         (errors/throw-service-error
          :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
         (assoc concept :concept-id concept-id)))))
@@ -654,7 +656,7 @@
 
 (defmethod force-delete-cascading-events :variable
   [context concept-type concept-id revision-id]
-  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))		
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
 (defmethod force-delete-cascading-events :default
   [context concept-type concept-id revision-id]

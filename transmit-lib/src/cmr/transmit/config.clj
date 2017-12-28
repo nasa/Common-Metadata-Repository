@@ -40,6 +40,9 @@
 (def token-header
   "echo-token")
 
+(def user-id-header
+  "user-id")
+
 (defmacro def-app-conn-config
   "Defines the following configuration entries for an application:
   * protocol

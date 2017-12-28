@@ -1,24 +1,15 @@
 (ns cmr.umm-spec.validation.umm-spec-collection-validation
   "Defines validations for UMM collections."
   (:require
-   [clj-time.core :as t]
    [cmr.common.validations.core :as v]
-   [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.validation.additional-attribute :as aa]
    [cmr.umm-spec.validation.data-date :as data-date]
    [cmr.umm-spec.validation.platform :as p]
-   [cmr.umm-spec.validation.project :as project]
+   [cmr.umm-spec.validation.coll-project :as project]
    [cmr.umm-spec.validation.related-url :as url]
    [cmr.umm-spec.validation.spatial :as s]
+   [cmr.umm-spec.validation.temporal-extent :as temporal-extent]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
-
-(defn- range-date-time-validation
-  "Defines range-date-time validation"
-  [field-path value]
-  (let [{:keys [BeginningDateTime EndingDateTime]} value]
-    (when (and BeginningDateTime EndingDateTime (t/after? BeginningDateTime EndingDateTime))
-      {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
-                           (str BeginningDateTime) (str EndingDateTime))]})))
 
 (defn- metadata-association-name
   "Returns the unique name of metadata association for reporting purpose"
@@ -33,6 +24,13 @@
       {field-path [(format "%%s minimum [%s] must be less than or equal to the maximum [%s]."
                            (str MinimumValue) (str MaximumValue))]})))
 
+(defn doi-format-warning-validation
+  "Validates that DOI is properly formatted."
+  [field-path value]
+  (when (seq value)
+    (when-not (re-matches #"\d\d\.\d\d\d\d(\.\d+)*\/.+" value)
+      {field-path [(format "DOI [%s] is improperly formatted." value)]})))
+
 (def tiling-identification-system-coordinate-validations
   "Defines the tiling identification system coordinate validations for collections"
   {:Coordinate1 coordinate-validator
@@ -43,9 +41,6 @@
   [(vu/unique-by-name-validator :TilingIdentificationSystemName)
    (v/every tiling-identification-system-coordinate-validations)])
 
-(def temporal-extent-validation
-  {:RangeDateTimes (v/every range-date-time-validation)})
-
 (def science-keyword-validations
   "Defines the science keyword validations for collections"
   {:Category v/required
@@ -54,7 +49,7 @@
 
 (def collection-validations
   "Defines validations for collections"
-  {:TemporalExtents (v/every temporal-extent-validation)
+  {:TemporalExtents (v/every temporal-extent/temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
    :Projects project/projects-validation
@@ -63,28 +58,17 @@
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
    :TilingIdentificationSystems tiling-identification-system-validations})
 
-(defn- temporal-end-date-in-past-validator
-  "Validate that the end date in TemporalExtents is in the past"
-  [field-path value]
-  (when (and value (not (date/is-in-past? value)))
-    {field-path [(str "Ending date should be in the past. Either set ending date to a date "
-                      "in the past or remove end date and set the ends at present flag to true.")]}))
-
-(def temporal-extent-warning-validation
-  {:RangeDateTimes (v/every {:BeginningDateTime vu/date-in-past-validator
-                             :EndingDateTime temporal-end-date-in-past-validator})
-   :SingleDateTimes (v/every vu/date-in-past-validator)})
-
 (def collection-validation-warnings
  "Defines validations for collections that we want to return as warnings and not
  as failures"
  {:RelatedUrls (v/every url/related-url-validations)
   :Projects project/projects-warning-validation
-  :TemporalExtents (v/every temporal-extent-warning-validation)
+  :TemporalExtents (v/every temporal-extent/temporal-extent-warning-validation)
   :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
   :DataCenters (v/every url/data-center-url-validation)
   :ContactPersons (v/every url/contact-persons-groups-contact-information-validations)
   :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)
   :DataDates data-date/data-dates-warning-validation
-  :MetadataDates data-date/data-dates-warning-validation})
+  :MetadataDates data-date/data-dates-warning-validation
+  :DOI {:DOI doi-format-warning-validation}})

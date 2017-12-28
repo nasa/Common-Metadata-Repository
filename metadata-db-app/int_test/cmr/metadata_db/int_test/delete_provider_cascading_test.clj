@@ -2,6 +2,7 @@
   "Tests that delete a provider cascading delete its concepts."
   (:require
    [clojure.test :refer :all]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (join-fixtures
@@ -19,17 +20,17 @@
   (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
 (deftest delete-provider-cascade-delete-concepts
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
-        coll2 (util/create-and-save-collection "PROV1" 1)
-        gran1 (util/create-and-save-granule "REG_PROV" coll1 1)
-        gran2 (util/create-and-save-granule "PROV1" coll2 1)
-        variable1 (util/create-and-save-variable "REG_PROV" 1)
-        variable2 (util/create-and-save-variable "PROV1" 2)
-        variable3 (util/create-and-save-variable "PROV1" 3)
-        variable-association1 (util/create-and-save-variable-association coll1 variable1 1)
-        variable-association2 (util/create-and-save-variable-association coll1 variable2 2)
-        variable-association3 (util/create-and-save-variable-association coll2 variable1 3)
-        variable-association4 (util/create-and-save-variable-association coll2 variable2 4)]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1)
+        coll2 (concepts/create-and-save-concept :collection "PROV1" 1)
+        gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1)
+        gran2 (concepts/create-and-save-concept :granule "PROV1" coll2 1)
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1)
+        variable2 (concepts/create-and-save-concept :variable "PROV1" 2)
+        variable3 (concepts/create-and-save-concept :variable "PROV1" 3)
+        variable-association1 (concepts/create-and-save-concept :variable-association coll1 variable1 1)
+        variable-association2 (concepts/create-and-save-concept :variable-association coll1 variable2 2)
+        variable-association3 (concepts/create-and-save-concept :variable-association coll2 variable1 3)
+        variable-association4 (concepts/create-and-save-concept :variable-association coll2 variable2 4)]
 
     ;; Delete REG_PROV
     (util/delete-provider "REG_PROV")

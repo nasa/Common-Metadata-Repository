@@ -1,10 +1,12 @@
 (ns cmr.metadata-db.int-test.concepts.acl-save-test
   "Contains integration tests for saving acls. Tests saves with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer (are2)]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer (are2)]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,7 +18,7 @@
 
 (defmethod c-spec/gen-concept :acl
   [_ provider-id uniq-num attributes]
-  (util/acl-concept provider-id uniq-num attributes))
+  (concepts/create-concept :acl provider-id uniq-num attributes))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,8 +31,8 @@
 
 (deftest save-acl-with-same-native-id-test
   (testing "Save acls with the same native-id for two small providers is OK"
-    (let [serv1 (util/create-and-save-acl "SMAL_PROV1" 1 1 {:native-id "foo"})
-          serv2 (util/create-and-save-acl "SMAL_PROV2" 2 1 {:native-id "foo"})
+    (let [serv1 (concepts/create-and-save-concept :acl "SMAL_PROV1" 1 1 {:native-id "foo"})
+          serv2 (concepts/create-and-save-concept :acl "SMAL_PROV2" 2 1 {:native-id "foo"})
           [serv1-concept-id serv2-concept-id] (map :concept-id [serv1 serv2])]
       (util/verify-concept-was-saved serv1)
       (util/verify-concept-was-saved serv2)

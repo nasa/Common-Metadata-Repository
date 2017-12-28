@@ -25,13 +25,13 @@
       {% for holding in holdings %}
       <tr>
         <td>
-          <a href="{{ holding.link-href }}">{{ holding.umm.EntryTitle }}</a>
+          <a href="{{ holding.link-href }}">{{ holding.entry-title }}</a>
         </td>
         <td>
-          {{ holding.umm.ShortName }}
+          {{ holding.short-name }}
         </td>
         <td>
-          {{ holding.umm.Version }}
+          {{ holding.version-id }}
         </td>
       </tr>
       {% endfor %}

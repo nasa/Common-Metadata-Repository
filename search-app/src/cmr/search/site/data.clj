@@ -12,10 +12,13 @@
   (:require
    [clj-time.core :as clj-time]
    [clojure.string :as string]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-exec]
+   [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.log :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [defn-timed]]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
    [cmr.transmit.config :as config]
@@ -66,18 +69,33 @@
         (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
+(defn-timed get-collection-data
+  "Get the collection data from elastic by provider id and tag. Sort results
+  by entry title"
+  [context tag provider-id]
+  (let [conditions (query-svc/generate-query-conditions-for-parameters
+                    context
+                    :collection
+                    {:tag-key tag
+                     :provider provider-id})
+        query (query-model/query {:concept-type :collection
+                                  :condition (gc/and-conds conditions)
+                                  :skip-acls? false
+                                  :page-size :unlimited
+                                  :result-format :query-specified
+                                  :result-fields [:concept-id
+                                                  :doi-stored
+                                                  :entry-title
+                                                  :short-name
+                                                  :version-id]})
+        result (query-exec/execute-query context query)]
+    (sort-by :entry-title (:items result))))
+
 (defmethod collection-data :default
   [context tag provider-id]
-  (as-> {:tag-key tag
-         :provider provider-id
-         :result-format {:format :umm-json-results}} data
-        (query-svc/make-concepts-query context :collection data)
-        (assoc data :page-size :unlimited)
-        (query-exec/execute-query context data)
-        (:items data)
-        (sort-by #(get-in % [:umm :EntryTitle]) data)))
+  (get-collection-data context tag provider-id))
 
-(defn provider-data
+(defn-timed provider-data
   "Create a provider data structure suitable for template iteration to
   generate links.
 
@@ -91,33 +109,21 @@
      :collections collections
      :collections-count (count collections)}))
 
-(defn providers-data
+(defn-timed providers-data
   "Given a list of provider maps, create the nested data structure needed
   for rendering providers in a template."
   [context tag providers]
   (debug "Using providers:" providers)
   (->> providers
-       (map (partial provider-data context tag))
+       (pmap (partial provider-data context tag))
        ;; Only want to include providers with EOSDIS collections
        (remove #(zero? (get % :collections-count 0)))
        (sort-by :id)))
 
-(defn get-doi
-  "Extract the DOI information from a collection item."
-  [item]
-  (or (get-in item [:umm "DOI"])
-      (get-in item [:umm :DOI])))
-
 (defn has-doi?
   "Determine whether a collection item has a DOI entry."
   [item]
-  (some? (get-doi item)))
-
-(defn doi-link
-  "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
-  link."
-  [doi-data]
-  (format "http://dx.doi.org/%s" (or (doi-data "DOI") (doi-data :DOI))))
+  (some? (:doi-stored item)))
 
 (defn cmr-link
   "Given a CMR host and a concept ID, return the collection landing page for
@@ -129,8 +135,8 @@
   "Create the `href` part of a landing page link."
   [cmr-base-url item]
   (if (has-doi? item)
-    (doi-link (get-doi item))
-    (cmr-link cmr-base-url (get-in item [:meta :concept-id]))))
+    (format "http://dx.doi.org/%s" (:doi-stored item))
+    (cmr-link cmr-base-url (:concept-id item))))
 
 (defn make-holding-data
   "Given a single item from a query's collections, update the item with data

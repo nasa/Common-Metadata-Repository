@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as cs-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,11 +17,11 @@
 
 (defmethod cs-spec/gen-concept :service
   [_ provider-id uniq-num attributes]
-  (util/service-concept provider-id uniq-num attributes))
+  (concepts/create-concept :service provider-id uniq-num attributes))
 
 (defmethod cs-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
-  (util/variable-concept provider-id uniq-num attributes))
+  (concepts/create-concept :variable provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
@@ -53,16 +54,16 @@
    (let [concept (cs-spec/gen-concept :collection "REG_PROV" 1 {})
          saved-concept (util/save-concept concept)
          concept-id (:concept-id saved-concept)
-         tag1 (util/create-and-save-tag 1)
-         tag2 (util/create-and-save-tag 2)
-         tag3 (util/create-and-save-tag 3)]
+         tag1 (concepts/create-and-save-concept :tag "CMR" 1)
+         tag2 (concepts/create-and-save-concept :tag "CMR" 2)
+         tag3 (concepts/create-and-save-concept :tag "CMR" 3)]
      ;; create some collection revisions
      (dorun (repeatedly 3 #(util/save-concept concept)))
      ;; associate tag1 to the whole collection, tag2 to revision 2 and tag3 to revision 3
      ;; this set up is not realistic, but will test the scenarios more thoroughly
-     (let [ta1 (util/create-and-save-tag-association (dissoc saved-concept :revision-id) tag1 1)
-           ta2 (util/create-and-save-tag-association (assoc saved-concept :revision-id 2) tag2 2)
-           ta3 (util/create-and-save-tag-association (assoc saved-concept :revision-id 3) tag3 3)]
+     (let [ta1 (concepts/create-and-save-concept :tag-association (dissoc saved-concept :revision-id) tag1 1)
+           ta2 (concepts/create-and-save-concept :tag-association (assoc saved-concept :revision-id 2) tag2 2)
+           ta3 (concepts/create-and-save-concept :tag-association (assoc saved-concept :revision-id 3) tag3 3)]
 
        ;; no tag associations are deleted before the force delete
        (util/is-tag-association-deleted? ta1 false)
@@ -79,11 +80,11 @@
        (util/is-tag-association-deleted? ta3 false)))))
 
 (deftest force-delete-service-with-associations
-  (let [coll (util/create-and-save-collection "REG_PROV" 1)
+  (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        svc-concept (util/create-and-save-service "REG_PROV" 1 3)
+        svc-concept (concepts/create-and-save-concept :service "REG_PROV" 1 3)
         svc-concept-id (:concept-id svc-concept)
-        svc-assn (util/create-and-save-service-association
+        svc-assn (concepts/create-and-save-concept :service-association
                   coll svc-concept 1)
         svc-assn-concept-id (:concept-id svc-assn)]
     (testing "initial conditions"
@@ -136,11 +137,11 @@
                (:errors response)))))))
 
 (deftest force-delete-variable-with-associations
-  (let [coll (util/create-and-save-collection "REG_PROV" 1)
+  (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        var-concept (util/create-and-save-variable "REG_PROV" 1 3)
+        var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
         var-concept-id (:concept-id var-concept)
-        var-assn (util/create-and-save-variable-association
+        var-assn (concepts/create-and-save-concept :variable-association
                   coll var-concept 1)
         var-assn-concept-id (:concept-id var-assn)]
     (testing "initial conditions"

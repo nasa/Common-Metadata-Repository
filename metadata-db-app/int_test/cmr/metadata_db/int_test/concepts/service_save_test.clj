@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer (are3)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,7 +18,7 @@
 
 (defmethod c-spec/gen-concept :service
   [_ provider-id uniq-num attributes]
-  (util/service-concept provider-id uniq-num attributes))
+  (concepts/create-concept :service provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
@@ -31,11 +32,11 @@
    :service ["PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
 (deftest save-service-created-at
-  (let [concept (util/service-concept "PROV1" 2)]
+  (let [concept (concepts/create-concept :service "PROV1" 2)]
     (util/concept-created-at-assertions "service" concept)))
 
 (deftest save-service-with-conflicting-native-id
-  (let [concept (util/service-concept "PROV1" 1)]
+  (let [concept (concepts/create-concept :service "PROV1" 1)]
     (util/concept-with-conflicting-native-id-assertions
      "service"
      :service-name

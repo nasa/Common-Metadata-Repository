@@ -36,6 +36,7 @@
          (-> (parse/parse-dif10-xml "<DIF>
                                        <Temporal_Coverage>
                                          <Range_DateTime>
+                                           <Beginning_Date_Time>2014-01-01</Beginning_Date_Time>
                                            <Ending_Date_Time>2015-01-01</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>
@@ -50,6 +51,7 @@
          (-> (parse/parse-dif10-xml "<DIF>
                                        <Temporal_Coverage>
                                          <Range_DateTime>
+                                           <Beginning_Date_Time>2014-01-01T04:30:12</Beginning_Date_Time>
                                            <Ending_Date_Time>2015-01-01T04:30:12</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>

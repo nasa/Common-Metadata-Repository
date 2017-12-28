@@ -102,9 +102,10 @@
          (Thread/sleep 10)
          (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
            (recur (set (current-message-states broker-wrapper)))
-           (warn (format "Waited %d ms for messages to complete, but they did not complete: %s"
+           (warn (format "Waited %d ms for messages to complete, but they did not complete. In progress: %s"
                          ms-to-wait
-                         (current-messages broker-wrapper)))))))))
+                         (pr-str (remove #(contains? terminal-states (:state %))
+                                         (current-messages broker-wrapper)))))))))))
 
 (defn- publish-to-queue
   "Publishes a message to the queue and captures the actions with the queue history."
@@ -182,7 +183,9 @@
         (handler msg)
         (update-message-queue-history broker-wrapper queue-name :process msg :success)
         (catch Exception e
-          (update-message-queue-history broker-wrapper queue-name :process msg :retry)
+          ;; Will return a retry up to the retry count and then a failure afterwards
+          (let [message-state (queue-response->message-state :retry msg)]
+            (update-message-queue-history broker-wrapper queue-name :process msg message-state))
           (throw e))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

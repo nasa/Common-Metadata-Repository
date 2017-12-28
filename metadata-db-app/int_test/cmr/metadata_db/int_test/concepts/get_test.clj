@@ -1,10 +1,12 @@
 (ns cmr.metadata-db.int-test.concepts.get-test
   "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "SMAL_PROV" :small true}))
@@ -23,9 +25,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [concept1 (util/collection-concept provider-id 1)
+    (let [concept1 (concepts/create-concept :collection provider-id 1)
           concept2-concept-id (str "C2-" provider-id)
-          concept2 (assoc (util/collection-concept provider-id 2) :concept-id concept2-concept-id)
+          concept2 (assoc (concepts/create-concept :collection provider-id 2)
+                          :concept-id concept2-concept-id)
           {:keys [concept-id]} (last (for [n (range 3)]
                                        (verify (util/save-concept concept1))))
           concept-id2 (:concept-id (verify (util/save-concept concept2)))]
@@ -54,7 +57,7 @@
           (let [{:keys [status]} (util/get-concept-by-id "bad id")]
             (is (= 400 status))))
         (testing "out of range revision-id"
-          (let [concept (util/collection-concept provider-id 1)
+          (let [concept (concepts/create-concept :collection provider-id 1)
                 {:keys [status]} (util/get-concept-by-id-and-revision concept-id 10)]
             (is (= 404 status))))
         (testing "non-integer revision-id"

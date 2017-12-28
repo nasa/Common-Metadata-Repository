@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]
    [cmr.metadata-db.services.concept-service :as concept-service]))
 
@@ -44,21 +45,21 @@
 
 (deftest old-collection-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 13)
-        coll2 (util/create-and-save-collection "REG_PROV" 2 3)
-        coll3 (util/create-and-save-collection "SMAL_PROV1" 1 12 {:native-id "foo"})
-        coll4 (util/create-and-save-collection "SMAL_PROV1" 4 3)
-        coll5 (util/create-and-save-collection "SMAL_PROV2" 4 3 {:native-id "foo"})
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 13)
+        coll2 (concepts/create-and-save-concept :collection "REG_PROV" 2 3)
+        coll3 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1 12 {:native-id "foo"})
+        coll4 (concepts/create-and-save-concept :collection "SMAL_PROV1" 4 3)
+        coll5 (concepts/create-and-save-concept :collection "SMAL_PROV2" 4 3 {:native-id "foo"})
         collections [coll1 coll2 coll3 coll4 coll5]
         ;; set up tag and tag associations
-        tag1 (util/create-and-save-tag 1)
-        tag2 (util/create-and-save-tag 2)
-        tag3 (util/create-and-save-tag 3)
-        tag4 (util/create-and-save-tag 4)
-        ta1 (util/create-and-save-tag-association (dissoc coll1 :revision-id) tag1 1)
-        ta2 (util/create-and-save-tag-association (assoc coll1 :revision-id 1) tag2 2)
-        ta3 (util/create-and-save-tag-association (assoc coll3 :revision-id 9) tag3 3)
-        ta4 (util/create-and-save-tag-association (assoc coll3 :revision-id 1) tag4 4)]
+        tag1 (concepts/create-and-save-concept :tag "CMR" 1)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2)
+        tag3 (concepts/create-and-save-concept :tag "CMR" 3)
+        tag4 (concepts/create-and-save-concept :tag "CMR" 4)
+        ta1 (concepts/create-and-save-concept :tag-association (dissoc coll1 :revision-id) tag1 1)
+        ta2 (concepts/create-and-save-concept :tag-association (assoc coll1 :revision-id 1) tag2 2)
+        ta3 (concepts/create-and-save-concept :tag-association (assoc coll3 :revision-id 9) tag3 3)
+        ta4 (concepts/create-and-save-concept :tag-association (assoc coll3 :revision-id 1) tag4 4)]
 
     ;; Collection 4 has a tombstone
     (util/delete-concept (:concept-id coll4))
@@ -91,14 +92,14 @@
 
 (deftest old-granule-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        gran1 (util/create-and-save-granule "REG_PROV" coll1 1 3)
-        gran2 (util/create-and-save-granule "REG_PROV" coll1 2 3)
-        coll2 (util/create-and-save-collection "SMAL_PROV1" 2 1)
-        gran3 (util/create-and-save-granule "SMAL_PROV1" coll2 1 3 {:native-id "foo"})
-        gran4 (util/create-and-save-granule "SMAL_PROV1" coll2 4 2)
-        coll3 (util/create-and-save-collection "SMAL_PROV2" 2 1)
-        gran5 (util/create-and-save-granule "SMAL_PROV2" coll3 1 12 {:native-id "foo"})
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1 3)
+        gran2 (concepts/create-and-save-concept :granule "REG_PROV" coll1 2 3)
+        coll2 (concepts/create-and-save-concept :collection "SMAL_PROV1" 2 1)
+        gran3 (concepts/create-and-save-concept :granule "SMAL_PROV1" coll2 1 3 {:native-id "foo"})
+        gran4 (concepts/create-and-save-concept :granule "SMAL_PROV1" coll2 4 2)
+        coll3 (concepts/create-and-save-concept :collection "SMAL_PROV2" 2 1)
+        gran5 (concepts/create-and-save-concept :granule "SMAL_PROV2" coll3 1 12 {:native-id "foo"})
         granules [gran1 gran2 gran3 gran4 gran5]]
 
     ;; Granule 4 has a tombstone
@@ -116,13 +117,13 @@
 
 (deftest old-tombstones-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1)
         base-revision-date (tk/now)
         offset->date #(t/plus base-revision-date (t/days %))
 
         ;; Creates a granule based on the number with a revision date offset-days in the future
         make-gran (fn [uniq-num offset-days]
-                    (let [gran (assoc (util/granule-concept "REG_PROV" coll1 uniq-num)
+                    (let [gran (assoc (concepts/create-concept :granule "REG_PROV" coll1 uniq-num)
                                       :revision-date (offset->date offset-days))
                           {:keys [concept-id revision-id]} (util/assert-no-errors
                                                              (util/save-concept gran))]
@@ -218,8 +219,8 @@
 
 (deftest old-tag-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [tag1 (util/create-and-save-tag 1 13)
-        tag2 (util/create-and-save-tag 2 3)]
+  (let [tag1 (concepts/create-and-save-concept :tag "CMR" 1 13)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [tag1 tag2]))
@@ -235,11 +236,11 @@
 
 (deftest old-tag-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        tag1 (util/create-and-save-tag 1 1)
-        tag2 (util/create-and-save-tag 2 1)
-        ta1 (util/create-and-save-tag-association coll1 tag1 1 13)
-        ta2 (util/create-and-save-tag-association coll1 tag2 2 3)]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        tag1 (concepts/create-and-save-concept :tag "CMR" 1 1)
+        tag2 (concepts/create-and-save-concept :tag "CMR" 2 1)
+        ta1 (concepts/create-and-save-concept :tag-association coll1 tag1 1 13)
+        ta2 (concepts/create-and-save-concept :tag-association coll1 tag2 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [ta1 ta2]))
@@ -255,8 +256,8 @@
 
 (deftest old-variable-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [variable1 (util/create-and-save-variable "REG_PROV" 1 13)
-        variable2 (util/create-and-save-variable "REG_PROV" 2 3)]
+  (let [variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 13)
+        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [variable1 variable2]))
@@ -272,11 +273,11 @@
 
 (deftest old-variable-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        variable1 (util/create-and-save-variable "REG_PROV" 1 1)
-        variable2 (util/create-and-save-variable "REG_PROV" 2 1)
-        va1 (util/create-and-save-variable-association coll1 variable1 1 13)
-        va2 (util/create-and-save-variable-association coll1 variable2 2 3)]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 1)
+        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 1)
+        va1 (concepts/create-and-save-concept :variable-association coll1 variable1 1 13)
+        va2 (concepts/create-and-save-concept :variable-association coll1 variable2 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [va1 va2]))
@@ -292,8 +293,8 @@
 
 (deftest old-service-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [service1 (util/create-and-save-service "REG_PROV" 1 13)
-        service2 (util/create-and-save-service "REG_PROV" 2 3)]
+  (let [service1 (concepts/create-and-save-concept :service "REG_PROV" 1 13)
+        service2 (concepts/create-and-save-concept :service "REG_PROV" 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [service1 service2]))
@@ -309,11 +310,11 @@
 
 (deftest old-service-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        service1 (util/create-and-save-service "REG_PROV" 1 1)
-        service2 (util/create-and-save-service "REG_PROV" 2 1)
-        sa1 (util/create-and-save-service-association coll1 service1 1 13)
-        sa2 (util/create-and-save-service-association coll1 service2 2 3)]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        service1 (concepts/create-and-save-concept :service "REG_PROV" 1 1)
+        service2 (concepts/create-and-save-concept :service "REG_PROV" 2 1)
+        sa1 (concepts/create-and-save-concept :service-association coll1 service1 1 13)
+        sa2 (concepts/create-and-save-concept :service-association coll1 service2 2 3)]
 
     ;; Verify prior revisions exist
     (is (every? all-revisions-exist? [sa1 sa2]))

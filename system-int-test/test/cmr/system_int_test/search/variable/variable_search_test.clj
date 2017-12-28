@@ -24,8 +24,10 @@
 
 (deftest search-for-variables-validation-test
   (testing "Unrecognized parameters"
-    (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}
+    (is (= {:status 400
+            :errors ["Parameter [foo] was not recognized."]}
            (variables/search {:foo "bar"}))))
+
   (testing "Unsupported sort key"
     (is (= {:status 400
             :errors ["The sort key [concept_id] is not a valid field for sorting variables."]}
@@ -40,18 +42,15 @@
       :measurement "and"))
 
   (testing "Search with wildcards in concept_id param not supported."
-    (is (= {:errors
-            ["Concept-id [V*] is not valid."
-             "Option [pattern] is not supported for param [concept_id]"],
-            :status 400}
+    (is (= {:status 400
+            :errors ["Concept-id [V*] is not valid."
+                     "Option [pattern] is not supported for param [concept_id]"]}
            (variables/search {:concept-id "V*" "options[concept-id][pattern]" true}))))
 
   (testing "Search with ignore_case in concept_id param not supported."
-    (is (= {:errors
-            ["Concept-id [V*] is not valid."
-             "Option [ignore_case] is not supported for param [concept_id]"],
-            :status 400}
-           (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true}))))
+    (is (= {:status 400
+            :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
+           (variables/search {:concept-id "V1000-PROV1" "options[concept-id][ignore-case]" true}))))
 
   (testing "Default variable search result format is XML"
     (let [{:keys [status headers]} (search/find-concepts-in-format nil :variable {})]
@@ -59,20 +58,20 @@
       (is (= "application/xml; charset=utf-8" (get headers "Content-Type")))))
 
   (testing "Unsuported result format in headers"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for variables."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format :atom+xml :variable {})))))
 
   (testing "Unsuported result format in url extension"
-    (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
-            :status 400}
+    (is (= {:status 400
+            :errors ["The mime type [application/atom+xml] is not supported for variables."]}
            (search/get-search-failure-xml-data
             (search/find-concepts-in-format
              nil :variable {} {:url-extension "atom"}))))))
 
 (deftest search-for-variables-test
-  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
                                                          :Name "Variable1"
                                                          :LongName "Measurement1"
                                                          :provider-id "PROV1"})
@@ -84,7 +83,7 @@
                                                          :Name "a subsitute for variable2"
                                                          :LongName "variable1"
                                                          :provider-id "PROV2"})
-        variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
+        variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
                                                          :Name "v.other"
                                                          :LongName "m.other"
                                                          :provider-id "PROV2"})
@@ -212,6 +211,44 @@
       "By multiple providers with options"
       all-variables
       {:provider ["PROV1" "*2"] "options[provider][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; native-id Param
+      "By native-id case sensitive - exact match"
+      [variable1]
+      {:native-id "VAR1"}
+
+      "By native-id case sensitive, default ignore-case true"
+      [variable1]
+      {:native-id "var1"}
+
+      "By native-id ignore case false"
+      []
+      {:native-id "var1" "options[native-id][ignore-case]" false}
+
+      "By native-id ignore case true"
+      [variable1]
+      {:native-id "var1" "options[native-id][ignore-case]" true}
+
+      "By native-id Pattern, default false"
+      []
+      {:native-id "var*"}
+
+      "By native-id Pattern true"
+      [variable1 variable2 variable3]
+      {:native-id "var*" "options[native-id][pattern]" true}
+
+      "By native-id Pattern false"
+      []
+      {:native-id "var*" "options[native-id][pattern]" false}
+
+      "By multiple native-ids"
+      [variable1 variable2]
+      {:native-id ["VAR1" "var2"]}
+
+      "By multiple native-ids with options"
+      [variable1 variable4]
+      {:native-id ["VAR1" "special*"] "options[native-id][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; concept-id Param
@@ -494,11 +531,11 @@
       [variable2 variable4 variable1 variable3]
 
       "Sort by provider id"
-      "provider_id"
+      "provider"
       [variable2 variable3 variable4 variable1]
 
       "Sort by provider id descending order"
-      "-provider_id"
+      "-provider"
       [variable1 variable2 variable3 variable4]
 
       "Sort by revision-date"
@@ -518,13 +555,13 @@
       [variable2 variable1 variable4 variable3]
 
       "Sort by name ascending then provider id ascending explicitly"
-      ["name" "provider_id"]
+      ["name" "provider"]
       [variable3 variable4 variable1 variable2]
 
       "Sort by name ascending then provider id descending order"
-      ["name" "-provider_id"]
+      ["name" "-provider"]
       [variable3 variable1 variable4 variable2]
 
       "Sort by name then provider id descending order"
-      ["-name" "-provider_id"]
+      ["-name" "-provider"]
       [variable2 variable1 variable4 variable3])))

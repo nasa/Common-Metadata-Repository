@@ -140,16 +140,39 @@
   [kms-index location-string]
   (get-in kms-index [:locations-index (str/upper-case location-string)]))
 
-(defn lookup-by-umm-c-keyword
+(defn- remove-long-name-from-kms-index
+  "Removes long-name from the umm-c-index keys in order to prevent validation when
+   long-name is not present in the umm-c-keyword.  We only want to validate long-name if it is not nil."
+  [kms-index keyword-scheme]
+  (into {}
+    (for [[k v] (get-in kms-index [:umm-c-index keyword-scheme])]
+      [(dissoc k :long-name) v])))
+
+(defmulti lookup-by-umm-c-keyword
   "Takes a keyword as represented in UMM-C and returns the KMS keyword. Comparison is made case
   insensitively."
+  (fn [kms-index keyword-scheme umm-c-keyword]
+    keyword-scheme))
+
+(defmethod lookup-by-umm-c-keyword :platforms
   [kms-index keyword-scheme umm-c-keyword]
   (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
         ;; CMR-3696 This is needed to compare the keyword category, which is mapped
         ;; to the UMM Platform Type field.  This will avoid complications with facets.
-        umm-c-keyword (if (= :platforms keyword-scheme)
-                         (set/rename-keys umm-c-keyword {:type :category})
-                         umm-c-keyword)
+        umm-c-keyword (set/rename-keys umm-c-keyword {:type :category})
+        comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
+                                                            keyword-scheme))]
+    (if (get umm-c-keyword :long-name)
+      ;; Check both longname and shortname
+      (get-in kms-index [:umm-c-index keyword-scheme comparison-map])
+      ;; Check just shortname
+      (-> kms-index
+          (remove-long-name-from-kms-index keyword-scheme)
+          (get comparison-map)))))
+
+(defmethod lookup-by-umm-c-keyword :default
+  [kms-index keyword-scheme umm-c-keyword]
+  (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
         comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
                                                             keyword-scheme))]
     (get-in kms-index [:umm-c-index keyword-scheme comparison-map])))

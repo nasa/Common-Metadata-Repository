@@ -146,7 +146,31 @@
                                   "uuid"
                                   "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}]}
    :platforms {"category"
-               [{"value" "Earth Observation Satellites",
+               [{"value" "Aircraft",
+                 "subfields" ["short_name"],
+                 "short_name"
+                 [{"value" "B-200",
+                   "subfields" ["long_name"],
+                   "long_name"
+                   [{"value" "Beechcraft King Air B-200",
+                     "uuid" "d6aa2406-0323-43c1-b890-3509ee22784e"}]}
+                  {"value" "DHC-3",
+                   "subfields" ["long_name"],
+                   "long_name"
+                   [{"value" "DeHavilland DHC-3 Otter",
+                     "uuid" "aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"}]}
+                  {"value" "CESSNA 188",
+                   "uuid" "80374e6d-fef6-4b11-bcc4-53568a3db220"}
+                  {"value" "AIRCRAFT",
+                   "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}
+                  {"value" "ALTUS",
+                   "uuid" "46392889-f6e2-4b06-8f79-87f2ff9d4349"}
+                  {"value" "A340-600",
+                   "subfields" ["long_name"],
+                   "long_name"
+                   [{"value" "Airbus A340-600",
+                     "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
+                {"value" "Earth Observation Satellites",
                  "subfields" ["series_entity"],
                  "series_entity"
                  [{"value"
@@ -173,17 +197,7 @@
                      [{"value"
                        "Soil Moisture Active and Passive Observatory",
                        "uuid"
-                       "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}]}
-                {"value" "Aircraft",
-                 "short_name"
-                 [{"value" "AIRCRAFT",
-                   "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}
-                  {"value" "A340-600",
-                   "subfields" ["long_name"],
-                   "long_name"
-                   [{"value" "Airbus A340-600",
-                     "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}],
-                 "subfields" ["short_name"]}]}
+                       "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}]}]}
    :instruments {"category"
                  [{"value" "Earth Remote Sensing Instruments",
                    "subfields" ["class"],

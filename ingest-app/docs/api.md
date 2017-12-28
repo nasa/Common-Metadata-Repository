@@ -74,7 +74,7 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 If this header is set to true then ingest will validate that collection keywords match [known keywords from GCMD KMS](http://gcmd.nasa.gov/learn/keyword_list.html). The following fields are validated.
 
-* Platforms - short name and long name
+* Platforms - short name, long name, and type
 * Instruments - short name and long name
 * Projects - short name and long name
 * Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
@@ -640,6 +640,7 @@ The following update types are supported:
   * Clear all and replace - clear the list and replace with the update value.
   * Find and replace - replace any instance in the list that matches the find value with the update value.
   * Find and update - merge update value into any instance in the list that matches the find value.
+  * Find and update home page url - A special case for Find and update. 
   * Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
@@ -648,14 +649,14 @@ Bulk update post request takes the following parameters:
   * Name (optional) - a name used to identify a bulk update task 
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
-  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`. For any other update types, it can only be a single object.
+  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
   * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
 
-Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc.  It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches. Please also note that update value can not be an array - except when used with `ADD_TO_EXISTING`.  If you want to use `CLEAR_ALL_AND_REPLACE` to replace the existing platforms with a list of new platforms, it can NOT be achieved currently. You can only replace the existing platforms with one new platform.  
+Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc.  It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.   
 
 The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
 
-`FIND_AND_UPDATE_HOME_PAGE_URL` is a special case for `FIND_AND_UPDATE`. It can only be used with Update field being DATA_CENTERS. It is the same as FIND_AND_UPDATE except that when update value contains ContactInformation, it doesn't replace the ContactInformation, instead it only replaces the datacenter HOME PAGE URL part with the value specified in the RelatedUrls, if it exists, and leave everything else in the ContactInformation untouched. 
+`FIND_AND_UPDATE_HOME_PAGE_URL` is a special case for `FIND_AND_UPDATE`. It can only be used with Update field being `DATA_CENTERS`. It is the same as `FIND_AND_UPDATE` except that when update value contains ContactInformation, it doesn't replace the ContactInformation, instead it only replaces the data center HOME PAGE URL part with the new data center HOME PAGE URL specified in the RelatedUrls, if it exists, and leaves everything else in the ContactInformation untouched. If the new data center HOME PAGE URL is not present in the update value, the HOME PAGE URL of the found data centers will be removed.
 
 Instruments are nested within platforms so instrument updates are applied to all platforms in the collection, when applying
 `ADD_TO_EXISTING` and `CLEAR_ALL_AND_REPLACE` bulk updates to the instruments.
@@ -677,7 +678,7 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
   "update-type": "FIND_AND_UPDATE",
   "update-field": "PLATFORMS",
   "find-value": {"Type": "Aircraft"},
-  "update-value": {"LongName": "new long name"
+  "update-value": {"LongName": "new long name",
                    "Characteristics": [{"Name": "nested field is allowed in update-value",
                                         "Description": "Orbital period in decimal minutes.",
                                         "DataType": "time/Direction (ascending)",
@@ -700,7 +701,7 @@ This returns a list of: created-at, name, task id, status (IN_PROGRESS or COMPLE
 
 Example
 ```
-curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" https://%CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status
+curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status
 
 <?xml version="1.0" encoding="UTF-8"?>
 <result>

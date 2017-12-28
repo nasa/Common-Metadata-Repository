@@ -41,7 +41,8 @@
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
                        :processing-level-id-h :sensor :data-center-h :measurement :variable-name
-                       :variable-native-id :author}
+                       :variable-concept-id :variable-native-id :author :service-name
+                       :service-concept-id}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
 
@@ -79,7 +80,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{}
+     :multiple-value #{:name :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
@@ -136,9 +137,14 @@
 
    ;; Variable related parameters
    :variable-name cpv/string-plus-and-options
+   :variable-concept-id cpv/and-option
    :variable-native-id cpv/string-plus-and-options
    :measurement cpv/string-plus-and-options
-   :variables-h cpv/string-plus-or-options})
+   :variables-h cpv/string-plus-or-options
+
+   ;; service related parameters
+   :service-name cpv/string-plus-and-options
+   :service-concept-id cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
@@ -179,6 +185,12 @@
   {:name cpv/string-param-options ;; name is the alias to variable-name
    :variable-name cpv/string-param-options
    :measurement cpv/string-param-options
+   :native-id cpv/string-param-options
+   :provider cpv/string-param-options})
+
+(defmethod cpv/valid-parameter-options :service
+  [_]
+  {:name cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})
 

@@ -86,7 +86,12 @@
   [context service-associations]
   (let [service-concepts (remove nil?
                                  (map #(service-association->service-concept context %)
-                                      service-associations))]
-    {:has-formats (boolean (some #(has-formats? context %) service-concepts))
+                                      service-associations))
+        service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
+        service-concept-ids (map :concept-id service-concepts)]
+    {:service-names service-names
+     :service-names.lowercase (map string/lower-case service-names)
+     :service-concept-ids service-concept-ids
+     :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))
      :has-transforms (boolean (some #(has-transforms? context %) service-concepts))}))

@@ -216,6 +216,133 @@
        {:Subregion1 "WESTERN ASIA"}
        {:LocationKeywords [{:Subregion1 "EASTERN ASIA"}]})))
 
+(deftest data-center-home-page-url-updates
+  (testing "DataCenter home page url updates when home page url is present in the update-value."
+    (let [umm {:DataCenters [{:ShortName "ShortName"
+                              :LongName "Hydrogeophysics Group, Aarhus University "
+                              :Roles ["ARCHIVER", "DISTRIBUTOR"]
+                              :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
+                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                  :Type "HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"}
+                                                                 {:URLContentType "DataCenterURL"
+                                                                  :Type "PROJECT HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"} ]
+                                                   :ContactMechanisms  [{:Type "Telephone"
+                                                                         :Value "1 303 492 6199 x" }
+                                                                        {:Type  "Fax"
+                                                                         :Value "1 303 492 2468 x" }
+                                                                        {:Type  "Email"
+                                                                         :Value "nsidc@nsidc.org" }]}}
+                             {:ShortName "ShortName"
+                              :LongName "Hydrogeophysics Group, Aarhus University "
+                              :Roles ["ARCHIVER"]}
+                             {:ShortName "ShortName"
+                              :Roles ["PROCESSOR"]
+                              :ContactPersons [{:Roles ["Data Center Contact"]
+                                                :LastName "Smith"}]
+                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                  :Type "HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"}]}}]}]
+      (are3 [update-type update-value find-value result]
+        (is (= result
+               (field-update/apply-update update-type umm [:DataCenters] update-value find-value)))
+
+        "Find and update home page url" 
+        :find-and-update-home-page-url
+        {:ShortName "NewShortName" :LongName nil :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                                               :Type "HOME PAGE"
+                                                                                               :URL "http://nsidc.org/daac/newindex.html"}]}}
+        {:ShortName "ShortName"}
+        {:DataCenters [{:ShortName "NewShortName"
+                        :LongName nil
+                        :Roles ["ARCHIVER", "DISTRIBUTOR"]
+                        :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}
+                                                           {:URLContentType "DataCenterURL"
+                                                            :Type "PROJECT HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/index.html"} ]
+                                             :ContactMechanisms  [{:Type "Telephone"
+                                                                   :Value "1 303 492 6199 x" }
+                                                                  {:Type  "Fax"
+                                                                   :Value "1 303 492 2468 x" }
+                                                                  {:Type  "Email"
+                                                                   :Value "nsidc@nsidc.org" }]}}
+                       {:ShortName "NewShortName"
+                        :LongName nil
+                        :Roles ["ARCHIVER"]
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}
+                       {:ShortName "NewShortName"
+                        :LongName nil
+                        :Roles ["PROCESSOR"]
+                        :ContactPersons [{:Roles ["Data Center Contact"]
+                                          :LastName "Smith"}]
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}]}))) 
+  (testing "DataCenter home page url updates when home page url is NOT present in the update-value."
+    (let [umm {:DataCenters [{:ShortName "ShortName"
+                              :LongName "Hydrogeophysics Group, Aarhus University "
+                              :Roles ["ARCHIVER", "DISTRIBUTOR"]
+                              :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
+                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                  :Type "HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"}
+                                                                 {:URLContentType "DataCenterURL"
+                                                                  :Type "PROJECT HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"} ]
+                                                   :ContactMechanisms  [{:Type "Telephone"
+                                                                         :Value "1 303 492 6199 x" }
+                                                                        {:Type  "Fax"
+                                                                         :Value "1 303 492 2468 x" }
+                                                                        {:Type  "Email"
+                                                                         :Value "nsidc@nsidc.org" }]}}
+                             {:ShortName "ShortName"
+                              :LongName "Hydrogeophysics Group, Aarhus University "
+                              :Roles ["ARCHIVER"]}
+                             {:ShortName "ShortName"
+                              :Roles ["PROCESSOR"]
+                              :ContactPersons [{:Roles ["Data Center Contact"]
+                                                :LastName "Smith"}]
+                              :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                  :Type "HOME PAGE"
+                                                                  :URL "http://nsidc.org/daac/index.html"}]}}]}]
+      (are3 [update-type update-value find-value result]
+        (is (= result
+               (field-update/apply-update update-type umm [:DataCenters] update-value find-value)))
+
+        "Find and update home page url"
+        :find-and-update-home-page-url
+        {:ShortName "NewShortName" :LongName "NewLongName" :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                                                               :Type "NOT A HOME PAGE"
+                                                                                               :URL "http://nsidc.org/daac/newindex.html"}]}}
+        {:ShortName "ShortName"}
+        {:DataCenters [{:ShortName "NewShortName"
+                        :LongName "NewLongName"
+                        :Roles ["ARCHIVER", "DISTRIBUTOR"]
+                        :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
+                        :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                            :Type "PROJECT HOME PAGE"
+                                                            :URL "http://nsidc.org/daac/index.html"} ]
+                                             :ContactMechanisms  [{:Type "Telephone"
+                                                                   :Value "1 303 492 6199 x" }
+                                                                  {:Type  "Fax"
+                                                                   :Value "1 303 492 2468 x" }
+                                                                  {:Type  "Email"
+                                                                   :Value "nsidc@nsidc.org" }]}}
+                       {:ShortName "NewShortName"
+                        :LongName "NewLongName"
+                        :Roles ["ARCHIVER"]}
+                       {:ShortName "NewShortName"
+                        :LongName "NewLongName"
+                        :Roles ["PROCESSOR"]
+                        :ContactPersons [{:Roles ["Data Center Contact"]
+                                          :LastName "Smith"}]}]}))))
+
 (deftest platform-instrument-name-updates
  (testing "Platform name updates"
    (let [umm {:Platforms [{:ShortName "Platform 1"
@@ -248,6 +375,19 @@
         {:ShortName "Platform 1"}
         {:Platforms [{:ShortName "A340-600"
                       :LongName "Airbus A340-600"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "An Instrument"
+                                     :LongName "The Full Name of An Instrument v123.4"
+                                     :Technique "Two cans and a string"
+                                     :NumberOfInstruments 0}]}]}
+        
+        "Find and update nil long name"
+        :find-and-update
+        {:ShortName "A340-600"
+         :LongName nil}
+        {:ShortName "Platform 1"}
+        {:Platforms [{:ShortName "A340-600"
+                      :LongName nil
                       :Type "Aircraft"
                       :Instruments [{:ShortName "An Instrument"
                                      :LongName "The Full Name of An Instrument v123.4"
@@ -323,20 +463,20 @@
 
         "Find and update - multiple instances"
         :find-and-update
-        {:ShortName "Inst X"}
+        {:ShortName "Inst X" :LongName nil}
         {:ShortName "Inst 1"}
         {:Platforms [{:ShortName "Platform 1"
                       :LongName "Example Platform Long Name 1"
                       :Type "Aircraft"
                       :Instruments [{:ShortName "Inst X"
-                                     :LongName "Instrument 1"}
+                                     :LongName nil}
                                     {:ShortName "Inst 2"
                                      :LongName "Instrument 2"}]}
                      {:ShortName "Platform 2"
                       :LongName "Example Platform Long Name 2"
                       :Type "Aircraft"
                       :Instruments [{:ShortName "Inst X"
-                                     :LongName "Instrument 1"}
+                                     :LongName nil}
                                     {:ShortName "Inst 3"
                                      :LongName "Instrument 3"}]}]}
 

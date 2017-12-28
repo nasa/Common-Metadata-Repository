@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]
    [cmr.metadata-db.services.messages :as msg]))
 
@@ -14,50 +15,60 @@
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
 (deftest find-collections
-  (let [coll1 (util/save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
-                                                            :entry-title "et1"
+  (let [coll1 (concepts/create-and-save-concept
+               :collection "REG_PROV" 1 1 {:extra-fields {:entry-id "entry-1"
+                                                          :entry-title "et1"
+                                                          :version-id "v1"
+                                                          :short-name "s1"}})
+        coll2-1 (concepts/create-and-save-concept
+                 :collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-2"
+                                                            :entry-title "et2"
                                                             :version-id "v1"
-                                                            :short-name "s1"}})
-        coll2-1 (util/save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                              :entry-title "et2"
-                                                              :version-id "v1"
-                                                              :short-name "s2"}})
-        coll2-2 (util/save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                              :entry-title "et2"
-                                                              :version-id "v2"
-                                                              :short-name "s2"}})
-        coll5-1 (util/save-collection "REG_PROV" 5 {:extra-fields {:entry-id "entry-5"
-                                                              :entry-title "et5"
-                                                              :version-id "v55"
-                                                              :short-name "s5"}})
+                                                            :short-name "s2"}})
+        coll2-2 (concepts/create-and-save-concept
+                 :collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-2"
+                                                            :entry-title "et2"
+                                                            :version-id "v2"
+                                                            :short-name "s2"}})
+        coll5-1 (concepts/create-and-save-concept
+                 :collection "REG_PROV" 5 1 {:extra-fields {:entry-id "entry-5"
+                                                            :entry-title "et5"
+                                                            :version-id "v55"
+                                                            :short-name "s5"}})
         _ (util/delete-concept (:concept-id coll5-1))
         coll5-2 (assoc coll5-1 :deleted true :revision-id 2 :metadata "" :user-id nil)
-        coll3 (util/save-collection "SMAL_PROV1" 3 {:extra-fields {:entry-id "entry-3"
-                                                              :entry-title "et3"
+        coll3 (concepts/create-and-save-concept
+               :collection "SMAL_PROV1" 3 1 {:extra-fields {:entry-id "entry-3"
+                                                            :entry-title "et3"
+                                                            :version-id "v3"
+                                                            :short-name "s3"}})
+        coll4-1 (concepts/create-and-save-concept
+                 :collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"
+                                                              :entry-title "et1"
                                                               :version-id "v3"
-                                                              :short-name "s3"}})
-        coll4-1 (util/save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
-                                                                :entry-title "et1"
-                                                                :version-id "v3"
-                                                                :short-name "s4"}})
-        coll4-2 (util/save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
-                                                                :entry-title "et1"
-                                                                :version-id "v4"
-                                                                :short-name "s4"}})
-        coll4-3 (util/save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
-                                                                :entry-title "et1"
-                                                                :version-id "v5"
-                                                                :short-name "s4"}})
-        coll6-1 (util/save-collection "SMAL_PROV1" 6 {:extra-fields {:entry-id "entry-6"
-                                                                :entry-title "et6"
-                                                                :version-id "v6"
-                                                                :short-name "s6"}})
+                                                              :short-name "s4"}})
+        coll4-2 (concepts/create-and-save-concept
+                 :collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"
+                                                              :entry-title "et1"
+                                                              :version-id "v4"
+                                                              :short-name "s4"}})
+        coll4-3 (concepts/create-and-save-concept
+                 :collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"
+                                                              :entry-title "et1"
+                                                              :version-id "v5"
+                                                              :short-name "s4"}})
+        coll6-1 (concepts/create-and-save-concept
+                 :collection "SMAL_PROV1" 6 1 {:extra-fields {:entry-id "entry-6"
+                                                              :entry-title "et6"
+                                                              :version-id "v6"
+                                                              :short-name "s6"}})
         _ (util/delete-concept (:concept-id coll6-1))
         coll6-2 (assoc coll6-1 :deleted true :revision-id 2 :metadata "" :user-id nil)
-        coll7 (util/save-collection "REG_PROV1" 1 {:extra-fields {:entry-id "entry-7"
-                                                             :entry-title "et7"
-                                                             :version-id "v7"
-                                                             :short-name "s7"}})]
+        coll7 (concepts/create-and-save-concept
+               :collection "REG_PROV1" 1 1 {:extra-fields {:entry-id "entry-7"
+                                                           :entry-title "et7"
+                                                           :version-id "v7"
+                                                           :short-name "s7"}})]
     (testing "find-with-parameters"
       (are3 [collections params]
         (is (= (set collections)
@@ -151,7 +162,7 @@
   (let [time-now (tk/now)
         make-coll-expiring-in (fn [prov uniq-num num-revisions num-secs]
                                 (let [expire-time (t/plus time-now (t/seconds num-secs))]
-                                  (util/create-and-save-collection
+                                  (concepts/create-and-save-concept :collection
                                     prov uniq-num num-revisions
                                     {:extra-fields {:delete-time (str expire-time)}})))
         ;; Expired a long time ago.
@@ -160,12 +171,12 @@
         ;; Expires in the far future
         coll3 (make-coll-expiring-in "REG_PROV" 3 1 500000)
         ;; Doesn't have an expiration date
-        coll4 (util/create-and-save-collection "REG_PROV" 4 1)
+        coll4 (concepts/create-and-save-concept :collection "REG_PROV" 4 1)
         ;; Small providers
         coll5 (make-coll-expiring-in "SMAL_PROV1" 5 1 -600000)
-        coll6 (util/create-and-save-collection "SMAL_PROV1" 6 1)
+        coll6 (concepts/create-and-save-concept :collection "SMAL_PROV1" 6 1)
         coll7 (make-coll-expiring-in "SMAL_PROV2" 7 1 -600000)
-        coll8 (util/create-and-save-collection "SMAL_PROV2" 8 1)]
+        coll8 (concepts/create-and-save-concept :collection "SMAL_PROV2" 8 1)]
 
     (testing "get expired collection concept ids"
       (are [provider-id collections]

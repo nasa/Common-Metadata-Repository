@@ -33,7 +33,8 @@
 
   (get-granule-concept-ids
     [db provider native-id]
-    "Return the granule concept-id and parent collection concept-id for the given granule native id.")
+    "Return the granule concept-id, parent collection concept-id and deleted flag
+    for the given granule native id.")
 
   (get-concept
     [db concept-type provider concept-id revision-id]

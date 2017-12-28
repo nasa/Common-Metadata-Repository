@@ -59,9 +59,9 @@
   :repl-options {
     :init-ns user
     :timeout 300000
-    :welcome ~(do
-               (println (slurp "resources/text/banner.txt"))
-               (println (slurp "resources/text/loading.txt")))}
+    :welcome (do
+              (println (slurp "resources/text/banner.txt"))
+              (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"]
              ;; Uncomment to enable logging in jetty.

@@ -3,14 +3,15 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "SMAL_PROV1" :small true}))
 
 (deftest find-groups
-  (let [group1 (util/create-and-save-group "REG_PROV" 1 3)
-        group2 (util/create-and-save-group "CMR" 2 2)]
+  (let [group1 (concepts/create-and-save-concept :access-group "REG_PROV" 1 3)
+        group2 (concepts/create-and-save-concept :access-group "CMR" 2 2)]
     (testing "find with parameters"
       (testing "latest revisions"
         (are3 [groups params]

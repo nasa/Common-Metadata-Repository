@@ -2,6 +2,10 @@
 Category,Series_Entity,Short_Name,Long_Name,UUID
 "Aircraft","","A340-600","Airbus A340-600","bab77f95-aa34-42aa-9a12-922d1c9fae63"
 "Aircraft","","AIRCRAFT","","8bce0691-74e9-4363-8d1f-d453a318c62b"
-"Earth Observation Satellites","DMSP (Defense Meteorological Satellite Program)","DMSP 5B/F3","Defense Meteorological Satellite Program-F3","7ed12e98-95b1-406c-a58a-f4bbfa405269"
+"Aircraft","","ALTUS","","46392889-f6e2-4b06-8f79-87f2ff9d4349"
+"Aircraft","","B-200","Beechcraft King Air B-200","d6aa2406-0323-43c1-b890-3509ee22784e"
+"Aircraft","","CESSNA 188","","80374e6d-fef6-4b11-bcc4-53568a3db220"
+"Aircraft","","DHC-3","DeHavilland DHC-3 Otter","aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"
 "Earth Observation Satellites","DIADEM","DIADEM-1D","","143a5181-7601-4cc7-96d1-2b1a04b08fa7"
+"Earth Observation Satellites","DMSP (Defense Meteorological Satellite Program)","DMSP 5B/F3","Defense Meteorological Satellite Program-F3","7ed12e98-95b1-406c-a58a-f4bbfa405269"
 "Earth Observation Satellites","NASA Decadal Survey","SMAP","Soil Moisture Active and Passive Observatory","7ee03239-24ff-433e-ab7e-8be8b9b2636b"

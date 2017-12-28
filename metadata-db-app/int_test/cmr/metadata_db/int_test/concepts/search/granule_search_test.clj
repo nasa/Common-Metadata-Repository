@@ -3,24 +3,19 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
    [cmr.metadata-db.int-test.utility :as util]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
 (deftest find-granules
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
-        gran1 (util/create-and-save-granule "REG_PROV"
-                                            coll1
-                                            1
-                                            3
-                                            {:native-id "G1-NAT"
-                                             :extra-fields {:granule-ur "G1-UR"}})
-        gran2 (util/create-and-save-granule "REG_PROV"
-                                            coll1
-                                            2
-                                            2
-                                            {:native-id "G2-NAT"
-                                             :extra-fields {:granule-ur "G2-UR"}})]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        gran1 (concepts/create-and-save-concept
+               :granule "REG_PROV" coll1 1 3 {:native-id "G1-NAT"
+                                              :extra-fields {:granule-ur "G1-UR"}})
+        gran2 (concepts/create-and-save-concept
+               :granule "REG_PROV" coll1 2 2 {:native-id "G2-NAT"
+                                              :extra-fields {:granule-ur "G2-UR"}})]
     (testing "find with parameters"
       (testing "latest revsions"
         (are3 [granules params]

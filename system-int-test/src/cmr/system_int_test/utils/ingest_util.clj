@@ -495,13 +495,18 @@
  ([provider-id request-body options]
   (let [accept-format (get options :accept-format :xml)
         token (:token options)
+        user-id (:user-id options)
+        headers (when (or user-id token)
+                  (util/remove-nil-keys
+                    {transmit-config/token-header token
+                     "user-id" user-id}))
         params {:method :post
                 :url (url/ingest-collection-bulk-update-url provider-id)
                 :body (json/generate-string request-body)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
-        params (merge params (when token {:headers {transmit-config/token-header token}}))
+        params (merge params (when headers {:headers headers}))
         response (client/request params)]
    (parse-bulk-update-response response options))))
 
@@ -709,6 +714,26 @@
      (when-not (empty? providers)
       (setup-providers providers options))
      (f))))
+
+(defn grant-all-search
+  "Grants all users access to search for any collections or granules from the passed in list of
+  provider ids."
+  [provider-ids]
+  (doseq [provider-id provider-ids]
+    (echo-util/grant (s/context)
+                     [echo-util/guest-read-ace
+                      echo-util/registered-user-read-ace]
+                     :catalog_item_identity
+                     (assoc (echo-util/catalog-item-id provider-id)
+                            :collection_applicable true
+                            :granule_applicable true))))
+
+(defn grant-all-search-fixture
+  "Fixture to grant all users search access for the provider-ids passed in."
+  [provider-ids]
+  (fn [f]
+    (grant-all-search provider-ids)
+    (f)))
 
 (defn clear-caches
   "Clears caches in the ingest application"

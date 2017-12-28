@@ -55,9 +55,13 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
+                          :variable-concept-id :variable-concept-ids
                           :variable-native-id :variable-native-ids
                           :measurement :measurements
-                          :author :authors}]
+                          :author :authors
+                          :doi :doi-stored
+                          :service-name :service-names
+                          :service-concept-id :service-concept-ids}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -120,9 +124,12 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
+   :variable-concept-ids :variable-concept-id
    :variable-native-ids :variable-native-id
    :measurements :measurement
-   :authors :author})
+   :authors :author
+   :service-names :service-name
+   :service-concept-ids :service-concept-id})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
@@ -149,7 +156,8 @@
    :variable-name "variable-names.lowercase"
    :variable-native-id "variable-native-ids.lowercase"
    :measurement "measurements.lowercase"
-   :author "authors.lowercase"})
+   :author "authors.lowercase"
+   :service-name "service-names.lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]

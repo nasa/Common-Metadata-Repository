@@ -5,6 +5,7 @@
     [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.ingest.config :as icfg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -76,6 +77,53 @@
       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings validation-response))))
       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response)))))))
+
+(deftest error-messages-are-friendly
+  (testing "Error messages don't contain regexes"
+    ;; Include fields that will fail the regex pattern and ensure that the regexes
+    ;; don't show up in the returned errors
+    (let [platform-collection (data-umm-c/collection
+                               {:Platforms [(data-umm-cmn/platform {:ShortName ""
+                                                                    :LongName ""})]})
+          data-center-collection (data-umm-c/collection
+                                  {:DataCenters [(data-umm-cmn/data-center {:ShortName "asdf"
+                                                                            :Roles ["ARCHIVER"]})]})
+          science-keyword-collection (data-umm-c/collection
+                                      {:ScienceKeywords
+                                       [(data-umm-cmn/science-keyword
+                                         {:VariableLevel1 ""
+                                          :VariableLevel2 ""
+                                          :VariableLevel3 ""
+                                          :Category ""
+                                          :Term ""
+                                          :DetailedVariable ""
+                                          :Topic ""})]})]
+      (are3 [collection]
+       (let [ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
+             validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
+         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
+         (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response)))))
+         (is (some? (map #(re-find #"is an invalid format" %) (:errors ingest-response))))
+         (is (some? (map #(re-find #"is an invalid format" %) (:errors validation-response)))))
+       "Invalid platforms"
+       platform-collection
+
+       "Invalid Data Centers"
+       data-center-collection
+
+       "Invalid Science Keywords"
+       science-keyword-collection)
+      (testing "Explicitly test error messages - ShorName and LongName should fail the regex"
+        (let [ingest-response (d/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true})
+              validation-response (ingest/validate-concept (data-umm-c/collection-concept platform-collection :umm-json))]
+          (is (= (:errors ingest-response)
+                 ["/Platforms/0/LongName string \"\" is too short (length: 0, required minimum: 1)"
+                  "/Platforms/0/LongName is in an invalid format"
+                  "/Platforms/0/ShortName string \"\" is too short (length: 0, required minimum: 1)"
+                  "/Platforms/0/ShortName is in an invalid format"]))
+          (is (= (:status ingest-response) 400)))))))
+
+
 
 (deftest multiple-warnings
  (testing "Schema and UMM-C validation warnings"
