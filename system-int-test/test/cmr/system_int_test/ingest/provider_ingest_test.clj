@@ -136,10 +136,10 @@
                                                         :Name "service2"
                                                         :provider-id "PROV2"})
           _ (index/wait-until-indexed)
-          sa1 (au/make-service-association
-               token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
-          sa2 (au/make-service-association
-               token (:concept-id service2) [{:concept-id (:concept-id coll3)}])
+          svc-association1 (au/make-service-association
+                            token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
+          svc-association2 (au/make-service-association
+                            token (:concept-id service2) [{:concept-id (:concept-id coll3)}])
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
@@ -208,7 +208,7 @@
         gran3
         variable1
         service1
-        sa1
+        svc-association1
         access-group
         acl1
         acl2)
@@ -228,7 +228,7 @@
         gran4
         variable2
         service2
-        sa2)
+        svc-association2)
 
       ;; search on PROV1 finds nothing
       (is (d/refs-match?
