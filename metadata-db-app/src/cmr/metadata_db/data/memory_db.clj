@@ -15,6 +15,13 @@
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
 
+(defn- association->tombstone
+  "Returns the tombstoned revision of the given association concept"
+  [association]
+  (-> association
+      (assoc :metadata "" :deleted true)
+      (update :revision-id inc)))
+
 (defmulti after-save
   "Handler for save calls. It will be passed the list of concepts and the
   concept that was just saved. Implementing mehods should manipulate anything
@@ -36,15 +43,12 @@
   (if-not (:deleted concept)
     concepts
     (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
-          tombstones (map (fn [ta] (-> ta
-                                       (assoc :metadata "" :deleted true)
-                                       (update :revision-id inc)))
-                          tag-associations)]
+          tombstones (map association->tombstone tag-associations)]
       ;; publish tag-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
-          (:context db)
-          (ingest-events/concept-delete-event tombstone)))
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
       (concat concepts tombstones))))
 
 ;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
@@ -57,10 +61,7 @@
                                  {:provider-id "CMR"}
                                  {:concept-type :variable-association
                                   :variable-concept-id (:concept-id concept)})
-          tombstones (map (fn [ta] (-> ta
-                                       (assoc :metadata "" :deleted true)
-                                       (update :revision-id inc)))
-                          variable-associations)]
+          tombstones (map association->tombstone variable-associations)]
       ;; publish variable-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
@@ -77,10 +78,7 @@
                                 {:provider-id "CMR"}
                                 {:concept-type :service-association
                                  :service-concept-id (:concept-id concept)})
-          tombstones (map (fn [ta] (-> ta
-                                       (assoc :metadata "" :deleted true)
-                                       (update :revision-id inc)))
-                          service-associations)]
+          tombstones (map association->tombstone service-associations)]
       ;; publish service-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
@@ -425,9 +423,9 @@
        (let [{:keys [concept-id revision-id extra-fields]} association
              {:keys [associated-concept-id variable-concept-id service-concept-id]} extra-fields
              referenced-providers (map (fn [cid]
-                                         (when cid (-> cid
-                                                       cc/parse-concept-id
-                                                       :provider-id)))
+                                         (some-> cid
+                                                 cc/parse-concept-id
+                                                 :provider-id))
                                        [associated-concept-id variable-concept-id service-concept-id])]
          ;; If the association references the deleted provider through
          ;; either collection or variable/service, delete the association
