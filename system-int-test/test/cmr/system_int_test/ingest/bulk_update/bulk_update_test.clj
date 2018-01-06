@@ -158,15 +158,17 @@
 
 (defn- ingest-collection-in-each-format
   "Ingest a collection in each format and return a list of concept-ids"
-  [attribs]
-  (doall
-    (for [x (range (count collection-formats))
-          :let [format (nth collection-formats x)
-                collection (data-umm-c/collection-concept
-                            (data-umm-c/collection x attribs)
-                            format)]]
-      (:concept-id (ingest/ingest-concept
-                    (assoc collection :concept-id (generate-concept-id x "PROV1")))))))
+  ([attribs]
+   (ingest-collection-in-each-format attribs collection-formats))
+  ([attribs formats]
+   (doall
+     (for [x (range (count formats))
+           :let [format (nth formats x)
+                 collection (data-umm-c/collection-concept
+                             (data-umm-c/collection x attribs)
+                             format)]]
+       (:concept-id (ingest/ingest-concept
+                     (assoc collection :concept-id (generate-concept-id x "PROV1"))))))))
 
 (defn- ingest-collection-in-umm-json-format
   "Ingest a collection in UMM Json format and return a list of one concept-id.
@@ -701,7 +703,7 @@
         (is (= "COMPLETE" (:status collection-status)))
         (is (= "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:MetadataDates] latest UPDATE date value: [2017-01-01T00:00:00.000Z] should be in the past. " (:status-message collection-status))))
 
-      ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
+      ;; Check that each concept was updated.
       (doseq [concept-id concept-ids
               :let [concept (-> (search/find-concepts-umm-json :collection
                                                                {:concept-id concept-id})
@@ -759,6 +761,44 @@
                 :VariableLevel1 "EMISSIONS",
                 :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
               (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-update-not-found-test
+  (let [concept-ids (ingest-collection-in-each-format 
+                      find-update-keywords-umm
+                      [:dif])
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "FIND_AND_UPDATE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:Topic "DOES NOT EXIST"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
+            concept-id (first concept-ids)
+            status-message (str "Collection with concept-id [" concept-id
+                                "] is not updated because no find-value found.")]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (= [{:concept-id concept-id,
+                 :status "FAILED",
+                 :status-message status-message}]
+               (:collection-statuses collection-response))))
+
+      ;; Check that each concept was not updated, no new revision-id, format is not changed to umm json.
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 1
+              (:revision-id (:meta concept))))
+       (is (not= "application/vnd.nasa.cmr.umm+json"
+              (:format (:meta concept)))))))
 
 (deftest bulk-update-default-name-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
