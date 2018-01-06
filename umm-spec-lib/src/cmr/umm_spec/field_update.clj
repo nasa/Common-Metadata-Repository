@@ -188,6 +188,23 @@
                                                   x))
                                               %))))
 
+
+(defn- apply-list-update-nested
+  "Apply the umm list update when the update-field is a supported nested field."
+  [update-type umm update-field update-value find-value partial-update-fn]
+  (if (re-matches #":find-and.*" (str update-type))
+    (when (find-value-exists-in-umm? find-value umm update-field)
+      (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value)))
+    (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value))))
+
+(defn- apply-list-update-default
+  "Apply the umm list update when the update-field is the top level field in umm."
+  [update-type umm update-field update-value find-value]
+  (if (re-matches #":find-and.*" (str update-type))
+    (when (find-value-exists-in-umm? find-value umm update-field)
+      (apply-umm-list-update update-type umm update-field update-value find-value)) 
+    (apply-umm-list-update update-type umm update-field update-value find-value)))
+
 (defn apply-update
   "Apply an update to a umm record. Check for field-specific function and use that
   if update-field is a supported nested field, otherwise apply the default list update.
@@ -195,14 +212,8 @@
   which indicates that no update will be done."
   [update-type umm update-field update-value find-value]
   (if-let [partial-update-fn (get (field-update-functions umm) update-field)]
-    (if (or (= :clear-all-and-replace update-type) (= :add-to-existing update-type))
-      (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value))
-      (when (find-value-exists-in-umm? find-value umm update-field)
-        (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value))))
-    (if (or (= :clear-all-and-replace update-type) (= :add-to-existing update-type))
-      (apply-umm-list-update update-type umm update-field update-value find-value)
-      (when (find-value-exists-in-umm? find-value umm update-field)
-        (apply-umm-list-update update-type umm update-field update-value find-value)))))
+    (apply-list-update-nested update-type umm update-field update-value find-value partial-update-fn)
+    (apply-list-update-default update-type umm update-field update-value find-value)))
 
 (defn update-concept
   "Apply an update to a raw concept. 

@@ -180,19 +180,24 @@
         provider-id
         false)))))
 
+(defn- update-concept-and-status
+  "Perform update for the collection concept and collection status."
+  [context task-id concept concept-id bulk-update-params user-id] 
+  (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
+    (let [warnings (validate-and-save-collection context updated-concept)]
+      (data-bulk-update/update-bulk-update-task-collection-status
+        context task-id concept-id complete-status (create-success-status-message warnings)))
+    (data-bulk-update/update-bulk-update-task-collection-status
+      context task-id concept-id failed-status
+      (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
+
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept
   cannot be found or if the concept doesn't contain the find-value."
   [context provider-id task-id concept-id bulk-update-params user-id]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
-        (let [warnings (validate-and-save-collection context updated-concept)]
-          (data-bulk-update/update-bulk-update-task-collection-status
-            context task-id concept-id complete-status (create-success-status-message warnings)))
-        (data-bulk-update/update-bulk-update-task-collection-status
-          context task-id concept-id failed-status 
-          (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id)))  
+      (update-concept-and-status context task-id concept concept-id bulk-update-params user-id)
       (data-bulk-update/update-bulk-update-task-collection-status
         context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
