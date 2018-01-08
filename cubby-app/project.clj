@@ -1,16 +1,20 @@
 (defproject nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"
   :description "Provides a centralized caching service for the CMR. See README for details."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/cubby-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]]
+  :exclusions [
+    [org.clojure/tools.reader]]
+  :dependencies [
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
   :plugins [[lein-exec "0.3.2"]
             [lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
