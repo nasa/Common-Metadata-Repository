@@ -1,18 +1,19 @@
 (defproject nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
+  :dependencies [
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [ring/ring-core "1.5.1"]
+    [ring/ring-json "0.4.0"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :repl-options {:init-ns user}

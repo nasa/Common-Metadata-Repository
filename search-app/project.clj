@@ -4,12 +4,16 @@
   :exclusions [
     [cheshire]
     [clj-time]
+    [commons-codec/commons-codec]
+    [org.apache.httpcomponents/httpclient]
     [org.clojure/clojure]
-    [org.clojure/tools.reader]]
+    [org.clojure/tools.reader]
+    [ring/ring-codec]]
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
     [com.github.fge/json-schema-validator "2.2.6"]
+    [commons-codec/commons-codec "1.11"]
     ;; XXX REMOVE the following deps when the stubbed
     ;;     responses are replaced with the real ones
     ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
@@ -53,11 +57,13 @@
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [net.sf.saxon/Saxon-HE "9.7.0-7"]
+    [org.apache.httpcomponents/httpclient "4.5.4"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/data.csv "0.1.3"]
     [org.clojure/tools.nrepl "0.2.12"]
     [org.clojure/tools.reader "1.1.1"]
-    [ring/ring-core "1.5.0"]
+    [ring/ring-codec "1.0.1"]
+    [ring/ring-core "1.5.1"]
     [ring/ring-json "0.4.0"]
     [selmer "1.10.7"]
     ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
