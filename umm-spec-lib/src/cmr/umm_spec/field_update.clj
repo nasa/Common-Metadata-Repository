@@ -28,6 +28,9 @@
                         instrument (:Instruments platform)]
                     instrument)})  
  
+(def update-types-associated-with-find-operations
+ "All the update types that are associated with the find operations."
+ [:find-and-remove :find-and-replace :find-and-update :find-and-update-home-page-url])
 
 (defn- get-home-page-url
   "Get the data center home page url from a list of related urls.
@@ -192,7 +195,7 @@
 (defn- apply-list-update-nested
   "Apply the umm list update when the update-field is a supported nested field."
   [update-type umm update-field update-value find-value partial-update-fn]
-  (if (re-matches #":find-and.*" (str update-type))
+  (if (some #(= update-type %) update-types-associated-with-find-operations)
     (when (find-value-exists-in-umm? find-value umm update-field)
       (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value)))
     (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value))))
@@ -200,7 +203,7 @@
 (defn- apply-list-update-default
   "Apply the umm list update when the update-field is the top level field in umm."
   [update-type umm update-field update-value find-value]
-  (if (re-matches #":find-and.*" (str update-type))
+  (if (some #(= update-type %) update-types-associated-with-find-operations)
     (when (find-value-exists-in-umm? find-value umm update-field)
       (apply-umm-list-update update-type umm update-field update-value find-value)) 
     (apply-umm-list-update update-type umm update-field update-value find-value)))

@@ -687,6 +687,45 @@
                 :VariableLevel1 "EMISSIONS"}]
               (:ScienceKeywords (:umm concept)))))))
 
+(deftest bulk-update-replace-with-identical-update-value-test
+  (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "FIND_AND_REPLACE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:VariableLevel1 "CARBON MONOXIDE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "CARBON MONOXIDE"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response))))
+
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 2
+              (:revision-id (:meta concept))))
+       (is (= "application/vnd.nasa.cmr.umm+json"
+              (:format (:meta concept))))
+       (is (= [{:Category "EARTH SCIENCE"
+                :Topic "ATMOSPHERE"
+                :Term "AIR QUALITY"
+                :VariableLevel1 "CARBON MONOXIDE"}
+               {:Category "EARTH SCIENCE"
+                :Topic "ATMOSPHERE"
+                :Term "CLOUDS"
+                :VariableLevel1 "CLOUD MICROPHYSICS"
+                :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
+              (:ScienceKeywords (:umm concept)))))))
+
 (deftest bulk-update-remove-all-instruments-test
   (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
         _ (index/wait-until-indexed)
@@ -762,43 +801,78 @@
                 :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
               (:ScienceKeywords (:umm concept)))))))
 
-(deftest bulk-update-update-not-found-test
-  (let [concept-ids (ingest-collection-in-each-format 
-                      find-update-keywords-umm
-                      [:dif])
+(deftest bulk-update-update-with-identical-update-value-test
+  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :name "TEST NAME"
                           :update-type "FIND_AND_UPDATE"
                           :update-field "SCIENCE_KEYWORDS"
-                          :find-value {:Topic "DOES NOT EXIST"}
+                          :find-value {:Topic "OCEANS"}
                           :update-value {:Category "EARTH SCIENCE"
-                                         :Topic "ATMOSPHERE"
-                                         :Term "AIR QUALITY"
-                                         :VariableLevel1 "EMISSIONS"}}
+                                         :Topic "OCEANS"
+                                         :Term "MARINE SEDIMENTS"}}
         task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
       (index/wait-until-indexed)
-      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
-            concept-id (first concept-ids)
-            status-message (str "Collection with concept-id [" concept-id
-                                "] is not updated because no find-value found.")]
-        (is (= "COMPLETE" (:task-status collection-response)))
-        (is (= [{:concept-id concept-id,
-                 :status "FAILED",
-                 :status-message status-message}]
-               (:collection-statuses collection-response))))
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response))))
 
-      ;; Check that each concept was not updated, no new revision-id, format is not changed to umm json.
+      ;; Check that each concept was updated
       (doseq [concept-id concept-ids
               :let [concept (-> (search/find-concepts-umm-json :collection
                                                                {:concept-id concept-id})
                                 :results
                                 :items
                                 first)]]
-       (is (= 1
+       (is (= 2
               (:revision-id (:meta concept))))
-       (is (not= "application/vnd.nasa.cmr.umm+json"
-              (:format (:meta concept)))))))
+       (is (= "application/vnd.nasa.cmr.umm+json"
+              (:format (:meta concept))))
+       (is (= [{:Category "EARTH SCIENCE"
+                :Topic "OCEANS"
+                :Term "MARINE SEDIMENTS"}]
+              (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-update-not-found-test
+  (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "TEST NAME"
+                          :update-type "FIND_AND_UPDATE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          ;; Note: find-value is case-sensitive.
+                          :find-value {:Topic "aTmoSPHERE"} 
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}
+        original-concepts (doseq [concept-id concept-ids]
+                            (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first))
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))
+        _ (index/wait-until-indexed)
+        new-concepts (doseq [concept-id concept-ids]
+                       (-> (search/find-concepts-umm-json :collection
+                                                           {:concept-id concept-id})
+                            :results
+                            :items
+                            first))]
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
+            collection-statuses (for [concept-id concept-ids]
+                                  {:concept-id concept-id
+                                   :status "SKIPPED"
+                                   :status-message (str "Collection with concept-id [" concept-id
+                                                        "] is not updated because no find-value found.")})]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (= collection-statuses
+               (:collection-statuses collection-response))))
+
+      ;; Check that each concept was not updated. 
+      ;; revision-id not changed, format not changed, it's identical to the original-concepts.
+      (is (= new-concepts original-concepts)))) 
 
 (deftest bulk-update-default-name-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)

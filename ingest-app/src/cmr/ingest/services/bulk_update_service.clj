@@ -33,6 +33,10 @@
   "Indicates bulk update operation completed with errors"
   "FAILED")
 
+(def skipped-status
+  "Indicates bulk update operation is skipped because no find-value is found."
+  "SKIPPED")
+
 (def add-to-existing 
   "Represents ADD_TO_EXISTING update type"
   "ADD_TO_EXISTING")
@@ -188,7 +192,7 @@
       (data-bulk-update/update-bulk-update-task-collection-status
         context task-id concept-id complete-status (create-success-status-message warnings)))
     (data-bulk-update/update-bulk-update-task-collection-status
-      context task-id concept-id failed-status
+      context task-id concept-id skipped-status
       (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
 
 (defn handle-collection-bulk-update-event
