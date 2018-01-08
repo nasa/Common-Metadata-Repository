@@ -13,7 +13,7 @@
     [log4j/log4j "1.2.17"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
-    [org.elasticsearch/elasticsearch "1.7.3"]
+    [org.elasticsearch/elasticsearch "1.6.2"]
     [potemkin "0.4.4"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
