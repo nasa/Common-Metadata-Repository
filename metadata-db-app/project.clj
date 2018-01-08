@@ -5,10 +5,13 @@
   :exclusions [
     [cheshire]
     [clj-time]
+    ;[com.fasterxml.jackson.core/jackson-annotations]
+    [com.fasterxml.jackson.core/jackson-databind]
     [org.clojure/tools.reader]]
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.0"]
     [compojure "1.5.1"]
     [drift "1.5.3"]
     [inflections "0.9.14"]
