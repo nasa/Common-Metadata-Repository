@@ -3,7 +3,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :exclusions [
     [clj-time]
-    [commons-codec]]
+    [commons-codec]
+    [instaparse]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
     [cheshire "5.8.0"]
@@ -18,6 +19,7 @@
     [commons-codec "1.10"]
     [compojure "1.5.1"]
     [environ "1.1.0"]
+    [instaparse "1.4.0"]
     [net.jpountz.lz4/lz4 "1.3.0"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/core.async "0.2.385"]

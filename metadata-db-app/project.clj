@@ -2,19 +2,20 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [drift "1.5.3"]
-                 [inflections "0.9.14"]
-                 [org.quartz-scheduler/quartz "2.2.2"]]
+  :dependencies [
+    [compojure "1.5.1"]
+    [drift "1.5.3"]
+    [inflections "0.9.14"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [org.quartz-scheduler/quartz "2.2.2"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
 
   :plugins [[drift "1.5.3"]
             [lein-exec "0.3.2"]
