@@ -1,16 +1,20 @@
 (defproject nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"
   :description "Adds virtual products to the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/virtual-product-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [compojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]]
+  :exclusions [
+    [commons-logging]]
+  :dependencies [
+    [commons-logging "1.2"]
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"
