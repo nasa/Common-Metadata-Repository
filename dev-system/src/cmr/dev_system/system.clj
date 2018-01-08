@@ -5,7 +5,6 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.system :as bootstrap-system]
    [cmr.common-app.services.search.elastic-search-index :as es-search]
-   [cmr.common.dev.gorilla-repl :as gorilla-repl]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
@@ -282,10 +281,7 @@
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})
-     :post-components {:control-server control-server
-                       :gorilla-repl (when-not (zero? (dev-config/gorilla-repl-port))
-                                       (gorilla-repl/create-gorilla-repl-server
-                                        (dev-config/gorilla-repl-port)))}}))
+     :post-components {:control-server control-server}}))
 
 (defn- stop-components
   [system components-key]
