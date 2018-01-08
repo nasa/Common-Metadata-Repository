@@ -3,15 +3,16 @@
                model for Metadata Concepts in the CMR along with code to parse and generate the
                various dialects of each concept."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-lib"
-
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
-
+  :exclusions [
+    [org.clojure/tools.reader]]
+  :dependencies [
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.reader "1.1.1"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
-
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"

@@ -2,9 +2,11 @@
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :exclusions [
+    [cheshire]
     [clj-time]
     [commons-codec]
-    [instaparse]]
+    [instaparse]
+    [org.clojure/tools.reader]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
     [cheshire "5.8.0"]
@@ -28,6 +30,7 @@
     [org.clojure/data.xml "0.0.8"]
     [org.clojure/test.check "0.9.0"]
     [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
     [org.eclipse.jetty/jetty-servlets "9.2.10.v20150310"]
     [org.ow2.asm/asm "5.1"]
     [potemkin "0.4.4"]
