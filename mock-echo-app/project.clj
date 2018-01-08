@@ -12,7 +12,7 @@
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.nrepl "0.2.12"]
     [org.clojure/tools.reader "1.1.1"]
-    [ring/ring-core "1.5.0"]
+    [ring/ring-core "1.5.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]

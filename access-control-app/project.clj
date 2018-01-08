@@ -17,14 +17,20 @@
   :exclusions [
     [cheshire]
     [clj-time]
-    [org.clojure/tools.reader]]
+    [commons-codec/commons-codec]
+    [commons-io]
+    [org.clojure/tools.reader]
+    [ring/ring-codec]]
   :dependencies ~(concat '[
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
+    [commons-codec/commons-codec "1.11"]
+    [commons-io "2.6"]
     [compojure "1.5.1"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.reader "1.1.1"]
-    [ring/ring-core "1.5.0"]
+    [ring/ring-codec "1.0.1"]
+    [ring/ring-core "1.5.1"]
     [ring/ring-json "0.4.0"]]
     cmr-deps)
   :plugins [[lein-exec "0.3.4"]

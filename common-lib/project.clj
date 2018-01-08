@@ -7,7 +7,8 @@
     [commons-codec]
     [instaparse]
     [org.clojure/core.async]
-    [org.clojure/tools.reader]]
+    [org.clojure/tools.reader]
+    [ring/ring-core]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
     [cheshire "5.8.0"]
@@ -35,7 +36,8 @@
     [org.eclipse.jetty/jetty-servlets "9.2.10.v20150310"]
     [org.ow2.asm/asm "5.1"]
     [potemkin "0.4.4"]
-    [ring/ring-jetty-adapter "1.5.0"]
+    [ring/ring-core "1.5.1"]
+    [ring/ring-jetty-adapter "1.5.1"]
     [ring/ring-json "0.4.0"]]
 
   :plugins [[lein-exec "0.3.2"]

@@ -2,11 +2,13 @@
   :description "Contains utilities for retreiving and working with ACLs."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
   :exclusions [
-    [commons-io]]
+    [commons-io]
+    [potemkin]]
   :dependencies [
     [commons-io "2.6"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]]
+    [org.clojure/clojure "1.8.0"]
+    [potemkin "0.4.4"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"

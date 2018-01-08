@@ -5,8 +5,8 @@
   :exclusions [
     [cheshire]
     [clj-time]
-    ;[com.fasterxml.jackson.core/jackson-annotations]
     [com.fasterxml.jackson.core/jackson-databind]
+    [org.apache.httpcomponents/httpcore]
     [org.clojure/tools.reader]]
   :dependencies [
     [cheshire "5.8.0"]
@@ -20,11 +20,12 @@
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
+    [org.apache.httpcomponents/httpcore "4.4.7"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.nrepl "0.2.12"]
     [org.clojure/tools.reader "1.1.1"]
     [org.quartz-scheduler/quartz "2.2.2"]
-    [ring/ring-core "1.5.0"]
+    [ring/ring-core "1.5.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [[drift "1.5.3"]
             [lein-exec "0.3.2"]
