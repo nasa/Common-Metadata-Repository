@@ -4,6 +4,7 @@
                various dialects of each concept."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-lib"
   :exclusions [
+    [org.clojure/clojure]
     [org.clojure/tools.reader]]
   :dependencies [
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
