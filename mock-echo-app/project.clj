@@ -2,8 +2,10 @@
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
   :exclusions [
+    [commons-io]
     [org.clojure/tools.reader]]
   :dependencies [
+    [commons-io "2.6"]
     [compojure "1.5.1"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
