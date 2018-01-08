@@ -16,20 +16,16 @@
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/es-spatial-plugin"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/tools.logging "0.3.1"]
-                 [org.elasticsearch/elasticsearch "1.6.2"]
-
-                 ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
-                 [log4j/log4j "1.2.17"]
-                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
-
+  :dependencies [
+    [log4j/log4j "1.2.17"]
+    [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.logging "0.3.1"]
+    [org.elasticsearch/elasticsearch "1.7.3"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
-
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
   :aot [cmr.es-spatial-plugin.SpatialScript

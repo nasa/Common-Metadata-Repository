@@ -1,18 +1,13 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.elasticsearch/elasticsearch "1.6.2" :exclusions [commons-codec
-                                                                       org.ow2.asm/asm]]
-                 [clojurewerkz/elastisch "2.2.2" :exclusions [commons-codec
-                                                              org.ow2.asm/asm]]
-
-                 ;; Log4j needed to configure logging in elasticsearch.
-                 ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
-                 [log4j/log4j "1.2.17"]
-                 [clj-http "2.0.0"]]
-
+  :dependencies [
+    [clj-http "2.0.0"]
+    [clojurewerkz/elastisch "2.2.2"]
+    [log4j/log4j "1.2.17"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.elasticsearch/elasticsearch "1.7.3"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"

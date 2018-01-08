@@ -1,17 +1,22 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
-  :dependencies [[compojure "1.5.1"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.8.0"]
-                 [org.pegdown/pegdown "1.6.0"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]
-                 [selmer "1.10.7"]]
-
+  :exclusions [
+    [cheshire]
+    [clj-time]]
+  :dependencies [
+    [cheshire "5.8.0"]
+    [clj-time "0.14.2"]
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.pegdown/pegdown "1.6.0"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]
+    [selmer "1.10.7"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"

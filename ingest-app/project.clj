@@ -1,8 +1,6 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
-
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
-
   :dependencies [
     [clj-http "2.0.0"]
     [compojure "1.5.1"]
@@ -17,7 +15,7 @@
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.nrepl "0.2.12"]
     [org.quartz-scheduler/quartz "2.2.2"]
-    [potemkin "0.4.3"]
+    [potemkin "0.4.4"]
     [ring/ring-core "1.5.0"]
     [ring/ring-json "0.4.0"]]
   :plugins [

@@ -1,13 +1,17 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.5.1"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]]
+  :exclusions [
+    [org.clojure/tools.reader]]
+  :dependencies [
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :repl-options {:init-ns user}
