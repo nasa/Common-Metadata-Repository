@@ -2,14 +2,26 @@
   :description "index-set app is a microservice enabling CMR system create/maintain a logical set of indexes in Elasticsearch
                for indexing and searching for concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/index-set-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [compojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]]
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [org.clojure/core.async]
+    [org.clojure/tools.reader]
+    [potemkin]]
+  :dependencies [
+    [cheshire "5.8.0"]
+    [clj-time "0.14.2"]
+    [compojure "1.5.1"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/core.async "0.4.474"]
+    [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
+    [potemkin "0.4.4"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :repl-options {:init-ns user}

@@ -6,6 +6,7 @@
     [clj-time]
     [commons-codec]
     [instaparse]
+    [org.clojure/core.async]
     [org.clojure/tools.reader]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
@@ -24,7 +25,7 @@
     [instaparse "1.4.0"]
     [net.jpountz.lz4/lz4 "1.3.0"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/core.async "0.2.385"]
+    [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.6.5"]
     [org.clojure/data.codec "0.1.0"]
     [org.clojure/data.xml "0.0.8"]
