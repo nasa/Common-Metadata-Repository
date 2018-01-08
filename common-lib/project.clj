@@ -14,11 +14,6 @@
     [com.taoensso/timbre "4.1.4"]
     [compojure "1.5.1"]
     [environ "1.1.0"]
-    [gorilla-repl "0.3.6" :exclusions [org.clojure/java.classpath
-                                       ch.qos.logback/logback-classic
-                                       javax.servlet/servlet-api
-                                       compojure
-                                       ring-json]]
     [net.jpountz.lz4/lz4 "1.3.0"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/core.async "0.2.385"]
