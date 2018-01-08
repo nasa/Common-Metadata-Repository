@@ -1,35 +1,18 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/spatial-lib"
-
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-
-                 ; Fast math library for atan2, acos, asin, etc
-                 [net.jafama/jafama "2.1.0"]
-
-                 ;; Matrix multiplication
-                 [net.mikera/core.matrix "0.54.0"]
-
-                 ;; Fast vectors
-                 ;; I could not update this past 0.28.0 without a failure in code when trying to do
-                 ;; a matrix multiply with two matrices. We should test updating this in the future
-                 ;; when doing updates to see if it's been fixed or take a closer look at the code
-                 ;; to make sure it's doing the right thing.
-                 [net.mikera/vectorz-clj "0.28.0"]
-
-                 ;; allows enable and disable when assertions run by jvm flags.
-                 ;; Can skip assertions for better performance
-                 [pjstadig/assertions "0.2.0"]
-
-                 ;; Helps prevent auto boxing when performing math in Clojure
-                 ;; Could not update to 0.1.5 due to "More than one matching method found: gt"
-                 [primitive-math "0.1.4"]
-
-                 ;; Added for combinations function
-                 [org.clojure/math.combinatorics "0.1.3"]]
-
-
+  :exclusions [
+    [org.clojure/clojure]]
+  :dependencies [
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [net.jafama/jafama "2.1.0"]
+    [net.mikera/core.matrix "0.54.0"]
+    [net.mikera/vectorz-clj "0.28.0"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/math.combinatorics "0.1.3"]
+    [pjstadig/assertions "0.2.0"]
+    [primitive-math "0.1.4"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
 

@@ -23,10 +23,14 @@
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/collection-renderer-lib"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [org.jruby/jruby-complete ~jruby-version]]
+  :exclusions [
+    [commons-io]]
+  :dependencies [
+    [commons-io "2.6"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.jruby/jruby-complete ~jruby-version]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :resource-paths ["resources" ~gem-install-path]

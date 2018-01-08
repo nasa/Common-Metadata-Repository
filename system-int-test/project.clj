@@ -3,40 +3,49 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-
-  :dependencies [[clj-http "2.0.0"]
-                 [clj-xml-validation "1.0.2"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-
-                 ;; included for access to messages or setting config
-                 [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
-
-                 ;; included to allow access to catalog rest and db connection code
-                 [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
-
-                 ;; Needed for client libraries
-                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
-
-                 ;; Needed for ring-swagger dependency in search for as long as we provide the
-                 ;; swagger-ui as part of search (until the developer portal is available)
-                 [prismatic/schema "1.1.3"]
-
-                 [org.clojure/clojure "1.8.0"]
-
-                 ; include ring-core to support encoding of params
-                 [ring/ring-core "1.5.0"]]
-
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [com.google.code.findbugs/jsr305]
+    [commons-codec/commons-codec]
+    [commons-io]
+    [org.apache.httpcomponents/httpclient]
+    [org.apache.httpcomponents/httpcore]
+    [org.clojure/tools.logging]
+    [org.clojure/tools.reader]
+    [potemkin]
+    [ring/ring-codec]]
+  :dependencies [
+    [cheshire "5.8.0"]
+    [clj-http "2.0.0"]
+    [clj-time "0.14.2"]
+    [clj-xml-validation "1.0.2"]
+    [com.google.code.findbugs/jsr305 "3.0.1"]
+    [commons-codec/commons-codec "1.11"]
+    [commons-io "2.6"]
+    [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
+    [org.apache.httpcomponents/httpclient "4.5.4"]
+    [org.apache.httpcomponents/httpcore "4.4.7"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.logging "0.3.1"]
+    [org.clojure/tools.reader "1.1.1"]
+    [potemkin "0.4.4"]
+    [prismatic/schema "1.1.3"]
+    [ring/ring-codec "1.0.1"]
+    [ring/ring-core "1.5.1"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
-
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
