@@ -14,11 +14,19 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
-                           [compojure "1.5.1"]
-                           [ring/ring-core "1.5.0"]
-                           [ring/ring-json "0.4.0"]]
-                   cmr-deps)
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [org.clojure/tools.reader]]
+  :dependencies ~(concat '[
+    [cheshire "5.8.0"]
+    [clj-time "0.14.2"]
+    [compojure "1.5.1"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.reader "1.1.1"]
+    [ring/ring-core "1.5.0"]
+    [ring/ring-json "0.4.0"]]
+    cmr-deps)
   :plugins [[lein-exec "0.3.4"]
             [lein-shell "0.4.0"]
             [test2junit "1.2.1"]]

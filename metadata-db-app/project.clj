@@ -2,7 +2,13 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [org.clojure/tools.reader]]
   :dependencies [
+    [cheshire "5.8.0"]
+    [clj-time "0.14.2"]
     [compojure "1.5.1"]
     [drift "1.5.3"]
     [inflections "0.9.14"]
@@ -13,10 +19,10 @@
     [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
     [org.quartz-scheduler/quartz "2.2.2"]
     [ring/ring-core "1.5.0"]
     [ring/ring-json "0.4.0"]]
-
   :plugins [[drift "1.5.3"]
             [lein-exec "0.3.2"]
             [lein-shell "0.4.0"]

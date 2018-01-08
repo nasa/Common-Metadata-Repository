@@ -1,13 +1,17 @@
 (defproject nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-                 [commons-validator/commons-validator "1.5.0"]]
-
+  :exclusions [
+    [org.clojure/clojure]
+    [org.clojure/tools.reader]]
+  :dependencies [
+    [commons-validator/commons-validator "1.5.0"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.reader "1.1.1"]]
   :plugins [[lein-exec "0.3.2"]
             [lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
