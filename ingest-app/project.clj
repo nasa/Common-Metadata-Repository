@@ -1,8 +1,11 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
+  :exclusions [
+    [commons-io]]
   :dependencies [
     [clj-http "2.0.0"]
+    [commons-io "2.6"]
     [compojure "1.5.1"]
     [drift "1.5.3"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
