@@ -22,12 +22,13 @@
       (is (= "Browse Granules" (:title facets)))))
 
   (testing "Only the json format supports V2 granule facets."
-    (let [unsupported-formats (remove #(or (= :timeline %) (= :json %))
-                                      (cqv/supported-result-formats :granule))
-          xml-error-string (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>"
+    (let [xml-error-string (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>"
                                 "V2 facets are only supported in the JSON format.</error></errors>")
           json-error-string "{\"errors\":[\"V2 facets are only supported in the JSON format.\"]}"]
-      (doseq [fmt unsupported-formats
+      (doseq [fmt (cqv/supported-result-formats :granule)
+              ;; timeline is not supported on the granule search route and json is valid, so we
+              ;; do not test those.
+              :when (not (#{:timeline :json} fmt))
               :let [expected-body (if (= :csv fmt) json-error-string xml-error-string)]]
         (testing (str "format" fmt)
           (let [response (search/find-concepts-in-format fmt :granule {:include-facets "v2"}
