@@ -10,7 +10,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as parser]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as u]
+   [cmr.common.util :as util]
    [cmr.search.models.query :as qm]
    [cmr.search.services.parameters.legacy-parameters :as lp]))
 
@@ -349,7 +349,7 @@
                                   (if (= "true" (:hierarchical-facets params))
                                     [:hierarchical-facets]
                                     [:facets]))
-                                (when (= (:include-facets params) "v2")
+                                (when (= "v2" (util/safe-lowercase (:include-facets params)))
                                     [:facets-v2])
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
@@ -381,14 +381,18 @@
                                             :end-tag end-tag
                                             :snippet-length (when snippet-length (Integer. snippet-length))
                                             :num-snippets (when num-snippets (Integer. num-snippets))}}))})
-         u/remove-nil-keys)]))
+         util/remove-nil-keys)]))
 
 (defmethod common-params/parse-query-level-params :granule
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :granule params lp/param-aliases)]
-    [(dissoc params :echo-compatible)
-     (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))
+                                 :granule params lp/param-aliases)
+        result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
+                          [:facets-v2])]
+    [(dissoc params :echo-compatible :include-facets)
+     (merge query-attribs
+            {:echo-compatible? (= "true" (:echo-compatible params))
+             :result-features result-features})]))
 
 (defmethod common-params/parse-query-level-params :variable
   [concept-type params]

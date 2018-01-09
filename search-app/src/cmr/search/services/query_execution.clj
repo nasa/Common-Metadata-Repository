@@ -64,11 +64,11 @@
 
 (defn- complicated-facets?
   "Returns true if the query has v2 facets and at least one of the facets fields in the query."
-  [{:keys [result-format all-revisions?] :as query}]
+  [{:keys [result-format all-revisions? concept-type] :as query}]
   (and (not= false (:complicated-facets query))
        ((set (:result-features query)) :facets-v2)
        (util/any? #(facet-condition-resolver/has-field? query %)
-                  fv2rf/facets-v2-params)))
+                  (fv2rf/facets-v2-params concept-type))))
 
 (defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
@@ -155,19 +155,20 @@
   "Returns the facets by merging the two lists of facets and sort the fields in the correct order.
   If a facet with the same title already exists in others, overwrite that facet with the one
   provided in facets."
-  [facets others]
-  (let [facets-sort-fn (fn [facet] (.indexOf fv2rf/v2-facets-result-field-in-order (:title facet)))
+  [concept-type facets others]
+  (let [facets-sort-fn (fn [facet] (.indexOf (fv2rf/v2-facets-result-field-in-order concept-type)
+                                             (:title facet)))
         facet-titles (set (map :title facets))
         unique-others (remove #(contains? facet-titles (:title %)) others)]
     (sort-by facets-sort-fn (concat facets unique-others))))
 
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
-  [base-result facet-results]
+  [concept-type base-result facet-results]
   (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
     (-> base-result
         (assoc-in [:facets :has_children] true)
-        (update-in [:facets :children] #(merge-facets % individual-facets)))))
+        (update-in [:facets :children] #(merge-facets concept-type % individual-facets)))))
 
 (defmethod common-qe/execute-query :complicated-facets
   [context query]
@@ -177,10 +178,12 @@
   ;; We execute a base query with all the parameters to get the result and facets of fields that
   ;; are not in the query, then we merge this base result with only the facets for each individual
   ;; facet field that is in the query.
-  (let [facet-fields-in-query (filter #(facet-condition-resolver/has-field? query %)
-                                      fv2rf/facets-v2-params)
-        base-facet-fields (set/difference (set fv2rf/facets-v2-params) (set facet-fields-in-query))
+  (let [concept-type (:concept-type query)
+        facet-fields-in-query (filter #(facet-condition-resolver/has-field? query %)
+                                      (fv2rf/facets-v2-params concept-type))
+        base-facet-fields (set/difference (set (fv2rf/facets-v2-params concept-type))
+                                          (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
         facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)]
-    (merge-search-result-facets base-result facet-results)))
+    (merge-search-result-facets concept-type base-result facet-results)))

@@ -14,7 +14,9 @@
             ;; The first check handles the data-center-h field since its query condition field
             ;; :organization.humanized2.value does not match the regex on the second check
             ;; The first check alone will not work for science-keywords
-            (= (str (fvrf/facets-v2-params->elastic-fields field-key) ".value") (str (:field c)))
+            ;; Note that this check only applies for collection facets and not granule facets
+            (= (str (-> fvrf/facets-v2-params->elastic-fields :collection field-key) ".value")
+               (str (:field c)))
             (re-matches (re-pattern (str field-key ".*")) (str (:field c))))))
 
 (defprotocol AdjustFacetQuery
