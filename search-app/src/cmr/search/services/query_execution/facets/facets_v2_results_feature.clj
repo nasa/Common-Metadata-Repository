@@ -10,6 +10,8 @@
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+   [cmr.search.services.query-execution.facets.granule-v2-facets :as granule-v2-facets]
+   [cmr.search.services.query-execution.facets.collection-v2-facets :as collection-v2-facets]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
    [cmr.search.services.query-execution.facets.links-helper :as lh]
    [cmr.transmit.connection :as conn]
@@ -24,54 +26,45 @@
   50)
 
 (def facets-v2-params->elastic-fields
-  "Defines the mapping of the base search parameters for the v2 facets fields to its field names
-   in elasticsearch."
-  {:science-keywords :science-keywords.humanized
-   :platform :platform-sn.humanized2
-   :instrument :instrument-sn.humanized2
-   :data-center :organization.humanized2
-   :project :project-sn.humanized2
-   :processing-level-id :processing-level-id.humanized2
-   :variables :variables})
+  "Maps the parameter names for the concept-type to the fields in Elasticsearch."
+  {:collection collection-v2-facets/facets-v2-params->elastic-fields
+   :granule granule-v2-facets/granule-facet-params->elastic-fields})
 
 (def facets-v2-params
-  "The base search parameters for the v2 facets fields."
-  (keys facets-v2-params->elastic-fields))
+  "Facets query params by concept-type"
+  {:collection collection-v2-facets/facets-v2-params
+   :granule granule-v2-facets/granule-facet-fields})
 
 (def facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
-  (into {}
-        (map (fn [field] [field (keyword (str (name field) "-h"))]) facets-v2-params)))
+  {:collection collection-v2-facets/facet-fields->aggregation-fields
+   :granule granule-v2-facets/granule-fields->aggregation-fields})
 
 (def v2-facets-result-field-in-order
-  "Defines the v2 facets result field in order"
-  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Measurements" "Output File Formats" "Reprojections"])
+  "Defines the v2 facets result field in order by concept-type"
+  {:collection collection-v2-facets/v2-facets-result-field-in-order
+   :granule granule-v2-facets/v2-facets-result-field-in-order})
 
 (defn- facet-query
   "Returns the facet query for the given facet field"
-  [facet-field size query-params]
-  (case  facet-field
+  [concept-type facet-field size query-params]
+  (case facet-field
     (:science-keywords :variables)
     (let [hierarchical-field (keyword (str (name facet-field) "-h"))
           depth (hv2/get-depth-for-hierarchical-field query-params hierarchical-field)]
-      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size depth))
+      (hv2/nested-facet (-> facets-v2-params->elastic-fields concept-type facet-field) size depth))
     ;; else
-    (v2h/prioritized-facet (facets-v2-params->elastic-fields facet-field) size)))
+    (v2h/prioritized-facet (-> facets-v2-params->elastic-fields concept-type facet-field) size)))
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [size query-params facet-fields]
+  [concept-type size query-params facet-fields]
   (into {}
         (for [field facet-fields]
-          [(facet-fields->aggregation-fields field) (facet-query field size query-params)])))
-
-(def v2-facets-root
-  "Root element for the facet response"
-  {:title "Browse Collections"
-   :type :group})
+          [(-> facet-fields->aggregation-fields concept-type field)
+           (facet-query concept-type field size query-params)])))
 
 (defn- add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
@@ -88,8 +81,8 @@
 
 (defn- create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
-  [elastic-aggregations facet-fields base-url query-params]
-  (let [flat-fields (map facet-fields->aggregation-fields facet-fields)]
+  [concept-type elastic-aggregations facet-fields base-url query-params]
+  (let [flat-fields (map #(-> facet-fields->aggregation-fields concept-type %) facet-fields)]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
@@ -111,50 +104,53 @@
   (let [params (codec/form-decode params encoding)]
     (if (map? params) params {})))
 
-(defn- collection-search-root-url
-  "The root URL for executing a collection search against the CMR."
-  [context]
+(defn- get-base-url
+  "Returns the base-url to use in facet links."
+  [context concept-type]
   (let [public-search-config (set/rename-keys (get-in context [:system :public-conf])
                                               {:relative-root-url :context})]
-    (format "%s/collections.json" (conn/root-url public-search-config))))
+    (format "%s/%ss.json"
+            (conn/root-url public-search-config)
+            (name concept-type))))
 
-(defconfig include-variable-facets
-  "Controls whether or not to display variable facets. Feature toggle needed while prototyping
-  with EDSC in certain environments."
-  {:type Boolean :default false})
+(def v2-facets-root
+  "V2 facets root for each concept-type."
+  {:collection collection-v2-facets/collection-v2-facets-root
+   :granule granule-v2-facets/granule-v2-facets-root})
 
 (defn- create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
-  [context aggs facet-fields]
-  (let [base-url (collection-search-root-url context)
+  [context concept-type aggs facet-fields]
+  (let [base-url (get-base-url context concept-type)
         query-params (parse-params (:query-string context) "UTF-8")
         flat-facet-fields (remove #{:science-keywords :variables} facet-fields)
         facet-fields-set (set facet-fields)
+        ;; CMR-4682: Refactor out collection and granule specific logic
         science-keywords-facets (when (facet-fields-set :science-keywords)
                                   (hv2/create-hierarchical-v2-facets
                                    aggs base-url query-params :science-keywords-h))
-        variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
+        variables-facets (when (and (facet-fields-set :variables) (collection-v2-facets/include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
         v2-facets (concat science-keywords-facets
                           (create-prioritized-v2-facets
-                           aggs flat-facet-fields base-url query-params)
+                           concept-type aggs flat-facet-fields base-url query-params)
                           variables-facets)]
     (if (seq v2-facets)
-      (assoc v2-facets-root :has_children true :children v2-facets)
-      (assoc v2-facets-root :has_children false))))
+      (assoc (v2-facets-root concept-type) :has_children true :children v2-facets)
+      (assoc (v2-facets-root concept-type) :has_children false))))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [{:keys [query-string]} query _]
   (let [query-params (parse-params query-string "UTF-8")
         facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields facets-v2-params)]
+        facet-fields (if facet-fields facet-fields (facets-v2-params (:concept-type query)))]
     ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
     ;; always use the DEFAULT_TERMS_SIZE
     (assoc query :aggregations
-           (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params facet-fields))))
+           (facets-v2-aggregations (:concept-type query) DEFAULT_TERMS_SIZE query-params facet-fields))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
-  [context {:keys [facet-fields]} {:keys [aggregations]} query-results _]
-  (let [facet-fields (if facet-fields facet-fields facets-v2-params)]
-    (assoc query-results :facets (create-v2-facets context aggregations facet-fields))))
+  [context {:keys [facet-fields concept-type]} {:keys [aggregations]} query-results _]
+  (let [facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))]
+    (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))
