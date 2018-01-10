@@ -37,6 +37,8 @@
       ["modules" "lint"]
     "check-deps"
       ["modules" "check-deps"]
+    "deps-tree-conflicts"
+      ["modules" "deps" ":tree"]
     "generate-static"
       ["modules" "generate-static"]
     "install!"
