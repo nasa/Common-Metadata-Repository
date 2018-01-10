@@ -5,31 +5,35 @@
     [commons-logging]]
   :dependencies [
     [commons-logging "1.2"]
-    [compojure "1.5.1"]
+    [compojure "1.6.0"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/tools.nrepl "0.2.12"]
-    [ring/ring-core "1.5.1"]
+    [org.clojure/tools.nrepl "0.2.13"]
+    [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]]
-  :plugins [[lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
+  :plugins [
+    [lein-shell "0.5.0"]
+    [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :repl-options {:init-ns user}
   :profiles {
-    :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                         [pjstadig/humane-test-output "0.8.1"]]
-          :jvm-opts ^:replace ["-server"]
-          :source-paths ["src" "dev" "test" "int_test"]
-          :injections [(require 'pjstadig.humane-test-output)
-                       (pjstadig.humane-test-output/activate!)]}
-    :uberjar {:main cmr.virtual-product.runner
-              :aot :all}
+    :dev {
+      :dependencies [
+        [org.clojars.gjahad/debug-repl "0.3.3"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [pjstadig/humane-test-output "0.8.3"]]
+      :jvm-opts ^:replace ["-server"]
+      :source-paths ["src" "dev" "test" "int_test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
+    :uberjar {
+      :main cmr.virtual-product.runner
+      :aot :all}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
@@ -38,11 +42,12 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]}}
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [venantius/yagni "0.1.4"]]}}
   :test-paths ["test" "int_test"]
   :aliases {;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
@@ -54,7 +59,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})
