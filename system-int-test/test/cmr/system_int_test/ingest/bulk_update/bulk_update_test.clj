@@ -868,7 +868,7 @@
                                    :status-message (str "Collection with concept-id [" concept-id
                                                         "] is not updated because no find-value found.")})]
         (is (= "COMPLETE" (:task-status collection-response)))
-        (is (= "Task completed with 6 SKIPPED out of totally 6 collection update(s)." (:status-message collection-response)))
+        (is (= "Task completed with 6 SKIPPED out of 6 total collection update(s)." (:status-message collection-response)))
         (is (= collection-statuses
                (:collection-statuses collection-response))))
 

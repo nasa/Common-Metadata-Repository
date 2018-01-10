@@ -108,7 +108,7 @@
         _ (qb-side-api/wait-for-terminal-states)
         status-response (ingest/bulk-update-task-status "PROV1" task-id)
         status-response (dissoc status-response :created-at)]
-    (is (= {:status-message "Task completed with 2 FAILED out of totally 2 collection update(s).",
+    (is (= {:status-message "Task completed with 2 FAILED out of 2 total collection update(s).",
             :status 200,
             :name "TEST NAME"
             :request-json-body json-body
