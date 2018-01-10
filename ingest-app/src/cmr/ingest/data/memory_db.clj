@@ -7,7 +7,6 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [defn-timed] :as util]
-   [cmr.ingest.data.bulk-update :as bulk-update]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as acl-hash]))
 
@@ -27,7 +26,7 @@
     (-> this :acl-hash-data-atom deref))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  bulk-update/BulkUpdateStore
+  data-bulk-update/BulkUpdateStore
 
   (get-provider-bulk-update-status
     [this provider-id]
@@ -103,7 +102,8 @@
       (let [coll-statuses (into [] @collection-status-atom) ; Need to refresh after change
             task-collections (filter #(= task-id (:task-id %)) coll-statuses)
             pending-collections (filter #(= "PENDING" (:status %)) task-collections)
-            failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
+            failed-collections (filter #(= "FAILED" (:status %)) task-collections)
+            skipped-collections (filter #(= "SKIPPED" (:status %)) task-collections)]
         (when-not (seq pending-collections)
           (let [task-statuses @task-status-atom
                 index (first (keep-indexed #(when (= task-id (:task-id %2))
@@ -115,6 +115,7 @@
                                                  (assoc-in [index :status-message]
                                                    (data-bulk-update/generate-task-status-message
                                                      (count failed-collections)
+                                                     (count skipped-collections)
                                                      (count task-collections)))))))))))
 
   (reset-bulk-update

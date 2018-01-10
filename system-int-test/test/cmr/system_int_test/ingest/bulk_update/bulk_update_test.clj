@@ -740,7 +740,7 @@
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
             collection-status (first (:collection-statuses collection-response))]
         (is (= "COMPLETE" (:task-status collection-response)))
-        (is (= "COMPLETE" (:status collection-status)))
+        (is (= "UPDATED" (:status collection-status)))
         (is (= "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:MetadataDates] latest UPDATE date value: [2017-01-01T00:00:00.000Z] should be in the past. " (:status-message collection-status))))
 
       ;; Check that each concept was updated.
@@ -868,6 +868,7 @@
                                    :status-message (str "Collection with concept-id [" concept-id
                                                         "] is not updated because no find-value found.")})]
         (is (= "COMPLETE" (:task-status collection-response)))
+        (is (= "Task completed with 6 SKIPPED out of 6 total collection update(s)." (:status-message collection-response)))
         (is (= collection-statuses
                (:collection-statuses collection-response))))
 
@@ -931,5 +932,5 @@
     (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
           collection-status (first (:collection-statuses collection-response))]
       (is (= "COMPLETE" (:task-status collection-response)))
-      (is (= "COMPLETE" (:status collection-status)))
+      (is (= "UPDATED" (:status collection-status)))
       (is (< 255 (count (:status-message collection-status)))))))
