@@ -10,7 +10,7 @@
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
-    [com.amazonaws/aws-java-sdk "1.10.60"]
+    [com.amazonaws/aws-java-sdk "1.11.261"]
     [com.novemberain/langohr "3.4.0"]
     [commons-logging "1.2"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
