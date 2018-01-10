@@ -11,7 +11,7 @@
     [org.clojure/clojure "1.8.0"]
     [org.clojure/math.combinatorics "0.1.4"]
     [pjstadig/assertions "0.2.0"]
-    [primitive-math "0.1.6"]]
+    [primitive-math "0.1.4"]]
   :plugins [
     [lein-shell "0.5.0"]
     [test2junit "1.3.3"]]
