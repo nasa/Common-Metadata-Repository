@@ -1,3 +1,30 @@
+(def projects
+  "A map of the other development projects to their versions"
+  {:cmr-acl-lib "0.1.0-SNAPSHOT"
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"
+   :cmr-common-lib "0.1.1-SNAPSHOT"
+   :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
+   :cmr-message-queue-lib "0.1.0-SNAPSHOT"
+   :cmr-metadata-db-app "0.1.0-SNAPSHOT"
+   :cmr-mock-echo-app "0.1.0-SNAPSHOT"
+   :cmr-transmit-lib "0.1.0-SNAPSHOT"
+   :cmr-umm-spec-lib "0.1.0-SNAPSHOT"})
+
+(def project-dependencies
+  "A list of other projects as maven dependencies"
+  (doall (map (fn [[project-name version]]
+                (let [maven-name (symbol "nasa-cmr" (name project-name))]
+                  [maven-name version]))
+              projects)))
+
+(def create-checkouts-commands
+  (vec
+    (apply concat ["do"
+                   "shell" "mkdir" "checkouts,"]
+           (map (fn [project-name]
+                  ["shell" "ln" "-s" (str "../../" (subs (name project-name) 4)) "checkouts/,"])
+                (keys projects)))))
+
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
@@ -9,26 +36,19 @@
     [commons-io]
     [org.clojure/tools.reader]
     [ring/ring-codec]]
-  :dependencies [
+  :dependencies ~(concat '[
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
     [com.fasterxml.jackson.core/jackson-core "2.9.3"]
     [commons-codec/commons-codec "1.11"]
     [commons-io "2.6"]
     [compojure "1.6.0"]
-    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-    [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.reader "1.1.1"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]]
+    project-dependencies)
   :plugins [
     [lein-exec "0.3.7"]
     [lein-shell "0.5.0"]
@@ -41,7 +61,6 @@
       :exclusions [
         [org.clojure/tools.nrepl]]
       :dependencies [
-        [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]
         [pjstadig/humane-test-output "0.8.3"]
@@ -80,6 +99,7 @@
                                "run" "-m" "cmr.access-control.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]
+            "create-checkouts" ~create-checkouts-commands
             ;; Alias to test2junit for consistency with lein-test-out.
             "test-out" ["test2junit"]
             ;; Linting aliases

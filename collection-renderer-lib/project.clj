@@ -46,10 +46,10 @@
         [org.clojure/tools.nrepl "0.2.13"]
         [pjstadig/humane-test-output "0.8.3"]
         [proto-repl "0.3.1"]]
-          :jvm-opts ^:replace ["-server"]
-          :source-paths ["src" "dev" "test"]
-          :injections [(require 'pjstadig.humane-test-output)
-                       (pjstadig.humane-test-output/activate!)]}
+      :jvm-opts ^:replace ["-server"]
+      :source-paths ["src" "dev" "test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
