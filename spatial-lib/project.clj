@@ -6,8 +6,8 @@
   :dependencies [
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [net.jafama/jafama "2.3.1"]
-    [net.mikera/core.matrix "0.61.0"]
-    [net.mikera/vectorz-clj "0.47.0"]
+    [net.mikera/core.matrix "0.54.0"]
+    [net.mikera/vectorz-clj "0.28.0"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/math.combinatorics "0.1.4"]
     [pjstadig/assertions "0.2.0"]
