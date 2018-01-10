@@ -1,30 +1,30 @@
 (def projects
   "A map of the other development projects to their versions"
-  {:cmr-ingest-app "0.1.0-SNAPSHOT"
-   :cmr-search-app "0.1.0-SNAPSHOT"
-   :cmr-indexer-app "0.1.0-SNAPSHOT"
-   :cmr-bootstrap-app "0.1.0-SNAPSHOT"
-   :cmr-cubby-app "0.1.0-SNAPSHOT"
-   :cmr-access-control-app "0.1.0-SNAPSHOT"
-   :cmr-virtual-product-app "0.1.0-SNAPSHOT"
-   :cmr-metadata-db-app "0.1.0-SNAPSHOT"
-   :cmr-index-set-app "0.1.0-SNAPSHOT"
-   :cmr-common-lib "0.1.1-SNAPSHOT"
+  {:cmr-access-control-app "0.1.0-SNAPSHOT"
    :cmr-acl-lib "0.1.0-SNAPSHOT"
-   :cmr-transmit-lib "0.1.0-SNAPSHOT"
+   :cmr-bootstrap-app "0.1.0-SNAPSHOT"
    :cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
-   :cmr-spatial-lib "0.1.0-SNAPSHOT"
-   :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
-   :cmr-umm-lib "0.1.0-SNAPSHOT"
-   :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"
+   :cmr-common-lib "0.1.1-SNAPSHOT"
+   :cmr-cubby-app "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
-   :cmr-system-int-test "0.1.0-SNAPSHOT"
+   :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
+   :cmr-index-set-app "0.1.0-SNAPSHOT"
+   :cmr-indexer-app "0.1.0-SNAPSHOT"
+   :cmr-ingest-app "0.1.0-SNAPSHOT"
+   :cmr-message-queue-lib "0.1.0-SNAPSHOT"
+   :cmr-metadata-db-app "0.1.0-SNAPSHOT"
+   :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
    :cmr-orbits-lib "0.1.0-SNAPSHOT"
-   :cmr-mock-echo-app "0.1.0-SNAPSHOT"
-   :cmr-message-queue-lib "0.1.0-SNAPSHOT"
-   :cmr-common-app-lib "0.1.0-SNAPSHOT"
-   :cmr-search-relevancy-test "0.1.0-SNAPSHOT"})
+   :cmr-search-app "0.1.0-SNAPSHOT"
+   :cmr-search-relevancy-test "0.1.0-SNAPSHOT"
+   :cmr-spatial-lib "0.1.0-SNAPSHOT"
+   :cmr-system-int-test "0.1.0-SNAPSHOT"
+   :cmr-transmit-lib "0.1.0-SNAPSHOT"
+   :cmr-umm-lib "0.1.0-SNAPSHOT"
+   :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
+   :cmr-virtual-product-app "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
@@ -137,8 +137,7 @@
       :jvm-opts ["-Dcmr.runmode=external"]}}
   :aliases {
     ;; Creates the checkouts directory to the local projects
-    "create-checkouts"
-      ~create-checkouts-commands
+    "create-checkouts" ~create-checkouts-commands
     ;; Alias to test2junit for consistency with lein-test-out
     "test-out"
       ["test2junit"]
