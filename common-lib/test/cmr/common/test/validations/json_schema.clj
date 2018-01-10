@@ -84,7 +84,7 @@
   (testing "Invalid JSON structure"
     (is (thrown-with-msg?
           ExceptionInfo
-          #"Invalid JSON: Unexpected character \('\}' \(code 125\)\): expected a value"
+          #"Invalid JSON: Unexpected character \('\}' \(code 125\)\):"
           (js/validate-json sample-json-schema "{\"bar\":}"))))
 
   (testing "Invalid schema - description cannot be an array"
