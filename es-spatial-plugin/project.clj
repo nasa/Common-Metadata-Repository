@@ -17,15 +17,18 @@
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/es-spatial-plugin"
   :exclusions [
-    [org.clojure/clojure]]
+    [org.clojure/clojure]
+    [org.ow2.asm/asm]]
   :dependencies [
     [log4j/log4j "1.2.17"]
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/tools.logging "0.3.1"]
-    [org.elasticsearch/elasticsearch "1.6.2"]]
-  :plugins [[lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
+    [org.clojure/tools.logging "0.4.0"]
+    [org.elasticsearch/elasticsearch "1.6.2"]
+    [org.ow2.asm/asm "5.1"]]
+  :plugins [
+    [lein-shell "0.5.0"]
+    [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
@@ -35,25 +38,29 @@
         cmr.es-spatial-plugin.SpatialSearchPlugin]
 
   :profiles {
-    :dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                         [org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                         [criterium "0.4.4"]]
+    :dev {
+      :exclusions [
+        [org.clojure/tools.nrepl]]
+      :dependencies [
+        [criterium "0.4.4"]
+        [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+        [org.clojars.gjahad/debug-repl "0.3.3"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [org.clojure/tools.nrepl "0.2.13"]]
+      :global-vars {*warn-on-reflection* true
+                   *assert* false}
 
-          :global-vars {*warn-on-reflection* true
-                       *assert* false}
-
-          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
-          ;; See https://github.com/technomancy/leiningen/wiki/Faster
-          :jvm-opts ^:replace ["-server"]
-                                 ;; important to allow logging to standard out
-          ;                      "-Des.foreground=true"
-          ;                      ;; Use the following to enable JMX profiling with visualvm
-          ;                      "-Dcom.sun.management.jmxremote"
-          ;                      "-Dcom.sun.management.jmxremote.ssl=false"
-          ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
-          ;                      "-Dcom.sun.management.jmxremote.port=1098"]
-          :source-paths ["src" "dev"]}
+      ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
+      ;; See https://github.com/technomancy/leiningen/wiki/Faster
+      :jvm-opts ^:replace ["-server"]
+                             ;; important to allow logging to standard out
+      ;                      "-Des.foreground=true"
+      ;                      ;; Use the following to enable JMX profiling with visualvm
+      ;                      "-Dcom.sun.management.jmxremote"
+      ;                      "-Dcom.sun.management.jmxremote.ssl=false"
+      ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
+      ;                      "-Dcom.sun.management.jmxremote.port=1098"]
+      :source-paths ["src" "dev"]}
     :uberjar {:aot :all}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
@@ -63,12 +70,12 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]}}
-
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [venantius/yagni "0.1.4"]]}}
   :aliases {;; Packages the spatial search plugin
             "package" ["do"
                        "clean,"
@@ -96,7 +103,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

@@ -5,49 +5,55 @@
   :exclusions [
     [cheshire]
     [clj-time]
+    [com.fasterxml.jackson.core/jackson-core]
     [com.fasterxml.jackson.core/jackson-databind]
     [org.apache.httpcomponents/httpcore]
-    [org.clojure/tools.reader]]
+    [org.clojure/tools.reader]
+    [org.slf4j/slf4j-api]]
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
-    [com.fasterxml.jackson.core/jackson-databind "2.9.0"]
-    [compojure "1.5.1"]
+    [com.fasterxml.jackson.core/jackson-core "2.9.3"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.3"]
+    [compojure "1.6.0"]
     [drift "1.5.3"]
-    [inflections "0.9.14"]
+    [inflections "0.13.0"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
-    [org.apache.httpcomponents/httpcore "4.4.7"]
+    [org.apache.httpcomponents/httpcore "4.4.8"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.nrepl "0.2.13"]
     [org.clojure/tools.reader "1.1.1"]
-    [org.quartz-scheduler/quartz "2.2.2"]
-    [ring/ring-core "1.5.1"]
+    [org.quartz-scheduler/quartz "2.3.0"]
+    [org.slf4j/slf4j-api "1.7.10"]
+    [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]]
-  :plugins [[drift "1.5.3"]
-            [lein-exec "0.3.2"]
-            [lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
-
+  :plugins [
+    [drift "1.5.3"]
+    [lein-exec "0.3.7"]
+    [lein-shell "0.5.0"]
+    [test2junit "1.3.3"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {
-    :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                         [proto-repl "0.3.1"]
-                         [pjstadig/humane-test-output "0.8.1"]
-                         [clj-http "2.0.0"]
-                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
-          :jvm-opts ^:replace ["-server"]
-          :source-paths ["src" "dev" "test" "int_test"]
-          :injections [(require 'pjstadig.humane-test-output)
-                       (pjstadig.humane-test-output/activate!)]}
+    :dev {
+      :dependencies [
+        [clj-http "2.3.0"]
+        [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+        [org.clojars.gjahad/debug-repl "0.3.3"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [pjstadig/humane-test-output "0.8.3"]
+        [proto-repl "0.3.1"]]
+      :jvm-opts ^:replace ["-server"]
+      :source-paths ["src" "dev" "test" "int_test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
     :integration-test {:test-paths ["int_test"]
-                       :dependencies [[clj-http "2.0.0"]]}
+                       :dependencies [[clj-http "2.3.0"]]}
     :uberjar {
       :main cmr.metadata-db.runner
       :aot :all}
@@ -59,11 +65,12 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]}}
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [venantius/yagni "0.1.4"]]}}
   :test-paths ["test" "int_test"]
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
@@ -78,7 +85,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

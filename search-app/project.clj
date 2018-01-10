@@ -4,6 +4,7 @@
   :exclusions [
     [cheshire]
     [clj-time]
+    [com.fasterxml.jackson.core/jackson-core]
     [commons-codec/commons-codec]
     [org.apache.httpcomponents/httpclient]
     [org.clojure/clojure]
@@ -12,6 +13,7 @@
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.2"]
+    [com.fasterxml.jackson.core/jackson-core "2.9.3"]
     [com.github.fge/json-schema-validator "2.2.6"]
     [commons-codec/commons-codec "1.11"]
     [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
@@ -23,41 +25,43 @@
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-    [net.sf.saxon/Saxon-HE "9.7.0-7"]
+    [net.sf.saxon/Saxon-HE "9.8.0-7"]
     [org.apache.httpcomponents/httpclient "4.5.4"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/data.csv "0.1.3"]
-    [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/data.csv "0.1.4"]
     [org.clojure/tools.reader "1.1.1"]
-    [ring/ring-codec "1.0.1"]
-    [ring/ring-core "1.5.1"]
+    [ring/ring-codec "1.1.0"]
+    [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]
-    [selmer "1.10.7"]
+    [selmer "1.11.5"]
     ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
     ;; done.
     [metosin/ring-swagger-ui "2.1.4-0"]
-    [metosin/ring-swagger "0.22.9"]
-    [prismatic/schema "1.1.3"]]
-
-  :plugins [[test2junit "1.2.1"]
-            [lein-exec "0.3.4"]]
+    [metosin/ring-swagger "0.25.0"]
+    [prismatic/schema "1.1.7"]]
+  :plugins [
+    [lein-exec "0.3.7"]
+    [test2junit "1.3.3"]]
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {
-    :dev {:dependencies [[ring-mock "0.1.5"]
-                         [org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                         [criterium "0.4.4"]
-                         [pjstadig/humane-test-output "0.8.1"]
-                         ;; Must be listed here as metadata db depends on it.
-                         [drift "1.5.3"]]
-          :jvm-opts ^:replace ["-server"]
-          :source-paths ["src" "dev" "test"]
-          :injections [(require 'pjstadig.humane-test-output)
-                       (pjstadig.humane-test-output/activate!)]}
-
+    :dev {
+      :exclusions [
+        [org.clojure/tools.nrepl]]
+      :dependencies [
+        [criterium "0.4.4"]
+        [drift "1.5.3"]
+        [org.clojars.gjahad/debug-repl "0.3.3"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [org.clojure/tools.nrepl "0.2.13"]
+        [pjstadig/humane-test-output "0.8.3"]
+        [ring-mock "0.1.5"]]
+      :jvm-opts ^:replace ["-server"]
+      :source-paths ["src" "dev" "test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
     ;; This profile specifically here for generating documentation. It's
     ;; faster than using the regular profile. An agent pool is being started
     ;; when using the default profile which causes the wait of 60 seconds
@@ -76,13 +80,13 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [lein-shell "0.4.0"]
-                [venantius/yagni "0.1.4"]]}}
-
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [lein-shell "0.5.0"]
+        [venantius/yagni "0.1.4"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
@@ -95,5 +99,5 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})

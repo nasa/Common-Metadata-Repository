@@ -58,11 +58,12 @@
     [org.clojure/clojure "1.8.0"]
     ;; Add groovy to support groovy scripting in elastic
     [org.codehaus.groovy/groovy-all "2.4.0"]
-    [ring/ring-codec "1.0.1"]]
+    [ring/ring-codec "1.1.0"]]
     project-dependencies)
-  :plugins [[lein-environ "1.1.0"]
-            [lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
+  :plugins [
+    [lein-environ "1.1.0"]
+    [lein-shell "0.5.0"]
+    [test2junit "1.3.3"]]
   :repl-options {
     :init-ns user
     :timeout 300000
@@ -76,28 +77,32 @@
              ; "-Dorg.eclipse.jetty.LEVEL=INFO"
              ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {
-    :dev-dependencies {:dependencies [[ring-mock "0.1.5"]
-                                      [org.clojure/tools.namespace "0.2.11"]
-                                      [org.clojars.gjahad/debug-repl "0.3.3"]
-                                      [pjstadig/humane-test-output "0.8.1"]
-                                      [debugger "0.2.0"]
-                                      [criterium "0.4.4"]
-                                      ;; Must be listed here as metadata db depends on it.
-                                      [drift "1.5.3"]
-                                      [proto-repl-charts "0.3.1"]
-                                      [proto-repl "0.3.1"]
-                                      [proto-repl-sayid "0.1.3"]]
-                       ;; XXX Note that profiling can be kept in a profile,
-                       ;;     with no need to comment/uncomment.
-                       ;; Use the following to enable JMX profiling with visualvm
-                       ;:jvm-opts ^:replace ["-server"
-                       ;                     "-Dcom.sun.management.jmxremote"
-                       ;                     "-Dcom.sun.management.jmxremote.ssl=false"
-                       ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
-                       ;                     "-Dcom.sun.management.jmxremote.port=1098"]
-                       :source-paths ["src" "dev" "test"]
-                       :injections [(require 'pjstadig.humane-test-output)
-                                    (pjstadig.humane-test-output/activate!)]}
+    :dev-dependencies {
+      :exclusions [
+        [org.clojure/tools.nrepl]]
+      :dependencies [
+        [criterium "0.4.4"]
+        [debugger "0.2.0"]
+        [drift "1.5.3"]
+        [org.clojars.gjahad/debug-repl "0.3.3"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [org.clojure/tools.nrepl "0.2.13"]
+        [pjstadig/humane-test-output "0.8.3"]
+        [proto-repl "0.3.1"]
+        [proto-repl-charts "0.3.2"]
+        [proto-repl-sayid "0.1.3"]
+        [ring-mock "0.1.5"]]
+      ;; XXX Note that profiling can be kept in a profile,
+      ;;     with no need to comment/uncomment.
+      ;; Use the following to enable JMX profiling with visualvm
+      ;:jvm-opts ^:replace ["-server"
+      ;                     "-Dcom.sun.management.jmxremote"
+      ;                     "-Dcom.sun.management.jmxremote.ssl=false"
+      ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
+      ;                     "-Dcom.sun.management.jmxremote.port=1098"]
+      :source-paths ["src" "dev" "test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
     ;; This is to separate the dependencies from the dev-config specified in profiles.clj
     :dev [:dev-dependencies :dev-config]
     :uberjar {:main cmr.dev-system.runner
@@ -112,11 +117,12 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]}
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [venantius/yagni "0.1.4"]]}
     ;; The following run-* profiles are used in conjunction with other lein
     ;; profiles to set the default CMR run mode and may be used in the
     ;; following manner:
@@ -146,16 +152,13 @@
         ["shell" "echo" "== Kibit =="]
         ["with-profile" "lint" "kibit"]]
     "eastwood"
-      ["with-profile" "lint"
-       "eastwood" "{:namespaces [:source-paths]}"]
+      ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
     "bikeshed"
-      ["with-profile" "lint"
-       "bikeshed" "--max-line-length=100"]
+      ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
     "yagni"
       ["with-profile" "lint" "yagni"]
     "check-deps"
-      ["with-profile" "lint"
-       "ancient" "all"]
+      ["with-profile" "lint" "ancient" ":all"]
     "lint"
       ["do"
         ["check"] ["kibit"] ["eastwood"]]
