@@ -37,7 +37,7 @@
     ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
     ;; done.
     [metosin/ring-swagger-ui "2.1.4-0"]
-    [metosin/ring-swagger "0.25.0"]
+    [metosin/ring-swagger "0.22.14"]
     [prismatic/schema "1.1.7"]]
   :plugins [
     [lein-exec "0.3.7"]
