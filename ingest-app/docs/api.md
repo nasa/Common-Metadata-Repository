@@ -711,7 +711,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
             <name>TEST NAME1</name>
             <task-id>21</task-id>
             <status>COMPLETE</status>
-            <status-message>Task completed with 1 collection update failures out of 5</status-message>
+            <status-message>Task completed with 1 FAILED and 4 UPDATED out of totally 5 collection update(s).</status-message>
             <request-json-body>{"concept-ids": ["C12807-PROV1","C17995-PROV1","C18002-PROV1","C18016-PROV1"],"update-type": "FIND_AND_REMOVE","update-field": "SCIENCE_KEYWORDS","find-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
         </task>
         <task>
@@ -719,7 +719,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
             <name>TEST NAME2</name>
             <task-id>22</task-id>
             <status>COMPLETE</status>
-            <status-message>Task completed with 1 collection update failures out of 3</status-message>
+            <status-message>Task completed with 1 FAILED and 2 UPDATED out of totally 3 collection update(s).</status-message>
             <request-json-body>{"concept-ids": ["C13239-PROV1","C13276-PROV1","C13883-PROV1","C13286-PROV1"],"update-type": "CLEAR_ALL_AND_REPLACE","update-field": "SCIENCE_KEYWORDS","update-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
         </task>
         <task>
@@ -736,9 +736,9 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
 
 A more detailed status for an individual task can be queried by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/collections/status/<task-id>`
 
-This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), an overall task status message, the original request JSON body, and the status of each collection updated. The collection status includes the concept-id, the collection update status (PENDING, COMPLETE, FAILED), and a status message. FAILED indicates an error occurred either updating the collection or during collection validation. The error will be reported in the collection status message. If collection validation results in warnings, the warnings will be reported in the status message.
+This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), an overall task status message, the original request JSON body, and the status of each collection updated. The collection status includes the concept-id, the collection update status (PENDING, UPDATED, SKIPPED, FAILED), and a status message. FAILED indicates an error occurred either updating the collection or during collection validation. SKIPPED indicates the update didn't happen because the find-value is not found in the collection during the find operations. The error will be reported in the collection status message. If collection validation results in warnings, the warnings will be reported in the status message.
 
-Example: Collection statuses with 1 failure and 1 warnings
+Example: Collection statuses with 1 failure, 1 skip and 1 warnings
 ```
 curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status/25
 
@@ -747,20 +747,21 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
     <created-at>2017-10-24T17:00:03.000Z</created-at>
     <name>TEST NAME</name>
     <task-status>COMPLETE</task-status>
-    <status-message>Task completed with 1 collection update failures out of 5</status-message>
+    <status-message>Task completed with 1 FAILED, 1 SKIPPED and 3 UPDATED out of totally 5 collection update(s).</status-message>
     <request-json-body>{"concept-ids": ["C11984-PROV1","C11991-PROV1","C119916-PROV1","C14432-PROV1","C20000-PROV1"],"update-type": "FIND_AND_REMOVE","update-field": "SCIENCE_KEYWORDS","find-value": {"Category": "EARTH SCIENCE","Topic": "HUMAN DIMENSIONS","Term": "ENVIRONMENTAL IMPACTS","VariableLevel1": "HEAVY METALS CONCENTRATION"}}</request-json-body>
     <collection-statuses>
         <collection-status>
             <concept-id>C11984-PROV1</concept-id>
-            <status>COMPLETE</status>
+            <status>UPDATED</status>
         </collection-status>
         <collection-status>
             <concept-id>C11991-PROV1</concept-id>
-            <status>COMPLETE</status>
+            <status>UPDATED</status>
         </collection-status>
         <collection-status>
             <concept-id>C119916-PROV1</concept-id>
-            <status>COMPLETE</status>
+            <status>SKIPPED</status>
+            <status-message>Collection with concept-id [C119916-PROV1] is not updated because no find-value found.</status-message>
         </collection-status>
         <collection-status>
             <concept-id>C14432-PROV1</concept-id>
@@ -769,7 +770,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
         </collection-status>
         <collection-status>
             <concept-id>C20000-PROV1</concept-id>
-            <status>COMPLETE</status>
+            <status>UPDATED</status>
             <status-message>Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:RelatedUrls 4 :URL] [http://gcmd.nasa.gov/r/d/[NOAA-NGDC]gov.noaa.ngdc.mgg.photos.G01372] is not a valid URL</status-message>
         </collection-status>
     </collection-statuses>

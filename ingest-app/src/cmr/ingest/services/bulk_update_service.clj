@@ -26,8 +26,12 @@
   (str "application/vnd.nasa.cmr.umm+json;version=" (config/collection-umm-version)))
 
 (def complete-status
-  "Indicates bulk update operation finished successfully."
+  "Indicates bulk update operation finished."
   "COMPLETE")
+
+(def updated-status
+  "Indicates the collection is updated."
+  "UPDATED")
 
 (def failed-status
   "Indicates bulk update operation completed with errors"
@@ -190,7 +194,7 @@
   (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
     (let [warnings (validate-and-save-collection context updated-concept)]
       (data-bulk-update/update-bulk-update-task-collection-status
-        context task-id concept-id complete-status (create-success-status-message warnings)))
+        context task-id concept-id updated-status (create-success-status-message warnings)))
     (data-bulk-update/update-bulk-update-task-collection-status
       context task-id concept-id skipped-status
       (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))

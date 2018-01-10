@@ -13,12 +13,31 @@
    [cmr.oracle.sql-utils :as su]))
 
 (defn generate-task-status-message
-  "Generate overall status message based on number of collection failures."
-  [num-failed-collections num-total-collections]
-  (if (= 0 num-failed-collections)
+  "Generate overall status message based on number of collection failures and skips."
+  [num-failed-collections num-skipped-collections num-total-collections]
+  (if (and (= 0 num-failed-collections)
+           (= 0 num-skipped-collections))
     "All collection updates completed successfully."
-    (format "Task completed with %d collection update failures out of %d"
-      num-failed-collections num-total-collections)))
+    (let [failed-msg (when (not= 0 num-failed-collections)
+                       (str num-failed-collections " FAILED"))
+          skipped-msg (when (not= 0 num-skipped-collections)
+                        (if (some? failed-msg)
+                          (str ", " num-skipped-collections " SKIPPED")
+                          (str num-skipped-collections " SKIPPED")))
+          updated-msg (let [num-updated-collections (- num-total-collections
+                                                       (+ num-failed-collections
+                                                          num-skipped-collections))]
+                        (when (not= 0 num-updated-collections)
+                          (if (or (some? failed-msg) (some? skipped-msg))
+                            (str " and " num-updated-collections " UPDATED")
+                            (str num-updated-collections " UPDATED"))))]
+      (str "Task completed with " 
+           failed-msg 
+           skipped-msg
+           updated-msg 
+           " out of totally " 
+           num-total-collections 
+           " collection update(s)."))))  
 
 (defprotocol BulkUpdateStore
   "Defines a protocol for getting and storing the bulk update status and task-id
@@ -137,11 +156,14 @@
                                                      (su/from "bulk_update_coll_status")
                                                      (su/where `(= :task-id ~task-id)))))
                pending-collections (filter #(= "PENDING" (:status %)) task-collections)
-               failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
+               failed-collections (filter #(= "FAILED" (:status %)) task-collections)
+               skipped-collections (filter #(= "SKIPPED" (:status %)) task-collections)]
            (when-not (seq pending-collections)
              (update-bulk-update-task-status db task-id "COMPLETE"
                                              (generate-task-status-message
-                                              (count failed-collections) (count task-collections)))))))
+                                              (count failed-collections)
+                                              (count skipped-collections)
+                                              (count task-collections)))))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
                                     [(str "Error creating updating bulk update collection status "
