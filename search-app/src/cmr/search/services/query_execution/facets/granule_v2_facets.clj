@@ -28,10 +28,10 @@
   expensive aggregation queries that would have to run against more than one granule index."
   [context]
   (let [collection-ids (:query-collection-ids context)
-        cnt (count collection-ids)]
-    (when-not (= 1 (count collection-ids))
+        collection-count (count collection-ids)]
+    (when-not (= 1 collection-count)
       [(str "Granule V2 facets are limited to a single collection, but query matched "
-            (if (zero? cnt) "an undetermined number of" cnt)
+            (if (zero? collection-count) "an undetermined number of" collection-count)
             " collections.")])))
 
 (def validations
