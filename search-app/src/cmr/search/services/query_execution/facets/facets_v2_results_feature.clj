@@ -140,15 +140,20 @@
       (assoc (v2-facets-root concept-type) :has_children true :children v2-facets)
       (assoc (v2-facets-root concept-type) :has_children false))))
 
+(def facets-validation
+  "Mapping of concept type to the validator to run for that concept type."
+  {:granule granule-v2-facets/validator})
+
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
-  [{:keys [query-string]} query _]
+  [{:keys [query-string] :as context} {:keys [concept-type facet-fields] :as query} _]
+  (when-let [validator (facets-validation concept-type)]
+    (validator context))
   (let [query-params (parse-params query-string "UTF-8")
-        facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields (facets-v2-params (:concept-type query)))]
+        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))]
     ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
     ;; always use the DEFAULT_TERMS_SIZE
     (assoc query :aggregations
-           (facets-v2-aggregations (:concept-type query) DEFAULT_TERMS_SIZE query-params facet-fields))))
+           (facets-v2-aggregations concept-type DEFAULT_TERMS_SIZE query-params facet-fields))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
   [context {:keys [facet-fields concept-type]} {:keys [aggregations]} query-results _]

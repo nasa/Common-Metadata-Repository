@@ -1,6 +1,8 @@
 (ns cmr.search.services.query-execution.facets.granule-v2-facets
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
-  granule fields. First major use case is supporting OPeNDAP virutal directories capability.")
+  granule fields. First major use case is supporting OPeNDAP virutal directories capability."
+  (:require
+   [cmr.common.util :as util]))
 
 (def granule-facet-params->elastic-fields
   {})
@@ -20,3 +22,22 @@
 (def v2-facets-result-field-in-order
   "Defines the v2 facets result field in order"
   [])
+
+(defn single-collection-validation
+  "Validates that the provided query is limited to a single collection. We do this to prevent
+  expensive aggregation queries that would have to run against more than one granule index."
+  [context]
+  (let [collection-ids (:query-collection-ids context)
+        cnt (count collection-ids)]
+    (when-not (= 1 (count collection-ids))
+      [(str "Granule V2 facets are limited to a single collection, but query matched "
+            (if (zero? cnt) "an undetermined number of " cnt)
+            "collections.")])))
+
+(def validations
+  "Validation functions to run for v2 granule facets."
+  (util/compose-validations [single-collection-validation]))
+
+(def validator
+  "Returns a validator function to perform the granule v2 facets validations."
+  (util/build-validator :bad-request validations))

@@ -79,14 +79,14 @@
 
 (defmethod execute-query :elasticsearch
   [context query]
-  (let [pre-processed-query (pre-process-query-result-features context query)
-        [context processed-query] (concept-type-specific-query-processing
-                                    context pre-processed-query)
+  (let [[context processed-query] (concept-type-specific-query-processing
+                                   context query)
+        processed-query (pre-process-query-result-features context processed-query)
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
                                  (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)
                              (idx/execute-query context))
-        query-results (rc/elastic-results->query-results context pre-processed-query elastic-results)]
+        query-results (rc/elastic-results->query-results context processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
