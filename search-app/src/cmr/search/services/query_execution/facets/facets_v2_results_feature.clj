@@ -145,17 +145,23 @@
   {:granule granule-v2-facets/validator})
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
-  [{:keys [query-string] :as context} {:keys [concept-type facet-fields] :as query} _]
-  (when-let [validator (facets-validation concept-type)]
-    (validator context))
-  (let [query-params (parse-params query-string "UTF-8")
-        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))]
+  [context query _]
+  (let [query-string (:query-string context)
+        concept-type (:concept-type query)
+        facet-fields (:facet-fields query)
+        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        query-params (parse-params query-string "UTF-8")]
+    (when-let [validator (facets-validation concept-type)]
+      (validator context))
     ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
     ;; always use the DEFAULT_TERMS_SIZE
     (assoc query :aggregations
            (facets-v2-aggregations concept-type DEFAULT_TERMS_SIZE query-params facet-fields))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
-  [context {:keys [facet-fields concept-type]} {:keys [aggregations]} query-results _]
-  (let [facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))]
+  [context query elastic-results query-results _]
+  (let [concept-type (:concept-type query)
+        facet-fields (:facet-fields query)
+        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        aggregations (:aggregations elastic-results)]
     (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))
