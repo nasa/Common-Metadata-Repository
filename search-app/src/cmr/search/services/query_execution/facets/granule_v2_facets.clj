@@ -31,8 +31,8 @@
         cnt (count collection-ids)]
     (when-not (= 1 (count collection-ids))
       [(str "Granule V2 facets are limited to a single collection, but query matched "
-            (if (zero? cnt) "an undetermined number of " cnt)
-            "collections.")])))
+            (if (zero? cnt) "an undetermined number of" cnt)
+            " collections.")])))
 
 (def validations
   "Validation functions to run for v2 granule facets."
