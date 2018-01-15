@@ -50,7 +50,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:echo-compatible}
+    {:single-value #{:echo-compatible :include-facets}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
                        :platform :sensor}
@@ -205,7 +205,7 @@
 
 (defmethod cpv/valid-query-level-params :granule
   [_]
-  #{:echo-compatible})
+  #{:echo-compatible :include-facets})
 
 (defmethod cpv/valid-query-level-params :variable
   [_]
@@ -486,12 +486,20 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
-(defn- include-facets-validation
+(defn- collection-include-facets-validation
   "Validates that the include_facets parameter has a value of true, false or v2."
   [concept-type params]
   (when-let [include-facets (:include-facets params)]
     (when-not (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
-      [(format "Parameter include_facets must take value of true, false, or v2, but was [%s]"
+      [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
+               include-facets)])))
+
+(defn- granule-include-facets-validation
+  "Validates that the include_facets parameter has a value of v2."
+  [concept-type params]
+  (when-let [include-facets (:include-facets params)]
+    (when-not (= "v2" (s/lower-case include-facets))
+      [(format "Granule parameter include_facets only supports the value v2, but was [%s]"
                include-facets)])))
 
 (defn- spatial-validation
@@ -643,7 +651,7 @@
                  no-highlight-options-without-highlights-validation
                  highlights-numeric-options-validation
                  include-tags-parameter-validation
-                 include-facets-validation])
+                 collection-include-facets-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation
@@ -662,7 +670,8 @@
               bounding-box-validation
               point-validation
               line-validation
-              collection-concept-id-validation])
+              collection-concept-id-validation
+              granule-include-facets-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])

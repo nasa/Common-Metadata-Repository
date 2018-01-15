@@ -1,10 +1,18 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [commons-codec]
+    [instaparse]
+    [org.clojure/core.async]
+    [org.clojure/tools.reader]
+    [ring/ring-core]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
-    [cheshire "5.6.3"]
-    [clj-time "0.12.0"]
+    [cheshire "5.8.0"]
+    [clj-time "0.14.2"]
     [clojail "1.0.6"]
     [clojurewerkz/quartzite "2.0.0"]
     [clojusc/ltest "0.3.0-SNAPSHOT"]
@@ -12,25 +20,24 @@
     [com.gfredericks/test.chuck "0.2.7"]
     [com.github.fge/json-schema-validator "2.2.6"]
     [com.taoensso/timbre "4.1.4"]
+    [commons-codec "1.10"]
     [compojure "1.5.1"]
     [environ "1.1.0"]
-    [gorilla-repl "0.3.6" :exclusions [org.clojure/java.classpath
-                                       ch.qos.logback/logback-classic
-                                       javax.servlet/servlet-api
-                                       compojure
-                                       ring-json]]
+    [instaparse "1.4.0"]
     [net.jpountz.lz4/lz4 "1.3.0"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/core.async "0.2.385"]
+    [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.6.5"]
     [org.clojure/data.codec "0.1.0"]
     [org.clojure/data.xml "0.0.8"]
     [org.clojure/test.check "0.9.0"]
     [org.clojure/tools.nrepl "0.2.12"]
+    [org.clojure/tools.reader "1.1.1"]
     [org.eclipse.jetty/jetty-servlets "9.2.10.v20150310"]
     [org.ow2.asm/asm "5.1"]
-    [potemkin "0.4.3"]
-    [ring/ring-jetty-adapter "1.5.0"]
+    [potemkin "0.4.4"]
+    [ring/ring-core "1.5.1"]
+    [ring/ring-jetty-adapter "1.5.1"]
     [ring/ring-json "0.4.0"]]
 
   :plugins [[lein-exec "0.3.2"]

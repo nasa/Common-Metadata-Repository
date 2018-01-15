@@ -39,3 +39,12 @@
   (let [{:keys [status body errors]} response]
     (is (= [422 (set expected-errors)]
            [status (set errors)]))))
+
+(defn make-service-association
+  "Returns the service association for associating the given service and collections"
+  [token concept-id coll-concept-ids]
+  (let [response (associate-by-concept-ids token concept-id coll-concept-ids)]
+    (-> response
+        :body
+        first
+        :service-association)))

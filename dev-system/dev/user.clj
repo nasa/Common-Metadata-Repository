@@ -200,9 +200,6 @@
   (humanizer-report-service/set-retry-count! 0)
   (humanizer-report-service/set-humanizer-report-generator-job-wait! 0)
 
-  ;; uncomment this line to start gorilla repl.
-  ;;(system/set-gorilla-repl-port! 8090)
-
   (let [run-modes @settings/run-modes]
     (when-not (empty? new-modes)
       (apply set-modes! (mapcat seq new-modes)))

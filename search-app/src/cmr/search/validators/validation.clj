@@ -83,7 +83,8 @@
   [lwv/limit-number-of-leading-wildcard-patterns
    all-granule-validation/no-all-granules-with-spatial
    all-granule-validation/all-granules-exceeds-page-depth-limit
-   all-granule-validation/no-all-granules-with-scroll])
+   all-granule-validation/no-all-granules-with-scroll
+   validate-facets-v2-format])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition

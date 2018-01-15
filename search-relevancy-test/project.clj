@@ -3,12 +3,27 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [camel-snake-kebab "0.4.0"]
-                 [clj-http "2.0.0"]
-                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
-
+  :exclusions [
+    [cheshire]
+    [clj-time]
+    [commons-codec/commons-codec]
+    [org.apache.httpcomponents/httpclient]
+    [org.apache.httpcomponents/httpcore]
+    [org.clojure/tools.reader]
+    [potemkin]]
+  :dependencies [
+    [camel-snake-kebab "0.4.0"]
+    [cheshire "5.8.0"]
+    [clj-http "2.0.0"]
+    [clj-time "0.14.2"]
+    [commons-codec/commons-codec "1.11"]
+    [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [org.apache.httpcomponents/httpclient "4.5.4"]
+    [org.apache.httpcomponents/httpcore "4.4.7"]
+    [org.clojure/clojure "1.8.0"]
+    [org.clojure/tools.reader "1.1.1"]
+    [potemkin "0.4.4"]]
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
   :main ^:skip-aot search-relevancy-test.runner

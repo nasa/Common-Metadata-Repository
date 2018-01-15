@@ -15,6 +15,13 @@
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
 
+(defn- association->tombstone
+  "Returns the tombstoned revision of the given association concept"
+  [association]
+  (-> association
+      (assoc :metadata "" :deleted true)
+      (update :revision-id inc)))
+
 (defmulti after-save
   "Handler for save calls. It will be passed the list of concepts and the
   concept that was just saved. Implementing mehods should manipulate anything
@@ -36,15 +43,12 @@
   (if-not (:deleted concept)
     concepts
     (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
-          tombstones (map (fn [ta] (-> ta
-                                       (assoc :metadata "" :deleted true)
-                                       (update :revision-id inc)))
-                          tag-associations)]
+          tombstones (map association->tombstone tag-associations)]
       ;; publish tag-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
-          (:context db)
-          (ingest-events/concept-delete-event tombstone)))
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
       (concat concepts tombstones))))
 
 ;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
@@ -57,11 +61,25 @@
                                  {:provider-id "CMR"}
                                  {:concept-type :variable-association
                                   :variable-concept-id (:concept-id concept)})
-          tombstones (map (fn [ta] (-> ta
-                                       (assoc :metadata "" :deleted true)
-                                       (update :revision-id inc)))
-                          variable-associations)]
+          tombstones (map association->tombstone variable-associations)]
       ;; publish variable-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
+
+(defmethod after-save :service
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [service-associations (concepts/find-latest-concepts
+                                db
+                                {:provider-id "CMR"}
+                                {:concept-type :service-association
+                                 :service-concept-id (:concept-id concept)})
+          tombstones (map association->tombstone service-associations)]
+      ;; publish service-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
          (:context db)
@@ -396,19 +414,24 @@
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts db [provider] nil)]
      (concepts/force-delete db concept-type provider concept-id revision-id))
 
-   ; Cascade to delete the variable associations, this is a hacky way of doing things
-   (doseq [var-association (concepts/find-concepts db
-                                                   [{:provider-id "CMR"}]
-                                                   {:concept-type :variable-association})]
-     (let [{:keys [concept-id revision-id variable-concept-id extra-fields]} var-association
-           {:keys [associated-concept-id variable-concept-id]} extra-fields
-           referenced-providers (map (comp :provider-id cc/parse-concept-id)
-                                     [associated-concept-id variable-concept-id])]
-       ;; If the variable association references the deleted provider through
-       ;; either collection or variable, delete the variable association
-       (when (some #{(:provider-id provider)} referenced-providers)
-         (concepts/force-delete
-           db :variable-association {:provider-id "CMR"} concept-id revision-id))))
+   ;; Cascade to delete the variable associations and service associations,
+   ;; this is a hacky way of doing things
+   (doseq [assoc-type [:variable-association :service-association]]
+     (doseq [association (concepts/find-concepts db
+                                                 [{:provider-id "CMR"}]
+                                                 {:concept-type assoc-type})]
+       (let [{:keys [concept-id revision-id extra-fields]} association
+             {:keys [associated-concept-id variable-concept-id service-concept-id]} extra-fields
+             referenced-providers (map (fn [cid]
+                                         (some-> cid
+                                                 cc/parse-concept-id
+                                                 :provider-id))
+                                       [associated-concept-id variable-concept-id service-concept-id])]
+         ;; If the association references the deleted provider through
+         ;; either collection or variable/service, delete the association
+         (when (some #{(:provider-id provider)} referenced-providers)
+           (concepts/force-delete
+             db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
 
    ;; to find items that reference the provider that should be deleted (e.g. ACLs)
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts

@@ -26,12 +26,20 @@
   (str "application/vnd.nasa.cmr.umm+json;version=" (config/collection-umm-version)))
 
 (def complete-status
-  "Indicates bulk update operation finished successfully."
+  "Indicates bulk update operation finished."
   "COMPLETE")
+
+(def updated-status
+  "Indicates the collection is updated."
+  "UPDATED")
 
 (def failed-status
   "Indicates bulk update operation completed with errors"
   "FAILED")
+
+(def skipped-status
+  "Indicates bulk update operation is skipped because no find-value is found."
+  "SKIPPED")
 
 (def add-to-existing 
   "Represents ADD_TO_EXISTING update type"
@@ -129,19 +137,22 @@
        user-id)))))
 
 (defn- update-collection-concept
-  "Perform the update on the collection and update the concept"
+  "Perform the update on the collection and update the concept.
+   Returns the updated concept or nil if the concept is not found through find-value."
   [context concept bulk-update-params user-id]
   (let [{:keys [update-type update-field find-value update-value]} bulk-update-params
         update-type (csk/->kebab-case-keyword update-type)
-        update-field (csk/->PascalCaseKeyword update-field)]
-    (-> concept
-        (assoc :metadata (field-update/update-concept context concept update-type
+        update-field (csk/->PascalCaseKeyword update-field)
+        updated-metadata (field-update/update-concept context concept update-type
                                                       [update-field] update-value find-value
-                                                      update-format))
-        (assoc :format update-format)
-        (update :revision-id inc)
-        (assoc :revision-date (time-keeper/now))
-        (assoc :user-id user-id))))
+                                                      update-format)]
+    (when (some? updated-metadata)
+      (-> concept
+          (assoc :metadata updated-metadata) 
+          (assoc :format update-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
 
 (defn- validate-and-save-collection
   "Put concept through ingest validation. Attempt save to
@@ -177,18 +188,26 @@
         provider-id
         false)))))
 
+(defn- update-concept-and-status
+  "Perform update for the collection concept and collection status."
+  [context task-id concept concept-id bulk-update-params user-id] 
+  (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
+    (let [warnings (validate-and-save-collection context updated-concept)]
+      (data-bulk-update/update-bulk-update-task-collection-status
+        context task-id concept-id updated-status (create-success-status-message warnings)))
+    (data-bulk-update/update-bulk-update-task-collection-status
+      context task-id concept-id skipped-status
+      (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
+
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept
-  cannot be found."
+  cannot be found or if the concept doesn't contain the find-value."
   [context provider-id task-id concept-id bulk-update-params user-id]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (let [updated-concept (update-collection-concept context concept bulk-update-params user-id)
-            warnings (validate-and-save-collection context updated-concept)]
-        (data-bulk-update/update-bulk-update-task-collection-status
-         context task-id concept-id complete-status (create-success-status-message warnings)))
+      (update-concept-and-status context task-id concept concept-id bulk-update-params user-id)
       (data-bulk-update/update-bulk-update-task-collection-status
-       context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
+        context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update

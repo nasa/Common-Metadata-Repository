@@ -1,10 +1,16 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
-
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
-
+  :exclusions [
+    [commons-codec/commons-codec]
+    [commons-io]
+    [org.apache.httpcomponents/httpclient]
+    [org.apache.httpcomponents/httpcore]
+    [ring/ring-codec]]
   :dependencies [
     [clj-http "2.0.0"]
+    [commons-codec/commons-codec "1.11"]
+    [commons-io "2.6"]
     [compojure "1.5.1"]
     [drift "1.5.3"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
@@ -14,11 +20,14 @@
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [org.apache.httpcomponents/httpclient "4.5.4"]
+    [org.apache.httpcomponents/httpcore "4.4.7"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/tools.nrepl "0.2.12"]
     [org.quartz-scheduler/quartz "2.2.2"]
-    [potemkin "0.4.3"]
-    [ring/ring-core "1.5.0"]
+    [potemkin "0.4.4"]
+    [ring/ring-codec "1.0.1"]
+    [ring/ring-core "1.5.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [
     [drift "1.5.3"]

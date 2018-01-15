@@ -60,8 +60,3 @@
   {:default :in-memory
    :parser parse-dev-system-component-type})
 
-(defconfig gorilla-repl-port
-  "Specifies the port gorilla repl should listen on. It will only be started
-  if non-zero."
-  {:default 0
-   :type Long})

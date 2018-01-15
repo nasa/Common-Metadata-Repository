@@ -82,13 +82,13 @@
                    :task-status "COMPLETE",
                    :request-json-body json-body
                    :collection-statuses [{:status-message nil,
-                                          :status "COMPLETE",
+                                          :status "UPDATED",
                                           :concept-id "C1200000000-PROV1"}
                                          {:status-message nil,
-                                          :status "COMPLETE",
+                                          :status "UPDATED",
                                           :concept-id "C1200000001-PROV1"}
                                          {:status-message nil,
-                                          :status "COMPLETE",
+                                          :status "UPDATED",
                                           :concept-id "C1200000002-PROV1"}]}
                   (dissoc response :created-at))))
          "JSON" :json
@@ -108,7 +108,7 @@
         _ (qb-side-api/wait-for-terminal-states)
         status-response (ingest/bulk-update-task-status "PROV1" task-id)
         status-response (dissoc status-response :created-at)]
-    (is (= {:status-message "Task completed with 2 collection update failures out of 2",
+    (is (= {:status-message "Task completed with 2 FAILED out of 2 total collection update(s).",
             :status 200,
             :name "TEST NAME"
             :request-json-body json-body
