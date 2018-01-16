@@ -53,8 +53,8 @@
     cmr.search.data.complex-to-simple-converters.temporal
     cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
     cmr.search.data.elastic-results-to-query-results
-    cmr.search.services.aql.converters.attribute-name
     cmr.search.services.aql.converters.attribute
+    cmr.search.services.aql.converters.attribute-name
     cmr.search.services.aql.converters.science-keywords
     cmr.search.services.aql.converters.spatial
     cmr.search.services.aql.converters.temporal
@@ -70,15 +70,17 @@
     cmr.search.services.parameters.converters.spatial
     cmr.search.services.parameters.converters.temporal
     cmr.search.services.parameters.converters.two-d-coordinate-system
+    cmr.search.services.query-execution
+    cmr.search.services.query-execution.facets.collection-v2-facets
     cmr.search.services.query-execution.facets.facets-results-feature
     cmr.search.services.query-execution.facets.facets-v2-results-feature
+    cmr.search.services.query-execution.facets.granule-v2-facets
     cmr.search.services.query-execution.granule-counts-results-feature
     cmr.search.services.query-execution.has-granules-created-at-feature
-    cmr.search.services.query-execution.has-granules-revised-at-feature
     cmr.search.services.query-execution.has-granules-results-feature
+    cmr.search.services.query-execution.has-granules-revised-at-feature
     cmr.search.services.query-execution.highlight-results-feature
     cmr.search.services.query-execution.tags-results-feature
-    cmr.search.services.query-execution
     cmr.search.validators.attribute
     cmr.search.validators.equator-crossing-date
     cmr.search.validators.equator-crossing-longitude
