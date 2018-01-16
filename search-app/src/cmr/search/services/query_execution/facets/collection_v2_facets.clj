@@ -49,3 +49,22 @@
   "Controls whether or not to display variable facets. Feature toggle needed while prototyping
   with EDSC in certain environments."
   {:type Boolean :default false})
+
+(defn create-v2-facets
+  "Create the collection facets v2 response. Parses an elastic aggregations result and returns the
+  facets."
+  [base-url query-params aggs facet-fields flat-facets-creation-fn]
+  (let [flat-facet-fields (remove #{:science-keywords :variables} facet-fields)
+        facet-fields-set (set facet-fields)
+        ;; CMR-4682: Refactor out collection and granule specific logic
+        science-keywords-facets (when (facet-fields-set :science-keywords)
+                                  (hv2/create-hierarchical-v2-facets
+                                   aggs base-url query-params :science-keywords-h))
+        variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
+                           (hv2/create-hierarchical-v2-facets
+                            aggs base-url query-params :variables-h))
+        v2-facets (concat science-keywords-facets
+                          (flat-facets-creation-fn
+                           :collection aggs flat-facet-fields base-url query-params)
+                          variables-facets)]
+    v2-facets))
