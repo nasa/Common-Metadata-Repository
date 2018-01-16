@@ -7,6 +7,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -25,7 +26,7 @@
     (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})]
       (is (= "Browse Granules" (:title facets))))))
 
-(defn- setup-collections-and-granules
+(defn- single-collection-test-setup
   "Ingests the collections and granules needed for the single collection validation test."
   []
   (let [coll1 (d/ingest-umm-spec-collection
@@ -59,7 +60,7 @@
     (index/wait-until-indexed)))
 
 (deftest single-collection-validation-tests
-  (setup-collections-and-granules)
+  (single-collection-test-setup)
   (testing "Allowed single collection queries"
     (util/are3
       [query-params]
@@ -127,4 +128,58 @@
         "true" true
         "false" false))))
 
-(deftest temporal-facets-test)
+(defn get-count-by-title
+  "Returns the count for the given title for the provided facets."
+  [facets title]
+  (let [relevant-facet (first (filter #(= title (:title %)) facets))]
+    (:count relevant-facet)))
+
+(deftest temporal-facets-test
+  (let [coll (d/ingest-umm-spec-collection
+              "PROV1"
+              (data-umm-c/collection {:concept-id "C1-PROV1"
+                                      :TemporalExtents
+                                      [(data-umm-cmn/temporal-extent
+                                        {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+        gran2010-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                      coll (:concept-id coll)
+                                      {:granule-ur "Granule1"
+                                       :beginning-date-time "2010-01-01T12:00:00Z"
+                                       :ending-date-time "2010-01-11T12:00:00Z"}))
+        gran2010-2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                      coll (:concept-id coll)
+                                      {:granule-ur "Granule2"
+                                       :beginning-date-time "2010-01-31T12:00:00Z"}))
+        gran2011-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                      coll (:concept-id coll)
+                                      {:granule-ur "Granule3"
+                                       :beginning-date-time "2011-12-03T12:00:00Z"
+                                       :ending-date-time "2011-12-20T12:00:00Z"}))
+        gran1999-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                      coll (:concept-id coll)
+                                      {:granule-ur "Granule4"
+                                       :beginning-date-time "1999-11-12T12:00:00Z"
+                                       :ending-date-time "1999-12-03T12:00:00Z"}))
+        gran2012-boundary (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                             coll (:concept-id coll)
+                                             {:granule-ur "Granule5"
+                                              :beginning-date-time "2012-12-25T12:00:00Z"
+                                              :ending-date-time "2013-03-01T12:00:00Z"}))]
+    (index/wait-until-indexed)
+    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})
+          year-facets (-> facets :children first :children first :children)]
+      (testing "Facet structure correct"
+        (is (= "Browse Granules" (:title facets)))
+        (is (= "Temporal" (-> facets :children first :title)))
+        (is (= "Year" (-> facets :children first :children first :title))))
+      (testing "Years returned in order"
+        (is (= ["1999" "2010" "2011" "2012"] (map :title year-facets))))
+      (testing "Counts correct"
+        (util/are3
+          [title cnt]
+          (is (= cnt (get-count-by-title year-facets title)))
+
+          "1999" "1999" 1
+          "2010" "2010" 2
+          "2011" "2011" 1
+          "2012" "2012" 1)))))

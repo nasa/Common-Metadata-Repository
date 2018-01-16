@@ -4,6 +4,7 @@
   (:require
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]))
 
 (def granule-facet-params->elastic-fields
@@ -49,4 +50,18 @@
 (defn create-v2-facets
   "Return the granule specific V2 facets"
   [base-url query-params aggs _ _]
-  (temporal-facets/parse-temporal-buckets (-> aggs :start-date-doc-values :buckets) :year))
+  (let [temporal-facets (temporal-facets/parse-temporal-buckets
+                         (-> aggs :start-date-doc-values :buckets)
+                         :year)
+        year-node (when (seq temporal-facets)
+                    (v2h/generate-group-node "Year"
+                                              false
+                                              temporal-facets))
+        ;; Will be added by CMR-4683 and CMR-4684
+        year-node (dissoc year-node :applied :type)
+        temporal-node (when year-node
+                        (v2h/generate-group-node (v2h/fields->human-readable-label :temporal)
+                                                 false
+                                                 [year-node]))
+        temporal-node (dissoc temporal-node :applied :type)]
+     [temporal-node]))
