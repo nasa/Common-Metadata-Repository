@@ -126,3 +126,5 @@
         "V22" "V22"
         "true" true
         "false" false))))
+
+(deftest temporal-facets-test)
