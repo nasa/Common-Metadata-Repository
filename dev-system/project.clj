@@ -105,6 +105,18 @@
                    (pjstadig.humane-test-output/activate!)]}
     ;; This is to separate the dependencies from the dev-config specified in profiles.clj
     :dev [:dev-dependencies :dev-config]
+    ;; The following run-* profiles are used in conjunction with other lein
+    ;; profiles to set the default CMR run mode and may be used in the
+    ;; following manner:
+    ;;
+    ;;   $ lein with-profile +run-external repl
+    ;;
+    ;; which will use dev and the other default profiles in addition to
+    ;; run-external (or whichever run mode profile is given).
+    :run-in-memory {
+      :jvm-opts ["-Dcmr.runmode=in-memory"]}
+    :run-external {
+      :jvm-opts ["-Dcmr.runmode=external"]}
     :uberjar {:main cmr.dev-system.runner
               ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
               :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
@@ -123,18 +135,9 @@
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
-    ;; The following run-* profiles are used in conjunction with other lein
-    ;; profiles to set the default CMR run mode and may be used in the
-    ;; following manner:
-    ;;
-    ;;   $ lein with-profile +run-external repl
-    ;;
-    ;; which will use dev and the other default profiles in addition to
-    ;; run-external (or whichever run mode profile is given).
-    :run-in-memory {
-      :jvm-opts ["-Dcmr.runmode=in-memory"]}
-    :run-external {
-      :jvm-opts ["-Dcmr.runmode=external"]}}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {
     ;; Creates the checkouts directory to the local projects
     "create-checkouts" ~create-checkouts-commands

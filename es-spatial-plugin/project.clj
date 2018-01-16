@@ -75,7 +75,10 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}}
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {;; Packages the spatial search plugin
             "package" ["do"
                        "clean,"
