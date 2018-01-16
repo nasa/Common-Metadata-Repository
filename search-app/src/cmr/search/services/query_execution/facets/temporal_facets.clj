@@ -3,7 +3,7 @@
 
 (defmulti parse-date
   "Returns the value from the date string that matches the provided interval.
-  Example: (parse-interval \"2017-01-01T00:00:00+0000\" :year) returns 2017."
+  Example: (parse-date \"2017-01-01T00:00:00+0000\" :year) returns 2017."
   (fn [datetime interval]
     interval))
 
