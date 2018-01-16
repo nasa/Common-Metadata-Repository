@@ -131,9 +131,7 @@
 (defn- create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
   [context concept-type aggs facet-fields]
-  (let [
-        ;; Keep here
-        base-url (get-base-url context concept-type)
+  (let [base-url (get-base-url context concept-type)
         query-params (parse-params (:query-string context) "UTF-8")
         v2-facets ((create-v2-facets-by-concept-type concept-type)
                    base-url query-params aggs facet-fields create-prioritized-v2-facets)]

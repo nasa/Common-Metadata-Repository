@@ -18,7 +18,8 @@
    :instrument-h "Instruments"
    :processing-level-id-h "Processing levels"
    :science-keywords-h "Keywords"
-   :variables-h "Measurements"})
+   :variables-h "Measurements"
+   :temporal "Temporal"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results
