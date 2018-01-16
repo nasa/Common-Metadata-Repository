@@ -56,6 +56,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :test-paths ["test" "int_test"]
   :profiles {
     :dev {
       :exclusions [
@@ -93,8 +94,10 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}}
-  :test-paths ["test" "int_test"]
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.access-control.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.

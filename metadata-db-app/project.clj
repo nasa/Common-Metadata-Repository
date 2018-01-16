@@ -39,6 +39,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :test-paths ["test" "int_test"]
   :profiles {
     :dev {
       :dependencies [
@@ -70,8 +71,10 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}}
-  :test-paths ["test" "int_test"]
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]

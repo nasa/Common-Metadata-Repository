@@ -34,6 +34,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :test-paths ["test" "int_test"]
   :profiles {
     :dev {
       :dependencies [
@@ -65,8 +66,10 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.0"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}}
-  :test-paths ["test" "int_test"]
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
