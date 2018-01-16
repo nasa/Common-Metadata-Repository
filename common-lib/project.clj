@@ -18,7 +18,7 @@
     [clj-time "0.14.2"]
     [clojail "1.0.6"]
     [clojurewerkz/quartzite "2.1.0"]
-    [clojusc/ltest "0.3.0-SNAPSHOT"]
+    [clojusc/ltest "0.3.0"]
     [com.dadrox/quiet-slf4j "0.1"]
     [com.gfredericks/test.chuck "0.2.8"]
     [com.github.fge/json-schema-validator "2.2.6"]
