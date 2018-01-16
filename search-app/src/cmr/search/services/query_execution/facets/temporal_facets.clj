@@ -35,8 +35,9 @@
   "Parses the Elasticsearch aggregations response to return a map of the value for the current
   interval and count of the number of documents for that interval."
   [buckets interval]
-  (map (fn [bucket]
-         (let [value (parse-date (:key_as_string bucket) interval)]
-           {:title value
-            :count (:doc_count bucket)}))
-       buckets))
+  (reverse
+   (map (fn [bucket]
+          (let [value (parse-date (:key_as_string bucket) interval)]
+            {:title value
+             :count (:doc_count bucket)}))
+        buckets)))

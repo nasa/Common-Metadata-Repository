@@ -172,8 +172,8 @@
         (is (= "Browse Granules" (:title facets)))
         (is (= "Temporal" (-> facets :children first :title)))
         (is (= "Year" (-> facets :children first :children first :title))))
-      (testing "Years returned in order"
-        (is (= ["1999" "2010" "2011" "2012"] (map :title year-facets))))
+      (testing "Years returned in order from most recent to oldest"
+        (is (= ["2012" "2011" "2010" "1999"] (map :title year-facets))))
       (testing "Counts correct"
         (util/are3
           [title cnt]
