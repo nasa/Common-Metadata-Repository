@@ -10,7 +10,7 @@
 # them in internal ones for building. If this is set then the maven repo will be updated to use this.
 
 date && echo "Installing all apps and generating API documentation" &&
-(cd .. && lein modules do clean, install, generate-static)
+(cd .. && lein 'install-with-content!')
 if [ $? -ne 0 ] ; then
   echo "Failed to install apps and generate docs" >&2
   exit 1
