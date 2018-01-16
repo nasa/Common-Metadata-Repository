@@ -11,7 +11,7 @@
 # should also set CMR_DB_URL to the URL to connect to the external database.
 
 date && echo "Building and starting dev-system" &&
-(cd dev-system && support/build-and-run.sh)
+(cd dev-system && support/build-and-run-internal.sh)
 if [ $? -ne 0 ] ; then
   echo "Failed to build and start up dev system" >&2
   exit 1
