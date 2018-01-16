@@ -100,13 +100,13 @@
              (set (map #(update % :meta meta-for-comparison)
                        (get-in search-result [:results :items]))))))))
 
-(defn- variable->umm-json-meta
+(defn- concept->umm-json-meta
   "Returns the meta section of umm-json format."
-  [variable]
-  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} variable
+  [concept-type concept]
+  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} concept
         deleted (boolean deleted)
         meta (util/remove-nil-keys
-              {:concept-type "variable"
+              {:concept-type (name concept-type)
                :concept-id concept-id
                :revision-id revision-id
                :native-id native-id
@@ -116,6 +116,11 @@
     (if deleted
       meta
       (assoc meta :format mt/umm-json))))
+
+(defn- variable->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [variable]
+  (concept->umm-json-meta :variable variable))
 
 (defn- variable->umm-json
   "Returns the UMM JSON result of the given variable."
@@ -150,6 +155,36 @@
           "UMM search result JSON was invalid")
       (is (= (set (map #(variable->umm-json version %) variables))
              (set (map result-item-for-comparison
+                       (get-in search-result [:results :items]))))))))
+
+(defn- service->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [service]
+  (concept->umm-json-meta :service service))
+
+(defn- service->umm-json
+  "Returns the UMM JSON result of the given service."
+  [version service]
+  (if (:deleted service)
+    {:meta (service->umm-json-meta service)}
+    (let [;; use the original metadata for now, add version migration when service versioning is added
+           {:keys [metadata]} service]
+      {:meta (service->umm-json-meta service)
+       :umm (json/decode metadata true)})))
+
+(defn assert-service-umm-jsons-match
+  "Returns true if the UMM service umm-jsons match the umm-jsons returned from the search."
+  [version services search-result]
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (do
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
+      (is (nil? (util/seqv (umm-json-schema/validate-service-umm-json-search-result
+                            (:body search-result) version)))
+          "UMM search result JSON was invalid")
+      (is (= (set (map #(service->umm-json version %) services))
+             (set (map #(util/dissoc-in % [:meta :revision-date])
                        (get-in search-result [:results :items]))))))))
 
 (defn minimum-umm-spec-fields
