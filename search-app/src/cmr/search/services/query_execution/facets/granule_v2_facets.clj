@@ -5,28 +5,42 @@
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]))
 
 (def granule-facet-params->elastic-fields
+  "Maps the parameter names for the concept-type to the fields in Elasticsearch."
   {:start-date :start-date-doc-values})
 
-(def granule-facet-fields
-  "Faceted fields for granules."
+(defmethod v2-facets/facets-v2-params->elastic-fields :granule
+  [_]
+  granule-facet-params->elastic-fields)
+
+(def granule-facet-params
+  "Granule facet params."
   (keys granule-facet-params->elastic-fields))
+
+(defmethod v2-facets/facets-v2-params :granule
+  [_]
+  granule-facet-params)
 
 (def granule-fields->aggregation-fields
   "Defines the mapping of granule parameter names to the aggregation parameter names."
   (into {}
         (map (fn [field]
                [field (q2e/query-field->elastic-field field :granule)])
-             granule-facet-fields)))
+             granule-facet-params)))
 
-(def granule-v2-facets-root
-  "Root element for the facet response"
+(defmethod v2-facets/facet-fields->aggregation-fields :granule
+  [_]
+  granule-fields->aggregation-fields)
+
+(defmethod v2-facets/v2-facets-root :granule
+  [_]
   {:title "Browse Granules"})
 
-(def v2-facets-result-field-in-order
-  "Defines the v2 facets result field in order"
+(defmethod v2-facets/v2-facets-result-field-in-order :granule
+  [_]
   ["Temporal"])
 
 (defn single-collection-validation
@@ -43,13 +57,12 @@
   "Validation functions to run for v2 granule facets."
   (util/compose-validations [single-collection-validation]))
 
-(def validator
-  "Returns a validator function to perform the granule v2 facets validations."
+(defmethod v2-facets/facets-validator :granule
+  [_]
   (util/build-validator :bad-request validations))
 
-(defn create-v2-facets
-  "Return the granule specific V2 facets"
-  [base-url query-params aggs _ _]
+(defmethod v2-facets/create-v2-facets-by-concept-type :granule
+  [concept-type base-url query-params aggs _]
   (let [temporal-facets (temporal-facets/parse-temporal-buckets
                          (-> aggs :start-date-doc-values :buckets)
                          :year)
