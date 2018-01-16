@@ -14,39 +14,6 @@
     [clj-time "0.14.2"]
     [com.github.fge/json-schema-validator "2.2.6"]
     [commons-codec/commons-codec "1.11"]
-    ;; XXX REMOVE the following deps when the stubbed
-    ;;     responses are replaced with the real ones
-    ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
-    [clojusc/ltest "0.3.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
-     :exclusions [cljs-http
-                  clj-http
-                  clojusc/ltest
-                  com.google.code.findbugs/jsr305
-                  gov.nasa.earthdata/cmr-client
-                  instaparse
-                  org.clojure/clojurescript
-                  org.clojure/core.async
-                  org.clojure/data.xml
-                  org.clojure/tools.analyzer.jvm
-                  org.clojure/tools.reader
-                  org.clojure/java.jdbc
-                  ring/ring-codec]]
-    [gov.nasa.earthdata/cmr-edsc-stubs "0.2.0-SNAPSHOT"
-     :exclusions [cljs-http
-                  clj-http
-                  clojusc/ltest
-                  com.google.code.findbugs/jsr305
-                  gov.nasa.earthdata/cmr-client
-                  instaparse
-                  org.clojure/clojurescript
-                  org.clojure/core.async
-                  org.clojure/data.xml
-                  org.clojure/tools.analyzer.jvm
-                  org.clojure/tools.reader
-                  org.clojure/java.jdbc
-                  ring/ring-codec]]
-    ;; XXX end REMOVE
     [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
