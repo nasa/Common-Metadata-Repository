@@ -3270,7 +3270,7 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
+The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
 __Example__
 ```
@@ -3541,6 +3541,77 @@ Content-Length: 393
         </reference>
     </references>
 </results>
+```
+##### UMM JSON
+The UMM JSON response contains meta-metadata of the service and the UMM fields.
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/services.umm_json?name=NSIDC_AtlasNorth&pretty=true"
+HTTP/1.1 200 OK
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf-8
+
+{
+  "hits": 1,
+  "took": 14,
+  "items": [
+    {
+      "meta": {
+        "revision-id": 2,
+        "deleted": false,
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "provider-id": "PROV1",
+        "native-id": "svc1",
+        "concept-id": "S1200000009-PROV1",
+        "revision-date": "2017-08-14T20:12:43Z",
+        "concept-type": "service"
+      },
+      "umm": {
+        "Name": "NSIDC_AtlasNorth",
+        "Type": "WCS",
+        "Version": "1.1.1",
+        "Description": "Atlas of the Cryosphere: Northern Hemisphere",
+        "OnlineResource": {
+          "Linkage": "https://nsidc.org/cgi-bin/atlas_north",
+          "Name": "NSIDC WCS Service for the Northern Hemisphere",
+          "Description": "NSIDC WCS Service, tlas of the Cryosphere: Northern Hemisphere"
+        },
+        "ServiceOptions": {
+          "SubsetType": [
+            "Spatial",
+            "Temporal",
+            "Variable"
+          ],
+          "SupportedProjections": [
+            "WGS 84 / UPS North (N,E)",
+            "WGS84 - World Geodetic System 1984",
+            "NSIDC EASE-Grid North",
+            "Google Maps Global Mercator -- Spherical Mercator"
+          ],
+          "InterpolationType": [
+            "Nearest Neighbor",
+            "Bilinear Interpolation"
+          ],
+          "SupportedFormats": [
+            "image/png",
+            "image/vnd.wap.wbmp"
+          ]
+        },
+        "Layer": [
+          {
+            "Name": "sea_ice_concentration_01"
+          },
+          {
+            "Name": "sea_ice_concentration_02"
+          },
+          {
+            "Name": "greenland_elevation"
+          }
+        ]
+      }
+    }
+  ]
+}
 ```
 
 ##### <a name="sorting-service-results"></a> Sorting Service Results
