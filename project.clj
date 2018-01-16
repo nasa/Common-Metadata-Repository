@@ -17,17 +17,19 @@
   :plugins [
     [lein-modules "0.3.11"]
     [lein-shell "0.4.0"]]
-
-  :profiles {:uberjar {:modules {:dirs ["access-control-app"
-                                        "cubby-app"
-                                        "bootstrap-app"
-                                        "index-set-app"
-                                        "indexer-app"
-                                        "ingest-app"
-                                        "metadata-db-app"
-                                        "search-app"
-                                        "virtual-product-app"
-                                        "es-spatial-plugin"]}}}
+  :profiles {
+    :uberjar {
+      :modules {
+        :dirs ["access-control-app"
+               "cubby-app"
+               "bootstrap-app"
+               "index-set-app"
+               "indexer-app"
+               "ingest-app"
+               "metadata-db-app"
+               "search-app"
+               "virtual-product-app"
+               "es-spatial-plugin"]}}}
   :aliases {
     "kibit"
       ["modules" "kibit"]
@@ -41,12 +43,6 @@
       ["modules" "deps" ":tree"]
     "generate-static"
       ["modules" "generate-static"]
-    "install!"
-      ["modules" "do"
-       "clean," "install," "clean"]
-    "install-with-content!"
-      ["modules" "do"
-       "clean," "install," "generate-static," "clean"]
     "start-sqs-sns"
       ["shell"
        "dev-system/support/start-local-sqs-sns.sh"]
@@ -61,5 +57,23 @@
       ["shell"
        "echo" "You need to be in the `dev-system` directory for that."]
     "test"
-      ["modules" "test-out"]})
+      ["modules" "test-out"]
+    ;; Install tasks using up-stream .jar repos
+    "install-no-clean!"
+      ["modules" "do" "clean," "install,"]
+    "install!"
+      ["modules" "do" "clean," "install," "clean"]
+    "install-with-content-no-clean!"
+      ["modules" "do" "clean," "install," "generate-static,"]
+    "install-with-content!"
+      ["modules" "do" "clean," "install," "generate-static," "clean"]
+    ;; Install tasks using nexus .jar repos proxy
+    "internal-install-no-clean!"
+      ["modules" "with-profile" "+internal-repos" "do" "clean," "install,"]
+    "internal-install!"
+      ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "clean"]
+    "internal-install-with-content-no-clean!"
+      ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static,"]
+    "internal-install-with-content!"
+      ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static," "clean"]})
 
