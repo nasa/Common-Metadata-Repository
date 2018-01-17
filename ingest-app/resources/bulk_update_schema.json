@@ -57,5 +57,5 @@
           "type": "object"
         }
     },
-    "required": ["update-type", "update-field", "concept-ids"]
+    "required": ["update-type", "update-field"]
 }

@@ -105,6 +105,28 @@
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
 
+(defn- get-provider-concept-ids
+  "Returns a list of collection concept ids for a given provider-id"
+  [context provider-id]
+  (let [concepts (mdb/find-concepts context 
+                                    {:provider-id provider-id} 
+                                    :collection)]
+    (when (seq concepts)
+      (distinct (map :concept-id concepts)))))
+
+(defn- get-concept-ids
+  "Get the concept-ids from either the concept-ids passed in or 
+   from the provider. If both are empty, throws exception." 
+  [context concept-ids provider-id]
+  (if-let [concept-ids (if (seq concept-ids)
+                         concept-ids
+                         (get-provider-concept-ids context provider-id))]
+    concept-ids
+    (errors/throw-service-errors
+      :bad-request
+      [(str "Concept-ids not found - None provided in the request,"
+            " and none are associated with the provider-id either.")]))) 
+
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
   and collection statuses, and queueu bulk update. Return task id, which comes
@@ -113,6 +135,8 @@
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
+        concept-ids (get-concept-ids context concept-ids provider-id)
+        bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
         ;; Write db rows - one for overall status, one for each concept id
         task-id (data-bulk-update/create-bulk-update-task context
                  provider-id json concept-ids)]
@@ -200,14 +224,18 @@
       (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
 
 (defn handle-collection-bulk-update-event
-  "Perform update for the given concept id. Log an error status if the concept
-  cannot be found or if the concept doesn't contain the find-value."
+  "Perform update for the given concept id. Log an error status if the concept-id is not associated
+  with the provider-id, or if the concept cannot be found, or if the concept doesn't contain the find-value."
   [context provider-id task-id concept-id bulk-update-params user-id]
   (try
-    (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (update-concept-and-status context task-id concept concept-id bulk-update-params user-id)
+    (if-not (string/ends-with? concept-id provider-id)    
       (data-bulk-update/update-bulk-update-task-collection-status
-        context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
+        context task-id concept-id failed-status 
+        (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
+      (if-let [concept (mdb2/get-latest-concept context concept-id)]
+        (update-concept-and-status context task-id concept concept-id bulk-update-params user-id)
+        (data-bulk-update/update-bulk-update-task-collection-status
+          context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update

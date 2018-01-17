@@ -95,7 +95,7 @@
          "XML" :xml)))))
 
 (deftest bulk-update-invalid-concept-id
-  (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
+  (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111-PROV2"]
                           :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
@@ -113,10 +113,11 @@
             :name "TEST NAME"
             :request-json-body json-body
             :task-status "COMPLETE",
-            :collection-statuses (set [{:status-message "Concept-id [C1200000100-PROV1] is not valid.",
+            :collection-statuses (set [{:status-message "Concept-id [C1200000100-PROV1] does not exist.",
                                         :status "FAILED",
                                         :concept-id "C1200000100-PROV1"}
-                                       {:status-message "Concept-id [C111] is not valid.",
+                                       {:status-message (str "Concept-id [C111-PROV2] is not associated "
+                                                             "with provider-id [PROV1]."),
                                         :status "FAILED",
-                                        :concept-id "C111"}])}
+                                        :concept-id "C111-PROV2"}])}
            (update status-response :collection-statuses set)))))

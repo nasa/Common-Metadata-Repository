@@ -69,9 +69,13 @@
             "Missing concept-ids"
             {:name "TEST NAME"
              :update-field "SCIENCE_KEYWORDS"
-             :update-type "ADD_TO_EXISTING"}
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"
+                            :Topic "LAND SURFACE"
+                            :Term "SURFACE RADIATIVE PROPERTIES"
+                            :VariableLevel1 "REFLECTANCE"}}
             400
-            ["object has missing required properties ([\"concept-ids\"])"]
+            ["Concept-ids not found - None provided in the request, and none are associated with the provider-id either."]
 
             "0 concept-ids"
             {:concept-ids []
