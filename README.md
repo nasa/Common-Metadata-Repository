@@ -1,6 +1,6 @@
 # Common Metadata Repository
 
-Visit the CMR at https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
+Visit the CMR at [https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository](https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository)
 
 ## About
 
