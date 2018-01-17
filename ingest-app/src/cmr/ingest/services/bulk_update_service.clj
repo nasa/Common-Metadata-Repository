@@ -105,13 +105,27 @@
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
 
-(defn- get-collection-concept-ids
+(defn- get-provider-concept-ids
   "Returns a list of collection concept ids for a given provider-id"
   [context provider-id]
   (let [concepts (mdb/find-concepts context 
                                     {:provider-id provider-id} 
                                     :collection)]
-    (into [] (distinct (map :concept-id concepts)))))
+    (when (seq concepts)
+      (distinct (map :concept-id concepts)))))
+
+(defn- get-concept-ids
+  "Get the concept-ids from either the concept-ids passed in or 
+   from the provider. If both are empty, throws exception." 
+  [context concept-ids provider-id]
+  (if-let [concept-ids (if (seq concept-ids)
+                         concept-ids
+                         (get-provider-concept-ids context provider-id))]
+    concept-ids
+    (errors/throw-service-errors
+      :bad-request
+      [(str "Concept-ids not found - None provided in the request,"
+            " and none are associated with the provider-id either.")]))) 
 
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
@@ -121,15 +135,8 @@
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
-        concept-ids (if (seq concept-ids)
-                      concept-ids
-                      (get-collection-concept-ids context provider-id))
+        concept-ids (get-concept-ids context concept-ids provider-id)
         bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
-        _ (when-not (seq concept-ids)
-            (errors/throw-service-errors
-              :bad-request
-              [(str "Concept-ids not found - None provided in the request,"
-                    " and none are associated with the provider-id either.")])) 
         ;; Write db rows - one for overall status, one for each concept id
         task-id (data-bulk-update/create-bulk-update-task context
                  provider-id json concept-ids)]
