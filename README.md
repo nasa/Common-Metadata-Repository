@@ -26,7 +26,7 @@ Search API provides access to this metadata.
     access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the generic ACL
     design pattern used in many other systems. At a high level, an ACL is a
     mapping of actors (subjects) to resources (object) to operations
-    (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group has permissions to ingest data for a particular provider.
+    (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group have permissions to ingest data for a particular provider.
   - API Docs: https://cmr.earthdata.nasa.gov/access-control/site/access_control_api_docs.html
 
 ## Our Development Environment
@@ -80,7 +80,7 @@ services as well as starting up worker threads.
 #### Building and Running separate CMR Applications
 
 This will build all of the applications but will put each jar into the
-appropriate /target directory for each application. The command is shown in step
+appropriate /target directory for each application. The command shown in step
 3 is an example. For the proper command to start up each application, see the
 `Applications` section below. Note: Steps 1 and 2 only need to be completed
 once.
