@@ -2,7 +2,6 @@
 
 Visit the CMR at [https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository](https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository)
 
-
 ## About
 
 The Common Metadata Repository (CMR) is an earth science metadata repository
@@ -18,20 +17,16 @@ Search API provides access to this metadata.
 
 - Ingest
   - Ingest refers to the process of validating, inserting, updating, or
-    deleting metadata in the CMR system and affects only the metadata for the
-    specific Data Partner. The CMR allows Data Partners to ingest metadata
+    deleting metadata in the CMR system and affects only the metadata for the specific Data Partner. The CMR allows Data Partners to ingest metadata
     records through a RESTful API
   - API Docs: https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html
 
 - Access Control
   - Access Control Lists (ACLs) are the mechanism by which users are granted
-    access to perform different operations in the CMR. CMR ACLs follow the
-    same design as ECHO ACLs which in turn are derived from the generic ACL
+    access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the generic ACL
     design pattern used in many other systems. At a high level, an ACL is a
     mapping of actors (subjects) to resources (object) to operations
-    (predicate). For instance, a CMR ACL might specify that all Registered
-    users have READ access to ASTER data or all users in a provider operations
-    group have permissions to ingest data for a particular provider.
+    (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group has permissions to ingest data for a particular provider.
   - API Docs: https://cmr.earthdata.nasa.gov/access-control/site/access_control_api_docs.html
 
 ## Our Development Environment
@@ -62,9 +57,8 @@ running the CMR as a single process or as multiple processes.
 #### Building and Running CMR Dev System in a REPL
 
 1. Install Oracle JDBC Jars into your local maven repository following
-   instructions in `oracle-lib/README.md`. The CMR must have these libraries to
-   build but it does not depend on Oracle DB when running locally. It uses a
-   local in memory database by default.
+   instructions in `oracle-lib/README.md`. The CMR must have these libraries to build but it does not depend on Oracle DB when running locally. It uses a
+   local in-memory database by default.
 2. `cd cmr`
 3. `./dev-system/support/setup_local_dev.sh`
 4. `cd dev-system`
@@ -85,8 +79,8 @@ services as well as starting up worker threads.
 
 #### Building and Running separate CMR Applications
 
-This will build all of the applications, but will put each jar into the
-appropriate /target directory for each application. The command shown in step
+This will build all of the applications but will put each jar into the
+appropriate /target directory for each application. The command is shown in step
 3 is an example. For the proper command to start up each application, see the
 `Applications` section below. Note: Steps 1 and 2 only need to be completed
 once.
@@ -100,7 +94,7 @@ once.
 ## Checking Dependencies, Static Analysis, and Tests
 
 There are several `lein` plugins that have been added to CMR for performing
-various tasks either at individual subproject levels, or at the top-level for
+various tasks either at individual subproject levels or at the top-level for
 all subprojects.
 
 #### Dependency Versions
@@ -189,9 +183,7 @@ Those tests will take much longer to run than when done with the in-memory
 database (~25m vs. ~6m). To switch back to using the in-memory database,
 simply call `(reset :db :in-memory)`.
 
-There is also a different, optional test runner you can use. For more details
-see the docstring for `run-suites` in `dev-system/dev/user.clj` for usage
-instructions.
+There is also a different, optional test runner you can use. For more details see the docstring for `run-suites` in `dev-system/dev/user.clj` for usage instructions.
 
 ## Code structure
 
@@ -211,9 +203,7 @@ applications, as well as several libraries and support applications.
 - access-control-app
   - The mechanism by which users are granted access to perform different
     operations in the CMR. Also maintains groups and access control rules.
-    Note that users access is provided by either ECHO or URS as an external
-    dependency. The mock-echo application implements both of the necessary
-    interfaces for local testing.
+    Note that users access is provided by either ECHO or URS as an external dependency. The mock-echo application implements both of the necessary interfaces for local testing.
   - Main method: cmr.access_control.runner
 
 - bootstrap-app
@@ -237,8 +227,7 @@ applications, as well as several libraries and support applications.
   - Main method: cmr.indexer.runner
 
 - ingest-app
-  - The Ingest app is responsible for collaborating with metadata db and
-    indexer components of the CMR system to maintain the lifecycle of concepts
+  - The Ingest app is responsible for collaborating with metadata db and indexer components of the CMR system to maintain the lifecycle of concepts
     coming into the system
   - Main method: cmr.ingest.runner
 
@@ -259,8 +248,7 @@ applications, as well as several libraries and support applications.
   - Main method: cmr.virtual_product.runner
 
 - index-set-app
-  - An application that maintains the set of indexes in elasticsearch for
-    multiple concept types
+  - An application that maintains the set of indexes in elasticsearch for multiple concept types
   - Main method: cmr.index_set.runner
 
 - metadata-db-app
@@ -299,7 +287,7 @@ applications, as well as several libraries and support applications.
     Algorithm (BOSA)
 
 - message-queue-lib
-  - A library for interfacing with RabbitMQ, AWS SQS, and an in memory message queue
+  - A library for interfacing with RabbitMQ, AWS SQS, and an in-memory message queue
 
 - spatial-lib
   - The spatial libraries provide utilities for working with spatial areas in the CMR
