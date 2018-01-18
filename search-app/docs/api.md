@@ -120,16 +120,16 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Document Scoring](#document-scoring)
   * [Facets](#facets)
     * [Version 2 Facets Response Format](#facets-v2-response-format)
-        * [Humanizers](#humanizers)
-          * [Updating Humanizers](#updating-humanizers)
-          * [Retrieving Humanizers](#retrieving-humanizers)
-        * [Humanizers Report](#facets-humanizers-report)
-    * [Facets in XML Responses](#facets-in-xml-responses)
+    * [Collection Facets in XML Responses](#facets-in-xml-responses)
         * [Flat XML Facets](#flat-xml-facets)
         * [Hierarchical XML Facets](#hierarchical-xml-facets)
-    * [Facets in JSON Responses](#facets-in-json-responses)
+    * [Collection Facets in JSON Responses](#facets-in-json-responses)
         * [Flat JSON facets](#flat-json-facets)
         * [Hierarchical JSON facets](#hierarchical-json-facets)
+  * [Humanizers](#humanizers)
+    * [Updating Humanizers](#updating-humanizers)
+    * [Retrieving Humanizers](#retrieving-humanizers)
+    * [Humanizers Report](#facets-humanizers-report)
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
   * [Find collections that have been deleted after a given date](#deleted-collections)
@@ -2203,28 +2203,30 @@ The filters are case insensitive, support wild-cards * and ?, and are given belo
 
 ### <a name="facets"></a> Facets
 
-Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets` parameter. There are three different types of facet responses. There are flat facets, hierarchical facets, and v2 (as in version two) facets.
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection or granule search results and are enabled with the `include_facets` parameter. There are three different types of facet responses. There are flat facets (collection only), hierarchical facets (collection only), and version 2 facets.
 
 Flat and hierarchical facets are supported on all collection search response formats except for the opendata response format. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in XML or JSON format.
 
 Several fields including science keywords, data centers, platforms, instruments, and location keywords can be represented as either flat or hierarchical fields. By default facets are returned in a flat format showing counts for each nested field separately. In order to retrieve hierarchical facets pass in the parameter `hierarchical_facets=true`.
 
-### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
+#### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
-Version 2 facets are enabled by setting the `include_facets=v2` parameter. With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter).
 
-The collection response will contain a field, "facets" containing the root node of the facets tree structure. Every node in the tree structure contains the following minimal structure:
+With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
+
+The response will contain a field, "facets" containing the root node of the facets tree structure. Every node in the tree structure contains the following minimal structure:
 
 ```
 var treeNode = {
   "title": "Example",         // A human-readable representation of the node
   "type": "group|filter|..."  // The type of node represented
-};
+}
 ```
 
 Currently, the filter response type defines two node types: "group" and "filter". More may be added in the future, and clients must be built to ignore unknown node types.
 
-#### Group Nodes
+##### Group Nodes
 
 Group nodes act as containers for similar data. Depending on context, this data may, for instance, be all facet parameters (the root facet node), top-level facets, or children of existing facets. Group nodes further have a
 
@@ -2237,15 +2239,15 @@ var groupNode = { // Inherits treeNode fields
 }
 ```
 
-#### Children
+##### Children
 
 In order to avoid sending unnecessary information, the CMR may in the future opt to not return children for group nodes that have facets, returning only the first few levels of the facet tree. It will, however, allow clients to appropriately display incomplete information and query the full tree as necessary.
 
-#### Relevance
+##### Relevance
 
 By default, clients should assume that the CMR may limit facet results to only include the most relevant child nodes in facet responses. For instance, if there are hundreds of science keywords at a particular depth, the CMR may choose to only return those that have a substantial number of results. When filtering children, the CMR makes no guarantees about the specific quantities or values of facets returned, only that applied filters attempt to surface the choices that typical users are most likely to find beneficial.
 
-#### Filter Nodes
+##### Filter Nodes
 
 Filter nodes are group nodes that supply a single query condition indicated by a string (the node title). They further have a field, "applied," which indicates if the query value has already been applied to the current query.
 
@@ -2260,7 +2262,7 @@ var filterNode = { // Inherits groupNode fields
 ```
 Note that while two potential queries are listed in "links", in practice only one would be returned based on whether the node is currently applied.
 
-#### Full Example
+##### Collection Example
 The following example is a sample response for a query using the query parameters API which has the "instruments=ASTER" filter applied as well as a page size of 10 applied by the client. The example is hand-constructed for example purposes only. Real-world queries would typically be more complex, counts would be different, and the facet tree would be much larger.
 
 ```
@@ -2347,67 +2349,33 @@ The following example is a sample response for a query using the query parameter
       }
     ]
   }
-};
+}
 ```
 
-#### <a name="humanizers"></a> Humanizers
-
-Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of faceted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer API.
-
-##### <a name="updating-humanizers"></a> Updating Humanizers
-
-Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
-
+##### Granule Example
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
-'[{"type": "trim_whitespace", "field": "platform", "order": -100},
-  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
-
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 48
-
-{"concept_id":"H1200000000-CMR","revision_id":2}
-```
-
-##### <a name="retrieving-humanizers"></a> Retrieving Humanizers
-
-The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
-
-```
-curl -i %CMR-ENDPOINT%/humanizers?pretty=true
-
-HTTP/1.1 200 OK
-Content-Length: 224
-Content-Type: application/json; charset=UTF-8
-
-[ {
-  "type" : "trim_whitespace",
-  "field" : "platform",
-  "order" : -100
-}, {
-  "type" : "alias",
-  "field" : "platform",
-  "source_value" : "AM-1",
-  "replacement_value" : "Terra",
-  "reportable" : true,
-  "order" : 0
-} ]
+"facets" : {
+      "title" : "Browse Granules",
+      "has_children" : true,
+      "children" : [ {
+        "title" : "Temporal",
+        "has_children" : true,
+        "children" : [ {
+          "title" : "Year",
+          "has_children" : true,
+          "children" : [ {
+            "title" : "2004",
+            "count" : 50
+          }, {
+            "title" : "2003",
+            "count" : 2
+          } ]
+        } ]
+      } ]
+    }
 ```
 
-#### <a name="facets-humanizers-report"></a> Humanizers Report
-
-The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
-
-```
-curl "%CMR-ENDPOINT%/humanizers/report"
-```
-
-Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
-
-An administrator with system object INGEST\_MANAGEMENT\_ACL update permission can force the report to be regenerated by passing in a query parameter `regenerate=true`.
-
-#### <a name="facets-in-xml-responses"></a> Facets in XML Responses
+#### <a name="facets-in-xml-responses"></a> Collection Facets in XML Responses
 
 Facets in XML search response formats will be formatted like the following examples. The exception is ATOM XML which is the same except the tags are in the echo namespace.
 
@@ -2491,7 +2459,7 @@ Fields that are not hierarchical are returned in the same format as the flat res
 </facets>
 ```
 
-#### <a name="facets-in-json-responses"></a> Facets in JSON Responses
+#### <a name="facets-in-json-responses"></a> Collection Facets in JSON Responses
 
 Facets in JSON search response formats will be formatted like the following examples.
 
@@ -2596,6 +2564,63 @@ Fields that are not hierarchical are returned in the same format as the flat res
       } ]
     } ]
 ```
+
+### <a name="humanizers"></a> Humanizers
+
+Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of faceted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer API.
+
+#### <a name="updating-humanizers"></a> Updating Humanizers
+
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
+'[{"type": "trim_whitespace", "field": "platform", "order": -100},
+  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":2}
+```
+
+#### <a name="retrieving-humanizers"></a> Retrieving Humanizers
+
+The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
+
+```
+curl -i %CMR-ENDPOINT%/humanizers?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 224
+Content-Type: application/json; charset=UTF-8
+
+[ {
+  "type" : "trim_whitespace",
+  "field" : "platform",
+  "order" : -100
+}, {
+  "type" : "alias",
+  "field" : "platform",
+  "source_value" : "AM-1",
+  "replacement_value" : "Terra",
+  "reportable" : true,
+  "order" : 0
+} ]
+```
+
+#### <a name="facets-humanizers-report"></a> Humanizers Report
+
+The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
+
+```
+curl "%CMR-ENDPOINT%/humanizers/report"
+```
+
+Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
+
+An administrator with system object INGEST\_MANAGEMENT\_ACL update permission can force the report to be regenerated by passing in a query parameter `regenerate=true`.
 
 ### <a name="search-for-tiles"></a> Search for Tiles
 
