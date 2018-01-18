@@ -2,6 +2,7 @@
   "This tests searching services."
   (:require
    [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -333,6 +334,32 @@
 
       ;; verify service search UMM JSON response is correct and does not have
       ;; collection associations like variable search response does
-      (du/assert-service-umm-jsons-match
-       umm-version/current-service-version [expected-service1 expected-service2]
-       (search/find-concepts-umm-json :service {})))))
+      (are3 [umm-version options]
+        (du/assert-service-umm-jsons-match
+         umm-version [expected-service1 expected-service2]
+         (search/find-concepts-umm-json :service {} options))
+
+        "without specifying UMM JSON version"
+        umm-version/current-service-version
+        {}
+
+        "explicit UMM JSON version through accept header"
+        umm-version/current-service-version
+        {:accept (mt/with-version mt/umm-json umm-version/current-service-version)}
+
+        "explicit UMM JSON version through suffix"
+        "1.0"
+        {:url-extension "umm_json_v1_0"})))
+
+  (testing "Searching with non-existent UMM JSON version"
+    (are3 [options]
+      (let [{:keys [status errors]} (search/find-concepts-umm-json :service {} options)]
+        (is (= 400 status))
+        (is (= ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [0.1] is not supported for services."]
+               errors)))
+
+      "explicit UMM JSON version through suffix"
+      {:url-extension "umm_json_v0_1"}
+      
+      "explicit UMM JSON version through accept header"
+      {:accept (mt/with-version mt/umm-json "0.1")})))
