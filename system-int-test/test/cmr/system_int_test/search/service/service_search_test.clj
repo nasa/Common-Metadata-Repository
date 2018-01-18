@@ -2,11 +2,11 @@
   "This tests searching services."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
@@ -335,7 +335,7 @@
       ;; verify service search UMM JSON response is correct and does not have
       ;; collection associations like variable search response does
       (are3 [umm-version options]
-        (du/assert-service-umm-jsons-match
+        (data-umm-json/assert-service-umm-jsons-match
          umm-version [expected-service1 expected-service2]
          (search/find-concepts-umm-json :service {} options))
 
@@ -345,7 +345,7 @@
 
         "explicit UMM JSON version through accept header"
         umm-version/current-service-version
-        {:accept (mt/with-version mt/umm-json umm-version/current-service-version)}
+        {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
         "1.0"
@@ -360,6 +360,6 @@
 
       "explicit UMM JSON version through suffix"
       {:url-extension "umm_json_v0_1"}
-      
+
       "explicit UMM JSON version through accept header"
-      {:accept (mt/with-version mt/umm-json "0.1")})))
+      {:accept (mime-types/with-version mime-types/umm-json "0.1")})))
