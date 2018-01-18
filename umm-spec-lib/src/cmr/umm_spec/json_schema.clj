@@ -225,11 +225,10 @@
 (defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
   [json-str concept-type schema-name umm-version]
-  (let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
-    (if schema-url
-      (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
-        (js-validations/validate-json java-schema-obj json-str))
-      [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)])))
+  (if-let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
+    (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
+      (js-validations/validate-json java-schema-obj json-str))
+    [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)]))
 
 (defn validate-collection-umm-json-search-result
   "Validates the collection UMM JSON search result and returns a list of errors if invalid."
