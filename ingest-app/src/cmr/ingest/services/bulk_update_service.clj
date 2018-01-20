@@ -138,8 +138,17 @@
         concept-ids (get-concept-ids context concept-ids provider-id)
         bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
         ;; Write db rows - one for overall status, one for each concept id
-        task-id (data-bulk-update/create-bulk-update-task context
-                 provider-id json concept-ids)]
+        task-id (try 
+                  (data-bulk-update/create-bulk-update-task 
+                    context provider-id json concept-ids)
+                (catch Exception e
+                  (let [msg (.getMessage e)
+                        msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
+                              "Bulkupdate name needs to be unique within the provider."
+                              msg)] 
+                    (errors/throw-service-errors
+                      :invalid-data
+                      [(str "Error creating bulk update task: " msg)]))))]
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
       context

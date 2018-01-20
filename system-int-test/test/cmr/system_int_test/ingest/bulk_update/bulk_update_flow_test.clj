@@ -28,21 +28,23 @@
                                               (generate-concept-id x "PROV1"))))))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
-        json-body (json/generate-string bulk-update-body)]
+        json-body1 (json/generate-string (assoc bulk-update-body :name "TEST NAME 1"))
+        json-body2 (json/generate-string (assoc bulk-update-body :name "TEST NAME 2"))]
 
     (testing "Bulk update response")
     (let [response-json (ingest/parse-bulk-update-body :json
-                          (ingest/bulk-update-collections "PROV1" bulk-update-body
+                          (ingest/bulk-update-collections "PROV1" 
+                            (assoc bulk-update-body :name "TEST NAME 1")
                             {:accept-format :json :raw? true}))
           response-xml (ingest/parse-bulk-update-body :xml
-                         (ingest/bulk-update-collections "PROV1" bulk-update-body
+                         (ingest/bulk-update-collections "PROV1" 
+                           (assoc bulk-update-body :name "TEST NAME 2")
                            {:accept-format :xml :raw? true}))
           task-id-1 (str (:task-id response-json))
           task-id-2 (:task-id response-xml)]
@@ -59,15 +61,15 @@
           (let [response (ingest/bulk-update-provider-status "PROV1"
                                                              {:accept-format accept-format})]
             (is (= (set [{:task-id task-id-1,
-                          :name "TEST NAME"
+                          :name "TEST NAME 1"
                           :status-message "All collection updates completed successfully.",
                           :status "COMPLETE",
-                          :request-json-body json-body}
+                          :request-json-body json-body1}
                          {:task-id task-id-2,
-                          :name "TEST NAME"
+                          :name "TEST NAME 2"
                           :status-message "All collection updates completed successfully.",
                           :status "COMPLETE",
-                          :request-json-body json-body}])
+                          :request-json-body json-body2}])
                    (set (map #(dissoc % :created-at) (:tasks response))))))
           "JSON" :json
           "XML" :xml))
@@ -78,9 +80,9 @@
                          {:accept-format accept-format})]
            (is (= {:status-message "All collection updates completed successfully.",
                    :status 200,
-                   :name "TEST NAME"
+                   :name "TEST NAME 1"
                    :task-status "COMPLETE",
-                   :request-json-body json-body
+                   :request-json-body json-body1
                    :collection-statuses [{:status-message nil,
                                           :status "UPDATED",
                                           :concept-id "C1200000000-PROV1"}

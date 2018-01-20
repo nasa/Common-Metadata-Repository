@@ -136,9 +136,7 @@
                  (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
           task-id))
       (catch Exception e
-        (errors/throw-service-error :invalid-data
-                                    [(str "Error creating creating bulk update status "
-                                          (.getMessage e))]))))
+        (throw e))))
 
   (update-bulk-update-task-status
     [db task-id status status-message]

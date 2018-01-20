@@ -62,12 +62,18 @@
     (swap! task-id-atom inc)
     (let [task-id (str @task-id-atom)
           name (get (json/parse-string json-body) "name" task-id)]
-     (swap! task-status-atom conj {:created-at (str (time-keeper/now))
-                                   :task-id task-id
-                                   :name name
-                                   :provider-id provider-id
-                                   :request-json-body json-body
-                                   :status "IN_PROGRESS"})
+     ;; provider-id and name together need to be unique. 
+     (if (some #(and (= provider-id (:provider-id %))(= name (:name %))) 
+               @task-status-atom)
+       (throw (Exception. (str "ORA-00001: unique constraint "
+                               "(CMR_INGEST.BULK_UPDATE_TASK_STATUS_UK) "
+                               "violated\n")))  
+       (swap! task-status-atom conj {:created-at (str (time-keeper/now))
+                                     :task-id task-id
+                                     :name name
+                                     :provider-id provider-id
+                                     :request-json-body json-body
+                                     :status "IN_PROGRESS"}))
      (swap! collection-status-atom concat (map (fn [c]
                                                 {:task-id task-id
                                                  :concept-id c
