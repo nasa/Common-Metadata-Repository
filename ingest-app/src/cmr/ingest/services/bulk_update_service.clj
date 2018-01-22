@@ -144,7 +144,7 @@
                 (catch Exception e
                   (let [msg (.getMessage e)
                         msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
-                              "Bulkupdate name needs to be unique within the provider."
+                              "Bulk update name needs to be unique within the provider."
                               msg)] 
                     (errors/throw-service-errors
                       :invalid-data

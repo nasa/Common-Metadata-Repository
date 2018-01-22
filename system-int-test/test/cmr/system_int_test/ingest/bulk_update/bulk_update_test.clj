@@ -895,7 +895,7 @@
         response2 (ingest/bulk-update-collections "PROV1" bulk-update-body)]
     (is (= 200 (:status response)))
     (is (= 422 (:status response2)))
-    (is (= ["Error creating bulk update task: Bulkupdate name needs to be unique within the provider."]
+    (is (= ["Error creating bulk update task: Bulk update name needs to be unique within the provider."]
            (:errors response2)))))
 
 (deftest bulk-update-xml-to-umm-failure-test
