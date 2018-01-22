@@ -4,12 +4,14 @@
   :license {
     :name "Apache License, Version 2.0"
     :url "https://opensource.org/licenses/Apache-2.0"}
+  :exclusions [org.clojure/clojure]
   :dependencies [
     [clj-http "3.7.0"]
-    [cljs-http "0.1.43"]
-    [org.clojure/clojure "1.8.0"]
-    [org.clojure/clojurescript "1.9.908"]
-    [org.clojure/core.async "0.3.443"]
+    [cljs-http "0.1.44"]
+    [clojusc/ltest "0.3.0"]
+    [org.clojure/clojure "1.9.0"]
+    [org.clojure/clojurescript "1.9.946"]
+    [org.clojure/core.async "0.4.474"]
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
     [potemkin "0.4.4"]]
@@ -19,30 +21,35 @@
       :aot :all}
     :dev {
       :dependencies [
+        [leiningen-core "2.8.1"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
-        [lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojure]]
-        [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]
+        [lein-cljsbuild "1.1.7"]
+        [lein-figwheel "0.5.14"]
         [lein-shell "0.5.0"]]
-      :resource-paths ["dev-resources"]
-      :source-paths ["dev-resources/src" "test/clj"]
+      :resource-paths ["dev-resources" "test/data" "test/clj"]
+      :source-paths ["src/clj" "src/cljc" "test/clj" "dev-resources/src"]
+      :test-paths ["test/clj"]
       :repl-options {
         :init-ns cmr.client.dev}}
     :test {
-      :dependencies [
-        ;[clojusc/ltest "0.2.0-SNAPSHOT"]
-        ]
-      :source-paths ["test/clj"]
       :resource-paths ["test/data"]
-    }
+      :source-paths ["test/clj"]
+      :test-paths ["test/clj"]
+      :test-selectors {
+        :default :unit
+        :unit :unit
+        :integration :integration
+        :system :system}
+      }
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.4"]
-        [lein-ancient "0.6.10"]
-        [lein-bikeshed "0.4.1"]
-        [lein-kibit "0.1.5"]
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
     :cljs {
       :source-paths ^:replace ["src/cljs" "src/cljc"]}
@@ -51,7 +58,7 @@
         [codox-theme-rdash "0.1.2"]]
       :plugins [
         [lein-codox "0.10.3"]
-        [lein-marginalia "0.9.0"]
+        [lein-marginalia "0.9.1"]
         [lein-simpleton "1.3.0"]]
       :codox {
         :project {
@@ -84,7 +91,7 @@
          :output-to "resources/public/js/cmr_client.js"}}]}
   :aliases {
     "repl"
-      ["with-profile" "+dev,+test" "repl"]
+      ["with-profile" "+dev" "repl"]
     "build-cljs-dev"
       ^{:doc "Build just the dev version of the ClojureScript code"}
       ["cljsbuild" "once" "cmr-dev"]
@@ -99,10 +106,10 @@
        "run" "-m" "cmr.client.testing.runner"]
     "check-deps"
       ^{:doc "Check to see if any dependencies are out of date"}
-      ["with-profile" "lint" "ancient" "all"]
+      ["with-profile" "+lint" "ancient" ":all"]
     "lint"
       ^{:doc "Run linting tools against the source"}
-      ["with-profile" "+test" "kibit"]
+      ["with-profile" "+lint" "kibit"]
     "docs"
       ^{:doc "Generate API documentation"}
       ["with-profile" "+docs" "do"
@@ -110,12 +117,13 @@
         ; ["marg" "--dir" "docs/current"
         ;         "--file" "marginalia.html"
         ;         "--name" "sockets"]
-        ["shell" "cp" "resources/public/cdn.html" "docs"]]
+        ;["shell" "cp" "resources/public/cdn.html" "docs"]
+        ]
     "build"
       ^{:doc "Perform the build tasks"}
       ["with-profile" "+test" "do"
         ["check-deps"]
-        ;["lint"]
+        ["lint"]
         ["test"]
         ["compile"]
         ["docs"]

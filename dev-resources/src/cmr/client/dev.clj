@@ -13,7 +13,10 @@
    [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]
    [cmr.client.ingest :as ingest]
-   [cmr.client.search :as search]))
+   [cmr.client.search :as search]
+   [cmr.client.testing.runner :as runner]
+   [cmr.client.tests]
+   [ltest.core :as ltest]))
 
 (repl/set-refresh-dirs
    "src/clj"

@@ -1,4 +1,4 @@
-(ns cmr.client.tests.common.const-test
+(ns ^:unit cmr.client.tests.common.const
   (:require
    [clojure.test :refer :all]
    [cmr.client.common.const :as const]))
