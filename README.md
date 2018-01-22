@@ -69,12 +69,12 @@ Distributed under the Apache License, Version 2.0.
 <!-- Named page links below: /-->
 
 [logo]: misc/images/ohboyohboyohboy.gif
-[travis]: https://travis-ci.org/oubiwann/cmr-client
-[travis badge]: https://img.shields.io/travis/oubiwann/cmr-client.svg
-[deps]: http://jarkeeper.com/oubiwann/cmr-client
-[deps-badge]: http://jarkeeper.com/oubiwann/cmr-client/status.svg
-[tag-badge]: https://img.shields.io/github/tag/oubiwann/cmr-client.svg
-[tag]: https://github.com/oubiwann/cmr-client/tags
+[travis]: https://travis-ci.org/cmr-exchange/cmr-client
+[travis badge]: https://img.shields.io/travis/cmr-exchange/cmr-client.svg
+[deps]: http://jarkeeper.com/cmr-exchange/cmr-client
+[deps-badge]: http://jarkeeper.com/cmr-exchange/cmr-client/status.svg
+[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-client.svg
+[tag]: https://github.com/cmr-exchange/cmr-client/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-client
