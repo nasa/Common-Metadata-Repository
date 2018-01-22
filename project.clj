@@ -7,14 +7,16 @@
 (defproject gov.nasa.earthdata/cmr-sample-data "0.2.0-SNAPSHOT"
   :description "Sample Data for the open source NASA Common Metadata Repository (CMR)"
   :url "https://github.com/oubiwann/cmr-sample-data"
-  :license {:name "Apache License 2.0"
-            :url "https://www.apache.org/licenses/LICENSE-2.0"}
+  :license {
+    :name "Apache License 2.0"
+    :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
   :dependencies [
     [cheshire "5.8.0"]
-    [org.clojure/clojure "1.8.0"]]
+    [org.clojure/clojure "1.9.0"]]
   :profiles {
-    :ubercompile {:aot :all}
+    :ubercompile {
+      :aot :all}
     :dev {
       :dependencies [
         [clojusc/trifl "0.2.0"]
@@ -25,10 +27,10 @@
         :prompt ~get-prompt}}
     :test {
       :plugins [
-        [lein-ancient "0.6.14"]
+        [lein-ancient "0.6.15"]
         [jonase/eastwood "0.2.5"]
         [lein-bikeshed "0.5.0"]
-        [lein-kibit "0.1.5"]
+        [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}}
   :aliases {
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
