@@ -35,7 +35,11 @@
   :aliases {
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
-    "lint" ["with-profile" "+test" "kibit"]
+    "kibit" ["with-profile" "+test" "kibit"]
+    "eastwood" ["with-profile" "+test" "eastwood" "{:namespaces [:source-paths]}"]
+    "lint" ["with-profile" "+test" "do"
+      ["kibit"]
+      ["eastwood"]]
     "build" ["with-profile" "+test" "do"
       ["check-deps"]
       ["lint"]
