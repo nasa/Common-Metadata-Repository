@@ -67,7 +67,7 @@
               (is (= error-messages errors)))
 
             "Missing concept-ids"
-            {:name "TEST NAME"
+            {:name "TEST NAME 1"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"
@@ -79,7 +79,7 @@
 
             "0 concept-ids"
             {:concept-ids []
-             :name "TEST NAME"
+             :name "TEST NAME 2"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
@@ -87,21 +87,21 @@
 
             "Missing update field"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 3"
              :update-type "ADD_TO_EXISTING"}
             400
             ["object has missing required properties ([\"update-field\"])"]
 
             "Missing update type"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 4"
              :update-field "SCIENCE_KEYWORDS"}
             400
             ["object has missing required properties ([\"update-type\"])"]
 
             "Invalid update type"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 5"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "REPLACE"}
             400
@@ -109,7 +109,7 @@
 
             "Missing update value"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 6"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"}
             400
@@ -117,7 +117,7 @@
 
             "Missing find value"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 7"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"
              :update-value {:Category "EARTH SCIENCE"
@@ -129,7 +129,7 @@
 
             "update-value can not be an array for update-type not being ADD_TO_EXISTING"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 8"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_UPDATE"
              :find-value {:Category "EARTH SCIENCE"}
@@ -142,7 +142,7 @@
 
             "FIND_AND_UPDATE_HOME_PAGE_URL can not be used for update-field not being DATA_CENTERS"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 9"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
              :find-value {:Category "EARTH SCIENCE"}
@@ -155,7 +155,7 @@
 
             "Invalid update field"
             {:concept-ids ["C1", "C2", "C3"]
-             :name "TEST NAME"
+             :name "TEST NAME 10"
              :update-field "Science keywords"
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"}}

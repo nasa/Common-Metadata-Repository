@@ -188,16 +188,14 @@
         bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
         bulk-update-options2 {:token (e/login (s/context) "user1")}
         bulk-update-options3 {:user-id "user2"}
-        bulk-update-body {:name "TEST NAME"
-                          :update-type "ADD_TO_EXISTING"
+        bulk-update-body {:update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         ;; CMR-4570 tests that no duplicate science keywords are created.
-        duplicate-body {:name "TEST NAME"
-                        :update-type "ADD_TO_EXISTING"
+        duplicate-body {:update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
@@ -233,7 +231,8 @@
       (side/eval-form `(ingest-config/set-bulk-update-enabled! true)))
 
     ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options1)]
+    (let [response (ingest/bulk-update-collections 
+                     "PROV1" bulk-update-body bulk-update-options1)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -259,7 +258,8 @@
                  :Term "ENVIRONMENTAL IMPACTS"
                  :Topic "HUMAN DIMENSIONS"}]
                (:ScienceKeywords (:umm concept))))))
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options2)]
+    (let [response (ingest/bulk-update-collections 
+                     "PROV1" bulk-update-body bulk-update-options2)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -273,7 +273,8 @@
         (is (= 4 (:revision-id (:meta concept))))
         (ingest/assert-user-id concept-id 4 "user1")))
 
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body bulk-update-options3)]
+    (let [response (ingest/bulk-update-collections 
+                     "PROV1" bulk-update-body bulk-update-options3)]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -294,7 +295,6 @@
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value [{:Category "EARTH SCIENCE1"
@@ -307,7 +307,6 @@
                                           :VariableLevel1 "HEAVY METALS CONCENTRATION2"}]}
         ;; CMR-4570 tests that no duplicate science keywords are created.
         duplicate-body {:concept-ids concept-ids
-                        :name "TEST NAME"
                         :update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value [{:Category "EARTH SCIENCE"
@@ -355,7 +354,6 @@
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "CLEAR_ALL_AND_REPLACE"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value [{:Category "EARTH SCIENCE1"
@@ -401,7 +399,6 @@
   (let [concept-ids (ingest-collection-in-each-format find-and-replace-multiple-science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_REPLACE"
                           :find-value {:Topic "OCEANS"}
                           :update-field "SCIENCE_KEYWORDS"
@@ -447,7 +444,6 @@
           _ (index/wait-until-indexed)]
       (testing "Data center find and update"
         (let [bulk-update-body {:concept-ids concept-ids
-                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "NSID"}
@@ -479,7 +475,6 @@
           _ (index/wait-until-indexed)]
       (testing "nil instrument long name find and update"
         (let [bulk-update-body {:concept-ids concept-ids
-                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "INSTRUMENTS"
                                 :find-value {:ShortName "atm"}
@@ -520,7 +515,6 @@
           _ (index/wait-until-indexed)]
       (testing "nil platform long name find and update"
         (let [bulk-update-body {:concept-ids concept-ids
-                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE"
                                 :update-field "PLATFORMS"
                                 :find-value {:ShortName "a340-600-1"}
@@ -562,7 +556,6 @@
           _ (index/wait-until-indexed)]
       (testing "Data center find and update home page url - removal case."
         (let [bulk-update-body {:concept-ids concept-ids
-                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "ShortName"}
@@ -602,7 +595,6 @@
           _ (index/wait-until-indexed)]
       (testing "Data center find and update home page url - update case."
         (let [bulk-update-body {:concept-ids concept-ids
-                                :name "TEST NAME"
                                 :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "ShortName"}
@@ -656,7 +648,6 @@
   (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_REPLACE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:Topic "ATMOSPHERE"}
@@ -690,7 +681,6 @@
   (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_REPLACE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:VariableLevel1 "CARBON MONOXIDE"}
@@ -729,7 +719,6 @@
   (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_REMOVE"
                           :update-field "INSTRUMENTS"
                           :find-value {:ShortName "atm"}}
@@ -765,7 +754,6 @@
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_UPDATE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:Topic "ATMOSPHERE"}
@@ -804,7 +792,6 @@
   (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_UPDATE"
                           :update-field "SCIENCE_KEYWORDS"
                           :find-value {:Topic "OCEANS"}
@@ -836,7 +823,6 @@
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "FIND_AND_UPDATE"
                           :update-field "SCIENCE_KEYWORDS"
                           ;; Note: find-value is case-sensitive.
@@ -893,13 +879,31 @@
       (is (= (:task-id response) (get collection-response :name)))
       (is (= "COMPLETE" (:task-status collection-response))))))
 
+(deftest bulk-update-unique-name-test
+  (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :name "unique"                     
+                          :update-type "FIND_AND_UPDATE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:Topic "ATMOSPHERE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}
+        response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+        response2 (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+    (is (= 200 (:status response)))
+    (is (= 422 (:status response2)))
+    (is (= ["Error creating bulk update task: Bulk update name needs to be unique within the provider."]
+           (:errors response2)))))
+
 (deftest bulk-update-xml-to-umm-failure-test
   (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
         concept (ingest/ingest-concept
                  (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids [(:concept-id concept)]
-                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -918,7 +922,6 @@
   (let [concept-ids (ingest-collection-in-umm-json-format large-status-message-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
-                          :name "TEST NAME"
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
