@@ -65,9 +65,21 @@
                   {:keys [status errors]} response]
               (is (= status-code status))
               (is (= error-messages errors)))
-
+    
             "Missing concept-ids"
             {:name "TEST NAME 1"
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"
+                            :Topic "LAND SURFACE"
+                            :Term "SURFACE RADIATIVE PROPERTIES"
+                            :VariableLevel1 "REFLECTANCE"}}
+            400
+            ["object has missing required properties ([\"concept-ids\"])"]
+
+            "All concept-ids"
+            {:concept-ids ["all" ]
+             :name "TEST NAME 1"
              :update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"

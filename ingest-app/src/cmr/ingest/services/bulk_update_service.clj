@@ -118,9 +118,9 @@
   "Get the concept-ids from either the concept-ids passed in or 
    from the provider. If both are empty, throws exception." 
   [context concept-ids provider-id]
-  (if-let [concept-ids (if (seq concept-ids)
-                         concept-ids
-                         (get-provider-concept-ids context provider-id))]
+  (if-let [concept-ids (if (= "[\"ALL\"]" (string/trim (string/upper-case concept-ids)))
+                         (get-provider-concept-ids context provider-id)
+                         concept-ids)]
     concept-ids
     (errors/throw-service-errors
       :bad-request
