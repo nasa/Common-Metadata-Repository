@@ -107,20 +107,23 @@
                                             update-type)]))))
 
 (defn- get-provider-concept-ids
-  "Returns a list of collection concept ids for a given provider-id"
+  "Returns a list of collection concept ids for a given provider-id.
+   Throws exception if non are returned."
   [context provider-id]
   (let [concepts (mdb/find-concepts context 
                                     {:provider-id provider-id} 
                                     :collection)]
-    (when (seq concepts)
-      (distinct (map :concept-id concepts)))))
+    (if (seq concepts)
+      (distinct (map :concept-id concepts))
+      (errors/throw-service-errors
+        :bad-request
+        ["No concept-ids are associated with the provider-id."]))))
 
-(defn- get-validated-concept-ids
-  "Returns the concept-ids that are valid. Throws exception if there exists invalid
+(defn- validate-concept-ids
+  "Throws exception if there exists invalid
    concept-ids."
-  [context concept-ids provider-id]
-  (if (= ["ALL"] (map string/upper-case concept-ids)) 
-    (get-provider-concept-ids context provider-id)
+  [concept-ids]
+  (when-not (= ["ALL"] (map string/upper-case concept-ids))
     (let [err-msgs 
            (for [id concept-ids
                  :let [err-msg (concepts/concept-id-validation id)
@@ -130,22 +133,18 @@
                                    [(str "Collection concept-id " id " does not start with C")]))]
                  :when err-msg]
              err-msg)]
-      (if (seq err-msgs)
+      (when (seq err-msgs)
         (errors/throw-service-errors
           :bad-request
-          [(string/join ", " err-msgs)])
-        concept-ids))))
+          [(string/join ", " err-msgs)])))))
 
 (defn- get-concept-ids
-  "Get the concept-ids from either the concept-ids passed in or 
-   from the provider. If both are empty, throws exception." 
+  "Get the concept-ids from either the concept-ids passed in or
+   from the provider."
   [context concept-ids provider-id]
-  (if-let [concept-ids (get-validated-concept-ids context concept-ids provider-id)]
-    concept-ids
-    (errors/throw-service-errors
-      :bad-request
-      [(str "Concept-ids not found - None provided in the request,"
-            " and none are associated with the provider-id either.")]))) 
+  (if (= ["ALL"] (map string/upper-case concept-ids))
+    (get-provider-concept-ids context provider-id)
+    concept-ids))
 
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
@@ -155,6 +154,7 @@
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
+        _ (validate-concept-ids concept-ids)
         concept-ids (get-concept-ids context concept-ids provider-id)
         bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
         ;; Write db rows - one for overall status, one for each concept id

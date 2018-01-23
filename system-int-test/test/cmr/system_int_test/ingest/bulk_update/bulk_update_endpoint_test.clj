@@ -87,7 +87,7 @@
                             :Term "SURFACE RADIATIVE PROPERTIES"
                             :VariableLevel1 "REFLECTANCE"}}
             400
-            ["Concept-ids not found - None provided in the request, and none are associated with the provider-id either."]
+            ["No concept-ids are associated with the provider-id."]
 
             "Mix of all, valid and invalid concept-ids"
             {:concept-ids ["all" "S1111-PROV1" "C12345-PROV1" "invalid-id"]
