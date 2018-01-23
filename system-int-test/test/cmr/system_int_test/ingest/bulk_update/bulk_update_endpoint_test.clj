@@ -99,7 +99,7 @@
                             :Term "SURFACE RADIATIVE PROPERTIES"
                             :VariableLevel1 "REFLECTANCE"}}
             400
-            ["[\"Concept-id [all] is not valid.\"], [\"Collection concept-id S1111-PROV1 does not start with C\"], [\"Concept-id [invalid-id] is not valid.\"]"] 
+            ["[\"Concept-id [all] is not valid.\"], [\"Concept-id [S1111-PROV1] is not a valid collection concept id, must start with C\"], [\"Concept-id [invalid-id] is not valid.\"]"]
 
             "0 concept-ids"
             {:concept-ids []

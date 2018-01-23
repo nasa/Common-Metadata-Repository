@@ -130,7 +130,9 @@
                        err-msg (if err-msg
                                  err-msg
                                  (when-not (string/starts-with? id "C")
-                                   [(str "Collection concept-id " id " does not start with C")]))]
+                                   [(str "Concept-id [" id 
+                                         "] is not a valid collection concept id, "
+                                         "must start with C")]))]
                  :when err-msg]
              err-msg)]
       (when (seq err-msgs)
