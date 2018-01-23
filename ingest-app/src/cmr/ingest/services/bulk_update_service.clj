@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.concepts :as concepts]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -114,13 +115,32 @@
     (when (seq concepts)
       (distinct (map :concept-id concepts)))))
 
+(defn- get-validated-concept-ids
+  "Returns the concept-ids that are valid. Throws exception if there exists invalid
+   concept-ids."
+  [context concept-ids provider-id]
+  (if (= ["ALL"] (map string/upper-case concept-ids)) 
+    (get-provider-concept-ids context provider-id)
+    (let [err-msgs 
+           (for [id concept-ids
+                 :let [err-msg (concepts/concept-id-validation id)
+                       err-msg (if err-msg
+                                 err-msg
+                                 (when-not (string/starts-with? id "C")
+                                   [(str "Collection concept-id " id " does not start with C")]))]
+                 :when err-msg]
+             err-msg)]
+      (if (seq err-msgs)
+        (errors/throw-service-errors
+          :bad-request
+          [(string/join ", " err-msgs)])
+        concept-ids))))
+
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or 
    from the provider. If both are empty, throws exception." 
   [context concept-ids provider-id]
-  (if-let [concept-ids (if (= "[\"ALL\"]" (string/trim (string/upper-case concept-ids)))
-                         (get-provider-concept-ids context provider-id)
-                         concept-ids)]
+  (if-let [concept-ids (get-validated-concept-ids context concept-ids provider-id)]
     concept-ids
     (errors/throw-service-errors
       :bad-request
