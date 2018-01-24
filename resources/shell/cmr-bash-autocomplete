@@ -1,0 +1,91 @@
+# file: cmr-bash-autocomplete
+# cmr (sub)command-completion
+
+APPS='access-control bootstrap cubby index-set indexer ingest metadata-db search virtual-product'
+
+# Level 1
+TOP_LEVEL='setup build install start stop test git help version -h -v --help --version'
+TOP_DASHED='-h -v --help --version'
+
+# Level 2
+TOP_HELP='setup build install run stop test git'
+SETUP_LEVEL='local db help'
+BUILD_LEVEL='jars docker uberdocker help'
+INSTALL_LEVEL='all docs jars local help'
+RUN_LEVEL="all $APPS docker uberdocker local help"
+STOP_LEVEL="all $APPS docker uberdocker local help"
+TEST_LEVEL='all unit integration lint deps versions help'
+GIT_LEVEL='tag log-latest log-short log-graph help'
+
+# Level 3
+SETUP_DB_LEVEL="create-users do-migrations help"
+STAR_DOCKER_LEVEL="all $APPS help"
+STAR_LOCAL_LEVEL='marvel sqs-sns help'
+
+_cmr () {
+    local cur prev
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    case ${COMP_CWORD} in
+        1)
+            case ${cur} in
+                -*)
+                    COMPREPLY=($(compgen -W "${TOP_DASHED}" -- $cur ))
+                    ;;
+                 *)
+                    COMPREPLY=($(compgen -W "${TOP_LEVEL}" ${cur}))
+                    ;;
+            esac
+            ;;
+        2)
+            case ${prev} in
+                build)
+                    COMPREPLY=($(compgen -W "${BUILD_LEVEL}" ${cur}))
+                    ;;
+                git)
+                    COMPREPLY=($(compgen -W "${GIT_LEVEL}" ${cur}))
+                    ;;
+                help)
+                    COMPREPLY=($(compgen -W "${TOP_HELP}" ${cur}))
+                    ;;
+                install)
+                    COMPREPLY=($(compgen -W "${INSTALL_LEVEL}" ${cur}))
+                    ;;
+                setup)
+                    COMPREPLY=($(compgen -W "${SETUP_LEVEL}" ${cur}))
+                    ;;
+                start)
+                    COMPREPLY=($(compgen -W "${RUN_LEVEL}" ${cur}))
+                    ;;
+                stop)
+                    COMPREPLY=($(compgen -W "${STOP_LEVEL}" ${cur}))
+                    ;;
+                test)
+                    COMPREPLY=($(compgen -W "${TEST_LEVEL}" ${cur}))
+                    ;;
+            esac
+            ;;
+        3)
+          case ${prev} in
+                db)
+                    COMPREPLY=($(compgen -W "${SETUP_DB_LEVEL}" ${cur}))
+                    ;;
+                docker)
+                    COMPREPLY=($(compgen -W "${STAR_DOCKER_LEVEL}" ${cur}))
+                    ;;
+                local)
+                    COMPREPLY=($(compgen -W "${STAR_LOCAL_LEVEL}" ${cur}))
+                    ;;
+            esac
+            ;;
+
+        *)
+            COMPREPLY=()
+            ;;
+    esac
+    return 0
+}
+
+complete -F _cmr cmr
+complete -F _cmr ./bin/cmr
+#
