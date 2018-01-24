@@ -106,46 +106,51 @@
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
 
-(defn- get-provider-concept-ids
+(defn- get-provider-collection-concept-ids
   "Returns a list of collection concept ids for a given provider-id.
    Throws exception if non are returned."
   [context provider-id]
   (let [concepts (mdb/find-concepts context 
-                                    {:provider-id provider-id} 
-                                    :collection)]
+                                    {:provider-id provider-id
+                                     :latest "true"} 
+                                    :collection)
+        concepts (remove :deleted concepts)]
     (if (seq concepts)
       (distinct (map :concept-id concepts))
       (errors/throw-service-errors
         :bad-request
         ["No concept-ids are associated with the provider-id."]))))
 
+(defn- get-collection-concept-id-validation-err-msgs
+  "Returns the concept-id validation msgs"
+  [concept-ids]
+  (for [id concept-ids
+        :let [err-msg (concepts/concept-id-validation id)
+              err-msg 
+               (if err-msg
+                 err-msg
+                 (when-not (string/starts-with? id "C")
+                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))] 
+        :when err-msg]
+    err-msg))
+
 (defn- validate-concept-ids
   "Throws exception if there exists invalid
    concept-ids."
   [concept-ids]
   (when-not (= ["ALL"] (map string/upper-case concept-ids))
-    (let [err-msgs 
-           (for [id concept-ids
-                 :let [err-msg (concepts/concept-id-validation id)
-                       err-msg (if err-msg
-                                 err-msg
-                                 (when-not (string/starts-with? id "C")
-                                   [(str "Concept-id [" id 
-                                         "] is not a valid collection concept id, "
-                                         "must start with C")]))]
-                 :when err-msg]
-             err-msg)]
+    (let [err-msgs (get-collection-concept-id-validation-err-msgs concept-ids)]
       (when (seq err-msgs)
         (errors/throw-service-errors
           :bad-request
-          [(string/join ", " err-msgs)])))))
+          [(string/join "; " err-msgs)])))))
 
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or
    from the provider."
   [context concept-ids provider-id]
   (if (= ["ALL"] (map string/upper-case concept-ids))
-    (get-provider-concept-ids context provider-id)
+    (get-provider-collection-concept-ids context provider-id)
     concept-ids))
 
 (defn validate-and-save-bulk-update
