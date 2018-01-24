@@ -10,7 +10,9 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn] 
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -188,14 +190,16 @@
         bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
         bulk-update-options2 {:token (e/login (s/context) "user1")}
         bulk-update-options3 {:user-id "user2"}
-        bulk-update-body {:update-type "ADD_TO_EXISTING"
+        bulk-update-body {:concept-ids ["all"] 
+                          :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         ;; CMR-4570 tests that no duplicate science keywords are created.
-        duplicate-body {:update-type "ADD_TO_EXISTING"
+        duplicate-body {:concept-ids ["ALL" ] 
+                        :update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value {:Category "EARTH SCIENCE"
                                        :Term "MARINE SEDIMENTS"
@@ -860,6 +864,36 @@
       ;; revision-id not changed, format not changed, it's identical to the original-concepts.
       (is (= new-concepts original-concepts)))) 
 
+(deftest bulk-update-update-all-tombstone-test
+  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                                     :ShortName "S1"}))
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids ["ALL"] 
+                          :update-type "FIND_AND_UPDATE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          ;; Note: find-value is case-sensitive.
+                          :find-value {:Topic "aTmoSPHERE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}]
+    ;; perform bulk update, verify that one collection is skipped because find-value is not found.
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+          _ (index/wait-until-indexed)
+          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
+      (is (= "COMPLETE" (:task-status collection-response)))
+      (is (= "Task completed with 1 SKIPPED out of 1 total collection update(s)." (:status-message collection-response))))
+    ;; delete the collection
+    (is (= 200 (:status (ingest/delete-concept (data2-core/umm-c-collection->concept coll1 :echo10)))))
+    (index/wait-until-indexed)
+    
+    ;; perform another bulk update, verify that the deleted collection is not included when getting all 
+    ;; collections from the provider. 
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+          _ (index/wait-until-indexed)]  
+      (is (= ["There are no un-deleted collections for provider-id [PROV1]."]
+             (:errors response))))))
+              
 (deftest bulk-update-default-name-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
         _ (index/wait-until-indexed)

@@ -65,7 +65,7 @@
                   {:keys [status errors]} response]
               (is (= status-code status))
               (is (= error-messages errors)))
-
+    
             "Missing concept-ids"
             {:name "TEST NAME 1"
              :update-field "SCIENCE_KEYWORDS"
@@ -75,7 +75,31 @@
                             :Term "SURFACE RADIATIVE PROPERTIES"
                             :VariableLevel1 "REFLECTANCE"}}
             400
-            ["Concept-ids not found - None provided in the request, and none are associated with the provider-id either."]
+            ["object has missing required properties ([\"concept-ids\"])"]
+
+            "All concept-ids"
+            {:concept-ids ["all"]
+             :name "TEST NAME 1"
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"
+                            :Topic "LAND SURFACE"
+                            :Term "SURFACE RADIATIVE PROPERTIES"
+                            :VariableLevel1 "REFLECTANCE"}}
+            400
+            ["There are no un-deleted collections for provider-id [PROV1]."]
+
+            "Mix of all, valid and invalid concept-ids"
+            {:concept-ids ["all" "S1111-PROV1" "C12345-PROV1" "invalid-id"]
+             :name "TEST NAME 1"
+             :update-field "SCIENCE_KEYWORDS"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"
+                            :Topic "LAND SURFACE"
+                            :Term "SURFACE RADIATIVE PROPERTIES"
+                            :VariableLevel1 "REFLECTANCE"}}
+            400
+            ["[\"Concept-id [all] is not valid.\"], [\"Collection concept-id [S1111-PROV1] is invalid, must start with C\"], [\"Concept-id [invalid-id] is not valid.\"]"]
 
             "0 concept-ids"
             {:concept-ids []

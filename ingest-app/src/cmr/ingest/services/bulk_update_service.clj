@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.concepts :as concepts]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -105,27 +106,50 @@
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
 
-(defn- get-provider-concept-ids
-  "Returns a list of collection concept ids for a given provider-id"
+(defn- get-provider-collection-concept-ids
+  "Returns a list of collection concept ids for a given provider-id.
+   Raise error if no collections are found."
   [context provider-id]
-  (let [concepts (mdb/find-concepts context 
-                                    {:provider-id provider-id} 
-                                    :collection)]
-    (when (seq concepts)
-      (distinct (map :concept-id concepts)))))
+  (let [collections (mdb/find-collections context 
+                                          {:provider-id provider-id
+                                           :latest true})
+        collections (remove :deleted collections)]
+    (if (seq collections)
+      (map :concept-id collections)
+      (errors/throw-service-errors
+        :bad-request
+        [(format "There are no un-deleted collections for provider-id [%s]." provider-id)]))))
+
+(defn- get-collection-concept-id-validation-err-msgs
+  "Returns the concept-id validation msgs"
+  [concept-ids]
+  (for [id concept-ids
+        :let [err-msg (concepts/concept-id-validation id)
+              err-msg 
+               (if err-msg
+                 err-msg
+                 (when-not (string/starts-with? id "C")
+                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))] 
+        :when err-msg]
+    err-msg))
+
+(defn- validate-concept-ids
+  "Validate concept-ids. Raise error if there exist invalid concept-ids."
+  [concept-ids]
+  (when-not (= ["ALL"] (map string/upper-case concept-ids))
+    (let [err-msgs (get-collection-concept-id-validation-err-msgs concept-ids)]
+      (when (seq err-msgs)
+        (errors/throw-service-errors
+          :bad-request
+          [(string/join ", " err-msgs)])))))
 
 (defn- get-concept-ids
-  "Get the concept-ids from either the concept-ids passed in or 
-   from the provider. If both are empty, throws exception." 
+  "Get the concept-ids from either the concept-ids passed in or
+   from the provider."
   [context concept-ids provider-id]
-  (if-let [concept-ids (if (seq concept-ids)
-                         concept-ids
-                         (get-provider-concept-ids context provider-id))]
-    concept-ids
-    (errors/throw-service-errors
-      :bad-request
-      [(str "Concept-ids not found - None provided in the request,"
-            " and none are associated with the provider-id either.")]))) 
+  (if (= ["ALL"] (map string/upper-case concept-ids))
+    (get-provider-collection-concept-ids context provider-id)
+    concept-ids))
 
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
@@ -135,6 +159,7 @@
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
+        _ (validate-concept-ids concept-ids)
         concept-ids (get-concept-ids context concept-ids provider-id)
         bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
         ;; Write db rows - one for overall status, one for each concept id
