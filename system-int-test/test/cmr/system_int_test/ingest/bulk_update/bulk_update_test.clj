@@ -864,7 +864,7 @@
       ;; revision-id not changed, format not changed, it's identical to the original-concepts.
       (is (= new-concepts original-concepts)))) 
 
-(deftest bulk-update-update-all-tomb-stone-test
+(deftest bulk-update-update-all-tombstone-test
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                      :ShortName "S1"}))
         _ (index/wait-until-indexed)

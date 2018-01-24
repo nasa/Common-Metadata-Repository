@@ -134,15 +134,14 @@
     err-msg))
 
 (defn- validate-concept-ids
-  "Throws exception if there exists invalid
-   concept-ids."
+  "Validate concept-ids. Raise error if there exist invalid concept-ids."
   [concept-ids]
   (when-not (= ["ALL"] (map string/upper-case concept-ids))
     (let [err-msgs (get-collection-concept-id-validation-err-msgs concept-ids)]
       (when (seq err-msgs)
         (errors/throw-service-errors
           :bad-request
-          [(string/join "; " err-msgs)])))))
+          [(string/join ", " err-msgs)])))))
 
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or
