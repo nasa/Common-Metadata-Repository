@@ -108,18 +108,17 @@
 
 (defn- get-provider-collection-concept-ids
   "Returns a list of collection concept ids for a given provider-id.
-   Throws exception if non are returned."
+   Raise error if no collections are found."
   [context provider-id]
-  (let [concepts (mdb/find-concepts context 
-                                    {:provider-id provider-id
-                                     :latest "true"} 
-                                    :collection)
-        concepts (remove :deleted concepts)]
-    (if (seq concepts)
-      (distinct (map :concept-id concepts))
+  (let [collections (mdb/find-collections context 
+                                          {:provider-id provider-id
+                                           :latest true})
+        collections (remove :deleted collections)]
+    (if (seq collections)
+      (map :concept-id collections)
       (errors/throw-service-errors
         :bad-request
-        ["No concept-ids are associated with the provider-id."]))))
+        [(format "There are no un-deleted collections for provider-id [%s]." provider-id)]))))
 
 (defn- get-collection-concept-id-validation-err-msgs
   "Returns the concept-id validation msgs"

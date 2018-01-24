@@ -891,7 +891,7 @@
     ;; collections from the provider. 
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
           _ (index/wait-until-indexed)]  
-      (is (= ["No concept-ids are associated with the provider-id."]
+      (is (= ["There are no un-deleted collections for provider-id [PROV1]."]
              (:errors response))))))
               
 (deftest bulk-update-default-name-test
