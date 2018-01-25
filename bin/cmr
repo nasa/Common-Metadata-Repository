@@ -1,0 +1,204 @@
+#!/bin/bash
+IFS='' read -r -d '' HELP <<'EOH'
+
+Usage: cmr [COMMAND] [SUBCOMMANDS]
+
+Defined commands:
+
+    build   - perform various CMR builds
+    git     - perform various custom 'git' commands
+    help    - show this message
+    install - perform various install operations
+    start   - run CMR in a number of supported ways
+    setup   - perform initial setup tasks of CMR
+    stop    - the counterpart to the various 'start' commands
+    test    - perform testing tasks
+    version - get the current version of the CMR
+
+A 'help' subcommand is defined for each command; for details on a given command,
+you can execute 'cmr COMMAND help'.
+
+Aliases:
+
+    -h --help    - Alias for the 'help' command
+    -v --version - Alias for the 'version' command
+
+Examples:
+
+    $ cmr run
+    $ cmr stop docker metadata-db
+    $ cmr test all
+
+A Bash auto-completion script is provided in 'resources/shell'; sourcing that in
+your terminal before running 'cmr' will allow you to TAB for command and
+subcommand hints.
+
+EOH
+
+BIN_DIR=`dirname $0`
+if [[ $BIN_DIR = "" ]]; then
+    BIN_DIR="."
+fi
+CMR_DIR=`dirname $BIN_DIR`
+
+# Load these first
+source $BIN_DIR/functions/local.sh
+source $BIN_DIR/functions/messages.sh
+# Then these
+source $BIN_DIR/functions/git.sh
+source $BIN_DIR/functions/install.sh
+source $BIN_DIR/functions/setup.sh
+source $BIN_DIR/functions/start.sh
+source $BIN_DIR/functions/stop.sh
+
+case "$1" in
+    git)
+        case "$2" in
+            branches)
+                git_branches
+                ;;
+            help)
+                echo "$GIT_HELP"
+                ;;
+            log-files)
+                shift; shift
+                git_log_files $@
+                ;;
+            log-graph)
+                shift; shift
+                git_log_grapht $@
+                ;;
+            log-latest)
+                shift; shift
+                git_log_latest $@
+                ;;
+            log-short)
+                shift; shift
+                git_log_short $@
+                ;;
+            tag)
+                git_tag $3
+                ;;
+            *)
+                subcmd_not_found $1
+                exit 127
+                ;;
+            esac
+            ;;
+    help|-h|--help)
+        echo "$HELP"
+        ;;
+    install)
+        case "$2" in
+            help)
+                echo "$INSTALL_HELP"
+                ;;
+            local)
+                case "$3" in
+                    help)
+                        echo "$INSTALL_HELP"
+                        ;;
+                    marvel)
+                        install_local_marvel
+                        ;;
+                    *)
+                        subcmd_not_found $1 $2
+                        exit 127
+                        ;;
+                esac
+                ;;
+            *)
+                subcmd_not_found $1
+                exit 127
+                ;;
+        esac
+        ;;
+    setup)
+        case "$2" in
+            db)
+                case "$3" in
+                    "")
+                        setup_db
+                        ;;
+                    create-users)
+                        setup_db_create_users
+                        ;;
+                    do-migrations)
+                        setup_db_do_migrations
+                        ;;
+                    help)
+                        echo "$SETUP_HELP"
+                        ;;
+                    *)
+                        subcmd_not_found $1 $2
+                        exit 127
+                        ;;
+                esac
+                ;;
+            help)
+                echo "$SETUP_HELP"
+                ;;
+            *)
+                subcmd_not_found $1
+                exit 127
+                ;;
+        esac
+        ;;
+    start)
+        case "$2" in
+            help)
+                echo "$START_HELP"
+                ;;
+            local)
+                case "$3" in
+                    help)
+                        echo "$START_HELP"
+                        ;;
+                    sqs-sns)
+                        start_local_sqs_sns
+                        ;;
+                    *)
+                        subcmd_not_found $1 $2
+                        exit 127
+                        ;;
+                esac
+                ;;
+            *)
+                subcmd_not_found $1
+                exit 127
+                ;;
+        esac
+        ;;
+    stop)
+        case "$2" in
+            help)
+                echo "$STOP_HELP"
+                ;;
+            local)
+                case "$3" in
+                    help)
+                        echo "$STOP_HELP"
+                        ;;
+                    sqs-sns)
+                        stop_local_sqs_sns
+                        ;;
+                    *)
+                        subcmd_not_found $1 $2
+                        exit 127
+                        ;;
+                esac
+                ;;
+            *)
+                subcmd_not_found $1
+                exit 127
+                ;;
+        esac
+        ;;
+    version|-v|--version)
+        echo "version"
+        ;;
+    *)
+        cmd_not_found
+        exit 127
+        ;;
+esac
