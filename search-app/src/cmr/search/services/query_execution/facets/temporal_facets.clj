@@ -23,6 +23,16 @@
   [datetime interval]
   (second (re-find #"^\d{4}-\d{2}-\d{2}T(\d{2}):\d{2}:\d{2}\+\d+$" datetime)))
 
+; (defn validate-year
+;   "Validates a given value is a valid year."
+;   [year]
+;   (let [parsed-year]
+;     (try
+;       (java.lang.Double. value)
+;       nil
+;       (catch NumberFormatException e
+;         (msg/invalid-msg Double value)))))
+
 (defn temporal-facet
   "Creates a temporal facet for the provided field."
   [field interval-granularity]

@@ -69,6 +69,7 @@
     cmr.search.services.parameters.converters.science-keyword
     cmr.search.services.parameters.converters.spatial
     cmr.search.services.parameters.converters.temporal
+    cmr.search.services.parameters.converters.temporal-facet
     cmr.search.services.parameters.converters.two-d-coordinate-system
     cmr.search.services.query-execution
     cmr.search.services.query-execution.facets.collection-v2-facets

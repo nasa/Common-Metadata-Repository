@@ -7,18 +7,29 @@
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.transmit.kms :as kms]))
 
-(def variable-sub-fields
+(def variable-subfields
   "The subfields of variable nested field."
   [:measurement :variable])
+
+(def temporal-facet-subfields
+  "The subfields of the granule temporal facet nested field."
+  [:year])
 
 (defn get-subfield-names
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
   [parent-field]
   ;; Remove any modifiers from parent field, e.g. :science-keyword.humanized -> :science-keyword
-  (let [base-parent-field (keyword (str/replace (name parent-field) #"\..*$" ""))]
-    (if (= :variables base-parent-field)
-      variable-sub-fields
+  ;; and :science-keywords-h to :science-keywords
+  (let [base-parent-field (-> parent-field
+                              name
+                              (str/replace #"\..*$" "")
+                              (str/replace #"-h$" "")
+                              keyword)]
+    (condp = base-parent-field
+      :variables variable-subfields
+      :temporal-facet temporal-facet-subfields
+      ;; else
       (conj (kms/keyword-scheme->field-names
              (kms/translate-keyword-scheme-to-gcmd base-parent-field))
             :any))))
