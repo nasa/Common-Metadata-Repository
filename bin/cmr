@@ -5,15 +5,16 @@ Usage: cmr [COMMAND] [SUBCOMMANDS]
 
 Defined commands:
 
-    build   - perform various CMR builds
-    git     - perform various custom 'git' commands
-    help    - show this message
-    install - perform various install operations
-    start   - run CMR in a number of supported ways
-    setup   - perform initial setup tasks of CMR
-    stop    - the counterpart to the various 'start' commands
-    test    - perform testing tasks
-    version - get the current version of the CMR
+    build   - Perform various CMR builds.
+    git     - Perform various custom 'git' commands.
+    help    - Show this message.
+    install - Perform various install operations.
+    setup   - Perform initial setup tasks of CMR.
+    show    - Display various outputs to the terminal.
+    start   - Run CMR in a number of supported ways.
+    stop    - The counterpart to the various 'start' commands.
+    test    - Perform testing tasks.
+    version - Get the current version of the CMR.
 
 A 'help' subcommand is defined for each command; for details on a given command,
 you can execute 'cmr COMMAND help'.
@@ -41,23 +42,60 @@ if [[ $BIN_DIR = "" ]]; then
 fi
 CMR_DIR=`dirname $BIN_DIR`
 
+export PATH=$PATH:$BIN_DIR
+
 # Load these first
-source $BIN_DIR/functions/local.sh
-source $BIN_DIR/functions/messages.sh
+source $BIN_DIR/functions/common.sh
 # Then these
 source $BIN_DIR/functions/git.sh
 source $BIN_DIR/functions/install.sh
 source $BIN_DIR/functions/setup.sh
+source $BIN_DIR/functions/show.sh
 source $BIN_DIR/functions/start.sh
+source $BIN_DIR/functions/status.sh
 source $BIN_DIR/functions/stop.sh
+source $BIN_DIR/functions/test.sh
+# Finally these (which depend upon one or more of the others)
+source $BIN_DIR/functions/build.sh
 
-case "$1" in
+COMMAND=$1
+SUBCOMMAND=$2
+case "$COMMAND" in
+    build)
+        PROJECT=$3
+        case "$SUBCOMMAND" in
+            all)
+                build_all
+                ;;
+            docker)
+                PROJECT=$3
+                build_docker_proj $PROJECT
+                ;;
+            help|-h|--help)
+                echo "$BUILD_HELP"
+                ;;
+            uberdocker)
+                OPT=$3
+                build_uberdocker $OPT
+                ;;
+            uberjar)
+                build_uberjar_proj $PROJECT
+                ;;
+            uberjars)
+                build_uberjars
+                ;;
+            *)
+                subcmd_not_found $COMMAND
+                exit 127
+                ;;
+            esac
+            ;;
     git)
-        case "$2" in
+        case "$SUBCOMMAND" in
             branches)
                 git_branches
                 ;;
-            help)
+            help|-h|--help)
                 echo "$GIT_HELP"
                 ;;
             log-files)
@@ -77,10 +115,11 @@ case "$1" in
                 git_log_short $@
                 ;;
             tag)
-                git_tag $3
+                TAG=$3
+                git_tag $TAG
                 ;;
             *)
-                subcmd_not_found $1
+                subcmd_not_found $COMMAND
                 exit 127
                 ;;
             esac
@@ -89,34 +128,54 @@ case "$1" in
         echo "$HELP"
         ;;
     install)
-        case "$2" in
-            help)
+        case "$SUBCOMMAND" in
+            coll-renderer-gems)
+                install_coll_renderer_gems
+                ;;
+            docs)
+                install_docs
+                ;;
+            help|-h|--help)
                 echo "$INSTALL_HELP"
                 ;;
+            jars)
+                install_jars
+                ;;
+            jars,docs)
+                install_jars_docs
+                ;;
             local)
-                case "$3" in
-                    help)
+                LOCAL_COMMAND=$3
+                case "$LOCAL_COMMAND" in
+                    help|-h|--help)
                         echo "$INSTALL_HELP"
                         ;;
                     marvel)
                         install_local_marvel
                         ;;
                     *)
-                        subcmd_not_found $1 $2
+                        subcmd_not_found $COMMAND $SUBCOMMAND
                         exit 127
                         ;;
                 esac
                 ;;
+            oracle-libs)
+                install_oracle_libs
+                ;;
+            orbits-gems)
+                install_orbits_gems
+                ;;
             *)
-                subcmd_not_found $1
+                subcmd_not_found $COMMAND
                 exit 127
                 ;;
         esac
         ;;
     setup)
-        case "$2" in
+        case "$SUBCOMMAND" in
             db)
-                case "$3" in
+                DB_COMMAND=$3
+                case "$DB_COMMAND" in
                     "")
                         setup_db
                         ;;
@@ -126,70 +185,192 @@ case "$1" in
                     do-migrations)
                         setup_db_do_migrations
                         ;;
-                    help)
+                    help|-h|--help)
                         echo "$SETUP_HELP"
                         ;;
                     *)
-                        subcmd_not_found $1 $2
+                        subcmd_not_found $COMMAND $SUBCOMMAND
                         exit 127
                         ;;
                 esac
                 ;;
-            help)
+            dev)
+                setup_dev
+                ;;
+            help|-h|--help)
                 echo "$SETUP_HELP"
                 ;;
             *)
-                subcmd_not_found $1
+                subcmd_not_found $COMMAND
+                exit 127
+                ;;
+        esac
+        ;;
+    show)
+        case "$SUBCOMMAND" in
+            cmr-port)
+                PROJECT=$3
+                get_cmr_port $PROJECT
+                ;;
+            help|-h|--help)
+                echo "$STATUS_HELP"
+                ;;
+            log)
+                PROJECT=$3
+                show_log_proj $PROJECT
+                ;;
+            log-tail)
+                PROJECT=$3
+                show_log_tail_proj $PROJECT
+                ;;
+            log-test)
+                PROJECT=$3
+                show_log_test_proj $PROJECT
+                ;;
+            log-tests)
+                show_log_tests $PROJECT
+                ;;
+            *)
+                subcmd_not_found $COMMAND
                 exit 127
                 ;;
         esac
         ;;
     start)
-        case "$2" in
-            help)
+        case "$SUBCOMMAND" in
+            docker)
+                PROJECT=$3
+                start_docker_proj $PROJECT
+                ;;
+            help|-h|--help)
                 echo "$START_HELP"
                 ;;
             local)
-                case "$3" in
-                    help)
+                LOCAL_COMMAND=$3
+                case "$LOCAL_COMMAND" in
+                    help|-h|--help)
                         echo "$START_HELP"
                         ;;
                     sqs-sns)
                         start_local_sqs_sns
                         ;;
                     *)
-                        subcmd_not_found $1 $2
+                        subcmd_not_found $COMMAND $SUBCOMMAND
                         exit 127
                         ;;
                 esac
                 ;;
+            uberjar)
+                PROJECT=$3
+                start_uberjar_proj $PROJECT
+                ;;
+            uberdocker)
+                OPT=$3
+                start_uberdocker $OPT
+                ;;
             *)
-                subcmd_not_found $1
+                subcmd_not_found $COMMAND
+                exit 127
+                ;;
+        esac
+        ;;
+    status)
+        case "$SUBCOMMAND" in
+            docker)
+                PROJECT=$3
+                if [ $"PROJECT" = "" ]; then
+                    status_docker
+                else
+                    status_docker_proj $PROJECT
+                fi
+                ;;
+            help|-h|--help)
+                echo "$STATUS_HELP"
+                ;;
+            uberjar)
+                PROJECT=$3
+                status_uberjar_proj $PROJECT
+                ;;
+            *)
+                subcmd_not_found $COMMAND
                 exit 127
                 ;;
         esac
         ;;
     stop)
-        case "$2" in
-            help)
+        case "$SUBCOMMAND" in
+            docker)
+                PROJECT=$3
+                stop_docker_proj $PROJECT
+                ;;
+            help|-h|--help)
                 echo "$STOP_HELP"
                 ;;
             local)
-                case "$3" in
-                    help)
+                LOCAL_COMMAND=$3
+                case "$LOCAL_COMMAND" in
+                    help|-h|--help)
                         echo "$STOP_HELP"
                         ;;
                     sqs-sns)
                         stop_local_sqs_sns
                         ;;
                     *)
-                        subcmd_not_found $1 $2
+                        subcmd_not_found $COMMAND $SUBCOMMAND
                         exit 127
                         ;;
                 esac
                 ;;
+            uberdocker)
+                OPT=$3
+                stop_uberdocker $OPT
+                ;;
+            uberjar)
+                PROJECT=$3
+                stop_uberjar_proj $PROJECT
+                ;;
             *)
-                subcmd_not_found $1
+                subcmd_not_found $COMMAND
+                exit 127
+                ;;
+        esac
+        ;;
+    test)
+        case "$SUBCOMMAND" in
+            all)
+                test_all
+                ;;
+            help|-h|--help)
+                echo "$STATUS_HELP"
+                ;;
+            cicd)
+                test_cicd
+                ;;
+            deps-tree)
+                PROJECT=$3
+                test_dep_tree_proj $PROJECT
+                ;;
+            deps-trees)
+                test_dep_trees
+                ;;
+            lint)
+                PROJECT=$3
+                if [ $"PROJECT" = "" ]; then
+                    test_lint
+                else
+                    test_lint $PROJECT
+                fi
+                ;;
+            versions)
+                PROJECT=$3
+                if [ $"PROJECT" = "" ]; then
+                    test_versions
+                else
+                    test_versions_proj $PROJECT
+                fi
+                ;;
+            *)
+                subcmd_not_found $COMMAND
                 exit 127
                 ;;
         esac

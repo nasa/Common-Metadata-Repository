@@ -1,26 +1,34 @@
 # file: cmr-bash-autocomplete
 # cmr (sub)command-completion
 
-APPS='access-control bootstrap cubby index-set indexer ingest metadata-db search virtual-product'
+APPS='access-control bootstrap cubby dev-system index-set indexer ingest metadata-db search virtual-product'
+LIBS='acl-lib collection-renderer-lib common-app-lib common-lib elastic-utils-lib es-spatial-plugin message-queue-lib oracle-lib orbits-lib spatial-lib transmit-lib umm-lib umm-spec-lib vdd-spatial-viz'
+APPS_LIBS="$APPS $LIBS"
 
 # Level 1
-TOP_LEVEL='setup build install start stop test git help version -h -v --help --version'
+TOP_COMMANDS='build git install setup show start status stop test'
 TOP_DASHED='-h -v --help --version'
+TOP_LEVEL="$TOP_COMMANDS $TOP_DASHED"
 
 # Level 2
-TOP_HELP='setup build install run stop test git'
-SETUP_LEVEL='local db help'
-BUILD_LEVEL='jars docker uberdocker help'
-INSTALL_LEVEL='all docs jars local help'
-RUN_LEVEL="all $APPS docker uberdocker local help"
-STOP_LEVEL="all $APPS docker uberdocker local help"
-TEST_LEVEL='all unit integration lint deps versions help'
-GIT_LEVEL='tag log-latest log-short log-graph help'
+TOP_HELP="$TOP_COMMANDS"
+SETUP_LEVEL='local db dev help'
+BUILD_LEVEL='docker help uberdocker uberjar uberjars'
+INSTALL_LEVEL='all docs help jars jars,docs local orbits-gems oracle-libs'
+SHOW_LEVEL='help log log-tail log-test log-tests'
+START_LEVEL="all $APPS docker help local uberdocker uberjar"
+STATUS_LEVEL="docker help uberdocker uberjar"
+STOP_LEVEL="all $APPS docker help local uberdocker uberjar"
+TEST_LEVEL='all deps help cicd lint versions'
+GIT_LEVEL='branches help log-latest log-short log-graph tag'
 
 # Level 3
 SETUP_DB_LEVEL="create-users do-migrations help"
 STAR_DOCKER_LEVEL="all $APPS help"
 STAR_LOCAL_LEVEL='marvel sqs-sns help'
+UBERJAR_LEVEL="$APPS"
+LOG_LEVEL="$APPS"
+UBERDOCKER_LEVEL="separate together"
 
 _cmr () {
     local cur prev
@@ -54,8 +62,14 @@ _cmr () {
                 setup)
                     COMPREPLY=($(compgen -W "${SETUP_LEVEL}" ${cur}))
                     ;;
+                show)
+                    COMPREPLY=($(compgen -W "${SHOW_LEVEL}" ${cur}))
+                    ;;
                 start)
-                    COMPREPLY=($(compgen -W "${RUN_LEVEL}" ${cur}))
+                    COMPREPLY=($(compgen -W "${START_LEVEL}" ${cur}))
+                    ;;
+                status)
+                    COMPREPLY=($(compgen -W "${STATUS_LEVEL}" ${cur}))
                     ;;
                 stop)
                     COMPREPLY=($(compgen -W "${STOP_LEVEL}" ${cur}))
@@ -70,11 +84,35 @@ _cmr () {
                 db)
                     COMPREPLY=($(compgen -W "${SETUP_DB_LEVEL}" ${cur}))
                     ;;
+                deps-tree)
+                    COMPREPLY=($(compgen -W "${APPS_LIBS}" ${cur}))
+                    ;;
                 docker)
                     COMPREPLY=($(compgen -W "${STAR_DOCKER_LEVEL}" ${cur}))
                     ;;
+                lint)
+                    COMPREPLY=($(compgen -W "${APPS_LIBS}" ${cur}))
+                    ;;
                 local)
                     COMPREPLY=($(compgen -W "${STAR_LOCAL_LEVEL}" ${cur}))
+                    ;;
+                log)
+                    COMPREPLY=($(compgen -W "${LOG_LEVEL}" ${cur}))
+                    ;;
+                log-tail)
+                    COMPREPLY=($(compgen -W "${LOG_LEVEL}" ${cur}))
+                    ;;
+                log-test)
+                    COMPREPLY=($(compgen -W "${LOG_LEVEL}" ${cur}))
+                    ;;
+                uberdocker)
+                    COMPREPLY=($(compgen -W "${UBERDOCKER_LEVEL}" ${cur}))
+                    ;;
+                uberjar)
+                    COMPREPLY=($(compgen -W "${UBERJAR_LEVEL}" ${cur}))
+                    ;;
+                versions)
+                    COMPREPLY=($(compgen -W "${APPS_LIBS}" ${cur}))
                     ;;
             esac
             ;;
