@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.collection-science-keyword-search-test
   "Integration test for CMR collection search by science keyword terms"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
@@ -261,4 +261,7 @@
   (testing "search by invalid format."
     (let [{:keys [status errors]} (search/find-refs :collection {:science-keywords {:0 {:and "true"}}})]
       (is (= 400 status))
-      (is (re-find #"parameter \[and\] is not a valid science keyword search term." (first errors))))))
+      (is (re-find #"parameter \[and\] is not a valid \[science_keywords\] search term." (first errors))))
+    (let [{:keys [status errors]} (search/find-refs :collection {:science-keywords-h {:0 {:and "true"}}})]
+      (is (= 400 status))
+      (is (re-find #"parameter \[and\] is not a valid \[science_keywords_h\] search term." (first errors))))))

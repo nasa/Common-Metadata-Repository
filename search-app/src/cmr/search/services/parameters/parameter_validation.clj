@@ -366,41 +366,43 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation-for-field
-  [field concept-type params]
-  (when-let [science-keywords (get params field)]
-    (if (map? science-keywords)
-      (let [values (vals science-keywords)]
+(defn nested-field-validation-for-field
+  "Validates that the provided subfield is valid for the given nested field."
+  [field concept-type params error-msg]
+  (when-let [param-values (get params field)]
+    (if (map? param-values)
+      (let [values (vals param-values)]
         (if (some #(not (map? %)) values)
-          [(msg/science-keyword-invalid-format-msg)]
+          [error-msg]
           (reduce
             (fn [errors param]
-              (if-not (some #{param} (nf/get-subfield-names :science-keywords))
-                (conj errors (format "parameter [%s] is not a valid science keyword search term."
-                                     (name param)))
+              (if-not (some #{param} (nf/get-subfield-names field))
+                (conj errors (format "parameter [%s] is not a valid [%s] search term."
+                                     (name param)
+                                     (csk/->snake_case_string field)))
                 errors))
             []
             (mapcat keys values))))
-      [(msg/science-keyword-invalid-format-msg)])))
+      [error-msg])))
+
+(defn science-keywords-validation-for-field
+  "Performs science keywords subfield validation."
+  [field concept-type params]
+  (nested-field-validation-for-field field concept-type params
+                                     (msg/science-keyword-invalid-format-msg)))
 
 (defn variables-validation
   "Validates the variables-h search parameters are in the format of e.g.
-   variables-h[0][measurement]=vaule."
+   variables-h[0][measurement]=value."
   [concept-type params]
-  (when-let [variables (get params :variables-h)]
-    (if (map? variables)
-      (let [values (vals variables)]
-        (if (some #(not (map? %)) values)
-          [(msg/variable-invalid-format-msg)]
-          (reduce
-            (fn [errors param]
-              (if-not (some #{param} (nf/get-subfield-names :variables))
-                (conj errors (format "parameter [%s] is not a valid variable search term."
-                                     (name param)))
-                errors))
-            []
-            (mapcat keys values))))
-      [(msg/variable-invalid-format-msg)])))
+  (nested-field-validation-for-field :variables-h concept-type params
+                                     (msg/variable-invalid-format-msg)))
+
+(defn temporal-facets-subfields-validation
+  "Performs temporal facets subfield validation."
+  [concept-type params]
+  (nested-field-validation-for-field :temporal-facet concept-type params
+                                     (msg/temporal-facets-invalid-format-msg)))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -671,7 +673,8 @@
               point-validation
               line-validation
               collection-concept-id-validation
-              granule-include-facets-validation])
+              granule-include-facets-validation
+              temporal-facets-subfields-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])

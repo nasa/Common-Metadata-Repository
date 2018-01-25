@@ -20,6 +20,12 @@
        "should be in the format of variables[0/group number (if multiple groups are present)]"
        "[measurement/variable]."))
 
+(defn temporal-facets-invalid-format-msg
+  []
+  (str "Parameter temporal_facet is invalid, "
+       "should be in the format of temporal_facet[0/group number (if multiple groups are present)]"
+       "[year]."))
+
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
