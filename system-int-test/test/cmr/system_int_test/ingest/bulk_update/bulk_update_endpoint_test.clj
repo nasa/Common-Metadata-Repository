@@ -87,7 +87,7 @@
                             :Term "SURFACE RADIATIVE PROPERTIES"
                             :VariableLevel1 "REFLECTANCE"}}
             400
-            ["There are no un-deleted collections for provider-id [PROV1]."]
+            ["There are no collections that have not been deleted for provider [PROV1]."]
 
             "Mix of all, valid and invalid concept-ids"
             {:concept-ids ["all" "S1111-PROV1" "C12345-PROV1" "invalid-id"]
