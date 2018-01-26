@@ -1,15 +1,15 @@
 (ns cmr.system-int-test.search.granule-temporal-facet-search-test
   "Integration test for CMR granule temporal search"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]))
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -49,41 +49,46 @@
         gran9 (ingest-granule-fn {:granule-ur "Granule9"})]
     (index/wait-until-indexed)
 
+    (testing "Temporal facets search"
+      (util/are3
+        [params expected]
+        (d/assert-refs-match expected (search/find-refs :granule params))
+
+        "Finds single granule."
+        {"temporal_facet[0][year]" 1501} [gran1]
+
+        "Index does not need to start at 0."
+        {"temporal_facet[1536][year]" 1501} [gran1]
+
+        "Multiple grans in one year."
+        {"temporal_facet[0][year]" 1924} [gran3 gran4]
+
+        "Ending date is not matched against for temporal_facet searches."
+        {"temporal_facet[0][year]" 2010} []
+
+        "Multiple years are OR'ed together."
+        {"temporal_facet[0][year]" 1501
+         "temporal_facet[1][year]" 1924}
+        [gran1 gran3 gran4]
+
+        "Multiple years with crazy values for indexes are allowed and OR'ed together."
+        {"temporal_facet[really-this-is-allowed?][year]" 1501
+         "temporal_facet[-3.14159265359][year]" 1924
+         "temporal_facet[91234859098293021023][year]" 1946}
+        [gran1 gran3 gran4 gran5]))))
+
+;; Just some symbolic invalid temporal facet testing, more complete test coverage is in unit tests
+(deftest search-temporal-facet-error-scenarios
+  (testing "Invalid temporal facets"
     (util/are3
-      [params expected]
-      (d/assert-refs-match expected (search/find-refs :granule params))
+      [params msg]
+      (let [{:keys [status errors]} (search/find-refs :granule params)]
+        (is (= 400 status))
+        (is (= msg errors)))
 
-      "Finds single granule."
-      {"temporal_facet[0][year]" 1501} [gran1]
+      "Invalid subfield name"
+      {"temporal_facet[0][not-year]" 1922}
+      ["parameter [not-year] is not a valid [temporal_facet] search term."]
 
-      "Index does not need to start at 0."
-      {"temporal_facet[1536][year]" 1501} [gran1]
-
-      "Multiple grans in one year."
-      {"temporal_facet[0][year]" 1924} [gran3 gran4]
-
-      "Ending date is not matched against for temporal_facet searches."
-      {"temporal_facet[0][year]" 2010} []
-
-      "Multiple years are OR'ed together."
-      {"temporal_facet[0][year]" 1501
-       "temporal_facet[1][year]" 1924}
-      [gran1 gran3 gran4]
-
-      "Multiple years with non-consecutive indexes are OR'ed together."
-      {"temporal_facet[0][year]" 1501
-       "temporal_facet[3][year]" 1924
-       "temporal_facet[11][year]" 1946}
-      [gran1 gran3 gran4 gran5])))
-
-;; TODO - figure out where the validation functions are going to go and then write unit tests
-;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
-; (deftest search-temporal-facet-error-scenarios
-;   (testing "search by invalid temporal format."
-;     (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2010-13-12T12:00:00,"})]
-;       (is (= 400 status))
-;       (is (re-find #"temporal start datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
-;   (testing "search by invalid temporal start-date after end-date."
-;     (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
-;       (is (= 400 status))
-;       (is (re-find #"start_date \[2011-01-01T10:00:00Z\] must be before end_date \[2010-01-10T12:00:00Z\]" (first errors))))))
+      "Invalid year" {"temporal_facet[0][year]" -3}
+      ["Year [-3] within [temporal_facet] is not a valid year. Years must be between 1 and 9999."])))

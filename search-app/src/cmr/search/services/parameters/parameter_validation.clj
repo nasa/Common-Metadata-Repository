@@ -28,7 +28,7 @@
    [cmr.spatial.codec :as spatial-codec])
   (:import
    (clojure.lang ExceptionInfo)
-   (java.lang Integer)))
+   (java.lang Integer Long)))
 
 (defmethod cpv/params-config :collection
   [_]
@@ -366,7 +366,7 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn nested-field-validation-for-field
+(defn nested-field-validation-for-subfield
   "Validates that the provided subfield is valid for the given nested field."
   [field concept-type params error-msg]
   (when-let [param-values (get params field)]
@@ -388,21 +388,48 @@
 (defn science-keywords-validation-for-field
   "Performs science keywords subfield validation."
   [field concept-type params]
-  (nested-field-validation-for-field field concept-type params
-                                     (msg/science-keyword-invalid-format-msg)))
+  (nested-field-validation-for-subfield field concept-type params
+                                        (msg/science-keyword-invalid-format-msg)))
 
 (defn variables-validation
   "Validates the variables-h search parameters are in the format of e.g.
    variables-h[0][measurement]=value."
   [concept-type params]
-  (nested-field-validation-for-field :variables-h concept-type params
-                                     (msg/variable-invalid-format-msg)))
+  (nested-field-validation-for-subfield :variables-h concept-type params
+                                        (msg/variable-invalid-format-msg)))
 
 (defn temporal-facets-subfields-validation
   "Performs temporal facets subfield validation."
   [concept-type params]
-  (nested-field-validation-for-field :temporal-facet concept-type params
-                                     (msg/temporal-facets-invalid-format-msg)))
+  (nested-field-validation-for-subfield :temporal-facet concept-type params
+                                        (msg/temporal-facets-invalid-format-msg)))
+
+(defn valid-year?
+  "Returns true if the provided value is a valid year and false otherwise."
+  [year]
+  (let [parsed-year (try
+                      (Long. year)
+                      (catch Exception e
+                        nil))]
+    (and (not (nil? parsed-year))
+         (<= 1 parsed-year 9999))))
+
+(defn temporal-facet-year-validation
+  "Validates that the years provided in all temporal-facet parameters are valid."
+  [concept-type params]
+  (when-let [param-values (:temporal-facet params)]
+    (when (map? param-values)
+      (let [temporal-facet-maps (vals param-values)
+            years (keep :year temporal-facet-maps)]
+        (reduce
+          (fn [errors year]
+            (if-not (valid-year? year)
+              (conj errors (format (str "Year [%s] within [temporal_facet] is not a valid year. "
+                                        "Years must be between 1 and 9999.")
+                                   year))
+              errors))
+          []
+          years)))))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -674,7 +701,8 @@
               line-validation
               collection-concept-id-validation
               granule-include-facets-validation
-              temporal-facets-subfields-validation])
+              temporal-facets-subfields-validation
+              temporal-facet-year-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])
