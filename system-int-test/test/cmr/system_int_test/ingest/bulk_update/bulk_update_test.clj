@@ -198,7 +198,7 @@
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         ;; CMR-4570 tests that no duplicate science keywords are created.
-        duplicate-body {:concept-ids ["ALL"] 
+        duplicate-body {:concept-ids ["ALL" ] 
                         :update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value {:Category "EARTH SCIENCE"
