@@ -73,8 +73,9 @@
                             ~cmr-metadata-preview-repo
                             ~metadata-preview-commit]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
-            "install!" ["do" ["install-gems" "install" "clean"]]
-            "internal-install!" ["with-profile" "+internal-repos" "install!"]
+            "install!" ["do" ["clean-gems" "install-gems" "install" "clean"]]
+            "internal-install!" ["with-profile" "+internal-repos" "do"
+                                  ["clean-gems" "install-gems" "install" "clean"]]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
             ;; Linting aliases
