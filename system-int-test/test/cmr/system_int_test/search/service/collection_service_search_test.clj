@@ -178,7 +178,7 @@
        {:native-id "serv3"
         :Name "service3"
         :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]
-                         :SubsetType ["Spatial"]}})
+                         :SubsetTypes ["Spatial"]}})
       (index/wait-until-indexed)
 
       ;; verify has-formats is true after the service is updated with two supported formats
@@ -288,26 +288,26 @@
         (service-util/ingest-service-with-attrs
          {:native-id "serv8"
           :Name "service8"
-          :ServiceOptions {:SubsetType ["Spatial"]}})
+          :ServiceOptions {:SubsetTypes ["Spatial"]}})
 
         {serv9-concept-id :concept-id}
         (service-util/ingest-service-with-attrs
          {:native-id "serv9"
           :Name "service9"
-          :ServiceOptions {:InterpolationType ["Bilinear Interpolation"]}})
+          :ServiceOptions {:InterpolationTypes ["Bilinear Interpolation"]}})
 
         ;; service for testing non-spatial SubsetType and service deletion
         serv10-concept (service-util/make-service-concept
                         {:native-id "serv10"
                          :Name "service10"
-                         :ServiceOptions {:SubsetType ["Variable"]}})
+                         :ServiceOptions {:SubsetTypes ["Variable"]}})
         {serv10-concept-id :concept-id} (service-util/ingest-service serv10-concept)
 
         ;; service for testing service deletion affects collection search result
         serv11-concept (service-util/make-service-concept
                         {:native-id "serv11"
                          :Name "service11"
-                         :ServiceOptions {:SubsetType ["Spatial"]
+                         :ServiceOptions {:SubsetTypes ["Spatial"]
                                           :SupportedFormats ["image/tiff" "JPEG"]}})
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
@@ -325,11 +325,11 @@
       (assert-collection-search-result
        coll3 {:has-transforms true :has-spatial-subsetting true} [serv8-concept-id]))
 
-    (testing "InterpolationType affects has-transforms"
+    (testing "InterpolationTypes affects has-transforms"
       ;; sanity check before the association is made
       (assert-collection-search-result coll4 {:has-transforms false} [])
 
-      ;; associate coll4 with a service that has InterpolationType
+      ;; associate coll4 with a service that has InterpolationTypes
       (au/associate-by-concept-ids token serv9-concept-id [{:concept-id (:concept-id coll4)}])
       (index/wait-until-indexed)
 
@@ -341,7 +341,7 @@
       (assert-collection-search-result
        coll5 {:has-spatial-subsetting false} [])
 
-      ;; associate coll5 with a service that has SubsetType
+      ;; associate coll5 with a service that has SubsetTypes
       (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll5)}])
       (index/wait-until-indexed)
 
