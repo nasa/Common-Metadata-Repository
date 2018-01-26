@@ -190,7 +190,7 @@
         bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
         bulk-update-options2 {:token (e/login (s/context) "user1")}
         bulk-update-options3 {:user-id "user2"}
-        bulk-update-body {:concept-ids ["all"] 
+        bulk-update-body {:concept-ids concept-ids 
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -198,7 +198,7 @@
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         ;; CMR-4570 tests that no duplicate science keywords are created.
-        duplicate-body {:concept-ids ["ALL" ] 
+        duplicate-body {:concept-ids concept-ids 
                         :update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value {:Category "EARTH SCIENCE"
@@ -864,36 +864,58 @@
       ;; revision-id not changed, format not changed, it's identical to the original-concepts.
       (is (= new-concepts original-concepts)))) 
 
-(deftest bulk-update-update-all-tombstone-test
+(deftest bulk-update-update-all-tomb-stone-test
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                      :ShortName "S1"}))
         _ (index/wait-until-indexed)
-        bulk-update-body {:concept-ids ["ALL"] 
-                          :update-type "FIND_AND_UPDATE"
-                          :update-field "SCIENCE_KEYWORDS"
-                          ;; Note: find-value is case-sensitive.
-                          :find-value {:Topic "aTmoSPHERE"}
-                          :update-value {:Category "EARTH SCIENCE"
-                                         :Topic "ATMOSPHERE"
-                                         :Term "AIR QUALITY"
-                                         :VariableLevel1 "EMISSIONS"}}]
+        bulk-update-body1 {:concept-ids ["ALL"] 
+                           :update-type "FIND_AND_UPDATE"
+                           :update-field "SCIENCE_KEYWORDS"
+                           ;; Note: find-value is case-sensitive.
+                           :find-value {:Topic "aTmoSPHERE"}
+                           :update-value {:Category "EARTH SCIENCE"
+                                          :Topic "ATMOSPHERE"
+                                          :Term "AIR QUALITY"
+                                          :VariableLevel1 "EMISSIONS"}}
+        bulk-update-body2 {:concept-ids [(:concept-id coll1)] 
+                           :update-type "FIND_AND_UPDATE"
+                           :update-field "SCIENCE_KEYWORDS"
+                           ;; Note: find-value is case-sensitive.
+                           :find-value {:Topic "aTmoSPHERE"}
+                           :update-value {:Category "EARTH SCIENCE"
+                                          :Topic "ATMOSPHERE"
+                                          :Term "AIR QUALITY"
+                                          :VariableLevel1 "EMISSIONS"}}]
     ;; perform bulk update, verify that one collection is skipped because find-value is not found.
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
           _ (index/wait-until-indexed)
           collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
       (is (= "COMPLETE" (:task-status collection-response)))
       (is (= "Task completed with 1 SKIPPED out of 1 total collection update(s)." (:status-message collection-response))))
+  
     ;; delete the collection
     (is (= 200 (:status (ingest/delete-concept (data2-core/umm-c-collection->concept coll1 :echo10)))))
     (index/wait-until-indexed)
-    
+   
     ;; perform another bulk update, verify that the deleted collection is not included when getting all 
     ;; collections from the provider. 
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
           _ (index/wait-until-indexed)]  
       (is (= ["There are no un-deleted collections for provider-id [PROV1]."]
-             (:errors response))))))
-              
+             (:errors response))))
+
+    ;; perform a bulk update with the deleted collection's concept-id. It doesn't exclude tomb-stone one.
+    ;; Looks like when updating the tomb stone one it will cause error
+    ;; https://bugs.earthdata.nasa.gov/browse/CMR-4708 
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body2)
+          _ (index/wait-until-indexed)
+          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))
+          collection-statuses (:collection-statuses collection-response)]
+      (is (= "COMPLETE" (:task-status collection-response)))
+      (is (= "Collection with concept-id [C1200000009-PROV1] is deleted. Can not be updated."  
+             (get (first collection-statuses) :status-message)))
+      (is (= "Task completed with 1 FAILED out of 1 total collection update(s)." (:status-message collection-response))))))
+          
 (deftest bulk-update-default-name-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
         _ (index/wait-until-indexed)

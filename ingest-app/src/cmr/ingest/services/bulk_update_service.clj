@@ -267,7 +267,11 @@
         context task-id concept-id failed-status 
         (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
       (if-let [concept (mdb2/get-latest-concept context concept-id)]
-        (update-concept-and-status context task-id concept concept-id bulk-update-params user-id)
+        (if (:deleted concept)
+          (data-bulk-update/update-bulk-update-task-collection-status
+            context task-id concept-id failed-status 
+            (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))   
+          (update-concept-and-status context task-id concept concept-id bulk-update-params user-id))
         (data-bulk-update/update-bulk-update-task-collection-status
           context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))
     (catch clojure.lang.ExceptionInfo ex-info
