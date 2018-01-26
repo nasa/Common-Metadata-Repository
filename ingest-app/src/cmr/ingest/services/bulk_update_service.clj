@@ -118,7 +118,7 @@
       (map :concept-id collections)
       (errors/throw-service-errors
         :bad-request
-        [(format "There are no un-deleted collections for provider-id [%s]." provider-id)]))))
+        [(format "There are no collections that have not been deleted for provider [%s]." provider-id)]))))
 
 (defn- get-collection-concept-id-validation-err-msgs
   "Returns the concept-id validation msgs"

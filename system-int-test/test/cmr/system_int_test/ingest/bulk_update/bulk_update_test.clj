@@ -864,9 +864,11 @@
       ;; revision-id not changed, format not changed, it's identical to the original-concepts.
       (is (= new-concepts original-concepts)))) 
 
-(deftest bulk-update-update-all-tomb-stone-test
+(deftest bulk-update-update-all-tombstone-test
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                      :ShortName "S1"}))
+        coll2 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                                     :ShortName "S2"}))
         _ (index/wait-until-indexed)
         bulk-update-body1 {:concept-ids ["ALL"] 
                            :update-type "FIND_AND_UPDATE"
@@ -877,7 +879,7 @@
                                           :Topic "ATMOSPHERE"
                                           :Term "AIR QUALITY"
                                           :VariableLevel1 "EMISSIONS"}}
-        bulk-update-body2 {:concept-ids [(:concept-id coll1)] 
+        bulk-update-body2 {:concept-ids [(:concept-id coll1) (:concept-id coll2)] 
                            :update-type "FIND_AND_UPDATE"
                            :update-field "SCIENCE_KEYWORDS"
                            ;; Note: find-value is case-sensitive.
@@ -891,7 +893,7 @@
           _ (index/wait-until-indexed)
           collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
       (is (= "COMPLETE" (:task-status collection-response)))
-      (is (= "Task completed with 1 SKIPPED out of 1 total collection update(s)." (:status-message collection-response))))
+      (is (= "Task completed with 2 SKIPPED out of 2 total collection update(s)." (:status-message collection-response))))
   
     ;; delete the collection
     (is (= 200 (:status (ingest/delete-concept (data2-core/umm-c-collection->concept coll1 :echo10)))))
@@ -900,12 +902,11 @@
     ;; perform another bulk update, verify that the deleted collection is not included when getting all 
     ;; collections from the provider. 
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
-          _ (index/wait-until-indexed)]  
-      (is (= ["There are no un-deleted collections for provider-id [PROV1]."]
-             (:errors response))))
-
-    ;; perform a bulk update with the deleted collection's concept-id. It doesn't exclude tomb-stone one.
-    ;; Looks like when updating the tomb stone one it will cause error
+          _ (index/wait-until-indexed)
+          collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]  
+      (is (= "Task completed with 1 SKIPPED out of 1 total collection update(s)." (:status-message collection-response))))       
+    ;; perform a bulk update with the deleted collection's concept-id and a non-deleted collection's concept-id
+    ;; The deleted one should fail the update. 
     ;; https://bugs.earthdata.nasa.gov/browse/CMR-4708 
     (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body2)
           _ (index/wait-until-indexed)
@@ -914,7 +915,18 @@
       (is (= "COMPLETE" (:task-status collection-response)))
       (is (= "Collection with concept-id [C1200000009-PROV1] is deleted. Can not be updated."  
              (get (first collection-statuses) :status-message)))
-      (is (= "Task completed with 1 FAILED out of 1 total collection update(s)." (:status-message collection-response))))))
+      (is (= "Task completed with 1 FAILED and 1 SKIPPED out of 2 total collection update(s)." (:status-message collection-response))))
+
+    ;; delete the second collection
+    (is (= 200 (:status (ingest/delete-concept (data2-core/umm-c-collection->concept coll2 :echo10)))))
+    (index/wait-until-indexed)
+  
+    ;; perform another bulk update, verify that the deleted collections are not included when getting all
+    ;; collections from the provider.
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
+          _ (index/wait-until-indexed)] 
+      (is (= ["There are no collections that have not been deleted for provider [PROV1]."]
+             (:errors response))))))
           
 (deftest bulk-update-default-name-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
