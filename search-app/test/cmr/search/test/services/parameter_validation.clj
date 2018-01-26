@@ -1,12 +1,14 @@
 (ns cmr.search.test.services.parameter-validation
-  (:require [clojure.test :refer :all]
-            [cmr.search.services.parameters.parameter-validation :as pv]
-            [cmr.common-app.services.search.parameter-validation :as cpv]
-            [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [cmr.common.services.messages :as com-msg]
-            [cmr.search.services.messages.common-messages :as msg]
-            [cmr.common-app.services.search.messages :as cmsg]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.search.services.parameters.parameter-validation :as pv]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.search.services.messages.attribute-messages :as attrib-msg]
+   [cmr.search.services.messages.orbit-number-messages :as on-msg]
+   [cmr.common.services.messages :as com-msg]
+   [cmr.search.services.messages.common-messages :as msg]
+   [cmr.common-app.services.search.messages :as cmsg]))
 
 (def valid-params
   "Example valid parameters"
@@ -243,10 +245,10 @@
        :variable-level-2
        :variable-level-3
        :detailed-variable)
-  (is (= ["parameter [categories] is not a valid science keyword search term."]
+  (is (= ["parameter [categories] is not a valid [science_keywords] search term."]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
-  (is (= ["parameter [categories] is not a valid science keyword search term."
-          "parameter [topics] is not a valid science keyword search term."]
+  (is (= ["parameter [categories] is not a valid [science_keywords] search term."
+          "parameter [topics] is not a valid [science_keywords] search term."]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
                                                                                                          :topics "Topic1"}}}))))
 
@@ -342,3 +344,18 @@
                                               {:collection-concept-id ["C1234-Invalid'"
                                                                        "C5678-Invalid'"
                                                                        "C5678-Valid"]}))))
+
+(deftest valid-year-test
+  (testing "Valid years"
+    (doseq [year (map inc (range 9999))]
+      (is (= true (pv/valid-year? year)))))
+  (testing "Invalid years"
+    (util/are3
+      [year]
+      (is (= false (pv/valid-year? year)))
+
+      "foo" "foo"
+      -5 -5
+      2010.2 2010.2
+      0 0
+      10000 10000)))
