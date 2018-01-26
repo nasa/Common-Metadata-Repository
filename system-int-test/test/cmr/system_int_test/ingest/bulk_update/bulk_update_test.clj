@@ -190,7 +190,7 @@
         bulk-update-options1 {:token (e/login (s/context) "user1") :user-id "user2"}
         bulk-update-options2 {:token (e/login (s/context) "user1")}
         bulk-update-options3 {:user-id "user2"}
-        bulk-update-body {:concept-ids concept-ids 
+        bulk-update-body {:concept-ids ["all"] 
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value {:Category "EARTH SCIENCE"
@@ -198,7 +198,7 @@
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         ;; CMR-4570 tests that no duplicate science keywords are created.
-        duplicate-body {:concept-ids concept-ids 
+        duplicate-body {:concept-ids ["ALL"] 
                         :update-type "ADD_TO_EXISTING"
                         :update-field "SCIENCE_KEYWORDS"
                         :update-value {:Category "EARTH SCIENCE"
