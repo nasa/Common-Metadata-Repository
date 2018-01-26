@@ -42,6 +42,7 @@ Search API provides access to this metadata.
 - Leiningen (http://leiningen.org) 2.5.1 or above.
   - We've had success with Homebrew and with the install script on the
     Leiningen website.
+- Ruby (used to support two legacy apps)
 
 ## Building and Running the CMR
 
