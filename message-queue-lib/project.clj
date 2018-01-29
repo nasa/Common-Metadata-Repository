@@ -84,12 +84,11 @@
         ["check"] ["kibit"] ["eastwood"]]
     ;; Placeholder for future docs and enabler of top-level alias
     "generate-static" ["with-profile" "static" "shell" "echo"]
+        ;; Run a local copy of SQS/SNS
     "start-sqs-sns"
-      ["shell"
-       "../dev-system/support/start-local-sqs-sns.sh"]
+      ["shell" "cmr" "start" "local" "sqs-sns"]
     "stop-sqs-sns"
-      ["shell"
-       "../dev-system/support/stop-local-sqs-sns.sh"]
+      ["shell" "cmr" "stop" "local" "sqs-sns"]
     "restart-sqs-sns"
       ["do"
         ["stop-sqs-sns"]

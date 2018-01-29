@@ -147,7 +147,7 @@
     ;; Installs the Elasticsearch Marvel plugin locally.
     ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
     "install-marvel"
-      ["shell" "./support/install-marvel.sh"]
+      ["shell" "cmr" "install" "local" "marvel"]
     ;; Linting aliases
     "kibit"
       ["do"
@@ -170,11 +170,9 @@
        "shell" "echo"]
     ;; Run a local copy of SQS/SNS
     "start-sqs-sns"
-      ["shell"
-       "support/start-local-sqs-sns.sh"]
+      ["shell" "cmr" "start" "local" "sqs-sns"]
     "stop-sqs-sns"
-      ["shell"
-       "support/stop-local-sqs-sns.sh"]
+      ["shell" "cmr" "stop" "local" "sqs-sns"]
     "restart-sqs-sns"
       ["do"
         ["stop-sqs-sns"]

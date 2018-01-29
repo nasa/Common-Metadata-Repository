@@ -43,12 +43,11 @@
       ["modules" "deps" ":tree"]
     "generate-static"
       ["modules" "generate-static"]
+    ;; Run a local copy of SQS/SNS
     "start-sqs-sns"
-      ["shell"
-       "dev-system/support/start-local-sqs-sns.sh"]
+      ["shell" "cmr" "start" "local" "sqs-sns"]
     "stop-sqs-sns"
-      ["shell"
-       "dev-system/support/stop-local-sqs-sns.sh"]
+      ["shell" "cmr" "stop" "local" "sqs-sns"]
     "restart-sqs-sns"
       ["do"
         ["stop-sqs-sns"]
