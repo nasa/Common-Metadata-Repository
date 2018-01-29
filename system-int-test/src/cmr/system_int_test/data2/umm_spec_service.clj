@@ -12,7 +12,7 @@
 (def ^:private sample-umm-service
   {:Name "AIRX3STD"
    :LongName "OPeNDAP Service for AIRS Level-3 retrieval products"
-   :Type "WEB SERVICES"
+   :Type "OPeNDAP"
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
    :RelatedURL {
