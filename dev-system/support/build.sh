@@ -17,7 +17,7 @@ if [ $? -ne 0 ] ; then
 fi
 # The library is reinstalled after installing gems so that it will contain the gem code.
 date && echo "Installing collection renderer gems and reinstalling library" &&
-(cd ../collection-renderer-lib && lein 'install!')
+(cd ../collection-renderer-lib && lein do install-gems, install, clean)
 if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
