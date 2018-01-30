@@ -9,13 +9,13 @@ While a full production deployment of CMR depends upon various services (e.g.,
 databases, message queues, portions of AWS, etc.), for development purposes it
 is possible to run CMR locally without these.
 
-To do so, perform the following:
+This instructions for this are covered in the `README.md` in the CMR project's
+top-level directory. The command relevant to just `dev-system` is the
+following:
 
-1. Clone the repo: `git clone git@github.com:nasa/Common-Metadata-Repository.git cmr`
-2. Switch to the working dir: `cd cmr`
-3. Copy `profiles.example.clj` to `profiles.clj`
-4. Configure `profiles.clj` (see below)
-3. Run the local setup script: `dev-system/support/setup_local_dev.sh`
+```
+$ cmr setup dev
+```
 
 ## Running Tests
 
@@ -34,7 +34,7 @@ If you would like to test messaging against a local clone of SQS/SNS, then you
 can do the following:
 
 * Be sure that Docker is installed on your system and running
-* Run `lein start-sqs-sns`
+* Run `cmr start local sqs-sns`
 * From the shell where you will start the REPL, you will need the
   `CMR_SNS_ENDPOINT` and `CMR_SQS_ENDPOINT` environment variables set;
   in most cases you will want both of these set to `http://localhost:4100`
@@ -75,4 +75,4 @@ We need to keep the latest version of the umm-cmn-json-schema.json in sync for a
 
 ## License
 
-Copyright © 2014-2017 NASA
+Copyright © 2014-2018 NASA

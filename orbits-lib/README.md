@@ -10,4 +10,4 @@ Instead of describing the orbit as a complex 2D polygon, we want to answer a dif
 
 Instead of using a complicated 2D polygon query, we could instead perform a simple range query: "Find all data granules whose orbit crosses the equator between longitudes `a` and `b`."
 
-See the orbit.rb Ruby code for more information.
+See the `orbit.rb` Ruby code for more information.
