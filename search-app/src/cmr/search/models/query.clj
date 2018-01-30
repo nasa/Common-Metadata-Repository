@@ -144,6 +144,7 @@
 ;; The HasGranulesCondition type represents a condition that restricts a query to collection that
 ;; are known to have granules.
 (defrecord HasGranulesCondition [has-granules])
+(defrecord HasGranulesOrCwicCondition [has-granules-or-cwic])
 
 (defmethod common-qm/default-sort-keys :granule
   [_]

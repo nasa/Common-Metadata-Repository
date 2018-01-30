@@ -60,4 +60,3 @@
 (def refresh-has-granules-map-job
   {:job-type RefreshHasGranulesMapJob
    :interval REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL})
-

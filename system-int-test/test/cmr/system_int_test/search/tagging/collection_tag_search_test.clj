@@ -1,17 +1,20 @@
 (ns cmr.system-int-test.search.tagging.collection-tag-search-test
   "This tests searching for collections by tag parameters"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :as util :refer [are2]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util :refer [are2]]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.spatial.point :as p]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
