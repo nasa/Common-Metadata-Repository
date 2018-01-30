@@ -44,6 +44,14 @@ Search API provides access to this metadata.
     Leiningen website.
 - Ruby (used to support two legacy apps)
 
+## Obtaining the Code
+
+You can get the CMR source code by cloning the repository from Github:
+
+```
+$ git clone git@github.com:nasa/Common-Metadata-Repository.git cmr
+```
+
 ## Building and Running the CMR
 
 The CMR is a system consisting of multiple services. The services can be run
@@ -55,16 +63,32 @@ run the entire CMR with no external dependencies from this Jar file and use
 that instance for local testing. The sections below contain instructions for
 running the CMR as a single process or as multiple processes.
 
+#### Using the `cmr` CLI Tool
+
+This project has its own tool that is used for everything from initial setup to
+running buids and tests on the CI/CD infrastructure. In order to use the tool
+as we do below, be sure to run the following from the top-level CMR directory:
+
+```
+export PATH=$PATH:`pwd`/bin
+source resources/shell/cmr-bash-autocomplete
+```
+
 #### Building and Running CMR Dev System in a REPL
 
-1. Install Oracle JDBC Jars into your local maven repository following
-   instructions in `oracle-lib/README.md`. The CMR must have these libraries to build but it does not depend on Oracle DB when running locally. It uses a
-   local in-memory database by default.
-2. `cd cmr`
-3. `./dev-system/support/setup_local_dev.sh`
-4. `cd dev-system`
-4. `lein repl`
-5. Once given a Clojure prompt, run `(reset)`
+1. Ensure you have installed on your system the items listed above in the
+   "Prerequisites" section.
+2. Install Oracle JDBC Jars into your local maven repository following
+   instructions in `oracle-lib/README.md`. The CMR must have these
+   libraries to build but it does not depend on Oracle DB when running
+   locally. It uses a local in-memory database by default.
+3. Copy `profiles.example.clj` to `profiles.clj` and update, according to
+   personal instruction provided by a CMR code developer.
+4. `cmr install oracle-libs`
+5. `cmr setup dev`
+6. `cd dev-system`
+7. `lein repl`
+8. Once given a Clojure prompt, run `(reset)`
 
 Note that the `reset` action could potentially take a while, not only due to
 the code reloading for a large number of namespaces, but for bootstrapping
@@ -72,25 +96,30 @@ services as well as starting up worker threads.
 
 #### Building and Running CMR Dev System from a Jar
 
-1. `cd cmr/dev-system`
-2. `./support/setup_local_dev.sh`
-3. `lein uberjar`
-4. See CMR Development Guide to read about specifying options and setting
-   environment variables
+Assuming you have already run the above steps (namely `cmr setup dev`), to
+build and run the default CMR development system (`dev-system`) from a
+`.jar` file:
+
+1. `cmr build uberjars`
+2. `cmr start uberjar dev-system`
+
+See CMR Development Guide to read about specifying options and setting
+environment variables
 
 #### Building and Running separate CMR Applications
 
-This will build all of the applications but will put each jar into the
-appropriate /target directory for each application. The command shown in step
+The following will build all of the applications but will put each jar into the
+appropriate `target` directory for each application. The command shown in step
 3 is an example. For the proper command to start up each application, see the
 `Applications` section below. Note: Steps 1 and 2 only need to be completed
 once.
 
-1. `cd cmr/dev-system`
-2. `./support/build.sh CMR_BUILD_UBERJARS`
-3. `cd cmr/<service>`
-4. `lein uberjar`
-5. `java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>`
+1. `cmr build uberjar PROJ`
+2. `cmr run uberjar PROJ`
+
+Where `PROJ` is any supported CMR app. You can touble-tap the `TAB` key on
+your keyboard to get the `cmr` tool to show you the list of availble apps
+after entering `uberjar` in each command.
 
 ## Checking Dependencies, Static Analysis, and Tests
 
@@ -158,17 +187,44 @@ For the first, the steps are as follows:
 4. Once in the REPL, start the in-memory services: `(reset)`
 5. Run the tests: `(run-all-tests)` or `(run-all-tests-future)`
 
-Depending upon your IDE/editor, you may have shortcuts available to you for
-starting/restarting the services and/or running the tests. To find out what
-these are you can contact a CMR core dev.
+Optionally, you could substitute the last step with `(run-suites)` which
+uses a third-party tool to display test results more explicitly and with
+easy copy/paste of tests for running individually (and with easier to read
+exception messages/stacktraces). Here's an excerpt:
+
+```
+   cmr.system-int-test.ingest.provider-ingest-test
+     update-provider-test
+       assertion 1 ........................................................ [OK]
+       assertion 2 ........................................................ [OK]
+       assertion 3 ........................................................ [OK]
+       assertion 4 ........................................................ [OK]
+     delete-provider-test
+       assertion 1 ........................................................ [OK]
+       assertion 2 ........................................................ [OK]
+       assertion 3 ........................................................ [OK]
+       assertion 4 ........................................................ [OK]
+       assertion 5 ........................................................ [OK]
+       assertion 6 ........................................................ [OK]
+       assertion 7 ........................................................ [OK]
+       assertion 8 ........................................................ [OK]
+       assertion 9 ........................................................ [OK]
+```
+
+For non-terminal based dev, depending upon your IDE/editor, you may have
+shortcuts available to you for starting/restarting the services and/or running the
+tests. To find out what these are you can contact a CMR core dev.
 
 In order to run the tests against an Oracle database, it is recommended that
 you use an Oracle VM built specifically for this purpose. You will also need
 configuration and authentication information that will be set as environment
-variables. Be sure to contact a CMR core dev for this information. Once these
-are in place, you will be able to run the following:
+variables. Be sure to contact a CMR core dev for this information.
 
-`./dev-system/support/build-and-test-ci.sh`
+Once these are in place, you will be able to run the following:
+
+```
+$ cmr test cicd
+```
 
 Additionally, if you have an Oracle VM up and running, you can change how
 the tests are run in the REPL by running the following:
