@@ -22,8 +22,14 @@
    ;; This element contains important information about the Unique Resource Locator for the service.
    ServiceOptions
 
+   ;; This is the contact persons of the service.
+   ContactPersons
+
    ;; Information about any constraints for accessing the service, software, or tool.
    AccessConstraints
+
+   ;; This is the contact groups of the service.
+   ContactGroups
 
    ;; Allows for the specification of Earth Science Service keywords that are representative of the
    ;; service, software, or tool being described. The controlled vocabulary for Service Keywords is
@@ -37,12 +43,6 @@
    ;; software, or tool being described. The controlled vocabulary for Science Keywords is
    ;; maintained in the Keyword Management System (KMS).
    ScienceKeywords
-
-   ;; The ServiceContact is the point of contact for more information about the service, software,
-   ;; or tool. ServiceContact is a parent element to the ContactPerson and the ContactGroup
-   ;; elements. Its purpose is to hold shared elements that its children will use. The
-   ;; ServiceContact element must exist with at least 1 of its children; it cannot exist on its own.
-   ServiceContacts
 
    ;; Information on how the item (service, software, or tool) may or may not be used after access
    ;; is granted. This includes any special restrictions, legal prerequisites, terms and conditions,
@@ -322,17 +322,6 @@
    LastName
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
-
-;; The ServiceContact is the point of contact for more information about the service, software, or
-;; tool. ServiceContact is a parent element to the ContactPerson and the ContactGroup elements. Its
-;; purpose is to hold shared elements that its children will use. The ServiceContact element must
-;; exist with at least 1 of its children; it cannot exist on its own.
-(defrecord ServiceContactType
-  [
-   ;; The name of the coverage available from the service.
-   ShortName
-  ])
-(record-pretty-printer/enable-record-pretty-printing ServiceContactType)
 
 ;; This object describes service options, data transformations and output formats.
 (defrecord ServiceOptionsType
