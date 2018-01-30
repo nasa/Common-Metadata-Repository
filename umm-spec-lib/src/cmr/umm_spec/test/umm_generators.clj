@@ -8,7 +8,7 @@
             [cmr.umm-spec.test.umm-record-sanitizer :as san]
             [clojure.set :as set]))
 
-;; We could move this to common lib if desired at some point. There's not much here that is UMM specific.
+;;; We could move this to common lib if desired at some point. There's not much here that is UMM specific.
 
 (defmulti ^:private schema-type->generator
   "Converts a schema type into a Clojure test.check generator."
@@ -105,7 +105,6 @@
 
         (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of))))))
 
-
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
@@ -149,7 +148,7 @@
                             (get-in schema-type [:$ref :type-name])
                             ref-schema-type)))
 
-;; Primitive Types
+;;; Primitive Types
 
 (def string-defaults
   {:minLength 0

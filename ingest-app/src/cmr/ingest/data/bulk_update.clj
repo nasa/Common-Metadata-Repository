@@ -118,27 +118,22 @@
   (create-and-save-bulk-update-status
     [db provider-id json-body concept-ids]
     ;; In a transaction, add one row to the task status table and for each concept
-    (try
-      (j/with-db-transaction
-        [conn db]
-        (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
-              statement (str "INSERT INTO bulk_update_task_status "
-                             "(task_id, provider_id, name, request_json_body, status)"
-                             "VALUES (?, ?, ?, ?, ?)")
-              name (get (json/parse-string json-body) "name" task-id)
-              values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
-          (j/db-do-prepared db statement values)
-          ;; Write a row to collection status for each concept id
-          (apply j/insert! conn
-                 "bulk_update_coll_status"
-                 ["task_id" "concept_id" "status"]
-                 ;; set :transaction? false since we are already inside a transaction
-                 (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
-          task-id))
-      (catch Exception e
-        (errors/throw-service-error :invalid-data
-                                    [(str "Error creating creating bulk update status "
-                                          (.getMessage e))]))))
+    (j/with-db-transaction
+      [conn db]
+      (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
+            statement (str "INSERT INTO bulk_update_task_status "
+                           "(task_id, provider_id, name, request_json_body, status)"
+                           "VALUES (?, ?, ?, ?, ?)")
+            name (get (json/parse-string json-body) "name" task-id)
+            values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
+        (j/db-do-prepared db statement values)
+        ;; Write a row to collection status for each concept id
+        (apply j/insert! conn
+               "bulk_update_coll_status"
+               ["task_id" "concept_id" "status"]
+               ;; set :transaction? false since we are already inside a transaction
+               (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
+        task-id)))
 
   (update-bulk-update-task-status
     [db task-id status status-message]

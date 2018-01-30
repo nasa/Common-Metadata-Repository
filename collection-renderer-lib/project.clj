@@ -31,19 +31,25 @@
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.jruby/jruby-complete ~jruby-version]]
-  :plugins [[lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
+  :plugins [
+    [lein-shell "0.5.0"]
+    [test2junit "1.3.3"]]
   :resource-paths ["resources" ~gem-install-path]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {
-    :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                         [proto-repl "0.3.1"]
-                         [pjstadig/humane-test-output "0.8.1"]]
-          :jvm-opts ^:replace ["-server"]
-          :source-paths ["src" "dev" "test"]
-          :injections [(require 'pjstadig.humane-test-output)
-                       (pjstadig.humane-test-output/activate!)]}
+    :dev {
+      :exclusions [
+        [org.clojure/tools.nrepl]]
+      :dependencies [
+        [org.clojure/tools.namespace "0.2.11"]
+        [org.clojure/tools.nrepl "0.2.13"]
+        [pjstadig/humane-test-output "0.8.3"]
+        [proto-repl "0.3.1"]]
+      :jvm-opts ^:replace ["-server"]
+      :source-paths ["src" "dev" "test"]
+      :injections [(require 'pjstadig.humane-test-output)
+                   (pjstadig.humane-test-output/activate!)]}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
@@ -52,17 +58,24 @@
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
-      :plugins [[jonase/eastwood "0.2.3"]
-                [lein-ancient "0.6.10"]
-                [lein-bikeshed "0.4.1"]
-                [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]}}
+      :plugins [
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
                             ~cmr-metadata-preview-repo
                             ~metadata-preview-commit]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
+            "install!" ["do" ["clean-gems" "install-gems" "install" "clean"]]
+            "internal-install!" ["with-profile" "+internal-repos" "do"
+                                  ["clean-gems" "install-gems" "install" "clean"]]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
             ;; Linting aliases
@@ -71,7 +84,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

@@ -2,16 +2,19 @@
   "This tests searching services."
   (:require
    [clojure.test :refer :all]
+   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.service-util :as services]))
+   [cmr.system-int-test.utils.service-util :as services]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 (use-fixtures :each
               (join-fixtures
@@ -307,3 +310,56 @@
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
       [service2 service1 service4 service3])))
+
+(deftest service-search-in-umm-json-format-test
+  (testing "service search result in UMM JSON format has associated collections"
+    (let [token (e/login (s/context) "user1")
+          coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection) {:format :umm-json :token token})
+          ;; create services
+          service1-concept (services/make-service-concept {:native-id "svc1"
+                                                           :Name "service1"})
+          service1 (services/ingest-service service1-concept)
+          service2-concept (services/make-service-concept {:native-id "svc2"
+                                                           :Name "service2"})
+          service2 (services/ingest-service service2-concept)
+          service1-concept-id (:concept-id service1)
+          service1-assoc-colls [{:concept-id (:concept-id coll1)}]
+          expected-service1 (merge service1-concept service1)
+          expected-service2 (merge service2-concept service2)]
+      ;; index the collections so that they can be found during service association
+      (index/wait-until-indexed)
+      ;; create service associations
+      (au/associate-by-concept-ids token service1-concept-id service1-assoc-colls)
+      (index/wait-until-indexed)
+
+      ;; verify service search UMM JSON response is correct and does not have
+      ;; collection associations like variable search response does
+      (are3 [umm-version options]
+        (data-umm-json/assert-service-umm-jsons-match
+         umm-version [expected-service1 expected-service2]
+         (search/find-concepts-umm-json :service {} options))
+
+        "without specifying UMM JSON version"
+        umm-version/current-service-version
+        {}
+
+        "explicit UMM JSON version through accept header"
+        umm-version/current-service-version
+        {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
+
+        "explicit UMM JSON version through suffix"
+        "1.0"
+        {:url-extension "umm_json_v1_0"})))
+
+  (testing "Searching with non-existent UMM JSON version"
+    (are3 [options]
+      (let [{:keys [status errors]} (search/find-concepts-umm-json :service {} options)]
+        (is (= 400 status))
+        (is (= ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [0.1] is not supported for services."]
+               errors)))
+
+      "explicit UMM JSON version through suffix"
+      {:url-extension "umm_json_v0_1"}
+
+      "explicit UMM JSON version through accept header"
+      {:accept (mime-types/with-version mime-types/umm-json "0.1")})))

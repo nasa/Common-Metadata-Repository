@@ -311,7 +311,7 @@
     (let [{:keys [status errors]} (search/find-refs :collection
                                                     {:variables-h {:0 {:and "true"}}})]
       (is (= 400 status))
-      (is (re-find #"parameter \[and\] is not a valid variable search term." (first errors)))))
+      (is (re-find #"parameter \[and\] is not a valid \[variables_h\] search term." (first errors)))))
   (testing "search variable concept id does not support ignore-case options"
     (let [{:keys [status errors]} (search/find-refs
                                    :collection

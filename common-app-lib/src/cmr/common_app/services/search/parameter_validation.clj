@@ -175,7 +175,7 @@
                (not (scrolling-enabled)))
       ["Scrolling is disabled."])))
 
-(defn scroll-validation 
+(defn scroll-validation
   "Validates the the scroll parameter (if present) is boolean."
   [concept-type params]
   (validate-boolean-param :scroll concept-type params))

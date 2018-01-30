@@ -109,6 +109,7 @@
    :sensor :inheritance
    :short-name :collection-query
    :temporal :temporal
+   :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
    :updated-since :updated-since
    :version :collection-query})

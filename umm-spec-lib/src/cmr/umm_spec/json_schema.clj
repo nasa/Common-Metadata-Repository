@@ -12,7 +12,8 @@
    [cmr.umm-spec.versioning :as ver]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Defined schema files
+;;; Defined schema files
+
 (def concept-schema-name
   "A map of concept types to schema names."
   {:collection "umm-c-json-schema.json"
@@ -27,8 +28,12 @@
   "Defines the name of the variable search result schema."
   "umm-var-search-results-json-schema.json")
 
+(def service-search-result-schema-name
+  "Defines the name of the service search result schema."
+  "umm-s-search-results-json-schema.json")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Code for loading schema files.
+;;; Code for loading schema files.
 
 (defn load-json-resource
   "Loads a json resource from the resource url. The JSON file may contain comments which are ignored"
@@ -100,7 +105,8 @@
   [schema-name type-def]
   (update-in type-def [:items] (partial resolve-ref schema-name)))
 
-;; No resolution
+;;; No resolution
+
 (doseq [t ["string" "integer" "number" "boolean" :empty-map]]
   (defmethod resolve-ref t [_ type-def] type-def))
 
@@ -186,12 +192,13 @@
 
 (defn- concept-schema*
   ([concept-type]
-    ;; Default to the current UMM version.
+   ;; Default to the current UMM version.
    (concept-schema* concept-type (ver/current-version concept-type)))
   ([concept-type umm-version]
    (load-schema concept-type (concept-schema-name concept-type) umm-version)))
 
-;; Define a memoized version of concept-schema to cache loaded JSON schemas.
+;;; Define a memoized version of concept-schema to cache loaded JSON schemas.
+
 (def concept-schema
   "Returns a Clojure map describing the JSON schema for the given UMM concept type."
   (memoize concept-schema*))
@@ -204,7 +211,7 @@
 (def concept-schema-java (memoize concept-schema-java*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Validation
+;;; Validation
 
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."
@@ -221,23 +228,28 @@
 (defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
   [json-str concept-type schema-name umm-version]
-   (let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
-     (if schema-url
-       (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
-         (js-validations/validate-json java-schema-obj json-str))
-       [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)])))
+  (if-let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
+    (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
+      (js-validations/validate-json java-schema-obj json-str))
+    [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)]))
 
 (defn validate-collection-umm-json-search-result
   "Validates the collection UMM JSON search result and returns a list of errors if invalid."
   [json-str umm-version]
-   (validate-umm-json-search-result
-    json-str :collection search-result-schema-name umm-version))
+  (validate-umm-json-search-result
+   json-str :collection search-result-schema-name umm-version))
 
 (defn validate-variable-umm-json-search-result
   "Validates the variable UMM JSON search result and returns a list of errors if invalid."
   [json-str umm-version]
-   (validate-umm-json-search-result
-    json-str :variable variable-search-result-schema-name umm-version))
+  (validate-umm-json-search-result
+   json-str :variable variable-search-result-schema-name umm-version))
+
+(defn validate-service-umm-json-search-result
+  "Validates the service UMM JSON search result and returns a list of errors if invalid."
+  [json-str umm-version]
+  (validate-umm-json-search-result
+   json-str :service service-search-result-schema-name umm-version))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loaded schemas

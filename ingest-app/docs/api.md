@@ -645,8 +645,8 @@ The following update types are supported:
 
 Bulk update post request takes the following parameters:
 
-  * Concept-ids (required) - a list of concept ids to update
-  * Name (optional) - a name used to identify a bulk update task 
+  * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
+  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider. 
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
   * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  

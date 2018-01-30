@@ -80,8 +80,8 @@
   (when-let [errors (seq (js/validate-json json-query-schema json-query))]
     (errors/throw-service-errors :bad-request errors)))
 
-(def ^:private tag-sub-fields
-  "Defines a map of :tag to its sub-fields for nested condition."
+(def ^:private tag-subfields
+  "Defines a map of :tag to its subfields for nested condition."
   {:tag [:tag-key :originator-id]})
 
 (defn- validate-nested-condition
@@ -92,7 +92,7 @@
   (when-not (seq (set/intersection
                    (set (keys value))
                    (set (concat (nf/get-subfield-names (inf/plural condition-name))
-                                (tag-sub-fields condition-name)))))
+                                (tag-subfields condition-name)))))
     (errors/throw-service-error
       :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
