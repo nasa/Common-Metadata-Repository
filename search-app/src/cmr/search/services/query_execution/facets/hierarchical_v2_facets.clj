@@ -183,8 +183,6 @@
               ;; Sort alphabetically
               sub-facets (when (seq (:children sub-facets))
                            (update sub-facets :children
-                                  ;  #(if temporal?
-                                  ;     (reverse (sort-by :title util/compare-natural-strings %))
                                    #(sort-by :title util/compare-natural-strings %)))
               children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
               has-siblings? (has-siblings-fn value)

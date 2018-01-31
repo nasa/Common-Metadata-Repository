@@ -2,7 +2,6 @@
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
   granule fields. First major use case is supporting OPeNDAP virutal directories capability."
   (:require
-   [camel-snake-kebab.core :as csk]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
