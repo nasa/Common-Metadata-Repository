@@ -317,10 +317,8 @@
     (index/wait-until-indexed)
 
    (testing "invalid include-facets"
-     (is (= {:errors ["Parameter include_facets must take value of true, false, or v2, but was [foo]"] :status 400}
-            (search/find-refs :collection {:include-facets "foo"})))
-     (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
-            (search/find-refs :granule {:include-facets true}))))
+     (is (= {:errors ["Collection parameter include_facets must take value of true, false, or v2, but was [foo]"] :status 400}
+            (search/find-refs :collection {:include-facets "foo"}))))
 
    (testing "retreving all facets in different formats"
      (let [expected-facets [{:field "data_center"

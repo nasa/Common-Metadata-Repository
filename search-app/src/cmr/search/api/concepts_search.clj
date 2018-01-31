@@ -2,12 +2,6 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
-   ;; XXX REMOVE the next three requires once the service and associations work is complete
-   ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
-   [clojure.string :as string]
-   [cmr-edsc-stubs.core :as stubs]
-   [cmr.common.util :as util]
-   ;; end XXX
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
@@ -150,19 +144,7 @@
     (OPTIONS "/" req common-routes/options-response)
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
-      ;; XXX REMOVE this check and the stubs once the service and
-      ;;     the associations work is complete
-      ;;     See https://bugs.earthdata.nasa.gov/browse/CMR-4583
-      (if (= "true" (util/safe-lowercase (headers "cmr-prototype-umm")))
-        (core-api/search-response
-         ctx
-         {:results (stubs/handle-prototype-request
-                    path-w-extension
-                    params
-                    (assoc headers "CMR-Hits" 42 "CMR-Took" 42)
-                    query-string)
-          :result-format :json})
-        (find-concepts ctx path-w-extension params headers query-string)))
+      (find-concepts ctx path-w-extension params headers query-string))
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}

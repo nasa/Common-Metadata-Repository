@@ -55,11 +55,7 @@
        nil
        {:Category "EARTH SCIENCE SERVICES"
         :Topic "Topic"}
-       {:EntryTitle "Test"
-        :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
-                          {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
-                           :VariableLevel1 "var 1" :VariableLevel2 "var 2"
-                           :VariableLevel3 "var 3" :DetailedVariable "detailed"}]}
+       nil
 
        "Find and update"
        :find-and-update
@@ -84,11 +80,7 @@
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
        {:Category "EARTH SCIENCE SERVICES"
         :Topic "Topic"}
-       {:EntryTitle "Test"
-        :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
-                          {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
-                           :VariableLevel1 "var 1" :VariableLevel2 "var 2"
-                           :VariableLevel3 "var 3" :DetailedVariable "detailed"}]}
+       nil
 
        "Find and replace"
        :find-and-replace
@@ -109,11 +101,7 @@
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
        {:Category "EARTH SCIENCE SERVICES"
         :Topic "Topic"}
-       {:EntryTitle "Test"
-        :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
-                          {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
-                           :VariableLevel1 "var 1" :VariableLevel2 "var 2"
-                           :VariableLevel3 "var 3" :DetailedVariable "detailed"}]})))
+       nil)))
 
   (testing "No science keywords"
     (let [umm {:EntryTitle "Test"}]
@@ -142,12 +130,15 @@
         :ScienceKeywords [{:Category "EARTH SCIENCE SERVICES"
                            :Topic "DATA ANALYSIS AND VISUALIZATION"
                            :Term "GEOGRAPHIC INFORMATION SYSTEMS"}]}
-
+       
+       ;; In order to filter out the concepts in the bulk update that's not found through find-value, 
+       ;; apply-update code is modified to return nil for all the find operations
+       ;; when the concept is not found.
        "Find and remove"
        :find-and-remove
        nil
        {:Category "EARTH SCIENCE SERVICES"}
-       {:EntryTitle "Test"}
+       nil 
 
        "Find and update"
        :find-and-update
@@ -155,7 +146,7 @@
         :Topic "DATA ANALYSIS AND VISUALIZATION"
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
        {:Category "EARTH SCIENCE SERVICES"}
-       {:EntryTitle "Test"}
+       nil 
 
        "Find and replace"
        :find-and-replace
@@ -163,7 +154,7 @@
         :Topic "DATA ANALYSIS AND VISUALIZATION"
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
        {:Category "EARTH SCIENCE SERVICES"}
-       {:EntryTitle "Test"}))))
+       nil))))
 
 (deftest location-keyword-updates-test
   (let [umm {:LocationKeywords [{:Category "CONTINENT"

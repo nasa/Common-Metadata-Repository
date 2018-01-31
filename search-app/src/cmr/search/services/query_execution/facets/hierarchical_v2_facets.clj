@@ -18,7 +18,7 @@
   [field]
   (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\.humanized$" "")]
     (if (= "variables" stripped-field)
-      nested-field/variable-sub-fields
+      nested-field/variable-subfields
       (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 
 (defn- get-max-subfield-index

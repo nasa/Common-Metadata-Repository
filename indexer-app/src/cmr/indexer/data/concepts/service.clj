@@ -64,21 +64,21 @@
   values being 'spatial'."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
-        {{subset-type :SubsetType} :ServiceOptions} service]
-    (and (seq subset-type)
-         (contains? (set subset-type) "Spatial"))))
+        {{subset-types :SubsetTypes} :ServiceOptions} service]
+    (and (seq subset-types)
+         (contains? (set subset-types) "Spatial"))))
 
 (defn- has-transforms?
-  "Returns true if the given service has a defined SubsetType or InterpolationType,
+  "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
   or multiple SupportedProjections values."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
         {service-options :ServiceOptions} service
-        {subset-type :SubsetType
-         interpolation-type :InterpolationType
+        {subset-types :SubsetTypes
+         interpolation-types :InterpolationTypes
          supported-projections :SupportedProjections} service-options]
-    (or (seq subset-type)
-        (seq interpolation-type)
+    (or (seq subset-types)
+        (seq interpolation-types)
         (> (count supported-projections) 1))))
 
 (defn service-associations->elastic-doc

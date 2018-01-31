@@ -41,7 +41,10 @@
 
 (defmethod cqv/supported-result-formats :service
   [_]
-  #{:xml})
+  (into #{:xml
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        (umm-versioned-result-formats :service)))
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
@@ -83,7 +86,8 @@
   [lwv/limit-number-of-leading-wildcard-patterns
    all-granule-validation/no-all-granules-with-spatial
    all-granule-validation/all-granules-exceeds-page-depth-limit
-   all-granule-validation/no-all-granules-with-scroll])
+   all-granule-validation/no-all-granules-with-scroll
+   validate-facets-v2-format])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition

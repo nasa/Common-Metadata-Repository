@@ -10,14 +10,14 @@
 # them in internal ones for building. If this is set then the maven repo will be updated to use this.
 
 date && echo "Installing all apps and generating API documentation" &&
-(cd .. && lein 'install-with-content-no-clean!')
+(cd .. && lein 'internal-install-with-content-no-clean!')
 if [ $? -ne 0 ] ; then
   echo "Failed to install apps and generate docs" >&2
   exit 1
 fi
 # The library is reinstalled after installing gems so that it will contain the gem code.
 date && echo "Installing collection renderer gems and reinstalling library" &&
-(cd ../collection-renderer-lib && lein do install-gems, install, clean)
+(cd ../collection-renderer-lib && lein with-profile +internal-repos do install-gems, install, clean)
 if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
@@ -38,7 +38,7 @@ if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
 fi
 if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
   date && echo "Building uberjars" &&
-  (cd .. && lein with-profile uberjar modules uberjar)
+  (cd .. && lein with-profile +uberjar,+internal-repos modules uberjar)
   if [ $? -ne 0 ] ; then
     echo "Failed to generate uberjars" >&2
     exit 1
@@ -46,7 +46,7 @@ if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
 fi
 
 date && echo "Building dev system uberjar" &&
-lein do clean, uberjar
+lein with-profile +uberjar,+internal-repos do clean, uberjar
 if [ $? -ne 0 ] ; then
   echo "Failed to generate dev system uberjar" >&2
   exit 1

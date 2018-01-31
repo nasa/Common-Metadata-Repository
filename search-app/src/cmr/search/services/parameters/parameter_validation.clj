@@ -28,7 +28,7 @@
    [cmr.spatial.codec :as spatial-codec])
   (:import
    (clojure.lang ExceptionInfo)
-   (java.lang Integer)))
+   (java.lang Integer Long)))
 
 (defmethod cpv/params-config :collection
   [_]
@@ -50,7 +50,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:echo-compatible}
+    {:single-value #{:echo-compatible :include-facets}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
                        :platform :sensor}
@@ -205,7 +205,7 @@
 
 (defmethod cpv/valid-query-level-params :granule
   [_]
-  #{:echo-compatible})
+  #{:echo-compatible :include-facets})
 
 (defmethod cpv/valid-query-level-params :variable
   [_]
@@ -366,41 +366,70 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation-for-field
-  [field concept-type params]
-  (when-let [science-keywords (get params field)]
-    (if (map? science-keywords)
-      (let [values (vals science-keywords)]
+(defn nested-field-validation-for-subfield
+  "Validates that the provided subfield is valid for the given nested field."
+  [field concept-type params error-msg]
+  (when-let [param-values (get params field)]
+    (if (map? param-values)
+      (let [values (vals param-values)]
         (if (some #(not (map? %)) values)
-          [(msg/science-keyword-invalid-format-msg)]
+          [error-msg]
           (reduce
             (fn [errors param]
-              (if-not (some #{param} (nf/get-subfield-names :science-keywords))
-                (conj errors (format "parameter [%s] is not a valid science keyword search term."
-                                     (name param)))
+              (if-not (some #{param} (nf/get-subfield-names field))
+                (conj errors (format "parameter [%s] is not a valid [%s] search term."
+                                     (name param)
+                                     (csk/->snake_case_string field)))
                 errors))
             []
             (mapcat keys values))))
-      [(msg/science-keyword-invalid-format-msg)])))
+      [error-msg])))
+
+(defn science-keywords-validation-for-field
+  "Performs science keywords subfield validation."
+  [field concept-type params]
+  (nested-field-validation-for-subfield field concept-type params
+                                        (msg/science-keyword-invalid-format-msg)))
 
 (defn variables-validation
   "Validates the variables-h search parameters are in the format of e.g.
-   variables-h[0][measurement]=vaule."
+   variables-h[0][measurement]=value."
   [concept-type params]
-  (when-let [variables (get params :variables-h)]
-    (if (map? variables)
-      (let [values (vals variables)]
-        (if (some #(not (map? %)) values)
-          [(msg/variable-invalid-format-msg)]
-          (reduce
-            (fn [errors param]
-              (if-not (some #{param} (nf/get-subfield-names :variables))
-                (conj errors (format "parameter [%s] is not a valid variable search term."
-                                     (name param)))
-                errors))
-            []
-            (mapcat keys values))))
-      [(msg/variable-invalid-format-msg)])))
+  (nested-field-validation-for-subfield :variables-h concept-type params
+                                        (msg/variable-invalid-format-msg)))
+
+(defn temporal-facets-subfields-validation
+  "Performs temporal facets subfield validation."
+  [concept-type params]
+  (nested-field-validation-for-subfield :temporal-facet concept-type params
+                                        (msg/temporal-facets-invalid-format-msg)))
+
+(defn valid-year?
+  "Returns true if the provided value is a valid year and false otherwise."
+  [year]
+  (let [parsed-year (try
+                      (Long. year)
+                      (catch Exception e
+                        nil))]
+    (and (not (nil? parsed-year))
+         (<= 1 parsed-year 9999))))
+
+(defn temporal-facet-year-validation
+  "Validates that the years provided in all temporal-facet parameters are valid."
+  [concept-type params]
+  (when-let [param-values (:temporal-facet params)]
+    (when (map? param-values)
+      (let [temporal-facet-maps (vals param-values)
+            years (keep :year temporal-facet-maps)]
+        (reduce
+          (fn [errors year]
+            (if-not (valid-year? year)
+              (conj errors (format (str "Year [%s] within [temporal_facet] is not a valid year. "
+                                        "Years must be between 1 and 9999.")
+                                   year))
+              errors))
+          []
+          years)))))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -486,12 +515,20 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
-(defn- include-facets-validation
+(defn- collection-include-facets-validation
   "Validates that the include_facets parameter has a value of true, false or v2."
   [concept-type params]
   (when-let [include-facets (:include-facets params)]
     (when-not (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
-      [(format "Parameter include_facets must take value of true, false, or v2, but was [%s]"
+      [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
+               include-facets)])))
+
+(defn- granule-include-facets-validation
+  "Validates that the include_facets parameter has a value of v2."
+  [concept-type params]
+  (when-let [include-facets (:include-facets params)]
+    (when-not (= "v2" (s/lower-case include-facets))
+      [(format "Granule parameter include_facets only supports the value v2, but was [%s]"
                include-facets)])))
 
 (defn- spatial-validation
@@ -643,7 +680,7 @@
                  no-highlight-options-without-highlights-validation
                  highlights-numeric-options-validation
                  include-tags-parameter-validation
-                 include-facets-validation])
+                 collection-include-facets-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation
@@ -662,7 +699,10 @@
               bounding-box-validation
               point-validation
               line-validation
-              collection-concept-id-validation])
+              collection-concept-id-validation
+              granule-include-facets-validation
+              temporal-facets-subfields-validation
+              temporal-facet-year-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])

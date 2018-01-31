@@ -12,13 +12,44 @@
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su]))
 
+(defn- generate-failed-msg
+  "Generate the FAILED part of the status message."
+  [num-failed-collections]
+  (when (not= 0 num-failed-collections)
+    (str num-failed-collections " FAILED")))
+
+(defn- generate-skipped-msg
+  "Generate the SKIPPED part of the status message."
+  [num-failed-collections num-skipped-collections num-total-collections]
+  (when (not= 0 num-skipped-collections)
+    (if (not= 0 num-failed-collections)
+      (if (not= num-total-collections (+ num-failed-collections num-skipped-collections))
+        (str ", " num-skipped-collections " SKIPPED")
+        (str " and " num-skipped-collections " SKIPPED"))
+      (str num-skipped-collections " SKIPPED"))))
+
+(defn- generate-updated-msg
+  "Generate the UPDATED part of the status message."
+  [num-failed-collections num-skipped-collections num-total-collections]
+  (let [num-updated-collections (- num-total-collections 
+                                   (+ num-failed-collections num-skipped-collections))]
+    (when (not= 0 num-updated-collections)
+      (if (or (not= 0 num-failed-collections) (not= 0 num-skipped-collections))
+        (str " and " num-updated-collections " UPDATED")
+        (str num-updated-collections " UPDATED")))))
+
 (defn generate-task-status-message
-  "Generate overall status message based on number of collection failures."
-  [num-failed-collections num-total-collections]
-  (if (= 0 num-failed-collections)
+  "Generate overall status message based on number of collection failures and skips."
+  [num-failed-collections num-skipped-collections num-total-collections]
+  (if (and (= 0 num-failed-collections) (= 0 num-skipped-collections))
     "All collection updates completed successfully."
-    (format "Task completed with %d collection update failures out of %d"
-      num-failed-collections num-total-collections)))
+    (str "Task completed with " 
+         (generate-failed-msg num-failed-collections)  
+         (generate-skipped-msg num-failed-collections num-skipped-collections num-total-collections) 
+         (generate-updated-msg num-failed-collections num-skipped-collections num-total-collections) 
+         " out of " 
+         num-total-collections 
+         " total collection update(s).")))  
 
 (defprotocol BulkUpdateStore
   "Defines a protocol for getting and storing the bulk update status and task-id
@@ -87,27 +118,22 @@
   (create-and-save-bulk-update-status
     [db provider-id json-body concept-ids]
     ;; In a transaction, add one row to the task status table and for each concept
-    (try
-      (j/with-db-transaction
-        [conn db]
-        (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
-              statement (str "INSERT INTO bulk_update_task_status "
-                             "(task_id, provider_id, name, request_json_body, status)"
-                             "VALUES (?, ?, ?, ?, ?)")
-              name (get (json/parse-string json-body) "name" task-id)
-              values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
-          (j/db-do-prepared db statement values)
-          ;; Write a row to collection status for each concept id
-          (apply j/insert! conn
-                 "bulk_update_coll_status"
-                 ["task_id" "concept_id" "status"]
-                 ;; set :transaction? false since we are already inside a transaction
-                 (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
-          task-id))
-      (catch Exception e
-        (errors/throw-service-error :invalid-data
-                                    [(str "Error creating creating bulk update status "
-                                          (.getMessage e))]))))
+    (j/with-db-transaction
+      [conn db]
+      (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
+            statement (str "INSERT INTO bulk_update_task_status "
+                           "(task_id, provider_id, name, request_json_body, status)"
+                           "VALUES (?, ?, ?, ?, ?)")
+            name (get (json/parse-string json-body) "name" task-id)
+            values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
+        (j/db-do-prepared db statement values)
+        ;; Write a row to collection status for each concept id
+        (apply j/insert! conn
+               "bulk_update_coll_status"
+               ["task_id" "concept_id" "status"]
+               ;; set :transaction? false since we are already inside a transaction
+               (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
+        task-id)))
 
   (update-bulk-update-task-status
     [db task-id status status-message]
@@ -137,11 +163,14 @@
                                                      (su/from "bulk_update_coll_status")
                                                      (su/where `(= :task-id ~task-id)))))
                pending-collections (filter #(= "PENDING" (:status %)) task-collections)
-               failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
+               failed-collections (filter #(= "FAILED" (:status %)) task-collections)
+               skipped-collections (filter #(= "SKIPPED" (:status %)) task-collections)]
            (when-not (seq pending-collections)
              (update-bulk-update-task-status db task-id "COMPLETE"
                                              (generate-task-status-message
-                                              (count failed-collections) (count task-collections)))))))
+                                              (count failed-collections)
+                                              (count skipped-collections)
+                                              (count task-collections)))))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
                                     [(str "Error creating updating bulk update collection status "

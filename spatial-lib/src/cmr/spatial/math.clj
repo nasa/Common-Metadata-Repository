@@ -1,7 +1,7 @@
 (ns cmr.spatial.math
-  (:require
+  [:require
    [cmr.common.util :as util]
-   [primitive-math])
+   [primitive-math]]
   (:import net.jafama.StrictFastMath))
 
 (primitive-math/use-primitive-operators)

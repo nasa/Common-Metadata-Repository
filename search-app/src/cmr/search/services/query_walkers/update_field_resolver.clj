@@ -3,8 +3,7 @@
   (:require
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.util :as util]
-   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf]))
+   [cmr.common.util :as util]))
 
 (defprotocol UpdateQueryForField
   "Defines functions to adjust query to either remove a field from the query or update the name of

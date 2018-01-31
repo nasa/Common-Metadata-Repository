@@ -4,7 +4,7 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
+   [cmr.search.services.query-execution.facets.collection-v2-facets :as frf2]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
@@ -69,7 +69,7 @@
 
 (deftest all-facets-v2-test
   (dev-sys-util/eval-in-dev-sys
-   `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+   `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
      true))
   (let [token (e/login (s/context) "user1")
         coll1 (fu/make-coll 1 "PROV1"
@@ -129,7 +129,7 @@
         (is (fu/applied? response :instrument-h))
         (is (fu/applied? response :processing-level-id-h)))))
   (dev-sys-util/eval-in-dev-sys
-   `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+   `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
      false)))
 
 (def science-keywords-all-applied
@@ -676,7 +676,7 @@
 
     (testing "variable facets enabled"
       (dev-sys-util/eval-in-dev-sys
-       `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+       `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
          true))
       ;; We only check the top level variables facet for convenience since the whole
       ;; hierarchical structure of variables facet has been covered in all facets test.
@@ -709,7 +709,7 @@
           (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))
       (dev-sys-util/eval-in-dev-sys
-       `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+       `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
          false)))))
 
 (comment

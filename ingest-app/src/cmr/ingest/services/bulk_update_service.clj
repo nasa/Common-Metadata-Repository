@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.concepts :as concepts]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -26,12 +27,20 @@
   (str "application/vnd.nasa.cmr.umm+json;version=" (config/collection-umm-version)))
 
 (def complete-status
-  "Indicates bulk update operation finished successfully."
+  "Indicates bulk update operation finished."
   "COMPLETE")
+
+(def updated-status
+  "Indicates the collection is updated."
+  "UPDATED")
 
 (def failed-status
   "Indicates bulk update operation completed with errors"
   "FAILED")
+
+(def skipped-status
+  "Indicates bulk update operation is skipped because no find-value is found."
+  "SKIPPED")
 
 (def add-to-existing 
   "Represents ADD_TO_EXISTING update type"
@@ -97,6 +106,51 @@
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
 
+(defn- get-provider-collection-concept-ids
+  "Returns a list of collection concept ids for a given provider-id.
+   Raise error if no collections are found."
+  [context provider-id]
+  (let [collections (mdb/find-collections context 
+                                          {:provider-id provider-id
+                                           :latest true})
+        collections (remove :deleted collections)]
+    (if (seq collections)
+      (map :concept-id collections)
+      (errors/throw-service-errors
+        :bad-request
+        [(format "There are no collections that have not been deleted for provider [%s]." provider-id)]))))
+
+(defn- get-collection-concept-id-validation-err-msgs
+  "Returns the concept-id validation msgs"
+  [concept-ids]
+  (for [id concept-ids
+        :let [err-msg (concepts/concept-id-validation id)
+              err-msg 
+               (if err-msg
+                 err-msg
+                 (when-not (string/starts-with? id "C")
+                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))] 
+        :when err-msg]
+    err-msg))
+
+(defn- validate-concept-ids
+  "Validate concept-ids. Raise error if there exist invalid concept-ids."
+  [concept-ids]
+  (when-not (= ["ALL"] (map string/upper-case concept-ids))
+    (let [err-msgs (get-collection-concept-id-validation-err-msgs concept-ids)]
+      (when (seq err-msgs)
+        (errors/throw-service-errors
+          :bad-request
+          [(string/join ", " err-msgs)])))))
+
+(defn- get-concept-ids
+  "Get the concept-ids from either the concept-ids passed in or
+   from the provider."
+  [context concept-ids provider-id]
+  (if (= ["ALL"] (map string/upper-case concept-ids))
+    (get-provider-collection-concept-ids context provider-id)
+    concept-ids))
+
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
   and collection statuses, and queueu bulk update. Return task id, which comes
@@ -105,9 +159,21 @@
   (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
+        _ (validate-concept-ids concept-ids)
+        concept-ids (get-concept-ids context concept-ids provider-id)
+        bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
         ;; Write db rows - one for overall status, one for each concept id
-        task-id (data-bulk-update/create-bulk-update-task context
-                 provider-id json concept-ids)]
+        task-id (try 
+                  (data-bulk-update/create-bulk-update-task 
+                    context provider-id json concept-ids)
+                (catch Exception e
+                  (let [msg (.getMessage e)
+                        msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
+                              "Bulk update name needs to be unique within the provider."
+                              msg)] 
+                    (errors/throw-service-errors
+                      :invalid-data
+                      [(str "Error creating bulk update task: " msg)]))))]
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
       context
@@ -129,19 +195,22 @@
        user-id)))))
 
 (defn- update-collection-concept
-  "Perform the update on the collection and update the concept"
+  "Perform the update on the collection and update the concept.
+   Returns the updated concept or nil if the concept is not found through find-value."
   [context concept bulk-update-params user-id]
   (let [{:keys [update-type update-field find-value update-value]} bulk-update-params
         update-type (csk/->kebab-case-keyword update-type)
-        update-field (csk/->PascalCaseKeyword update-field)]
-    (-> concept
-        (assoc :metadata (field-update/update-concept context concept update-type
+        update-field (csk/->PascalCaseKeyword update-field)
+        updated-metadata (field-update/update-concept context concept update-type
                                                       [update-field] update-value find-value
-                                                      update-format))
-        (assoc :format update-format)
-        (update :revision-id inc)
-        (assoc :revision-date (time-keeper/now))
-        (assoc :user-id user-id))))
+                                                      update-format)]
+    (when (some? updated-metadata)
+      (-> concept
+          (assoc :metadata updated-metadata) 
+          (assoc :format update-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
 
 (defn- validate-and-save-collection
   "Put concept through ingest validation. Attempt save to
@@ -177,18 +246,34 @@
         provider-id
         false)))))
 
+(defn- update-concept-and-status
+  "Perform update for the collection concept and collection status."
+  [context task-id concept concept-id bulk-update-params user-id] 
+  (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
+    (let [warnings (validate-and-save-collection context updated-concept)]
+      (data-bulk-update/update-bulk-update-task-collection-status
+        context task-id concept-id updated-status (create-success-status-message warnings)))
+    (data-bulk-update/update-bulk-update-task-collection-status
+      context task-id concept-id skipped-status
+      (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
+
 (defn handle-collection-bulk-update-event
-  "Perform update for the given concept id. Log an error status if the concept
-  cannot be found."
+  "Perform update for the given concept id. Log an error status if the concept-id is not associated
+  with the provider-id, or if the concept cannot be found, or if the concept doesn't contain the find-value."
   [context provider-id task-id concept-id bulk-update-params user-id]
   (try
-    (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (let [updated-concept (update-collection-concept context concept bulk-update-params user-id)
-            warnings (validate-and-save-collection context updated-concept)]
-        (data-bulk-update/update-bulk-update-task-collection-status
-         context task-id concept-id complete-status (create-success-status-message warnings)))
+    (if-not (string/ends-with? concept-id provider-id)    
       (data-bulk-update/update-bulk-update-task-collection-status
-       context task-id concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
+        context task-id concept-id failed-status 
+        (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
+      (if-let [concept (mdb2/get-latest-concept context concept-id)]
+        (if (:deleted concept)
+          (data-bulk-update/update-bulk-update-task-collection-status
+            context task-id concept-id failed-status 
+            (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))   
+          (update-concept-and-status context task-id concept concept-id bulk-update-params user-id))
+        (data-bulk-update/update-bulk-update-task-collection-status
+          context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update

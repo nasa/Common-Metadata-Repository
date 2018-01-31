@@ -1,12 +1,21 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
-
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
-
+  :exclusions [
+    [commons-codec/commons-codec]
+    [commons-io]
+    [instaparse]
+    [org.apache.httpcomponents/httpclient]
+    [org.apache.httpcomponents/httpcore]
+    [org.slf4j/slf4j-api]
+    [ring/ring-codec]]
   :dependencies [
-    [clj-http "2.0.0"]
-    [compojure "1.5.1"]
+    [clj-http "2.3.0"]
+    [commons-codec/commons-codec "1.11"]
+    [commons-io "2.6"]
+    [compojure "1.6.0"]
     [drift "1.5.3"]
+    [instaparse "1.4.8"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
@@ -14,16 +23,20 @@
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [org.apache.httpcomponents/httpclient "4.5.4"]
+    [org.apache.httpcomponents/httpcore "4.4.8"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/tools.nrepl "0.2.12"]
-    [org.quartz-scheduler/quartz "2.2.2"]
-    [potemkin "0.4.3"]
-    [ring/ring-core "1.5.0"]
+    [org.clojure/tools.nrepl "0.2.13"]
+    [org.quartz-scheduler/quartz "2.3.0"]
+    [org.slf4j/slf4j-api "1.7.10"]
+    [potemkin "0.4.4"]
+    [ring/ring-codec "1.1.0"]
+    [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]]
   :plugins [
     [drift "1.5.3"]
-    [lein-exec "0.3.4"]
-    [test2junit "1.2.1"]]
+    [lein-exec "0.3.7"]
+    [test2junit "1.3.3"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -51,12 +64,15 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.3"]
-        [lein-ancient "0.6.10"]
-        [lein-bikeshed "0.4.1"]
-        [lein-kibit "0.1.2"]
-        [lein-shell "0.4.0"]
-        [venantius/yagni "0.1.4"]]}}
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.0"]
+        [lein-kibit "0.1.6"]
+        [lein-shell "0.5.0"]
+        [venantius/yagni "0.1.4"]]}
+    ;; The following profile is overriden on the build server or in the user's
+    ;; ~/.lein/profiles.clj file.
+    :internal-repos {}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
@@ -81,6 +97,6 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient" "all"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
 
