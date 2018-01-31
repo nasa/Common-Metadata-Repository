@@ -60,7 +60,7 @@ If anomaly-filename is not provided, anomaly_tests.csv will be used.
 
 For example, if you run `lein run analyze-test 5`, it will analyze test number 5 in anomaly_tests.csv and give you the
 following information, which helps explain why C1237114139-GES_DISC appears above C1239966794-GES_DISC: 
-Filtered search result is:  ({:id C1237114139-GES_DISC, :score 1.3104, :version_id 003, :short_name OMDOAO3, :processing_level_id 2} {:id C1239966794-GES_DISC, :score 1.008, :version_id 008, :short_name TOMSEPL2, :processing_level_id 2})
+Filtered search result is:  ({:id C1237114193-GES_DISC, :score 1.3104, :version_id 008, :short_name TOMSEPL2, :processing_level_id 2} {:id C1239966794-GES_DISC, :score 1.008, :version_id 003, :short_name OMDOAO3, :processing_level_id 2})
 
 ## License
 
