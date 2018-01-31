@@ -20,8 +20,10 @@
 
 (defn- add-concept-ids-to-search
   "Takes a search string and adds concept-ids to the search."
-  [query-string concept-ids-string]
-  (let [concept-ids (string/split concept-ids-string #",")
+  [query-string concept-ids]
+  (let [concept-ids (if (string? concept-ids)
+                      (string/split concept-ids #",")
+                      concept-ids)
         concept-ids-query-string (string/join "&concept_id[]=" concept-ids)]
     (format "%s&concept_id[]=%s" query-string concept-ids-query-string)))
 
