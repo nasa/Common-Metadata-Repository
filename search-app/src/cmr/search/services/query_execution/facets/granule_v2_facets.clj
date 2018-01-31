@@ -2,10 +2,12 @@
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
   granule fields. First major use case is supporting OPeNDAP virutal directories capability."
   (:require
+   [camel-snake-kebab.core :as csk]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]))
 
 (def granule-facet-params->elastic-fields
@@ -63,18 +65,24 @@
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :granule
   [concept-type base-url query-params aggs _]
-  (let [temporal-facets (temporal-facets/parse-temporal-buckets
-                         (-> aggs :start-date-doc-values :buckets)
-                         :year)
-        year-node (when (seq temporal-facets)
-                    (v2h/generate-group-node "Year"
-                                              false
-                                              temporal-facets))
-        ;; Will be added by CMR-4683 and CMR-4684
-        year-node (dissoc year-node :applied :type)
-        temporal-node (when year-node
-                        (v2h/generate-group-node (v2h/fields->human-readable-label :temporal)
-                                                 false
-                                                 [year-node]))
-        temporal-node (dissoc temporal-node :applied :type)]
-     [temporal-node]))
+  (let [subfacets (hv2/hierarchical-bucket-map->facets-v2
+                   :temporal-facet
+                   (:start-date-doc-values aggs)
+                   base-url
+                   query-params)]
+    (when (seq subfacets)
+      (let [field-reg-ex (re-pattern "temporal_facet.*")
+            applied? (->> query-params
+                          (filter (fn [[k v]] (re-matches field-reg-ex k)))
+                          seq
+                          some?)
+            subfacets-missing-label? (nil? (:title subfacets))
+            updated-subfacets (if subfacets-missing-label?
+                                (v2h/generate-group-node "Year" applied?
+                                                         (:children subfacets))
+                                (assoc subfacets :applied applied?))
+            ;; Return facets in reverse chronological order
+            updated-subfacets (update updated-subfacets :children reverse)]
+        [(merge v2h/sorted-facet-map
+                (v2h/generate-group-node "Temporal" applied?
+                                         [updated-subfacets]))]))))

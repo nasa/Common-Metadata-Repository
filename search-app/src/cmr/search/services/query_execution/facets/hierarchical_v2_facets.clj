@@ -11,14 +11,19 @@
    [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-   [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]))
+   [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
+   [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]))
 
 (defn- nested-fields-mappings
   "Returns nested field mappings for the given field, ignoring humanizer suffixes"
   [field]
   (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\.humanized$" "")]
-    (if (= "variables" stripped-field)
-      nested-field/variable-subfields
+    (condp = stripped-field
+      "variables" nested-field/variable-subfields
+      "temporal" nested-field/temporal-facet-subfields
+      "temporal-facet" nested-field/temporal-facet-subfields
+      "start-date-doc-values" nested-field/temporal-facet-subfields
+      ;; else
       (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 
 (defn- get-max-subfield-index
@@ -39,13 +44,15 @@
   depth of 3 levels (e.g. Category, Topic, and Term for science keywords) for science keywords,
   and 2 for variables."
   {:science-keywords-h 3
-   :variables-h 2})
+   :variables-h 2
+   :temporal 2})
 
 (def num-levels-below-subfield
   "Number of levels below the lowest level subfield to request for hierarchical aggregations queries
   from elastic."
   {:science-keywords-h 2
-   :variables-h 1})
+   :variables-h 1
+   :temporal 1})
 
 (defn get-depth-for-hierarchical-field
   "Returns what depth should be used when requesting aggregations for facets for a hierarchical
@@ -167,13 +174,19 @@
                          the part of the facets v2 response related to the passed in field."
   [recursive-parse-fn has-siblings-fn generate-links-fn field field-hierarchy elastic-aggregations]
   ;; Each value for this field has its own bucket in the elastic aggregations response
-  (for [bucket (get-in elastic-aggregations [field :buckets])
-        :let [value (:key bucket)
+  ;; Top level could be a field
+  (for [bucket (or (get-in elastic-aggregations [field :buckets] (get elastic-aggregations :buckets)))
+        :let [temporal? (some? (:key_as_string bucket))
+              value (if temporal?
+                      (temporal-facets/parse-date (:key_as_string bucket) field)
+                      (:key bucket))
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
               sub-facets (recursive-parse-fn value bucket)
               ;; Sort alphabetically
               sub-facets (when (seq (:children sub-facets))
                            (update sub-facets :children
+                                  ;  #(if temporal?
+                                  ;     (reverse (sort-by :title util/compare-natural-strings %))
                                    #(sort-by :title util/compare-natural-strings %)))
               children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
               has-siblings? (has-siblings-fn value)
@@ -237,7 +250,9 @@
                                                     generate-links-fn subfield field-hierarchy
                                                     elastic-aggs)]
        (when (seq children)
-         (v2h/generate-group-node (csk/->snake_case_string subfield) true children))))))
+         (v2h/generate-group-node (string/capitalize (csk/->snake_case_string subfield))
+                                  true
+                                  children))))))
 
 (defn- get-search-terms-for-hierarchical-field
   "Returns all of the search terms applied in the passed in query params for the provided
@@ -337,7 +352,7 @@
         (assoc updated-facet :children (:children earth-science-facets))))
     hierarchical-facet))
 
-(defn- hierarchical-bucket-map->facets-v2
+(defn hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
