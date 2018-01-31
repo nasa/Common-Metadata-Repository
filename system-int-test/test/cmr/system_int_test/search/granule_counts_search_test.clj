@@ -367,7 +367,7 @@
                [coll1 coll5])
         tag2 (tags/save-tag
                user1-token
-               (tags/make-tag {:tag-key "CWIC"})
+               (tags/make-tag {:tag-key "org.ceos.wgiss.cwic.granules.prod"})
                [coll2 coll6])]
     (index/wait-until-indexed)
 
