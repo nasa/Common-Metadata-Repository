@@ -351,7 +351,7 @@
                :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))))))
 
-(deftest search-collections-include-cwic-collections-test
+(deftest search-collections-has-granules-or-cwic-test
   (let [coll1 (make-coll 1 m/whole-world nil)
         coll2 (make-coll 2 m/whole-world nil)
         coll3 (make-coll 3 m/whole-world nil)
@@ -368,8 +368,8 @@
         tag2 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "CWIC"})
-               [coll2 coll6])
-        _ (index/wait-until-indexed)]
+               [coll2 coll6])]
+    (index/wait-until-indexed)
 
     ;; coll1
     ;; non-cwic tagged with granule

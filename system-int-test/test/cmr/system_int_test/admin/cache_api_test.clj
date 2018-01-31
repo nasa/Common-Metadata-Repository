@@ -111,6 +111,7 @@
          "acls"
          "collections-for-gran-acls"
          "has-granules-map"
+         "has-granules-or-cwic-map"
          "health"
          "humanizer-report-cache"
          "index-names"
