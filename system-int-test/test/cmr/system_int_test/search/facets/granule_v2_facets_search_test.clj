@@ -183,3 +183,19 @@
           "2010" "2010" 2
           "2011" "2011" 1
           "2012" "2012" 1)))))
+      ; (testing "All of the years include a link to apply that year to the search."
+      ;   (let [links (get-links year-facets)]
+      ;     (is (= 4 (count links)))
+      ;     (doseq [[link-type url] (map :links year-facets)]
+      ;       (is (= :apply link-type)))))
+      ; (testing "When selecting a link the search results only contain granules for that year."
+      ;   (let [response (traverse-link "2011" year-facets)
+      ;         updated-year-facets (get-in response [:results :facets])]
+      ;     (is (= gran2011-1 (get-gran-from-json-response response)))
+      ;     (is (= :remove (get-link-type "2011" updated-year-facets)))))
+      ; (testing "When multiple years are selected the search results contain granules from either year."
+      ;     (let [response (traverse-link "1999" updated-year-facets)
+      ;           updated-year-facets (get-in response [:results :facets])]
+      ;       (is (= [gran1999-1 gran2011-1] (get-gran-from-json-response response)))
+      ;       (is (= :remove (get-link-type "2011" updated-year-facets)))
+      ;       (is (= :remove (get-link-type "1999" updated-year-facets))))))))
