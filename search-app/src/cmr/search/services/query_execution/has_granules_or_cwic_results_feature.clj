@@ -73,11 +73,6 @@
                          (idx/get-collection-granule-counts context nil)
                          (get-cwic-collections context nil)))))))
 
-;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
-(defmethod query-execution/post-process-query-result-feature :has-granules-or-cwic
-  [context query elastic-results query-results feature]
-  (assoc query-results :has-granules-or-cwic-map (get-has-granules-or-cwic-map context)))
-
 (defjob RefreshHasGranulesOrCwicMapJob
   [ctx system]
   (refresh-has-granules-or-cwic-map {:system system}))

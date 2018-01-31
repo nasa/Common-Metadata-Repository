@@ -290,9 +290,7 @@
 
 (defmethod common-params/parameter->condition :has-granules-or-cwic
   [_ _ _ value _]
-  (if (= "unset" value)
-    cqm/match-all
-    (qm/->HasGranulesOrCwicCondition (= "true" value))))
+  (qm/->HasGranulesOrCwicCondition (= "true" value)))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
