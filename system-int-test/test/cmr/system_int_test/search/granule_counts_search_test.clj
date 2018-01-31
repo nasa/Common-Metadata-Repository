@@ -397,4 +397,10 @@
       (d/refs-match? [coll1 coll3 coll6 coll2]
                      (search/find-refs :collection
                                        {:has_granules_or_cwic true}
+                                       {:snake-kebab? false})))
+
+    (testing "Search with has-granules-or-cwic feature"
+      (d/refs-match? [coll4 coll5 coll6]
+                     (search/find-refs :collection
+                                       {:has_granules_or_cwic false}
                                        {:snake-kebab? false})))))

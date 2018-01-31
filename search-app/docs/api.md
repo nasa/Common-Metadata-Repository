@@ -1612,6 +1612,12 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
     curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
+#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection is tagged with the configured CWIC tag.
+
+When `has_granules_or_cwic` is set to "true" or "false", results will be restricted to collections with or without granules or with or without the configured CWIC tag, respectively.
+
+    curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
+
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
