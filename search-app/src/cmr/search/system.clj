@@ -140,6 +140,7 @@
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
+                          hgrf/refresh-has-granules-or-cwic-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job
