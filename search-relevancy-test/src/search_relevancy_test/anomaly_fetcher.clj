@@ -42,7 +42,7 @@
                  {:form-params {:concept-id concept-ids
                                 :page-size 2000}
                   :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
-        response (client/post url)
+        response (client/post url options)
         items (:items (json/parse-string (:body response) true))]
     (into {}
           (for [item items

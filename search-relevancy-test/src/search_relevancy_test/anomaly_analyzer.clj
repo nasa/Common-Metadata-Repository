@@ -11,8 +11,8 @@
   "Get the test data from the CSV file - need the concept ids we want to look at
   and the search params. If the anomaly has multiple tests, we get the data for
   all of the tests."
-  [anomaly-number]
-  (let [csv-data (core/read-anomaly-test-csv)
+  [anomaly-number file-name]
+  (let [csv-data (core/read-anomaly-test-csv file-name)
         tests (filter #(= (str anomaly-number) (:anomaly %))
                       csv-data)
         concept-ids (distinct
@@ -37,10 +37,12 @@
 (defn analyze-test
  "Get relevancy-related data for concepts in the test by performing the search
  and filtering by concept"
- [anomaly-number]
- (let [test (get-test-data anomaly-number)
-       search-results (relevancy-test/perform-search test nil)]
-   (filter-search-results search-results test)))
+ ([anomaly-number]
+  (analyze-test anomaly-number core/provider-anomaly-filename))
+ ([anomaly-number file-name]
+  (let [test (get-test-data anomaly-number file-name)
+        search-results (relevancy-test/perform-search test nil)]
+    (println "Filtered search result is: " (filter-search-results search-results test)))))
 
 (comment
  (analyze-test 39))

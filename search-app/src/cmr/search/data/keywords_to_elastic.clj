@@ -51,7 +51,7 @@
   "Field boosts to use if not provided."
   {:short-name 1.4
    :entry-id 1.4
-   :project 1.3
+   :project 1.0
    :platform 1.3
    :instrument 1.2
    :science-keywords 1.2
