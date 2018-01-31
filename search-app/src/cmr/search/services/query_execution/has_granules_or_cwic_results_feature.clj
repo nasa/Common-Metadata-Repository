@@ -24,7 +24,7 @@
 
 (defconfig cwic-tag
   "has-granules-or-cwic should also return any collection with configured cwic-tag"
-  {:default "CWIC"})
+  {:default "org.ceos.wgiss.cwic.granules.prod"})
 
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
