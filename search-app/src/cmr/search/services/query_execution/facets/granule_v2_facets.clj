@@ -76,8 +76,8 @@
                           (filter (fn [[k v]] (re-matches field-reg-ex k)))
                           seq
                           some?)
-            subfacets-missing-label? (nil? (:title subfacets))
-            updated-subfacets (if subfacets-missing-label?
+            subfacets-missing-title? (nil? (:title subfacets))
+            updated-subfacets (if subfacets-missing-title?
                                 (v2h/generate-group-node "Year" applied?
                                                          (:children subfacets))
                                 (assoc subfacets :applied applied?))

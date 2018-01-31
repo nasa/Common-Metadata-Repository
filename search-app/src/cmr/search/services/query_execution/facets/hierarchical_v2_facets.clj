@@ -20,9 +20,7 @@
   (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\.humanized$" "")]
     (condp = stripped-field
       "variables" nested-field/variable-subfields
-      "temporal" nested-field/temporal-facet-subfields
       "temporal-facet" nested-field/temporal-facet-subfields
-      "start-date-doc-values" nested-field/temporal-facet-subfields
       ;; else
       (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 

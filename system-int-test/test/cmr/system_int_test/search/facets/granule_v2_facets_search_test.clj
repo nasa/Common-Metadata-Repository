@@ -1,6 +1,8 @@
 (ns cmr.system-int-test.search.facets.granule-v2-facets-search-test
   "This tests retrieving v2 facets when searching for granules."
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.query-validation :as cqv]
    [cmr.common.util :as util]
@@ -17,7 +19,7 @@
 (defn- search-and-return-v2-facets
   "Returns only the facets from a v2 granule facets search request."
   [search-params]
-  (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
+  (let [query-params (merge {:page-size 0 :include-facets "v2"} search-params)]
     (get-in (search/find-concepts-json :granule query-params) [:results :facets])))
 
 (deftest granule-facet-tests
@@ -134,6 +136,36 @@
   (let [relevant-facet (first (filter #(= title (:title %)) facets))]
     (:count relevant-facet)))
 
+(defn get-links
+  "Returns the links from within the provided facets."
+  [facets]
+  (mapcat :links facets))
+
+(defn traverse-link
+  "Finds the link for the given facet title and navigates to that link, returning the response."
+  [title facets]
+  (let [facet-node (first (filter #(= title (:title %)) facets))
+        [link-type url] (first (:links facet-node))]
+    (is (some #{link-type} [:remove :apply]))
+    (when url
+      (client/get url))))
+
+(defn assert-granules-match
+  "Tests that the passed in expected granule matches the result returned in the JSON granule
+  response."
+  [expected-granules granule-json-response]
+  (is (= (count expected-granules)
+         (count granule-json-response)))
+  (is (= (set (map :concept-id expected-granules))
+         (set (map :id granule-json-response)))))
+
+(defn get-link-type
+  "Returns the link type for the given facet title and facets response."
+  [title facets]
+  (let [facet-node (first (filter #(= title (:title %)) facets))
+        [link-type url] (first (:links facet-node))]
+    link-type))
+
 (deftest temporal-facets-test
   (let [coll (d/ingest-umm-spec-collection
               "PROV1"
@@ -166,7 +198,8 @@
                                               :beginning-date-time "2012-12-25T12:00:00Z"
                                               :ending-date-time "2013-03-01T12:00:00Z"}))]
     (index/wait-until-indexed)
-    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})
+    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"
+                                               :page_size 10})
           year-facets (-> facets :children first :children first :children)]
       (testing "Facet structure correct"
         (is (= "Browse Granules" (:title facets)))
@@ -178,24 +211,31 @@
         (util/are3
           [title cnt]
           (is (= cnt (get-count-by-title year-facets title)))
-
           "1999" "1999" 1
           "2010" "2010" 2
           "2011" "2011" 1
-          "2012" "2012" 1)))))
-      ; (testing "All of the years include a link to apply that year to the search."
-      ;   (let [links (get-links year-facets)]
-      ;     (is (= 4 (count links)))
-      ;     (doseq [[link-type url] (map :links year-facets)]
-      ;       (is (= :apply link-type)))))
-      ; (testing "When selecting a link the search results only contain granules for that year."
-      ;   (let [response (traverse-link "2011" year-facets)
-      ;         updated-year-facets (get-in response [:results :facets])]
-      ;     (is (= gran2011-1 (get-gran-from-json-response response)))
-      ;     (is (= :remove (get-link-type "2011" updated-year-facets)))))
-      ; (testing "When multiple years are selected the search results contain granules from either year."
-      ;     (let [response (traverse-link "1999" updated-year-facets)
-      ;           updated-year-facets (get-in response [:results :facets])]
-      ;       (is (= [gran1999-1 gran2011-1] (get-gran-from-json-response response)))
-      ;       (is (= :remove (get-link-type "2011" updated-year-facets)))
-      ;       (is (= :remove (get-link-type "1999" updated-year-facets))))))))
+          "2012" "2012" 1))
+      (testing "All of the years include a link to apply that year to the search."
+        (let [links (mapcat :links year-facets)]
+          (is (= 4 (count links)))
+          (doseq [[link-type url] links]
+            (is (= :apply link-type)))))
+      (testing "When selecting a link the search results only contain granules for that year."
+        (let [response (traverse-link "2011" year-facets)
+              parsed-body (json/parse-string (:body response) true)
+              updated-facets (get-in parsed-body [:feed :facets])
+              granules-response (get-in parsed-body [:feed :entry])
+              updated-year-facets (-> updated-facets :children first :children first :children)]
+          (assert-granules-match [gran2011-1] granules-response)
+          (is (= :remove (get-link-type "2011" updated-year-facets)))
+          (testing "Navigating to a remove link removes the search filter"
+            (let [;; Note that the test above traversed to 2011,
+                  ;; so the 2011 link is now a remove link
+                  response (traverse-link "2011" updated-year-facets)
+                  parsed-body (json/parse-string (:body response) true)
+                  updated-facets (get-in parsed-body [:feed :facets])
+                  granules-response (get-in parsed-body [:feed :entry])
+                  updated-year-facets (-> updated-facets :children first :children first :children)]
+              (assert-granules-match [gran1999-1 gran2010-1 gran2010-2 gran2011-1 gran2012-boundary]
+                                     granules-response)
+              (is (= :apply (get-link-type "2011" updated-year-facets))))))))))
