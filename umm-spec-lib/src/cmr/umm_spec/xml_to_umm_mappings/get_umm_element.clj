@@ -10,8 +10,9 @@
   "Get collection progress value of UMM based on coll-progress-mapping and xml-path
    If the upper case of the xml-value at xml-path is mapped to a value in coll-progress-mapping,
    that value will be used for collection progress. Otherwise, use \"NOT PROVIDED\""
-  [coll-progress-mapping doc xml-path]
+  [coll-progress-mapping doc xml-path sanitize?]
   (get coll-progress-mapping
        (when-let [xml-value (value-of doc xml-path)]
          (string/upper-case xml-value))
-       umm-spec-util/NOT-PROVIDED))
+       (when sanitize?
+         umm-spec-util/NOT-PROVIDED)))
