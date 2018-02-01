@@ -38,7 +38,8 @@
 
 (defmethod v2-facets/v2-facets-root :granule
   [_]
-  {:title "Browse Granules"})
+  {:title "Browse Granules"
+   :type :group})
 
 (defmethod v2-facets/v2-facets-result-field-in-order :granule
   [_]
