@@ -36,17 +36,28 @@ subcommand hints.
 
 EOH
 
-BIN_DIR=`dirname $0`
-if [[ $BIN_DIR = "" ]]; then
-    BIN_DIR="."
-fi
-CMR_DIR=`dirname $BIN_DIR`
+### Script Bootstrapping
 
+function get_bin_dir () {
+    SCRIPT=$1
+    echo $(cd "$(dirname "$SCRIPT")" && pwd -P)
+}
+
+function get_cmr_dir () {
+    SCRIPT="$1"
+    echo $(dirname $(get_bin_dir "$SCRIPT"))
+}
+
+CMR_DIR=`get_cmr_dir $0`
+BIN_DIR=`get_bin_dir $0`
 export PATH=$PATH:$BIN_DIR
 
-# Load these first
+# Load this first
 source $BIN_DIR/functions/common.sh
-# Then these
+
+# The rest of these depend upon common.sh
+source $BIN_DIR/functions/build.sh
+source $BIN_DIR/functions/clean.sh
 source $BIN_DIR/functions/git.sh
 source $BIN_DIR/functions/install.sh
 source $BIN_DIR/functions/setup.sh
@@ -55,8 +66,6 @@ source $BIN_DIR/functions/start.sh
 source $BIN_DIR/functions/status.sh
 source $BIN_DIR/functions/stop.sh
 source $BIN_DIR/functions/test.sh
-# Finally these (which depend upon one or more of the others)
-source $BIN_DIR/functions/build.sh
 
 COMMAND=$1
 SUBCOMMAND=$2
@@ -79,14 +88,46 @@ case "$COMMAND" in
                 build_uberdocker $OPT
                 ;;
             uberjar)
+                PROJECT=$3
+                if [[ -z "$PROJECT" ]]; then
+                    echo "Project required; exiting ..."
+                    exit 127
+                fi
                 build_uberjar_proj $PROJECT
                 ;;
             uberjars)
                 build_uberjars
                 ;;
             *)
-                subcmd_not_found $COMMAND
-                exit 127
+                if [[ -z "$PROJECT" ]]; then
+                    build_all
+                else
+                    subcmd_not_found $COMMAND
+                    exit 127
+                fi
+                ;;
+            esac
+            ;;
+    clean)
+        PROJECT=$3
+        case "$SUBCOMMAND" in
+            all)
+                clean_all
+                ;;
+            es-data)
+                PROJECT=$3
+                clean_es_data
+                ;;
+            help|-h|--help)
+                echo "$CLEAN_HELP"
+                ;;
+            *)
+                PROJECT=$3
+                if [[ -z "$PROJECT" ]]; then
+                    clean_all
+                else
+                    clean_proj $PROJECT
+                fi
                 ;;
             esac
             ;;
@@ -200,6 +241,9 @@ case "$COMMAND" in
             help|-h|--help)
                 echo "$SETUP_HELP"
                 ;;
+            profile)
+                setup_profile
+                ;;
             *)
                 subcmd_not_found $COMMAND
                 exit 127
@@ -213,7 +257,7 @@ case "$COMMAND" in
                 get_cmr_port $PROJECT
                 ;;
             help|-h|--help)
-                echo "$STATUS_HELP"
+                echo "$SHOW_HELP"
                 ;;
             log)
                 PROJECT=$3
@@ -229,6 +273,13 @@ case "$COMMAND" in
                 ;;
             log-tests)
                 show_log_tests $PROJECT
+                ;;
+            port-process)
+                PORT=$3
+                show_port_process $PORT
+                ;;
+            sqs-queues)
+                show_sqs_queues
                 ;;
             *)
                 subcmd_not_found $COMMAND
@@ -260,6 +311,9 @@ case "$COMMAND" in
                         ;;
                 esac
                 ;;
+            repl)
+                start_repl
+                ;;
             uberjar)
                 PROJECT=$3
                 start_uberjar_proj $PROJECT
@@ -286,6 +340,9 @@ case "$COMMAND" in
                 ;;
             help|-h|--help)
                 echo "$STATUS_HELP"
+                ;;
+            sqs-sns)
+                status_sqs_sns
                 ;;
             uberjar)
                 PROJECT=$3
@@ -341,16 +398,16 @@ case "$COMMAND" in
                 test_all
                 ;;
             help|-h|--help)
-                echo "$STATUS_HELP"
+                echo "$TEST_HELP"
                 ;;
             cicd)
                 test_cicd
                 ;;
-            deps-tree)
+            dep-tree)
                 PROJECT=$3
                 test_dep_tree_proj $PROJECT
                 ;;
-            deps-trees)
+            dep-trees)
                 test_dep_trees
                 ;;
             lint)

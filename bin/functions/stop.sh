@@ -25,9 +25,18 @@ function stop_local_sqs_sns () {
 
 function stop_uberjar_proj () {
     PROJ=$1
-    PID=`cat ${PID_FILE_PREFIX}${PROJ}`
-    echo "Stopping CMR $PROJ running with pid $PID ..."
-    kill -9 $PID
+    PID_FILE=`get_pid_file $PROJ`
+    PID=`get_pid $PROJ`
+    echo "Attempting to stop the CMR using the administrative command URL ..."
+    curl -v -XPOST http://localhost:2999/stop
+    sleep 3
+    if [[ -f "$PID_FILE" && `cmr status uberjar dev-system` = "RUNNING" ]]; then
+    	echo "CMR app '$PROJ' still running; forcibly stopping process with pid $PID ..."
+        kill -9 $PID
+    fi
+    if [[ -f "$PID_FILE" && `cmr status uberjar dev-system` != "RUNNING" ]]; then
+    	rm $PID_FILE
+    fi
 }
 
 function stop_docker_proj () {

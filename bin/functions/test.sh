@@ -54,6 +54,11 @@ function test_cicd {
     cmr start uberjar dev-system
     if [ $? -ne 0 ] ; then
         echo "Failed to build and start up dev-system" >&2
+        echo
+        echo "Log for dev-system:"
+        cat $CMR_LOG_DIR/dev-system.log
+        echo "End of dev-system log."
+        echo
         exit 127
     fi
     echo "Timestamp:" `date`
@@ -62,16 +67,13 @@ function test_cicd {
     if [ $? -ne 0 ] ; then
         echo "Failed Tests" >&2
         cmr show log-tests
-        (curl -XPOST http://localhost:2999/stop; true)
+        cmr stop uberjar dev-system
         exit 127
     fi
     cmr show log-tests
     echo "Timestamp:" `date`
-    echo "Stopping applications ..." &&
-    (curl -XPOST http://localhost:2999/stop; true)
-    if [ `cmr status uberjar dev-system` = "RUNNING" ]; then
-        cmr stop uberjar dev-system
-    fi
+    echo "Stopping applications ..."
+    cmr stop uberjar dev-system
 }
 
 function test_dep_tree_proj {
