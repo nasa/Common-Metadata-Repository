@@ -3,6 +3,8 @@ IFS='' read -r -d '' BUILD_HELP <<'EOH'
 
 Usage: cmr build [SUBCOMMANDS]
 
+With no subcommand, will perform the 'cmr build all' operation.
+
 Defined subcommands:
 
     all            - Perform all basic build tasks. Prerequisite tasks include
@@ -48,36 +50,33 @@ Notes on the ENV variables:
 EOH
 
 function build_uberjar_proj {
-    echo "Timestamp:" `date`
-    echo "Building '$1' uberjar ..."
+    PROJ=$1
+    echo "Building '$PROJ' uberjar ..."
     if [ "$CMR_INTERNAL_NEXUS_REPO" = "true" ]; then
-        (cd $CMR_DIR/$1 && \
+        (cd $CMR_DIR/$PROJ && \
             lein with-profile +uberjar,+internal-repos do clean, uberjar)
     else
-        (cd $CMR_DIR/$1 && \
+        (cd $CMR_DIR/$PROJ && \
             lein with-profile +uberjar do clean, uberjar)
     fi
     if [ $? -ne 0 ] ; then
-        echo "Failed to generate '$1' uberjar" >&2
-        exit 1
+        echo "Failed to generate '$PROJ' uberjar" >&2
+        exit 127
     fi
 }
 
 function build_uberjars {
-    echo "Timestamp:" `date`
-    if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
-        echo "Building uberjars ..."
-        if [ "$CMR_INTERNAL_NEXUS_REPO" = "true" ]; then
-            (cd $CMR_DIR && \
-                lein with-profile +uberjar,+internal-repos modules uberjar)
-        else
-            (cd $CMR_DIR && \
-                lein with-profile +uberjar modules uberjar)
-        fi
-        if [ $? -ne 0 ] ; then
-            echo "Failed to generate uberjars" >&2
-            exit 1
-        fi
+    echo "Building uberjars ..."
+    if [ "$CMR_INTERNAL_NEXUS_REPO" = "true" ]; then
+        (cd $CMR_DIR && \
+            lein with-profile +uberjar,+internal-repos modules do clean, uberjar)
+    else
+        (cd $CMR_DIR && \
+            lein with-profile +uberjar modules do clean, uberjar)
+    fi
+    if [ $? -ne 0 ] ; then
+        echo "Failed to generate uberjars" >&2
+        exit 127
     fi
 }
 
@@ -95,16 +94,6 @@ function build_all {
     fi
     build_uberjars
     build_uberjar_proj dev-system
-}
-
-function build_uberjar_proj {
-    echo "Timestamp:" `date`
-    echo "Building '$1' uberjar ..."
-    (cd $CMR_DIR/$1 && lein do clean, uberjar)
-    if [ $? -ne 0 ] ; then
-        echo "Failed to generate '$1' uberjar" >&2
-        exit 1
-    fi
 }
 
 function oracle_download_instructions () {
@@ -188,5 +177,5 @@ function build_uberdocker () {
     elif [[ $OPT == "together" || -z $1 ]]; then
         build_docker_proj dev-system
     fi
-    clean_targets
+    cmr clean
 }

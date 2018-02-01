@@ -52,6 +52,8 @@
       ["do"
         ["stop-sqs-sns"]
         ["start-sqs-sns"]]
+    ;; Dev
+    "clean-all" ["modules" "do" "clean"]
     "repl"
       ["shell"
        "echo" "You need to be in the `dev-system` directory for that."]

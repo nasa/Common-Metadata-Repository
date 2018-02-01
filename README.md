@@ -63,6 +63,15 @@ run the entire CMR with no external dependencies from this Jar file and use
 that instance for local testing. The sections below contain instructions for
 running the CMR as a single process or as multiple processes.
 
+#### First Steps
+
+1. Ensure you have installed on your system the items listed above in the
+   "Prerequisites" section.
+1. Download the Oracle JDBC `.jar` files into `./oracle-libs/support` by
+   following instructions in `./oracle-lib/README.md`. (The CMR must have these
+   libraries to build but it does not depend on Oracle DB when running
+   locally. It uses a local in-memory database by default.)
+
 #### Using the `cmr` CLI Tool
 
 This project has its own tool that is used for everything from initial setup to
@@ -74,21 +83,16 @@ export PATH=$PATH:`pwd`/bin
 source resources/shell/cmr-bash-autocomplete
 ```
 
+If you use another system shell, we'll except a PR with auto-complete for it.
+
 #### Building and Running CMR Dev System in a REPL
 
-1. Ensure you have installed on your system the items listed above in the
-   "Prerequisites" section.
-2. Install Oracle JDBC Jars into your local maven repository following
-   instructions in `oracle-lib/README.md`. The CMR must have these
-   libraries to build but it does not depend on Oracle DB when running
-   locally. It uses a local in-memory database by default.
-3. Copy `profiles.example.clj` to `profiles.clj` and update, according to
-   personal instruction provided by a CMR code developer.
-4. `cmr install oracle-libs`
-5. `cmr setup dev`
-6. `cd dev-system`
-7. `lein repl`
-8. Once given a Clojure prompt, run `(reset)`
+1. `cmr install oracle-libs`
+1. `cmr setup profile` and then update the new `./dev-system/profiles.clj`
+   according to personal instructions provided by a CMR code developer.
+1. `cmr setup dev`
+1. `cmr start repl`
+1. Once given a Clojure prompt, run `(reset)`
 
 Note that the `reset` action could potentially take a while, not only due to
 the code reloading for a large number of namespaces, but for bootstrapping
@@ -114,12 +118,12 @@ appropriate `target` directory for each application. The command shown in step
 `Applications` section below. Note: Steps 1 and 2 only need to be completed
 once.
 
-1. `cmr build uberjar PROJ`
-2. `cmr run uberjar PROJ`
+1. `cmr build uberjar APP`
+2. `cmr run uberjar APP`
 
-Where `PROJ` is any supported CMR app. You can touble-tap the `TAB` key on
+Where `APP` is any supported CMR app. You can touble-tap the `TAB` key on
 your keyboard to get the `cmr` tool to show you the list of availble apps
-after entering `uberjar` in each command.
+after entering `uberjar` in each step above.
 
 ## Checking Dependencies, Static Analysis, and Tests
 
@@ -129,48 +133,37 @@ all subprojects.
 
 #### Dependency Versions
 
-The linting profile in each project also includes the `lein-ancient` plugin
-as well as an alias for it called `check-deps`. As such, each project may be
-checked for out-of-date dependency versions with the following:
+To check for up-to-date versions of all project dependencies, you can use
+`cmr test versions PROJ`, where `PROJ` is any CMR sub-project under the
+top-level directory.
 
-* `lein check-deps`
+You may run the same command without a project to check for all projects:
+`cmr test versions`.
 
-Additionally, this same command is provided at the top-level for running
-against all projects at once. Note that this command fails with the first
-project that fails. If many subprojects are failing their dependency version
-checks and you wish to see all of these, you may use your system shell:
+Note that this command fails with the first project that fails. If many
+subprojects are failing their dependency version checks and you wish to see
+all of these, you may use your system shell:
 
 ```sh
-for DIR in `ls -1d */project.clj|xargs dirname`
+for PROJ in `ls -1d */project.clj|xargs dirname`
 do
-  cd $DIR && echo "Checking $DIR ..." && lein check-deps
+  "Checking $PROJ ..."
+  cmr test versions $PROJ
   cd - &> /dev/null
 done
 ```
 
+#### Dependency Ambiguities and `.jar` File Conflicts
+
+To see if the JVM is having problems resolving which version of a
+dependency to use, you can run `cmr test dep-tree PROJ`. To perform this
+against all projects: `cmr test dep-trees`.
+
 #### Static Analysis and Linting
 
-At the individual, subproject level, the following commands are available:
-
-* `lein kibit`
-* `lein eastwood`
-* `lein lint` (a higher-order task combining `compile`, `kibit`, and
-  `eastwood`)
-* `lein bikeshed`
-* `lein yagni`
-
-Each of those is a `lein` alias that wraps the given command's use from the
-`lint` profile.
-
-Across all subprojects, the following are available for use from the top-level
-directory:
-
-* `lein kibit`
-* `lein eastwood`
-* `lein lint`
-
-Each of those is a `lein` alias that takes advantage of `lein modules` and the
-fact that all subprojects share the same static analysis commands.
+To perform static analysis and linting for a project, you can run
+`cmr test lint PROJ`. As above with dependency version checking, by
+not passing a project, you can run for all projects: `cmr test lint`.
 
 #### Testing CMR
 
@@ -182,8 +175,9 @@ There are two modes of testing the CMR:
 For the first, the steps are as follows:
 
 1. Ensure you have set up your development environment in `dev-system`
-2. If you have built any `.jar` files, run `lein clean`
-3. Start the REPL: `lein repl`
+2. If you have built any `.jar` files, run `cmr clean PROJ` (for a given
+   project) or `cmr clean` to clean all projects.
+3. Start the REPL: `cmr start repl`
 4. Once in the REPL, start the in-memory services: `(reset)`
 5. Run the tests: `(run-all-tests)` or `(run-all-tests-future)`
 
@@ -366,3 +360,7 @@ applications, as well as several libraries and support applications.
 - CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide
 - CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
 - CMR Client Developer Forum: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum
+
+## License
+
+Copyright © 2014-2018 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

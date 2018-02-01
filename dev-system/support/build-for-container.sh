@@ -21,14 +21,14 @@ echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
 echo '***'
 if [[ $1 == "separate" ]]; then
 	cmr build uberdocker separate
-	clean_targets
+	cmr clean
 	cmr start uberdocker separate
 elif [[ $1 == "together" || -z $1 ]]; then
 	cmr build uberdocker together
-	clean_targets
+	cmr clean
 	cmr start uberdocker together
 else
 	cmr build docker $1
-	clean_targets
+	cmr clean
 	cmr start docker $1
 fi

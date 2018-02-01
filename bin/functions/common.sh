@@ -1,17 +1,17 @@
-PID_FILE_PREFIX=/tmp/cmr-pid-
+### Global constants
+
+CMR_TMP_DIR=/tmp
+CMR_LOG_DIR=$CMR_DIR/logs
+PID_FILE_PREFIX=$CMR_TMP_DIR/cmr-pid-
 CMR_PROJ_VERSION=0.1.0-SNAPSHOT
 ORACLE_VERSION=11.2.0.4
 ORACLE_GROUP_ID=com.oracle
 SQS_DOCKER_REPO=pafortin/goaws
-SQS_CONTAINER_ID_FILE=/tmp/cmr-sqs-sns-docker-cid
+SQS_CONTAINER_ID_FILE=$CMR_TMP_DIR/cmr-sqs-sns-docker-cid
 DOCKER_CONTAINER_PREFIX=cmr-
-DOCKER_CONTAINER_ID_FILE_PREFIX=/tmp/cmr-docker-conatiner-id.
+DOCKER_CONTAINER_ID_FILE_PREFIX=$CMR_TMP_DIR/cmr-docker-conatiner-id.
 
 ### Utility Functions
-
-function test_echo () {
-	echo "This is a test ..."
-}
 
 # Bash 3 doesn't support associative arrays, so we'll use a function:
 function get_cmr_port () {
@@ -29,15 +29,17 @@ function get_cmr_port () {
 	esac
 }
 
-function clean_es_data () {
-    if [ -d es_data ] ; then
-        rm -rf es_data
-    fi
+function get_pid_file () {
+	PROJ=$1
+	echo "${PID_FILE_PREFIX}${PROJ}"
 }
 
-function clean_targets () {
-	echo "Cleaning up ..."
-	cd $CMR_DIR && rm -rf */target
+function get_pid () {
+	PROJ=$1
+	PID_FILE=`get_pid_file $PROJ`
+    if [ -f "$PID_FILE" ]; then
+		echo `cat $PID_FILE`
+	fi
 }
 
 ### Messages

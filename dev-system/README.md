@@ -44,7 +44,7 @@ can do the following:
   `AWS_SECRET_ACCESS_KEY` (it doesn't matter what the actual values are).
 * For CMR to use the local SQS/SNS, it needs to have the
   `CMR_DEV_SYSTEM_QUEUE_TYPE` environment variable set to "aws".
-* Start the REPL, e.g. `lein repl`.
+* Start the REPL, e.g. `cmr start repl`.
 * Reset the REPL (which reloads the code and starts up the system components):
   `(reset)`
 
@@ -53,7 +53,7 @@ install the AWS cli. On a Mac, just do `brew install awscli`. You can use this
 to make sure that the local SQS/SNS has started:
 
 ```
-$ aws --endpoint-url http://localhost:4100 sqs list-queues
+$ cmr show sqs-queues
 ```
 
 ## Setting up profiles.clj

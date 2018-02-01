@@ -6,20 +6,21 @@ LIBS='acl-lib collection-renderer-lib common-app-lib common-lib elastic-utils-li
 APPS_LIBS="$APPS $LIBS"
 
 # Level 1
-TOP_COMMANDS='build git install setup show start status stop test'
+TOP_COMMANDS='build clean git install setup show start status stop test'
 TOP_DASHED='-h -v --help --version'
 TOP_LEVEL="$TOP_COMMANDS $TOP_DASHED"
 
 # Level 2
 TOP_HELP="$TOP_COMMANDS"
-SETUP_LEVEL='local db dev help'
+SETUP_LEVEL='local db dev help profile'
 BUILD_LEVEL='docker help uberdocker uberjar uberjars'
+CLEAN_LEVEL="all $APPS_LIBS es-data help"
 INSTALL_LEVEL='all docs help jars jars,docs local orbits-gems oracle-libs'
-SHOW_LEVEL='help log log-tail log-test log-tests'
-START_LEVEL="all $APPS docker help local uberdocker uberjar"
-STATUS_LEVEL="docker help uberdocker uberjar"
+SHOW_LEVEL='help log log-tail log-test log-tests port-process'
+START_LEVEL="all $APPS docker help local repl uberdocker uberjar"
+STATUS_LEVEL="docker help sqs-sns uberdocker uberjar"
 STOP_LEVEL="all $APPS docker help local uberdocker uberjar"
-TEST_LEVEL='all deps help cicd lint versions'
+TEST_LEVEL='all cicd dep-tree dep-trees help lint versions'
 GIT_LEVEL='branches help log-latest log-short log-graph tag'
 
 # Level 3
@@ -49,6 +50,9 @@ _cmr () {
             case ${prev} in
                 build)
                     COMPREPLY=($(compgen -W "${BUILD_LEVEL}" ${cur}))
+                    ;;
+                clean)
+                    COMPREPLY=($(compgen -W "${CLEAN_LEVEL}" ${cur}))
                     ;;
                 git)
                     COMPREPLY=($(compgen -W "${GIT_LEVEL}" ${cur}))
@@ -84,7 +88,7 @@ _cmr () {
                 db)
                     COMPREPLY=($(compgen -W "${SETUP_DB_LEVEL}" ${cur}))
                     ;;
-                deps-tree)
+                dep-tree)
                     COMPREPLY=($(compgen -W "${APPS_LIBS}" ${cur}))
                     ;;
                 docker)
