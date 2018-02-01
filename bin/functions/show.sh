@@ -14,7 +14,7 @@ Defined subcommands:
     log-tests        - Display all output for all project tests.
     port-process NUM - Show information about the process that opened the given
                        TCP/IP port (may require 'sudo' on some systems).
-    sqs-queus        -
+    sqs-queus        - Show list of active local SQS queues.
 
 EOH
 

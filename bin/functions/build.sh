@@ -92,7 +92,9 @@ function build_all {
             exit 127
         fi
     fi
-    build_uberjars
+    if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
+        build_uberjars
+    fi
     build_uberjar_proj dev-system
 }
 
