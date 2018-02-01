@@ -83,7 +83,7 @@ export PATH=$PATH:`pwd`/bin
 source resources/shell/cmr-bash-autocomplete
 ```
 
-If you use another system shell, we'll except a PR with auto-complete for it.
+If you use another system shell, we'll accept a PR with auto-complete for it.
 
 #### Building and Running CMR Dev System in a REPL
 

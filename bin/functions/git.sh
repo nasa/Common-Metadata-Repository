@@ -60,7 +60,7 @@ function git_tag {
     if [ -z "$1" ]
       then
         echo "Must supply the tag name to use. Example: 'cmr git tag sprint10'"
-        exit 1
+        exit 127
     fi
 
     git tag -a "$1" -m "Tagging at the end of the sprint"

@@ -433,7 +433,7 @@ case "$COMMAND" in
         esac
         ;;
     version|-v|--version)
-        echo "version"
+        grep defproject project.clj|awk '{print $3}'|sed 's/\"//g'
         ;;
     *)
         cmd_not_found
