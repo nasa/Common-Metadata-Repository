@@ -198,15 +198,22 @@
                                               :beginning-date-time "2012-12-25T12:00:00Z"
                                               :ending-date-time "2013-03-01T12:00:00Z"}))]
     (index/wait-until-indexed)
-    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"
-                                               :page_size 10})
-          year-facets (-> facets :children first :children first :children)]
+    (let [root-node (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"
+                                                  :page_size 10})
+          year-facets (-> root-node :children first :children first :children)
+          temporal-node (-> root-node :children first)
+          year-node (-> root-node :children first :children first)]
       (testing "Facet structure correct"
-        (is (= "Browse Granules" (:title facets)))
-        (is (= "Temporal" (-> facets :children first :title)))
-        (is (= "Year" (-> facets :children first :children first :title))))
+        (is (= "Browse Granules" (:title root-node)))
+        (is (= "group" (:type root-node)))
+        (is (= "Temporal" (:title temporal-node)))
+        (is (= "group" (:type temporal-node)))
+        (is (= "Year" (:title year-node)))
+        (is (= "group" (:type year-node))))
       (testing "Years returned in order from most recent to oldest"
         (is (= ["2012" "2011" "2010" "1999"] (map :title year-facets))))
+      (testing "Years have a type of filter"
+        (is (= ["filter" "filter" "filter" "filter"] (map :type year-facets))))
       (testing "Counts correct"
         (util/are3
           [title cnt]
