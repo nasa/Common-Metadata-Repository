@@ -100,8 +100,8 @@
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
-                shapes points boxes polygons lines granule-count has-granules has-variables
-                has-formats has-transforms has-spatial-subsetting orbit-parameters
+                shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
+                has-variables has-formats has-transforms has-spatial-subsetting orbit-parameters
                 highlighted-summary-snippets organizations associations]} json-entry]
     (util/remove-nil-keys
       {:id id

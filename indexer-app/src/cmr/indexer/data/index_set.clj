@@ -320,6 +320,7 @@
           :granule-end-date               m/date-field-mapping
 
           :has-granules (m/stored m/bool-field-mapping)
+          :has-granules-or-cwic (m/stored m/bool-field-mapping)
           :has-variables (m/stored m/bool-field-mapping)
           :has-formats (m/stored m/bool-field-mapping)
           :has-transforms (m/stored m/bool-field-mapping)

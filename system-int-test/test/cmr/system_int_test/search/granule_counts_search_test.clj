@@ -1,22 +1,26 @@
 (ns cmr.system-int-test.search.granule-counts-search-test
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util]
-    [cmr.spatial.codec :as codec]
-    [cmr.spatial.mbr :as m]
-    [cmr.spatial.point :as p]
-    [cmr.system-int-test.data2.collection :as dc]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.granule-counts :as gran-counts]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]))
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.spatial.codec :as codec]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.granule-counts :as gran-counts]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       tags/grant-all-tag-fixture]))
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
   which should be single digit integers."
@@ -346,3 +350,57 @@
                :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))))))
+
+(deftest search-collections-has-granules-or-cwic-test
+  (let [coll1 (make-coll 1 m/whole-world nil)
+        coll2 (make-coll 2 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil)
+        coll4 (make-coll 4 m/whole-world nil)
+        coll5 (make-coll 5 m/whole-world nil)
+        coll6 (make-coll 6 m/whole-world nil)
+
+        _ (index/wait-until-indexed)
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "NON-CWIC"})
+               [coll1 coll5])
+        tag2 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "org.ceos.wgiss.cwic.granules.prod"})
+               [coll2 coll6])]
+    (index/wait-until-indexed)
+
+    ;; coll1
+    ;; non-cwic tagged with granule
+    (make-gran coll1 (p/point 0 0) nil)
+
+    ;; coll2
+    ;; cwic tagged with granule
+    (make-gran coll2 (p/point 0 0) nil)
+
+    ;; coll 3
+    ;; no tag with granule
+    (make-gran coll3 (p/point 0 0) nil)
+
+    ;; coll 4
+    ;; no tag without granule
+
+    ;; coll 5
+    ;; non-cwic tagged no granule
+
+    ;; coll 6
+    ;; cwic tagged no granule
+
+    (index/wait-until-indexed)
+    (testing "Search with has-granules-or-cwic feature"
+      (d/refs-match? [coll1 coll3 coll6 coll2]
+                     (search/find-refs :collection
+                                       {:has_granules_or_cwic true}
+                                       {:snake-kebab? false})))
+
+    (testing "Search with has-granules-or-cwic feature"
+      (d/refs-match? [coll4 coll5 coll6]
+                     (search/find-refs :collection
+                                       {:has_granules_or_cwic false}
+                                       {:snake-kebab? false})))))
