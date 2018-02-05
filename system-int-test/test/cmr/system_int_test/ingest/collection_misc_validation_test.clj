@@ -70,7 +70,7 @@
                        {:Platforms [(data-umm-cmn/platform {:ShortName (apply str (repeat 81 "x"))})]
                         :Purpose (apply str (repeat 12000 "y"))
                         :ProcessingLevel {:Id "1"}
-                        :CollectionProgress :complete})
+                        :CollectionProgress "COMPLETE"})
           ingest-response (d/ingest "PROV1" collection {:format :dif10})
           validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :dif10))]
       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
