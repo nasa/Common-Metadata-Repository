@@ -1,16 +1,18 @@
-(ns cmr.es-spatial-plugin.spatial-script-factory-helper
+(ns cmr.elasticsearch.plugins.spatial.factory.helper
   "Contains functionality used by SpatialScriptFactory. Seperated into a typical Clojure namespace
   to make it more compatible with REPL development."
-  (:require [clojure.string :as str]
-            [cmr.spatial.point :as point]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.serialize :as srl]
-            [cmr.spatial.relations :as relations]
-            [cmr.es-spatial-plugin.SpatialScript])
-  (:import cmr.es_spatial_plugin.SpatialScript
-           org.elasticsearch.common.xcontent.support.XContentMapValues
-           org.elasticsearch.ElasticsearchIllegalArgumentException))
+  (:require
+   [clojure.string :as str]
+   [cmr.elasticsearch.plugins.spatial.script.core]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.point :as point]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as relations]
+   [cmr.spatial.serialize :as srl])
+  (:import
+   cmr.elasticsearch.plugins.SpatialScript
+   org.elasticsearch.common.xcontent.support.XContentMapValues
+   org.elasticsearch.ElasticsearchIllegalArgumentException))
 
 (def parameters
   "The parameters to the Spatial script"
@@ -32,13 +34,15 @@
              (str "Missing one or more of required parameters: "
                   (clojure.string/join parameters ", "))))))
 
+(defn- convert-params
+  "Convert the comma separated string into a vector of integers."
+  [[k v]]
+  [k (map #(Integer. ^String %) (str/split v #","))])
+
 (defn- params->spatial-shape
   [params]
   (let [{:keys [ords-info ords]} (->> params
-                                      (map
-                                        (fn [[k v]]
-                                          ;; Convert the comma separated string into a vector of integers.
-                                          [k (map #(Integer. ^String %) (str/split v #","))]))
+                                      (map convert-params)
                                       (into {}))]
     (first (srl/ords-info->shapes ords-info ords))))
 
