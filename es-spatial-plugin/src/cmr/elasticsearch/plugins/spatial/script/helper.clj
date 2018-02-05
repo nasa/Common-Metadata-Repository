@@ -6,9 +6,7 @@
   (:import
    org.elasticsearch.common.logging.ESLogger
    org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
-   org.elasticsearch.search.lookup.DocLookup
-   org.elasticsearch.search.lookup.FieldLookup
-   org.elasticsearch.search.lookup.FieldsLookup))
+   (org.elasticsearch.search.lookup DocLookup FieldLookup FieldsLookup)))
 
 (defn- get-from-fields
   [^FieldsLookup lookup key]
