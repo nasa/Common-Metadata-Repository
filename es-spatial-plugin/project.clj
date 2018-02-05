@@ -33,10 +33,10 @@
                        "-Dclojure.compiler.direct-linking=true"]
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
-  :aot [cmr.es-spatial-plugin.SpatialScript
-        cmr.es-spatial-plugin.SpatialScriptFactory
-        cmr.es-spatial-plugin.SpatialSearchPlugin]
-
+  :aot [
+    cmr.elasticsearch.plugins.spatial.script.core
+    cmr.elasticsearch.plugins.spatial.factory.core
+    cmr.elasticsearch.plugins.spatial.plugin]
   :profiles {
     :dev {
       :exclusions [
@@ -48,7 +48,7 @@
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]]
       :global-vars {*warn-on-reflection* true
-                   *assert* false}
+                    *assert* false}
 
       ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
       ;; See https://github.com/technomancy/leiningen/wiki/Faster
@@ -61,7 +61,13 @@
       ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
       ;                      "-Dcom.sun.management.jmxremote.port=1098"]
       :source-paths ["src" "dev"]}
-    :uberjar {:aot :all}
+    :uberjar {
+      :aot [
+        cmr.elasticsearch.plugins.spatial.script.core
+        cmr.elasticsearch.plugins.spatial.factory.core
+        cmr.elasticsearch.plugins.spatial.plugin
+        cmr.elasticsearch.plugins.spatial.script.helper
+        cmr.elasticsearch.plugins.spatial.factory.helper]}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
@@ -86,18 +92,31 @@
                        "shell" "zip" "-j" ~plugin-zip-name ~uberjar-name]
 
             ;; Packages and installs the plugin into the local elastic search vm
-            "install-local" ["do"
-                             "package,"
-                             "shell" "../../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin,"
-                             "clean"]
+            "install-local" [
+              "do"
+              "package,"
+              "shell"
+                "../../cmr-vms/elastic_local/install_plugin.sh"
+                ~plugin-zip-name
+                "spatialsearch-plugin,"
+              "clean"]
 
-            "install-aws" ["do"
-                           "package,"
-                           ;; IP address is hard coded for now
-                           "shell" "../cmr-vms/elastic_aws/install_plugin.sh" "54.193.23.62" ~plugin-zip-name "spatialsearch-plugin"]
-            "install-workload" ["do"
-                                "package,"
-                                "shell" "install_plugin_into_workload.sh" ~plugin-zip-name "spatialsearch-plugin"]
+            "install-aws" [
+              "do"
+              "package,"
+              ;; IP address is hard coded for now
+              "shell"
+                "../cmr-vms/elastic_aws/install_plugin.sh"
+                "54.193.23.62"
+                ~plugin-zip-name
+                "spatialsearch-plugin"]
+            "install-workload" [
+              "do"
+              "package,"
+              "shell"
+                "install_plugin_into_workload.sh"
+                ~plugin-zip-name
+                "spatialsearch-plugin"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
             ;; Linting aliases

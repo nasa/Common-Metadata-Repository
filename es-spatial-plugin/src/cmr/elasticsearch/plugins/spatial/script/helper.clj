@@ -1,13 +1,14 @@
-(ns cmr.es-spatial-plugin.spatial-script-helper
-  (:require [cmr.spatial.serialize :as srl]
-            [clojure.string :as s]
-            [cmr.common.util :as u])
-  (:import org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
-           org.elasticsearch.search.lookup.DocLookup
-           org.elasticsearch.search.lookup.FieldsLookup
-           org.elasticsearch.search.lookup.FieldLookup
-           org.elasticsearch.common.logging.ESLogger))
-
+(ns cmr.elasticsearch.plugins.spatial.script.helper
+  (:require
+   [clojure.string :as s]
+   [cmr.common.util :as u]
+   [cmr.spatial.serialize :as srl])
+  (:import
+   org.elasticsearch.common.logging.ESLogger
+   org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
+   org.elasticsearch.search.lookup.DocLookup
+   org.elasticsearch.search.lookup.FieldLookup
+   org.elasticsearch.search.lookup.FieldsLookup))
 
 (defn- get-from-fields
   [^FieldsLookup lookup key]
