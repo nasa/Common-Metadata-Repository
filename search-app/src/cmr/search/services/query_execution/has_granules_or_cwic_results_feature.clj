@@ -19,7 +19,7 @@
   ;; default to 1 hour
   3600)
 
-(def has-granule-cache-key
+(def has-granule-or-cwic-cache-key
   :has-granules-or-cwic-map)
 
 (defconfig cwic-tag
@@ -34,9 +34,10 @@
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [condition (nf/parse-nested-condition :tags {:tag-key (cwic-tag)} false true)
+  (let [condition (nf/parse-nested-condition :tags {:tag-key (cwic-tag)} false false)
         query (qm/query {:concept-type :collection
-                         :condition condition})
+                         :condition condition
+                         :page-size :unlimited})
         results (common-esi/execute-query context query)]
     (into {}
           (for [coll-id (map :_id (get-in results [:hits :hits]))]
@@ -56,7 +57,7 @@
                                   (merge
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
-    (cache/set-value (cache/context->cache context has-granule-cache-key)
+    (cache/set-value (cache/context->cache context has-granule-or-cwic-cache-key)
                      :has-granules-or-cwic has-granules-or-cwic-map)))
 
 (defn get-has-granules-or-cwic-map
@@ -64,7 +65,7 @@
   of whether the collections have granules or not. If the has-granules-or-cwic-map has not yet been cached
   it will retrieve it and cache it."
   [context]
-  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granule-cache-key)]
+  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granule-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
                      :has-granules-or-cwic
                      (fn []
