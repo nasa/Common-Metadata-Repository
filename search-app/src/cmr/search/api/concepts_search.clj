@@ -64,7 +64,8 @@
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
         search-params (if cached-search-params
-                        (assoc cached-search-params :result-format (:result-format search-params))
+                        (assoc cached-search-params :result-format (:result-format search-params)
+                                                    :include_facets (:include_facets search-params))
                         search-params)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)    
