@@ -88,17 +88,18 @@
                      {:provider "PROV1" :scroll true :page-size 2 :result-format mime-types/xml})
             format (get-in result [:headers :Content-Type])
             hits (get-in result [:headers :CMR-Hits])
-            scroll-id (get-in result [:headers :CMR-Scroll-Id])]
-        (testing "Subsequent searches with different search params still returns the same hits and format."
-          (let [result (search/find-concepts-in-format
-                         mime-types/json
-                         :granule
-                         {:provider "PROV2" :scroll false :page-size 10}
-                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})
-                subsequent-hits (get-in result [:headers :CMR-Hits])
-                subsequent-format (get-in result [:headers :Content-Type])]
-            (is (= hits subsequent-hits))
-            (is (= format subsequent-format))))))
+            scroll-id (get-in result [:headers :CMR-Scroll-Id])
+            ;; Do a subsequent scroll search with different format, provider, scroll and page-size.
+            ;; Verify the new search params are ignored. It still returns the same xml format.
+            subsequent-result (search/find-concepts-in-format
+                                mime-types/json
+                                :granule
+                                {:provider "PROV2" :scroll false :page-size 10}
+                                {:headers {routes/SCROLL_ID_HEADER scroll-id}})
+            subsequent-format (get-in subsequent-result [:headers :Content-Type])
+            subsequent-hits (get-in subsequent-result [:headers :CMR-Hits])]
+         (is (= hits subsequent-hits))
+         (is (= format subsequent-format))))
 
     ;; The following test is included for completeness to test session timeouts, but it
     ;; cannot be run regularly because it is impossible to predict how long it will take
