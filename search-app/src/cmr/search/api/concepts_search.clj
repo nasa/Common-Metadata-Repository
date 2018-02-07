@@ -62,10 +62,9 @@
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
-        search-params (lp/process-legacy-psa params)
         search-params (if cached-search-params
                         cached-search-params
-                        search-params)
+                        (lp/process-legacy-psa params))
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)    
       (core-api/search-response ctx results search-params)
