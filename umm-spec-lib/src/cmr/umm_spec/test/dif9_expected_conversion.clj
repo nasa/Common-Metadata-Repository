@@ -203,10 +203,6 @@
   "Returns the expected DIF parsed data centers for the given UMM collection."
   [centers]
   (let [originating-center (first (filter #(.contains (:Roles %) "ORIGINATOR") centers))
-        originating-centers (when originating-center
-                              [(cmn/map->DataCenterType
-                                 {:Roles ["ORIGINATOR"]
-                                  :ShortName (:ShortName originating-center)})])
         processing-centers (for [center centers
                                  :let [long-name (:LongName center)]
                                  :when (and (.contains (:Roles center) "PROCESSOR")
@@ -235,7 +231,7 @@
                            :ContactPersons [(cmn/map->ContactPersonType
                                               {:Roles ["Data Center Contact"]
                                                :LastName su/not-provided})]})])]
-    (seq (concat originating-centers data-centers processing-centers))))
+    (seq (concat data-centers processing-centers))))
 
 (defn- expected-dif-additional-attribute
   [attribute]
