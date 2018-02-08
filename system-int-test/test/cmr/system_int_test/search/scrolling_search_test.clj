@@ -85,7 +85,7 @@
       (let [result (search/find-concepts-in-format
                      mime-types/xml
                      :granule
-                     {:provider "PROV1" :scroll true :page-size 2 :result-format mime-types/xml})
+                     {:provider "PROV1" :scroll true :page-size 2})
             format (get-in result [:headers :Content-Type])
             hits (get-in result [:headers :CMR-Hits])
             scroll-id (get-in result [:headers :CMR-Scroll-Id])
