@@ -160,7 +160,6 @@
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     [:Use_Constraints (:UseConstraints c)]
     (dif-util/generate-dataset-language :Data_Set_Language (:DataLanguage c))
-    (center/generate-originating-center c)
     (center/generate-data-centers c)
     (for [distribution (:Distributions c)]
       [:Distribution
