@@ -359,6 +359,19 @@
         coll5 (make-coll 5 m/whole-world nil)
         coll6 (make-coll 6 m/whole-world nil)
 
+        ;; Adding more collections to test internal query page size
+        coll7 (make-coll 7 m/whole-world nil)
+        coll8 (make-coll 8 m/whole-world nil)
+        coll9 (make-coll 9 m/whole-world nil)
+        coll10 (make-coll 10 m/whole-world nil)
+        coll11 (make-coll 11 m/whole-world nil)
+        coll12 (make-coll 12 m/whole-world nil)
+        coll13 (make-coll 13 m/whole-world nil)
+        coll14 (make-coll 14 m/whole-world nil)
+        coll15 (make-coll 15 m/whole-world nil)
+        coll16 (make-coll 16 m/whole-world nil)
+        coll17 (make-coll 17 m/whole-world nil)
+
         _ (index/wait-until-indexed)
         user1-token (e/login (s/context) "user1")
         tag1 (tags/save-tag
@@ -368,7 +381,9 @@
         tag2 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "org.ceos.wgiss.cwic.granules.prod"})
-               [coll2 coll6])]
+               [coll2 coll6 coll7 coll8 coll9 coll10 coll11 coll12 coll13 coll14
+                coll15 coll16 coll17])]
+
     (index/wait-until-indexed)
 
     ;; coll1
@@ -393,14 +408,22 @@
     ;; cwic tagged no granule
 
     (index/wait-until-indexed)
-    (testing "Search with has-granules-or-cwic feature"
-      (d/refs-match? [coll1 coll3 coll6 coll2]
+    (testing "Search with has-granules-or-cwic feature true"
+      (d/refs-match? [coll1 coll3 coll6 coll2
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
                      (search/find-refs :collection
-                                       {:has_granules_or_cwic true}
+                                       {:has_granules_or_cwic true
+                                        :page-size 20}
                                        {:snake-kebab? false})))
 
-    (testing "Search with has-granules-or-cwic feature"
-      (d/refs-match? [coll4 coll5 coll6]
+    (testing "Search with has-granules-or-cwic feature false"
+      (d/refs-match? [coll4 coll5 coll6
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
                      (search/find-refs :collection
-                                       {:has_granules_or_cwic false}
+                                       {:has_granules_or_cwic false
+                                        :page-size 20}
                                        {:snake-kebab? false})))))
