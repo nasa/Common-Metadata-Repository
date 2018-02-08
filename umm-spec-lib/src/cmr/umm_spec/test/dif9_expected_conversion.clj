@@ -202,8 +202,7 @@
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."
   [centers]
-  (let [originating-center (first (filter #(.contains (:Roles %) "ORIGINATOR") centers))
-        processing-centers (for [center centers
+  (let [processing-centers (for [center centers
                                  :let [long-name (:LongName center)]
                                  :when (and (.contains (:Roles center) "PROCESSOR")
                                             (or (nil? long-name) (.endsWith ".processor" long-name)))]
