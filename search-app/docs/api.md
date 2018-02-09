@@ -1693,6 +1693,7 @@ __Sample response__
 ```
 
 ### <a name="granule-search-by-parameters"></a> Granule Search By Parameters
+Search performance for granule searches is significantly improved by including an identifier that limits the search to a certain collection or subset of collections. Examples of parameters which limit the scope of the search include collection_concept_id, short_name, entry_title, or provider.
 
 #### <a name="find-all-granules"></a> Find all granules for a collection.
 
