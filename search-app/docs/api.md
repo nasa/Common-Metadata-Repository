@@ -1693,65 +1693,66 @@ __Sample response__
 ```
 
 ### <a name="granule-search-by-parameters"></a> Granule Search By Parameters
+Search performance for granule searches is significantly improved by including an identifier that limits the search to a certain collection or subset of collections. Examples of parameters which limit the scope of the search include collection_concept_id, short_name, entry_title, or provider.
 
-#### <a name="find-all-granules"></a> Find all granules
+#### <a name="find-all-granules"></a> Find all granules for a collection.
 
-    curl "%CMR-ENDPOINT%/granules"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%"
 
 
 Granule search results are paged. See [Paging Details](#paging-details) for more information on how to page through granule search results.
 
 #### <a name="g-granule-ur"></a> Find granules with a granule-ur
 
-    curl "%CMR-ENDPOINT%/granules?granule_ur\[\]=DummyGranuleUR"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&granule_ur\[\]=DummyGranuleUR"
 
 #### <a name="g-producer-granule-id"></a> Find granules with a producer granule id
 
-    curl "%CMR-ENDPOINT%/granules?producer_granule_id\[\]=DummyID"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&producer_granule_id\[\]=DummyID"
 
 #### <a name="g-granule-ur-or-producer-granule-id"></a> Find granules matching either granule ur or producer granule id
 
 This condition is encapsulated in a single parameter called readable_granule_name
 
-    curl "%CMR-ENDPOINT%/granules?readable_granule_name\[\]=DummyID"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&readable_granule_name\[\]=DummyID"
 
 #### <a name="g-online-only"></a> Find granules by online_only
 
-    curl "%CMR-ENDPOINT%/granules?online_only=true"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&online_only=true"
 
 #### <a name="g-downloadable"></a> Find granules by downloadable
 
-    curl "%CMR-ENDPOINT%/granules?downloadable=true"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&downloadable=true"
 
 #### <a name="g-additional-attribute"></a> Find granules by additional attribute
 
 Find an additional attribute with name "PERCENTAGE" only
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=PERCENTAGE"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=PERCENTAGE"
 
 Find an additional attribute with name "PERCENTAGE" of type float with value 25.5
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,PERCENTAGE,25.5"
 
 Find an additional attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,30"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,PERCENTAGE,25.5,30"
 
 Find an additional attribute with name "PERCENTAGE" of type float with min value 25.5.
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,PERCENTAGE,25.5,"
 
 Find an additional attribute with name "PERCENTAGE" of type float with max value 30.
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,,30"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,PERCENTAGE,,30"
 
 Find an additional attribute with name "X,Y,Z" with value 7.
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\,Y\,Z,7"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,X\,Y\,Z,7"
 
 Find an additional attribute with name "X\Y\Z" with value 7.
 
-    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\Y\Z,7"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,X\Y\Z,7"
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
@@ -1766,50 +1767,50 @@ The parameters used for searching granules by spatial are the same as the spatia
 
 ##### <a name="g-polygon"></a> Polygon
 
-    curl "%CMR-ENDPOINT%/granules?provider=PROV1&polygon=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
-    curl "%CMR-ENDPOINT%/granules?provider=PROV1&bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5
 
 ##### <a name="g-point"></a> Point
 
-    curl "%CMR-ENDPOINT%/granules?provider=PROV1&point=100,20"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&point=100,20"
 
 ##### <a name="g-line"></a> Line
 
-    curl "%CMR-ENDPOINT%/granules?provider=PROV1&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
   Find granules with an orbit number of 10
 
-    curl "%CMR-ENDPOINT%/granules?orbit_number=10"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&orbit_number=10"
 
 Find granules with an orbit number in a range of 0.5 to 1.5
 
-    curl "%CMR-ENDPOINT%/granules?orbit_number=0.5,1.5"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&orbit_number=0.5,1.5"
 
 #### <a name="g-orbit-equator-crossing-longitude"></a> Find granules by orbit equator crossing longitude
 
 Find granules with an exact equator crossing longitude of 90
 
-    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=90"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=90"
 
 Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=0,10
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=0,10
 
 Find granules with an equator crossing longitude in the range from 170 to -170
   (across the anti-meridian)
 
-    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=170,-170
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=170,-170
 
 #### <a name="g-orbit-equator-crossing-date"></a> Find granules by orbit equator crossing date
 
 Find granules with an orbit equator crossing date in the range of 2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
 The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under [Temporal Range searches](#temporal-range-searches).
 
@@ -1817,7 +1818,7 @@ The time interval in equator crossing date range searches can be specified in di
 
 Find granules which have revision date starting at or after 'updated_since' param value
 
-     curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&updated_since=2014-05-08T20:12:35Z"
 
 #### <a name="g-revision-date"></a> Find granules by revision_date
 
@@ -1825,7 +1826,7 @@ This supports option `and`.
 
 Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-    curl "%CMR-ENDPOINT%/granules?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-created-at"></a> Find granules by created_at
 
@@ -1833,39 +1834,39 @@ Find granules which have revision date within the ranges of datetimes. The datet
 
  Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-   curl "%CMR-ENDPOINT%/granules?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+   curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-cloud-cover"></a> Find granules by cloud_cover
 
 Find granules with just the min cloud cover value set to 0.2
 
-     curl "%CMR-ENDPOINT%/granules?cloud_cover=0.2,"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cloud_cover=0.2,"
 
 Find granules with just the max cloud cover value set to 30
 
-     curl "%CMR-ENDPOINT%/granules?cloud_cover=,30"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cloud_cover=,30"
 
 Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
 
-     curl "%CMR-ENDPOINT%/granules?cloud_cover=-70.0,120.0"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cloud_cover=-70.0,120.0"
 
 #### <a name="g-platform"></a> Find granules by platform
 
 This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without platform values inherit their parent collection's platform.   This can be changed by specifying `exclude_collection` option with `options[platform][exclude_collection]=true`.
 
-     curl "%CMR-ENDPOINT%/granules?platform\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&platform\[\]=1B"
 
 #### <a name="g-instrument"></a> Find granules by instrument
 
 This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without instrument values inherit their parent collection's instrument.   This can be changed by specifying `exclude_collection` option with `options[instrument][exclude_collection]=true`.
 
-     curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&instrument\[\]=1B"
 
 #### <a name="g-sensor"></a> Find granules by sensor param
 
 This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without sensor values inherit their parent collection's sensor.   This can be changed by specifying `exclude_collection` option with `options[sensor][exclude_collection]=true`.
 
-     curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&sensor\[\]=1B"
 
 #### <a name="g-project"></a> Find granules by project
 
@@ -1875,21 +1876,21 @@ This supports `pattern`, `ignore_case` and option `and`.
 
 Find granules matching 'project' param value
 
-     curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&project\[\]=2009_GR_NASA"
 
 Find granules matching any of the 'project' param values
 
-     curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA"
 
 Find granules matching the given pattern for the 'project' param value
 
 ```
-curl "%CMR-ENDPOINT%/granules?project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true"
+curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true"
 ```
 
 Find granules that match all of the 'project' param values
 
-     curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA&options\[project\]\[and\]=true"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA&options\[project\]\[and\]=true"
 
 #### <a name="g-concept-id"></a> Find granules by concept id
 
@@ -1897,29 +1898,29 @@ Note: more than one may be supplied
 
 Find granule by concept id
 
-     curl "%CMR-ENDPOINT%/granules?concept_id\[\]=G1000000002-CMR_PROV1"
+     curl "%CMR-ENDPOINT%/granules?provider=PROV1&concept_id\[\]=G1000000002-CMR_PROV1"
 
 Find granule by echo granule id
 
-     curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1"
+     curl "%CMR-ENDPOINT%/granules?provider=PROV1&echo_granule_id\[\]=G1000000002-CMR_PROV1"
 
 Find granules by parent concept id. `concept_id` or `collection_concept_id` can be used interchangeably.
 
-     curl "%CMR-ENDPOINT%/granules?concept_id\[\]=C1000000001-CMR_PROV2"
-     curl "%CMR-ENDPOINT%/granules?collection_concept_id\[\]=C1000000001-CMR_PROV2"
+     curl "%CMR-ENDPOINT%/granules?concept_id=%CMR-EXAMPLE-COLLECTION-ID%"
+     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%"
 
 Find granules by echo collection id
 
-     curl "%CMR-ENDPOINT%/granules?echo_collection_id\[\]=C1000000001-CMR_PROV2"
+     curl "%CMR-ENDPOINT%/granules?echo_collection_id=%CMR-EXAMPLE-COLLECTION-ID%"
 
 #### <a name="g-day-night-flag"></a> Find granules by day\_night\_flag param, supports pattern and ignore_case
 
 ```
-curl "%CMR-ENDPOINT%/granules?day_night_flag=night
+curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&day_night_flag=night
 
-curl "%CMR-ENDPOINT%/granules?day_night_flag=day
+curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&day_night_flag=day
 
-curl "%CMR-ENDPOINT%/granules?day_night=unspecified
+curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&day_night=unspecified
 ```
 
 #### <a name="g-twod-coordinate-system"></a> Find granules by two\_d\_coordinate\_system parameter.
@@ -1927,7 +1928,7 @@ curl "%CMR-ENDPOINT%/granules?day_night=unspecified
 Note: An alias for the parameter 'two_d_coordinate_system' is 'grid'. As such 'grid' can be used in place of 'two_d_coordinate_system'.
 
 ```
-  curl "%CMR-ENDPOINT%/granules?two_d_coordinate_system\[\]=wrs-1:5,10:8-10,0-10:8,12
+  curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&two_d_coordinate_system\[\]=wrs-1:5,10:8-10,0-10:8,12
 ```
 
 The parameter expects a coordinate system name and a set of two-d coordinates. The two-d coordinates could be represented either by a single coordinate pair or a pair of coordinate ranges. ':' is used as the separator between the coordinate system name, single coordinate pairs and coordinate range pairs. The coordinates in the single coordinate pair are represented in the format "x,y". And the coordinates in the coordinate range pairs are represented in the format "x1-x2,y1-y2" where x1 and x2 are the bounds of the values for the first coordinate and y1 and y2, for the second coordinate. One can also use single values for each of the two ranges, say "x1" instead of "x1-x2", in which case the upper and lower bound are considered the same. In other words using "x1" for range is equivalent to using "x1-x1". A single query can consist of a combination of individual coordinate pairs and coordinate range pairs. For example, the query above indicates that the user wants to search for granules which have a two\_d\_coordinate\_system whose name is wrs-1 and whose two-d coordinates match(or fall within) at least one of the given pairs: a single coordinate pair (5,10), a range coordinate pair 8-10,0-10 and another single coordinate pair (8,12).
@@ -1950,11 +1951,11 @@ This parameter supports `pattern`, `ignore_case` and option `and`.
 
 Find granules matching 'native_id' param value
 
-    curl "%CMR-ENDPOINT%/granules?native_id=nativeid1"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&native_id=nativeid1"
 
 Find granules matching any of the 'native_id' param values
 
-    curl "%CMR-ENDPOINT%/granules?native_id[]=nativeid1&native_id[]=nativeid2"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&native_id[]=nativeid1&native_id[]=nativeid2"
 
 #### <a name="g-short-name"></a> Find granules by short name
 
@@ -1994,7 +1995,7 @@ See under "Find collections by entry title" for more examples of how to use this
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
-    curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
@@ -2007,18 +2008,18 @@ Note: more than one id may be supplied in exclude param
 Exclude granule by echo granule id
 
 ```
-curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
+curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
 
-curl "%CMR-ENDPOINT%/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
+curl "%CMR-ENDPOINT%/granules?provider=PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
 ```
 
 Exclude granule by concept id
 
-    curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
 
 Exclude granule by parent concept id
 
-    curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
 
 #### <a name="sorting-granule-results"></a> Sorting Granule Results
 
