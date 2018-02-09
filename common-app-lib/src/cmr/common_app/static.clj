@@ -204,11 +204,20 @@
         ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
         (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
           (when-let [resource (site-resource page)]
-            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
+            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
+                  provider (let [host-info (headers "host")]
+                             (case host-info
+                                   "cmr.earthdata.nasa.gov" "PODAAC"
+                                   "cmr.uat.earthdata.nasa.gov" "DEMO_89"
+                                   "cmr.sit.earthdata.nasa.gov" "DEMO_PROV"
+                                   "cmr.wl.earthdata.nasa.gov" "LAADS"
+                                   "PROV1"))
+                  cmr-example-collection-id (str "C1234567-" provider)]
               {:status 200
                :body (-> resource
                          slurp
-                         (string/replace "%CMR-ENDPOINT%" cmr-root))})))
+                         (string/replace "%CMR-ENDPOINT%" cmr-root)
+                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
         ;; Other static resources (Javascript, CSS)
         (route/resources "/" {:root resource-root})
         (pages/not-found))))
