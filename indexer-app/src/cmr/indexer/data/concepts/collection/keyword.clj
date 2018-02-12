@@ -6,7 +6,6 @@
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.collection.data-center :as data-center]
     [cmr.indexer.data.concepts.keyword-util :as keyword-util]
-    [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 
@@ -82,7 +81,7 @@
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         data-centers (map :ShortName (:DataCenters collection))
-        science-keywords (mapcat science-keyword-util/science-keyword->keywords
+        science-keywords (mapcat keyword-util/science-keyword->keywords
                                  (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/aa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))

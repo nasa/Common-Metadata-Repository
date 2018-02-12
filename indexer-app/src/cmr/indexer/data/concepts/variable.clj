@@ -7,7 +7,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
-   [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -17,7 +16,7 @@
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        science-keywords (mapcat science-keyword-util/science-keyword->keywords
+        science-keywords (mapcat keyword-util/science-keyword->keywords
                                  (:ScienceKeywords parsed-concept))
         ;; keyword values that are used to index the keyword field
         keyword-values (flatten (conj [variable-name measurement]

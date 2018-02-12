@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concepts.keyword-util
-  "Contains functions to convert a list of field values into a keyword text for indexing into
-  an elasticsearch text field."
+  "Contains utility functions for working with keywords when adding data
+  to elasticsearch for indexing."
   (:require
    [clojure.string :as string]))
 
@@ -22,3 +22,21 @@
        (mapcat prepare-keyword-field)
        set
        (string/join " ")))
+
+(defn science-keyword->keywords
+  "Converts a science keyword into a vector of terms for keyword searches."
+  [science-keyword]
+  (let [{category :Category
+         detailed-variable :DetailedVariable
+         term :Term
+         topic :Topic
+         variable-level-1 :VariableLevel1
+         variable-level-2 :VariableLevel2
+         variable-level-3 :VariableLevel3} science-keyword]
+    [category
+     detailed-variable
+     term
+     topic
+     variable-level-1
+     variable-level-2
+     variable-level-3]))
