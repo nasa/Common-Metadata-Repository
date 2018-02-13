@@ -3,6 +3,7 @@
   integration tests."
   (:require
    [cmr.common.mime-types :as mime-types]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.umm-spec.models.umm-service-models :as umm-s]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
@@ -71,3 +72,111 @@
          (service attribs)
          (assoc :provider-id provider-id :native-id native-id)
          umm-s->concept))))
+
+(defn contact-person
+  "Returns a ContactPersonType suitavke as an element in a
+  Persons collection."
+  ([]
+   (contact-person {}))
+  ([attribs]
+   (umm-s/map->ContactPersonType
+     (merge {:FirstName "Alice"
+             :LastName "Bob"
+             :Roles ["AUTHOR"]}
+            attribs))))
+
+(defn contact-mechanism
+  "Returns a ContactMechanismType suitavke as an element in a
+  ContactMechanisms collection."
+  ([]
+   (contact-mechanism {}))
+  ([attribs]
+   (umm-s/map->ContactMechanismType
+     (merge {:Type "Email"
+             :Value "alice@example.com"}
+            attribs))))
+
+(defn address
+  "Returns a AddressType suitable as an element in an Addresses
+  collection."
+  ([]
+    (address {}))
+  ([attribs]
+   (umm-s/map->AddressType
+     (merge {:StreetAddresses ["101 S. Main St"]
+             :City "Anytown"
+             :StateProvince "ST"}
+            attribs))))
+
+(defn contact-info
+  "Returns a ContactInformationType suitable as an element in a
+  ContactInformation collection."
+  ([]
+   (contact-info {}))
+  ([attribs]
+   (umm-s/map->ContactInformationType
+     (merge {:RelatedUrls [(data-umm-cmn/related-url)]
+             :ContactMechanisms [(contact-mechanism)]
+             :Addresses [(address)]}
+            attribs))))
+
+(defn contact-group
+  "Returns a ContectGroupType suitable for inclusion in ContactGroups."
+  ([]
+    (contact-group {}))
+  ([attribs]
+   (umm-s/map->ContactGroupType
+    (merge {:Roles ["SERVICE PROVIDER CONTACT" "TECHNICAL CONTACT"]
+            :NonServiceOrganizationAffiliation "Non-group contact info"
+            :ContactInformation (contact-info)
+            :GroupName "Contact Group Name"}
+            attribs))))
+
+(defn instrument
+  "Returns a InstrumentType suitable as an element in an Instruments
+  collection."
+  ([]
+    (instrument {}))
+  ([attribs]
+   (umm-s/map->PlatformType
+     (merge {:ShortName "instr1"
+             :LongName "Instrument Name"}
+            attribs))))
+
+(defn platform
+  "Returns a PlatformType suitable as an element in a Platforms
+  collection."
+  ([]
+    (platform {}))
+  ([attribs]
+   (umm-s/map->PlatformType
+     (merge {:ShortName "pltfrm1"
+             :LongName "Platform Name"
+             :Instruments [(instrument)]}
+            attribs))))
+
+(defn service-keywords
+  "Returns a ServiceKeywordType suitable as an element in a
+  ServiceKeywords collection."
+  ([]
+    (service-keywords {}))
+  ([attribs]
+   (umm-s/map->ServiceKeywordType
+     (merge {:ServiceCategory "A service category"
+             :ServiceTopic "A service topic"
+             :ServiceTerm "A service term"
+             :ServiceSpecificTerm "A specific service term"}
+            attribs))))
+
+(defn service-organization
+  "Returns a ServiceOrganizationType suitable as an element in a
+  ServiceOrganizations collection."
+  ([]
+    (service-organization {}))
+  ([attribs]
+   (umm-s/map->ServiceOrganizationType
+     (merge {:Roles ["SERVICE PROVIDER" "PUBLISHER"]
+             :ShortName "svcorg1"
+             :LongName "Service Org 1"
+             :ContactPersons [(contact-person)]}
+            attribs))))

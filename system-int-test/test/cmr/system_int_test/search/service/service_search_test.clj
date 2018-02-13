@@ -8,6 +8,8 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
@@ -25,24 +27,24 @@
   (testing "Unrecognized parameters"
     (is (= {:status 400
             :errors ["Parameter [foo] was not recognized."]}
-           (search/find-refs :service {:foo "bar"}))))
+           (services/search {:foo "bar"}))))
 
   (testing "Unsupported sort-key parameters"
     (is (= {:status 400
             :errors ["The sort key [concept_id] is not a valid field for sorting services."]}
-           (search/find-refs :service {:sort-key "concept_id"}))))
+           (services/search {:sort-key "concept_id"}))))
 
   (testing "Search with wildcards in concept_id param not supported."
     (is (= {:status 400
             :errors ["Concept-id [S*] is not valid."
                      "Option [pattern] is not supported for param [concept_id]"]}
-           (search/find-refs :service {:concept-id "S*" "options[concept-id][pattern]" true}))))
+           (services/search {:concept-id "S*" "options[concept-id][pattern]" true}))))
 
   (testing "Search with ignore_case in concept_id param not supported."
     (is (= {:status 400
             :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
-           (search/find-refs
-            :service {:concept-id "S1000-PROV1" "options[concept-id][ignore-case]" true}))))
+           (services/search
+            {:concept-id "S1000-PROV1" "options[concept-id][ignore-case]" true}))))
 
   (testing "Default service search result format is XML"
     (let [{:keys [status headers]} (search/find-concepts-in-format nil :service {})]
@@ -81,7 +83,7 @@
     (index/wait-until-indexed)
 
     (are3 [expected-services query]
-      (d/refs-match? expected-services (search/find-refs :service query))
+      (d/refs-match? expected-services (services/search query))
 
       "Find all"
       all-services {}
@@ -216,6 +218,326 @@
       [service3]
       {:native-id "svc*" :provider "PROV2" "options[native-id][pattern]" true})))
 
+(deftest search-service-simple-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :LongName "Long Service Name-1"
+              :Version "40.0"})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"
+              :LongName "Long Service Name-2"
+              :Version "42.0"
+              :AncillaryKeywords ["stuff" "things"]})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Name"
+      [svc1 svc2]
+      "Service"
+
+      "Long Name"
+      [svc1 svc2]
+      "Long"
+
+      "Version"
+      [svc2]
+      "42.0"
+
+      "Combination of keywords"
+      [svc1]
+      "Service Name-1"
+
+      "Ancillary Keywords"
+      [svc2]
+      "things stuff"
+
+      "Combination of keywords - different order, case insensitive"
+      [svc2]
+      "nAmE-2 sERviCE"
+
+      "Wildcards"
+      [svc1 svc2]
+      "Ser?ice Name*")))
+
+(deftest search-service-related-url-keywords-test
+  (let [url1 (data-umm-cmn/related-url {
+              :URL "http://data.space/downloads"
+              :Description "Pertinent Data Source Page 1"
+              :URLContentType "DistributionURL"
+              :Type "GET DATA"
+              :Subtype "ON-LINE ARCHIVE"})
+        url2 (data-umm-cmn/related-url {
+              :URL "http://data.space/home"
+              :Description "Pertinent Data Source Page 2"
+              :URLContentType "PublicationURL"
+              :Type "HOME PAGE"
+              :Subtype "USER'S GUIDE"})
+        svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :RelatedURL url1})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"
+              :RelatedURL url2})
+        svc3 (services/ingest-service-with-attrs {
+              :native-id "svc-3"
+              :Name "Service 3"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "URL"
+      [svc1]
+      "space downloads"
+
+      "Description"
+      [svc1 svc2]
+      "Data Source"
+
+      "URLContentType"
+      [svc2]
+      "PublicationURL"
+
+      "Type"
+      [svc2]
+      "home page"
+
+      "Subtype"
+      [svc1]
+      "on-line archive")))
+
+(deftest search-service-science-keywords-test
+  (let [skw1 (data-umm-cmn/science-keyword {
+              :Category "science kw cat-1"
+              :Topic "science kw topic-1"
+              :Term "science kw term-1"
+              :VariableLevel1 "science kw var-1 level-1"
+              :VariableLevel2 "science kw var-1 level-2"
+              :VariableLevel3 "science kw var-1 level-3"
+              :DetailedVariable "science kw deet var-1"})
+        skw2 (data-umm-cmn/science-keyword {
+              :Category "science kw cat-2"
+              :Topic "science kw topic-2"
+              :Term "science kw term-2"
+              :VariableLevel1 "science kw var-2 level-1"
+              :VariableLevel2 "science kw var-2 level-2"
+              :VariableLevel3 "science kw var-2 level-3"})
+        skw3 (data-umm-cmn/science-keyword {
+              :Category "science kw cat-3"
+              :Topic "science kw topic-3"
+              :Term "science kw term-3"
+              :VariableLevel1 "science kw var-3 level-1"
+              :VariableLevel2 "science kw var-3 level-2"
+              :VariableLevel3 "science kw var-3 level-3"
+              :DetailedVariable "science kw deet var-3"})
+        svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :provider-id "PROV1"
+              :Name "Service 1"
+              :LongName "Long Service Name 1"
+              :ScienceKeywords [skw1 skw2]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"
+              :LongName "Long Service Name 2"
+              :ScienceKeywords [skw3]})
+        svc3 (services/ingest-service-with-attrs {
+              :native-id "svc-3"
+              :Name "Service 3"
+              :LongName "Long Service Name 3"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      ;; Science keywords
+      "Category"
+      [svc1]
+      "science kw cat-1"
+
+      "Topic"
+      [svc1 svc2]
+      "science kw topic"
+
+      "Term"
+      [svc1 svc2]
+      "science kw term"
+
+      "Variable level 1"
+      [svc1]
+      "var-1 level-1"
+
+      "Variable level 2"
+      [svc1]
+      "var-1 level-2"
+
+      "Variable level 3"
+      [svc1]
+      "var-1 level-3"
+
+      "Detailed Variable"
+      [svc1]
+      "deet var-1"
+
+      "Combination of keywords"
+      [svc1]
+      "cat-1 topic-1"
+
+      "Combination of keywords - different order, case insensitive"
+      [svc1]
+      "ToPiC-1 CaT-1"
+
+      "Wildcards"
+      [svc1 svc2]
+      "s?ien* k? var*")))
+
+(deftest search-service-contact-group-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :ContactGroups [(data-umm-s/contact-group)]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Roles"
+      [svc1]
+      "TECHNICAL CONTACT"
+
+      "Group Name"
+      [svc1]
+      "Group Name")))
+
+(deftest search-service-contact-persons-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :ContactPersons [(data-umm-s/contact-person)]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Roles"
+      [svc1]
+      "AUTHOR"
+
+      "First Name"
+      [svc1]
+      "Alice"
+
+      "Last Name"
+      [svc1]
+      "Bob")))
+
+(deftest search-service-platforms-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :Platforms [(data-umm-s/platform)]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Platform Short Name"
+      [svc1]
+      "pltfrm1"
+
+      "Platform Long Name"
+      [svc1]
+      "Platform Name"
+
+      "Instrument Short Name"
+      [svc1]
+      "instr1"
+
+      "Instrument Long Name"
+      [svc1]
+      "Instrument Name")))
+
+(deftest search-service-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :ServiceKeywords [(data-umm-s/service-keywords)]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Service Category"
+      [svc1]
+      "service category"
+
+      "Service Specific Term"
+      [svc1]
+      "specific service term"
+
+      "Service Term"
+      [svc1]
+      "service term"
+
+      "Service Topic"
+      [svc1]
+      "service topic")))
+
+(deftest search-service-organization-keywords-test
+  (let [svc1 (services/ingest-service-with-attrs {
+              :native-id "svc-1"
+              :Name "Service 1"
+              :ServiceOrganizations [(data-umm-s/service-organization)]})
+        svc2 (services/ingest-service-with-attrs {
+              :native-id "svc-2"
+              :Name "Service 2"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-services keyword-query]
+      (services/assert-service-search
+       expected-services (services/search {:keyword keyword-query}))
+
+      "Short Name"
+      [svc1]
+      "svcorg1"
+
+      "Long Name"
+      [svc1]
+      "Service Org 1"
+
+      "Roles"
+      [svc1 svc2]
+      "SERVICE PROVIDER"
+
+      "Contact Persons"
+      [svc1]
+      "Alice")))
+
 (deftest deleted-services-not-found-test
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest-umm-spec-collection "PROV1"
@@ -231,13 +553,13 @@
     (index/wait-until-indexed)
 
     ;; Now I should find the all services when searching
-    (d/refs-match? all-services (search/find-refs :service {}))
+    (d/refs-match? all-services (services/search {}))
 
     ;; Delete service1
     (ingest/delete-concept svc1-concept {:token token})
     (index/wait-until-indexed)
     ;; Now searching services does not find the deleted service
-    (d/refs-match? [service2] (search/find-refs :service {}))
+    (d/refs-match? [service2] (services/search {}))
 
     ;; Now verify that after we delete a service that has service association,
     ;; we can't find it through search
@@ -249,7 +571,7 @@
     (ingest/delete-concept svc2-concept {:token token})
     (index/wait-until-indexed)
     ;; Now searching services does not find the deleted services
-    (d/refs-match? [] (search/find-refs :service {}))))
+    (d/refs-match? [] (services/search {}))))
 
 (deftest service-search-sort
   (let [service1 (services/ingest-service-with-attrs {:native-id "svc1"
@@ -269,7 +591,7 @@
     (are3 [sort-key expected-services]
       (is (d/refs-match-order?
            expected-services
-           (search/find-refs :service {:sort-key sort-key})))
+           (services/search {:sort-key sort-key})))
 
       "Default sort"
       nil

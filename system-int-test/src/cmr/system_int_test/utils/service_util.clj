@@ -4,27 +4,26 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.test :refer [is]]
-   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as config]
    [cmr.umm-spec.versioning :as versioning]))
-
-(def content-type
-  "The default content type used in the tests below."
-  "application/vnd.nasa.cmr.umm+json")
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
-  (mt/with-version content-type versioning/current-service-version))
+  (mime-types/with-version
+   mime-types/umm-json versioning/current-service-version))
 
 (def default-opts
   "Default HTTP client options for use in the tests below."
   {:accept-format :json
-   :content-type content-type})
+   :content-type mime-types/umm-json})
 
 (defn token-opts
   "A little testing utility function that adds a user token to the default
@@ -67,7 +66,7 @@
       (merge result attrs))))
 
 (defn ingest-service-with-attrs
-  "Helper function to ingest a service with the given service attributes"
+  "Helper function to ingest a service with the given service attributes."
   ([metadata-attrs]
    (ingest-service (make-service-concept metadata-attrs)))
   ([metadata-attrs attrs]
@@ -75,6 +74,40 @@
   ([metadata-attrs attrs idx]
    (ingest-service (make-service-concept metadata-attrs attrs idx))))
 
+(defn search
+  "Searches for services using the given parameters."
+  ([]
+    (search {}))
+  ([params]
+    (search params {}))
+  ([params options]
+    (search/find-refs :service params options)))
+
+(defn service-result->xml-result
+  [service]
+  (let [base-url (format "%s://%s:%s/concepts"
+                         (config/search-protocol)
+                         (config/search-host)
+                         (config/search-port))
+        id (:concept-id service)
+        revision (:revision-id service)]
+    (-> service
+        (assoc :id id
+               :location (format "%s/%s/%s" base-url id revision))
+        (select-keys [:id :revision-id :location]))))
+
+(defn assert-service-search
+  "Verifies the service search results"
+  [services response]
+  (let [expected-items (set (map service-result->xml-result services))
+        expected-response {:hits (count services)
+                           :refs expected-items}]
+    (is (:took response))
+    (is (= expected-response
+           (-> response
+               (select-keys [:status :hits :refs])
+               (util/update-in-each [:refs] dissoc :name)
+               (update :refs set))))))
 
 (defn- coll-service-association->expected-service-association
   "Returns the expected service association for the given collection concept id to
