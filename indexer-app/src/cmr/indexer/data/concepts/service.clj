@@ -5,7 +5,9 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.indexer.data.concept-parser :as concept-parser]
+   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -13,7 +15,20 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields]} concept
-        {:keys [service-name]} extra-fields]
+        {:keys [service-name]} extra-fields
+        schema-keys [:LongName
+                     :Name
+                     :Version
+                     :AncillaryKeywords
+                     :ContactGroups
+                     :ContactPersons
+                     :Platforms
+                     :RelatedURL
+                     :ScienceKeywords
+                     :ServiceKeywords
+                     :ServiceOrganizations]
+        keyword-values (keyword-util/concept-keys->keyword-text
+                        parsed-concept schema-keys)]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted services would have gone through the index-service/delete-concept path.
@@ -26,6 +41,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
+       :keyword keyword-values
        :user-id user-id
        :revision-date revision-date}
       {:concept-id concept-id
@@ -37,6 +53,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
+       :keyword keyword-values
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))})))

@@ -72,7 +72,8 @@
     concept-id))
 
 (defmulti parsed-concept->elastic-doc
-  "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
+  "Returns elastic json that can be used to insert into Elasticsearch for the
+  given concept"
   (fn [context concept parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
