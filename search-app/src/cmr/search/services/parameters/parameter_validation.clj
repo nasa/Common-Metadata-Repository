@@ -79,7 +79,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{}
+    {:single-value #{:keyword}
      :multiple-value #{:name :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
@@ -89,11 +89,9 @@
   {:collection #{:tag-key}
    :granule #{:concept-id}})
 
-
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
 (def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
-
 
 (defmethod cpv/valid-parameter-options :collection
   [_]
@@ -677,7 +675,6 @@
               (when-not (= field :include-defaults)
                 (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
           (seq boosts))))
-
 
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
