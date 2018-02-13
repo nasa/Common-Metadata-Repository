@@ -34,6 +34,7 @@
    :entry-title :string
    :exclude :exclude
    :has-granules :has-granules
+   :has-granules-or-cwic :has-granules-or-cwic
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :instrument :string
@@ -287,6 +288,10 @@
   (if (= "unset" value)
     cqm/match-all
     (qm/->HasGranulesCondition (= "true" value))))
+
+(defmethod common-params/parameter->condition :has-granules-or-cwic
+  [_ _ _ value _]
+  (qm/->HasGranulesOrCwicCondition (= "true" value)))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function

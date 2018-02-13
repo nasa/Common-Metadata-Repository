@@ -1,8 +1,9 @@
 (ns cmr.search.data.complex-to-simple-converters.has-granules
-  (:require [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-base]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-model :as cqm]))
+  (:require
+   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-base]))
 
 ;; The following protocol implementation ensures that a c.s.m.q.HasGranulesCondition record in our
 ;; query model will be expanded into a form which can, in turn, be converted into another structure

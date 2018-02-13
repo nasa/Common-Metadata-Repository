@@ -1,31 +1,22 @@
-#!/bin/sh
-# This script is used to setup an Oracle database for use with the CMR. It creates all of the users
-# and runs the database migrations to fully setup Oracle. The script should be run from the cmr root
-# directory, ie, # ./dev-system/support/setup-oracle.sh
+#!/bin/bash
 
-# Should be able to use lein modules, however it is reporting that create-user is returning a
-# non-zero exit code even though manually running lein create-user for an app returns 0 exit code
-# lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
+# XXX DEPRECATED!
+#
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV
+#     variable and point to the build execution below.
 
-# Fail the script if the required environment variables are not set.
-if [ -z "${CMR_METADATA_DB_PASSWORD}" ] || 
-   [ -z "${CMR_BOOTSTRAP_PASSWORD}" ] || 
-   [ -z "${CMR_INGEST_PASSWORD}" ]; then
-  echo "Failed running the script because one or more of the following environment variables are not set: CMR_METADATA_DB_PASSWORD, CMR_BOOTSTRAP_PASSWORD and CMR_INGEST_PASSWORD" >&2
- exit 1
-fi 
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
 
-date && echo "Creating database users" &&
-for i in metadata-db-app bootstrap-app ingest-app; do
-  (cd $i && lein create-user)
-  if [ $? -ne 0 ] ; then
-    echo "Failed to create database users for $i" >&2
-    exit 1
-  fi
-done
-date && echo "Running database migrations" &&
-lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" migrate
-if [ $? -ne 0 ] ; then
-  echo "Failed to run database migrations" >&2
-  exit 1
-fi
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr setup db

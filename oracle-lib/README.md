@@ -28,9 +28,8 @@ project.
   In each case, be sure you get the version matching the versions specified
   in the `project.clj`.
 2. Put the Jars in `oracle-lib/support`
-3. From `oracle-lib`, run `./support/install_oracle_jars.sh` which will
-   install the oracle jars in your local maven repository.
+3. Finally, perform the actual installation: `cmr install oracle-libs`.
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2014-2018 NASA

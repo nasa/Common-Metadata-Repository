@@ -1,53 +1,22 @@
-#!/bin/sh
-# This script is used to manage building the CMR applications
+#!/bin/bash
+
+# XXX DEPRECATED!
 #
-# The script uses these environment variables:
-# CMR_BUILD_UBERJARS: If set to true, the script will create the application uberjars.
-# CMR_DEV_SYSTEM_DB_TYPE: If set to external, the script will create all of the users required and
-# run the database migrations to setup an Oracle database for use with CMR. Note that the caller
-# should also set CMR_DB_URL to the URL to connect to the external database.
-# CMR_ORACLE_JAR_REPO: Oracle libraries are not available in public maven repositories. We can host
-# them in internal ones for building. If this is set then the maven repo will be updated to use this.
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV
+#     variable and point to the build execution below.
 
-date && echo "Installing all apps and generating API documentation" &&
-(cd .. && lein 'install-with-content-no-clean!')
-if [ $? -ne 0 ] ; then
-  echo "Failed to install apps and generate docs" >&2
-  exit 1
-fi
-# The library is reinstalled after installing gems so that it will contain the gem code.
-date && echo "Installing collection renderer gems and reinstalling library" &&
-(cd ../collection-renderer-lib && lein do install-gems, install, clean)
-if [ $? -ne 0 ] ; then
-  echo "Failed to install gems" >&2
-  exit 1
-fi
-# Orbit gems are only a test time dependency so the library doesn't need to be reinstalled.
-date && echo "Installing orbits gems" &&
-(cd ../orbits-lib && lein install-gems)
-if [ $? -ne 0 ] ; then
-  echo "Failed to install gems" >&2
-  exit 1
-fi
-if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
-  (cd ../ && dev-system/support/setup-oracle.sh)
-  if [ $? -ne 0 ] ; then
-    echo "Failed to setup Oracle" >&2
-    exit 1
-  fi
-fi
-if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
-  date && echo "Building uberjars" &&
-  (cd .. && lein with-profile uberjar modules uberjar)
-  if [ $? -ne 0 ] ; then
-    echo "Failed to generate uberjars" >&2
-    exit 1
-  fi
-fi
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
 
-date && echo "Building dev system uberjar" &&
-lein do clean, uberjar
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate dev system uberjar" >&2
-  exit 1
-fi
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr build all

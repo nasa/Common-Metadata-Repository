@@ -1,11 +1,22 @@
-# This script will install Elasticsearch marvel locally. This is mostly so that you can use the sense
-# plugin on local data. Visit http://localhost:9210/_plugin/marvel/sense/index.html after running this.
-# Note that this disables running marvel statistics gathering so that only the sense part of marvel works.
-# Run this inside the dev-system folder
-mkdir -p plugins/marvel
-cd plugins/marvel
-curl -O https://download.elasticsearch.org/elasticsearch/marvel/marvel-1.3.0.tar.gz
-tar -zxvf marvel-1.3.0.tar.gz
+#!/bin/bash
 
-# Rename the jar file so that marvel won't attempt to run. This prevents exceptions with "failed to load marvel_index_template.json"
-mv marvel-1.3.0.jar marvel-1.3.0.jar_ignore
+# XXX DEPRECATED!
+#
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV
+#     variable and point to the build execution below.
+
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
+
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr install local marvel

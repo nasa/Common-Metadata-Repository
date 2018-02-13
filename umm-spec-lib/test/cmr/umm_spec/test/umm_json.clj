@@ -64,7 +64,7 @@
 
 (defn- remove-get-service-and-get-data-nils
   "Removes nil values in GetService and GetData added by json->umm to RelatedUrls,
-  this is needed to prevent failures caused by json->umm parser.  It will add in :GetService
+  this is needed to prevent failures caused by json->umm parser. It will add in :GetService
   and :GetData that shouldn't be there because it is calling the contructor for RelatedUrlType defrecord.
   So we remove them because they should only be present when URLContentType = DistributionURL and
   Type = GET DATA or GET SERVICE."

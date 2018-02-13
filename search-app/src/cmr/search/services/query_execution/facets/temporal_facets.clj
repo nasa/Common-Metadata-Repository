@@ -25,19 +25,8 @@
 
 (defn temporal-facet
   "Creates a temporal facet for the provided field."
-  [field interval-granularity]
+  [interval-granularity]
   (let [interval-granularity :year]
     {:date_histogram
-     {:field field
+     {:field :start-date-doc-values
       :interval interval-granularity}}))
-
-(defn parse-temporal-buckets
-  "Parses the Elasticsearch aggregations response to return a map of the value for the current
-  interval and count of the number of documents for that interval."
-  [buckets interval]
-  (reverse
-   (map (fn [bucket]
-          (let [value (parse-date (:key_as_string bucket) interval)]
-            {:title value
-             :count (:doc_count bucket)}))
-        buckets)))

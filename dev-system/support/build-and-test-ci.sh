@@ -1,29 +1,23 @@
-#!/bin/sh
-# This script is used to manage building and testing the CMR applications within the continuous
-# integration (CI) environment. The intent is to never need to modify the configuration of the CI
-# server. Instead the CI server will simply call this script. The script should be run from the cmr
-# root directory, ie, ./dev-system/support/build-and-test-ci.sh
-#
-# The script uses two environment variables:
-# CMR_BUILD_UBERJARS: If set to true, the script will create the application uberjars.
-# CMR_DEV_SYSTEM_DB_TYPE: If set to external, the script will create all of the users required and
-# run the database migrations to setup an Oracle database for use with CMR. Note that the caller
-# should also set CMR_DB_URL to the URL to connect to the external database.
+#!/bin/bash
 
-date && echo "Building and starting dev-system" &&
-(cd dev-system && support/build-and-run-internal.sh)
-if [ $? -ne 0 ] ; then
-  echo "Failed to build and start up dev system" >&2
-  exit 1
-fi
-date && echo "Running tests" &&
-lein test
-if [ $? -ne 0 ] ; then
-  echo "Failed Tests" >&2
-  cat */testreports.xml */test2junit/xml/*.xml
-  (curl -XPOST http://localhost:2999/stop; true)
-  exit 1
-fi
-cat */testreports.xml */test2junit/xml/*.xml
-date && echo "Stopping applications" &&
-(curl -XPOST http://localhost:2999/stop; true)
+# XXX DEPRECATED!
+#
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please 
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV 
+#     variable and point to the build execution below.
+
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
+CMR_INTERNAL_NEXUS_REPO=true
+
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr test cicd

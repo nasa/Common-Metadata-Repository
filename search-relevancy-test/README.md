@@ -14,6 +14,7 @@ The tasks supported by this project are:
 * download-collections
 * relevancy-tests
 * boost-tests
+* analyze-test
 
 ### Download collections
 
@@ -49,6 +50,17 @@ Arguments:
 * -field - (required) the field for which to configure the boost
 * -min-value (optional) - the smallest boost value, defaults to 1.0
 * -max-value (optional) - the highest boost value, defaults to 4.0
+
+### analyze-test
+
+`lein run analyze-test <anomaly-number> <anomaly-filename>`
+
+This task will help analyze the failure of a test with the anomaly-number in the anomaly file with the anomaly-filename. 
+If anomaly-filename is not provided, anomaly_tests.csv will be used.
+
+For example, if you run `lein run analyze-test 5`, it will analyze test number 5 in anomaly_tests.csv and give you the
+following information, which helps explain why C1237114139-GES_DISC appears above C1239966794-GES_DISC: 
+Filtered search result is:  ({:id C1237114193-GES_DISC, :score 1.3104, :version_id 008, :short_name TOMSEPL2, :processing_level_id 2} {:id C1239966794-GES_DISC, :score 1.008, :version_id 003, :short_name OMDOAO3, :processing_level_id 2})
 
 ## License
 

@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
+   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as es-config]
    [cmr.system-int-test.data2.core :as data2-core]
@@ -79,6 +80,26 @@
                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [] result))))))
+    
+    (testing "Scrolling with different search params from the original"
+      (let [result (search/find-concepts-in-format
+                     mime-types/xml
+                     :granule
+                     {:provider "PROV1" :scroll true :page-size 2})
+            format (get-in result [:headers :Content-Type])
+            hits (get-in result [:headers :CMR-Hits])
+            scroll-id (get-in result [:headers :CMR-Scroll-Id])
+            ;; Do a subsequent scroll search with different format, provider, scroll and page-size.
+            ;; Verify the new search params are ignored. It still returns the same xml format.
+            subsequent-result (search/find-concepts-in-format
+                                mime-types/json
+                                :granule
+                                {:provider "PROV2" :scroll false :page-size 10}
+                                {:headers {routes/SCROLL_ID_HEADER scroll-id}})
+            subsequent-format (get-in subsequent-result [:headers :Content-Type])
+            subsequent-hits (get-in subsequent-result [:headers :CMR-Hits])]
+         (is (= hits subsequent-hits))
+         (is (= format subsequent-format))))
 
     ;; The following test is included for completeness to test session timeouts, but it
     ;; cannot be run regularly because it is impossible to predict how long it will take

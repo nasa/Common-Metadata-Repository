@@ -1,33 +1,22 @@
-#!/bin/sh
-# This script is used to setup CMR for local development. It assumes you have
-# cloned the whole repo, installed leiningen and Java.
+#!/bin/bash
+
+# XXX DEPRECATED!
 #
-# Additionally, this script assumes it is being executed in the parent
-# directory of the the dev-system project.
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV
+#     variable and point to the build execution below.
 
-date && echo "Installing all apps and generating API documentation" &&
-lein install-with-content!
-if [ $? -ne 0 ] ; then
-  echo "Failed to install apps and generate docs" >&2
-  exit 1
-fi
-rm -r dev-system/checkouts
-date && echo "Creating dev-system checkouts directory" &&
-(cd dev-system && lein create-checkouts)
-if [ $? -ne 0 ] ; then
-  echo "Failed to create checkouts directory" >&2
-  exit 1
-fi
-date && echo "Installing collection renderer gems" &&
-(cd collection-renderer-lib && lein install-gems)
-if [ $? -ne 0 ] ; then
-  echo "Failed to install gems" >&2
-  exit 1
-fi
-date && echo "Installing orbit library gems" &&
-(cd orbits-lib && lein install-gems)
-if [ $? -ne 0 ] ; then
-  echo "Failed to install gems" >&2
-  exit 1
-fi
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
 
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr setup dev

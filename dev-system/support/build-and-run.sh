@@ -1,16 +1,23 @@
-#!/bin/sh
-# This is a script for building and running the dev system for continuous integration.
-# It will build and run it in the background.
-# CMR_COLLS_WITH_SEPARATE_INDEXES is the environment variable used by indexer to set up granule indexes
-# for large collections. It is set to facilitate granule_search_index_name_test in system-int-test.
+#!/bin/bash
 
-if [ -d es_data ] ; then
-  rm -fr es_data
-fi
-date && echo "Building dev-system" &&
-support/build.sh
-if [ $? -ne 0 ] ; then
-  echo "Failed to build dev system" >&2
-  exit 1
-fi
-nohup java -classpath ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr.dev_system.runner&
+# XXX DEPRECATED!
+#
+#     The scripts kept in dev-system/support have been migrated to the new CMR
+#     command line tool. This script will be removed in the future; please
+#     update your CI/CD build plans to set the CMR_INTERNAL_NEXUS_REPO ENV
+#     variable and point to the build execution below.
+
+CMR_DIR=`dirname $0`/../..
+PATH=$PATH:$CMR_DIR/bin
+
+echo '***'
+echo '*** DEPRECATED!'
+echo '***'
+echo '*** The use of dev-system/support/* scripts is now deprecated. Please'
+echo '*** remove all references to them in the Bamboo build scripts and use'
+echo '*** the new CMR CLI tool in the top-level bin directory. Note that to'
+echo '*** use the internal nexus repository, you will also need to set the'
+echo '*** CMR_INTERNAL_NEXUS_REPO environment variable in your scripts.'
+echo '***'
+cmr build all
+cmr start uberjar dev-system

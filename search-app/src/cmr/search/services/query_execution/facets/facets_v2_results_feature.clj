@@ -54,8 +54,7 @@
       (hv2/nested-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size depth))
 
     :start-date
-    (temporal-facets/temporal-facet (get (facets-v2-params->elastic-fields concept-type) facet-field)
-                                    size)
+    (temporal-facets/temporal-facet size)
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
 

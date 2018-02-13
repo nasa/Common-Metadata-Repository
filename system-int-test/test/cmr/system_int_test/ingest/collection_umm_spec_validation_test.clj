@@ -112,7 +112,7 @@
                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation errors not returned"
@@ -130,7 +130,7 @@
                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true"
@@ -320,24 +320,23 @@
               (is (= warning-message (:warnings response)))))
 
           "ECHO10 Ingest and Ingest Validation"
-          :echo10 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"
+          :echo10 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"
 
           "umm-json Ingest and Ingest Validation for Invalid data date ranges"
           :umm-json (collection-invalid-data-date-ranges) "After translating item to UMM-C the metadata had the following issue: [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].After translating item to UMM-C the metadata had the following issue: [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past.  latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
-          
+
           "DIF10 Ingest and Ingest Validation"
-          :dif10 (data-umm-c/collection-missing-properties-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"ProcessingLevel\"])"
+          :dif10 (data-umm-c/collection-missing-properties-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"ProcessingLevel\"])"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (data-umm-c/collection-missing-properties-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :dif (data-umm-c/collection-missing-properties-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO19115 Ingest and Ingest Validation"
-          :iso19115 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso19115 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso-smap (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
-          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
-
+          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))

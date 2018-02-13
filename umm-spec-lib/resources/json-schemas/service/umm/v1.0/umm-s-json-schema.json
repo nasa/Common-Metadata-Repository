@@ -86,19 +86,6 @@
       "maxLength": 80,
       "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
-    "ServiceContactType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "The ServiceContact is the point of contact for more information about the service, software, or tool. ServiceContact is a parent element to the ContactPerson and the ContactGroup elements. Its purpose is to hold shared elements that its children will use. The ServiceContact element must exist with at least 1 of its children; it cannot exist on its own.",
-      "properties": {
-        "ShortName": {
-          "description": "The name of the coverage available from the service.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
-        }
-      }
-    },
     "ServiceOrganizationType": {
       "type": "object",
       "additionalProperties": false,
@@ -722,13 +709,19 @@
         },
       "minItems": 1
       },
-      "ServiceContacts": {
-        "description": "The ServiceContact is the point of contact for more information about the service, software, or tool. ServiceContact is a parent element to the ContactPerson and the ContactGroup elements. Its purpose is to hold shared elements that its children will use. The ServiceContact element must exist with at least 1 of its children; it cannot exist on its own.",
+      "ContactGroups": {
+        "description": "This is the contact groups of the service.",
         "type": "array",
         "items": {
-            "$ref": "#/definitions/ServiceContactType"
-        },
-      "minItems": 1
+          "$ref": "#/definitions/ContactGroupType"
+        }
+      },
+      "ContactPersons": {
+        "description": "This is the contact persons of the service.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ContactPersonType"
+        }
       },
       "Platforms": {
         "description": "Associates the satellite/platform that is supported by the service, software, or tool.",

@@ -147,7 +147,8 @@
      :CollectionProgress (get-umm-element/get-collection-progress
                            coll-progress-mapping
                            doc
-                           "/DIF/Data_Set_Progress") 
+                           "/DIF/Data_Set_Progress"
+                           sanitize?) 
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")
@@ -213,8 +214,7 @@
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
-     :DataCenters (concat (center/parse-originating-centers doc)
-                          (center/parse-data-centers doc sanitize?)
+     :DataCenters (concat (center/parse-data-centers doc sanitize?)
                           (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c

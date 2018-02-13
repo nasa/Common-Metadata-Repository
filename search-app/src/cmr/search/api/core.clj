@@ -29,24 +29,24 @@
     mt/kml
     mt/native})
 
-(defn add-scroll-id-to-cache
-  "Adds the given ES scroll-id to the cache and returns the generated key"
-  [context scroll-id]
+(defn add-scroll-id-and-search-params-to-cache
+  "Adds the given ES scroll-id and search-params to the cache and returns the generated key"
+  [context scroll-id search-params]
   (when scroll-id
     (let [short-scroll-id (str (hash scroll-id))
           id-cache (cache/context->cache context search/scroll-id-cache-key)]
-      (cache/set-value id-cache short-scroll-id scroll-id)
+      (cache/set-value id-cache short-scroll-id {:scroll-id scroll-id :search-params search-params})
       short-scroll-id)))
 
-(defn get-scroll-id-from-cache
-  "Returns the full ES scroll-id from the cache using the short scroll-id as a key. Throws a
+(defn get-scroll-id-and-search-params-from-cache
+  "Returns the full ES scroll-id and search-params from the cache using the short scroll-id as a key. Throws a
   service error :not-found if the key does not exist in the cache."
   [context short-scroll-id]
   (when short-scroll-id
-    (if-let [scroll-id (-> context
-                           (cache/context->cache search/scroll-id-cache-key)
-                           (cache/get-value short-scroll-id))]
-      scroll-id
+    (if-let [scroll-id-and-search-params (-> context
+                                             (cache/context->cache search/scroll-id-cache-key)
+                                             (cache/get-value short-scroll-id))]
+      scroll-id-and-search-params 
       (svc-errors/throw-service-error
        :not-found
        (format "Scroll session [%s] does not exist" short-scroll-id)))))
@@ -114,9 +114,12 @@
 
 (defn search-response
   "Returns the response map for finding concepts"
-  [context response]
-  (let [short-scroll-id (add-scroll-id-to-cache context (:scroll-id response))
-        response (-> response
-                     (update :result mt/format->mime-type)
-                     (update :scroll-id (constantly short-scroll-id)))]
-    (common-routes/search-response response)))
+  ([context response]
+   (search-response context response nil))
+  ([context response search-params]
+   (let [short-scroll-id (add-scroll-id-and-search-params-to-cache 
+                           context (:scroll-id response) search-params)
+         response (-> response
+                      (update :result mt/format->mime-type)
+                      (update :scroll-id (constantly short-scroll-id)))]
+     (common-routes/search-response response))))
