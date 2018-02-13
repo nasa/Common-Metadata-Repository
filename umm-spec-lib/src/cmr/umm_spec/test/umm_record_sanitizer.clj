@@ -104,7 +104,9 @@
   [records]
   (seq (for [record records]
          (if-let [contact-info (:ContactInformation record)]
-           (update-in record [:ContactInformation :RelatedUrls] sanitize-related-urls)
+           (update-in record
+                      [:ContactInformation :RelatedUrls]
+                      sanitize-related-urls)
            record))))
 
 (defn- sanitize-data-centers
@@ -160,9 +162,7 @@
       (sanitize-umm-record-contacts :ContactPersons)
       (sanitize-umm-record-contacts :ContactGroups)
       (sanitize-umm-record-related-url :CollectionCitations)
-      (sanitize-umm-record-related-url :PublicationReferences)
-      (update-in-each [:PublicationReferences] sanitize-online-resource)
-      (update-in-each [:CollectionCitations] sanitize-online-resource)))
+      (sanitize-umm-record-related-url :PublicationReferences)))
 
 (defn- sanitize-umm-number-of-instruments
   "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"
@@ -192,6 +192,13 @@
    (assoc-in record [:OnlineResource :Function] valid-uri)
    record))
 
+(defn- sanitize-umm-collection-citations
+  "Sanitize different elements of the CollectionCitations data."
+  [record]
+  (-> record
+      (update-in-each [:CollectionCitations] sanitize-online-resource)
+      (update-in-each [:CollectionCitations] sanitize-umm-online-resource-function)))
+
 (defn sanitized-umm-c-record
   "Returns the sanitized version of the given umm-c record."
   [record]
@@ -204,14 +211,16 @@
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
       sanitize-umm-record-urls
+      (update-in-each [:PublicationReferences] sanitize-online-resource)
       sanitize-umm-number-of-instruments
       sanitize-umm-data-presentation-form
-      (update-in-each [:CollectionCitations] sanitize-umm-online-resource-function)))
+      sanitize-umm-collection-citations))
 
 (defn sanitized-umm-s-record
   "Include only the sanitizers needed for a given umm-s record."
   [record]
-  record)
+  (-> record
+      sanitize-umm-record-urls))
 
 (defn sanitized-umm-var-record
   "Include only the sanitizers needed for a given umm-var record."

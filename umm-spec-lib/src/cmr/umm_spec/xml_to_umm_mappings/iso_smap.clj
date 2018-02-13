@@ -153,7 +153,8 @@
        :CollectionProgress (get-umm-element/get-collection-progress
                              coll-progress-mapping
                              data-id-el
-                             "gmd:status/gmd:MD_ProgressCode")
+                             "gmd:status/gmd:MD_ProgressCode"
+                             sanitize?)
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")

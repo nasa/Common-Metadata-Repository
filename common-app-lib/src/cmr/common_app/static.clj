@@ -183,6 +183,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Routing Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+(def site-provider-map
+  "Defines site and a sample provider map for all sites"
+  {"cmr.earthdata.nasa.gov" "PODAAC"
+   "cmr.uat.earthdata.nasa.gov" "DEMO_89"
+   "cmr.sit.earthdata.nasa.gov" "DEMO_PROV"
+   "cmr.wl.earthdata.nasa.gov" "LAADS"})
 
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
@@ -204,11 +211,14 @@
         ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
         (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
           (when-let [resource (site-resource page)]
-            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
+            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
+                  site-example-provider (get site-provider-map (headers "host") "PROV1") 
+                  cmr-example-collection-id (str "C1234567-" site-example-provider)]
               {:status 200
                :body (-> resource
                          slurp
-                         (string/replace "%CMR-ENDPOINT%" cmr-root))})))
+                         (string/replace "%CMR-ENDPOINT%" cmr-root)
+                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
         ;; Other static resources (Javascript, CSS)
         (route/resources "/" {:root resource-root})
         (pages/not-found))))

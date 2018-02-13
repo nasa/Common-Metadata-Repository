@@ -5,12 +5,13 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [search-relevancy-test.anomaly-fetcher :as anomaly-fetcher]
+   [search-relevancy-test.anomaly-analyzer :as anomaly-analyzer]
    [search-relevancy-test.boost-test :as boost-test]
    [search-relevancy-test.relevancy-test :as relevancy-test]))
 
 (def tasks
   "List of available tasks"
-  ["download-collections" "relevancy-tests" "boost-tests"])
+  ["download-collections" "relevancy-tests" "boost-tests" "analyze-test"])
 
 (defn- usage
  "Prints the list of available tasks."
@@ -21,6 +22,9 @@
   "Runs search relevancy tasks."
   [task-name & args]
   (case task-name
+        "analyze-test" (if (some? (second args))
+                         (anomaly-analyzer/analyze-test (first args) (second args))
+                         (anomaly-analyzer/analyze-test (first args)))
         "download-collections" (anomaly-fetcher/download-and-save-all-collections)
         "relevancy-tests" (relevancy-test/relevancy-test args)
         "edsc-relevancy-tests" (relevancy-test/edsc-relevancy-test args)

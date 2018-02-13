@@ -384,6 +384,13 @@
           },
           {
             "in": "query",
+            "name": "has_granules_or_cwic",
+            "description": "When <code>has_granules_or_cwic</code> is set to \"true\" or \"false\", results will be restricted to collections with or without granules, respectively. Or they are CWIC tagged collections.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
             "name": "collection_data_type[]",
             "description": "Matches collections by the collection data type. The following are aliases for \"NEAR_REAL_TIME\": \"near_real_time\", \"nrt\", \"NRT\", \"near real time\", \"near-real time\", \"near-real-time\", \"near real-time\".",
             "required": false,

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Collection>
+    <ShortName>THORPEX_ER2_MAS</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2003-08-25T00:00:00.000Z</InsertTime>
+    <LastUpdate>2003-08-25T00:00:00.000Z</LastUpdate>
+    <LongName>THe Observing-system Research and Predictability EXperiment (THORPEX) ER_2 Moderate Resolution Imaging Spectrometer (MODIS) Airborne Simulator (MAS) Data in HDF (THORPEX_ER2_MAS).</LongName>
+    <DataSetId>THORPEX_ER2_MAS</DataSetId>
+    <Description>THe Observing-system Research and Predictability EXperiment (THORPEX) ER_2 MODIS Airborne Simulator (MAS) Data in HDF covering Hawaii and the Pacific Ocean.</Description>
+    <Orderable>true</Orderable>
+    <Visible>false</Visible>
+    <ProcessingLevelId>1B</ProcessingLevelId>
+    <ProcessingLevelDescription>Data processed to sensor units</ProcessingLevelDescription>
+    <ArchiveCenter>Atmospheric Science Data Center</ArchiveCenter>
+    <RestrictionFlag>4</RestrictionFlag>
+    <RestrictionComment>hello</RestrictionComment>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2003-01-01T00:00:00Z</BeginningDateTime>
+            <EndingDateTime>2003-04-10T23:59:59Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Data Manager</Role>
+            <OrganizationName>ASDC User Services</OrganizationName>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>NASA Langley Research Center Mail Stop 157D</StreetAddress>
+                    <City>Hampton</City>
+                    <StateProvince>Virginia</StateProvince>
+                    <PostalCode>23681-2199</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>757-864-8656</Number>
+                    <Type>Phone</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>larc@eos.nasa.gov</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+      <ScienceKeyword>
+        <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+        <TopicKeyword>AGRICULTURE</TopicKeyword>
+        <TermKeyword>AGRICULTURAL AQUATIC SCIENCES</TermKeyword>
+      </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>ER2</ShortName>
+            <LongName>NASA ER2 High Altitude Airplane</LongName>
+            <Type>Spacecraft</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>MAS</ShortName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MAS</ShortName>
+                            <LongName>MODerate resolution Imaging Spectroradiometer (MODIS) Airborne Simulator</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <Campaigns>
+        <Campaign>
+            <ShortName>THORPEX</ShortName>
+        </Campaign>
+    </Campaigns>
+    <AssociatedDIFs>
+        <DIF>
+            <EntryId>THORPEX_ER2_MAS</EntryId>
+        </DIF>
+    </AssociatedDIFs>
+    <Spatial>
+        <SpatialCoverageType>Horizontal</SpatialCoverageType>
+        <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

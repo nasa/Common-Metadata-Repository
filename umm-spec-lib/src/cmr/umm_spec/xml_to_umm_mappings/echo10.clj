@@ -48,7 +48,7 @@
   "Returns a seq of UMM characteristic records from the element's child Characteristics."
   [el]
   (let [elements (select el "Characteristics/Characteristic")
-        parsed-characteristics (remove nil? (map parse-characteristic elements))] 
+        parsed-characteristics (remove nil? (map parse-characteristic elements))]
     (seq (remove nil?
            (map char-data-type-normalization/normalize-data-type parsed-characteristics)))))
 
@@ -177,7 +177,8 @@
    :CollectionProgress (get-umm-element/get-collection-progress
                          coll-progress-mapping
                          doc
-                         "/Collection/CollectionState")
+                         "/Collection/CollectionState"
+                         sanitize?)
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]

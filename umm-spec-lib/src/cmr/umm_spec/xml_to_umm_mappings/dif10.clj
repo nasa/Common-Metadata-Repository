@@ -219,7 +219,8 @@
    :CollectionProgress (get-umm-element/get-collection-progress
                          coll-progress-mapping
                          doc
-                         "/DIF/Dataset_Progress")
+                         "/DIF/Dataset_Progress"
+                         sanitize?)
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
                        {:Category (value-of lk "Location_Category")
                         :Type (value-of lk "Location_Type")

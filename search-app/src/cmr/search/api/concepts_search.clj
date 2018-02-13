@@ -53,16 +53,22 @@
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
-        scroll-id (core-api/get-scroll-id-from-cache ctx short-scroll-id)
+        scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
+        scroll-id (:scroll-id scroll-id-and-search-params)
+        cached-search-params (:search-params scroll-id-and-search-params)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
-        search-params (lp/process-legacy-psa params)
+        search-params (if cached-search-params
+                        cached-search-params
+                        (lp/process-legacy-psa params))
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (core-api/search-response ctx results)))
+    (if (:scroll-id results)    
+      (core-api/search-response ctx results search-params)
+      (core-api/search-response ctx results))))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response.
