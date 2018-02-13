@@ -181,7 +181,7 @@
         gran2010-2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                       coll (:concept-id coll)
                                       {:granule-ur "Granule2"
-                                       :beginning-date-time "2010-01-31T12:00:00Z"}))
+                                       :beginning-date-time "2010-05-31T12:00:00Z"}))
         gran2011-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                       coll (:concept-id coll)
                                       {:granule-ur "Granule3"
