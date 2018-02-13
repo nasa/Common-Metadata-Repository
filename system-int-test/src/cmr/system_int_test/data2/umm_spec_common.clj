@@ -159,10 +159,12 @@
 (defn related-url
   "Creates related url for online_only test"
   ([]
-   (related-url nil))
+   (related-url {}))
   ([attribs]
    (umm-cmn/map->RelatedUrlType (merge {:URL (d/unique-str "http://example.com/file")
-                                        :Description (d/unique-str "description")}
+                                        :Description (d/unique-str "description")
+                                        :Type "GET SERVICE"
+                                        :URLContentType "CollectionURL"}
                                        attribs))))
 (defn spatial
   [attributes]

@@ -1,15 +1,17 @@
 (ns cmr.transmit.search
   "Provide functions to invoke search app"
-  (:require [clj-http.client :as client]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.config :as config]
-            [cmr.common.api.context :as ch]
-            [cmr.transmit.connection :as conn]
-            [ring.util.codec :as codec]
-            [cmr.common.mime-types :as mt]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util :refer [defn-timed]]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.data.xml :as x]
+   [cmr.common.api.context :as ch]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.common.xml :as cx]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]
+   [ring.util.codec :as codec]))
 
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
@@ -61,4 +63,11 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
+(h/defsearcher search-for-variables :search
+  (fn [conn]
+    (format "%s/variables" (conn/root-url conn))))
+
+(h/defsearcher search-for-services :search
+  (fn [conn]
+    (format "%s/services" (conn/root-url conn))))
 
