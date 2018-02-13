@@ -665,6 +665,7 @@
    :provider-id.lowercase (m/doc-values m/string-field-mapping)
    :service-name (-> m/string-field-mapping m/stored m/doc-values)
    :service-name.lowercase (m/doc-values m/string-field-mapping)
+   :keyword m/text-field-mapping
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
