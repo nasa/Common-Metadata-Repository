@@ -1387,33 +1387,33 @@ string length. The longer the max keyword string length, the less number of keyw
 
 The following fields are indexed for keyword search:
 
-    * Concept ID
-    * DOI value
-    * Provider ID
-    * Entry ID
-    * Entry title
-    * Data type
-    * Short name
-    * Summary
-    * Version ID
-    * Version description
-    * Processing level ID
-    * Science keywords
-    * Ancillary keywords
-    * Directory Names
-    * Archive centers
-    * Additional attribute names, data types, values, and descriptions
-    * detailed locations
-    * Spatial keywords
-    * Temporal keywords
-    * ISO Topic Categories
-    * Project short and long names
-    * Platform short and long names
-    * Instrument short names, long names, and techniques
-    * Sensor short names, long names, and techniques
-    * Characteristic names, descriptions and values
-    * TwoD coordinate system names
-    * Author
+* Concept ID
+* DOI value
+* Provider ID
+* Entry ID
+* Entry title
+* Data type
+* Short name
+* Summary
+* Version ID
+* Version description
+* Processing level ID
+* Science keywords
+* Ancillary keywords
+* Directory Names
+* Archive centers
+* Additional attribute names, data types, values, and descriptions
+* detailed locations
+* Spatial keywords
+* Temporal keywords
+* ISO Topic Categories
+* Project short and long names
+* Platform short and long names
+* Instrument short names, long names, and techniques
+* Sensor short names, long names, and techniques
+* Characteristic names, descriptions and values
+* TwoD coordinate system names
+* Author
 
 #### <a name="c-provider"></a> Find collections by provider
 
@@ -3216,7 +3216,13 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
-  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
+
+The following fields are indexed for keyword (free text) search:
+
+* Variable name
+* Variable long name
+* Science keywords (category, detailed variable, term, topic, variables 1-3)
 
 ##### <a name="variable-search-response"></a> Variable Search Response
 
@@ -3531,6 +3537,23 @@ These parameters will match fields within a service. They are case insensitive b
 * native_id
   * options: pattern, ignore_case
 * concept_id
+* keyword (free text)
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
+
+The following fields are indexed for keyword (free text) search:
+
+* Service name
+* Service long name
+* Service version
+* Service keywords (category, term spcific term, topic)
+* Service organizations (short and long names, roles, contact persons)
+* Contact persons (first names, contacts last names, roles)
+* Contact groups (group name, roles)
+* Science keywords (category, detailed variable, term, topic, variables 1-3)
+* Platforms (short and long names)
+* Platforms instruments (short and long names)
+* RelatedURL (description, subtype, type, URL, URL content type)
+* Ancillary keywords
 
 ##### <a name="service-search-response"></a> Service Search Response
 
