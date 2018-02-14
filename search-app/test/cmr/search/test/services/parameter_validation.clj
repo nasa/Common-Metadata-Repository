@@ -359,3 +359,19 @@
       2010.2 2010.2
       0 0
       10000 10000)))
+
+(deftest valid-month-test
+  (testing "Valid months"
+    (doseq [month (map inc (range 12))]
+      (is (= true (pv/valid-month? month)))))
+  (testing "Invalid months"
+    (util/are3
+      [month]
+      (is (= false (pv/valid-month? month)))
+
+      "foo" "foo"
+      -5 -5
+      2010.2 2010.2
+      0 0
+      13 13
+      10000 10000)))
