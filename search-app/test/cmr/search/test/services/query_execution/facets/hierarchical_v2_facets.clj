@@ -1,8 +1,9 @@
 (ns cmr.search.test.services.query-execution.facets.hierarchical-v2-facets
   "Unit tests for hierarchical-v2-facets namespace."
-  (:require [clojure.test :refer :all]
-            [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
-            [cmr.common.util :refer [are3]]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]))
 
 (deftest get-depth-for-hierarchical-field-test
   (testing "Defaults to 3 levels"
@@ -36,7 +37,7 @@
 
 (deftest find-applied-children-test
   (let [field-hierarchy [:first :second :third :fourth :fifth]]
-    (are3 [facets expected]
+    (util/are3 [facets expected]
       (is (= expected (find-applied-children facets field-hierarchy false)))
 
       "Empty facets returns nil"
@@ -77,7 +78,7 @@
              (find-applied-children {:applied false :title "A"} field-hierarchy true))))))
 
 (deftest get-indexes-in-params
-  (are3 [query-params expected]
+  (util/are3 [query-params expected]
     (is (= expected (#'hv2/get-indexes-in-params query-params "foo" "alpha" "found")))
 
     "Single matching param and value"
@@ -122,7 +123,7 @@
   #'hv2/has-siblings?)
 
 (deftest has-siblings?-test
-  (are3 [query-params expected]
+  (util/are3 [query-params expected]
     (is (= expected
            (has-siblings? query-params "foo" "parent-alpha" "parent-found" "alpha" "me")))
 
@@ -185,3 +186,30 @@
 
     "Nil query-params"
     nil false))
+
+(deftest get-field-hierarchy-test
+  (let [science-keywords-fields [:category :topic :term :variable-level-1 :variable-level-2
+                                 :variable-level-3]
+        variable-fields [:measurement :variable]]
+    (util/are3 [field query-params expected]
+      (is (= expected (hv2/get-field-hierarchy field query-params)))
+
+      "Science keywords"
+      :science-keywords {"science_keywords_h[0][category]" "foo"} science-keywords-fields
+
+      "Science keywords Humanized"
+      :science-keywords-h {} science-keywords-fields
+
+      "Variables"
+      :variables {} variable-fields
+
+      "Temporal facets not selected"
+      :temporal-facet {} [:year]
+
+      "Temporal facets year selected"
+      :temporal-facet {"temporal_facet[0][year]" "1537"} [:year :month]
+
+      "Temporal facets year and month selected"
+      :temporal-facet {"temporal_facet[0][year]" "1537"
+                       "temporal_facet[0][month]" "8"}
+      [:year :month])))

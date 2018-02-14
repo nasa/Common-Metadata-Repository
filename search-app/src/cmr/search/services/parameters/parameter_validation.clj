@@ -415,6 +415,16 @@
     (and (not (nil? parsed-year))
          (<= 1 parsed-year 9999))))
 
+(defn valid-month?
+  "Returns true if the provided value is a valid month and false otherwise."
+  [month]
+  (let [parsed-month (try
+                       (Long. month)
+                       (catch Exception e
+                         nil))]
+    (and (not (nil? parsed-month))
+         (<= 1 parsed-month 12))))
+
 (defn temporal-facet-year-validation
   "Validates that the years provided in all temporal-facet parameters are valid."
   [concept-type params]
@@ -431,6 +441,23 @@
               errors))
           []
           years)))))
+
+(defn temporal-facet-month-validation
+  "Validates that the months provided in all temporal-facet parameters are valid."
+  [concept-type params]
+  (when-let [param-values (:temporal-facet params)]
+    (when (map? param-values)
+      (let [temporal-facet-maps (vals param-values)
+            months (keep :month temporal-facet-maps)]
+        (reduce
+          (fn [errors month]
+            (if-not (valid-month? month)
+              (conj errors (format (str "Month [%s] within [temporal_facet] is not a valid month. "
+                                        "Months must be between 1 and 12.")
+                                   month))
+              errors))
+          []
+          months)))))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -703,7 +730,8 @@
               collection-concept-id-validation
               granule-include-facets-validation
               temporal-facets-subfields-validation
-              temporal-facet-year-validation])
+              temporal-facet-year-validation
+              temporal-facet-month-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])

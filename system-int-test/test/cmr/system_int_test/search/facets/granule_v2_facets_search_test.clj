@@ -228,21 +228,53 @@
           (doseq [[link-type url] links]
             (is (= :apply link-type)))))
       (testing "When selecting a link the search results only contain granules for that year."
-        (let [response (traverse-link "2011" year-facets)
+        (let [response (traverse-link "2010" year-facets)
               parsed-body (json/parse-string (:body response) true)
               updated-facets (get-in parsed-body [:feed :facets])
               granules-response (get-in parsed-body [:feed :entry])
-              updated-year-facets (-> updated-facets :children first :children first :children)]
-          (assert-granules-match [gran2011-1] granules-response)
-          (is (= :remove (get-link-type "2011" updated-year-facets)))
-          (testing "Navigating to a remove link removes the search filter"
-            (let [;; Note that the test above traversed to 2011,
-                  ;; so the 2011 link is now a remove link
-                  response (traverse-link "2011" updated-year-facets)
-                  parsed-body (json/parse-string (:body response) true)
-                  updated-facets (get-in parsed-body [:feed :facets])
-                  granules-response (get-in parsed-body [:feed :entry])
-                  updated-year-facets (-> updated-facets :children first :children first :children)]
-              (assert-granules-match [gran1999-1 gran2010-1 gran2010-2 gran2011-1 gran2012-boundary]
-                                     granules-response)
-              (is (= :apply (get-link-type "2011" updated-year-facets))))))))))
+              updated-year-facets (-> updated-facets :children first :children first :children)
+              month-node (-> updated-facets :children first :children first :children first
+                             :children first)
+              month-facets (:children month-node)]
+          (assert-granules-match [gran2010-1 gran2010-2] granules-response)
+          (is (= :remove (get-link-type "2010" updated-year-facets)))
+          (testing "Selecting a year returns month facets for that year"
+            (is (= "Month" (:title month-node)))
+            (is (= ["05" "01"] (map :title month-facets)))
+            (is (= :apply (get-link-type "01" month-facets)))
+            (is (= :apply (get-link-type "05" month-facets)))
+            (testing "Selecting a month returns only granules for that year and month."
+              (let [response (traverse-link "01" month-facets)
+                    parsed-body (json/parse-string (:body response) true)
+                    updated-facets (get-in parsed-body [:feed :facets])
+                    granules-response (get-in parsed-body [:feed :entry])
+                    updated-year-facets (-> updated-facets :children first :children first
+                                            :children)
+                    updated-month-facets (-> updated-facets :children first :children first
+                                             :children first :children first :children)]
+                (assert-granules-match [gran2010-1] granules-response)
+                (is (= :remove (get-link-type "2010" updated-year-facets)))
+                (is (= :remove (get-link-type "01" updated-month-facets)))
+                (testing "Navigating to a remove month link removes the search filter for that month."
+                  (let [response (traverse-link "01" updated-month-facets)
+                        parsed-body (json/parse-string (:body response) true)
+                        updated-facets (get-in parsed-body [:feed :facets])
+                        granules-response (get-in parsed-body [:feed :entry])
+                        updated-year-facets (-> updated-facets :children first :children first :children)
+                        updated-month-facets (-> updated-facets :children first :children first
+                                                 :children first :children first :children)]
+                    (assert-granules-match [gran2010-1 gran2010-2] granules-response)
+                    (is (= :apply (get-link-type "01" updated-month-facets)))
+                    (is (= :apply (get-link-type "05" updated-month-facets)))))
+                (testing (str "Navigating to a remove year link removes the search filter for both "
+                              "year and month.")
+                  (let [;; Note that the test above traversed to 2010,
+                        ;; so the 2010 link is now a remove link
+                        response (traverse-link "2010" updated-year-facets)
+                        parsed-body (json/parse-string (:body response) true)
+                        updated-facets (get-in parsed-body [:feed :facets])
+                        granules-response (get-in parsed-body [:feed :entry])
+                        updated-year-facets (-> updated-facets :children first :children first :children)]
+                    (assert-granules-match [gran1999-1 gran2010-1 gran2010-2 gran2011-1 gran2012-boundary]
+                                           granules-response)
+                    (is (= :apply (get-link-type "2010" updated-year-facets)))))))))))))
