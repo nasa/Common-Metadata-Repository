@@ -168,7 +168,7 @@
     (temporal-facets/parse-date (:key_as_string bucket) field)
     (:key bucket)))
 
-(defn- generate-temporal-hierarchical-children
+(defn- process-temporal-bucket
   "Generate children nodes for a hierarchical facet v2 response for a temporal facet subfield.
   recursive-parse-fn - function to call to recursively generate any children filter nodes.
   has-siblings-fn - function to call to check whether the given value has any sibling nodes.
@@ -190,6 +190,22 @@
         links (generate-links-fn value has-siblings? children-values-to-remove)]
     [(v2h/generate-hierarchical-filter-node value count links sub-facets)]))
 
+(defn- process-bucket-for-hierarchical-field
+  "Takes an elasticsearch bucket for a hierarchical field and returns a V2 facets node for that
+  bucket."
+  [bucket field field-hierarchy recursive-parse-fn has-siblings-fn generate-links-fn]
+  (let [value (extract-value-from-bucket bucket field)
+        count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
+        sub-facets (recursive-parse-fn value bucket)
+        ;; Sort alphabetically
+        sub-facets (when (seq (:children sub-facets))
+                     (update sub-facets :children
+                             #(sort-by :title util/compare-natural-strings %)))
+        children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
+        has-siblings? (has-siblings-fn value)
+        links (generate-links-fn value has-siblings? children-values-to-remove)]
+    (v2h/generate-hierarchical-filter-node value count links sub-facets)))
+
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
   recursive-parse-fn - function to call to recursively generate any children filter nodes.
@@ -200,24 +216,16 @@
   elastic-aggregations - the portion of the elastic aggregations response to parse to generate
                          the part of the facets v2 response related to the passed in field."
   [recursive-parse-fn has-siblings-fn generate-links-fn field field-hierarchy elastic-aggregations]
-  (let [temporal-case? (some? (get elastic-aggregations :buckets))]
-    (if (and temporal-case? (not= 1 (count field-hierarchy)))
-      (generate-temporal-hierarchical-children recursive-parse-fn has-siblings-fn generate-links-fn
-                                               field field-hierarchy elastic-aggregations)
-      (let [buckets (or (get-in elastic-aggregations [field :buckets])
-                        (get elastic-aggregations :buckets))]
-        (for [bucket buckets
-              :let [value (extract-value-from-bucket bucket field)
-                    count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-                    sub-facets (recursive-parse-fn value bucket)
-                    ;; Sort alphabetically
-                    sub-facets (when (seq (:children sub-facets))
-                                 (update sub-facets :children
-                                         #(sort-by :title util/compare-natural-strings %)))
-                    children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
-                    has-siblings? (has-siblings-fn value)
-                    links (generate-links-fn value has-siblings? children-values-to-remove)]]
-          (v2h/generate-hierarchical-filter-node value count links sub-facets))))))
+  (if (and (some? (get elastic-aggregations :buckets))
+           (not= 1 (count field-hierarchy)))
+    (process-temporal-bucket recursive-parse-fn has-siblings-fn generate-links-fn field
+                             field-hierarchy elastic-aggregations)
+    (let [buckets (or (get-in elastic-aggregations [field :buckets])
+                      (get elastic-aggregations :buckets))]
+      (map (fn [bucket]
+             (process-bucket-for-hierarchical-field
+              bucket field field-hierarchy recursive-parse-fn has-siblings-fn generate-links-fn))
+           buckets))))
 
 (defn- parse-hierarchical-bucket-v2
   "Recursively parses the elasticsearch aggregations response and generates version 2 facets.
@@ -378,19 +386,23 @@
         (assoc updated-facet :children (:children earth-science-facets))))
     hierarchical-facet))
 
+(defn- get-limited-field-hierarchy
+  "Returns the fields from the field hierarchy until reaching the last field. Returns in the same
+  order as the passed in field-hierarchy"
+  [field-hierarchy last-field-needed]
+  (concat (for [field field-hierarchy
+                :while (not= last-field-needed field)]
+            field)
+          [last-field-needed]))
+
 (defn get-field-hierarchy
   "Returns the field hierarchy for the given field and passed in query parameters."
   [field query-params]
   (let [field-hierarchy (nested-fields-mappings field)]
     (if (not= :temporal-facet field)
       field-hierarchy
-      (let [lowest-field (temporal-facets/query-params->time-interval query-params)
-            relevant-fields (concat
-                              (for [a-field field-hierarchy
-                                    :while (not= lowest-field a-field)]
-                                a-field)
-                              [lowest-field])]
-        relevant-fields))))
+      (let [lowest-field (temporal-facets/query-params->time-interval query-params)]
+        (get-limited-field-hierarchy field-hierarchy lowest-field)))))
 
 (defn hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
