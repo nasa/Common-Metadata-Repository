@@ -63,6 +63,21 @@
   [_]
   (util/build-validator :bad-request validations))
 
+(def group-nodes-in-order
+  "The titles of temporal facet group nodes in order."
+  ["Year" "Month" "Day"])
+
+(defn add-group-nodes-to-facets
+  "Adds group nodes (Year, Month, Day) as applicable to the provided facets."
+  [facets remaining-levels]
+  (let [applied? (some? (some true? (map :applied facets)))
+        children-facets (for [facet (reverse facets)]
+                          (if (seq (:children facet))
+                            (assoc facet :children [(add-group-nodes-to-facets
+                                                     (:children facet) (rest remaining-levels))])
+                            facet))]
+    (v2h/generate-group-node (first remaining-levels) applied? children-facets)))
+
 (defmethod v2-facets/create-v2-facets-by-concept-type :granule
   [concept-type base-url query-params aggs _]
   (let [subfacets (hv2/hierarchical-bucket-map->facets-v2
@@ -76,13 +91,7 @@
                           (filter (fn [[k v]] (re-matches field-reg-ex k)))
                           seq
                           some?)
-            subfacets-missing-title? (nil? (:title subfacets))
-            updated-subfacets (if subfacets-missing-title?
-                                (v2h/generate-group-node "Year" applied?
-                                                         (:children subfacets))
-                                (assoc subfacets :applied applied?))
-            ;; Return facets in reverse chronological order
-            updated-subfacets (update updated-subfacets :children reverse)]
+            updated-subfacets (add-group-nodes-to-facets (:children subfacets) group-nodes-in-order)]
         [(merge v2h/sorted-facet-map
                 (v2h/generate-group-node "Temporal" applied?
                                          [updated-subfacets]))]))))

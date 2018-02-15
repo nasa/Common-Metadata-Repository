@@ -91,4 +91,7 @@
       ["parameter [not-year] is not a valid [temporal_facet] search term."]
 
       "Invalid year" {"temporal_facet[0][year]" -3}
-      ["Year [-3] within [temporal_facet] is not a valid year. Years must be between 1 and 9999."])))
+      ["Year [-3] within [temporal_facet] is not a valid year. Years must be between 1 and 9999."]
+
+      "Invalid month" {"temporal_facet[0][month]" 13}
+      ["Month [13] within [temporal_facet] is not a valid month. Months must be between 1 and 12."])))
