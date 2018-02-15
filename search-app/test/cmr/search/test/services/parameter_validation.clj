@@ -375,3 +375,19 @@
       0 0
       13 13
       10000 10000)))
+
+(deftest valid-day-test
+  (testing "Valid days"
+    (doseq [day (map inc (range 31))]
+      (is (= true (pv/valid-day? day)))))
+  (testing "Invalid days"
+    (util/are3
+      [day]
+      (is (= false (pv/valid-day? day)))
+
+      "foo" "foo"
+      -5 -5
+      2010.2 2010.2
+      0 0
+      32 32
+      10000 10000)))

@@ -28,7 +28,9 @@
   [time-intervals]
   (if-not (contains? (set time-intervals) :year)
     :year
-    :month))
+    (if-not (contains? (set time-intervals) :month)
+      :month
+      :day)))
 
 (defn- get-subfields
   "Returns the subfields within all of the provided temporal_facet params."

@@ -13,7 +13,7 @@
 
 (def temporal-facet-subfields
   "The subfields of the granule temporal facet nested field."
-  [:year :month])
+  [:year :month :day])
 
 (defn get-subfield-names
   "Returns all of the subfields for the provided nested field. All nested field queries also support

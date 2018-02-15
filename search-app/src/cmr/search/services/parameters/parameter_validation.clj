@@ -425,6 +425,16 @@
     (and (not (nil? parsed-month))
          (<= 1 parsed-month 12))))
 
+(defn valid-day?
+  "Returns true if the provided value is a valid day and false otherwise."
+  [day]
+  (let [parsed-day (try
+                     (Long. day)
+                     (catch Exception e
+                       nil))]
+    (and (not (nil? parsed-day))
+         (<= 1 parsed-day 31))))
+
 (defn temporal-facet-year-validation
   "Validates that the years provided in all temporal-facet parameters are valid."
   [concept-type params]
@@ -458,6 +468,23 @@
               errors))
           []
           months)))))
+
+(defn temporal-facet-day-validation
+  "Validates that the days provided in all temporal-facet parameters are valid."
+  [concept-type params]
+  (when-let [param-values (:temporal-facet params)]
+    (when (map? param-values)
+      (let [temporal-facet-maps (vals param-values)
+            days (keep :day temporal-facet-maps)]
+        (reduce
+          (fn [errors day]
+            (if-not (valid-day? day)
+              (conj errors (format (str "Day [%s] within [temporal_facet] is not a valid day. "
+                                        "Days must be between 1 and 31.")
+                                   day))
+              errors))
+          []
+          days)))))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -731,7 +758,8 @@
               granule-include-facets-validation
               temporal-facets-subfields-validation
               temporal-facet-year-validation
-              temporal-facet-month-validation])
+              temporal-facet-month-validation
+              temporal-facet-day-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])
