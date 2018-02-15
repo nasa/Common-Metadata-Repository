@@ -26,7 +26,10 @@
   (testing (str "Granule facets are returned when requesting V2 facets in JSON format for a single"
                 " collection concept ID.")
     (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})]
-      (is (= "Browse Granules" (:title facets))))))
+      (is (= {:title "Browse Granules"
+              :type "group"
+              :has_children false}
+             facets)))))
 
 (defn- single-collection-test-setup
   "Ingests the collections and granules needed for the single collection validation test."
@@ -211,9 +214,12 @@
       (testing "Facet structure correct"
         (is (= "Browse Granules" (:title root-node)))
         (is (= "group" (:type root-node)))
+        (is (= true (:has_children root-node)))
         (is (= "Temporal" (:title temporal-node)))
         (is (= "group" (:type temporal-node)))
+        (is (= true (:has_children temporal-node)))
         (is (= "Year" (:title year-node)))
+        (is (= true (:has_children year-node)))
         (is (= "group" (:type year-node))))
       (testing "Years returned in order from most recent to oldest"
         (is (= ["2012" "2011" "2010" "1999"] (map :title year-facets))))
@@ -246,6 +252,7 @@
           (testing "Selecting a year returns month facets for that year"
             (is (= "Month" (:title month-node)))
             (is (= ["05" "01"] (map :title month-facets)))
+            (is (= [true true] (map :has_children month-facets)))
             (is (= :apply (get-link-type "01" month-facets)))
             (is (= :apply (get-link-type "05" month-facets)))
             (testing "Selecting a month returns only granules for that year and month."
@@ -256,14 +263,15 @@
                     updated-year-facets (-> updated-facets :children first :children first
                                             :children)
                     updated-month-facets (-> updated-year-facets first :children first :children)
-                    updated-day-facets (-> updated-month-facets first :children first :children)]
+                    day-facets (-> updated-month-facets first :children first :children)]
                 (assert-granules-match [gran2010-1 gran2010-3] granules-response)
                 (is (= :remove (get-link-type "2010" updated-year-facets)))
                 (is (= :remove (get-link-type "01" updated-month-facets)))
                 (testing "Days are displayed below month facets when selecting a month."
-                  (is (= ["21" "02"] (map :title updated-day-facets)))
+                  (is (= ["21" "02"] (map :title day-facets)))
+                  (is (= [false false] (map :has_children day-facets)))
                   (testing "Select a day returns only granules for that year, month, and day."
-                    (let [response (traverse-link "21" updated-day-facets)
+                    (let [response (traverse-link "21" day-facets)
                           parsed-body (json/parse-string (:body response) true)
                           updated-facets (get-in parsed-body [:feed :facets])
                           granules-response (get-in parsed-body [:feed :entry])

@@ -70,12 +70,13 @@
 (defn add-group-nodes-to-facets
   "Adds group nodes (Year, Month, Day) as applicable to the provided facets."
   [facets remaining-levels]
-  (let [applied? (some? (some true? (map :applied facets)))
+  (let [has-children (not= remaining-levels ["Day"])
+        applied? (some? (some true? (map :applied facets)))
         children-facets (for [facet (reverse facets)]
                           (if (seq (:children facet))
                             (assoc facet :children [(add-group-nodes-to-facets
                                                      (:children facet) (rest remaining-levels))])
-                            facet))]
+                            (assoc facet :has_children has-children)))]
     (v2h/generate-group-node (first remaining-levels) applied? children-facets)))
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :granule
@@ -91,7 +92,8 @@
                           (filter (fn [[k v]] (re-matches field-reg-ex k)))
                           seq
                           some?)
-            updated-subfacets (add-group-nodes-to-facets (:children subfacets) group-nodes-in-order)]
+            updated-subfacets (add-group-nodes-to-facets (:children subfacets)
+                                                         group-nodes-in-order)]
         [(merge v2h/sorted-facet-map
                 (v2h/generate-group-node "Temporal" applied?
                                          [updated-subfacets]))]))))
