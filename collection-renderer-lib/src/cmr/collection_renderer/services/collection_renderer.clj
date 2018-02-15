@@ -8,7 +8,8 @@
    [cmr.common.log :refer [info]]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
-   [cmr.umm-spec.versioning :as umm-version])
+   [cmr.umm-spec.versioning :as umm-version]
+   [cmr.common.config :as cfg :refer [defconfig]])
   (:import
    (java.io ByteArrayInputStream)
    (javax.script ScriptEngine ScriptEngineManager Invocable)))
@@ -107,15 +108,21 @@
 
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
-  [context collection]
+  [context collection concept-id]
   (let [umm-json (umm-json/umm->json
                   (vm/migrate-umm context
                                   :collection
                                   umm-version/current-collection-version
                                   (context->preview-gem-umm-version context)
                                   collection))]
+    (defconfig search-edsc-url
+         "URL of the Earthdata Search application"
+         {:default "https://search.earthdata.nasa.gov/search"})
+
     (render-erb (context->jruby-runtime context)
                 collection-preview-erb
                 ;; Arguments for collection preview. See the ERB file for documentation.
                 {"umm_json" umm-json
-                 "relative_root_url" (context->relative-root-url context)})))
+                 "relative_root_url" (context->relative-root-url context)
+                 "edsc_url" (search-edsc-url)
+                 "concept_id" concept-id})))

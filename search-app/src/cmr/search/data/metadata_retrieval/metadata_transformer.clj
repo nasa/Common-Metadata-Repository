@@ -53,7 +53,7 @@
   [context concept]
   (let [collection (umm-spec/parse-metadata
                      context :collection (:format concept) (:metadata concept))]
-    (collection-renderer/render-collection context collection)))
+    (collection-renderer/render-collection context collection (:concept-id concept))))
 
 ;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic transform-strategy
