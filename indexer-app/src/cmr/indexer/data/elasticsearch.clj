@@ -51,6 +51,12 @@
          (:transaction-id concept)
          (map :transaction-id (:variable-associations concept))))
 
+(defmethod get-elastic-version :service
+ [concept]
+ (apply max
+        (:transaction-id concept)
+        (map :transaction-id (:service-associations concept))))
+
 (defmethod get-elastic-version :default
   [concept]
   (:revision-id concept))

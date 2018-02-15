@@ -275,6 +275,11 @@
   (let [variable-associations (meta-db/get-associations-for-variable context concept)]
     (get-elastic-version-with-associations context concept nil variable-associations nil)))
 
+(defmethod get-elastic-version :service
+  [context concept]
+  (let [service-associations (meta-db/get-associations-for-variable context concept)]
+    (get-elastic-version-with-associations context concept nil service-associations nil)))
+
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"
   (fn [context concept]

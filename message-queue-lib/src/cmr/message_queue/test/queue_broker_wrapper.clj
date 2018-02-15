@@ -9,7 +9,7 @@
    [clojure.set :as set]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug trace info warn error)]
    [cmr.common.util :as util]
    [cmr.message-queue.config :as iconfig]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -116,11 +116,11 @@
         tagged-msg (assoc msg :id msg-id)]
     ;; Set the initial state of the message to :initial
     (update-message-queue-history broker queue-name :enqueue tagged-msg :initial)
-    (debug "Updated message queue history")
+    (trace "Updated message queue history")
     ;; Mark the enqueue as failed if we are timing things out or it fails
     (if (or @timeout?-atom (not (queue-protocol/publish-to-queue queue-broker queue-name tagged-msg)))
       (do
-        (debug "Published; preparing to update history ...")
+        (trace "Published; preparing to update history ...")
         (update-message-queue-history broker queue-name :enqueue tagged-msg :failure)
         false)
       true)))

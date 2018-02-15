@@ -42,8 +42,7 @@
   Requests to publish a message are wrapped in a timeout to handle error cases with the Rabbit MQ
   server. Otherwise failures to publish will be retried indefinitely."
   [queue-broker exchange-name msg]
-  (debug "Publishing message" msg
-         "[broker =" queue-broker "exchange =" exchange-name "]")
+  (debug (format "Publishing message: %s exchange: [%s]" msg exchange-name))
   (let [start-time (System/currentTimeMillis)]
     (try
       (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg)
