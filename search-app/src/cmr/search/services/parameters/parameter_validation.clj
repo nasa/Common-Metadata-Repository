@@ -405,86 +405,57 @@
   (nested-field-validation-for-subfield :temporal-facet concept-type params
                                         (msg/temporal-facets-invalid-format-msg)))
 
-(defn valid-year?
-  "Returns true if the provided value is a valid year and false otherwise."
-  [year]
-  (let [parsed-year (try
-                      (Long. year)
-                      (catch Exception e
-                        nil))]
-    (and (not (nil? parsed-year))
-         (<= 1 parsed-year 9999))))
+(def max-value-for-date-field
+  "Defines the maximum valid value for each date field."
+  {:year 9999
+   :month 12
+   :day 31})
 
-(defn valid-month?
-  "Returns true if the provided value is a valid month and false otherwise."
-  [month]
-  (let [parsed-month (try
-                       (Long. month)
+(defn valid-value-for-date-field?
+  "Returns true if the provided value is valid for the given date field and false otherwise."
+  [value field]
+  (let [parsed-value (try
+                       (Long. value)
                        (catch Exception e
                          nil))]
-    (and (not (nil? parsed-month))
-         (<= 1 parsed-month 12))))
+    (and (not (nil? parsed-value))
+         (<= 1 parsed-value (max-value-for-date-field field)))))
 
-(defn valid-day?
-  "Returns true if the provided value is a valid day and false otherwise."
-  [day]
-  (let [parsed-day (try
-                     (Long. day)
-                     (catch Exception e
-                       nil))]
-    (and (not (nil? parsed-day))
-         (<= 1 parsed-day 31))))
+(defn temporal-facet-date-validation
+  "Validates that the given temporal date field in all temporal-facet parameters are valid."
+  [date-field concept-type params]
+  (when-let [param-values (:temporal-facet params)]
+    (when (map? param-values)
+      (let [temporal-facet-maps (vals param-values)
+            values (keep date-field temporal-facet-maps)]
+        (reduce
+          (fn [errors value]
+            (if-not (valid-value-for-date-field? value date-field)
+              (conj errors (format (str "%s [%s] within [temporal_facet] is not a valid %s. "
+                                        "%ss must be between 1 and %d.")
+                                   (s/capitalize (name date-field))
+                                   value
+                                   (name date-field)
+                                   (s/capitalize (name date-field))
+                                   (max-value-for-date-field date-field)))
+              errors))
+          []
+          values)))))
 
 (defn temporal-facet-year-validation
   "Validates that the years provided in all temporal-facet parameters are valid."
   [concept-type params]
-  (when-let [param-values (:temporal-facet params)]
-    (when (map? param-values)
-      (let [temporal-facet-maps (vals param-values)
-            years (keep :year temporal-facet-maps)]
-        (reduce
-          (fn [errors year]
-            (if-not (valid-year? year)
-              (conj errors (format (str "Year [%s] within [temporal_facet] is not a valid year. "
-                                        "Years must be between 1 and 9999.")
-                                   year))
-              errors))
-          []
-          years)))))
+  (temporal-facet-date-validation :year concept-type params))
 
 (defn temporal-facet-month-validation
   "Validates that the months provided in all temporal-facet parameters are valid."
   [concept-type params]
-  (when-let [param-values (:temporal-facet params)]
-    (when (map? param-values)
-      (let [temporal-facet-maps (vals param-values)
-            months (keep :month temporal-facet-maps)]
-        (reduce
-          (fn [errors month]
-            (if-not (valid-month? month)
-              (conj errors (format (str "Month [%s] within [temporal_facet] is not a valid month. "
-                                        "Months must be between 1 and 12.")
-                                   month))
-              errors))
-          []
-          months)))))
+  (temporal-facet-date-validation :month concept-type params))
 
 (defn temporal-facet-day-validation
   "Validates that the days provided in all temporal-facet parameters are valid."
   [concept-type params]
-  (when-let [param-values (:temporal-facet params)]
-    (when (map? param-values)
-      (let [temporal-facet-maps (vals param-values)
-            days (keep :day temporal-facet-maps)]
-        (reduce
-          (fn [errors day]
-            (if-not (valid-day? day)
-              (conj errors (format (str "Day [%s] within [temporal_facet] is not a valid day. "
-                                        "Days must be between 1 and 31.")
-                                   day))
-              errors))
-          []
-          days)))))
+  (temporal-facet-date-validation :day concept-type params))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
