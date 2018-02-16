@@ -348,11 +348,11 @@
 (deftest valid-year-test
   (testing "Valid years"
     (doseq [year (map inc (range 9999))]
-      (is (= true (pv/valid-year? year)))))
+      (is (= true (pv/valid-value-for-date-field? year :year)))))
   (testing "Invalid years"
     (util/are3
       [year]
-      (is (= false (pv/valid-year? year)))
+      (is (= false (pv/valid-value-for-date-field? year :year)))
 
       "foo" "foo"
       -5 -5
@@ -363,11 +363,11 @@
 (deftest valid-month-test
   (testing "Valid months"
     (doseq [month (map inc (range 12))]
-      (is (= true (pv/valid-month? month)))))
+      (is (= true (pv/valid-value-for-date-field? month :month)))))
   (testing "Invalid months"
     (util/are3
       [month]
-      (is (= false (pv/valid-month? month)))
+      (is (= false (pv/valid-value-for-date-field? month :month)))
 
       "foo" "foo"
       -5 -5
@@ -379,11 +379,11 @@
 (deftest valid-day-test
   (testing "Valid days"
     (doseq [day (map inc (range 31))]
-      (is (= true (pv/valid-day? day)))))
+      (is (= true (pv/valid-value-for-date-field? day :day)))))
   (testing "Invalid days"
     (util/are3
       [day]
-      (is (= false (pv/valid-day? day)))
+      (is (= false (pv/valid-value-for-date-field? day :day)))
 
       "foo" "foo"
       -5 -5
