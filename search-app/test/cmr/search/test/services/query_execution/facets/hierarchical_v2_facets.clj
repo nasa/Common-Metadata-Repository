@@ -212,4 +212,10 @@
       "Temporal facets year and month selected"
       :temporal-facet {"temporal_facet[0][year]" "1537"
                        "temporal_facet[0][month]" "8"}
-      [:year :month])))
+      [:year :month :day]
+
+      "Temporal facets year, month, and day selected"
+      :temporal-facet {"temporal_facet[0][year]" "1537"
+                       "temporal_facet[0][month]" "8"
+                       "temporal_facet[0][day]" "15"}
+      [:year :month :day])))
