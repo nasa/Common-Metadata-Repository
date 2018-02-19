@@ -24,7 +24,7 @@
        (apply sorted-set)
        (string/join \space)))
 
-(defn contact-group->keywords
+(defn- contact-group->keywords
   "Converts a contact group into a vector of terms for keyword searches."
   [contact-group]
   (let [{group-name :GroupName
@@ -32,7 +32,7 @@
     (concat [group-name]
             roles)))
 
-(defn contact-person->keywords
+(defn- contact-person->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
   (let [{first-name :FirstName
@@ -41,7 +41,7 @@
     (concat [first-name last-name]
             roles)))
 
-(defn names->keywords
+(defn- names->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
   (let [{long-name :LongName
@@ -49,14 +49,14 @@
     [long-name
      short-name]))
 
-(defn platform->keywords
+(defn- platform->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
   (let [{instruments :Instruments} data]
     (concat (names->keywords data)
             (mapcat names->keywords instruments))))
 
-(defn related-url->keywords
+(defn- related-url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
   (let [{description :Description
@@ -88,7 +88,7 @@
      variable-level-2
      variable-level-3]))
 
-(defn service-keyword->keywords
+(defn- service-keyword->keywords
   "Converts a service keyword into a vector of terms for keyword searches."
   [service-keyword]
   (let [{service-category :ServiceCategory
@@ -100,7 +100,7 @@
      service-term
      service-topic]))
 
-(defn service-organization->keywords
+(defn- service-organization->keywords
   "Converts a service keyword into a vector of terms for keyword searches."
   [service-organization]
   (let [{roles :Roles
@@ -109,18 +109,23 @@
             (mapcat contact-person->keywords service-contact-persons)
             roles)))
 
-(def fields->fn-mapper
-  "A data structure that maps UMM field names to functions that extract keyword
-  data for those fields. Intended to be used instead of `case` statements for
-  dispatching based upon field name.
+(def ^:private variable-fields->fn-mapper
+  "A data structure that maps UMM variable field names to functions that
+  extract keyword data for those fields. Intended only to be used as part
+  of a larger map for multiple field types.
 
-  For example, to iterate over all the science keywords in a concept and return
-  textual data that will be indexd (i.e., from sub-fields):
-
-    (map (:ScienceKeywords fields->fn-mapper) parsed-concept))"
+  See `fields->fn-mapper`, below."
   {;; Simple single-valued data
    :variable-name :variable-name
-   :measurement :measurement
+   :measurement :measurement})
+
+(def ^:private service-fields->fn-mapper
+  "A data structure that maps UMM service field names to functions that
+  extract keyword data for those fields. Intended only to be used as part
+  of a larger map for multiple field types.
+
+  See `fields->fn-mapper`, below."
+  {;; Simple single-valued data
    :LongName :LongName
    :Name :Name
    :Version :Version
@@ -131,11 +136,38 @@
    :ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
    :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
    :Platforms #(mapcat platform->keywords (:Platforms %))
-   :ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 
-(defn flatten-collections
+(def ^:private shared-fields->fn-mapper
+  "A data structure that maps UMM field names used by multiple types to
+  functions that extract keyword data for those fields. Intended only to be
+  used as part of a larger map for multiple field types.
+
+  See `fields->fn-mapper`, below."
+  {;; Simple multi-valued data
+   :ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
+
+(def fields->fn-mapper
+  "A data structure that maps UMM field names to functions that extract keyword
+  data for those fields. Intended to be used instead of `case` statements for
+  dispatching based upon field name.
+
+  For example, to iterate over all the science keywords in a concept and return
+  textual data that will be indexd (i.e., from sub-fields):
+
+    (map (:ScienceKeywords fields->fn-mapper) parsed-concept))"
+  (merge variable-fields->fn-mapper
+         service-fields->fn-mapper
+         shared-fields->fn-mapper))
+
+(defn- flatten-collections
+  "This function is used to conditionally prepare schema texutal field data,
+  in the form of collections of strings or strings, to be used by higher
+  order functions that operate on flat collections of textual field data. As
+  such, textual data that is not in a collection needs to be converted to
+  one. Additionally, any nested collections need to be flattened. Everything
+  returned from this function should be a collection of one or more strings."
   [data]
   (if (coll? data)
     (flatten data)
@@ -161,11 +193,15 @@
        (remove empty?)))
 
 (defn concept-key->keyword-text
+  "Given a parsed concept and a single schema key, build a concatenated string
+  of keywords for that key."
   [parsed-concept schema-key]
   (field-values->keyword-text
    (concept-key->keywords parsed-concept schema-key)))
 
 (defn concept-keys->keyword-text
+  "Given a parsed concept and a sequence of schema keys, build a concatenated
+  string of keywords using all the schema keys."
   [parsed-concept schema-keys]
   (field-values->keyword-text
    (concept-keys->keywords parsed-concept schema-keys)))

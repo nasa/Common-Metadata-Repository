@@ -74,7 +74,7 @@
          umm-s->concept))))
 
 (defn contact-person
-  "Returns a ContactPersonType suitavke as an element in a
+  "Returns a ContactPersonType suitable as an element in a
   Persons collection."
   ([]
    (contact-person {}))
@@ -86,7 +86,7 @@
             attribs))))
 
 (defn contact-mechanism
-  "Returns a ContactMechanismType suitavke as an element in a
+  "Returns a ContactMechanismType suitable as an element in a
   ContactMechanisms collection."
   ([]
    (contact-mechanism {}))
