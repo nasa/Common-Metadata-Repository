@@ -1,5 +1,5 @@
 (ns cmr.indexer.test.data.concepts.keyword-util
-  "Functions for testing cmr.indexer.test.data.concepts.keyword-util namespace."
+  "Functions for testing cmr.indexer.data.concepts.keyword-util namespace."
   (:require
    [clojure.test :refer :all]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
