@@ -164,7 +164,7 @@
                                                 :url-extension "html"})
             _ (is (= 200 (:status response)))]
         (is (search/mime-type-matches-response? response mt/html))
-        (is (= "C1200000016-PROV1" (:concept-id coll1) ))
+        (is (.contains ^String (:body response) (:concept-id coll1)))
         (is (.contains ^String (:body response) (:entry-title umm-coll)))))
     (testing "retrieval of HTML with accept headers"
       (let [response (search/retrieve-concept
