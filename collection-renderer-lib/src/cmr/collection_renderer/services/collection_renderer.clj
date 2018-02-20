@@ -116,8 +116,8 @@
                                   (context->preview-gem-umm-version context)
                                   collection))]
     (defconfig search-edsc-url
-         "URL of the Earthdata Search application"
-         {:default "https://search.earthdata.nasa.gov/search"})
+      "URL of the Earthdata Search application"
+      {:default "https://search.earthdata.nasa.gov/search"})
 
     (render-erb (context->jruby-runtime context)
                 collection-preview-erb

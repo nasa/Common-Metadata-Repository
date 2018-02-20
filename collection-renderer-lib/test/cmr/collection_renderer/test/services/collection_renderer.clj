@@ -36,13 +36,13 @@
 ;; Verify that the title of the html is the entry title
 (deftest render-title-as-entry-title
   (let [coll expected-conversion/example-collection-record
-         ^String html (cr/render-collection (renderer-context) coll "C-1234")]
+        ^String html (cr/render-collection (renderer-context) coll "C-1234")]
     (is html "Expected a title containing the entry title")
     (is (.contains html (str "<title>" (:EntryTitle coll) "</title>")))))
 
 ;; Verify that the correct EDSC url is rendered
 (deftest render-edsc-link
   (let [coll expected-conversion/example-collection-record
-         ^String html (cr/render-collection (renderer-context) coll "C-1234")]
+        ^String html (cr/render-collection (renderer-context) coll "C-1234")]
     (is html "Expected the correct edsc url to be rendered")
     (is (.contains html (str "https://search.earthdata.nasa.gov/search/granules?p=C-1234")))))
