@@ -74,11 +74,22 @@
        ;; Do the escape after the format here, so it doesn't get formatted out
        [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
+(defn description-validation
+  "Validation that checks if description exists, when the URL is specified"
+  [field-path value]
+  (let [{:keys [URL Description]} value]
+    (when (and (some? URL)
+               (not= URL su/not-provided-url)
+               (not (seq Description)))
+      {field-path
+       [(vu/escape-error-string (format "[%s] RelatedURL does not have a description." URL))]})))
+
 (def urls-validation
   {:URL url-validation})
 
 (def related-url-validations
   [{:URL url-validation}
+   description-validation
    related-url-type-validation
    get-service-validation
    get-data-validation])
