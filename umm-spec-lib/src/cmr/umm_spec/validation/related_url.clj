@@ -82,7 +82,7 @@
                (not= URL su/not-provided-url)
                (not (seq Description)))
       {field-path
-       [(vu/escape-error-string (format "[%s] RelatedURL does not have a description." URL))]})))
+       [(vu/escape-error-string "RelatedUrl does not have a description.")]})))
 
 (def urls-validation
   {:URL url-validation})
