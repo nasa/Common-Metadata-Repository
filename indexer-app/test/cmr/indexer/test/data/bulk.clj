@@ -1,7 +1,8 @@
 (ns cmr.indexer.test.data.bulk
   "Tests for bulk indexing"
-  (:require [clojure.test :refer :all]
-            [cmr.indexer.data.bulk :as bulk]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.indexer.data.bulk :as bulk]))
 
 (deftest bulk-index
   (testing "interleaved deletes with indexing"

@@ -1,7 +1,8 @@
 (ns cmr.indexer.test.data.elasticsearch
-  (:require [clojure.test :refer :all]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.index-set :as i]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.index-set :as i]))
 
 (def test-index-set
   "A real copy of an index set from UAT with the mappings replaced to be smaller and reduce churn"

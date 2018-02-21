@@ -1,13 +1,14 @@
 (ns cmr.indexer.test.data.collection-granule-aggregation-cache
-  (require [clojure.test :refer :all]
-           [clj-time.core :as t]
-           [clj-time.coerce :as c]
-           [cmr.common.util :as u]
-           [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-           [clojure.edn :as edn]
-           [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-           [clojure.test.check.properties :refer [for-all]]
-           [clojure.test.check.generators :as gen]))
+  (require
+   [clj-time.coerce :as c]
+   [clj-time.core :as t]
+   [clojure.edn :as edn]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+   [cmr.common.util :as u]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]))
 
 (def sample-response
   {:took 7,
