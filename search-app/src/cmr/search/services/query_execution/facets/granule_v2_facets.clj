@@ -72,7 +72,7 @@
   [facets remaining-levels]
   (let [has-children (not= remaining-levels ["Day"])
         applied? (some? (some true? (map :applied facets)))
-        children-facets (for [facet (reverse facets)]
+        children-facets (for [facet facets]
                           (if (seq (:children facet))
                             (assoc facet :children [(add-group-nodes-to-facets
                                                      (:children facet) (rest remaining-levels))])

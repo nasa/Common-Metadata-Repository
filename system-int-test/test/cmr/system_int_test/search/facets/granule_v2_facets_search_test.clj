@@ -221,8 +221,8 @@
         (is (= "Year" (:title year-node)))
         (is (= true (:has_children year-node)))
         (is (= "group" (:type year-node))))
-      (testing "Years returned in order from most recent to oldest"
-        (is (= ["2012" "2011" "2010" "1999"] (map :title year-facets))))
+      (testing "Years returned in ascending order"
+        (is (= ["1999" "2010" "2011" "2012"] (map :title year-facets))))
       (testing "Years have a type of filter"
         (is (= ["filter" "filter" "filter" "filter"] (map :type year-facets))))
       (testing "Counts correct"
@@ -251,7 +251,7 @@
           (is (= :remove (get-link-type "2010" updated-year-facets)))
           (testing "Selecting a year returns month facets for that year"
             (is (= "Month" (:title month-node)))
-            (is (= ["05" "01"] (map :title month-facets)))
+            (is (= ["01" "05"] (map :title month-facets)))
             (is (= [true true] (map :has_children month-facets)))
             (is (= :apply (get-link-type "01" month-facets)))
             (is (= :apply (get-link-type "05" month-facets)))
@@ -268,7 +268,7 @@
                 (is (= :remove (get-link-type "2010" updated-year-facets)))
                 (is (= :remove (get-link-type "01" updated-month-facets)))
                 (testing "Days are displayed below month facets when selecting a month."
-                  (is (= ["21" "02"] (map :title day-facets)))
+                  (is (= ["02" "21"] (map :title day-facets)))
                   (is (= [false false] (map :has_children day-facets)))
                   (testing "Select a day returns only granules for that year, month, and day."
                     (let [response (traverse-link "21" day-facets)
