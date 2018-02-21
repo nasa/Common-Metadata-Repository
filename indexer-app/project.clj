@@ -23,6 +23,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :test-paths ["test" "int-test"]
   :profiles {
     :dev {
       :dependencies [
