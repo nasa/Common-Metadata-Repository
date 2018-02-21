@@ -159,7 +159,9 @@
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
       (and all-revisions-index? (contains?
-                                 #{:collection :variable :tag-association :variable-association}
+                                 #{:collection :tag-association
+                                   :variable :variable-association
+                                   :service :service-association}
                                  concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
