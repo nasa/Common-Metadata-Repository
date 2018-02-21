@@ -21,7 +21,7 @@
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :repl-options {:init-ns user}
-  :test-paths ["test" "int_test"]
+  :test-paths ["test" "int-test"]
   :profiles {
     :dev {
       :dependencies [
@@ -29,7 +29,7 @@
         [org.clojure/tools.namespace "0.2.11"]
         [pjstadig/humane-test-output "0.8.3"]]
       :jvm-opts ^:replace ["-server"]
-      :source-paths ["src" "dev" "test" "int_test"]
+      :source-paths ["src" "dev" "test" "int-test"]
       :injections [(require 'pjstadig.humane-test-output)
                    (pjstadig.humane-test-output/activate!)]}
     :uberjar {
