@@ -1,17 +1,18 @@
 (ns cmr.indexer.test.services.index-versions
   "Integration test for index versions during save and delete in elasticsearch"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.index :as esi]
-            [clojurewerkz.elastisch.rest.document :as doc]
-            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.index-set :as idx-set]
-            [cmr.common.test.test-util :as tu]
-            [cmr.common.cache :as cache]
-            [clojure.data.codec.base64 :as b64]
-            [cmr.common.lifecycle :as lifecycle]))
+  (:require
+   [clojure.data.codec.base64 :as b64]
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [clojurewerkz.elastisch.rest :as esr]
+   [clojurewerkz.elastisch.rest.document :as doc]
+   [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.common.cache :as cache]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.test.test-util :as tu]
+   [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.index-set :as idx-set]))
 
 (defn- es-doc
   "Returns dummy elasticsearch doc for testing"
