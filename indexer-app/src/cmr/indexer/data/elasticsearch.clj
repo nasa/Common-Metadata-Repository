@@ -66,7 +66,8 @@
   [concept-id revision-id all-revisions-index?]
   (if (and
        (or (= :collection (cs/concept-id->type concept-id))
-           (= :variable (cs/concept-id->type concept-id)))
+           (= :variable (cs/concept-id->type concept-id))
+           (= :service (cs/concept-id->type concept-id)))
        all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))

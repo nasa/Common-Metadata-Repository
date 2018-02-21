@@ -731,6 +731,10 @@
                           :mapping variable-mapping}
                :service {:indexes
                          [{:name "services"
+                           :settings service-setting}
+                          ;; This index contains all the revisions (including tombstones) and
+                          ;; is used for all-revisions searches.
+                          {:name "all-service-revisions"
                            :settings service-setting}]
                          :mapping service-mapping}}})
 
@@ -897,7 +901,9 @@
          [(get indexes (or target-index-key :variables))])
 
        :service
-       [(get indexes (or target-index-key :services))]
+       (if all-revisions-index?
+         [(get indexes :all-services-revisions)]
+         [(get indexes (or target-index-key :services))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
