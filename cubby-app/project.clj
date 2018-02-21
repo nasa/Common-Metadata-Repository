@@ -25,7 +25,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :test-paths ["int_test"]
+  :test-paths ["int-test"]
   :profiles {
     :dev {
       :exclusions [
@@ -37,7 +37,7 @@
         [org.clojure/tools.nrepl "0.2.13"]
         [pjstadig/humane-test-output "0.8.3"]]
       :jvm-opts ^:replace ["-server"]
-      :source-paths ["src" "dev" "test" "int_test"]
+      :source-paths ["src" "dev" "test" "int-test"]
       :injections [(require 'pjstadig.humane-test-output)
                    (pjstadig.humane-test-output/activate!)]}
     :uberjar {:main cmr.cubby.runner

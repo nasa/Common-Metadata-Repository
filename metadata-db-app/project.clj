@@ -39,7 +39,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :test-paths ["test" "int_test"]
+  :test-paths ["test" "int-test"]
   :profiles {
     :dev {
       :dependencies [
@@ -50,10 +50,10 @@
         [pjstadig/humane-test-output "0.8.3"]
         [proto-repl "0.3.1"]]
       :jvm-opts ^:replace ["-server"]
-      :source-paths ["src" "dev" "test" "int_test"]
+      :source-paths ["src" "dev" "test" "int-test"]
       :injections [(require 'pjstadig.humane-test-output)
                    (pjstadig.humane-test-output/activate!)]}
-    :integration-test {:test-paths ["int_test"]
+    :integration-test {:test-paths ["int-test"]
                        :dependencies [[clj-http "2.3.0"]]}
     :uberjar {
       :main cmr.metadata-db.runner

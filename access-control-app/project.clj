@@ -56,7 +56,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :test-paths ["test" "int_test"]
+  :test-paths ["test" "int-test"]
   :profiles {
     :dev {
       :exclusions [
@@ -68,8 +68,8 @@
         [proto-repl "0.3.1"]
         [ring-mock "0.1.5"]]
       :jvm-opts ^:replace ["-server"]
-      :source-paths ["src" "dev" "test" "int_test"]
-      :test-paths ["test" "int_test"]
+      :source-paths ["src" "dev" "test" "int-test"]
+      :test-paths ["test" "int-test"]
       :injections [(require 'pjstadig.humane-test-output)
                    (pjstadig.humane-test-output/activate!)]}
     ;; This profile specifically here for generating documentation. It's faster
