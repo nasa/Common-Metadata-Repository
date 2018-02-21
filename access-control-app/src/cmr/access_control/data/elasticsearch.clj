@@ -24,15 +24,6 @@
   [concept]
   (cs/concept-id->type (:concept-id concept)))
 
-(defn- get-elastic-id
-  "Create the proper elastic document id for normal indexing or all-revisions indexing"
-  [concept-id revision-id all-revisions-index?]
-  (if (and
-        (= :collection (cs/concept-id->type concept-id))
-        all-revisions-index?)
-    (str concept-id "," revision-id)
-    concept-id))
-
 (defmulti parsed-concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
   (fn [context concept parsed-concept]
