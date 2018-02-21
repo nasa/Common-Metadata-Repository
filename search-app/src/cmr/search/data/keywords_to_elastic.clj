@@ -168,10 +168,8 @@
   (let [get-boost-fn #(get-boost specified-boosts %)]
     [;; long-name
      (keywords->regex-filter :long-name.lowercase keywords (get-boost-fn :short-name))
-
      ;; short-name
      (keywords->boosted-exact-match-filter :short-name.lowercase keywords (get-boost-fn :short-name))
-
      ;; entry-id
      (keywords->boosted-exact-match-filter :entry-id.lowercase keywords (get-boost-fn :entry-id))
 
