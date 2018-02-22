@@ -326,12 +326,15 @@
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
                   doc/put conn es-index es-type es-doc elastic-id elastic-version ttl)]
-      (if (:error result)
+      (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
             (info (str "Ignore conflict: " (str result)))
-            (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
-          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
+            (errors/throw-service-error
+             :conflict
+             (str "Save to Elasticsearch failed " (str result))))
+          (errors/internal-error!
+            (str "Save to Elasticsearch failed " (str result))))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."

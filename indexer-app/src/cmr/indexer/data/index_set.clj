@@ -257,7 +257,8 @@
    :ords (m/not-indexed (m/stored m/int-field-mapping))})
 
 (defmapping collection-mapping :collection
-  "Defines the elasticsearch mapping for storing collections"
+  "Defines the elasticsearch mapping for storing collections. These are the
+  fields that will be stored in an Elasticsearch document."
   {:_id {:index "not_analyzed"
          :store true}}
   (merge {:deleted (m/stored m/bool-field-mapping) ; deleted=true is a tombstone
@@ -461,7 +462,8 @@
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule
-  "Defines the elasticsearch mapping for storing granules"
+  "Defines the elasticsearch mapping for storing granules. These are the
+  fields that will be stored in an Elasticsearch document."
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
@@ -469,7 +471,8 @@
    :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
 
 (defmapping granule-mapping :granule
-  "Defines the elasticsearch mapping for storing collections"
+  "Defines the elasticsearch mapping for storing collections. These are the
+  fields that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   (merge
     {:concept-id (m/stored m/string-field-mapping)
@@ -623,7 +626,8 @@
     spatial-coverage-fields))
 
 (defmapping tag-mapping :tag
-  "Defines the elasticsearch mapping for storing tags."
+  "Defines the elasticsearch mapping for storing tags. These are the fields
+  that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   {:concept-id (m/stored m/string-field-mapping)
    :tag-key.lowercase (-> m/string-field-mapping m/stored m/doc-values)
@@ -631,7 +635,8 @@
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
 (defmapping variable-mapping :variable
-  "Defines the elasticsearch mapping for storing variables."
+  "Defines the elasticsearch mapping for storing variables. These are the
+  fields that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)
@@ -655,7 +660,8 @@
    :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 
 (defmapping service-mapping :service
-  "Defines the elasticsearch mapping for storing services."
+  "Defines the elasticsearch mapping for storing services. These are the
+  fields that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)

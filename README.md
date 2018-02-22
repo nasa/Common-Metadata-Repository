@@ -63,19 +63,10 @@ run the entire CMR with no external dependencies from this Jar file and use
 that instance for local testing. The sections below contain instructions for
 running the CMR as a single process or as multiple processes.
 
-#### First Steps
-
-1. Ensure you have installed on your system the items listed above in the
-   "Prerequisites" section.
-1. Download the Oracle JDBC `.jar` files into `./oracle-libs/support` by
-   following instructions in `./oracle-lib/README.md`. (The CMR must have these
-   libraries to build but it does not depend on Oracle DB when running
-   locally. It uses a local in-memory database by default.)
-
 #### Using the `cmr` CLI Tool
 
 This project has its own tool that is used for everything from initial setup to
-running buids and tests on the CI/CD infrastructure. In order to use the tool
+running builds and tests on the CI/CD infrastructure. In order to use the tool
 as we do below, be sure to run the following from the top-level CMR directory:
 
 ```
@@ -83,14 +74,39 @@ export PATH=$PATH:`pwd`/bin
 source resources/shell/cmr-bash-autocomplete
 ```
 
-If you use another system shell, we'll accept a PR with auto-complete for it.
+(If you use a system shell not compatible with Bash, we'll accept a PR with
+auto-complete for it.)
+
+To make this change permanent:
+
+```
+echo "export PATH=\$PATH:`pwd`/bin" >> ~/.profile
+echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
+```
+
+#### Oracle Dependencies
+
+Even if you're not going to develop against a local Oracle database,
+you still need to have the Oracle libraries locally installed to use the
+CMR.
+
+Here are the steps to do so:
+
+1. Ensure you have installed on your system the items listed above in the
+   "Prerequisites" section.
+1. Download the Oracle JDBC JAR files into `./oracle-libs/support` by
+   following instructions in `./oracle-lib/README.md`. (The CMR must have these
+   libraries to build but it does not depend on Oracle DB when running
+   locally. It uses a local in-memory database by default.)
+1. With the JAR files downloadded to the proper location, you're now ready
+   to install them for use by the CMR:" `cmr install oracle-libs`
 
 #### Building and Running CMR Dev System in a REPL
 
-1. `cmr install oracle-libs`
 1. `cmr setup profile` and then update the new `./dev-system/profiles.clj`
    according to personal instructions provided by a CMR code developer.
 1. `cmr setup dev`
+1. `cmr setup db`
 1. `cmr start repl`
 1. Once given a Clojure prompt, run `(reset)`
 
