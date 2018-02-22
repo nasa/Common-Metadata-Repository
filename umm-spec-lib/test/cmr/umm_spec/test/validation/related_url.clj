@@ -37,11 +37,11 @@
      (coll/map->UMM-C
       {:RelatedUrls [{:URL "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"
                       :URLContentType "DistributionURL"
+                      :Description "Description"
                       :Type "GET DATA"
                       :Subtype "ECHO"}
                      {:URL "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"
                       :URLContentType "PublicationURL"
-                      :Description "Description"
                       :Type "VIEW RELATED INFORMATION"
                       :Subtype "USER'S GUIDE"}
                      {:URL "https://www.foo.com"
@@ -86,7 +86,7 @@
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}
       {:path [:RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
-      {:path [:RelatedUrls 0]
+      {:path [:RelatedUrls 1]
        :errors ["RelatedUrl does not have a description."]}
       {:path [:RelatedUrls 5]
        :errors ["Only URLContentType: DistributionURL Type: GET SERVICE can contain GetService, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}
@@ -167,6 +167,7 @@
          [{:ContactInformation
            {:RelatedUrls [{:URL "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"
                            :URLContentType "DataContactURL"
+                           :Description "Description"
                            :Type "HOME PAGE"}
                           {:URL "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"
                            :URLContentType "DataContactURL"
@@ -174,7 +175,6 @@
                            :Type "HOME PAGE"}
                           {:URL "https://www.foo.com"
                            :URLContentType "Bad URLContentType"
-                           :Description "Description"
                            :Type "HOME PAGE"}
                           {:URL "https://www.bar.com"
                            :URLContentType "DataContactURL"
@@ -187,14 +187,13 @@
                            :Subtype "Bad Subtype"}]}}]}]})
      [{:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
-      {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 0]
-       :errors ["RelatedUrl does not have a description."]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 3]
        :errors ["URLContentType: DataContactURL, Type: Bad Type, Subtype: null is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 4]
        :errors ["URLContentType: DataContactURL, Type: HOME PAGE, Subtype: Bad Subtype is not a vaild URLContentType/Type/Subtype combination."]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 2]
-       :errors ["URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
+       :errors ["RelatedUrl does not have a description."
+                "URLContentType: Bad URLContentType, Type: HOME PAGE, Subtype: null is not a vaild URLContentType/Type/Subtype combination."
                 "URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls"]}
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}]))
