@@ -96,25 +96,25 @@
 (deftest delete-collection-with-increment-versions-test
   (testing "Delete with increment versions"
     (save-collection (es-doc-coll) "C1234-PROV1" 1)
-    (delete-collection "C1234-PROV1" "2")
+    (delete-collection "C1234-PROV1" 2)
     (assert-delete-coll "C1234-PROV1")
-    (delete-collection "C1234-PROV1" "8")
+    (delete-collection "C1234-PROV1" 8)
     (assert-delete-coll "C1234-PROV1")))
 
 (deftest delete-collection-with-equal-versions-test
   (testing "Delete with equal versions"
     (save-collection (es-doc-coll) "C1234-PROV1" 1)
-    (delete-collection "C1234-PROV1" "1")
+    (delete-collection "C1234-PROV1" 1)
     (assert-delete-coll "C1234-PROV1")))
 
 (deftest delete-collection-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (save-collection (es-doc-coll) "C1234-PROV1" 2)
     (try
-      (delete-collection "C1234-PROV1" "1")
+      (delete-collection "C1234-PROV1" 1)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (save-collection (es-doc-coll) "C1234-PROV1" 2 {:ignore-conflict? true})
-    (delete-collection "C1234-PROV1" "1" {:ignore-conflict? true})
+    (delete-collection "C1234-PROV1" 1 {:ignore-conflict? true})
     (assert-version-coll "C1234-PROV1" 2)))

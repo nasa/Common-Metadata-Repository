@@ -148,4 +148,5 @@
 ;;; Keep in mind, however, that the onus is on the developer to ensure that
 ;;; all function and test names are unique in all these files.
 (load "index_fields/collections")
+(load "index_fields/services")
 (load "index_fields/variables")
