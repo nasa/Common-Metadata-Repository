@@ -30,13 +30,13 @@ This task will ingest all of the locally saved metadata files into a local CMR. 
 
 The report will also be logged to local_test_runs.csv to allow a comparison between runs for the local user and a historical record during debugging.
 
-If an optional argument -log-run-description is specified with a run description (i.e. "Increase entry title boost") by default the log will also be written to test_run_history.csv, which should be committed to the repository.
+An optional argument -log-run-description can be specified with a run description (i.e. "Increase entry title boost").
 
 Usage: `lein run relevancy-tests -log-run-description "Base Run"`
 
-An additional optional boolean argument, -log-history, is available if you want to specify a run description, but do not want to log to the test_run_history.csv file. By default, this option is true when -log-run-description is set.
+An additional optional boolean argument, -log-history, is available if you want the log be written to test_run_history.csv, which should be committed to the repository. By default, this option is false. Note: -log-history and -log-run-description are independent of each other. They can be used together, or separately. 
 
-Usage: `lein run relevancy-tests -log-run-description "Base Run" -log-history false`
+Usage: `lein run relevancy-tests -log-run-description "Base Run" -log-history true`
 
 ### boost-tests
 
