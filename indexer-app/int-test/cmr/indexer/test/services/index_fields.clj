@@ -29,41 +29,70 @@
 
 (defn- save-document-in-elastic
   "Helper function to call elasticsearch save-document-in-elastic"
-  ([context es-type es-doc concept-id revision-id]
+  ([es-type es-doc concept-id revision-id]
+   (save-document-in-elastic es-type es-doc concept-id revision-id {}))
+  ([es-type es-doc concept-id revision-id options]
    (save-document-in-elastic
-    context es-type es-doc concept-id revision-id {}))
-  ([context es-type es-doc concept-id revision-id options]
-   (save-document-in-elastic
-    context ["tests"] es-type es-doc concept-id revision-id options))
-  ([context es-index es-type es-doc concept-id revision-id options]
+    ["tests"] es-type es-doc concept-id revision-id options))
+  ([es-index es-type es-doc concept-id revision-id options]
    (es/save-document-in-elastic
-    context es-index es-type es-doc concept-id revision-id revision-id
+    @context es-index es-type es-doc concept-id revision-id revision-id
     options)))
 
 (defn- delete-document-in-elastic
-  ([context es-type concept-id revision-id]
-   (delete-document-in-elastic
-    context es-type concept-id revision-id {}))
-  ([context es-type concept-id revision-id options]
+  ([es-type concept-id revision-id]
+   (delete-document-in-elastic es-type concept-id revision-id {}))
+  ([es-type concept-id revision-id options]
     (delete-document-in-elastic
-     context ["tests"] es-type concept-id revision-id options))
-  ([context es-index es-type concept-id revision-id options]
+     ["tests"] es-type concept-id revision-id options))
+  ([es-index es-type concept-id revision-id options]
    (es/delete-document
-    context es-index es-type concept-id revision-id revision-id options)))
+    @context es-index es-type concept-id revision-id revision-id options)))
 
-(defn- assert-version
-  "Assert the retrieved document for the given id is of the given version.
-  Note that this will only be valid for concept type ES documents that have
-  the version field, i.e.: collections and granules."
-  [concept-type-str id version]
-  (let [result (es/get-document @context "tests" concept-type-str id)]
-    (is (= version (:_version result)))))
+(defn- get-document
+  ([es-type concept-id]
+    (get-document "tests" es-type concept-id))
+  ([es-index es-type concept-id]
+    (es/get-document @context es-index es-type concept-id)))
+
+(defn- assert-same
+  "Assert the retrieved document for the given concept and field has the
+  value value as that passed to this function."
+  [concept-type-str concept-id field value]
+  (is (= value
+         (field (get-document concept-type-str concept-id)))))
+
+(defn- -field-match
+  "Generic field match check to be used for both assert and assert-not."
+  [func es-doc fields substr]
+  (is (func
+       (re-find
+        (re-pattern (str ".*" substr ".*"))
+        (get-in es-doc (concat [:_source] fields))))))
+
+(defn- assert-field-match-in
+  "Assert that value associated with the nested fields for the retrieved
+  document of type concept-type-str with the given concept-id contains
+  the given substring."
+  [concept-type-str concept-id fields substr]
+  (let [es-doc (get-document concept-type-str concept-id)]
+    (is (:found es-doc))
+    (-field-match #(not (nil? %)) es-doc fields substr)))
+
+(defn- assert-not-field-match-in
+  "Assert that value associated with the nested fields for the retrieved
+  document of type concept-type-str with the given concept-id does not
+  contain the given substring."
+  [concept-type-str concept-id fields substr]
+  (let [es-doc (get-document concept-type-str concept-id)]
+    (if (:found es-doc)
+      (-field-match nil? es-doc fields substr)
+      (is true))))
 
 (defn- assert-delete
   "Assert the document with the given id is deleted"
   [concept-type-str id]
-  (let [result (es/get-document @context "tests" concept-type-str id)]
-    (is (nil? result))))
+  (is (nil? (get-document "tests" concept-type-str id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Testing Fixtures   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -119,3 +148,4 @@
 ;;; Keep in mind, however, that the onus is on the developer to ensure that
 ;;; all function and test names are unique in all these files.
 (load "index_fields/collections")
+(load "index_fields/variables")

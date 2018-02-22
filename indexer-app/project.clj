@@ -34,6 +34,8 @@
     :uberjar {
       :main cmr.indexer.runner
       :aot :all}
+    :integration-tests {
+      :test-paths ^:replace ["int-test"]}
     :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
@@ -55,6 +57,7 @@
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+            "int-test-out" ["with-profile" "+integration-tests" "test2junit"]
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                           ["with-profile" "lint" "kibit"]]
