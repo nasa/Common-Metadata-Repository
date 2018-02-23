@@ -106,7 +106,6 @@ Here are the steps to do so:
 1. `cmr setup profile` and then update the new `./dev-system/profiles.clj`
    according to personal instructions provided by a CMR code developer.
 1. `cmr setup dev`
-1. `cmr setup db`
 1. `cmr start repl`
 1. Once given a Clojure prompt, run `(reset)`
 
@@ -236,8 +235,14 @@ Once these are in place, you will be able to run the following:
 $ cmr test cicd
 ```
 
-Additionally, if you have an Oracle VM up and running, you can change how
-the tests are run in the REPL by running the following:
+If you want to run tests against Oracle, bring up the Oracle VM and execute
+the following to create the users and run the migrations:
+
+```
+cmr setup db
+```
+
+Then, in the CMR REPL:
 
 ```clj
 user=> (reset :db :external)
