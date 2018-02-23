@@ -908,7 +908,7 @@
 
        :service
        (if all-revisions-index?
-         [(get indexes :all-services-revisions)]
+         [(get indexes :all-service-revisions)]
          [(get indexes (or target-index-key :services))])
 
        :granule
