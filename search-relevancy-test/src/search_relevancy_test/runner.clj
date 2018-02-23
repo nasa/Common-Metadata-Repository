@@ -29,6 +29,7 @@
         "relevancy-tests" (relevancy-test/relevancy-test args)
         "edsc-relevancy-tests" (relevancy-test/edsc-relevancy-test args)
         "boost-tests" (boost-test/boost-tests-with-args args)
+        ; "top-n-tests" (top-n/top-n-tests args)
         usage)
   (shutdown-agents))
 

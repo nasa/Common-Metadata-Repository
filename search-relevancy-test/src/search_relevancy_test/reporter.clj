@@ -129,3 +129,11 @@
                      (:average-failed-dcg result-summary)))
     (println (format "Mean reciprocal rank: %.3f"
                      (:mean-reciprocal-rank result-summary)))))
+
+(defn print-start-of-anomaly-tests
+  "Prints the preamble for a test."
+  [anomaly->subtests]
+  (let [test-count (count (val anomaly->subtests))]
+    (println (format "Anomaly %s %s"
+                     (key anomaly->subtests)
+                     (if (> test-count 1) (format "(%s tests)" test-count) "")))))
