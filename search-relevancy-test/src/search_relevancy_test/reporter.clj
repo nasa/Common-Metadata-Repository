@@ -57,14 +57,19 @@
       (/ 1 idx)
       0)))
 
+(defn get-test-description
+  "Returns the test description string used for printing of test result."
+  [test]
+  (format "...............Test %s: %s"
+          (:test test)
+          (:description test)))
+
 (defn analyze-search-results
   "Given the list of result concept ids in order and the order from the test,
   analyze the results to determine if the concept ids came back in the correct
   position. Print a message if not."
   [anomaly-test test-concept-ids result-ids print-results]
-  (let [description (format "...............Test %s: %s"
-                            (:test anomaly-test)
-                            (:description anomaly-test))
+  (let [description (get-test-description anomaly-test)
         items-in-positional-order (positional-order test-concept-ids result-ids)
         colored-items (vec (colorize-positional-order items-in-positional-order))]
     (if (not= (count test-concept-ids) (count result-ids))
@@ -132,8 +137,42 @@
 
 (defn print-start-of-anomaly-tests
   "Prints the preamble for a test."
-  [anomaly->subtests]
-  (let [test-count (count (val anomaly->subtests))]
-    (println (format "Anomaly %s %s"
-                     (key anomaly->subtests)
-                     (if (> test-count 1) (format "(%s tests)" test-count) "")))))
+  [anomaly-number num-tests]
+  (println (format "Anomaly %s %s"
+                   anomaly-number
+                   (if (> num-tests 1) (format "(%s tests)" num-tests) ""))))
+
+(defn get-top-n-result-string
+  "Returns a top N test result string."
+  [description test-results]
+  (if (:pass test-results)
+    (ansi/style (format "%s PASSED at position %d which is in top %d"
+                        description
+                        (:actual test-results)
+                        (:desired test-results))
+                :green)
+    (if (nil? (:actual test-results))
+      (ansi/style (format "%s FAILED because the collection was not found by the search."
+                          description
+                          (:actual test-results)
+                          (:desired test-results))
+                  :magenta)
+      (ansi/style (format "%s FAILED at position %d when top %d was expected."
+                          description
+                          (:actual test-results)
+                          (:desired test-results))
+                  :red))))
+
+(defn print-top-n-test-result
+  "Prints the test results for a top N test."
+  [anomaly-test test-results]
+  (let [description (get-test-description anomaly-test)]
+    (println (get-top-n-result-string description test-results))))
+
+(defn print-top-n-results-summary
+  "Prints a summary of the results for all of the top N tests."
+  [test-results]
+  (println "---------------------------------------")
+  (println (format "SUMMARY: %d tests passed out of %d."
+                   (count (filter :pass test-results))
+                   (count test-results))))

@@ -55,13 +55,19 @@ Arguments:
 
 `lein run analyze-test <anomaly-number> <anomaly-filename>`
 
-This task will help analyze the failure of a test with the anomaly-number in the anomaly file with the anomaly-filename. 
+This task will help analyze the failure of a test with the anomaly-number in the anomaly file with the anomaly-filename.
 If anomaly-filename is not provided, anomaly_tests.csv will be used.
 
 For example, if you run `lein run analyze-test 5`, it will analyze test number 5 in anomaly_tests.csv and give you the
-following information, which helps explain why C1237114139-GES_DISC appears above C1239966794-GES_DISC: 
+following information, which helps explain why C1237114139-GES_DISC appears above C1239966794-GES_DISC:
 Filtered search result is:  ({:id C1237114193-GES_DISC, :score 1.3104, :version_id 008, :short_name TOMSEPL2, :processing_level_id 2} {:id C1239966794-GES_DISC, :score 1.008, :version_id 003, :short_name OMDOAO3, :processing_level_id 2})
+
+### top-n-tests
+
+`lein run top-n-tests`
+
+This task will run the relevancy tests of the form "I expect collection X to be in the top N collections returned when searching for Z." For each test it performs the search against the operational CMR and compares the position the result is returned in to the expected position to determine if the test passed or failed.
 
 ## License
 
-Copyright © 2017 NASA
+Copyright © 2017-2018 NASA

@@ -14,6 +14,10 @@
   "EDSC user anomaly filename."
   "edsc_anomaly_tests.csv")
 
+(def top-n-anomaly-filename
+  "Top N tests anomaly filename."
+  "top_n_tests.csv")
+
 (def test-collection-formats
  [:iso-smap :echo10 :dif10 :dif :iso19115 :umm-json])
 

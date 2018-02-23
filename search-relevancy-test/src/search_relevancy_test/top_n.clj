@@ -3,9 +3,10 @@
   top N collections returned when searching for Z."
   (:require
    [clj-http.client :as client]
+   [clojure.data.xml :as xml]
    [cmr.common.config :refer [defconfig]]
    [search-relevancy-test.core :as core]
-   [clojure.data.xml :as xml]))
+   [search-relevancy-test.reporter :as reporter]))
 
 (defconfig cmr-search-url
   "Base URL for performing CMR searches."
@@ -31,7 +32,6 @@
   (first
    (keep-indexed (fn [idx reference]
                    (let [concept-id (get-concept-id-from-reference reference)]
-                    ;  (println "Concept-id" concept-id "for reference" reference)
                      (when (= test-concept-id concept-id)
                        (inc idx))))
                  references)))
@@ -48,55 +48,44 @@
        :content
        (map :content)))
 
-; (defn- perform-tests
-;   "Read the anomaly test CSV and perform each test"
-;   [anomaly-filename search-params print-results]
-;   (for [tests-by-anomaly (sort core/string-key-to-int-sort
-;                                (group-by :anomaly (core/read-anomaly-test-csv anomaly-filename)))
-;           :let [test-count (count (val tests-by-anomaly))]]
-;     (do
-;       (when print-results
-;         (println (format "Anomaly %s %s"
-;                          (key tests-by-anomaly)
-;                          (if (> test-count 1) (format "(%s tests)" test-count) ""))))
-;       (doall
-;         (for [individual-test (val tests-by-anomaly)]
-;           (perform-search-test individual-test search-params print-results))))))
-
-
-(defn print-test-result
-  "Prints the test result in a way to quickly see whether a test passed or failed."
-  [test-result]
-  (println test-result))
-
-(defn perform-test
-  "Performs a top N test"
+(defn perform-subtest
+  "Performs a subtest for an anomaly test."
   [test]
-  ; (println "Running test" test)
-  ; (reporter/print-start-of-anomaly-tests anomaly-number number-of-subtests)
   (let [url (format "%s/collections?%s&%s" (cmr-search-url) standard-params-string (:search test))
         references (get-xml-references url)
-        ; _ (println "References are" references)
         position (get-position-in-references (:concept-id test) references)
         desired-position (Integer/parseInt (:position test))
         passed? (and (not (nil? position))
-                     (<= position desired-position))]
-    {:pass passed?
-     :anomaly (:anomaly test)
-     :test (:test test)
-     :actual position
-     :desired desired-position}))
+                     (<= position desired-position))
+        result {:pass passed?
+                :anomaly (:anomaly test)
+                :test (:test test)
+                :actual position
+                :desired desired-position}]
+    (reporter/print-top-n-test-result test result)
+    result))
+
+(defn perform-anomaly-test
+  "Performs all of the subtests for a top N anomaly test."
+  [anomaly->subtests]
+  (let [subtests (val anomaly->subtests)]
+    (reporter/print-start-of-anomaly-tests (key anomaly->subtests) (count subtests))
+    (map perform-subtest subtests)))
 
 (defn get-tests-from-filename
-  "Returns tests by parsing the CSV file for the passed in filename."
+  "Returns a map of anomaly number to tests for that anomaly by parsing the CSV file for the passed
+  in filename."
   [filename]
-  (core/read-anomaly-test-csv filename))
+  (sort core/string-key-to-int-sort
+        (group-by :anomaly (core/read-anomaly-test-csv filename))))
 
 (defn run-top-n-tests
   "Run all of the top N tests from the CSV file"
   [filename]
-  (let [top-n-tests (get-tests-from-filename filename)]
-    (map perform-test top-n-tests)))
+  (let [top-n-tests (get-tests-from-filename filename)
+        results (doall (mapcat perform-anomaly-test top-n-tests))]
+    (reporter/print-top-n-results-summary results)
+    results))
 
 (comment
   (run-top-n-tests "top_n_tests.csv"))

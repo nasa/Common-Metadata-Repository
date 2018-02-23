@@ -90,8 +90,8 @@
     (println "Creating providers")
     (ingest/create-providers test-files)
     (println "Ingesting community usage metrics and test collections")
-    (ingest/ingest-community-usage-metrics) ;; Needs to happen before ingest
-    (ingest/ingest-test-files test-files)))
+    (ingest/ingest-community-usage-metrics))) ;; Needs to happen before ingest
+    ;(ingest/ingest-test-files test-files)))
 
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
