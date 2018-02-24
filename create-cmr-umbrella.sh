@@ -1,7 +1,5 @@
 #!/bin/bash
 
-shopt -s dotglob
-
 REPO=cmr
 PROJ=cmr
 CONTINUE_FLAG=$1
