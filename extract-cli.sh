@@ -2,6 +2,10 @@
 
 shopt -s dotglob
 
+BASE_DIR=`dirname $0`
+
+source $BASE_DIR/functions.sh
+
 REPO=cli
 PROJ=bin
 CONTINUE_FLAG=$1

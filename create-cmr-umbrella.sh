@@ -1,5 +1,9 @@
 #!/bin/bash
 
+BASE_DIR=`dirname $0`
+
+source $BASE_DIR/functions.sh
+
 REPO=cmr
 PROJ=cmr
 CONTINUE_FLAG=$1
