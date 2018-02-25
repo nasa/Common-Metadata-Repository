@@ -15,7 +15,7 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields]} concept
-        {:keys [service-name]} extra-fields
+        {:keys [service-name long-name]} extra-fields
         schema-keys [:LongName
                      :Name
                      :Version
@@ -37,6 +37,8 @@
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
+       :long-name long-name 
+       :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
@@ -49,6 +51,8 @@
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
+       :long-name long-name 
+       :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
