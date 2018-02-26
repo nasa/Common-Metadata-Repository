@@ -34,15 +34,27 @@ LIBS="collection-renderer-lib orbits-lib oracle-lib elastic-utils-lib common-app
 APPS="index-set-app mock-echo-app cubby-app metadata-db-app indexer-app search-relevancy-test virtual-product-app access-control-app ingest-app bootstrap-app search-app"
 OTHERS="search-relevancy-test system-int-test es-spatial-plugin vdd-spatial-viz dev-system"
 git submodule add git@github.com:nasa-cmr/cli.git bin
-for LIB in $LIBS;
-	do git submodule add git@github.com:nasa-cmr/${LIB}.git ${LIB}
+for LIB in $LIBS; do
+	if [[ ! -d "$LIB" ]]; then
+		git submodule add git@github.com:nasa-cmr/${LIB}.git ${LIB}
+	else
+		echo "Submodule '$LIB' already exists; skipping ..."
+	fi
 done
-for APP in $APPS;
-	GIT_REPO=`echo $APP|sed 's/-app$//'`
-	do git submodule add git@github.com:nasa-cmr/${GIT_REPO}.git ${APP}
+for APP in $APPS; do
+	if [[ ! -d "$APP" ]]; then
+		GIT_REPO=`echo $APP|sed 's/-app//'`
+		git submodule add git@github.com:nasa-cmr/${GIT_REPO}.git ${APP}
+	else
+		echo "Submodule '$APP' already exists; skipping ..."
+	fi
 done
-for OTHER in $OTHERS;
-	do git submodule add git@github.com:nasa-cmr/${OTHER}.git $OTHER
+for OTHER in $OTHERS; do
+	if [[ ! -d "$OTHER" ]]; then
+		git submodule add git@github.com:nasa-cmr/${OTHER}.git $OTHER
+	else
+		echo "Submodule '$OTHER' already exists; skipping ..."
+	fi
 done
 
 MSG="Added all projects as submodules to CMR umbrella project."
@@ -54,3 +66,10 @@ git push origin master -f
 echo "Pushed extracted code for the CMR $REPO to its own remote repo."
 
 echo "Done CMR umbrella project."
+
+# Note: once done, gettting the full source for CMR will require these
+# steps:
+
+# $ git clone git@github.com:nasa-cmr/cmr.git split-cmr
+# $ cd split-cmr
+# $ git submodule update --recursive --init
