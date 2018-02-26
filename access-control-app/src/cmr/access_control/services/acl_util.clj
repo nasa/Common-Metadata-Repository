@@ -11,7 +11,7 @@
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
-    [cmr.common.log :refer [info debug]]
+    [cmr.common.log :refer [info debug warn]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :refer [defn-timed] :as util]
@@ -141,7 +141,7 @@
                                     (assoc :concept-ids synced-concept-ids)
                                     util/remove-nil-keys)]
       (when (seq dropped-concept-ids)
-        (info (format "Dropping non existent collection concept-ids from collection identifier: %s"
+        (warn (format "Dropping non existent collection concept-ids from collection identifier: %s"
                       (vec dropped-concept-ids))))
       (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
     acl))
