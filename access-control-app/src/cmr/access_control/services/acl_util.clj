@@ -3,20 +3,21 @@
    group-service and acl-service."
   (:require
     [clojure.edn :as edn]
+    [clojure.set :as set]
     [clojure.string :as str]
+    [cmr.access-control.config :as config]
     [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.config :as config]
+    [cmr.common-app.services.search.group-query-conditions :as gc]
+    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.log :refer [info debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :refer [defn-timed] :as util]
-    [cmr.common-app.services.search.query-execution :as qe]
-    [cmr.common-app.services.search.query-model :as qm]
     [cmr.transmit.echo.tokens :as tokens]
-    [cmr.transmit.metadata-db2 :as mdb]
     [cmr.transmit.metadata-db :as mdb1]
-    [cmr.common-app.services.search.group-query-conditions :as gc]))
+    [cmr.transmit.metadata-db2 :as mdb]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -131,11 +132,16 @@
           colls-from-concept-ids (when (seq concept-ids)
                                    (get-collections-chunked context concept-ids :concept-id provider-id))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
-          concept-ids (map :concept-id collections)
+          synced-concept-ids (map :concept-id collections)
+          dropped-concept-ids (set/difference (set concept-ids)
+                                              (set synced-concept-ids))
           entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)
           collection-identifier (-> collection-identifier
                                     (assoc :entry-titles entry-titles)
-                                    (assoc :concept-ids concept-ids)
+                                    (assoc :concept-ids synced-concept-ids)
                                     util/remove-nil-keys)]
+      (when (seq dropped-concept-ids)
+        (info (format "Concept-ids %s do not exist, dropping them from collection identifier"
+                      (vec dropped-concept-ids))))
       (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
     acl))
