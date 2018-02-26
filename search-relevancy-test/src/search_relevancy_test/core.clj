@@ -14,8 +14,18 @@
   "EDSC user anomaly filename."
   "edsc_anomaly_tests.csv")
 
+(def top-n-anomaly-filename
+  "Top N tests anomaly filename."
+  "top_n_tests.csv")
+
 (def test-collection-formats
  [:iso-smap :echo10 :dif10 :dif :iso19115 :umm-json])
+
+(defn string-key-to-int-sort
+  "Sorts by comparing as integers."
+  [v1 v2]
+  (< (Integer/parseInt (key v1))
+     (Integer/parseInt (key v2))))
 
 (defn- test-files-for-format
   "Returns a set of test collection files in the given format."

@@ -49,17 +49,11 @@
         result-ids (filter #(contains? (set test-concept-ids) %) all-result-ids)]
     (reporter/analyze-search-results anomaly-test test-concept-ids result-ids print-results)))
 
-(defn string-key-to-int-sort
-  "Sorts by comparing as integers."
-  [v1 v2]
-  (< (Integer/parseInt (key v1))
-     (Integer/parseInt (key v2))))
-
 (defn- perform-tests
   "Read the anomaly test CSV and perform each test"
   [anomaly-filename search-params print-results]
-  (for [tests-by-anomaly (sort string-key-to-int-sort
-                                 (group-by :anomaly (core/read-anomaly-test-csv anomaly-filename)))
+  (for [tests-by-anomaly (sort core/string-key-to-int-sort
+                               (group-by :anomaly (core/read-anomaly-test-csv anomaly-filename)))
           :let [test-count (count (val tests-by-anomaly))]]
     (do
       (when print-results
@@ -96,8 +90,8 @@
     (println "Creating providers")
     (ingest/create-providers test-files)
     (println "Ingesting community usage metrics and test collections")
-    (ingest/ingest-community-usage-metrics) ;; Needs to happen before ingest
-    (ingest/ingest-test-files test-files)))
+    (ingest/ingest-community-usage-metrics))) ;; Needs to happen before ingest
+    ;(ingest/ingest-test-files test-files)))
 
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
