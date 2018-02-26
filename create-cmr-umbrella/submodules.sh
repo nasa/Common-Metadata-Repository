@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SCRIPT_DIR=`dirname $0`
-
+SCRIPT_SUB_DIR=`dirname $0`
+SCRIPT_DIR=`dirname $SCRIPT_SUB_DIR`
 source $SCRIPT_DIR/functions.sh
 
 REPO=cmr

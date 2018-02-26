@@ -22,7 +22,7 @@ done
 
 if [[ -d "cmr-nasa" ]]; then
 	if [[ ! -d "cmr" ]]; then
-		$SCRIPT_DIR/create-cmr-umbrella.sh -y
+		$SCRIPT_DIR/create-cmr-umbrella/submodules.sh -y
 	fi
 else
 	echo "The expected repo 'cmr-nasa' doesn't exist; exiting ..."

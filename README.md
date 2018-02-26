@@ -12,6 +12,7 @@ Steps:
 	$ cd cmr-experimental
 	```
 1. Split the repos:
+	```
 	$ ../repo-splitter/split-repos.sh
 	```
 
@@ -21,4 +22,3 @@ this process will take several hours on a fast machine. Once done, there will
 be a `cmr` directory in `cmr-experimental`: this is the new umrealla project
 containing all the split out repos -- the CMR, the REPL, and the tests all work
 exactly as the did before the split.
-
