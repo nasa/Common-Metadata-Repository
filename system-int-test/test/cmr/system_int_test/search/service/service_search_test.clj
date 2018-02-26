@@ -576,7 +576,7 @@
 (deftest service-search-sort
   (let [service1 (services/ingest-service-with-attrs {:native-id "svc1"
                                                       :Name "service"
-                                                      :LongName "LongName1"
+                                                      :LongName "LongName4"
                                                       :provider-id "PROV2"})
         service2 (services/ingest-service-with-attrs {:native-id "svc2"
                                                       :Name "Service 2"
@@ -584,11 +584,11 @@
                                                       :provider-id "PROV1"})
         service3 (services/ingest-service-with-attrs {:native-id "svc3"
                                                       :Name "a service"
-                                                      :LongName "LongName3"
+                                                      :LongName "LongName1"
                                                       :provider-id "PROV1"})
         service4 (services/ingest-service-with-attrs {:native-id "svc4"
                                                       :Name "service"
-                                                      :LongName "LongName4"
+                                                      :LongName "LongName3"
                                                       :provider-id "PROV1"})]
     (index/wait-until-indexed)
 
@@ -627,11 +627,11 @@
 
       "Sort by long-name"
       "long_name"
-      [service1 service2 service3 service4]
+      [service3 service2 service4 service1]
 
       "Sort by long-name descending order"
       "-long_name"
-      [service4 service3 service2 service1]
+      [service1 service4 service2 service3]
 
       "Sort by name ascending then provider id ascending explicitly"
       ["name" "provider"]

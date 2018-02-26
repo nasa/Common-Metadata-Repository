@@ -15,7 +15,8 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields]} concept
-        {:keys [service-name long-name]} extra-fields
+        {:keys [service-name]} extra-fields
+        long-name (:LongName parsed-concept)
         schema-keys [:LongName
                      :Name
                      :Version

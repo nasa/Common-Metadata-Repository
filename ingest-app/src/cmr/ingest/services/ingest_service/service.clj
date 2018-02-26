@@ -8,8 +8,7 @@
   "Returns service concept with fields necessary for ingest into metadata db
   under :extra-fields."
   [context concept service]
-  (assoc concept :extra-fields {:service-name (:Name service) 
-                                :long-name (:LongName service)}))
+  (assoc concept :extra-fields {:service-name (:Name service)})) 
 
 (defn-timed save-service
   "Store a service concept in mdb and indexer. Return name, long-name, concept-id, and
