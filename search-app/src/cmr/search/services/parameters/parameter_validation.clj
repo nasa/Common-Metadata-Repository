@@ -79,7 +79,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:keyword}
+    {:single-value #{:keyword :all-revisions}
      :multiple-value #{:name :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
@@ -206,6 +206,10 @@
   #{:echo-compatible :include-facets})
 
 (defmethod cpv/valid-query-level-params :variable
+  [_]
+  #{:all-revisions})
+
+(defmethod cpv/valid-query-level-params :service
   [_]
   #{:all-revisions})
 
@@ -732,7 +736,8 @@
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation])
-   :service cpv/common-validations})
+   :service (concat cpv/common-validations
+                    [boolean-value-validation])})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

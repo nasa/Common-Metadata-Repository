@@ -408,6 +408,13 @@
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 
+(defmethod common-params/parse-query-level-params :service
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :service params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
   [context params]
