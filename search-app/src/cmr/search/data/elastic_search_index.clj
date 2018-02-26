@@ -157,7 +157,9 @@
 
 (defmethod common-esi/concept-type->index-info :service
   [context _ query]
-  {:index-name "1_services"
+  {:index-name (if (:all-revisions? query)
+                 "1_all_service_revisions"
+                 "1_services")
    :type-name "service"})
 
 (defn context->conn
