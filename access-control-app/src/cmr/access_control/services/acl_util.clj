@@ -141,7 +141,7 @@
                                     (assoc :concept-ids synced-concept-ids)
                                     util/remove-nil-keys)]
       (when (seq dropped-concept-ids)
-        (info (format "Concept-ids %s do not exist, dropping them from collection identifier."
+        (info (format "Dropping non existent collection concept-ids from collection identifier: %s"
                       (vec dropped-concept-ids))))
       (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
     acl))
