@@ -1,8 +1,8 @@
 #!/bin/bash
 
-BASE_DIR=`dirname $0`
+SCRIPT_DIR=`dirname $0`
 
-source $BASE_DIR/functions.sh
+source $SCRIPT_DIR/functions.sh
 
 shopt -s dotglob
 

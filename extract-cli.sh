@@ -2,9 +2,9 @@
 
 shopt -s dotglob
 
-BASE_DIR=`dirname $0`
+SCRIPT_DIR=`dirname $0`
 
-source $BASE_DIR/functions.sh
+source $SCRIPT_DIR/functions.sh
 
 REPO=cli
 PROJ=bin
