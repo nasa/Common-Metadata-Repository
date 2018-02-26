@@ -137,7 +137,9 @@
     (is (some? (re-find #"object has missing required properties \(\[\"DataCenters\"\]\)"  (:warnings ingest-response))))
     (is (some? (re-find #"object has missing required properties \(\[\"DataCenters\"\]\)" (:warnings validation-response))))
     (is (some? (re-find #"\[:RelatedUrls 0 :URL\] \[htp://www.x.com\] is not a valid URL" (:warnings ingest-response))))
-    (is (some? (re-find #"\[:RelatedUrls 0 :URL\] \[htp://www.x.com\] is not a valid URL" (:warnings validation-response)))))))
+    (is (some? (re-find #"\[:RelatedUrls 0 :URL\] \[htp://www.x.com\] is not a valid URL" (:warnings validation-response))))
+    (is (some? (re-find #"\[:RelatedUrls 0\] RelatedUrl does not have a description." (:warnings ingest-response))))
+    (is (some? (re-find #"\[:RelatedUrls 0\] RelatedUrl does not have a description." (:warnings validation-response)))))))
 
 (comment
   (ingest/delete-provider "PROV1")
