@@ -420,21 +420,12 @@
                                    :collection_identifier {:entry_titles ["notreal"]}}}
 
           "An error is returned if specifying a collection identifier with collection concept-ids that do not exist."
-          ["[INVALID ID] is not a valid collection concept-id."
-           "collection with concept-id [INVALID ID] does not exist in provider [PROV1]"]
+          ["[INVALID ID] is not a valid collection concept-id."]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
                                    :collection_identifier {:concept_ids ["INVALID ID"]}}}
-
-          "An error is returned if specifying a collection identifier with collection concept-ids that do not exist."
-          ["collection with concept-id [C999999999-PROV1] does not exist in provider [PROV1]"]
-          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-           :catalog_item_identity {:name "A Catalog Item ACL"
-                                   :provider_id "PROV1"
-                                   :collection_applicable true
-                                   :collection_identifier {:concept_ids ["C999999999-PROV1"]}}}
 
           "At least one of a range (min and/or max) or include_undefined value must be specified (collection_identifier)"
           ["either include_undefined_value or the combination of min_value and max_value must be specified"]
@@ -536,6 +527,32 @@
                                                              :collection_identifier {:concept_ids [concept-id]
                                                                                      :entry_titles ["coll1 v1"]}}})
                 [:revision_id :status])))))
+
+    (testing "collection concept id and entry title check passes when one collection doesn't exist."
+      (let [concept-id (u/save-collection {:entry-title "coll5 v1"
+                                           :native-id "coll5"
+                                           :entry-id "coll5"
+                                           :short-name "coll5"
+                                           :version "v1"
+                                           :provider-id "PROV1"})
+            ;; To test that validly formated collection concept-ids that don't exist in the provider
+            ;; are not added into the collection-identifier on creation.
+            non-existent-coll-id "C999999-PROV1"
+            acl (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+                                     :catalog_item_identity {:name "A real live catalog item ACL2"
+                                                             :provider_id "PROV1"
+                                                             :collection_applicable true
+                                                             :collection_identifier {:concept_ids
+                                                                                     [concept-id non-existent-coll-id]
+                                                                                     :entry_titles ["coll5 v1"]}}})
+            resp (ac/get-acl (u/conn-context) (get acl :concept_id) {:token token :raw? true
+                                                                     :include_full_acl true})]
+        (is (= 1 (get acl :revision_id)))
+        (is (= 200 (get acl :status)))
+        (is (= (get-in resp [:body :catalog_item_identity :collection_identifier :concept_ids])
+               [concept-id]))
+        (is (= (get-in resp [:body :catalog_item_identity :collection_identifier :entry_titles])
+               ["coll5 v1"]))))
 
     (testing "long entry titles"
       (u/save-collection {:entry-title "coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
