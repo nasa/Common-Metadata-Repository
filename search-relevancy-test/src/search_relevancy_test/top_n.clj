@@ -70,7 +70,7 @@
   [anomaly->subtests]
   (let [subtests (val anomaly->subtests)]
     (reporter/print-start-of-anomaly-tests (key anomaly->subtests) (count subtests))
-    (map perform-subtest subtests)))
+    (mapv perform-subtest subtests)))
 
 (defn get-tests-from-filename
   "Returns a map of anomaly number to tests for that anomaly by parsing the CSV file for the passed
