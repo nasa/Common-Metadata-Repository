@@ -305,6 +305,7 @@
   [_]
   {:service-name :service-name.lowercase
    :name :service-name.lowercase
+   :long-name :long-name.lowercase
    :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule

@@ -261,6 +261,7 @@
 (defmethod cpv/valid-sort-keys :service
   [_]
   #{:name
+    :long-name
     :revision-date
     :provider})
 

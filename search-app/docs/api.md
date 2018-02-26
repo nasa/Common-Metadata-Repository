@@ -3677,6 +3677,7 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Service Sort Keys
   * `name`
+  * `long_name`
   * `provider`
   * `revision_date`
 
