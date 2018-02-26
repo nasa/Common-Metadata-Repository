@@ -420,21 +420,12 @@
                                    :collection_identifier {:entry_titles ["notreal"]}}}
 
           "An error is returned if specifying a collection identifier with collection concept-ids that do not exist."
-          ["[INVALID ID] is not a valid collection concept-id."
-           "collection with concept-id [INVALID ID] does not exist in provider [PROV1]"]
+          ["[INVALID ID] is not a valid collection concept-id."]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
                                    :collection_identifier {:concept_ids ["INVALID ID"]}}}
-
-          "An error is returned if specifying a collection identifier with collection concept-ids that do not exist."
-          ["collection with concept-id [C999999999-PROV1] does not exist in provider [PROV1]"]
-          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-           :catalog_item_identity {:name "A Catalog Item ACL"
-                                   :provider_id "PROV1"
-                                   :collection_applicable true
-                                   :collection_identifier {:concept_ids ["C999999999-PROV1"]}}}
 
           "At least one of a range (min and/or max) or include_undefined value must be specified (collection_identifier)"
           ["either include_undefined_value or the combination of min_value and max_value must be specified"]

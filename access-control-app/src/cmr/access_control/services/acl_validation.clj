@@ -101,10 +101,7 @@
     [(v/every (fn [key-path concept-id]
                 (let [regex #"C\d+-\S+"]
                   (when-not (re-matches regex concept-id)
-                    {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]}))))
-     (v/every (fn [key-path concept-id]
-                (when-not (seq (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-id} :collection))
-                  {key-path [(format "collection with concept-id [%s] does not exist in provider [%s]" concept-id provider-id)]})))]))
+                    {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]}))))]))
 
 (defn- access-value-validation
   "Validates the access_value part of a collection or granule identifier."
