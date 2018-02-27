@@ -17,6 +17,7 @@
                 revision-date format extra-fields]} concept
         {:keys [service-name]} extra-fields
         long-name (:LongName parsed-concept)
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:LongName
                      :Name
                      :Version
@@ -35,11 +36,10 @@
       ;; Regular deleted services would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
        :revision-id revision-id
+       :concept-seq-id concept-seq-id
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
-       :long-name long-name 
-       :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
@@ -49,10 +49,11 @@
        :revision-date revision-date}
       {:concept-id concept-id
        :revision-id revision-id
+       :concept-seq-id concept-seq-id
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
-       :long-name long-name 
+       :long-name long-name
        :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)

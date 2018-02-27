@@ -7,6 +7,7 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
@@ -90,11 +91,14 @@
                          (config/search-host)
                          (config/search-port))
         id (:concept-id service)
-        revision (:revision-id service)]
-    (-> service
-        (assoc :id id
-               :location (format "%s/%s/%s" base-url id revision))
-        (select-keys [:id :revision-id :location]))))
+        revision (:revision-id service)
+        deleted (:deleted service)
+        location (if deleted
+                   []
+                   [:location (format "%s/%s/%s" base-url id revision)])]
+        (select-keys
+          (apply assoc service (concat [:id id] location))
+          [:id :revision-id :location :deleted])))
 
 (defn assert-service-search
   "Verifies the service search results"
@@ -108,6 +112,11 @@
                (select-keys [:status :hits :refs])
                (util/update-in-each [:refs] dissoc :name)
                (update :refs set))))))
+
+(defn assert-service-references-match
+  "Verifies the service references"
+  [services response]
+  (d/refs-match? services response))
 
 (defn- coll-service-association->expected-service-association
   "Returns the expected service association for the given collection concept id to
