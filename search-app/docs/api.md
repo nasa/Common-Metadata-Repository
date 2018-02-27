@@ -160,6 +160,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Searching for Services](#searching-for-services)
         * [Service Search Parameters](#service-search-params)
         * [Service Search Response](#service-search-response)
+    * [Retrieving All Revisions of a Service](#retrieving-all-revisions-of-a-service)
     * [Sorting Service Results](#sorting-service-results)
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
@@ -3667,6 +3668,42 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf
     }
   ]
 }
+```
+
+##### <a name="retrieving-all-revisions-of-a-service"></a> Retrieving All Revisions of a Service
+
+In addition to retrieving the latest revision for a service parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/services?concept_id=S1200000010-PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>3</took>
+        <references>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <location>http://localhost:3003/concepts/S1200000010-PROV1/3</location>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <deleted>true</deleted>
+                <revision-id>2</revision-id>
+            </reference>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <location>http://localhost:3003/concepts/S1200000010-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
 ```
 
 ##### <a name="sorting-service-results"></a> Sorting Service Results
