@@ -102,3 +102,17 @@
   (delete-service "S1234-PROV1" 2 {:all-revisions-index? true})
   (assert-delete-svc "S1234-PROV1")
   (assert-not-match-in-svc "S1234-PROV1,2" [:keyword] "keyword"))
+
+(deftest save-service-all-revisions-false-test
+  (save-service (es-doc-svc-rev-1) "S1234-PROV1" 1 {:all-revisions-index? false})
+  (assert-match-in-svc "S1234-PROV1" [:keyword] "kw")
+  (assert-match-in-svc "S1234-PROV1" [:keyword] "kw3")
+  (assert-not-match-in-svc "S1234-PROV1" [:keyword] "keyword")
+  (save-service (es-doc-svc-rev-2) "S1234-PROV1" 2 {:all-revisions-index? false})
+  (assert-match-in-svc "S1234-PROV1" [:keyword] "keyword")
+  (assert-match-in-svc "S1234-PROV1" [:keyword] "keyword3")
+  (assert-not-match-in-svc "S1234-PROV1" [:keyword] "kw")
+  (delete-service "S1234-PROV1" 2 {:all-revisions-index? false})
+  (assert-delete-svc "S1234-PROV1")
+  (assert-not-match-in-svc "S1234-PROV1" [:keyword] "keyword")
+  (assert-not-match-in-svc "S1234-PROV1" [:keyword] "kw"))
