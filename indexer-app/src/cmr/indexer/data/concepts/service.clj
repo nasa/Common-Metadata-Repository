@@ -17,7 +17,6 @@
                 revision-date format extra-fields]} concept
         {:keys [service-name]} extra-fields
         long-name (:LongName parsed-concept)
-        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:LongName
                      :Name
                      :Version
@@ -32,11 +31,8 @@
         keyword-values (keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)]
     (if deleted
-      ;; This is only called by re-indexing (bulk indexing)
-      ;; Regular deleted services would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
        :revision-id revision-id
-       :concept-seq-id concept-seq-id
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
@@ -49,7 +45,6 @@
        :revision-date revision-date}
       {:concept-id concept-id
        :revision-id revision-id
-       :concept-seq-id concept-seq-id
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)

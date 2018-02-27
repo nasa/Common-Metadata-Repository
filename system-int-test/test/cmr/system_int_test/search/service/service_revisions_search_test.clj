@@ -4,14 +4,10 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as metadata-db]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.service-util :as service]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -37,7 +33,6 @@
                                                    :provider-id "PROV2"})
         svc1-1 (service/ingest-service svc1-concept)
         svc1-2-tombstone (merge (ingest/delete-concept
-                                 ; svc1-concept)
                                  svc1-concept (service/token-opts token))
                                 svc1-concept
                                 {:deleted true
