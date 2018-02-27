@@ -94,4 +94,7 @@
       ["Year [-3] within [temporal_facet] is not a valid year. Years must be between 1 and 9999."]
 
       "Invalid month" {"temporal_facet[0][month]" 13}
-      ["Month [13] within [temporal_facet] is not a valid month. Months must be between 1 and 12."])))
+      ["Month [13] within [temporal_facet] is not a valid month. Months must be between 1 and 12."]
+
+      "Invalid day" {"temporal_facet[0][day]" 32}
+      ["Day [32] within [temporal_facet] is not a valid day. Days must be between 1 and 31."])))

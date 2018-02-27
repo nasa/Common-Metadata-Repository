@@ -51,6 +51,12 @@
          (:transaction-id concept)
          (map :transaction-id (:variable-associations concept))))
 
+(defmethod get-elastic-version :service
+ [concept]
+ (apply max
+        (:transaction-id concept)
+        (map :transaction-id (:service-associations concept))))
+
 (defmethod get-elastic-version :default
   [concept]
   (:revision-id concept))
@@ -60,13 +66,15 @@
   [concept-id revision-id all-revisions-index?]
   (if (and
        (or (= :collection (cs/concept-id->type concept-id))
-           (= :variable (cs/concept-id->type concept-id)))
+           (= :variable (cs/concept-id->type concept-id))
+           (= :service (cs/concept-id->type concept-id)))
        all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))
 
 (defmulti parsed-concept->elastic-doc
-  "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
+  "Returns elastic json that can be used to insert into Elasticsearch for the
+  given concept"
   (fn [context concept parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
@@ -318,12 +326,15 @@
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
                   doc/put conn es-index es-type es-doc elastic-id elastic-version ttl)]
-      (if (:error result)
+      (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
             (info (str "Ignore conflict: " (str result)))
-            (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
-          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
+            (errors/throw-service-error
+             :conflict
+             (str "Save to Elasticsearch failed " (str result))))
+          (errors/internal-error!
+            (str "Save to Elasticsearch failed " (str result))))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."

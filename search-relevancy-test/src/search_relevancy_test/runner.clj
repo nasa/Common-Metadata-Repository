@@ -4,10 +4,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [search-relevancy-test.anomaly-fetcher :as anomaly-fetcher]
    [search-relevancy-test.anomaly-analyzer :as anomaly-analyzer]
+   [search-relevancy-test.anomaly-fetcher :as anomaly-fetcher]
    [search-relevancy-test.boost-test :as boost-test]
-   [search-relevancy-test.relevancy-test :as relevancy-test]))
+   [search-relevancy-test.core :as core]
+   [search-relevancy-test.relevancy-test :as relevancy-test]
+   [search-relevancy-test.top-n :as top-n]))
 
 (def tasks
   "List of available tasks"
@@ -29,6 +31,7 @@
         "relevancy-tests" (relevancy-test/relevancy-test args)
         "edsc-relevancy-tests" (relevancy-test/edsc-relevancy-test args)
         "boost-tests" (boost-test/boost-tests-with-args args)
+        "top-n-tests" (top-n/run-top-n-tests core/top-n-anomaly-filename)
         usage)
   (shutdown-agents))
 

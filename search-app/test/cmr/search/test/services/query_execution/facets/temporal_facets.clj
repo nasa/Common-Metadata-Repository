@@ -32,13 +32,18 @@
     :month {"temporal_facet[0][year]" "1537"}
 
     "Single temporal-facet parameter with month"
-    :month {"temporal_facet[0][year]" "1537"
-            "temporal_facet[0][month]" "8"}
+    :day {"temporal_facet[0][year]" "1537"
+          "temporal_facet[0][month]" "8"}
+
+    "Single temporal-facet parameter with day"
+    :day {"temporal_facet[0][year]" "1537"
+          "temporal_facet[0][month]" "8"
+          "temporal_facet[0][day]" "15"}
 
     "Temporal facet in the value of a query parameter is ignored"
     :year {"foo" "temporal_facet[0][year]=1537"}
 
     "Multiple temporal-facet parameters"
-    :month {"temporal_facet[5][year]" 2010
-            "temporal_facet[5][month]" 10
-            "temporal_facet[2][year]" 2013}))
+    :day {"temporal_facet[5][year]" 2010
+          "temporal_facet[5][month]" 10
+          "temporal_facet[2][year]" 2013}))

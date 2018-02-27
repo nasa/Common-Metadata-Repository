@@ -26,7 +26,10 @@
   (testing (str "Granule facets are returned when requesting V2 facets in JSON format for a single"
                 " collection concept ID.")
     (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})]
-      (is (= "Browse Granules" (:title facets))))))
+      (is (= {:title "Browse Granules"
+              :type "group"
+              :has_children false}
+             facets)))))
 
 (defn- single-collection-test-setup
   "Ingests the collections and granules needed for the single collection validation test."
@@ -176,12 +179,17 @@
         gran2010-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                       coll (:concept-id coll)
                                       {:granule-ur "Granule1"
-                                       :beginning-date-time "2010-01-01T12:00:00Z"
+                                       :beginning-date-time "2010-01-02T12:00:00Z"
                                        :ending-date-time "2010-01-11T12:00:00Z"}))
         gran2010-2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                       coll (:concept-id coll)
                                       {:granule-ur "Granule2"
                                        :beginning-date-time "2010-05-31T12:00:00Z"}))
+        gran2010-3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                      coll (:concept-id coll)
+                                      {:granule-ur "Granule2010-3"
+                                       :beginning-date-time "2010-01-21T12:00:00Z"
+                                       :ending-date-time "2020-01-11T12:00:00Z"}))
         gran2011-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                       coll (:concept-id coll)
                                       {:granule-ur "Granule3"
@@ -195,7 +203,7 @@
         gran2012-boundary (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                              coll (:concept-id coll)
                                              {:granule-ur "Granule5"
-                                              :beginning-date-time "2012-12-25T12:00:00Z"
+                                              :beginning-date-time "2012-12-21T12:00:00Z"
                                               :ending-date-time "2013-03-01T12:00:00Z"}))]
     (index/wait-until-indexed)
     (let [root-node (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"
@@ -206,12 +214,15 @@
       (testing "Facet structure correct"
         (is (= "Browse Granules" (:title root-node)))
         (is (= "group" (:type root-node)))
+        (is (= true (:has_children root-node)))
         (is (= "Temporal" (:title temporal-node)))
         (is (= "group" (:type temporal-node)))
+        (is (= true (:has_children temporal-node)))
         (is (= "Year" (:title year-node)))
+        (is (= true (:has_children year-node)))
         (is (= "group" (:type year-node))))
-      (testing "Years returned in order from most recent to oldest"
-        (is (= ["2012" "2011" "2010" "1999"] (map :title year-facets))))
+      (testing "Years returned in ascending order"
+        (is (= ["1999" "2010" "2011" "2012"] (map :title year-facets))))
       (testing "Years have a type of filter"
         (is (= ["filter" "filter" "filter" "filter"] (map :type year-facets))))
       (testing "Counts correct"
@@ -219,7 +230,7 @@
           [title cnt]
           (is (= cnt (get-count-by-title year-facets title)))
           "1999" "1999" 1
-          "2010" "2010" 2
+          "2010" "2010" 3
           "2011" "2011" 1
           "2012" "2012" 1))
       (testing "All of the years include a link to apply that year to the search."
@@ -236,11 +247,12 @@
               month-node (-> updated-facets :children first :children first :children first
                              :children first)
               month-facets (:children month-node)]
-          (assert-granules-match [gran2010-1 gran2010-2] granules-response)
+          (assert-granules-match [gran2010-1 gran2010-2 gran2010-3] granules-response)
           (is (= :remove (get-link-type "2010" updated-year-facets)))
           (testing "Selecting a year returns month facets for that year"
             (is (= "Month" (:title month-node)))
-            (is (= ["05" "01"] (map :title month-facets)))
+            (is (= ["01" "05"] (map :title month-facets)))
+            (is (= [true true] (map :has_children month-facets)))
             (is (= :apply (get-link-type "01" month-facets)))
             (is (= :apply (get-link-type "05" month-facets)))
             (testing "Selecting a month returns only granules for that year and month."
@@ -250,11 +262,40 @@
                     granules-response (get-in parsed-body [:feed :entry])
                     updated-year-facets (-> updated-facets :children first :children first
                                             :children)
-                    updated-month-facets (-> updated-facets :children first :children first
-                                             :children first :children first :children)]
-                (assert-granules-match [gran2010-1] granules-response)
+                    updated-month-facets (-> updated-year-facets first :children first :children)
+                    day-facets (-> updated-month-facets first :children first :children)]
+                (assert-granules-match [gran2010-1 gran2010-3] granules-response)
                 (is (= :remove (get-link-type "2010" updated-year-facets)))
                 (is (= :remove (get-link-type "01" updated-month-facets)))
+                (testing "Days are displayed below month facets when selecting a month."
+                  (is (= ["02" "21"] (map :title day-facets)))
+                  (is (= [false false] (map :has_children day-facets)))
+                  (testing "Select a day returns only granules for that year, month, and day."
+                    (let [response (traverse-link "21" day-facets)
+                          parsed-body (json/parse-string (:body response) true)
+                          updated-facets (get-in parsed-body [:feed :facets])
+                          granules-response (get-in parsed-body [:feed :entry])
+                          updated-year-facets (-> updated-facets :children first :children first
+                                                  :children)
+                          updated-month-facets (-> updated-year-facets first :children first :children)
+                          updated-day-facets (-> updated-month-facets first :children first :children)]
+                      (assert-granules-match [gran2010-3] granules-response)
+                      (is (= :remove (get-link-type "2010" updated-year-facets)))
+                      (is (= :remove (get-link-type "01" updated-month-facets)))
+                      (is (= :remove (get-link-type "21" updated-day-facets)))
+                      (testing (str "Navigating to a remove year link removes the search filter "
+                                    "for year, month, and day.")
+                        (let [;; Note that the test above traversed to 2010,
+                              ;; so the 2010 link is now a remove link
+                              response (traverse-link "2010" updated-year-facets)
+                              parsed-body (json/parse-string (:body response) true)
+                              updated-facets (get-in parsed-body [:feed :facets])
+                              granules-response (get-in parsed-body [:feed :entry])
+                              updated-year-facets (-> updated-facets :children first :children first :children)]
+                          (assert-granules-match [gran1999-1 gran2010-1 gran2010-2 gran2010-3 gran2011-1
+                                                  gran2012-boundary]
+                                                 granules-response)
+                          (is (= :apply (get-link-type "2010" updated-year-facets))))))))
                 (testing "Navigating to a remove month link removes the search filter for that month."
                   (let [response (traverse-link "01" updated-month-facets)
                         parsed-body (json/parse-string (:body response) true)
@@ -263,18 +304,6 @@
                         updated-year-facets (-> updated-facets :children first :children first :children)
                         updated-month-facets (-> updated-facets :children first :children first
                                                  :children first :children first :children)]
-                    (assert-granules-match [gran2010-1 gran2010-2] granules-response)
+                    (assert-granules-match [gran2010-1 gran2010-2 gran2010-3] granules-response)
                     (is (= :apply (get-link-type "01" updated-month-facets)))
-                    (is (= :apply (get-link-type "05" updated-month-facets)))))
-                (testing (str "Navigating to a remove year link removes the search filter for both "
-                              "year and month.")
-                  (let [;; Note that the test above traversed to 2010,
-                        ;; so the 2010 link is now a remove link
-                        response (traverse-link "2010" updated-year-facets)
-                        parsed-body (json/parse-string (:body response) true)
-                        updated-facets (get-in parsed-body [:feed :facets])
-                        granules-response (get-in parsed-body [:feed :entry])
-                        updated-year-facets (-> updated-facets :children first :children first :children)]
-                    (assert-granules-match [gran1999-1 gran2010-1 gran2010-2 gran2011-1 gran2012-boundary]
-                                           granules-response)
-                    (is (= :apply (get-link-type "2010" updated-year-facets)))))))))))))
+                    (is (= :apply (get-link-type "05" updated-month-facets)))))))))))))

@@ -203,8 +203,8 @@
                                        (common-search/find-concepts
                                          context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) total-took
+    (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) (pr-str params)))
     (assoc results :took total-took)))
 
@@ -222,8 +222,8 @@
                                                                     concept-type
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
-                  (:hits results) (name concept-type) total-took
+    (info (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s."
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) json-query (pr-str params)))
     (assoc results :took total-took)))
 
@@ -241,8 +241,8 @@
                                                                     concept-type
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d %ss in %d ms in format %s with aql: %s."
-                  (:hits results) (name concept-type) total-took
+    (info (format "Found %d %ss in %d ms from client %s in format %s with aql: %s."
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) aql))
     (assoc results :took total-took)))
 
@@ -440,11 +440,9 @@
                      (qm/query {:concept-type :collection
                                 :result-format result-format})
                      (assoc results :took total-took))]
-
-    (info (format "Found %d deleted collections in %d ms in format %s with params %s."
-                  (:hits results) total-took
+    (info (format "Found %d deleted collections in %d ms from client %s in format %s with params %s."
+                  (:hits results) total-took (:client-id context)
                   (rfh/printable-result-format result-format) (pr-str params)))
-
     {:results results-str
      :hits (:hits results)
      :result-format result-format}))
@@ -464,7 +462,6 @@
                         :filter {:and {:filters filters}}}}
      :fields [:concept-id :revision-date :provider-id
               :granule-ur :parent-collection-id]}))
-
 
 (defn get-deleted-granules
   "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
@@ -486,8 +483,8 @@
         results {:hits hits :items items :took total-took}
         ;; construct the response results string
         results-str (json/generate-string (:items results))]
-    (info (format "Found %d deleted granules in %d ms in format %s with params %s."
-                  (:hits results) total-took
+    (info (format "Found %d deleted granules in %d ms from client %s in format %s with params %s."
+                  (:hits results) total-took (:client-id context)
                   (rfh/printable-result-format result-format) (pr-str params)))
     {:results results-str
      :hits (:hits results)

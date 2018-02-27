@@ -135,7 +135,8 @@
   {:name :string
    :provider :string
    :native-id :string
-   :concept-id :string})
+   :concept-id :string
+   :keyword :keyword})
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]

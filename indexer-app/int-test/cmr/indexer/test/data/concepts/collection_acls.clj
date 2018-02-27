@@ -1,10 +1,11 @@
 (ns cmr.indexer.test.data.concepts.collection_acls
-  (:require [clojure.test :refer :all]
-            [cmr.common.cache :as cache]
-            [cmr.acl.core :as a]
-            [cmr.acl.acl-fetcher :as af]
-            [cmr.indexer.data.concepts.collection :as coll]
-            [cmr.common.cache.in-memory-cache :as mem-cache]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.acl.acl-fetcher :as af]
+   [cmr.acl.core :as a]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.indexer.data.concepts.collection :as coll]))
 
 (defn context-with-acls
   "Creates a fake context with the acls in an acl cache"

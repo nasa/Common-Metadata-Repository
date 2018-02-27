@@ -13,7 +13,7 @@
   "Returns a context to use with testing collection"
   []
   {:system (l/start {cr/system-key (cr/create-collection-renderer)
-                     :public-conf {:relative-root-url "/search"}}
+                     :public-conf {:relative-root-url "/search" :edsc-url "https://search.earthdata.nasa.gov"}}
                     nil)})
 
 (def renderer-context
@@ -22,7 +22,7 @@
 
 (deftest render-default-collection
   (let [coll expected-conversion/example-collection-record
-        ^String html (cr/render-collection (renderer-context) coll)]
+        ^String html (cr/render-collection (renderer-context) coll "C1234-PROV1")]
     (is html "Expected some HTML to be returned")
     (is (.contains html (:EntryTitle coll)))))
 
@@ -30,12 +30,19 @@
 ;; A small number of tries is done to avoid making tests take a long time.
 (defspec render-any-umm-collection 10
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)]
-    (let [^String html (cr/render-collection (renderer-context) umm-record)]
+    (let [^String html (cr/render-collection (renderer-context) umm-record "C1234-PROV1")]
       (and html (.contains html (:EntryTitle umm-record))))))
 
 ;; Verify that the title of the html is the entry title
 (deftest render-title-as-entry-title
   (let [coll expected-conversion/example-collection-record
-         ^String html (cr/render-collection (renderer-context) coll)]
+        ^String html (cr/render-collection (renderer-context) coll "C1234-PROV1")]
     (is html "Expected a title containing the entry title")
     (is (.contains html (str "<title>" (:EntryTitle coll) "</title>")))))
+
+;; Verify that the correct EDSC url is rendered
+(deftest render-edsc-link
+  (let [coll expected-conversion/example-collection-record
+        ^String html (cr/render-collection (renderer-context) coll "C1234-PROV1")]
+    (is html "Expected the correct edsc url to be rendered")
+    (is (.contains html (str "https://search.earthdata.nasa.gov/search/granules?p=C1234-PROV1")))))

@@ -1,7 +1,8 @@
 (ns cmr.indexer.test.data.elasticsearch
-  (:require [clojure.test :refer :all]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.index-set :as i]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.index-set :as i]))
 
 (def test-index-set
   "A real copy of an index set from UAT with the mappings replaced to be smaller and reduce churn"
@@ -36,7 +37,9 @@
                           :settings i/variable-setting}],
                :mapping i/variable-mapping},
     :service {:indexes [{:name "services",
-                         :settings i/service-setting}],
+                         :settings i/service-setting}
+                        {:name "all-service-revisions",
+                          :settings i/service-setting}],
               :mapping i/service-mapping},
     :concepts {:collection {:collections "1_collections_v2",
                             :all-collection-revisions "1_all_collection_revisions"},
@@ -85,8 +88,9 @@
 
 (deftest requires-update-test
   (testing "No updates required"
-    (is (not (es/requires-update? test-index-set
-                                  (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
+    (is (not (es/requires-update?
+              test-index-set
+              (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
   (testing "Updates required from individual index settings"
     (is (es/requires-update? (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)
                              (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))

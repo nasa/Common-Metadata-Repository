@@ -159,7 +159,9 @@
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
       (and all-revisions-index? (contains?
-                                 #{:collection :variable :tag-association :variable-association}
+                                 #{:collection :tag-association
+                                   :variable :variable-association
+                                   :service :service-association}
                                  concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
@@ -274,6 +276,11 @@
   [context concept]
   (let [variable-associations (meta-db/get-associations-for-variable context concept)]
     (get-elastic-version-with-associations context concept nil variable-associations nil)))
+
+(defmethod get-elastic-version :service
+  [context concept]
+  (let [service-associations (meta-db/get-associations-for-variable context concept)]
+    (get-elastic-version-with-associations context concept nil service-associations nil)))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"

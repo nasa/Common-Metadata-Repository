@@ -203,6 +203,13 @@
                 :latest true}]
     (find-concepts context params :variable-association)))
 
+(defn get-associations-for-service
+  "Get service associations (including tombstones) for a given service."
+  [context concept]
+  (let [params {:service-concept-id (:concept-id concept)
+                :latest true}]
+    (find-concepts context params :service-association)))
+
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]

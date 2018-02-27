@@ -306,7 +306,7 @@
       [variable3]
       {:keyword "sub* variable?"})))
 
-(deftest search-variable-by-science-keywords-keyword-test
+(deftest search-variable-science-keywords-test
   (let [sk1 (data-umm-cmn/science-keyword {:Category "Cat1"
                                            :Topic "Topic1"
                                            :Term "Term1"

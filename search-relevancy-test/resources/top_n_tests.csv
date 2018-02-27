@@ -1,0 +1,19 @@
+Anomaly,Test,Search,Concept-id,Position,Description
+14,1,keyword=glacier*,C1386246230-NSIDCV0,3,World Glacier Inventory should be in the top 3 for glacier
+14,2,keyword=glacier*,C1386250255-NSIDCV0,3,GLIMS Glacier Database should be in the top 3 for glacier
+15,1,keyword=snow*+cover*,C1386246980-NSIDCV0,10,NSIDC-0046 should be in the top 10 because temporal coverage spans decades and community usage is high.
+15,2,keyword=snow*+cover*,C1000001181-NSIDC_ECS,10,Snow cover search should return MOD10_L2 in the top 10
+15,3,keyword=snow*+cover*,C1000001167-NSIDC_ECS,10,Snow cover search should return MOD10A1 in the top 10 because global spatial coverage and long temporal coverage
+15,4,keyword=snow*+cover*,C1000001161-NSIDC_ECS,10,Snow cover search should return MOD10A2 in the top 10 for same reason as MOD10A1
+15,5,keyword=snow*+cover*,C1386246263-NSIDCV0,15,G02158 should be in the top 15 because it is popular in the user community for snow cover search
+15,6,keyword=snow*+cover*,C1386246258-NSIDCV0,20,G02156 should be in the top 20 because community usage is high, continuously updated, and easy to use data formats.
+16,1,keyword=sea*+ice*+concentration*,C1386250131-NSIDCV0,8,NSIDC-0051 should be top 8 for sea ice concentration
+16,2,keyword=sea*+ice*+concentration*,C1386250236-NSIDCV0,10,NSIDC-0192 should be top 10 for sea ice concentration
+16,3,keyword=sea*+ice*+concentration*,C1386250137-NSIDCV0,8,NSIDC-0081 should be top 8 for sea ice concentration
+16,4,keyword=sea*+ice*+concentration*,C1438590512-NSIDCV0,8,NSIDC-0079 should be top 8 for sea ice concentration
+16,5,keyword=sea*+ice*+concentration*,C1452437262-NSIDC_ECS,8,AE_SI12 should be top 8 for sea ice concentration
+20,1,keyword=sea*+ice*+extent*,C1449515322-NSIDC_ECS,4,NISE is in the top 4 for sea ice extent
+20,2,keyword=sea*+ice*+extent*,C1386250236-NSIDCV0,10,NSIDC-0192 is in the top 10 for sea ice extent
+20,3,keyword=sea*+ice*+extent*,C1386246980-NSIDCV0,15,NSIDC-0046 is in the top 15 for sea ice extent
+20,4,keyword=sea*+ice*+extent*,C1000001166-NSIDC_ECS,15,MODIS Sea Ice Extent is in the top 15 for sea ice extent
+24,1,keyword=soil*+carbon*,C1402102441-NSIDC_ECS,10,SPL4CMDL is in the top 10 for soil carbon

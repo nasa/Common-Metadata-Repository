@@ -7,7 +7,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
-   [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -17,11 +16,9 @@
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        science-keywords (mapcat science-keyword-util/science-keyword->keywords
-                                 (:ScienceKeywords parsed-concept))
-        ;; keyword values that are used to index the keyword field
-        keyword-values (flatten (conj [variable-name measurement]
-                                      science-keywords))]
+        schema-keys [:ScienceKeywords :measurement :variable-name]
+        keyword-values (keyword-util/concept-keys->keyword-text
+                        (merge parsed-concept extra-fields) schema-keys)]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -37,7 +34,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
-       :keyword (keyword-util/field-values->keyword-text keyword-values)
+       :keyword keyword-values
        :user-id user-id
        :revision-date revision-date}
       {:concept-id concept-id
@@ -52,7 +49,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
-       :keyword (keyword-util/field-values->keyword-text keyword-values)
+       :keyword keyword-values
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))

@@ -1,7 +1,8 @@
 (ns cmr.indexer.test.services.index-service
   "Tests for index service"
-  (:require [clojure.test :refer :all]
-            [cmr.indexer.services.index-service :as index-svc]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.indexer.services.index-service :as index-svc]))
 
 (deftest index-concept-invalid-input-test
   (testing "invalid input"

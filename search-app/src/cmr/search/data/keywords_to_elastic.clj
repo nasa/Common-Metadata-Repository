@@ -58,7 +58,7 @@
    :spatial-keyword 1.1
    :temporal-keyword 1.1
    :version-id 1.0
-   :entry-title 1.4
+   :entry-title 2.2 
    :provider 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
@@ -166,10 +166,10 @@
   "Create filters with boosting for the function score query used with keyword search"
   [keywords specified-boosts]
   (let [get-boost-fn #(get-boost specified-boosts %)]
-    [;; long-name, short-name
-     (keywords->name-filter :long-name.lowercase
-                            :short-name.lowercase keywords
-                            (get-boost-fn :short-name))
+    [;; long-name
+     (keywords->regex-filter :long-name.lowercase keywords (get-boost-fn :short-name))
+     ;; short-name
+     (keywords->boosted-exact-match-filter :short-name.lowercase keywords (get-boost-fn :short-name))
      ;; entry-id
      (keywords->boosted-exact-match-filter :entry-id.lowercase keywords (get-boost-fn :entry-id))
 

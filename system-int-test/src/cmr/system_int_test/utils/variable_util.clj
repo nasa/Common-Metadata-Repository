@@ -12,7 +12,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.variable :as transmit-variable]
+   [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.versioning :as versioning]))
 
 (def unique-index (atom 0))
@@ -144,7 +144,9 @@
   "Verifies the variable search results"
   [variables response]
   (let [expected-items (->> variables
-                            (map #(select-keys % variable-names-in-expected-response))
+                            (map #(select-keys
+                                   %
+                                   variable-names-in-expected-response))
                             seq
                             set)
         expected-response {:status 200
@@ -175,7 +177,9 @@
   "Verifies the searcch results are in the correct order"
   [variables response]
   (let [expected-items (->> variables
-                            (map #(select-keys % variable-names-in-expected-response))
+                            (map #(select-keys
+                                   %
+                                   variable-names-in-expected-response))
                             seq)]
     (is (= expected-items
            (-> response
@@ -236,11 +240,12 @@
     (is (d/refs-match? expected-colls refs))))
 
 (defn search
-  "Searches for variables using the given parameters"
+  "Searches for variables using the given parameters."
   [params]
   (search/process-response
-   (transmit-variable/search-for-variables (s/context) params {:raw? true
-                                                               :http-options {:accept :json}})))
+   (transmit-search/search-for-variables
+    (s/context) params {:raw? true
+                        :http-options {:accept :json}})))
 
 (defn- matches-concept-id-and-revision-id?
   "Returns true if the item matches the provided concept-id and revision-id."
