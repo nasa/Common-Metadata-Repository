@@ -20,17 +20,17 @@
 (deftest search-service-all-revisions
   (let [token (e/login (s/context) "user1")
         svc1-concept (service/make-service-concept {:native-id "SVC1"
-                                                   :Name "Service1"
-                                                   :provider-id "PROV1"})
+                                                    :Name "Service1"
+                                                    :provider-id "PROV1"})
         svc2-concept (service/make-service-concept {:native-id "SVC2"
-                                                   :Name "Service2"
-                                                   :provider-id "PROV1"})
+                                                    :Name "Service2"
+                                                    :provider-id "PROV1"})
         svc2-2-concept (service/make-service-concept {:native-id "SVC2"
                                                       :Name "Service2-2"
                                                       :provider-id "PROV1"})
         svc3-concept (service/make-service-concept {:native-id "SVC3"
-                                                   :Name "Service1"
-                                                   :provider-id "PROV2"})
+                                                    :Name "Service1"
+                                                    :provider-id "PROV2"})
         svc1-1 (service/ingest-service svc1-concept)
         svc1-2-tombstone (merge (ingest/delete-concept
                                  svc1-concept (service/token-opts token))
@@ -58,8 +58,7 @@
           ;; search in UMM JSON with all-revisions
           (du/assert-service-umm-jsons-match
            umm-version/current-service-version services
-           (search/find-concepts-umm-json :service params))
-          )
+           (search/find-concepts-umm-json :service params)))
 
         "provider-id all-revisions=false"
         [svc1-3]

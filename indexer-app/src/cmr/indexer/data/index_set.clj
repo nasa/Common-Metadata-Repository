@@ -665,7 +665,6 @@
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)
-   :concept-seq-id (m/doc-values m/int-field-mapping)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
    :native-id.lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)

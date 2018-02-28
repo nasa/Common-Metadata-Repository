@@ -362,6 +362,11 @@
   [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
    {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
 
+(def service-all-revision-sub-sort-fields
+  "Defines the sub sort fields for an all revisions service search."
+  [{(q2e/query-field->elastic-field :concept-id :service) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :service) {:order "desc"}}])
+
 (def service-latest-sub-sort-fields
   "This defines the sub sort fields for a latest revision service search."
   [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
@@ -403,7 +408,7 @@
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
-                          (all-revision-sub-sort-fields :service)
+                          service-all-revision-sub-sort-fields
                           service-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
 
