@@ -408,6 +408,12 @@
     ;; cwic tagged no granule
 
     (index/wait-until-indexed)
+    ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/full-refresh-collection-granule-aggregate-cache)
+    ;; Reindex all the collections to get the latest information.
+    (ingest/reindex-all-collections)
+    (index/wait-until-indexed)
+
     (testing "Search with has-granules-or-cwic feature true"
       (d/refs-match? [coll1 coll3 coll6 coll2
                       coll7 coll8 coll9 coll10
@@ -426,4 +432,20 @@
                      (search/find-refs :collection
                                        {:has_granules_or_cwic false
                                         :page-size 20}
-                                       {:snake-kebab? false})))))
+                                       {:snake-kebab? false})))
+
+    (testing "Sorting by has-granules-or-cwic"
+      (is (d/refs-match-order? [coll1 coll2 coll3 coll6
+                                coll7 coll8 coll9 coll10
+                                coll11 coll12 coll13 coll14
+                                coll15 coll16 coll17 coll4 coll5]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["has_granules_or_cwic"
+                                                                         "revision-date"]})))
+      (is (d/refs-match-order? [coll4 coll5 coll1 coll2
+                                coll3 coll6 coll7 coll8
+                                coll9 coll10 coll11 coll12
+                                coll13 coll14 coll15 coll16 coll17]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["-has_granules_or_cwic"
+                                                                         "revision-date"]}))))))

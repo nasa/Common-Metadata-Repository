@@ -338,7 +338,8 @@
   (update query-attribs :sort-keys
           (fn [sort-keys]
             (seq (for [{:keys [field order] :as sort-key} sort-keys]
-                   (if (= field :has-granules)
+                   (if (or (= field :has-granules)
+                           (= field :has-granules-or-cwic))
                      {:field field :order (if (= order :asc) :desc :asc)}
                      sort-key))))))
 

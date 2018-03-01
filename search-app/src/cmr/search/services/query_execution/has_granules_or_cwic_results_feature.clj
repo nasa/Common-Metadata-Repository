@@ -19,7 +19,7 @@
   ;; default to 1 hour
   3600)
 
-(def has-granule-or-cwic-cache-key
+(def has-granules-or-cwic-cache-key
   :has-granules-or-cwic-map)
 
 (defconfig cwic-tag
@@ -57,7 +57,7 @@
                                   (merge
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
-    (cache/set-value (cache/context->cache context has-granule-or-cwic-cache-key)
+    (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
                      :has-granules-or-cwic has-granules-or-cwic-map)))
 
 (defn get-has-granules-or-cwic-map
@@ -65,7 +65,7 @@
   of whether the collections have granules or not. If the has-granules-or-cwic-map has not yet been cached
   it will retrieve it and cache it."
   [context]
-  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granule-or-cwic-cache-key)]
+  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granules-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
                      :has-granules-or-cwic
                      (fn []
