@@ -6,9 +6,9 @@
     [clojure.set :as set]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.common-app.config :as common-config]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.concepts :as concepts]
-    [cmr.common.config :refer [defconfig]]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
@@ -42,10 +42,6 @@
     [cmr.umm-spec.util :as su]
     [cmr.umm.collection.entry-id :as eid]
     [cmr.umm.umm-collection :as umm-c]))
-
-(defconfig cwic-tag
-  "has-granules-or-cwic should also return any collection with configured cwic-tag"
-  {:default "org.ceos.wgiss.cwic.granules.prod"})
 
 (defn spatial->elastic
   [collection]
@@ -262,7 +258,7 @@
             ;; If there's an entry in the collection granule aggregates then the collection has granules.
             :has-granules has-granules
             :has-granules-or-cwic (or
-                                   (some #(= (cwic-tag) %)
+                                   (some #(= (common-config/cwic-tag) %)
                                          (map :tag-key.lowercase tags))
                                    has-granules)
             :entry-id entry-id

@@ -10,7 +10,7 @@
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common-app.config :as common-config]
    [cmr.common.jobs :refer [defjob]]
    [cmr.search.data.elastic-search-index :as idx]))
 
@@ -22,10 +22,6 @@
 (def has-granules-or-cwic-cache-key
   :has-granules-or-cwic-map)
 
-(defconfig cwic-tag
-  "has-granules-or-cwic should also return any collection with configured cwic-tag"
-  {:default "org.ceos.wgiss.cwic.granules.prod"})
-
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
@@ -34,7 +30,7 @@
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [condition (nf/parse-nested-condition :tags {:tag-key (cwic-tag)} false false)
+  (let [condition (nf/parse-nested-condition :tags {:tag-key (common-config/cwic-tag)} false false)
         query (qm/query {:concept-type :collection
                          :condition condition
                          :page-size :unlimited})
