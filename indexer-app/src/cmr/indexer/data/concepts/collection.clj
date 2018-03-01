@@ -258,9 +258,10 @@
             ;; If there's an entry in the collection granule aggregates then the collection has granules.
             :has-granules has-granules
             :has-granules-or-cwic (or
-                                   (some #(= (common-config/cwic-tag) %)
-                                         (map :tag-key.lowercase tags))
-                                   has-granules)
+                                   has-granules
+                                   (some?
+                                    (some #(= (common-config/cwic-tag) %)
+                                          (map :tag-key.lowercase tags))))
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title (str/trim entry-title)
