@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
@@ -51,10 +52,10 @@
       (are3 [services params]
         (do
           ;; find references with all revisions
-          (service/assert-service-references-match
-           services (service/search params))
-          ;; search in JSON with all-revisions
-          (service/assert-service-search services (service/search params))
+          (d/assert-refs-match
+           services (service/search-refs params))
+          ;; TODO - is this statement correct? search in JSON with all-revisions
+          (service/assert-service-search services (service/search-json params))
           ;; search in UMM JSON with all-revisions
           (du/assert-service-umm-jsons-match
            umm-version/current-service-version services

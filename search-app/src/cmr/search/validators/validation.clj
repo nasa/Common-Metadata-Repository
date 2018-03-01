@@ -41,7 +41,7 @@
 
 (defmethod cqv/supported-result-formats :service
   [_]
-  (into #{:xml
+  (into #{:xml :json
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :service)))
