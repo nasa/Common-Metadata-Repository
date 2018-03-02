@@ -137,16 +137,32 @@
   ([metadata-attrs attrs idx]
    (ingest-variable (make-variable-concept metadata-attrs attrs idx))))
 
-(def ^:private variable-names-in-expected-response
-  [:concept-id :revision-id :provider-id :native-id :deleted])
+(def ^:private json-field-names
+  "List of fields expected in a variable JSON response."
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name])
+
+(defn extract-name-from-metadata
+  "Pulls the name out of the metadata field in the provided variable concept."
+  [variable]
+  (:Name (json/parse-string (:metadata variable) true)))
+
+(defn extract-long-name-from-metadata
+  "Pulls the long name out of the metadata field in the provided variable concept."
+  [variable]
+  (:LongName (json/parse-string (:metadata variable) true)))
+
+(defn get-expected-json-variables
+  "Returns the expected variables to compare to results returned by a JSON search."
+  [variables]
+  (->> variables
+       (map #(assoc % :name (extract-name-from-metadata %)))
+       (map #(assoc % :long-name (extract-long-name-from-metadata %)))
+       (map #(select-keys % json-field-names))))
 
 (defn assert-variable-search
   "Verifies the variable search results"
   [variables response]
-  (let [expected-items (->> variables
-                            (map #(select-keys
-                                   %
-                                   variable-names-in-expected-response))
+  (let [expected-items (->> (get-expected-json-variables variables)
                             seq
                             set)
         expected-response {:status 200
@@ -156,7 +172,6 @@
     (is (= expected-response
            (-> response
                (select-keys [:status :hits :items])
-               (util/update-in-each [:items] dissoc :name :long-name)
                (update :items set))))))
 
 (defn- add-name-to-variable
@@ -176,15 +191,8 @@
 (defn assert-variable-search-order
   "Verifies the searcch results are in the correct order"
   [variables response]
-  (let [expected-items (->> variables
-                            (map #(select-keys
-                                   %
-                                   variable-names-in-expected-response))
-                            seq)]
-    (is (= expected-items
-           (-> response
-               (util/update-in-each [:items] dissoc :name :long-name)
-               :items)))))
+  (let [expected-items (seq (get-expected-json-variables variables))]
+    (is (= expected-items (:items response)))))
 
 (defn- coll-variable-association->expected-variable-association
   "Returns the expected variable association for the given collection concept id to

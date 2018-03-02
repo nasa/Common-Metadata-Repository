@@ -15,7 +15,7 @@
 (defmethod elastic-results/elastic-result->query-result-item [:service :json]
   [context query elastic-result]
   (let [{{[service-name] :service-name
-          [measurement] :measurement
+          [long-name] :long-name
           [deleted] :deleted
           [provider-id] :provider-id
           [native-id] :native-id
@@ -27,7 +27,7 @@
                       :provider_id provider-id
                       :native_id native-id
                       :name service-name
-                      :long_name measurement})]
+                      :long_name long-name})]
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))
