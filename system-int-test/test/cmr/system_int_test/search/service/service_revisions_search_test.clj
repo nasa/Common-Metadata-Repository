@@ -54,7 +54,7 @@
           ;; find references with all revisions
           (d/assert-refs-match
            services (service/search-refs params))
-          ;; TODO - is this statement correct? search in JSON with all-revisions
+          ;; search in JSON with all-revisions
           (service/assert-service-search services (service/search-json params))
           ;; search in UMM JSON with all-revisions
           (du/assert-service-umm-jsons-match
