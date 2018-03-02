@@ -126,15 +126,22 @@
   [service]
   (:LongName (json/parse-string (:metadata service) true)))
 
+(defn get-expected-service-json
+  "For the given service return the expected service JSON."
+  [service]
+  (let [service-json-fields (select-keys
+                             (assoc service
+                                    :name (extract-name-from-metadata service)
+                                    :long-name (extract-long-name-from-metadata service))
+                             json-field-names)]
+    (if (:deleted service-json-fields)
+      (dissoc service-json-fields :long-name)
+      service-json-fields)))
+
 (defn assert-service-search
   "Verifies the service search results. The response must be provided in JSON format."
   [services response]
-  (let [expected-items (->> services
-                            (map #(assoc % :name (extract-name-from-metadata %)))
-                            (map #(assoc % :long-name (extract-long-name-from-metadata %)))
-                            (map #(select-keys % json-field-names))
-                            seq
-                            set)
+  (let [expected-items (-> (map get-expected-service-json services) seq set)
         expected-response {:status 200
                            :hits (count services)
                            :items expected-items}]
@@ -157,8 +164,8 @@
   (let [[[coll-concept-id coll-revision-id] service-association] coll-service-association
         {:keys [concept-id revision-id]} service-association
         associated-item (if coll-revision-id
-                      {:concept-id coll-concept-id :revision-id coll-revision-id}
-                      {:concept-id coll-concept-id})
+                          {:concept-id coll-concept-id :revision-id coll-revision-id}
+                          {:concept-id coll-concept-id})
         errors (select-keys service-association [:errors :warnings])]
     (if (seq errors)
       (merge {:associated-item associated-item} errors)
