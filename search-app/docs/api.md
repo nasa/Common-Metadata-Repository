@@ -3514,7 +3514,7 @@ A service enables data to be accessed via a universal resource locator, and has 
 
 #### <a name="searching-for-services"></a> Searching for Services
 
-Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference response formats is supported for services search.
+Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference, JSON, and UMM JSON response formats are supported for services search.
 
 Service search results are paged. See [Paging Details](#paging-details) for more information on how to page through service search results.
 
@@ -3597,6 +3597,61 @@ Content-Length: 393
         </reference>
     </references>
 </results>
+```
+##### JSON
+The JSON response includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of services with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * name
+  * long_name
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/services.json?pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 944
+
+{
+  "hits" : 4,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "S1200000012-PROV2",
+    "revision_id" : 1,
+    "provider_id" : "PROV2",
+    "native_id" : "svc3",
+    "name" : "a sub for service2",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000013-PROV2",
+    "revision_id" : 1,
+    "provider_id" : "PROV2",
+    "native_id" : "serv4",
+    "name" : "s.other",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000010-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "SVC1",
+    "name" : "Service1",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000011-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "svc2",
+    "name" : "Service2",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  } ]
+}
 ```
 ##### UMM JSON
 The UMM JSON response contains meta-metadata of the service and the UMM fields.
