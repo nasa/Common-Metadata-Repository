@@ -112,20 +112,27 @@
       (apply assoc service (concat [:id id] location))
       [:id :revision-id :location :deleted])))
 
-(def ^:private service-names-in-expected-response
-  [:concept-id :revision-id :provider-id :native-id :deleted :name])
+(def ^:private json-field-names
+  "List of fields expected in a service JSON response."
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided service concept."
   [service]
   (:Name (json/parse-string (:metadata service) true)))
 
+(defn extract-long-name-from-metadata
+  "Pulls the long name out of the metadata field in the provided service concept."
+  [service]
+  (:LongName (json/parse-string (:metadata service) true)))
+
 (defn assert-service-search
   "Verifies the service search results. The response must be provided in JSON format."
   [services response]
   (let [expected-items (->> services
                             (map #(assoc % :name (extract-name-from-metadata %)))
-                            (map #(select-keys % service-names-in-expected-response))
+                            (map #(assoc % :long-name (extract-long-name-from-metadata %)))
+                            (map #(select-keys % json-field-names))
                             seq
                             set)
         expected-response {:status 200
