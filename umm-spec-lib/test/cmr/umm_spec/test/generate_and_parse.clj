@@ -84,6 +84,15 @@
   [record]
   (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))
 
+(defn- remove-contact-persons
+  "Remove ContactPersons and ContactPersons in DataCenters from iso-smaps when doing comparisons
+   because when converting from UMM to iso-smap, these fields go to some elements,
+   but when converting back to UMM, these fields are converted from different elements."
+  [record]
+  (-> record
+      (dissoc :ContactPersons)
+      (update-in-each [:DataCenters] #(dissoc % :ContactPersons))))
+
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
         check-failure (fn [result]
@@ -130,13 +139,18 @@
                                                                 (when (> ct 0) ct)))))
                     ;; Change fields to sets for comparison
                     ;; Also, dif9 changes VerticalSpatialDomain values when they contain Max and Min
+                    ;; iso-smap changes the ContactPersons and DataCenter ContactPersons.
                     ;;  Remove them from the comparison.
                     expected (convert-to-sets (if (= :dif target-format)
                                                 (remove-vertical-spatial-domains expected)
-                                                expected))
+                                                (if (= :iso-smap target-format)
+                                                  (remove-contact-persons expected)
+                                                  expected)))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              actual))]]
+                                              (if (= :iso-smap target-format)
+                                                  (remove-contact-persons actual)
+                                                  actual)))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -176,7 +190,13 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (if (= :iso-smap metadata-format)
+                     (remove-contact-persons expected)
+                     expected)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (if (= :iso-smap metadata-format)
+                   (remove-contact-persons actual)
+                   actual)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
@@ -204,7 +224,13 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (if (= :iso-smap metadata-format)
+                     (remove-contact-persons expected)
+                     expected)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (if (= :iso-smap metadata-format)
+                   (remove-contact-persons actual)
+                   actual)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]

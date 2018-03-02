@@ -12,7 +12,7 @@
 
 (def metadata-authors-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty"
-       "[gmd:role/gmd:CI_RoleCode/@codeListValue='author']"))
+       "[gmd:role/gmd:CI_RoleCode='pointOfContact' or gmd:role/gmd:CI_RoleCode='author']"))
 
 (def point-of-contact-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:identificationInfo"
