@@ -10,7 +10,7 @@
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common-app.config :as common-config]
    [cmr.common.jobs :refer [defjob]]
    [cmr.search.data.elastic-search-index :as idx]))
 
@@ -19,12 +19,8 @@
   ;; default to 1 hour
   3600)
 
-(def has-granule-or-cwic-cache-key
+(def has-granules-or-cwic-cache-key
   :has-granules-or-cwic-map)
-
-(defconfig cwic-tag
-  "has-granules-or-cwic should also return any collection with configured cwic-tag"
-  {:default "org.ceos.wgiss.cwic.granules.prod"})
 
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
@@ -34,7 +30,7 @@
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [condition (nf/parse-nested-condition :tags {:tag-key (cwic-tag)} false false)
+  (let [condition (nf/parse-nested-condition :tags {:tag-key (common-config/cwic-tag)} false false)
         query (qm/query {:concept-type :collection
                          :condition condition
                          :page-size :unlimited})
@@ -57,7 +53,7 @@
                                   (merge
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
-    (cache/set-value (cache/context->cache context has-granule-or-cwic-cache-key)
+    (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
                      :has-granules-or-cwic has-granules-or-cwic-map)))
 
 (defn get-has-granules-or-cwic-map
@@ -65,7 +61,7 @@
   of whether the collections have granules or not. If the has-granules-or-cwic-map has not yet been cached
   it will retrieve it and cache it."
   [context]
-  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granule-or-cwic-cache-key)]
+  (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granules-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
                      :has-granules-or-cwic
                      (fn []
