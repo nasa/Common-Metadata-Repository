@@ -152,6 +152,7 @@
   "Bulk index the given service batches in both regular index and all revisions index."
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
+    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
     (index/bulk-index indexer-context concept-batches {})))
 
 (defn- index-services-by-provider
