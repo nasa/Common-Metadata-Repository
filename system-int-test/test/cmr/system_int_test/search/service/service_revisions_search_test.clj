@@ -58,7 +58,8 @@
           (service/assert-service-search services (service/search-json params))
           ;; search in UMM JSON with all-revisions
           (du/assert-service-umm-jsons-match
-           umm-version/current-service-version services
+           umm-version/current-service-version
+           services
            (search/find-concepts-umm-json :service params)))
 
         "provider-id all-revisions=false"

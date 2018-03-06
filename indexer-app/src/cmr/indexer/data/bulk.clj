@@ -3,7 +3,16 @@
   The origninal implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
 
 (def ^:private special-operation-keys
-  [:_index :_type :_version :_version_type :_id :_routing :_percolate :_parent :_timestamp :_ttl])
+  [:_id
+   :_index
+   :_parent
+   :_percolate
+   :_routing
+   :_timestamp
+   :_ttl
+   :_type
+   :_version
+   :_version_type])
 
 (defn index-operation
   "Takes a document map and extracts the keys/values related to indexing instructions and
