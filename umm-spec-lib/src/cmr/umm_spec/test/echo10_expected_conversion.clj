@@ -259,6 +259,13 @@
       [(cmn/map->ResourceCitationType
         {:OtherCitationDetails other-citation-details})])))
 
+(defn- expected-doi
+  "Updates the expected DOI for ECHO10."
+  [doi]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :MissingReason :Explanation))]
+    (when (seq updated-doi)
+      updated-doi)))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -300,4 +307,5 @@
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))))
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update :DOI expected-doi)))
