@@ -52,7 +52,7 @@
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
 ;; Tests all granule search when allow-all-granule-params-flag is false
-;; Existing tests should test the cover the case when the flag is set to true. 
+;; Existing tests should cover the case when the flag is set to true. 
 (deftest allow-all-granule-params-flag-false-search-test 
   (let [saved-flag-value (concepts-search/allow-all-granule-params-flag)
         saved-header-value (concepts-search/allow-all-gran-header) 
