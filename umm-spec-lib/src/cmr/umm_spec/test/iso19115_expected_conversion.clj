@@ -362,4 +362,5 @@
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
+      (update :DOI iso-shared/expected-doi)
       js/parse-umm-c))

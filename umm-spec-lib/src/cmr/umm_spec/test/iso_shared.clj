@@ -92,3 +92,10 @@
        (map iso-topic-categories/xml->umm-iso-topic-category-map)
        (remove nil?)
        seq))
+
+(defn expected-doi
+  "Returns the expected DOI."
+  [doi]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :MissingReason :Explanation))]
+    (when (seq updated-doi)
+      updated-doi)))

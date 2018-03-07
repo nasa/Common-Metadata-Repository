@@ -138,17 +138,6 @@
     pub-ref)
    pub-ref)))
 
-(defn dif-publication-reference
-  "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"
-  [pub-ref]
-  (-> pub-ref
-      (update-in [:DOI] (fn [doi]
-                          (util/remove-nil-keys
-                           (dissoc doi :Authority :MissingReason :Explanation))))
-      (update :ISBN su/format-isbn)
-      (update :OnlineResource dif-online-resource)
-      check-nil-pub-ref))
-
 (defn expected-dif-url-type
  "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
  Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
@@ -230,4 +219,15 @@
 (defn expected-dif-doi
   "DIF9 and DIF10 do not have several DOI fields so remove them."
   [doi]
-  (dissoc doi :Authority :MissingReason :Explanation))
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :MissingReason :Explanation))]
+    (when (seq updated-doi)
+      updated-doi)))
+
+(defn dif-publication-reference
+  "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"
+  [pub-ref]
+  (-> pub-ref
+      (update-in [:DOI] expected-dif-doi)
+      (update :ISBN su/format-isbn)
+      (update :OnlineResource dif-online-resource)
+      check-nil-pub-ref))
