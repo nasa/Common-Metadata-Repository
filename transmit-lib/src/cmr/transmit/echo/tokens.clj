@@ -42,12 +42,16 @@
     ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
 
-    (let [[status parsed body] (r/rest-get context (format "/tokens/%s/token_info",token)
+    (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                            {:headers {"Accept" mt/json
-                                                      "Echo-Token" (transmit-config/echo-system-token)}})]
+                                                      "Echo-Token" (transmit-config/echo-system-token)}
+                                            :form-params {:id token}})]
       (case (int status)
         200 (get-in parsed [:token_info :user_name])
         401 (errors/throw-service-error
+             :unauthorized
+             (format "Token %s does not exist" token))
+        404 (errors/throw-service-error
              :unauthorized
              (format "Token %s does not exist" token))
         ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR

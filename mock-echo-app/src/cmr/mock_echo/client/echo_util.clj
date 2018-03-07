@@ -139,7 +139,7 @@
    (assoc (catalog-item-id provider-guid coll-identifier gran-identifier)
           :granule_applicable true)))
 
-(defn cmr-catalog-identity->echo
+(defn- cmr-catalog-identity->echo
   "Converts a cmr catalog-item-identity into the format used by mock-echo"
   [identity]
   (let [{:keys [name provider_id collection_applicable granule_applicable]} identity
@@ -176,9 +176,8 @@
                   {:group_permissions group-permissions
                    object-identity-type object-identity})
         echo-identity (if (= object-identity-type :catalog_item_identity) (cmr-catalog-identity->echo object-identity) object-identity)
-
-        cmr-response (ac/create-acl context cmr-acl {:raw? true :token (config/echo-system-token)})
         ;;attempt to create ACL.  If it already exists, then get the existing ACL and update.
+        cmr-response (ac/create-acl context cmr-acl {:raw? true :token (config/echo-system-token)})
         cmr-response (if (= 409 (:status cmr-response))
                        (let [existing-concept-id (->> (get-in cmr-response [:body :errors])
                                                       first

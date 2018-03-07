@@ -61,7 +61,9 @@
   ([context url-path body-obj options]
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
-         params (merge (post-options conn body-obj) options)
+         params (if (some? (:form-params body-obj))
+                  body-obj
+                  (merge (post-options conn body-obj) options))
          response (client/post url params)
          {:keys [status body headers]} response
          parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
