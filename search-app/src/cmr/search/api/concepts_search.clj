@@ -5,17 +5,27 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
+   [cmr.common.util :as util]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
+   [cmr.search.validators.all-granule-validation :as all-gran-validation]
    [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
+(defconfig allow-all-granule-params-flag
+  "Flag that indicates if we allow all granule queries."
+  {:default true :type Boolean}) 
+
+(defconfig allow-all-gran-header
+  "This is the header that allows the operator to run the all granule queries." 
+  {:default "Must be changed"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -47,6 +57,34 @@
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
+(defn- all-granule-params?
+  "Check if the params is all granule params based on the concept-type,query params and scroll-id.
+   Only granule queries that don't have scroll-id and don't contain certain collection constraints
+   are all granule params."
+  [concept-type params scroll-id]
+  (let [constraints (select-keys 
+                      params 
+                      all-gran-validation/granule-limiting-search-fields)]
+    (and (= :granule concept-type)
+         (not (some? scroll-id))
+         (empty? (util/remove-nil-keys constraints)))))
+
+(defn- handle-all-granule-params
+  "Throws error if all granule params needs to be rejected."
+  [headers]
+  (when (and (= false (allow-all-granule-params-flag))
+             (or (not (some? (get headers "client-id")))
+                 (not (some? (get headers (allow-all-gran-header))))))
+    (svc-errors/throw-service-error
+      :bad-request
+      (str "The CMR does not currently allow querying across granules in all collections. "
+          "To help optimize your search, you should limit your query using conditions that "
+          "identify one or more collections, such as provider, provider_id, concept_id, "
+          "collection_concept_id, short_name, version, entry_title or entry_id. "
+          "Visit the CMR Client Developer Forum at "
+          " https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers "
+          "for more information, and for any questions please contact support@earthdata.nasa.gov."))))
+ 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and
   return the response"
@@ -65,6 +103,8 @@
         search-params (if cached-search-params
                         cached-search-params
                         (lp/process-legacy-psa params))
+        _ (when (all-granule-params? concept-type params short-scroll-id)
+            (handle-all-granule-params headers)) 
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)    
       (core-api/search-response ctx results search-params)
