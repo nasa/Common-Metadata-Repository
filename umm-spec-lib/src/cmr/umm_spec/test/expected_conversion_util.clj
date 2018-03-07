@@ -15,7 +15,7 @@
   [cmr.umm-spec.util :as su]))
 
 (def coll-progress-enum-list
-  "The enum list for CollectionProgress in v1.10. that could be converted from 
+  "The enum list for CollectionProgress in v1.10. that could be converted from
    all formats except for DIF10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED" "NOT APPLICABLE"]))
 
@@ -139,10 +139,12 @@
    pub-ref)))
 
 (defn dif-publication-reference
-  "Returns the expected value of a parsed DIF 9 publication reference"
+  "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"
   [pub-ref]
   (-> pub-ref
-      (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+      (update-in [:DOI] (fn [doi]
+                          (util/remove-nil-keys
+                           (dissoc doi :Authority :MissingReason :Explanation))))
       (update :ISBN su/format-isbn)
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
@@ -226,8 +228,6 @@
       (dif-util/dif-language->umm-language dif-language))))
 
 (defn expected-dif-doi
-  "dif9 and dif10 don't have :Authority field, so assign nil to it"
+  "DIF9 and DIF10 do not have several DOI fields so remove them."
   [doi]
-  (if (get-in doi [:Authority])
-    (assoc doi :Authority nil)
-    doi))
+  (dissoc doi :Authority :MissingReason :Explanation))

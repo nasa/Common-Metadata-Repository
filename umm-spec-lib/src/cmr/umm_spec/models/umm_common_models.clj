@@ -277,27 +277,24 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ResourceCitationType)
 
-;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The
-;; values should start with the directory indicator which in ESDIS' case is 10. If the DOI was
-;; registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not
-;; stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for
-;; creating the DOI is described in the Authority element. For ESDIS records the value of
-;; https://doi.org/ should be used. While this element is not required, NASA metadata providers are
-;; strongly encouraged to include DOI and DOI Authority for their collections.
 (defrecord DoiType
   [
-   ;; Authority is the registry that registers the DOI. For ESDIS records the value of
-   ;; http://dx.doi.org should be used.
+   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
+   ;; element. For ESDIS records the value of https://doi.org/ should be used.
    Authority
 
    ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
    ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
    ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
-   ;; not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible
-   ;; for creating the DOI is described in the Authority element. For ESDIS records the value of
-   ;; https://doi.org/ should be used. While this element is not required, NASA metadata providers
-   ;; are strongly encouraged to include DOI and DOI Authority for their collections.
+   ;; not stored here; it should be stored as a RelatedURL.
    DOI
+
+   ;; This element stores the fact that a DOI (Digital Object Identifier) is not applicable for this
+   ;; record.
+   MissingReason
+
+   ;; This element describes the reason the DOI is not applicable.
+   Explanation
   ])
 (record-pretty-printer/enable-record-pretty-printing DoiType)
 
