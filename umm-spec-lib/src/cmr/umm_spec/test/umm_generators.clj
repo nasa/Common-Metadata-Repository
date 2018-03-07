@@ -15,6 +15,7 @@
   (fn [schema type-name schema-type]
     (cond
       (:type schema-type) (:type schema-type)
+      (:oneOf schema-type) "oneOf"
       (:$ref schema-type) :$ref)))
 
 (defmethod schema-type->generator :default
@@ -121,6 +122,10 @@
       (object-like-schema-type->generator
         schema type-name
         (select-keys schema-type [:properties :required :additionalProperties])))))
+
+(defmethod schema-type->generator "oneOf"
+  [schema type-name schema-type]
+  (object-one-of->generator schema type-name schema-type))
 
 (def array-min-items 0)
 (def array-max-items 5)

@@ -51,6 +51,8 @@
         ;; This is needed for a nested properties def in an allOf
         (:properties type-def) "object"
 
+        (:oneOf type-def) "oneOf"
+
         ;; This will trigger an error
         :else
         (throw (Exception. (str "Unable to resolve ref on " (pr-str type-def)))))))
@@ -104,6 +106,10 @@
 (defmethod resolve-ref "array"
   [schema-name type-def]
   (update-in type-def [:items] (partial resolve-ref schema-name)))
+
+(defmethod resolve-ref "oneOf"
+  [schema-name type-def]
+  (resolve-one-of schema-name type-def))
 
 ;;; No resolution
 

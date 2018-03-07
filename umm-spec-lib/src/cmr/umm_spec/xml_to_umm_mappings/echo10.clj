@@ -157,9 +157,13 @@
 (defn- parse-doi
   "There could be multiple DOIs under Collection, just take the first one for now."
   [doc]
-  (let [doi (first (select doc "Collection/DOI"))]
-    {:DOI (value-of doi "DOI")
-     :Authority (value-of doi "Authority")}))
+  (let [doi (first (select doc "Collection/DOI"))
+        doi-value (value-of doi "DOI")
+        authority (value-of doi "Authority")]
+    (when (or doi-value authority)
+      (util/remove-nil-keys
+       {:DOI doi-value
+        :Authority authority}))))
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."

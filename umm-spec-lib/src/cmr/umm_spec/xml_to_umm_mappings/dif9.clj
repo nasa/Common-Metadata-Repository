@@ -4,7 +4,7 @@
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
     [clojure.string :as string]
-    [cmr.common.util :as common-util]
+    [cmr.common.util :as util]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.umm-spec.date-util :as date]
@@ -128,8 +128,10 @@
                                          (value-of dsc "Version"))))
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
-     :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
-                                {:DOI (value-of dsc "Dataset_DOI")})))
+     :DOI (first (for [dsc (select doc "DIF/Data_Set_Citation")
+                       :let [doi (value-of dsc "Dataset_DOI")]
+                       :when doi]
+                   {:DOI doi}))
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
@@ -148,7 +150,7 @@
                            coll-progress-mapping
                            doc
                            "/DIF/Data_Set_Progress"
-                           sanitize?) 
+                           sanitize?)
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")
@@ -198,7 +200,8 @@
                                              :Publisher
                                              :Pages
                                              [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
-                                             [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                             [:DOI (when-let [doi (value-of pub-ref "DOI")]
+                                                     {:DOI doi})]
                                              [:OnlineResource (dif-util/parse-publication-reference-online-resouce pub-ref sanitize?)]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")

@@ -61,7 +61,7 @@
              :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :PublicationPlace nil)
-             (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+             (update-in [:DOI] (fn [doi] (dissoc doi :Authority :Explanation :MissingReason)))
              (update-in [:PublicationDate] conversion-util/date-time->date)
              (update :ISBN su/format-isbn)
              (update :OnlineResource expected-online-resource)))))

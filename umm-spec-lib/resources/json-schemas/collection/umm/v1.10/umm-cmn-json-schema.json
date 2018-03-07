@@ -509,22 +509,42 @@
       }
     },
     "DoiType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections.",
-      "properties": {
-        "Authority": {
-          "description": "Authority is the registry that registers the DOI. For ESDIS records the value of http://dx.doi.org should be used.",
-          "$ref": "#/definitions/AuthorityType"
+      "oneOf": [{
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.",
+        "properties": {
+          "Authority": {
+            "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+            "$ref": "#/definitions/AuthorityType"
+          },
+          "DOI": {
+            "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
         },
-        "DOI": {
-          "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["DOI"]
+        "required": ["DOI"]
+      }, {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element stores the fact that the DOI (Digital Object Identifier) is not applicable.",
+        "properties": {
+          "MissingReason": {
+            "description": "This element stores the fact that a DOI (Digital Object Identifier) is not applicable for this record.",
+            "type": "string",
+            "enum": ["Not Applicable"]
+          },
+          "Explanation": {
+            "description": "This element describes the reason the DOI is not applicable.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": ["MissingReason"]
+      }]
     },
     "AccessConstraintsType": {
       "type": "object",
