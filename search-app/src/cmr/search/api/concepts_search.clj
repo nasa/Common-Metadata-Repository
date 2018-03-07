@@ -1,7 +1,6 @@
 (ns cmr.search.api.concepts-search
   "Defines the API for search-by-concept in the CMR."
   (:require
-   [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -25,7 +24,8 @@
   {:default true :type Boolean}) 
 
 (defconfig allow-all-gran-header
-  "This is the header that allows the operator to run the all granule queries." 
+  "This is the header that allows operators to run all granule queries when 
+   allow-all-granule-params-flag is set to false." 
   {:default "Must be changed"})
 
 (def supported-provider-holdings-mime-types
