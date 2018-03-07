@@ -15,6 +15,7 @@
    :conflict 409
    :invalid-content-type 415
    :invalid-data 422
+   :too-many-requests 429
    :service-unavailable 503})
 
 (def CONTENT_TYPE_HEADER "Content-Type")

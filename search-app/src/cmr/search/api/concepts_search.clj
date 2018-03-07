@@ -47,6 +47,22 @@
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
+(defn- block-excessive-queries
+  "Temporary solution to prevent a specific query from overloading the CMR search resources."
+  [ctx concept-type result-format params]
+  (when (and (= concept-type :granule)
+             (= :json result-format)
+             (= "MCD43A4" (:short_name params))
+             (contains? params ""))
+    (warn (format "Blocking %s query from client %s in format %s with params %s."
+                  (name concept-type)
+                  (:client-id ctx)
+                  (rfh/printable-result-format result-format)
+                  (pr-str params)))
+    (svc-errors/throw-service-error
+      :too-many-requests
+      "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
+
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and
   return the response"
@@ -59,6 +75,7 @@
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
+        _ (block-excessive-queries ctx concept-type result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
@@ -66,7 +83,7 @@
                         cached-search-params
                         (lp/process-legacy-psa params))
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (if (:scroll-id results)    
+    (if (:scroll-id results)
       (core-api/search-response ctx results search-params)
       (core-api/search-response ctx results))))
 

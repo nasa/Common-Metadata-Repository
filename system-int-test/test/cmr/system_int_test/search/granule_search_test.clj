@@ -369,11 +369,11 @@
 ;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"}))
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"}))
         coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
-                                                        :ShortName "S2"
-                                                        :Version "V2"}))
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"}))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 0.8}))
@@ -414,11 +414,11 @@
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest search-by-concept-id
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"}))
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"}))
         coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
-                                                        :ShortName "S2"
-                                                        :Version "V2"}))
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"}))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid))
@@ -534,3 +534,9 @@
       (is (= {:status 400
               :errors [(smsg/mixed-arity-parameter-msg :concept-id)]}
              (search/make-raw-search-query :granule ".json?concept_id=G&concept_id[pattern]=true"))))))
+
+(deftest block-excessive-queries-test
+  (testing "Blocking those MCD43A4 queries"
+    (is (= {:status 429
+            :errors ["Excessive query rate. Please contact support@earthdata.nasa.gov."]}
+           (search/make-raw-search-query :granule ".json?short_name=MCD43A4&&page_size=5")))))
