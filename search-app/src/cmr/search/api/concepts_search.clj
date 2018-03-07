@@ -5,6 +5,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
@@ -47,10 +48,16 @@
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
+(defconfig block-queries
+  "Indicates whether we are going to block a specific excessive query."
+  {:type Boolean
+   :default true})
+
 (defn- block-excessive-queries
   "Temporary solution to prevent a specific query from overloading the CMR search resources."
   [ctx concept-type result-format params]
-  (when (and (= concept-type :granule)
+  (when (and (block-queries)
+             (= concept-type :granule)
              (= :json result-format)
              (= "MCD43A4" (:short_name params))
              (contains? params ""))
