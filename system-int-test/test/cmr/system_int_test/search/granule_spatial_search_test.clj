@@ -2,8 +2,10 @@
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common.dev.util :as dev-util]
+   [cmr.search.api.concepts-search :as concepts-search]
    [cmr.spatial.arc :as a]
    [cmr.spatial.cartesian-ring :as cr]
    [cmr.spatial.codec :as codec]
@@ -48,6 +50,48 @@
   "Returns a url encoded polygon for searching"
   [& ords]
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
+
+;; Tests all granule search when allow-all-granule-params-flag is false
+;; Existing tests should test the cover the case when the flag is set to true. 
+(deftest allow-all-granule-params-flag-false-search-test 
+  (let [saved-flag-value (concepts-search/allow-all-granule-params-flag)
+        saved-header-value (concepts-search/allow-all-gran-header) 
+        _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! false))
+        _ (side/eval-form `(concepts-search/set-allow-all-gran-header! "allow-all-gran"))
+        header1 {"client-id" "testing", "allow-all-gran" true} 
+        header2 {"client-id" "testing", "allow-all-gran" false} 
+        header3 {"client-id" "testing"}
+        header4 {"allow-all-gran" true} 
+        header5 {"allow-all-gran" false}
+        header6 {}
+        params {:short-name "testing"} 
+        ;; With allow-all-granule-params-flag being set to false, all granule query is allowed
+        ;; only when client-id is present and allow-all-gran header is set to true. 
+        result1 (search/find-refs :granule {} {:headers header1})
+        result2 (search/find-refs :granule {} {:headers header2})
+        result3 (search/find-refs :granule {} {:headers header3})
+        result4 (search/find-refs :granule {} {:headers header4})
+        result5 (search/find-refs :granule {} {:headers header5})
+        result6 (search/find-refs :granule {} {:headers header6})
+        ;; search with collection constraint should be allowed.
+        result7 (search/find-refs :granule params)
+        err-msg "The CMR does not currently allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version, entry_title or entry_id. Visit the CMR Client Developer Forum at  https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov."
+        _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! ~saved-flag-value))
+        _ (side/eval-form `(concepts-search/set-allow-all-gran-header! ~saved-header-value))]
+    (is (= nil 
+           (:errors result1)))
+    (is (= [err-msg]
+           (:errors result2)))
+    (is (= [err-msg]
+           (:errors result3)))
+    (is (= [err-msg]
+           (:errors result4)))
+    (is (= [err-msg]
+           (:errors result5)))
+    (is (= [err-msg]
+           (:errors result5)))
+    (is (= nil 
+           (:errors result7)))))
 
 ;; Tests search failure conditions
 (deftest spatial-search-validation-test

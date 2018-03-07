@@ -1,6 +1,7 @@
 (ns cmr.search.api.concepts-search
   "Defines the API for search-by-concept in the CMR."
   (:require
+   [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -63,7 +64,7 @@
    are all granule params."
   [concept-type params scroll-id]
   (let [constraints (select-keys 
-                      params 
+                      (util/map-keys->kebab-case params) 
                       all-gran-validation/granule-limiting-search-fields)]
     (and (= :granule concept-type)
          (not (some? scroll-id))
@@ -74,7 +75,7 @@
   [headers]
   (when (and (= false (allow-all-granule-params-flag))
              (or (not (some? (get headers "client-id")))
-                 (not (some? (get headers (allow-all-gran-header))))))
+                 (not (= "true" (get headers (allow-all-gran-header))))))
     (svc-errors/throw-service-error
       :bad-request
       (str "The CMR does not currently allow querying across granules in all collections. "
