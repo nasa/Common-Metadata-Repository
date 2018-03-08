@@ -64,18 +64,38 @@
         header4 {"allow-all-gran" true} 
         header5 {"allow-all-gran" false}
         header6 {}
-        params {:short-name "testing"} 
+        params1 {:provider "PROV1"}
+        params2 {:provider_id "PROV1"}
+        params3 {:concept_id "C1234-PROV1"}
+        params4 {:collection_concept_id "C1234-PROV1"}
+        params5 {:short_name "short name"}
+        params6 {:version "1.0"}
+        params7 {:entry_title "testing"}
+        params8 {:bounding-box "-10,-5,10,5"}
+        params9 {"temporal[]" "2010-12-12T12:00:00Z,"}
+        params10 {"page_num" 2 "page_size" 5}
         ;; With allow-all-granule-params-flag being set to false, all granule query is allowed
         ;; only when client-id is present and allow-all-gran header is set to true. 
         result1 (search/find-refs :granule {} {:headers header1})
+        ;; Without the proper headers and collection constriants, these should be rejected
         result2 (search/find-refs :granule {} {:headers header2})
         result3 (search/find-refs :granule {} {:headers header3})
         result4 (search/find-refs :granule {} {:headers header4})
         result5 (search/find-refs :granule {} {:headers header5})
         result6 (search/find-refs :granule {} {:headers header6})
-        ;; search with collection constraint should be allowed.
-        result7 (search/find-refs :granule params)
-        err-msg "The CMR does not currently allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version, entry_title or entry_id. Visit the CMR Client Developer Forum at  https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov."
+        ;; Search with collection constraints should be allowed.
+        result7 (search/find-refs :granule params1)
+        result8 (search/find-refs :granule params2)
+        result9 (search/find-refs :granule params3)
+        result10 (search/find-refs :granule params4)
+        result11 (search/find-refs :granule params5)
+        result12 (search/find-refs :granule params6)
+        result13 (search/find-refs :granule params7)
+        ;; Search without collection constraints, but with other spatial, temporal page_num, page_size are rejected.
+        result14 (search/find-refs :granule params8)
+        result15 (search/find-refs :granule params9)
+        result16 (search/find-refs :granule params10)
+        err-msg "The CMR does not currently allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at  https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov."
         _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! ~saved-flag-value))
         _ (side/eval-form `(concepts-search/set-allow-all-gran-header! ~saved-header-value))]
     (is (= nil 
@@ -89,9 +109,27 @@
     (is (= [err-msg]
            (:errors result5)))
     (is (= [err-msg]
-           (:errors result5)))
-    (is (= nil 
-           (:errors result7)))))
+           (:errors result6)))
+    (is (= nil
+           (:errors result7)))
+    (is (= nil
+           (:errors result8)))
+    (is (= nil
+           (:errors result9)))
+    (is (= nil
+           (:errors result10)))
+    (is (= nil
+           (:errors result11)))
+    (is (= nil
+           (:errors result12)))
+    (is (= nil
+           (:errors result13)))
+    (is (= [err-msg]
+           (:errors result14)))
+    (is (= [err-msg]
+           (:errors result15)))
+    (is (= [err-msg]
+           (:errors result16)))))
 
 ;; Tests search failure conditions
 (deftest spatial-search-validation-test

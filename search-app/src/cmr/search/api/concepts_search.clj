@@ -81,7 +81,7 @@
       (str "The CMR does not currently allow querying across granules in all collections. "
           "To help optimize your search, you should limit your query using conditions that "
           "identify one or more collections, such as provider, provider_id, concept_id, "
-          "collection_concept_id, short_name, version, entry_title or entry_id. "
+          "collection_concept_id, short_name, version or entry_title. "
           "Visit the CMR Client Developer Forum at "
           " https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers "
           "for more information, and for any questions please contact support@earthdata.nasa.gov."))))
