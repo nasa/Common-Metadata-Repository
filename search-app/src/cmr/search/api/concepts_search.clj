@@ -64,7 +64,6 @@
    Only granule queries that don't have scroll-id and don't contain certain collection constraints
    are all granule params."
   [concept-type params scroll-id]
-  (println "params are: " params)
   (let [constraints (select-keys 
                       params 
                       all-gran-validation/granule-limiting-search-fields)]
