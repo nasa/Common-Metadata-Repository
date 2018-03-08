@@ -1695,7 +1695,7 @@ __Sample response__
 ```
 
 ### <a name="granule-search-by-parameters"></a> Granule Search By Parameters
-The CMR does not permit queries across all granules in all collections in order to provide fast search responses. Granule queries must target a subset of the collections in the CMR using a condition like provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title.
+**Note:** The CMR does not permit queries across all granules in all collections in order to provide fast search responses. Granule queries must target a subset of the collections in the CMR using a condition like provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title.
 
 #### <a name="find-all-granules"></a> Find all granules for a collection.
 

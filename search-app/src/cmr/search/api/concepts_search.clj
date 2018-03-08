@@ -1,6 +1,7 @@
 (ns cmr.search.api.concepts-search
   "Defines the API for search-by-concept in the CMR."
   (:require
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -58,13 +59,22 @@
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
+(defn- preparing-params-for-limiting-search-fields-checking
+  "This is to change the aliases keys to its related keys and kebab all the keys."
+  [params]
+  (let [params (set/rename-keys params {:ShortName :short_name,
+                                        :echo_granule_id :concept_id,
+                                        :dataset_id :entry_title,
+                                        :echo_collection_id :collection_concept_id})]
+    (util/map-keys->kebab-case params)))
+ 
 (defn- all-granule-params?
   "Check if the params is all granule params based on the concept-type,query params and scroll-id.
    Only granule queries that don't have scroll-id and don't contain certain collection constraints
    are all granule params."
   [concept-type params scroll-id]
   (let [constraints (select-keys 
-                      (util/map-keys->kebab-case params) 
+                      (preparing-params-for-limiting-search-fields-checking params) 
                       all-gran-validation/granule-limiting-search-fields)]
     (and (= :granule concept-type)
          (not (some? scroll-id))
