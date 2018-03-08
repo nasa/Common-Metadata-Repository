@@ -1,12 +1,13 @@
 (ns cmr.mock-echo.api.tokens
   "Defines the HTTP URL routes for tokens."
-  (:require [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [clojure.set :as set]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as svc-errors]
-            [cmr.mock-echo.data.token-db :as token-db]
-            [cmr.mock-echo.api.api-helpers :as ah]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.mock-echo.api.api-helpers :as ah]
+   [cmr.mock-echo.data.token-db :as token-db]
+   [compojure.core :refer :all]))
 
 
 (def token-keys
@@ -43,7 +44,7 @@
   (get-token-or-error context token-id)
   (token-db/delete context token-id))
 
-(defn get-token-info
+(defn- get-token-info-mock
   [context token-id]
   (let [{:keys [username client_id id]} (get-token-or-error context token-id)]
     {:token_info {:user_name username
@@ -58,7 +59,7 @@
 (def registered-user-sid
   {:sid {:user_authorization_type_sid {:user_authorization_type "REGISTERED"}}})
 
-(defn get-current-sids
+(defn- get-current-sids
   "Returns the groups the user who owns the token belongs to"
   [context token-id]
   (let [{:keys [username group_guids]} (get-token-or-error context token-id)]
@@ -68,6 +69,16 @@
             (map (fn [guid]
                    {:sid {:group_sid {:group_guid guid}}})
                  group_guids)))))
+
+(defn- get-token-info
+  "Returns the token info for the given token"
+  [context headers token-id]
+  (if (= "expired-token" token-id)
+    ;; echo-rest returns status code 400 for request with expired token
+    (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+    (do
+      (ah/require-sys-admin-token headers)
+      (ah/status-ok (get-token-info-mock context token-id)))))
 
 (defn build-routes [system]
   (routes
@@ -80,6 +91,8 @@
            :content-type :json
            :headers {"Location" url}
            :body {:token token}}))
+      (POST "/get_token_info" {context :request-context headers :headers {token-id :id} :params}
+        (get-token-info context headers token-id))
       (context "/:token-id" [token-id]
         ;; Logout
         (DELETE "/" {context :request-context}
@@ -91,12 +104,7 @@
             ;; echo-rest returns status code 400 for request with expired token
             (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
             (ah/status-ok (get-current-sids context token-id))))
-        (GET "/token_info" {context :request-context headers :headers }
-          (if (= "expired-token" token-id)
-            ;; echo-rest returns status code 400 for request with expired token
-            (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
-            (do
-              (ah/require-sys-admin-token headers)
-              (ah/status-ok (get-token-info context token-id)))))))
+        (GET "/token_info" {context :request-context headers :headers}
+          (get-token-info context headers token-id))))
     (GET "/availability" {context :request-context}
       {:status 200})))
