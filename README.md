@@ -185,6 +185,14 @@ At this point, you're ready to bring up the CMR Graph system components:
 [cmr.graph.dev] λ=> (startup)
 ```
 
+This will start the following CMR Graph components:
+
+* Configuration
+* Logging
+* An Elasticsearch connection
+* A Neo4j connection
+* The CMR Graph HTTP server for the REST API
+
 
 ## License [&#x219F;](#contents)
 
