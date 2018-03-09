@@ -30,6 +30,8 @@
     :ubercompile {
       :aot :all}
     :dev {
+      :dependencies [
+        [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
         :init-ns cmr.graph.dev
