@@ -13,6 +13,9 @@
    * [Neo4j Shell](#neo4j-shell-)
    * [Bash](#bash-)
 * [Usage](#usage-)
+   * [REST API](#rest-api-)
+   * [JVM Library](#jvm-library-)
+   * [Client Library](#client-library-)
 * [Deploying with CMR](#deploying-with-cmr-)
 * [License](#license-)
 
@@ -98,6 +101,19 @@ any of the following:
 
 
 ## Usage [&#x219F;](#contents)
+
+
+### REST API [&#x219F;](#contents)
+
+TBD
+
+
+### JVM Library [&#x219F;](#contents)
+
+TBD
+
+
+### Client Library  [&#x219F;](#contents)
 
 TBD
 
