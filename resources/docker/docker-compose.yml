@@ -3,11 +3,12 @@ services:
   neo4j:
     image: neo4j:3.3.3
     container_name: cmr-graph-neo4j
+    environment:
+      - NEO4J_AUTH=none
     volumes:
       - ${PWD}/data/neo4j:/data
     ports:
       - 7474:7474
-      - 7687:7687
     networks:
       - cmr-graph-net
 
