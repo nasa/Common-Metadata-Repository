@@ -91,6 +91,7 @@
           (if (nil? (:GetService related-url))
             (assoc related-url :GetService {:MimeType su/not-provided
                                             :Protocol su/not-provided
+                                            :Format su/not-provided
                                             :FullName su/not-provided
                                             :DataID su/not-provided
                                             :DataType su/not-provided
@@ -107,10 +108,11 @@
    (seq (for [related-url
               (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
-          (-> related-url
-              (dissoc :FileSize :MimeType :GetData)
-              expected-related-url-get-service
-              (update :Description #(when % (string/trim %))))))))
+          (cmn/map->RelatedUrlType
+           (-> related-url
+               (dissoc :FileSize :MimeType)
+               expected-related-url-get-service
+               (update :Description #(when % (string/trim %)))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

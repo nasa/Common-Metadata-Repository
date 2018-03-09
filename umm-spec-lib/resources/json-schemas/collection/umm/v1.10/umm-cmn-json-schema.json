@@ -306,6 +306,10 @@
                 "description": "The format of the data.",
                 "$ref": "#/definitions/GetDataTypeFormatEnum"
             },
+            "MimeType": {
+                "description": "The mime type of the service.",
+                "$ref": "#/definitions/URLMimeTypeEnum"
+            },
             "Size": {
                 "description": "The size of the data.",
                "type": "number"
@@ -335,6 +339,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+            "Format": {
+                "description": "The format of the data.",
+                "$ref": "#/definitions/GetDataTypeFormatEnum"
+            },
             "MimeType": {
                 "description": "The mime type of the service.",
                 "$ref": "#/definitions/URLMimeTypeEnum"

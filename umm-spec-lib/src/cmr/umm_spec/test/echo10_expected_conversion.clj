@@ -83,11 +83,32 @@
     (-> related-url
         ;;The following fields are not applicable to ECHO10 format, and are always filled with default values.
         (assoc-in [:GetService :URI] nil)
+        (assoc-in [:GetService :Format] nil)
         (assoc-in [:GetService :Protocol] su/not-provided)
         (assoc-in [:GetService :DataID] su/not-provided)
         (assoc-in [:GetService :DataType] su/not-provided)
         (assoc-in [:GetService :FullName] su/not-provided))
     (dissoc related-url :GetService)))
+
+(defn- expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (get-in related-url [:GetData :MimeType])
+    (-> related-url
+        ;;The following fields are not applicable to ECHO10 format, and are always filled with default values.
+        (assoc-in [:GetData :Unit] "KB")
+        (assoc-in [:GetData :Format] su/not-provided)
+        (update-in [:GetData] dissoc :Fees :Checksum)
+        (update :GetData cmn/map->GetDataType)
+        (assoc-in [:GetData :Size] 0.0))
+    (dissoc related-url :GetData)))
+
+(defn- expected-related-url
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (case (:Type related-url)
+    "GET DATA" (expected-related-url-get-data related-url)
+    (expected-related-url-get-service related-url)))
 
 (defn- expected-echo10-related-urls
  [related-urls]
@@ -96,8 +117,8 @@
     (cmn/map->RelatedUrlType
      (-> related-url
          expected-related-url-type
-         (dissoc :Relation :FileSize :MimeType :GetData)
-         expected-related-url-get-service
+         (dissoc :Relation :FileSize :MimeType)
+         expected-related-url
          (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls
@@ -110,12 +131,12 @@
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
- (as-> spatial-extent se
-       (conversion-util/prune-empty-maps se)
-       (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
-       (if (get-in se [:HorizontalSpatialDomain :Geometry])
-         (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
-         se)))
+  (as-> spatial-extent se
+        (conversion-util/prune-empty-maps se)
+        (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
+        (if (get-in se [:HorizontalSpatialDomain :Geometry])
+          (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
+          se)))
 
 (defn- expected-echo10-platform-longname-with-default-value
   "Returns the expected ECHO10 LongName with default value."

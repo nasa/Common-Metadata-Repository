@@ -37,6 +37,7 @@
             (assoc related-url :GetService (map->GetServiceType
                                               {:MimeType su/not-provided
                                                :Protocol su/not-provided
+                                               :Format su/not-provided
                                                :FullName su/not-provided
                                                :DataID su/not-provided
                                                :DataType su/not-provided
@@ -53,8 +54,7 @@
          (-> related-url
              (update :URL #(url/format-url % true))
              (update :Description #(when % (string/trim %)))
-             (expected-related-url-get-service)
-             (assoc :GetData nil)))))
+             (expected-related-url-get-service)))))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all

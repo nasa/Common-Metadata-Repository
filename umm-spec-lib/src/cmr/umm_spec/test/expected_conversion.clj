@@ -146,6 +146,8 @@
                    :Type "GET DATA"
                    :Subtype "ECHO"
                    :GetData {:Format "ascii"
+                             :MimeType "application/json"
+                             :Checksum "checksum"
                              :Size 10.0
                              :Unit "MB"
                              :Fees "fees"}}
@@ -158,6 +160,7 @@
                                 :DataType "datatype"
                                 :Protocol "HTTP"
                                 :FullName "fullname"
+                                :Format "ascii"
                                 :URI ["http://www.foo.com", "http://www.bar.com"]}}
                   {:Description "Related url 2 description"
                    :URL "http://www.foo.com"

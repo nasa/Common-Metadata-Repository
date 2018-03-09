@@ -450,6 +450,9 @@
    ;; The format of the data.
    Format
 
+   ;; The mime type of the service.
+   MimeType
+
    ;; The size of the data.
    Size
 
@@ -795,6 +798,9 @@
 ;; the caller.
 (defrecord GetServiceType
   [
+   ;; The format of the data.
+   Format
+
    ;; The mime type of the service.
    MimeType
 

@@ -95,7 +95,8 @@
     [:OnlineAccessURLs
      (for [related-url urls
            :let [{:keys [Description URL]} related-url
-                 MimeType (get-in related-url [:GetService :MimeType])]]
+                 MimeType (or (get-in related-url [:GetService :MimeType])
+                              (get-in related-url [:GetData :MimeType]))]]
        [:OnlineAccessURL
         [:URL URL]
         [:URLDescription Description]
@@ -109,7 +110,8 @@
     [:OnlineResources
      (for [related-url urls
            :let [{:keys [Description]} related-url
-                 MimeType (get-in related-url [:GetService :MimeType])]]
+                 MimeType (or (get-in related-url [:GetService :MimeType])
+                              (get-in related-url [:GetData :MimeType]))]]
        [:OnlineResource
         [:URL (:URL related-url)]
         [:Description Description]
@@ -128,7 +130,6 @@
       ("TERABYTES" "TB") (* size 1099511627776)
       ("PETABYTES" "PB") (* size 1125899906842624)
       nil)))
-
 
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."

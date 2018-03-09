@@ -15,7 +15,7 @@
   [cmr.umm-spec.util :as su]))
 
 (def coll-progress-enum-list
-  "The enum list for CollectionProgress in v1.10. that could be converted from 
+  "The enum list for CollectionProgress in v1.10. that could be converted from
    all formats except for DIF10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED" "NOT APPLICABLE"]))
 
