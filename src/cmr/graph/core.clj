@@ -1,4 +1,4 @@
-(ns cmr-graph.core)
+(ns cmr.graph.core)
 
 (defn foo
   "I don't do a whole lot."
