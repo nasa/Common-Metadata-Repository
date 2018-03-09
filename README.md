@@ -45,8 +45,6 @@ available by navigating to the "DevTools" menu item, or this direct link:
 
 * http://localhost:5601/app/kibana#/dev_tools/console
 
-* http://localhost:5601/
-
 [![][kibana-query-thumb]][kibana-query]
 
 Stopping (in a different terminal) is done in a similar manner as start:
@@ -89,11 +87,11 @@ your option) any later version.
 
 <!-- Named page links below: /-->
 
-[neo4j-screen]: resources/images/resources/images/neo4j-web-screen.png
-[neo4j-screen-thumb]: resources/images/resources/images/neo4j-web-screen-thumb.png
+[neo4j-screen]: resources/images/neo4j-web-screen.png
+[neo4j-screen-thumb]: resources/images/neo4j-web-screen-thumb.png
 
-[kibana]: resources/images/resources/images/kibana.png
-[kibana-thumb]: resources/images/resources/images/kibana-thumb.png
+[kibana]: resources/images/kibana.png
+[kibana-thumb]: resources/images/kibana-thumb.png
 
-[kibana-query]: resources/images/resources/images/kibana-query.png
-[kibana-query-thumb]: resources/images/resources/images/kibana-query-thumb.png
+[kibana-query]: resources/images/kibana-query.png
+[kibana-query-thumb]: resources/images/kibana-query-thumb.png
