@@ -23,7 +23,9 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [clojurewerkz/neocons "3.2.0"]
+    [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
+    [http-kit "2.2.0"]
     [metosin/reitit "0.1.0"]
     [org.clojure/clojure "1.9.0"]]
   :profiles {

@@ -17,6 +17,7 @@
    * [JVM Library](#jvm-library-)
    * [Client Library](#client-library-)
 * [Deploying with CMR](#deploying-with-cmr-)
+* [Development](#development-)
 * [License](#license-)
 
 
@@ -122,6 +123,67 @@ TBD
 ## Deploying with CMR [&#x219F;](#contents)
 
 TBD
+
+
+## Development [&#x219F;](#contents)
+
+To write new code for CMR Graph, you'll need to have the infrastructure running
+as described above (see the "Setup" section) and then you'll want to start up
+the REPL:
+
+```
+$ lein repl
+```
+```
+               ____
+            ,dP9CGG88@b,
+          ,IIIIYICCG888@@b,
+         dIIIIIIIICGG8888@b
+        dCIIIIIIICCGG8888@@b
+        GCCIIIICCCGGG8888@@@
+        GGCCCCCCCGGG88888@@@
+        GGGGCCCGGGG88888@@@@
+        Y8GGGGGG8888888@@@@P
+         Y88888888888@@@@@P
+         `Y8888888@@@@@@@P\
+           |`@@@@@@@@@P'\  \
+           | .  """"     \   \
+           ' .            \   \         .d$#T!!!~"#*b.
+           ' |             \    \     d$MM!!!!~~~     "h
+           " |              \     \ dRMMM!!!~           ^k
+           = "               \     $RMM!!~                .__
+  ____   ____________         \  ________________  ______ |  |__
+_/ ___\ /     \_  __ \  ______  / ___\_  __ \__  \ \____ \|  |  \
+\  \___|  Y Y  \  | \/ /_____/ / /_/  >  | \// __ \|  |_> >   Y  \
+ \___  >__|_|  /__|            \___  /|__|  (____  /   __/|___|  /
+     \/      \/               /_____/            \/|__|        \/
+      .X+.   .      ___----     'k~~                        :
+    .Xx+-.     . '''  ____----""" 3>                        F
+    XXx++-..     --'''            9>                       F
+    XXxx++--..                     "i                    :"
+    `XXXxx+++--'                     t.                .P
+      `XXXxxx'                         #c.          .z#
+         ""                               ^#*heee*#"
+
+nREPL server started on port 52433 on host 127.0.0.1 - nrepl://127.0.0.1:52433
+REPL-y 0.3.7, nREPL 0.2.12
+Clojure 1.9.0
+Java HotSpot(TM) 64-Bit Server VM 1.8.0_161-b12
+    Docs: (doc function-name-here)
+          (find-doc "part-of-name-here")
+  Source: (source function-name-here)
+ Javadoc: (javadoc java-object-or-class-here)
+    Exit: Control+D or (exit) or (quit)
+ Results: Stored in vars *1, *2, *3, an exception in *e
+
+[cmr.graph.dev] λ=>
+```
+
+At this point, you're ready to bring up the CMR Graph system components:
+
+```clj
+[cmr.graph.dev] λ=> (startup)
+```
 
 
 ## License [&#x219F;](#contents)

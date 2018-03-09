@@ -1,2 +1,9 @@
-{:httpd
-  {:port 5099}}
+{:elastic
+  {:elastic :config}
+ :httpd
+  {:port 5099}
+ :logging
+  {:level :trace
+   :nss [cmr.graph]}
+ :neo4j
+  {:neo4j :config}}
