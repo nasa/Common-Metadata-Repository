@@ -62,7 +62,7 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (if (some? (:form-params body-obj))
-                  body-obj
+                  (merge (request-options conn) body-obj)
                   (merge (post-options conn body-obj) options))
          response (client/post url params)
          {:keys [status body headers]} response

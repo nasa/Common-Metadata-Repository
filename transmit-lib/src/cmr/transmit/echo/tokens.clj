@@ -43,9 +43,9 @@
     (transmit-config/echo-system-username)
 
     (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
-                                           {:headers {"Accept" mt/json
-                                                      "Echo-Token" (transmit-config/echo-system-token)}
-                                            :form-params {:id token}})]
+                                            {:headers {"Accept" mt/json
+                                                       "Echo-Token" (transmit-config/echo-system-token)}
+                                             :form-params {:id token}})]
       (case (int status)
         200 (get-in parsed [:token_info :user_name])
         401 (errors/throw-service-error
