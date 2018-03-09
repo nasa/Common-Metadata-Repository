@@ -4,8 +4,20 @@
 
 [![][logo]][logo]
 
+#### Contents
 
-## Setup
+* [Setup](#setup-)
+   * [Neo4j](#neo4j-)
+   * [Kibana](#kibana-)
+* [Connecting](#connecting-)
+   * [Neo4j Shell](#neo4j-shell-)
+   * [Bash](#bash-)
+* [Usage](#usage-)
+* [Deploying with CMR](#deploying-with-cmr-)
+* [License](#license-)
+
+
+## Setup [&#x219F;](#contents)
 
 Start supporting infrastructure:
 
@@ -25,7 +37,7 @@ Once all the containers are running, you can access web resources via
 localhost, as shown in the following subsections:
 
 
-### Neo4j
+### Neo4j [&#x219F;](#contents)
 
 Load up the web interface for Neo4j:
 
@@ -34,7 +46,7 @@ Load up the web interface for Neo4j:
 [![][neo4j-screen-thumb]][neo4j-screen]
 
 
-### Kibana
+### Kibana [&#x219F;](#contents)
 
 Load up Kibana in a browser:
 
@@ -56,15 +68,26 @@ $ lein stop-infra
 ```
 
 
-## Connecting
+## Connecting [&#x219F;](#contents)
 
 
-### Neo4j Shell
+### Neo4j Shell [&#x219F;](#contents)
+
+You can run the Neo4j shell on the container by executing the following:
 
 * `resources/scripts/neo4j-cypher.sh`
 
+This will put you at the Cypher shell prompt:
 
-### Bash
+```
+Connected to Neo4j 3.3.3 at bolt://localhost:7687.
+Type :help for a list of available commands or :exit to exit the shell.
+Note that Cypher queries must end with a semicolon.
+neo4j
+```
+
+
+### Bash [&#x219F;](#contents)
 
 Should you wish to bring up a system shell on the containers, you can execute
 any of the following:
@@ -74,12 +97,17 @@ any of the following:
 * `resources/scripts/kibana-bash.sh` (kibana user)
 
 
-## Usage
+## Usage [&#x219F;](#contents)
 
 TBD
 
 
-## License
+## Deploying with CMR [&#x219F;](#contents)
+
+TBD
+
+
+## License [&#x219F;](#contents)
 
 Copyright © 2018 NASA
 
