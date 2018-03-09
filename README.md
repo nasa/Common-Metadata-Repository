@@ -1,6 +1,8 @@
 # cmr-graph
 
-A Clojure library designed to ... well, that part is up to you.
+*A service and API for querying CMR metadata relationships*
+
+[![][logo]][logo]
 
 
 ## Setup
@@ -86,6 +88,8 @@ your option) any later version.
 
 
 <!-- Named page links below: /-->
+
+[logo]: https://avatars2.githubusercontent.com/u/32934967?s=200&v=4
 
 [neo4j-screen]: resources/images/neo4j-web-screen.png
 [neo4j-screen-thumb]: resources/images/neo4j-web-screen-thumb.png
