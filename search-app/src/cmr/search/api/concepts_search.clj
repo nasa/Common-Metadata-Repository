@@ -1,7 +1,6 @@
 (ns cmr.search.api.concepts-search
   "Defines the API for search-by-concept in the CMR."
   (:require
-   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
