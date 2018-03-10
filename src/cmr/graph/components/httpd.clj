@@ -22,7 +22,7 @@
   [this]
   (log/info "Starting httpd component ...")
   (let [port (config/http-port this)
-        server (server/run-server rest-api/app {:port port})]
+        server (server/run-server (rest-api/app this) {:port port})]
     (log/debugf "HTTPD is listening on port %s" port)
     (log/debug "Started httpd component.")
     (assoc this :server server)))

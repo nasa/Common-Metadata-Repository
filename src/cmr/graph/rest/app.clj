@@ -1,24 +1,37 @@
 (ns cmr.graph.rest.app
   (:require
    [cheshire.core :as json]
-   [reitit.ring :as ring]))
+   [cmr.graph.health :as health]
+   [reitit.ring :as ring]
+   [ring.util.http-response :as response]
+   [taoensso.timbre :as log]))
 
-
-(defn handler-200
+(defn json-response
   [data _request]
-  {:status 200
-   :headers {"Content-Type" "application/json"}
-   :body (json/generate-string (merge {:result :ok} data))})
+  (-> data
+      json/generate-string
+      response/ok
+      (response/content-type "application/json")))
 
-(defn handler-404
+(defn health-response
+  [component _request]
+  (-> component
+      health/components-ok?
+      json/generate-string
+      response/ok
+      (response/content-type "application/json")))
+
+(defn not-found
   [_request]
-  {:status 404
-   :headers {"Content-Type" "text/plain"}
-   :body "Not Found"})
+  (response/content-type
+   (response/not-found "Not Found")
+   "plain/text"))
 
-(def app
+(defn app
+  [httpd-component]
   (ring/ring-handler
     (ring/router
-      ["/ping" {:get (partial handler-200 {:result :pong})
-                :port handler-200}])
-    handler-404))
+      [["/health" {:get (partial health-response httpd-component)}]
+       ["/ping" {:get (partial json-response {:result :pong})
+                :port (partial json-response {:result :pong})}]])
+    (constantly not-found)))
