@@ -22,6 +22,7 @@
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
+    [clojurewerkz/elastisch "3.0.0"]
     [clojurewerkz/neocons "3.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
@@ -75,18 +76,9 @@
       ]
     "ltest" ["with-profile" "+test" "ltest"]
     ;; Container Aliases
-    "start-infra"
-      ["shell"
+    "start-infra" [
+       "shell"
        "docker-compose" "-f" "resources/docker/docker-compose.yml" "up"]
     "stop-infra" [
       "shell"
-      "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]
-    "neo4j-bash" [
-      "shell"
-      "docker" "exec" "-it" "cmr-graph-neo4j" "bash"]
-    "elastic-bash" [
-      "shell"
-      "docker" "exec" "-it" "cmr-graph-elastic" "bash"]
-    "kibana-bash" [
-      "shell"
-      "docker" "exec" "-it" "cmr-graph-kibana" "bash"]})
+      "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]})

@@ -1,5 +1,6 @@
 (ns cmr.graph.components.elastic
   (:require
+   [clojurewerkz.elastisch.rest :as esr]
    [cmr.graph.components.config :as config]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
@@ -19,10 +20,14 @@
 (defn start
   [this]
   (log/info "Starting Elasticsearch component ...")
-  (let [cfg (get-in this [:config :data :elastic])]
-    (log/debug "Setting condig data for Elasticsearch:" cfg)
+  (let [conn-mgr (clj-http.conn-mgr/make-reusable-conn-manager
+                  {:timeout (config/elastic-timeout this)})
+        conn (esr/connect (format "http://%s:%s"
+                                  (config/elastic-host this)
+                                  (config/elastic-port this))
+                          {:connection-manager conn-mgr})]
     (log/debug "Started Elasticsearch component.")
-    (assoc this :conn cfg)))
+    (assoc this :conn conn)))
 
 (defn stop
   [this]

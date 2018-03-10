@@ -1,6 +1,7 @@
 (ns cmr.graph.components.neo
   (:require
-   [cmr.graph.config :as config]
+   [clojurewerkz.neocons.rest :as nr]
+   [cmr.graph.components.config :as config]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
@@ -16,13 +17,17 @@
 
 (defrecord Neo4j [conn])
 
+(nr/connect "http://localhost:7474/db/data/")
+
 (defn start
   [this]
   (log/info "Starting Neo4j component ...")
-  (let [cfg (get-in this [:config :data :neo4j])]
-    (log/debug "Setting condig data for Neo4j:" cfg)
+  (let [conn (nr/connect (format "http://%s:%s%s"
+                                 (config/neo4j-host this)
+                                 (config/neo4j-port this)
+                                 (config/neo4j-db-path this)))]
     (log/debug "Started Neo4j component.")
-    (assoc this :conn cfg)))
+    (assoc this :conn conn)))
 
 (defn stop
   [this]

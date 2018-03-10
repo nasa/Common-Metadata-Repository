@@ -21,6 +21,16 @@
 * [License](#license-)
 
 
+## Dependencies [&#x219F;](#contents)
+
+* Java
+* `lein`
+* `docker`
+* `docker-compose`
+
+Note that your Docker installation needs have at least 4GB of memory allocate
+to it in order for Elasticsearch and Kibana to run.
+
 
 ## Setup [&#x219F;](#contents)
 

@@ -1,9 +1,13 @@
 {:elastic
-  {:elastic :config}
+  {:host "127.0.0.1"
+   :port 9211
+   :timeout 10}
  :httpd
   {:port 5099}
  :logging
   {:level :trace
    :nss [cmr.graph]}
  :neo4j
-  {:neo4j :config}}
+  {:host "127.0.0.1"
+   :port 7474
+   :db-path "/db/data"}}

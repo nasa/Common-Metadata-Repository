@@ -5,12 +5,28 @@
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- get-cfg
   [system]
   (get-in system [:config :data]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn elastic-host
+  [system]
+  (get-in (get-cfg system) [:elastic :host]))
+
+(defn elastic-port
+  [system]
+  (get-in (get-cfg system) [:elastic :port]))
+
+(defn elastic-timeout
+  [system]
+  (get-in (get-cfg system) [:elastic :timeout]))
 
 (defn http-port
   [system]
@@ -23,6 +39,18 @@
 (defn log-nss
   [system]
   (get-in (get-cfg system) [:logging :nss]))
+
+(defn neo4j-host
+  [system]
+  (get-in (get-cfg system) [:neo4j :host]))
+
+(defn neo4j-port
+  [system]
+  (get-in (get-cfg system) [:neo4j :port]))
+
+(defn neo4j-db-path
+  [system]
+  (get-in (get-cfg system) [:neo4j :db-path]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
