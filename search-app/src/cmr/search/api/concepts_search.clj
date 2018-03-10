@@ -83,7 +83,7 @@
 (defn- reject-all-granule-query?
   "Returns true if the all granule query will be rejected."
   [headers]
-  (and (= false (allow-all-granule-params-flag))
+  (and (false? (allow-all-granule-params-flag))
        (or (not (some? (get headers "client-id")))
            (not (= "true" (get headers (allow-all-gran-header)))))))
 
