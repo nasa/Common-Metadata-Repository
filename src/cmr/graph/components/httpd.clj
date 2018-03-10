@@ -2,6 +2,7 @@
   (:require
     [com.stuartsierra.component :as component]
     [cmr.graph.components.config :as config]
+    [cmr.graph.rest.app :as rest-api]
     [org.httpkit.server :as server]
     [taoensso.timbre :as log]))
 
@@ -20,16 +21,11 @@
 (defn start
   [this]
   (log/info "Starting httpd component ...")
-  ; (let [port (config/port this)
-  ;       docroot (config/output-dir this)
-  ;       main-handler {}
-  ;       site (ring-file/wrap-file main-handler docroot)
-  ;       server (server/run-server site {:port port})]
-  ;   (log/debugf "Serving files from %s and listening on port %s"
-  ;               docroot port)
-  ;   (log/debug "Started httpd component.")
-  ;   (assoc this :server server)))
-  (assoc this :server (fn [] "server placeholder")))
+  (let [port (config/http-port this)
+        server (server/run-server rest-api/app {:port port})]
+    (log/debugf "HTTPD is listening on port %s" port)
+    (log/debug "Started httpd component.")
+    (assoc this :server server)))
 
 (defn stop
   [this]
