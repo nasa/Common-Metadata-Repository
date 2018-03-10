@@ -75,10 +75,13 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
-    ;; Container Aliases
+    ;; Docker Aliases
+    "docker-clean" [
+      "shell"
+      "docker" "system" "prune" "-f"]
     "start-infra" [
-       "shell"
-       "docker-compose" "-f" "resources/docker/docker-compose.yml" "up"]
+      "shell"
+      "docker-compose" "-f" "resources/docker/docker-compose.yml" "up"]
     "stop-infra" [
       "shell"
       "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]})
