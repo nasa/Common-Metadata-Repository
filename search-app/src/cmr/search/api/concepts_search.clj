@@ -115,8 +115,9 @@
   "This function is used for remove-map-keys function.
    The keys will be removed if their values are empty strings, or if it's sequential and
    only contain empty strings.
-   Note:  When you pass a parameter with a = sign, but without a value,
-   it becomes an empty string in the params."
+   Note:  When you pass a parameter without = sign, it is considered a nil value and get  
+   filtered out before getting to the params; with the = sign, no value, it becomes empty 
+   string."
   [v]
   (or (= "" v)
       (when (sequential? v)
