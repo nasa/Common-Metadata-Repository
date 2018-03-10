@@ -199,10 +199,19 @@ This will start the following CMR Graph components:
 
 * Configuration
 * Logging
-* An Elasticsearch connection
 * A Neo4j connection
+* An Elasticsearch connection
 * The CMR Graph HTTP server for the REST API
 
+as the log messages show:
+
+```
+2018-03-10T00:07:18.922 [nREPL-worker-1] INFO cmr.graph.components.config:63 - Starting config component ...
+2018-03-10T00:07:18.924 [nREPL-worker-1] INFO cmr.graph.components.logging:22 - Starting logging component ...
+2018-03-10T00:07:18.925 [nREPL-worker-1] INFO cmr.graph.components.neo:24 - Starting Neo4j component ...
+2018-03-10T00:07:18.933 [nREPL-worker-1] INFO cmr.graph.components.elastic:22 - Starting Elasticsearch component ...
+2018-03-10T00:07:18.934 [nREPL-worker-1] INFO cmr.graph.components.httpd:23 - Starting httpd component ...
+```
 
 ## License [&#x219F;](#contents)
 
