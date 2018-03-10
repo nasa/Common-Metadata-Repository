@@ -111,8 +111,8 @@
                                   [concept-id-param])]
       (some #(not (re-find #"^[GC]" %)) concept-id-param-list))))
 
-(defn function-for-remove-map-keys
-  "This function is used for remove-map-keys function.
+(defn empty-string-values? 
+  "This function is used by remove-map-keys function.
    The keys will be removed if their values are empty strings, or if it's sequential and
    only contain empty strings.
    Note:  When you pass a parameter without = sign, it is considered a nil value and get  
@@ -138,7 +138,7 @@
     ;; Check to see if any concept-id(s) are not starting with C or G. If so, bad request.
     ;; otherwise, check to see if it's all-granule-params?, if so, handle it.
     (let [params (lp/replace-parameter-aliases (util/map-keys->kebab-case params))
-          params (util/remove-map-keys function-for-remove-map-keys params)
+          params (util/remove-map-keys empty-string-values? params)
           constraints (select-keys params all-gran-validation/granule-limiting-search-fields)
           concept-id-param (:concept-id constraints)
           illegal-concept-id-msg (str "Granule query concept_id param [" concept-id-param
