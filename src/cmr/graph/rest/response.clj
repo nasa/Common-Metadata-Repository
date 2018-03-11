@@ -5,7 +5,7 @@
    [taoensso.timbre :as log]))
 
 (defn json
-  [data _request]
+  [_request data]
   (-> data
       json/generate-string
       response/ok
