@@ -89,15 +89,15 @@
     (if (= uniq-keys #{:required})
       ;; Using oneOfs with each only specifying :required
       (let [field-sets (mapv (comp set (partial mapv keyword)) (mapv :required one-of))
-              all-required-fields (reduce into field-sets)
-              all-fields (set (keys (:properties schema-type)))
-              one-of-types (for [field-set field-sets
-                                 :let [excluded-fields (set/difference all-required-fields field-set)]]
-                             (-> schema-type
-                                 (update-in [:properties] #(apply dissoc % excluded-fields))
-                                 (update-in [:required] concat field-set)
-                                 (dissoc :oneOf)))]
-          (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of-types)))
+            all-required-fields (reduce into field-sets)
+            all-fields (set (keys (:properties schema-type)))
+            one-of-types (for [field-set field-sets
+                               :let [excluded-fields (set/difference all-required-fields field-set)]]
+                           (-> schema-type
+                               (update-in [:properties] #(apply dissoc % excluded-fields))
+                               (update-in [:required] concat field-set)
+                               (dissoc :oneOf)))]
+        (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of-types)))
       ;; Using oneOf with each specifying the full object mapping
       (do
         ;; These fields aren't supported in schema-type if oneOf is used with other fields

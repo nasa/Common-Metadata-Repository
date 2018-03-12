@@ -30,7 +30,6 @@
         find-var
         var-get)))
 
-
 (def ^:private MAX_LINE_SIZE
   "Defines the maximum line size for Clojure files."
   100)
