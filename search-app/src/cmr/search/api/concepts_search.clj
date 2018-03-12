@@ -81,7 +81,7 @@
       "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
 
 (defn- reject-all-granule-query?
-  "Returns true if the all granule query will be rejected."
+  "Return true if the all granule query will be rejected."
   [headers]
   (and (false? (allow-all-granule-params-flag))
        (or (not (some? (get headers "client-id")))
@@ -119,9 +119,9 @@
    filtered out before getting to the params; with the = sign, no value, it becomes empty 
    string."
   [v]
-  (or (= "" v)
-      (when (sequential? v)
-        (= [] (remove #(= "" %) v)))))
+  (if (sequential? v)
+    (empty? (remove #(= "" %) v))
+    (= "" v)))
 
 (defn- all-granule-params?
   "Returns true if it's a all granule query params.
@@ -137,12 +137,15 @@
   (when (= :granule concept-type)
     ;; Check to see if any concept-id(s) are not starting with C or G. If so, bad request.
     ;; otherwise, check to see if it's all-granule-params?, if so, handle it.
-    (let [params (lp/replace-parameter-aliases (util/map-keys->kebab-case params))
-          params (util/remove-map-keys empty-string-values? params)
+    (let [params (->> params
+                      util/map-keys->kebab-case
+                      lp/replace-parameter-aliases
+                      (util/remove-map-keys empty-string-values?)) 
           constraints (select-keys params all-gran-validation/granule-limiting-search-fields)
           concept-id-param (:concept-id constraints)
-          illegal-concept-id-msg (str "Granule query concept_id param [" concept-id-param
-                                      "] contains concept ids not starting with G or C.")]
+          illegal-concept-id-msg (str "Invalid concept_id [" concept-id-param
+                                      "]. For granule queries concept_id must be"
+                                      " either a granule or collection concept ID.")]
       (if (illegal-concept-id-in-granule-query? concept-id-param)
         (svc-errors/throw-service-error :bad-request illegal-concept-id-msg) 
         (when (all-granule-params? scroll-id constraints) 
