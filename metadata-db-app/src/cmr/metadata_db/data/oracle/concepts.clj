@@ -296,7 +296,8 @@
    (let [table (tables/get-table-name provider :granule)
          {:keys [provider-id small]} provider
          stmt (if small
-                [(format "select a.concept_id, a.parent_collection_id, a.deleted
+                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a SMALL_PROV_GRANULES_CID_REV) */
+                          a.concept_id, a.parent_collection_id, a.deleted
                           from %s a,
                           (select concept_id, max(revision_id) revision_id
                           from %s where provider_id = '%s'
@@ -304,13 +305,14 @@
                           where a.concept_id = b.concept_id
                           and a.revision_id = b.revision_id"
                          table table provider-id native-id)]
-                [(format "select a.concept_id, a.parent_collection_id, a.deleted
+                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a %s_GRANULES_CID_REV) */
+                          a.concept_id, a.parent_collection_id, a.deleted
                           from %s a,
                           (select concept_id, max(revision_id) revision_id
                           from %s where native_id = '%s' group by concept_id) b
                           where a.concept_id = b.concept_id
                           and a.revision_id = b.revision_id"
-                         table table native-id)])
+                         provider-id table table native-id)])
          result (first (su/query db stmt))
          {:keys [concept_id parent_collection_id deleted]} result
          deleted (when deleted (= 1 (int deleted)))]
