@@ -25,6 +25,7 @@
     [cheshire "5.8.0"]
     [clojurewerkz/elastisch "3.0.0"]
     [clojurewerkz/neocons "3.2.0"]
+    [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
     [http-kit "2.2.0"]
@@ -33,6 +34,7 @@
     [org.clojure/clojure "1.9.0"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
+  :main cmr.graph.core
   :profiles {
     :ubercompile {
       :aot :all}
@@ -79,6 +81,9 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    ;; Application
+    "start-cmr-graph"
+      ["trampoline" "run"]
     ;; Docker Aliases
     "docker-clean" [
       "shell"

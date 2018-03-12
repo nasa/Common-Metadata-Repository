@@ -4,6 +4,7 @@
 
 [![][logo]][logo]
 
+
 #### Contents
 
 * [Setup](#setup-)
@@ -80,6 +81,13 @@ Stopping (in a different terminal) is done in a similar manner as start:
 
 ```
 $ lein stop-infra
+```
+
+If you don't need the REPL, you can start the CMR Graph system with the
+following:
+
+```
+$ lein start-cmr-graph
 ```
 
 
@@ -226,6 +234,7 @@ as the log messages show:
 2018-03-10T00:07:18.933 [nREPL-worker-1] INFO cmr.graph.components.elastic:22 - Starting Elasticsearch component ...
 2018-03-10T00:07:18.934 [nREPL-worker-1] INFO cmr.graph.components.httpd:23 - Starting httpd component ...
 ```
+
 
 ## License [&#x219F;](#contents)
 
