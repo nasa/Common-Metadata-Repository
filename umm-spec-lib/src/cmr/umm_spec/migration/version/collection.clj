@@ -239,4 +239,6 @@
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
-      coll-progress-migration/migrate-down))
+      coll-progress-migration/migrate-down
+      (util/update-in-all [:RelatedUrls :GetData] dissoc :MimeType)
+      (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)))
