@@ -2,11 +2,11 @@
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
     [clojure.string :as string]
+    [cmr.common.util :as util]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
@@ -16,6 +16,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
     [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
@@ -72,6 +73,28 @@
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
 
+(defn- generate-doi
+  "Returns the DOI field."
+  [c]
+  (let [doi (util/remove-nil-keys (dissoc (:DOI c) :MissingReason :Explanation))]
+    (when (seq doi)
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+         (when-let [authority (:Authority doi)]
+           [:gmd:authority
+            [:gmd:CI_Citation
+             [:gmd:title [:gco:CharacterString ""]]
+             [:gmd:date ""]
+             [:gmd:citedResponsibleParty
+              [:gmd:CI_ResponsibleParty
+               [:gmd:organisationName [:gco:CharacterString authority]]
+               [:gmd:role
+                [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                   :codeListValue ""} "authority"]]]]]])
+         [:gmd:code [:gco:CharacterString (:DOI doi)]]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         [:gmd:description [:gco:CharacterString "DOI"]]]])))
+
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -104,23 +127,7 @@
              [:gmd:MD_Identifier
               [:gmd:code (char-string (:Version c))]
               [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]
-            (when-let [doi (:DOI c)]
-              [:gmd:identifier
-               [:gmd:MD_Identifier
-                 (when-let [authority (:Authority doi)]
-                   [:gmd:authority
-                    [:gmd:CI_Citation
-                     [:gmd:title [:gco:CharacterString ""]]
-                     [:gmd:date ""]
-                     [:gmd:citedResponsibleParty
-                      [:gmd:CI_ResponsibleParty
-                       [:gmd:organisationName [:gco:CharacterString authority]]
-                       [:gmd:role
-                        [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                           :codeListValue ""} "authority"]]]]]])
-                 [:gmd:code [:gco:CharacterString (:DOI doi)]]
-                 [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-                 [:gmd:description [:gco:CharacterString "DOI"]]]])
+            (generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
              [:gmd:identifier
               [:gmd:MD_Identifier
@@ -155,41 +162,41 @@
               [:gmd:keyword
                (char-string (kws/smap-keyword-str instrument))])]]
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
-        (iso-topic-categories/generate-iso-topic-categories c)
-        (when (first (:TilingIdentificationSystems c))
-         [:gmd:extent
-          [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
-           [:gmd:description
-            [:gco:CharacterString "Tiling Identitfication System"]]
-              (tiling/tiling-system-elements c)]])
-         [:gmd:extent
-          [:gmd:EX_Extent
-           (generate-spatial-extent (:SpatialExtent c))
-           (iso19115-spatial-conversion/generate-vertical-domain c)
-           (for [temporal (:TemporalExtents c)
-                 rdt (:RangeDateTimes temporal)]
-             [:gmd:temporalElement
-              [:gmd:EX_TemporalExtent
-               [:gmd:extent
-                [:gml:TimePeriod {:gml:id (su/generate-id)}
-                 [:gml:beginPosition (:BeginningDateTime rdt)]
-                 (let [ends-at-present (:EndsAtPresentFlag temporal)]
-                   [:gml:endPosition (if ends-at-present
-                                       {:indeterminatePosition "now"}
-                                       {})
-                    (when-not ends-at-present
-                      (or (:EndingDateTime rdt) ""))])]]]])
-           (for [temporal (:TemporalExtents c)
-                 date (:SingleDateTimes temporal)]
-             [:gmd:temporalElement
-              [:gmd:EX_TemporalExtent
-               [:gmd:extent
-                [:gml:TimeInstant {:gml:id (su/generate-id)}
-                 [:gml:timePosition date]]]]])]]
+          (iso-topic-categories/generate-iso-topic-categories c)
+          (when (first (:TilingIdentificationSystems c))
+            [:gmd:extent
+              [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+                [:gmd:description
+                  [:gco:CharacterString "Tiling Identitfication System"]]
+                (tiling/tiling-system-elements c)]])
+          [:gmd:extent
+           [:gmd:EX_Extent
+            (generate-spatial-extent (:SpatialExtent c))
+            (iso19115-spatial-conversion/generate-vertical-domain c)
+            (for [temporal (:TemporalExtents c)
+                  rdt (:RangeDateTimes temporal)]
+              [:gmd:temporalElement
+               [:gmd:EX_TemporalExtent
+                [:gmd:extent
+                 [:gml:TimePeriod {:gml:id (su/generate-id)}
+                  [:gml:beginPosition (:BeginningDateTime rdt)]
+                  (let [ends-at-present (:EndsAtPresentFlag temporal)]
+                    [:gml:endPosition (if ends-at-present
+                                        {:indeterminatePosition "now"}
+                                        {})
+                     (when-not ends-at-present
+                       (or (:EndingDateTime rdt) ""))])]]]])
+            (for [temporal (:TemporalExtents c)
+                  date (:SingleDateTimes temporal)]
+              [:gmd:temporalElement
+               [:gmd:EX_TemporalExtent
+                [:gmd:extent
+                 [:gml:TimeInstant {:gml:id (su/generate-id)}
+                  [:gml:timePosition date]]]]])]]
 
-        (when processing-level
-         [:gmd:processingLevel
-          (proc-level/generate-iso-processing-level processing-level)])]]
+          (when processing-level
+           [:gmd:processingLevel
+            (proc-level/generate-iso-processing-level processing-level)])]]
         [:gmd:identificationInfo
          [:gmd:MD_DataIdentification
           [:gmd:citation

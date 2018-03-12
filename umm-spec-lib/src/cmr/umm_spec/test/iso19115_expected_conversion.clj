@@ -54,6 +54,13 @@
       (update :Name #(su/with-default % true))
       (update :Description #(str (su/with-default % true) " PublicationReference:")))))
 
+(defn- expected-doi-in-publication-reference
+  "Returns the expected DOI field in a publication reference."
+  [doi]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :Explanation :MissingReason))]
+    (when (seq updated-doi)
+      updated-doi)))
+
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
   [pub-refs]
@@ -61,7 +68,7 @@
              :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :PublicationPlace nil)
-             (update-in [:DOI] (fn [doi] (dissoc doi :Authority :Explanation :MissingReason)))
+             (update-in [:DOI] expected-doi-in-publication-reference)
              (update-in [:PublicationDate] conversion-util/date-time->date)
              (update :ISBN su/format-isbn)
              (update :OnlineResource expected-online-resource)))))
