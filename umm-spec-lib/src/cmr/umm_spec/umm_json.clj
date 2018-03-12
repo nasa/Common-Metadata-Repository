@@ -53,6 +53,7 @@
   (fn [schema type-name-path type-name schema-type js-data]
     (cond
       (:type schema-type) (:type schema-type)
+      (:oneOf schema-type) "oneOf"
       (:$ref schema-type) :$ref)))
 
 (defmethod parse-json :default
@@ -63,6 +64,17 @@
 ;; An object is parsed by finding the equivalent clojure record and it's map->record-name constructor
 ;; function.
 (defmethod parse-json "object"
+  [schema type-name-path type-name schema-type js-data]
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+        merged-prop-types (apply merge (:properties schema-type)
+                                 (map :properties (:oneOf schema-type)))
+        properties (into {}
+                         (for [[k v] js-data
+                               :let [sub-type-def (get merged-prop-types k)]]
+                           [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
+    (constructor-fn properties)))
+
+(defmethod parse-json "oneOf"
   [schema type-name-path type-name schema-type js-data]
   (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
         merged-prop-types (apply merge (:properties schema-type)
