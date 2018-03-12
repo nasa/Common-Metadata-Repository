@@ -198,11 +198,11 @@
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (let [umm-record (js/parse-umm-c
-                        (assoc umm-record
-                               :DataDates [{:Date (t/date-time 2012)
-                                            :Type "CREATE"}
-                                           {:Date (t/date-time 2013)
-                                            :Type "UPDATE"}]))
+                      (assoc umm-record
+                             :DataDates [{:Date (t/date-time 2012)
+                                          :Type "CREATE"}
+                                         {:Date (t/date-time 2013)
+                                          :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison
