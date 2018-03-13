@@ -219,9 +219,10 @@
 (defn expected-dif-doi
   "DIF9 and DIF10 do not have several DOI fields so remove them."
   [doi]
-  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :MissingReason :Explanation))]
+  (let [updated-doi (util/remove-nil-keys
+                     (dissoc doi :Authority :MissingReason :Explanation))]
     (when (seq updated-doi)
-      updated-doi)))
+      (cmn/map->DoiType updated-doi))))
 
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"
