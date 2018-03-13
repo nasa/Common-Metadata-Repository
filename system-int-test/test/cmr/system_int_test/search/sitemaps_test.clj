@@ -42,7 +42,7 @@
                                          n (range 1 4)]
                                      (d/ingest-umm-spec-collection
                                       p
-                                      (-> exp-conv/example-collection-record
+                                      (-> exp-conv/curr-ingest-ver-example-collection-record
                                           (assoc :ShortName (str "s" n))
                                           (assoc :EntryTitle (str "Collection Item " n)))
                                       {:format :umm-json
@@ -51,7 +51,7 @@
          [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
                                      (d/ingest-umm-spec-collection
                                        "PROV3"
-                                       (-> exp-conv/example-collection-record
+                                       (-> exp-conv/curr-ingest-ver-example-collection-record
                                            (assoc :ShortName (str "s" n))
                                            (assoc :EntryTitle (str "Collection Item " n))
                                            (assoc :DOI (cm/map->DoiType
