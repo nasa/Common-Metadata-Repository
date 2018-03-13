@@ -103,13 +103,7 @@
 
 (defmethod prepare-batch :service
   [context batch options]
-  ;; Get the service associations as well.
-  (let [batch (map (fn [concept]
-                     (let [service-associations (meta-db/get-associations-for-service
-                                                 context concept)]
-                       (assoc concept :service-associations service-associations)))
-                   batch)]
-    (es/prepare-batch context (filter-expired-concepts batch) options)))
+  (es/prepare-batch context (filter-expired-concepts batch) options))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
@@ -411,7 +405,7 @@
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
-(defn- concept-id->indexed-concept
+(defn- index-associated-concept
   "Given a concept id, index the concept to which it refers."
   [context concept-id options]
   (let [concept (meta-db/get-latest-concept context concept-id)
@@ -421,14 +415,8 @@
 (defn- index-associated-variable
   "Index the associated variable concept of the given variable association concept."
   [context concept options]
-  (concept-id->indexed-concept
+  (index-associated-concept
    context (get-in concept [:extra-fields :variable-concept-id]) options))
-
-(defn- index-associated-service
-  "Index the associated service concept of the given service association concept."
-  [context concept options]
-  (concept-id->indexed-concept
-   context (get-in concept [:extra-fields :service-concept-id]) options))
 
 (defn- reindex-associated-variables
   "Reindex variables associated with the collection"
@@ -436,7 +424,7 @@
   (let [var-associations (meta-db/get-associations-by-collection-concept-id
                           context coll-concept-id coll-revision-id :variable-association)]
     (doseq [association var-associations]
-      (concept-id->indexed-concept
+      (index-associated-concept
        context (get-in association [:extra-fields :variable-concept-id]) {}))))
 
 (defmethod index-concept :tag-association
@@ -451,9 +439,7 @@
 
 (defmethod index-concept :service-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options)
-  (index-associated-service context concept {})
-  (index-associated-service context concept {:all-revisions-index? true}))
+  (index-associated-collection context concept options))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
