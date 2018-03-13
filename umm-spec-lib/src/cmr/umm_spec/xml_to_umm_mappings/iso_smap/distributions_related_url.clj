@@ -45,7 +45,7 @@
 (def service-online-resource-xpath (str "srv:containsOperations/srv:SV_OperationMetadata/"
                                         "srv:connectPoint/gmd:CI_OnlineResource"))
 
-(def distributor-xpaths-map 
+(def distributor-xpaths-map
   {:Root distributor-xpath
    :Fees distributor-fees-xpath
    :Format distributor-format-xpath
@@ -56,6 +56,6 @@
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (sdru/parse-online-and-service-urls
-                 doc sanitize? service-url-path  distributor-xpaths-map service-online-resource-xpath)
+                 doc sanitize? service-url-path distributor-xpaths-map service-online-resource-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
                (sdru/parse-publication-urls doc sanitize? publication-url-path))))
