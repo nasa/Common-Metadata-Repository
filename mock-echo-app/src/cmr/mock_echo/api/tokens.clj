@@ -45,6 +45,7 @@
   (token-db/delete context token-id))
 
 (defn- get-token-info-mock
+  "Returns the mock token info for the token with the given token id"
   [context token-id]
   (let [{:keys [username client_id id]} (get-token-or-error context token-id)]
     {:token_info {:user_name username
