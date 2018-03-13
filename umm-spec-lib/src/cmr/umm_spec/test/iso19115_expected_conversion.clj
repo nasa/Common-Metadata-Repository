@@ -59,7 +59,7 @@
   [doi]
   (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :Explanation :MissingReason))]
     (when (seq updated-doi)
-      updated-doi)))
+      (cmn/map->DoiType updated-doi))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"

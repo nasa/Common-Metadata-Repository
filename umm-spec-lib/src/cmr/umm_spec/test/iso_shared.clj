@@ -98,4 +98,4 @@
   [doi]
   (let [updated-doi (util/remove-nil-keys (dissoc doi :MissingReason :Explanation))]
     (when (seq updated-doi)
-      updated-doi)))
+      (cmn/map->DoiType updated-doi))))
