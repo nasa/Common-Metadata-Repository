@@ -108,7 +108,7 @@
                                                          :long-name "c8-dif10"})
                            {:format :dif10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         ;; An item ingested with and XML preprocessing line to ensure this is tested
@@ -215,7 +215,7 @@
         c2-echo (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "c2-echo"})
                           {:format :echo10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
@@ -293,7 +293,7 @@
                            {:format :dif10})
 
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
 
@@ -776,7 +776,7 @@
                 {:format :iso19115})
 
       (d/ingest "PROV1"
-                (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
+                (assoc exp-conv/curr-ingest-ver-example-collection-record :ShortName "S-UMM-JSON")
                 {:format :umm-json
                  :accept-format :json})
       (index/wait-until-indexed)

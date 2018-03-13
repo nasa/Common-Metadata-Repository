@@ -146,7 +146,7 @@
           ;; Ingest collections that will use those humanizers
           coll1 (d/ingest-umm-spec-collection
                   "PROV1"
-                  (assoc exp-conv/example-collection-record
+                  (assoc exp-conv/curr-ingest-ver-example-collection-record
                          :ScienceKeywords [{:Category "earth science"
                                              :Topic "Bioosphere"
                                              :Term "Term1"}]
@@ -177,7 +177,7 @@
               _ (is (= humanizers returned-humanizers))
               coll2 (d/ingest-umm-spec-collection
                       "PROV1"
-                      (assoc exp-conv/example-collection-record
+                      (assoc exp-conv/curr-ingest-ver-example-collection-record
                              :ShortName "NewSN"
                              :EntryTitle "New Entry title"
                              :ScienceKeywords [{:Category "earth science"
@@ -206,7 +206,7 @@
     ;; ingest a collection and refresh cache to avoid the wait and retry in the get-all-collections code.
     (d/ingest-umm-spec-collection
        "PROV1"
-       (assoc exp-conv/example-collection-record
+       (assoc exp-conv/curr-ingest-ver-example-collection-record
               :ScienceKeywords [{:Category "earth science"
                                  :Topic "Bioosphere"
                                  :Term "Term1"}]
@@ -227,7 +227,7 @@
       ;; ingest a collection and refresh cache to avoid the wait and retry in the get-all-collections code.
       (d/ingest-umm-spec-collection
        "PROV1"
-       (assoc exp-conv/example-collection-record
+       (assoc exp-conv/curr-ingest-ver-example-collection-record
               :ScienceKeywords [{:Category "earth science"
                                  :Topic "Bioosphere"
                                  :Term "Term1"}]

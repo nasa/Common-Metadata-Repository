@@ -47,7 +47,9 @@
   "Generate operation description from GetData values"
   [Format MimeType]
   (let [description (format "Format: %s " (su/with-default Format))
-        description (str description (format "MimeType: %s " (su/with-default MimeType)))]
+        description (if (seq MimeType)
+                      (str description (format "MimeType: %s " (su/with-default MimeType)))
+                      description)]
     (str/trim description)))
 
 (defn generate-browse-urls
@@ -150,7 +152,9 @@
   (let [operation-description (format "MimeType: %s " (su/with-default MimeType))
         operation-description (str operation-description (format "DataID: %s " (su/with-default DataID)))
         operation-description (str operation-description (format "DataType: %s " (su/with-default DataType)))
-        operation-description (str operation-description (format "Format: %s " (su/with-default Format)))]
+        operation-description (if (seq Format)
+                                (str operation-description (format "Format: %s " (su/with-default Format)))
+                                operation-description)]
     (str/trim operation-description)))
 
 (defn generate-service-related-url

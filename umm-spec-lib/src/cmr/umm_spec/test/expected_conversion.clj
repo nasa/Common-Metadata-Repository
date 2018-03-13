@@ -8,6 +8,7 @@
     [clojure.string :as str]
     [cmr.common.util :as util :refer [update-in-each]]
     [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.migration.version.core :as core]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.models.umm-service-models]
     [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
@@ -325,6 +326,9 @@
                            :OnlineResource {:Linkage "http://www.foo.com"
                                             :Name "Data Set Citation"
                                             :Description "Data Set Citation"}}]}))
+
+(def curr-ingest-ver-example-collection-record
+  (core/migrate-umm nil :collection "1.10" "1.9" example-collection-record))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the

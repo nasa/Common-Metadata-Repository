@@ -124,12 +124,12 @@
                             :DataID (su/with-default DataID sanitize?)
                             :Protocol (su/with-default protocol sanitize?)
                             :DataType (su/with-default DataType sanitize?)
-                            :Format (su/with-default Format sanitize?)
+                            :Format Format
                             :URI (when-not (empty? uris)
                                    uris)})}))))
 
 (defn- parse-distributor-format
-  "Parses distributor format string, returns MimeTyp and Format"
+  "Parses distributor format string, returns MimeType and Format"
   [distributor distributor-xpaths-map]
   (when-let [format-name (value-of distributor (get distributor-xpaths-map :Format))]
     (let [mime-type-index (get-index-or-nil format-name "MimeType:")
@@ -174,19 +174,16 @@
                 (or (:Subtype types-and-desc) (:Subtype service-url)))
       :Description (:Description types-and-desc)}
      (case type
-       "GET DATA" (when (or (:Checksum types-and-desc)
-                            (some #(not (= "Not provided" %)) (vals format))
-                            fees unit size)
-                    {:GetData {:Format (su/with-default (:Format format) sanitize?)
-                               :Size (if sanitize?
-                                       (or size 0.0)
-                                       size)
-                               :Unit (if sanitize?
-                                       (or unit "KB")
-                                       unit)
-                               :Fees (su/with-default fees sanitize?)
-                               :Checksum (su/with-default (:Checksum types-and-desc) sanitize?)
-                               :MimeType (su/with-default (:MimeType format) sanitize?)}})
+       "GET DATA" {:GetData {:Format (su/with-default (:Format format) sanitize?)
+                             :Size (if sanitize?
+                                     (or size 0.0)
+                                     size)
+                             :Unit (if sanitize?
+                                     (or unit "KB")
+                                     unit)
+                             :Fees fees
+                             :Checksum (:Checksum types-and-desc)
+                             :MimeType (:MimeType format)}}
        "GET SERVICE" (if (some #(not (= "Not provided" %)) (vals (:GetService service-url)))
                        {:GetService (:GetService service-url)}
                        {:GetService nil})

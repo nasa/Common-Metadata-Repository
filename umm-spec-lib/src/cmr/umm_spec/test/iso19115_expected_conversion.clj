@@ -80,6 +80,19 @@
           (-> related-url
               (update :URL #(url/format-url % true)))))))
 
+(defn- expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (and (= "DistributionURL" (:URLContentType related-url))
+           (= "GET DATA" (:Type related-url)))
+    (if (nil? (:GetData related-url))
+      (assoc related-url :GetData (cmn/map->GetDataType
+                                   {:Format su/not-provided
+                                    :Size 0.0
+                                    :Unit "KB"}))
+      related-url)
+    related-url))
+
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
   [related-url]
@@ -89,13 +102,13 @@
       (if (and (= "DistributionURL" (:URLContentType related-url))
                (= "GET SERVICE" (:Type related-url)))
           (if (nil? (:GetService related-url))
-            (assoc related-url :GetService {:MimeType su/not-provided
-                                            :Protocol su/not-provided
-                                            :Format su/not-provided
-                                            :FullName su/not-provided
-                                            :DataID su/not-provided
-                                            :DataType su/not-provided
-                                            :URI URI})
+            (assoc related-url :GetService (cmn/map->GetServiceType
+                                              {:MimeType su/not-provided
+                                               :Protocol su/not-provided
+                                               :FullName su/not-provided
+                                               :DataID su/not-provided
+                                               :DataType su/not-provided
+                                               :URI URI}))
             (assoc-in related-url [:GetService :URI] URI))
           (dissoc related-url :GetService))))
 
@@ -112,6 +125,7 @@
            (-> related-url
                (dissoc :FileSize :MimeType)
                expected-related-url-get-service
+               expected-related-url-get-data
                (update :Description #(when % (string/trim %)))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
