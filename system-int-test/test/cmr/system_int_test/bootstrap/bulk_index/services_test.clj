@@ -129,7 +129,7 @@
                                    {:deleted true
                                     :user-id "user1"})
            svc3 (service/ingest-service svc3-concept)]
-       ;; Before bulk indexing, search for variables found nothing
+       ;; Before bulk indexing, search for services found nothing
        (du/assert-service-umm-jsons-match
         umm-version/current-service-version
         []
@@ -139,18 +139,18 @@
        (bootstrap/bulk-index-services "PROV1")
        (index/wait-until-indexed)
 
-       ;; After bulk indexing a provider, search found all variable revisions
+       ;; After bulk indexing a provider, search found all service revisions
        ;; of that provider
        (du/assert-service-umm-jsons-match
         umm-version/current-service-version
         [svc1-1 svc1-2-tombstone svc1-3]
         (search/find-concepts-umm-json :service {:all-revisions true}))
 
-       ;; Now index all variables
+       ;; Now index all services
        (bootstrap/bulk-index-services)
        (index/wait-until-indexed)
 
-       ;; After bulk indexing, search for variables found all revisions
+       ;; After bulk indexing, search for services found all revisions
        (du/assert-service-umm-jsons-match
         umm-version/current-service-version
         [svc1-1 svc1-2-tombstone svc1-3 svc2-1 svc2-2 svc2-3-tombstone svc3]
