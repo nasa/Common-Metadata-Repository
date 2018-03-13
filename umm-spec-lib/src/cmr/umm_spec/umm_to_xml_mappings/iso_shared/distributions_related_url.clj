@@ -67,7 +67,8 @@
 
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url.
-  encode-types=true will encode the Type and Subtype into the description field."
+  Used when mapping data contacts. encode-types=true will encode the Type and Subtype into the
+  description field."
   [online-resource-url open-tag encode-types]
   (when online-resource-url
    (let [{:keys [URL Description Type]}  online-resource-url
@@ -93,9 +94,8 @@
            {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
             :codeListValue code}]]]])))
 
-(defn generate-online-resource-url2
-  "Returns content generator instructions for an online resource url or access url.
-  encode-types=true will encode the Type and Subtype into the description field."
+(defn generate-distributor-online-resource-url
+  "Returns content generator instructions for an online resource url along with the distributor."
   [online-resource-url open-tag encode-types]
   (when online-resource-url
    (let [{:keys [URL Description Type GetData]}  online-resource-url
@@ -270,4 +270,4 @@
                  [:gco:Real (:Size size)]]]])
             (when (zero? idx))]])
         (for [related-url related-urls]
-          (generate-online-resource-url2 related-url :gmd:onLine true))))))
+          (generate-distributor-online-resource-url related-url :gmd:onLine true))))))

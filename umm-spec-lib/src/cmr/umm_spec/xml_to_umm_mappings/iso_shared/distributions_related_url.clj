@@ -136,8 +136,8 @@
           format-index (get-index-or-nil format-name "Format:")]
       {:Format (when format-index
                  (let [format (subs format-name
-                                          format-index
-                                          (or mime-type-index (count format-name)))]
+                                    format-index
+                                    (or mime-type-index (count format-name)))]
                    (str/trim (subs format (inc (.indexOf format ":"))))))
        :MimeType (when mime-type-index
                    (let [mime-type (subs format-name mime-type-index)]
