@@ -107,6 +107,7 @@
               url-link (value-of url "gmd:linkage/gmd:URL")
               full-name (value-of service "srv:containsOperations/srv:SV_OperationMetadata/srv:operationName/gco:CharacterString")
               protocol (value-of url "gmd:protocol/gco:CharacterString")
+              description (char-string-value url "gmd:description")
               ;;http is currently invalid in the schema, use HTTP instead
               protocol (if (= "http" protocol)
                          "HTTP"
@@ -115,7 +116,8 @@
               {:keys [MimeType DataID DataType Format]} (parse-operation-description operation-description)]]
     (merge url-types
            {:URL (when url-link (url/format-url url-link sanitize?))
-            :Description (char-string-value url "gmd:description")}
+            :Description (when (seq description)
+                           (str/trim description))} 
            (util/remove-nil-keys
             {:GetService (when (or MimeType full-name DataID protocol DataType Format
                                   (not (empty? uris)))
@@ -184,9 +186,6 @@
                              :Fees fees
                              :Checksum (:Checksum types-and-desc)
                              :MimeType (:MimeType format)}}
-       "GET SERVICE" (if (some #(not (= "Not provided" %)) (vals (:GetService service-url)))
-                       {:GetService (:GetService service-url)}
-                       {:GetService nil})
        nil))))
 
 (defn parse-online-and-service-urls
@@ -195,8 +194,7 @@
   [doc sanitize? service-url-path distributor-xpaths-map service-online-resource-xpath]
   (let [service-urls (parse-service-urls doc sanitize? service-url-path service-online-resource-xpath)
         online-urls (parse-online-urls doc sanitize? service-urls distributor-xpaths-map)
-        online-url-urls (set (map :URL online-urls))
-        service-urls (seq (remove #(contains? online-url-urls (:URL %)) service-urls))]
+        online-url-urls (set (map :URL online-urls))]
     (concat
      online-urls
      service-urls)))

@@ -106,45 +106,46 @@
          format (:Format GetData)
          mime-type (:MimeType GetData)
          code (if (= "GET DATA" Type) "download" "information")]
-     [:gmd:distributor
-      [:gmd:MD_Distributor
-       [:gmd:distributorContact {:gco:nilReason "missing"}]
-       [:gmd:distributionOrderProcess
-        [:gmd:MD_StandardOrderProcess
-         [:gmd:fees
-          (char-string (or (:Fees GetData) ""))]]]
-       [:gmd:distributorFormat
-        [:gmd:MD_Format
-         [:gmd:name
-          (char-string
-           (generate-distribution-name format mime-type))]
-         [:gmd:version {:gco:nilReason "unknown"}]
-         [:gmd:specification
-           ""]]]
-       [:gmd:distributorTransferOptions
-        [:gmd:MD_DigitalTransferOptions
-         [:gmd:unitsOfDistribution
-          (char-string (:Unit GetData))]
-         [:gmd:transferSize
-          [:gco:Real (:Size GetData)]]
-         [open-tag
-          [:gmd:CI_OnlineResource
-           [:gmd:linkage
-            [:gmd:URL URL]]
-           [:gmd:protocol
-            (char-string (url/protocol URL))]
+     (when-not (= "GET SERVICE" Type)
+       [:gmd:distributor
+        [:gmd:MD_Distributor
+         [:gmd:distributorContact {:gco:nilReason "missing"}]
+         [:gmd:distributionOrderProcess
+          [:gmd:MD_StandardOrderProcess
+           [:gmd:fees
+            (char-string (or (:Fees GetData) ""))]]]
+         [:gmd:distributorFormat
+          [:gmd:MD_Format
            [:gmd:name
-            (char-string name)]
-           (if description
-             [:gmd:description
-              (if (seq (:Checksum GetData))
-                (char-string (str description " Checksum: " (:Checksum GetData)))
-                (char-string description))]
-             [:gmd:description {:gco:nilReason "missing"}])
-           [:gmd:function
-            [:gmd:CI_OnLineFunctionCode
-             {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
-              :codeListValue code}]]]]]]]])))
+            (char-string
+             (generate-distribution-name format mime-type))]
+           [:gmd:version {:gco:nilReason "unknown"}]
+           [:gmd:specification
+            ""]]]
+         [:gmd:distributorTransferOptions
+          [:gmd:MD_DigitalTransferOptions
+           [:gmd:unitsOfDistribution
+            (char-string (:Unit GetData))]
+           [:gmd:transferSize
+            [:gco:Real (:Size GetData)]]
+           [open-tag
+            [:gmd:CI_OnlineResource
+             [:gmd:linkage
+              [:gmd:URL URL]]
+             [:gmd:protocol
+              (char-string (url/protocol URL))]
+             [:gmd:name
+              (char-string name)]
+             (if description
+               [:gmd:description
+                (if (seq (:Checksum GetData))
+                  (char-string (str description " Checksum: " (:Checksum GetData)))
+                  (char-string description))]
+               [:gmd:description {:gco:nilReason "missing"}])
+             [:gmd:function
+              [:gmd:CI_OnLineFunctionCode
+               {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
+                :codeListValue code}]]]]]]]]))))
 
 (defn- generate-operation-description
   "Generate operation description from GetService values"
