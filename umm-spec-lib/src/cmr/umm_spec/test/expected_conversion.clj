@@ -3,20 +3,23 @@
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
   (:require
-    [clj-time.format :as f]
-    [clj-time.core :as t]
-    [clojure.string :as str]
-    [cmr.common.util :as util :refer [update-in-each]]
-    [cmr.umm-spec.json-schema :as js]
-    [cmr.umm-spec.models.umm-common-models :as cmn]
-    [cmr.umm-spec.models.umm-service-models]
-    [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
-    [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
-    [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
-    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-    [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
-    [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
-    [cmr.umm-spec.util :as su]))
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.common-app.config :as common-config]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version.core :as core]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm-spec.models.umm-service-models]
+   [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
+   [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
+   [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
+   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
+   [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.versioning :as vers]))
 
 (def example-collection-record
   "An example record with fields supported by most formats."
@@ -146,6 +149,8 @@
                    :Type "GET DATA"
                    :Subtype "ECHO"
                    :GetData {:Format "ascii"
+                             :MimeType "application/json"
+                             :Checksum "checksum"
                              :Size 10.0
                              :Unit "MB"
                              :Fees "fees"}}
@@ -158,6 +163,7 @@
                                 :DataType "datatype"
                                 :Protocol "HTTP"
                                 :FullName "fullname"
+                                :Format "ascii"
                                 :URI ["http://www.foo.com", "http://www.bar.com"]}}
                   {:Description "Related url 2 description"
                    :URL "http://www.foo.com"
@@ -322,6 +328,11 @@
                            :OnlineResource {:Linkage "http://www.foo.com"
                                             :Name "Data Set Citation"
                                             :Description "Data Set Citation"}}]}))
+
+(def curr-ingest-ver-example-collection-record
+  (core/migrate-umm nil :collection
+                    vers/current-collection-version
+                    (common-config/collection-umm-version) example-collection-record))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the

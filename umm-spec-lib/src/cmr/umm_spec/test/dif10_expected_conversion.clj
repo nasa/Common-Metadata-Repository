@@ -237,6 +237,7 @@
                         (assoc-in [:GetService :DataType] su/not-provided)
                         (assoc-in [:GetService :DataID] su/not-provided)
                         (assoc-in [:GetService :FullName] su/not-provided)
+                        (assoc-in [:GetService :Format] su/not-provided)
                         (update :GetService dissoc :URI))]
     (cond
       (and mime-type protocol) related-url
@@ -244,6 +245,27 @@
       protocol (assoc-in related-url [:GetService :MimeType] su/not-provided)
       :else
       (dissoc related-url :GetService))))
+
+(defn- expected-related-url-get-data
+  "Returns related-url with the expected values in GetData"
+  [related-url]
+  (let [mime-type (get-in related-url [:GetData :MimeType])
+        related-url (-> related-url
+                        (update :GetData dissoc :Fees :Checksum)
+                        (assoc-in [:GetData :Size] 0.0)
+                        (assoc-in [:GetData :Unit] "KB")
+                        (assoc-in [:GetData :Format] su/not-provided))]
+    (if (seq mime-type)
+      related-url
+      (dissoc related-url :GetData))))
+
+(defn- expected-related-url
+  "Returns related-url with the expected values"
+  [related-url]
+  (case (:Type related-url)
+    "GET SERVICE" (expected-related-url-get-service related-url)
+    "GET DATA" (expected-related-url-get-data related-url)
+    related-url))
 
 (defn expected-related-urls-for-dif10
   "Expected Related URLs for DIF and SERF concepts"
@@ -253,11 +275,11 @@
                :let [url-type (conversion-util/expected-dif-url-type related-url)]]
            (cmn/map->RelatedUrlType
             (merge
-             url-type
              (-> related-url
                  (update-in [:URL] #(url/format-url % true))
-                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData)
-                 expected-related-url-get-service)))))))
+                 (dissoc :URLContentType :Subtype :Relation :FileSize :MimeType)
+                 expected-related-url)
+             url-type))))))
 
 (defn- expected-collection-citations
   "Adds OnlineResource Name and Description to CollectionCitations"

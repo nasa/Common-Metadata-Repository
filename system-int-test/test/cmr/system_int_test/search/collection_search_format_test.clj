@@ -1,44 +1,44 @@
 (ns cmr.system-int-test.search.collection-search-format-test
   "This tests ingesting and searching for collections in different formats."
   (:require
-    [cheshire.core :as json]
-    [clj-http.client :as client]
-    [clojure.data.xml :as x]
-    [clojure.string :as str]
-    [clojure.test :refer :all]
-    [clojure.java.io :as io]
-    [cmr.common-app.test.side-api :as side]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.util :as util :refer [are2 are3]]
-    [cmr.common.xml :as cx]
-    [cmr.ingest.config :as ingest-config]
-    [cmr.search.validators.opendata :as opendata-json]
-    [cmr.spatial.codec :as codec]
-    [cmr.spatial.line-string :as l]
-    [cmr.spatial.mbr :as m]
-    [cmr.spatial.point :as p]
-    [cmr.spatial.polygon :as poly]
-    [cmr.spatial.ring-relations :as rr]
-    [cmr.system-int-test.data2.atom :as da]
-    [cmr.system-int-test.data2.atom-json :as dj]
-    [cmr.system-int-test.data2.collection :as dc]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.kml :as dk]
-    [cmr.system-int-test.data2.opendata :as od]
-    [cmr.system-int-test.data2.umm-json :as du]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.fast-xml :as fx]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.umm-spec.test.expected-conversion :as exp-conv]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm-spec.versioning :as umm-version]
-    [cmr.umm.umm-core :as umm]
-    [cmr.umm.umm-spatial :as umm-s]))
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util :refer [are2 are3]]
+   [cmr.common.xml :as cx]
+   [cmr.search.validators.opendata :as opendata-json]
+   [cmr.spatial.codec :as codec]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.atom-json :as dj]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.data2.opendata :as od]
+   [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as umm-version]
+   [cmr.umm.umm-core :as umm]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
@@ -92,7 +92,7 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
+  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.10"))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -108,7 +108,7 @@
                                                          :long-name "c8-dif10"})
                            {:format :dif10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         ;; An item ingested with and XML preprocessing line to ensure this is tested
@@ -203,10 +203,10 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115))))))
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.9")))
 
 (deftest collection-umm-json-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
+  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.10"))
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -215,7 +215,7 @@
         c2-echo (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "c2-echo"})
                           {:format :echo10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
@@ -248,7 +248,7 @@
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]})))
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.9")))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -293,7 +293,7 @@
                            {:format :dif10})
 
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               exp-conv/curr-ingest-ver-example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
 
@@ -776,7 +776,7 @@
                 {:format :iso19115})
 
       (d/ingest "PROV1"
-                (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
+                (assoc exp-conv/curr-ingest-ver-example-collection-record :ShortName "S-UMM-JSON")
                 {:format :umm-json
                  :accept-format :json})
       (index/wait-until-indexed)

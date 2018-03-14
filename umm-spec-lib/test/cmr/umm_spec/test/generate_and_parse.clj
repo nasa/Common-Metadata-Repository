@@ -140,7 +140,7 @@
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
-         (is (= (convert-to-sets expected) (convert-to-sets actual))
+         (is (= expected actual)
 
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))

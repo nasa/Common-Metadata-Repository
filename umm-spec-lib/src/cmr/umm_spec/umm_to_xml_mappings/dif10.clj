@@ -185,7 +185,8 @@
           :let [[type subtype] (dif-util/umm-url-type->dif-umm-content-type
                                 (util/remove-nil-keys
                                  (select-keys related-url [:URLContentType :Type :Subtype])))
-                mime-type (get-in related-url [:GetService :MimeType])
+                mime-type (or (get-in related-url [:GetService :MimeType])
+                              (get-in related-url [:GetData :MimeType]))
                 protocol (get-in related-url [:GetService :Protocol])]]
       [:Related_URL
        [:URL_Content_Type
@@ -205,7 +206,7 @@
   determined."
   [c]
   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                          (get coll-progress-mapping (string/upper-case coll-progress)))] 
+                          (get coll-progress-mapping (string/upper-case coll-progress)))]
     [:Dataset_Progress c-progress]))
 
 (defn- dif10-product-level-id

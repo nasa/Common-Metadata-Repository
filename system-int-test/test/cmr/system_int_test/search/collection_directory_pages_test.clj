@@ -128,7 +128,7 @@
                                          n (range 1 4)]
                                      (d/ingest-umm-spec-collection
                                        p
-                                       (assoc exp-conv/example-collection-record
+                                       (assoc exp-conv/curr-ingest-ver-example-collection-record
                                              :ShortName (str "s" n)
                                              :EntryTitle (str "Collection Item " n))
                                        {:format :umm-json
@@ -137,7 +137,7 @@
          [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
                                       (d/ingest-umm-spec-collection
                                        "PROV3"
-                                       (assoc exp-conv/example-collection-record
+                                       (assoc exp-conv/curr-ingest-ver-example-collection-record
                                               :ShortName (str "s" n)
                                               :EntryTitle (str "Collection Item " n)
                                               :DOI (cm/map->DoiType
@@ -152,7 +152,7 @@
          over-ten-colls (doall (for [n (range 1001 1017)]
                                  (d/ingest-umm-spec-collection
                                   "PROV2"
-                                  (assoc exp-conv/example-collection-record
+                                  (assoc exp-conv/curr-ingest-ver-example-collection-record
                                          :ShortName (str "s" n)
                                          :EntryTitle (str "Collection Item " n))
                                   {:format :umm-json
@@ -160,7 +160,7 @@
          [admin-1 admin-2] (doall (for [n (range 110 113)]
                                     (d/ingest-umm-spec-collection
                                      "ONLYADMIN"
-                                     (assoc exp-conv/example-collection-record
+                                     (assoc exp-conv/curr-ingest-ver-example-collection-record
                                             :ShortName (str "s" n)
                                             :EntryTitle (str "Collection Item " n)
                                             :DOI (cm/map->DoiType
@@ -171,7 +171,7 @@
          someadmin-guest-colls (doall (for [n (range 120 123)]
                                     (d/ingest-umm-spec-collection
                                      "SOMEADMIN"
-                                     (assoc exp-conv/example-collection-record
+                                     (assoc exp-conv/curr-ingest-ver-example-collection-record
                                             :ShortName (str "s" n)
                                             :EntryTitle (str "Collection Item " n)
                                             :DOI (cm/map->DoiType
@@ -182,7 +182,7 @@
          someadmin-invisible-colls (doall (for [n (range 130 133)]
                                     (d/ingest-umm-spec-collection
                                      "SOMEADMIN"
-                                     (assoc exp-conv/example-collection-record
+                                     (assoc exp-conv/curr-ingest-ver-example-collection-record
                                             :ShortName (str "s" n)
                                             :EntryTitle (str "Collection Item " n)
                                             :DOI (cm/map->DoiType

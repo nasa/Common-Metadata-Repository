@@ -643,7 +643,7 @@
 ;; This would break other tests when doing the keyword searches.
 (deftest search-by-more-keywords
   (let [coll1 (d/ingest "PROV1"
-                        (-> exp-conv/example-collection-record
+                        (-> exp-conv/curr-ingest-ver-example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
                             (assoc :DOI (cm/map->DoiType
                                          {:DOI "doi" :Authority "auth"}))
@@ -664,7 +664,7 @@
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest "PROV1"
-                        (-> exp-conv/example-collection-record
+                        (-> exp-conv/curr-ingest-ver-example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType

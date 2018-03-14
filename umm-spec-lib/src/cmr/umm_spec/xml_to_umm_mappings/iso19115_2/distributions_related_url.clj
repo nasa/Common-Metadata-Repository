@@ -40,10 +40,19 @@
 (def service-online-resource-xpath (str "srv:containsOperations/srv:SV_OperationMetadata/"
                                         "srv:connectPoint/gmd:CI_OnlineResource"))
 
+(def distributor-xpaths-map
+  {:Root distributor-xpath
+   :Fees distributor-fees-xpath
+   :Format distributor-format-xpath
+   :TransferOptions distributor-transfer-options-xpath
+   :URL "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/"})
+
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc sanitize?]
-  (for [distributor-element (select doc distributor-xpath)]
+  (for [distributor-element (select doc distributor-xpath)
+        :when (not (value-of distributor-element (str (get distributor-xpaths-map :URL)
+                                                      "gmd:linkage/gmd:URL")))]
     {:DistributionMedia (value-of distributor-element distributor-media-xpath)
      :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)
                   :let [size (value-of transfer-el "gmd:transferSize/gco:Real")]]
@@ -57,6 +66,6 @@
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (sdru/parse-online-and-service-urls
-                 doc sanitize? service-url-path distributor-online-url-xpath service-online-resource-xpath)
+                 doc sanitize? service-url-path distributor-xpaths-map service-online-resource-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
                (sdru/parse-publication-urls doc sanitize? publication-url-path))))

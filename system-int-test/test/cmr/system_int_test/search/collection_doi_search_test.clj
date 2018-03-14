@@ -14,7 +14,7 @@
 
 (deftest search-by-doi
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
-                        (-> exp-conv/example-collection-record
+                        (-> exp-conv/curr-ingest-ver-example-collection-record
                             (assoc :ShortName "CMR3674SN1")
                             (assoc :EntryTitle "CMR3674ET1")
                             (assoc :DOI (cm/map->DoiType
@@ -22,7 +22,7 @@
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest-umm-spec-collection "PROV1"
-                        (-> exp-conv/example-collection-record
+                        (-> exp-conv/curr-ingest-ver-example-collection-record
                             (assoc :ShortName "CMR3674SN2")
                             (assoc :EntryTitle "CMR3674ET2")
                             (assoc :DOI (cm/map->DoiType
@@ -30,7 +30,7 @@
                         {:format :umm-json
                          :accept-format :json})
         coll3 (d/ingest-umm-spec-collection "PROV1"
-                              (-> exp-conv/example-collection-record
+                              (-> exp-conv/curr-ingest-ver-example-collection-record
                                   (assoc :ShortName "BlankDOI")
                                   (assoc :EntryTitle "BlankDOIIIIIII")
                                   (assoc :DOI (cm/map->DoiType
@@ -38,7 +38,7 @@
                               {:format :umm-json
                                :accept-format :json})
         no-doi (d/ingest-umm-spec-collection "PROV1"
-                              (-> exp-conv/example-collection-record
+                              (-> exp-conv/curr-ingest-ver-example-collection-record
                                   (assoc :ShortName "noDOI")
                                   (assoc :EntryTitle "These Are Not The DOIs You're Looking For"))
                               {:format :umm-json

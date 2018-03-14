@@ -4,11 +4,11 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
-   [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.ingest-service :as ingest-service]
@@ -24,7 +24,7 @@
 
 (def update-format
   "Format to save bulk updates"
-  (str "application/vnd.nasa.cmr.umm+json;version=" (config/collection-umm-version)))
+  (str "application/vnd.nasa.cmr.umm+json;version=" (common-config/collection-umm-version)))
 
 (def complete-status
   "Indicates bulk update operation finished."
@@ -42,7 +42,7 @@
   "Indicates bulk update operation is skipped because no find-value is found."
   "SKIPPED")
 
-(def add-to-existing 
+(def add-to-existing
   "Represents ADD_TO_EXISTING update type"
   "ADD_TO_EXISTING")
 
@@ -84,18 +84,18 @@
                                             update-type)]))
     (when (and (= find-and-update-home-page-url update-type)
                (not= data-centers update-field))
-      (errors/throw-service-errors 
+      (errors/throw-service-errors
        :bad-request
-      [(str find-and-update-home-page-url " update type can not be used for the [" update-field 
+      [(str find-and-update-home-page-url " update type can not be used for the [" update-field
             "] update field. "
             "It can only be used for the " data-centers " update field.")]))
     (when (and (not= add-to-existing update-type)
                (not= clear-all-and-replace update-type)
                (not= find-and-replace update-type)
                (sequential? update-value))
-      (errors/throw-service-errors 
+      (errors/throw-service-errors
         :bad-request
-        [(str "An update value must be a single object for the [" update-type "] update type. " 
+        [(str "An update value must be a single object for the [" update-type "] update type. "
               "Arrays are only supported for the " add-to-existing ", " clear-all-and-replace
               " and " find-and-replace " update types.")]))
     (when (and (or (= find-and-replace update-type)
@@ -110,7 +110,7 @@
   "Returns a list of collection concept ids for a given provider-id.
    Raise error if no collections are found."
   [context provider-id]
-  (let [collections (mdb/find-collections context 
+  (let [collections (mdb/find-collections context
                                           {:provider-id provider-id
                                            :latest true})
         collections (remove :deleted collections)]
@@ -125,11 +125,11 @@
   [concept-ids]
   (for [id concept-ids
         :let [err-msg (concepts/concept-id-validation id)
-              err-msg 
+              err-msg
                (if err-msg
                  err-msg
                  (when-not (string/starts-with? id "C")
-                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))] 
+                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))]
         :when err-msg]
     err-msg))
 
@@ -161,16 +161,16 @@
         {:keys [concept-ids]} bulk-update-params
         _ (validate-concept-ids concept-ids)
         concept-ids (get-concept-ids context concept-ids provider-id)
-        bulk-update-params (assoc bulk-update-params :concept-ids concept-ids) 
+        bulk-update-params (assoc bulk-update-params :concept-ids concept-ids)
         ;; Write db rows - one for overall status, one for each concept id
-        task-id (try 
-                  (data-bulk-update/create-bulk-update-task 
+        task-id (try
+                  (data-bulk-update/create-bulk-update-task
                     context provider-id json concept-ids)
                 (catch Exception e
                   (let [msg (.getMessage e)
                         msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
                               "Bulk update name needs to be unique within the provider."
-                              msg)] 
+                              msg)]
                     (errors/throw-service-errors
                       :invalid-data
                       [(str "Error creating bulk update task: " msg)]))))]
@@ -206,7 +206,7 @@
                                                       update-format)]
     (when (some? updated-metadata)
       (-> concept
-          (assoc :metadata updated-metadata) 
+          (assoc :metadata updated-metadata)
           (assoc :format update-format)
           (update :revision-id inc)
           (assoc :revision-date (time-keeper/now))
@@ -248,7 +248,7 @@
 
 (defn- update-concept-and-status
   "Perform update for the collection concept and collection status."
-  [context task-id concept concept-id bulk-update-params user-id] 
+  [context task-id concept concept-id bulk-update-params user-id]
   (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
     (let [warnings (validate-and-save-collection context updated-concept)]
       (data-bulk-update/update-bulk-update-task-collection-status
@@ -262,15 +262,15 @@
   with the provider-id, or if the concept cannot be found, or if the concept doesn't contain the find-value."
   [context provider-id task-id concept-id bulk-update-params user-id]
   (try
-    (if-not (string/ends-with? concept-id provider-id)    
+    (if-not (string/ends-with? concept-id provider-id)
       (data-bulk-update/update-bulk-update-task-collection-status
-        context task-id concept-id failed-status 
+        context task-id concept-id failed-status
         (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
       (if-let [concept (mdb2/get-latest-concept context concept-id)]
         (if (:deleted concept)
           (data-bulk-update/update-bulk-update-task-collection-status
-            context task-id concept-id failed-status 
-            (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))   
+            context task-id concept-id failed-status
+            (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))
           (update-concept-and-status context task-id concept concept-id bulk-update-params user-id))
         (data-bulk-update/update-bulk-update-task-collection-status
           context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))

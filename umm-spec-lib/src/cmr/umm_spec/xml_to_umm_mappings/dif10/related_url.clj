@@ -37,10 +37,15 @@
                          :Description (value-of related-url "Description")}
                         (when (= "DistributionURL" (:URLContentType url-types))
                           (case (:Type url-types)
-                            "GET DATA" {:GetData nil}
+                            "GET DATA" {:GetData (when (seq mime-type)
+                                                   {:Format (su/with-default nil sanitize?)
+                                                    :Size 0.0
+                                                    :Unit "KB"
+                                                    :MimeType mime-type})}
                             "GET SERVICE" {:GetService (when (or mime-type protocol)
                                                          {:MimeType mime-type
                                                           :FullName (su/with-default nil sanitize?)
+                                                          :Format (su/with-default nil sanitize?)
                                                           :DataID (su/with-default nil sanitize?)
                                                           :DataType (su/with-default nil sanitize?)
                                                           :Protocol protocol})}
