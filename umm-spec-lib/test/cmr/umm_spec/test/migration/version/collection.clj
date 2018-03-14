@@ -1541,25 +1541,35 @@
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
     (is (= "PLANNED"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "PLANNED"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "PLANNED"}))))
     (is (= "IN WORK"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "ACTIVE"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "ACTIVE"}))))
     (is (= u/NOT-PROVIDED
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "NOT PROVIDED"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "NOT APPLICABLE"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:CollectionProgress "COMPLETE"}))))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "COMPLETE"})))))
+
+  (testing "RelatedUrls GET DATA and GET SERVICE new schema"
+    (is (= {}
+           (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
+                                   {:RelatedUrls [{:GetData {:MimeType "application/json"}}]})
+                   [:RelatedUrls 0 :GetData])))
+    (is (= {}
+           (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
+                                   {:RelatedUrls [{:GetService {:Format "ascii"}}]})
+                   [:RelatedUrls 0 :GetService])))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems
