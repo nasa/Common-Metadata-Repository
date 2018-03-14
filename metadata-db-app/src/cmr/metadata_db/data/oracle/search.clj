@@ -136,75 +136,83 @@
                                                result))
                    (su/query conn stmt))))))
 
-(extend-protocol c/ConceptSearch
-  OracleStore
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (find-concepts
-    [db providers params]
-    {:pre [(coll? providers)]}
-    (let [concept-type (:concept-type params)
-          tables-to-providers (group-by #(tables/get-table-name % concept-type) providers)]
-      (util/mapcatv (fn [[table provider-list]]
-                      (find-concepts-in-table db table concept-type provider-list params))
-                    tables-to-providers)))
+(defn find-concepts
+  [db providers params]
+  {:pre [(coll? providers)]}
+  (let [concept-type (:concept-type params)
+        tables-to-providers (group-by #(tables/get-table-name % concept-type) providers)]
+    (util/mapcatv (fn [[table provider-list]]
+                    (find-concepts-in-table db table concept-type provider-list params))
+                  tables-to-providers)))
 
-  (find-concepts-in-batches
-    ([db provider params batch-size]
-     (c/find-concepts-in-batches db provider params batch-size 0))
-    ([db provider params batch-size requested-start-index]
-     (let [{:keys [concept-type]} params
-           provider-id (:provider-id provider)
-           params (params->sql-params concept-type [provider] params)
-           table (tables/get-table-name provider concept-type)]
-       (letfn [(find-batch
-                 [start-index]
-                 (j/with-db-transaction
-                   [conn db]
-                   (let [conditions [`(>= :id ~start-index)
-                                     `(< :id ~(+ start-index batch-size))]
-                         _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
-                                         provider-id
-                                         (name concept-type)
-                                         start-index
-                                         (+ start-index batch-size)))
-                         conditions (if (empty? params)
-                                      conditions
-                                      (cons (sh/find-params->sql-clause params) conditions))
-                         stmt (su/build (select [:*]
-                                                (from table)
-                                                (where (cons `and conditions))))
-                         batch-result (su/query db stmt)]
-                     (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
-                           batch-result))))
-               (lazy-find
-                 [start-index]
-                 (let [batch (find-batch start-index)]
-                   (if (empty? batch)
-                     ;; We couldn't find any items  between start-index and start-index + batch-size
-                     ;; Look for the next greatest id and to see if there's a gap that we can restart from.
-                     (do
-                       (info "Couldn't find batch so searching for more from" start-index)
-                       (when-let [next-id (find-batch-starting-id db table params start-index)]
-                         (info "Found next-id of" next-id)
-                         (lazy-find next-id)))
-                     ;; We found a batch. Return it and the next batch lazily
-                     (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
-         ;; If there's no minimum found so there are no concepts that match
-         (when-let [start-index (find-batch-starting-id db table params)]
-           (lazy-find (max requested-start-index start-index)))))))
+(defn find-concepts-in-batches
+  ([db provider params batch-size]
+   (c/find-concepts-in-batches db provider params batch-size 0))
+  ([db provider params batch-size requested-start-index]
+   (let [{:keys [concept-type]} params
+         provider-id (:provider-id provider)
+         params (params->sql-params concept-type [provider] params)
+         table (tables/get-table-name provider concept-type)]
+     (letfn [(find-batch
+               [start-index]
+               (j/with-db-transaction
+                 [conn db]
+                 (let [conditions [`(>= :id ~start-index)
+                                   `(< :id ~(+ start-index batch-size))]
+                       _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                                       provider-id
+                                       (name concept-type)
+                                       start-index
+                                       (+ start-index batch-size)))
+                       conditions (if (empty? params)
+                                    conditions
+                                    (cons (sh/find-params->sql-clause params) conditions))
+                       stmt (su/build (select [:*]
+                                              (from table)
+                                              (where (cons `and conditions))))
+                       batch-result (su/query db stmt)]
+                   (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
+                         batch-result))))
+             (lazy-find
+               [start-index]
+               (let [batch (find-batch start-index)]
+                 (if (empty? batch)
+                   ;; We couldn't find any items  between start-index and start-index + batch-size
+                   ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+                   (do
+                     (info "Couldn't find batch so searching for more from" start-index)
+                     (when-let [next-id (find-batch-starting-id db table params start-index)]
+                       (info "Found next-id of" next-id)
+                       (lazy-find next-id)))
+                   ;; We found a batch. Return it and the next batch lazily
+                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
+       ;; If there's no minimum found so there are no concepts that match
+       (when-let [start-index (find-batch-starting-id db table params)]
+         (lazy-find (max requested-start-index start-index)))))))
 
-  (find-latest-concepts
-    [db provider params]
-    {:pre [(:concept-type params)]}
-    ;; First we find all revisions of the concepts that have at least one revision that matches the
-    ;; search parameters. Then we find the latest revisions of those concepts and match with the
-    ;; search parameters again in memory to find what we are looking for.
-    (let [concept-type (:concept-type params)
-          table (tables/get-table-name provider concept-type)
-          revision-concepts (find-concepts-in-table db table concept-type [provider]
-                                                    (assoc params :include-all true))
-          latest-concepts (->> revision-concepts
-                               (group-by :concept-id)
-                               (map (fn [[concept-id concepts]]
-                                      (->> concepts (sort-by :revision-id) reverse first))))]
-      (c/search-with-params latest-concepts params))))
+(defn find-latest-concepts
+  [db provider params]
+  {:pre [(:concept-type params)]}
+  ;; First we find all revisions of the concepts that have at least one revision that matches the
+  ;; search parameters. Then we find the latest revisions of those concepts and match with the
+  ;; search parameters again in memory to find what we are looking for.
+  (let [concept-type (:concept-type params)
+        table (tables/get-table-name provider concept-type)
+        revision-concepts (find-concepts-in-table db table concept-type [provider]
+                                                  (assoc params :include-all true))
+        latest-concepts (->> revision-concepts
+                             (group-by :concept-id)
+                             (map (fn [[concept-id concepts]]
+                                    (->> concepts (sort-by :revision-id) reverse first))))]
+    (c/search-with-params latest-concepts params)))
+
+(def behaviour
+  {:find-concepts find-concepts
+   :find-concepts-in-batches find-concepts-in-batches
+   :find-latest-concepts find-latest-concepts})
+
+(extend OracleStore
+        c/ConceptSearch
+        behaviour)

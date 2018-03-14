@@ -62,60 +62,71 @@
     (j/delete! db (ct/get-table-name provider :service) ["provider_id = ?" provider-id])
     (j/delete! db :providers ["provider_id = ?" provider-id])))
 
-(extend-protocol p/ProvidersStore
-  OracleStore
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (save-provider
-    [db provider]
-    (let [{:keys [provider-id short-name cmr-only small]} provider]
-      (j/insert! db
-                 :providers
-                 ["provider_id" "short_name" "cmr_only" "small"]
-                 [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
-      (when (not small)
-        (ct/create-provider-concept-tables db provider))))
-
-  (get-providers
-    [db]
-    (map dbresult->provider
-         (j/query db ["SELECT * FROM providers"])))
-
-  (get-provider
-    [db provider-id]
-    (first (map dbresult->provider
-                (j/query db
-                         ["SELECT provider_id, short_name, cmr_only, small FROM providers where provider_id = ?"
-                          provider-id]))))
-
-  (update-provider
-    [db {:keys [provider-id short-name cmr-only]}]
-    (j/update! db
+(defn save-provider
+  [db provider]
+  (let [{:keys [provider-id short-name cmr-only small]} provider]
+    (j/insert! db
                :providers
-               {:short_name short-name
-                :cmr_only (if cmr-only 1 0)}
-               ["provider_id = ?" provider-id]))
+               ["provider_id" "short_name" "cmr_only" "small"]
+               [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
+    (when (not small)
+      (ct/create-provider-concept-tables db provider))))
 
-  (delete-provider
-    [db provider]
-    (purge-provider-data db provider))
+(defn get-providers
+  [db]
+  (map dbresult->provider
+       (j/query db ["SELECT * FROM providers"])))
 
-  (reset-providers
-    [db]
-    (doseq [provider (p/get-providers db)]
-      (p/delete-provider db provider))))
+(defn get-provider
+  [db provider-id]
+  (first (map dbresult->provider
+              (j/query db
+                       ["SELECT provider_id, short_name, cmr_only, small FROM providers where provider_id = ?"
+                       provider-id]))))
 
+(defn update-provider
+  [db {:keys [provider-id short-name cmr-only]}]
+  (j/update! db
+             :providers
+             {:short_name short-name
+              :cmr_only (if cmr-only 1 0)}
+             ["provider_id = ?" provider-id]))
+
+(defn delete-provider
+  [db provider]
+  (purge-provider-data db provider))
+
+(defn reset-providers
+  [db]
+  (doseq [provider (p/get-providers db)]
+    (delete-provider db provider)))
+
+(def behaviour
+  {:save-provider save-provider
+   :get-providers get-providers
+   :get-provider get-provider
+   :update-provider update-provider
+   :delete-provider delete-provider
+   :reset-providers reset-providers})
+
+(extend OracleStore
+        p/ProvidersStore
+        behaviour)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (comment
 
   (def db (get-in user/system [:apps :metadata-db :db]))
 
-  (p/get-providers db)
-  (p/reset-providers db)
-  (p/delete-provider db "PROV1")
-  (p/delete-provider db "FOO")
+  (get-providers db)
+  (reset-providers db)
+  (delete-provider db "PROV1")
+  (delete-provider db "FOO")
 
   (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
        first vals first (== 0))
-
 
   (j/delete! db :providers ["provider_id = ?" "FOO"]))
