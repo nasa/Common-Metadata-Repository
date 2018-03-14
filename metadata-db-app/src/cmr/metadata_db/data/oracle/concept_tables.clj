@@ -1,14 +1,15 @@
 (ns cmr.metadata-db.data.oracle.concept-tables
-  (require [cmr.common.services.errors :as errors]
-           [cmr.common.log :refer (debug info warn error)]
-           [cmr.common.util :as cutil]
-           [clojure.string :as string]
-           [clojure.pprint :refer (pprint pp)]
-           [clojure.java.jdbc :as j]
-           [inflections.core :as inf]
-           [cmr.metadata-db.services.provider-validation :as pv]
-           [cmr.metadata-db.data.oracle.collection-table :as ct]
-           [cmr.metadata-db.data.oracle.granule-table :as gt]))
+  (:require
+   [clojure.java.jdbc :as j]
+   [clojure.pprint :refer (pprint pp)]
+   [clojure.string :as string]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as cutil]
+   [cmr.metadata-db.data.oracle.collection-table :as ct]
+   [cmr.metadata-db.data.oracle.granule-table :as gt]
+   [cmr.metadata-db.services.provider-validation :as pv]
+   [inflections.core :as inf]))
 
 (def all-provider-concept-types
   "All the concept types that have tables for each (non-small) provider"

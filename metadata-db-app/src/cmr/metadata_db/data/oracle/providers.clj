@@ -1,14 +1,17 @@
 (ns cmr.metadata-db.data.oracle.providers
   "Functions for saving, retrieving, deleting providers."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as cutil]
-            [clojure.pprint :refer (pprint pp)]
-            [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.providers :as p]
-            [cmr.metadata-db.data.oracle.sql-helper :as sh]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct]
-            [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
-  (:import cmr.oracle.connection.OracleStore))
+  (:require
+   [clojure.java.jdbc :as j]
+   [clojure.pprint :refer [pprint pp]]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.util :as cutil]
+   [cmr.metadata-db.data.oracle.concept-tables :as ct]
+   [cmr.metadata-db.data.oracle.sql-helper :as sh]
+   [cmr.metadata-db.data.providers :as p]
+   [cmr.oracle.sql-utils :as su :refer
+    [insert values select from where with order-by desc delete as]])
+  (:import
+   (cmr.oracle.connection OracleStore)))
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
