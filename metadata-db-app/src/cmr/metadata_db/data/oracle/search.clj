@@ -149,7 +149,7 @@
 
 (defn find-concepts-in-batches
   ([db provider params batch-size]
-   (c/find-concepts-in-batches db provider params batch-size 0))
+   (find-concepts-in-batches db provider params batch-size 0))
   ([db provider params batch-size requested-start-index]
    (let [{:keys [concept-type]} params
          provider-id (:provider-id provider)
