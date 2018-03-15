@@ -218,7 +218,7 @@
       util/remove-empty-maps
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up
-      doi/migrate-missing-reason))
+      doi/migrate-missing-reason-up))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
@@ -226,5 +226,4 @@
       coll-progress-migration/migrate-down
       (util/update-in-all [:RelatedUrls :GetData] dissoc :MimeType)
       (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
-      (update :DOI dissoc :MissingReason :Explanation)
-      util/remove-empty-maps))
+      doi/migrate-missing-reason-down))

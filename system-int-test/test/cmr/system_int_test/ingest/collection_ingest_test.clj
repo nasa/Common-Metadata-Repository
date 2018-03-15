@@ -632,7 +632,7 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc exc/example-collection-record
+    (let [json (umm-spec/generate-metadata test-context (assoc exc/curr-ingest-ver-example-collection-record
                                                          :DataDates
                                                          [{:Date "invalid date"
                                                            :Type "CREATE"}])
