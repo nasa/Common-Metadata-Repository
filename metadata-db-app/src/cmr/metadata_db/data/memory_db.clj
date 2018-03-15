@@ -15,6 +15,12 @@
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
 
+;; XXX find-latest-concepts is used by after-save which is defined before
+;;     find-latest-concepts is. This bears closer examination, since the
+;;     need for a declare due to issues like this is often a signifier
+;;     in an API that hasn't been fully ironed out.
+(declare find-latest-concepts)
+
 (defn- association->tombstone
   "Returns the tombstoned revision of the given association concept"
   [association]
@@ -56,7 +62,7 @@
   [db concepts concept]
   (if-not (:deleted concept)
     concepts
-    (let [variable-associations (concepts/find-latest-concepts
+    (let [variable-associations (find-latest-concepts
                                  db
                                  {:provider-id "CMR"}
                                  {:concept-type :variable-association
@@ -73,7 +79,7 @@
   [db concepts concept]
   (if-not (:deleted concept)
     concepts
-    (let [service-associations (concepts/find-latest-concepts
+    (let [service-associations (find-latest-concepts
                                 db
                                 {:provider-id "CMR"}
                                 {:concept-type :service-association
@@ -192,6 +198,8 @@
 
 (defn find-concepts
   [db providers params]
+  ;; XXX Looking at search-with-params, seems like it might need to be
+  ;;     in a utility ns for use by all impls
   (let [found-concepts (mapcat #(concepts/search-with-params
                                 @(:concepts-atom db)
                                 (assoc params :provider-id (:provider-id %)))
@@ -267,7 +275,7 @@
 (defn- -get-concept-with-revision
   [db concept-type provider concept-id revision-id]
   (if-not revision-id
-    (concepts/get-concept db concept-type provider concept-id)
+    (-get-concept db concept-type provider concept-id)
     (first (filter
             (fn [c]
              (and (= concept-type (:concept-type c))
@@ -288,7 +296,7 @@
   (filter
    identity
    (map (fn [[concept-id revision-id]]
-          (concepts/get-concept db concept-type provider concept-id revision-id))
+          (get-concept db concept-type provider concept-id revision-id))
         concept-id-revision-id-tuples)))
 
 (defn get-latest-concepts
@@ -345,7 +353,7 @@
                        (update-in [:extra-fields] dissoc :parent-entry-title))
                    concept)]
      (if (or (nil? revision-id)
-             (concepts/get-concept db concept-type provider concept-id revision-id))
+             (get-concept db concept-type provider concept-id revision-id))
        {:error :revision-id-conflict}
        (do
          (swap! (:concepts-atom db) (fn [concepts]
@@ -367,7 +375,7 @@
 (defn force-delete-concepts
   [db provider concept-type concept-id-revision-id-tuples]
   (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-    (concepts/force-delete db concept-type provider concept-id revision-id)))
+    (force-delete db concept-type provider concept-id revision-id)))
 
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
@@ -381,6 +389,7 @@
 (defn reset
   [db]
   (reset! (:concepts-atom db) [])
+  ;; XXX WAT; no calling into other implementations; split this out into a common ns
   (reset! (:next-id-atom db) (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
   (reset! (:next-transaction-id-atom db) 1))
 
@@ -463,15 +472,14 @@
 (defn delete-provider
   [db provider]
   ;; Cascade to delete the concepts
-  (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts db [provider] nil)]
-   (concepts/force-delete db concept-type provider concept-id revision-id))
+  (doseq [{:keys [concept-type concept-id revision-id]} (find-concepts db [provider] nil)]
+   (force-delete db concept-type provider concept-id revision-id))
 
   ;; Cascade to delete the variable associations and service associations,
   ;; this is a hacky way of doing things
   (doseq [assoc-type [:variable-association :service-association]]
-   (doseq [association (concepts/find-concepts db
-                                               [{:provider-id "CMR"}]
-                                               {:concept-type assoc-type})]
+   (doseq [association (find-concepts db [{:provider-id "CMR"}]
+                                         {:concept-type assoc-type})]
      (let [{:keys [concept-id revision-id extra-fields]} association
            {:keys [associated-concept-id variable-concept-id service-concept-id]} extra-fields
            referenced-providers (map (fn [cid]
@@ -482,15 +490,14 @@
        ;; If the association references the deleted provider through
        ;; either collection or variable/service, delete the association
        (when (some #{(:provider-id provider)} referenced-providers)
-         (concepts/force-delete
-           db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
+         (force-delete db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
 
   ;; to find items that reference the provider that should be deleted (e.g. ACLs)
-  (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts
-                                                        db
-                                                        [pv/cmr-provider]
-                                                        {:target-provider-id (:provider-id provider)})]
-   (concepts/force-delete db concept-type pv/cmr-provider concept-id revision-id))
+  (doseq [{:keys [concept-type concept-id revision-id]} (find-concepts
+                                                         db
+                                                         [pv/cmr-provider]
+                                                         {:target-provider-id (:provider-id provider)})]
+   (force-delete db concept-type pv/cmr-provider concept-id revision-id))
   ;; finally delete the provider
   (swap! (:providers-atom db) dissoc (:provider-id provider)))
 
@@ -524,6 +531,8 @@
    ;      the record ...
    ;; sort by revision-id reversed so latest will be first
    (->MemoryDB (atom (reverse (sort-by :revision-id concepts)))
+               ;; XXX WAT; no calling into other implementations;
+               ;      split this out into a common ns
                (atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
                (atom 0)
                (atom {}))))

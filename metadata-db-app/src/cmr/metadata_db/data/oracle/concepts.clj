@@ -340,7 +340,7 @@
                                                           (from table)
                                                           (where `(and (= :concept-id ~concept-id)
                                                                        (= :revision-id ~revision-id))))))))
-     (concepts/get-concept db concept-type provider concept-id))))
+     (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
@@ -369,7 +369,7 @@
 
 (defn get-latest-concepts
   [db concept-type provider concept-ids]
-  (concepts/get-concepts
+  (get-concepts
    db concept-type provider
    (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 

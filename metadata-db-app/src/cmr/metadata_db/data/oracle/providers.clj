@@ -100,7 +100,7 @@
 
 (defn reset-providers
   [db]
-  (doseq [provider (p/get-providers db)]
+  (doseq [provider (get-providers db)]
     (delete-provider db provider)))
 
 (def behaviour
