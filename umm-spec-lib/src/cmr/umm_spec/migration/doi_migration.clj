@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.migration.doi-migration
   "Contains helper functions for migrating between different versions of UMM DOI"
   (:require
-   [cmr.common.util :as util :refer [update-in-each]]))
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (defn migrate-doi-up
   "Migrate :DOI from CollectionCitation level up to collection level."
@@ -24,8 +25,10 @@
 (defn migrate-missing-reason-up
   "Migrate nil :DOI to have MissingReason up."
   [c]
-  (when-not (seq (:DOI c))
-    (assoc c :DOI {:MissingReason "Not Applicable"})))
+  (if-not (seq (:DOI c))
+    (assoc c :DOI (cmn/map->DoiType
+                   {:MissingReason "Not Applicable"}))
+    c))
 
 (defn migrate-missing-reason-down
   "Migrate nil :DOI to have MissingReason down."
