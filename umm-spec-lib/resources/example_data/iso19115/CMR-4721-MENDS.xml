@@ -127,6 +127,9 @@
                             <gmd:codeSpace>
                                 <gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
                             </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Explanation: This is the explanation.</gco:CharacterString>
+                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmd:identifier>
                 </gmd:CI_Citation>
@@ -283,19 +286,6 @@
                     </gmd:role>
                 </gmd:CI_ResponsibleParty>
             </gmd:pointOfContact>
-            <gmd:graphicOverview>
-                <gmd:MD_BrowseGraphic>
-                    <gmd:fileName>
-                        <gmx:FileName src="http://www.foo.com"/>
-                    </gmd:fileName>
-                    <gmd:fileDescription>
-                        <gco:CharacterString>Description: Related url 2 description URLContentType: VisualizationURL Type: GET RELATED VISUALIZATION Subtype: GIBS</gco:CharacterString>
-                    </gmd:fileDescription>
-                    <gmd:fileType>
-                        <gco:CharacterString>Browse</gco:CharacterString>
-                    </gmd:fileType>
-                </gmd:MD_BrowseGraphic>
-            </gmd:graphicOverview>
             <gmd:descriptiveKeywords>
                 <gmd:MD_Keywords>
                     <gmd:keyword>
@@ -370,7 +360,7 @@
                     <gmd:temporalElement>
                         <gmd:EX_TemporalExtent>
                             <gmd:extent>
-                                <gml:TimePeriod gml:id="d73d938de-482e-4421-abeb-9a11ad337555">
+                                <gml:TimePeriod gml:id="d24313c36-3b87-4254-9327-1c85cbec394b">
                                     <gml:beginPosition>2001-01-01T00:00:00.000Z</gml:beginPosition>
                                     <gml:endPosition>2002-01-01T00:00:00.000Z</gml:endPosition>
                                 </gml:TimePeriod>
@@ -380,7 +370,7 @@
                     <gmd:temporalElement>
                         <gmd:EX_TemporalExtent>
                             <gmd:extent>
-                                <gml:TimePeriod gml:id="d5cdedd86-4c2e-4af0-85b0-e428f6153f4b">
+                                <gml:TimePeriod gml:id="deec3b411-22bf-46ef-b030-f1b5aed85b51">
                                     <gml:beginPosition>2003-01-01T00:00:00.000Z</gml:beginPosition>
                                     <gml:endPosition>2004-01-01T00:00:00.000Z</gml:endPosition>
                                 </gml:TimePeriod>
@@ -404,53 +394,6 @@
             </gmd:processingLevel>
         </gmd:MD_DataIdentification>
     </gmd:identificationInfo>
-    <gmd:identificationInfo>
-        <srv:SV_ServiceIdentification>
-            <gmd:citation gco:nilReason="missing"/>
-            <gmd:abstract gco:nilReason="missing"/>
-            <srv:serviceType>
-                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE</gco:LocalName>
-            </srv:serviceType>
-            <srv:couplingType>
-                <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
-            </srv:couplingType>
-            <srv:containsOperations>
-                <srv:SV_OperationMetadata>
-                    <srv:operationName>
-                        <gco:CharacterString>fullname</gco:CharacterString>
-                    </srv:operationName>
-                    <srv:DCP gco:nilReason="unknown"/>
-                    <srv:operationDescription>
-                        <gco:CharacterString>MimeType: application/json DataID: dataid DataType: datatype Format: ascii</gco:CharacterString>
-                    </srv:operationDescription>
-                    <srv:connectPoint>
-                        <gmd:CI_OnlineResource>
-                            <gmd:linkage>
-                                <gmd:URL>http://www.foo.com</gmd:URL>
-                            </gmd:linkage>
-                            <gmd:protocol>
-                                <gco:CharacterString>HTTP</gco:CharacterString>
-                            </gmd:protocol>
-                            <gmd:description>
-                                <gco:CharacterString>Related url 3 description </gco:CharacterString>
-                            </gmd:description>
-                            <gmd:function>
-                                <gmd:CI_OnLineFunctionCode
-                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="download"/>
-                            </gmd:function>
-                        </gmd:CI_OnlineResource>
-                    </srv:connectPoint>
-                    <srv:connectPoint>
-                        <gmd:CI_OnlineResource>
-                            <gmd:linkage>
-                                <gmd:URL>http://www.bar.com</gmd:URL>
-                            </gmd:linkage>
-                        </gmd:CI_OnlineResource>
-                    </srv:connectPoint>
-                </srv:SV_OperationMetadata>
-            </srv:containsOperations>
-        </srv:SV_ServiceIdentification>
-    </gmd:identificationInfo>
     <gmd:contentInfo>
         <gmd:MD_ImageDescription>
             <gmd:attributeDescription/>
@@ -472,57 +415,6 @@
     </gmd:contentInfo>
     <gmd:distributionInfo>
         <gmd:MD_Distribution>
-            <gmd:distributor>
-                <gmd:MD_Distributor>
-                    <gmd:distributorContact gco:nilReason="missing"/>
-                    <gmd:distributionOrderProcess>
-                        <gmd:MD_StandardOrderProcess>
-                            <gmd:fees>
-                                <gco:CharacterString>fees</gco:CharacterString>
-                            </gmd:fees>
-                        </gmd:MD_StandardOrderProcess>
-                    </gmd:distributionOrderProcess>
-                    <gmd:distributorFormat>
-                        <gmd:MD_Format>
-                            <gmd:name>
-                                <gco:CharacterString>Format: ascii MimeType: application/json</gco:CharacterString>
-                            </gmd:name>
-                            <gmd:version gco:nilReason="unknown"/>
-                            <gmd:specification/>
-                        </gmd:MD_Format>
-                    </gmd:distributorFormat>
-                    <gmd:distributorTransferOptions>
-                        <gmd:MD_DigitalTransferOptions>
-                            <gmd:unitsOfDistribution>
-                                <gco:CharacterString>MB</gco:CharacterString>
-                            </gmd:unitsOfDistribution>
-                            <gmd:transferSize>
-                                <gco:Real>10.0</gco:Real>
-                            </gmd:transferSize>
-                            <gmd:onLine>
-                                <gmd:CI_OnlineResource>
-                                    <gmd:linkage>
-                                    <gmd:URL>http://www.foo.com</gmd:URL>
-                                    </gmd:linkage>
-                                    <gmd:protocol>
-                                    <gco:CharacterString>http</gco:CharacterString>
-                                    </gmd:protocol>
-                                    <gmd:name>
-                                    <gco:CharacterString>DATA ACCESS</gco:CharacterString>
-                                    </gmd:name>
-                                    <gmd:description>
-                                    <gco:CharacterString>Description: Related url description URLContentType: DistributionURL Type: GET DATA Subtype: ECHO Checksum: checksum</gco:CharacterString>
-                                    </gmd:description>
-                                    <gmd:function>
-                                    <gmd:CI_OnLineFunctionCode
-                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="download"/>
-                                    </gmd:function>
-                                </gmd:CI_OnlineResource>
-                            </gmd:onLine>
-                        </gmd:MD_DigitalTransferOptions>
-                    </gmd:distributorTransferOptions>
-                </gmd:MD_Distributor>
-            </gmd:distributor>
             <gmd:distributor>
                 <gmd:MD_Distributor>
                     <gmd:distributorContact>
@@ -656,7 +548,7 @@
     <gmi:acquisitionInformation>
         <gmi:MI_AcquisitionInformation>
             <gmi:instrument>
-                <eos:EOS_Instrument id="d0f6a1741-db03-4b1b-8ae3-7a070d36e4da">
+                <eos:EOS_Instrument id="dabef3b95-72aa-439f-94ce-fb501968216c">
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
@@ -673,7 +565,7 @@
                     <gmi:type>
                         <gco:CharacterString>testing</gco:CharacterString>
                     </gmi:type>
-                    <gmi:mountedOn xlink:href="#d94aa1c59-f8a7-4eff-9279-357f1d33437e"/>
+                    <gmi:mountedOn xlink:href="#d221cdac2-718c-4e4d-9746-78f694eba602"/>
                     <eos:otherProperty>
                         <gco:Record>
                             <eos:AdditionalAttributes>
@@ -717,7 +609,7 @@
                 </eos:EOS_Instrument>
             </gmi:instrument>
             <gmi:instrument>
-                <eos:EOS_Instrument id="dd6db0622-a6ae-4a48-a60e-e0eae02ad0c9">
+                <eos:EOS_Instrument id="d1ac762bf-8490-4a0f-8dea-14562f319caf">
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
@@ -734,11 +626,11 @@
                     <gmi:type>
                         <gco:CharacterString>Not provided</gco:CharacterString>
                     </gmi:type>
-                    <gmi:mountedOn xlink:href="#de0aecdab-75f2-4c82-9492-4a4c16cd2d3d"/>
+                    <gmi:mountedOn xlink:href="#d2ea8e273-0e14-4cdb-bc03-18de8b0d46e0"/>
                 </eos:EOS_Instrument>
             </gmi:instrument>
             <gmi:platform>
-                <eos:EOS_Platform id="d52edd779-2077-4eb2-bfa2-c570320e28c8">
+                <eos:EOS_Platform id="dd024d60d-29ef-40d0-84e2-3de82643d4ba">
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
@@ -759,7 +651,7 @@
                 </eos:EOS_Platform>
             </gmi:platform>
             <gmi:platform>
-                <eos:EOS_Platform id="d94aa1c59-f8a7-4eff-9279-357f1d33437e">
+                <eos:EOS_Platform id="d221cdac2-718c-4e4d-9746-78f694eba602">
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
@@ -776,11 +668,11 @@
                     <gmi:description>
                         <gco:CharacterString>Aircraft</gco:CharacterString>
                     </gmi:description>
-                    <gmi:instrument xlink:href="#d0f6a1741-db03-4b1b-8ae3-7a070d36e4da"/>
+                    <gmi:instrument xlink:href="#dabef3b95-72aa-439f-94ce-fb501968216c"/>
                 </eos:EOS_Platform>
             </gmi:platform>
             <gmi:platform>
-                <eos:EOS_Platform id="de0aecdab-75f2-4c82-9492-4a4c16cd2d3d">
+                <eos:EOS_Platform id="d2ea8e273-0e14-4cdb-bc03-18de8b0d46e0">
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
@@ -797,7 +689,7 @@
                     <gmi:description>
                         <gco:CharacterString>Aircraft</gco:CharacterString>
                     </gmi:description>
-                    <gmi:instrument xlink:href="#dd6db0622-a6ae-4a48-a60e-e0eae02ad0c9"/>
+                    <gmi:instrument xlink:href="#d1ac762bf-8490-4a0f-8dea-14562f319caf"/>
                 </eos:EOS_Platform>
             </gmi:platform>
         </gmi:MI_AcquisitionInformation>

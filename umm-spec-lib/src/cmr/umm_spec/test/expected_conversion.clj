@@ -117,6 +117,8 @@
                          "GEOSCIENTIFIC INFORMATION"
                          "EXTRA TERRESTRIAL"]
     :Quality "Pretty good quality"
+    :DOI {:MissingReason "Not Applicable"
+          :Explanation "This is an explanation."}
     :PublicationReferences [{:PublicationDate (t/date-time 2015)
                              :OtherReferenceDetails "Other reference details"
                              :Series "series"

@@ -246,24 +246,30 @@
 (defn- generate-doi
   "Returns the DOI field."
   [c]
-  (let [doi (util/remove-nil-keys (dissoc (:DOI c) :MissingReason :Explanation))]
-    (when (seq doi)
+  (let [doi (util/remove-nil-keys (:DOI c))]
+    (if (seq (:DOI doi))
       [:gmd:identifier
-        [:gmd:MD_Identifier
-          (when-let [authority (:Authority doi)]
-            [:gmd:authority
-             [:gmd:CI_Citation
-              [:gmd:title [:gco:CharacterString ""]]
-              [:gmd:date ""]
-              [:gmd:citedResponsibleParty
-               [:gmd:CI_ResponsibleParty
-                [:gmd:organisationName [:gco:CharacterString authority]]
-                [:gmd:role
-                 [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                    :codeListValue ""} "authority"]]]]]])
-          [:gmd:code [:gco:CharacterString (:DOI doi)]]
-          [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-          [:gmd:description [:gco:CharacterString "DOI"]]]])))
+       [:gmd:MD_Identifier
+         (when-let [authority (:Authority doi)]
+           [:gmd:authority
+            [:gmd:CI_Citation
+             [:gmd:title [:gco:CharacterString ""]]
+             [:gmd:date ""]
+             [:gmd:citedResponsibleParty
+              [:gmd:CI_ResponsibleParty
+               [:gmd:organisationName [:gco:CharacterString authority]]
+               [:gmd:role
+                [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                   :codeListValue ""} "authority"]]]]]])
+         [:gmd:code [:gco:CharacterString (:DOI doi)]]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         [:gmd:description [:gco:CharacterString "DOI"]]]]
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+         [:gmd:code {:gco:nilReason "inapplicable"}]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         [:gmd:description [:gco:CharacterString (when-let [explanation (:Explanation doi)]
+                                                   (str "Explanation: " explanation))]]]])))
 
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
