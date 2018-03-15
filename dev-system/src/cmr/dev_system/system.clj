@@ -20,7 +20,7 @@
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
    [cmr.ingest.config :as ingest-config]
-   [cmr.ingest.data.memory-db :as ingest-data]
+   [cmr.ingest.data.memorydb :as ingest-data]
    [cmr.ingest.system :as ingest-system]
    [cmr.message-queue.config :as rmq-conf]
    [cmr.message-queue.queue.memory-queue :as mem-queue]
@@ -229,7 +229,7 @@
 (defmethod create-ingest-app :in-memory
   [db-type queue-broker]
   (assoc (ingest-system/create-system)
-         :db (ingest-data/create-in-memory-db)
+         :db (ingest-data/create-db)
          :queue-broker queue-broker
          :scheduler (jobs/create-non-running-scheduler)))
 
