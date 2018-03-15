@@ -12,6 +12,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as concepts]
+   [cmr.metadata-db.data.const :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.services.provider-service :as provider-service]
@@ -19,15 +20,6 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
-
-(def INITIAL_CONCEPT_NUM
-  "The number to use as the numeric value for the first concept. Chosen to be larger than the current
-  largest sequence in Catalog REST in operations which is 1005488460 as of this writing."
-  1200000000)
-
-(def EXPIRED_CONCEPTS_BATCH_SIZE
-  "The batch size to retrieve expired concepts"
-  5000)
 
 (def mime-type->db-format-map
   "A mapping of mime type strings to the strings they are stored in the database as. The existing ones

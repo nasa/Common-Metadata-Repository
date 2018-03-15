@@ -9,6 +9,7 @@
    [cmr.common.memorydb.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
+   [cmr.metadata-db.data.const :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
@@ -20,7 +21,7 @@
 ;; XXX find-latest-concepts is used by after-save which is defined before
 ;;     find-latest-concepts is. This bears closer examination, since the
 ;;     need for a declare due to issues like this is often a signifier
-;;     in an API that hasn't been fully ironed out.
+;;     for an API that hasn't been fully ironed out.
 (declare find-latest-concepts)
 
 (defn- association->tombstone
@@ -363,7 +364,7 @@
   [db]
   (reset! (:concepts db) [])
   ;; XXX WAT; no calling into other implementations; split this out into a common ns
-  (reset! (:next-id db) (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+  (reset! (:next-id db) (dec INITIAL_CONCEPT_NUM))
   (reset! (:next-transaction-id db) 1))
 
 (defn get-expired-concepts
@@ -495,12 +496,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-db
-  "Creates and returns an in-memory database."
+  "Creates and returns an in-memory database.
+
+  Note that a wrapper is used here in order to support default initial values
+  that are only available in cmr.metaata-db.*."
   ([]
    (create-db []))
   ([concepts]
    (connection/create-db
     {:concepts concepts
-     ;; XXX WAT; no calling into other implementations;
-     ;      split this out into a common ns
-     :next-id cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM})))
+     :next-id INITIAL_CONCEPT_NUM})))

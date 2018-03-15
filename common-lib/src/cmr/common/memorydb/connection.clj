@@ -1,10 +1,10 @@
 (ns cmr.common.memorydb.connection
   "Contains a record definition that implements the Lifecycle protocol. This
-  record is also intended to implement ConceptStore, ConceptSearch, and
-  ProviderStore protocols.
+  record is also intended to used for implementing ConceptStore, ConceptSearch,
+  and ProviderStore protocols.
 
-  This namespace was created to bring the MemoryStore in as close parity to
-  the OracleStore (in cmr.oracle.connection) as possible."
+  This namespace was created to bring the MemoryStore in as close parity as
+  possible to the OracleStore in cmr.oracle.connection."
   (:require
    [cmr.common.lifecycle :as lifecycle]))
 
