@@ -22,7 +22,7 @@
     c))
 
 (defn migrate-missing-reason
-  "Migrate nil :DOI to have MissingReason"
+  "Migrate nil :DOI to have MissingReason."
   [c]
   (when-not (seq (:DOI c))
     (assoc c :DOI {:MissingReason "Not Applicable"})))
