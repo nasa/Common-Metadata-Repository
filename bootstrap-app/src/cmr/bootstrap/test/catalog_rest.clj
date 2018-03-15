@@ -1,16 +1,17 @@
 (ns cmr.bootstrap.test.catalog-rest
   "Contains code to help test bulk database migration. It can insert and delete data from the Catalog
   REST schema"
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
-            [cmr.bootstrap.data.migration-utils :as mu]
-            [cmr.common.util :as util]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.mime-types :as mt]
-             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
-            [clj-time.coerce :as cr]))
+  (:require
+   [clj-time.coerce :as cr]
+   [clojure.java.jdbc :as j]
+   [cmr.bootstrap.data.migration-utils :as mu]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.util :as mdb-util]
+   [cmr.oracle.connection :as oracle]))
 
 (defn- execute-sql
   "Executes the sql which presumably has side effects. Returns nil."
@@ -104,7 +105,7 @@
 
 (def mime-type->db-format
   "Map of mime types to the format to store in the database. Modified to store what Catalog REST uses"
-  (assoc mdb-concepts/mime-type->db-format-map
+  (assoc mdb-util/mime-type->db-format-map
          mt/iso-smap "ISO-SMAP"))
 
 (defn update-concept
@@ -212,10 +213,4 @@
 
   (insert-concept system example-collection)
 
-  (insert-concept system example-granule)
-
-
-
-
-  )
-
+  (insert-concept system example-granule))
