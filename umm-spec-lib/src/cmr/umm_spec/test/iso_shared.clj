@@ -96,7 +96,7 @@
 (defn expected-doi
   "Returns the expected DOI."
   [doi]
-  (let [explanation (when (seq (:Explanation doi))
+  (let [explanation (when (:Explanation doi)
                       (string/trim (:Explanation doi)))
         updated-doi (util/remove-nil-keys (assoc doi :Explanation explanation))]
     (if (seq updated-doi)

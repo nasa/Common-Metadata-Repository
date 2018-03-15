@@ -1567,11 +1567,11 @@
                             {:CollectionProgress "COMPLETE"})))))
 
   (testing "RelatedUrls GET DATA and GET SERVICE new schema"
-    (is (= nil
+    (is (= {}
            (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
                                    {:RelatedUrls [{:GetData {:MimeType "application/json"}}]})
                    [:RelatedUrls 0 :GetData])))
-    (is (= nil
+    (is (= {}
            (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
                                    {:RelatedUrls [{:GetService {:Format "ascii"}}]})
                    [:RelatedUrls 0 :GetService]))))

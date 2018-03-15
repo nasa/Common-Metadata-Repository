@@ -98,8 +98,8 @@
        [:gmd:MD_Identifier
          [:gmd:code {:gco:nilReason "inapplicable"}]
          [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         [:gmd:description [:gco:CharacterString (when-let [explanation (:Explanation doi)]
-                                                   (str "Explanation: " explanation))]]]])))
+         (when-let [explanation (:Explanation doi)]
+           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
 
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."

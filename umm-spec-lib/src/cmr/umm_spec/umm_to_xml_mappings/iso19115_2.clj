@@ -268,8 +268,8 @@
        [:gmd:MD_Identifier
          [:gmd:code {:gco:nilReason "inapplicable"}]
          [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         [:gmd:description [:gco:CharacterString (when-let [explanation (:Explanation doi)]
-                                                   (str "Explanation: " explanation))]]]])))
+         (when-let [explanation (:Explanation doi)]
+           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
 
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."

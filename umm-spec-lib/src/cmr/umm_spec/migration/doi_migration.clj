@@ -30,6 +30,6 @@
 (defn migrate-missing-reason-down
   "Migrate nil :DOI to have MissingReason down."
   [c]
-  (if (seq (get-in c [:DOI :DOI]))
+  (if (get-in c [:DOI :DOI])
     (update c :DOI dissoc :MissingReason :Explanation)
     (assoc c :DOI nil)))
