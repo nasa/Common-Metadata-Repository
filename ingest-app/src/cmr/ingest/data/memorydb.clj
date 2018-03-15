@@ -1,4 +1,4 @@
-(ns cmr.ingest.data.memory-db
+(ns cmr.ingest.data.memorydb
   "Stores and retrieves the hashes of the ACLs for a provider."
   (:require
    [cheshire.core :as json]
@@ -10,7 +10,7 @@
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as acl-hash]))
 
-(defrecord MemoryDB
+(defrecord ACLHashMemoryStore
 
   [acl-hash-data-atom task-status-atom collection-status-atom task-id-atom]
 
@@ -62,12 +62,12 @@
     (swap! task-id-atom inc)
     (let [task-id (str @task-id-atom)
           name (get (json/parse-string json-body) "name" task-id)]
-     ;; provider-id and name together need to be unique. 
-     (if (some #(and (= provider-id (:provider-id %))(= name (:name %))) 
+     ;; provider-id and name together need to be unique.
+     (if (some #(and (= provider-id (:provider-id %))(= name (:name %)))
                @task-status-atom)
        (throw (Exception. (str "ORA-00001: unique constraint "
                                "(CMR_INGEST.BULK_UPDATE_TASK_STATUS_UK) "
-                               "violated\n")))  
+                               "violated\n")))
        (swap! task-status-atom conj {:created-at (str (time-keeper/now))
                                      :task-id task-id
                                      :name name
@@ -140,6 +140,6 @@
     [this system]
     this))
 
-(defn create-in-memory-db
+(defn create-db
   []
-  (->MemoryDB (atom nil) (atom []) (atom []) (atom 0)))
+  (->ACLHashMemoryStore (atom nil) (atom []) (atom []) (atom 0)))
