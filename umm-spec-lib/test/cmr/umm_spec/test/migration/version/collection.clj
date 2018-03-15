@@ -1355,106 +1355,106 @@
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Decimal Degrees"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:HorizontalCoordinateSystem
-                               {:GeographicCoordinateSystem
-                                 {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Kilometers"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:HorizontalCoordinateSystem
-                               {:GeographicCoordinateSystem
-                                 {:GeographicCoordinateUnits "kiLometers"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "kiLometers"}}}}))))
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Meters"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:HorizontalCoordinateSystem
-                               {:GeographicCoordinateSystem
-                                 {:GeographicCoordinateUnits "mEters"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "mEters"}}}}))))
     (is (= nil
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:HorizontalCoordinateSystem
-                               {:GeographicCoordinateSystem
-                                 {:GeographicCoordinateUnits "randomstring"}}}})))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "randomstring"}}}})))))
   (testing "DistanceUnits migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
              :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
-                                :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
+                                  :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
              :DepthSystemDefinition {:DistanceUnits "Feet"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
-                                :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
+                                  :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "Meters"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                                :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
     (is (= nil
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
-                             {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                                :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
   (testing "EncodingMethod migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
@@ -1482,61 +1482,61 @@
                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]
          (:TemporalExtents
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:TemporalExtents [{:TemporalRangeType "temp range 1"
-                                              :PrecisionOfSeconds "3"
-                                              :EndsAtPresentFlag "false"
-                                              :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
-                                             {:TemporalRangeType "temp range 2"
-                                              :PrecisionOfSeconds "3"
-                                              :EndsAtPresentFlag "false"
-                                              :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
+                           {:TemporalExtents [{:TemporalRangeType "temp range 1"
+                                               :PrecisionOfSeconds "3"
+                                               :EndsAtPresentFlag "false"
+                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+                                              {:TemporalRangeType "temp range 2"
+                                               :PrecisionOfSeconds "3"
+                                               :EndsAtPresentFlag "false"
+                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
   (testing "CollectionProgress migration from version 1.9 to 1.10"
     (is (= u/NOT-PROVIDED
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "ACTIVE"}))))
+                           {:CollectionProgress "ACTIVE"}))))
     (is (= "PLANNED"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "planned"}))))
+                           {:CollectionProgress "planned"}))))
     (is (= "ACTIVE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "IN WORK"}))))
+                           {:CollectionProgress "IN WORK"}))))
     (is (= u/NOT-PROVIDED
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "NOT PROVIDED"}))))
+                           {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "NOT APPLICABLE"}))))
+                           {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "COMPLETE"}))))
-   (testing "VerticalSpatialDomains migration from 1.9.0 to 1.10.0"
-     (let [vsds {:SpatialExtent
-                 {:VerticalSpatialDomains [{:Type "An Invalid Type"
-                                            :Value "I can't believe I'm going down for this too"}
-                                           {:Type "AtmosphereLayer"
-                                            :Value "I am invalid"}
-                                           {:Type "AtMoSphErE LAYER"
-                                            :Value "The Earth has one of these"}
-                                           {:Type "MaximuM Altitude"
-                                            :Value "There is no limit if you believe -Bob Ross"}]}}
-           result (vm/migrate-umm {} :collection "1.9" "1.10" vsds)]
-       (is (= [{:Value "The Earth has one of these",
-                :Type "Atmosphere Layer"}
-               {:Value "There is no limit if you believe -Bob Ross",
-                :Type "Maximum Altitude"}]
-            (get-in result [:SpatialExtent :VerticalSpatialDomains])))))
+                           {:CollectionProgress "COMPLETE"})))))
+  (testing "VerticalSpatialDomains migration from 1.9.0 to 1.10.0"
+    (let [vsds {:SpatialExtent
+                {:VerticalSpatialDomains [{:Type "An Invalid Type"
+                                           :Value "I can't believe I'm going down for this too"}
+                                          {:Type "AtmosphereLayer"
+                                           :Value "I am invalid"}
+                                          {:Type "AtMoSphErE LAYER"
+                                           :Value "The Earth has one of these"}
+                                          {:Type "MaximuM Altitude"
+                                           :Value "There is no limit if you believe -Bob Ross"}]}}
+          result (vm/migrate-umm {} :collection "1.9" "1.10" vsds)]
+      (is (= [{:Value "The Earth has one of these",
+               :Type "Atmosphere Layer"}
+              {:Value "There is no limit if you believe -Bob Ross",
+               :Type "Maximum Altitude"}]
+           (get-in result [:SpatialExtent :VerticalSpatialDomains]))))
    (testing "DOI MissingReason and Explanation"
      (is (= {:MissingReason "Not Applicable"}
             (get (vm/migrate-umm {} :collection "1.9" "1.10"
