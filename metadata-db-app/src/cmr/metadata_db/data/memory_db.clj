@@ -6,14 +6,16 @@
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.memorydb.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
-   [cmr.metadata-db.data.oracle.concepts.variable :as variable]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
-   [cmr.metadata-db.services.provider-validation :as pv]))
+   [cmr.metadata-db.services.provider-validation :as pv])
+  (:import
+   (cmr.common.memorydb.connection MemoryStore)))
 
 ;; XXX find-latest-concepts is used by after-save which is defined before
 ;;     find-latest-concepts is. This bears closer examination, since the
@@ -48,6 +50,10 @@
   [db concepts concept]
   (if-not (:deleted concept)
     concepts
+    ;; XXX The use of tag/ here is calling into the Oracle implementation; the
+    ;;     in-mem db needs its own implementation of that function (they can't
+    ;;     share a utility version of it due to the fact that it depends upon
+    ;;     a call to another function which is implementation specific).
     (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
           tombstones (map association->tombstone tag-associations)]
       ;; publish tag-association delete events
@@ -108,7 +114,7 @@
   [db provider concept]
   (let [{:keys [concept-id native-id concept-type provider-id]} concept
         {existing-concept-id :concept-id
-         existing-native-id :native-id} (->> (deref (:concepts-atom db))
+         existing-native-id :native-id} (->> (deref (:concepts db))
                                              (filter #(= concept-type (:concept-type %)))
                                              (filter #(= provider-id (:provider-id %)))
                                              (filter #(or (= concept-id (:concept-id %))
@@ -159,39 +165,6 @@
                      concept)))]
     (map map-fn concepts)))
 
-(defrecord MemoryDB
-  [;; A sequence of concepts stored in metadata db
-   concepts-atom
-
-   ;; The next id to use for generating a concept id.
-   next-id-atom
-
-   ;; The next global transaction id
-   next-transaction-id-atom
-
-   ;; A map of provider ids to providers that exist
-   providers-atom])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; CMR Component Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn start
-  [this system]
-  this)
-
-(defn stop
-  [this system]
-  this)
-
-(def component-lifecycle-behaviour
-  {:start start
-   :stop stop})
-
-(extend MemoryDB
-        lifecycle/Lifecycle
-        component-lifecycle-behaviour)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptSearch Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -201,14 +174,14 @@
   ;; XXX Looking at search-with-params, seems like it might need to be
   ;;     in a utility ns for use by all impls
   (let [found-concepts (mapcat #(concepts/search-with-params
-                                @(:concepts-atom db)
+                                @(:concepts db)
                                 (assoc params :provider-id (:provider-id %)))
                               providers)]
     (concepts->find-result found-concepts params)))
 
 (defn find-latest-concepts
   [db provider params]
-  (let [latest-concepts (latest-revisions @(:concepts-atom db))
+  (let [latest-concepts (latest-revisions @(:concepts db))
         found-concepts (concepts/search-with-params
                         latest-concepts
                         (assoc params :provider-id (:provider-id provider)))]
@@ -218,7 +191,7 @@
   {:find-concepts find-concepts
    :find-latest-concepts find-latest-concepts})
 
-(extend MemoryDB
+(extend MemoryStore
         concepts/ConceptSearch
         concept-search-behaviour)
 
@@ -229,7 +202,7 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-       num (swap! (:next-id-atom db) inc)]
+       num (swap! (:next-id db) inc)]
    (cc/build-concept-id {:concept-type concept-type
                          :sequence-number num
                          :provider-id provider-id})))
@@ -238,7 +211,7 @@
   [db concept-type provider native-id]
   (let [provider-id (:provider-id provider)
        concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
-   (->> @(:concepts-atom db)
+   (->> @(:concepts db)
         (filter (fn [c]
                   (and (= concept-type (:concept-type c))
                        (= provider-id (:provider-id c))
@@ -249,7 +222,7 @@
 (defn get-granule-concept-ids
   [db provider native-id]
   (let [provider-id (:provider-id provider)
-        matched-gran (->> @(:concepts-atom db)
+        matched-gran (->> @(:concepts db)
                           (filter (fn [c]
                                    (and (= :granule (:concept-type c))
                                         (= provider-id (:provider-id c))
@@ -267,7 +240,7 @@
                     (and (= concept-type (:concept-type c))
                          (= (:provider-id provider) (:provider-id c))
                          (= concept-id (:concept-id c))))
-                   @(:concepts-atom db))]
+                   @(:concepts db))]
     (->> revisions
          (sort-by :revision-id)
          last)))
@@ -282,7 +255,7 @@
                   (= (:provider-id provider) (:provider-id c))
                   (= concept-id (:concept-id c))
                   (= revision-id (:revision-id c))))
-            @(:concepts-atom db)))))
+            @(:concepts db)))))
 
 (defn get-concept
   ([db concept-type provider concept-id]
@@ -316,7 +289,7 @@
                                  concept-map)
                                concept-map))
                             {}
-                            @(:concepts-atom db))]
+                            @(:concepts db))]
    (keep (partial get concept-map) concept-ids)))
 
 (defn get-transactions-for-concept
@@ -324,7 +297,7 @@
   (keep (fn [{:keys [concept-id revision-id transaction-id]}]
          (when (= con-id concept-id)
            {:revision-id revision-id :transaction-id transaction-id}))
-       @(:concepts-atom db)))
+       @(:concepts db)))
 
 (defn save-concept
   [db provider concept]
@@ -345,7 +318,7 @@
                               [:created-at]
                               #(or % (f/unparse (f/formatters :date-time) (tk/now))))
                    concept)
-         concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
+         concept (assoc concept :transaction-id (swap! (:next-transaction-id db) inc))
          concept (if (= concept-type :granule)
                    (-> concept
                        (dissoc :user-id)
@@ -356,14 +329,14 @@
              (get-concept db concept-type provider concept-id revision-id))
        {:error :revision-id-conflict}
        (do
-         (swap! (:concepts-atom db) (fn [concepts]
+         (swap! (:concepts db) (fn [concepts]
                                      (after-save db (conj concepts concept)
                                                  concept)))
          nil)))))
 
 (defn force-delete
   [db concept-type provider concept-id revision-id]
-  (swap! (:concepts-atom db)
+  (swap! (:concepts db)
          #(filter
            (fn [c]
             (not (and (= concept-type (:concept-type c))
@@ -379,7 +352,7 @@
 
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
-  (->> @(:concepts-atom db)
+  (->> @(:concepts db)
       (filter #(= (:provider-id provider) (:provider-id %)))
       (filter #(= concept-type (:concept-type %)))
       (group-by (comp :parent-collection-id :extra-fields))
@@ -388,14 +361,14 @@
 
 (defn reset
   [db]
-  (reset! (:concepts-atom db) [])
+  (reset! (:concepts db) [])
   ;; XXX WAT; no calling into other implementations; split this out into a common ns
-  (reset! (:next-id-atom db) (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
-  (reset! (:next-transaction-id-atom db) 1))
+  (reset! (:next-id db) (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+  (reset! (:next-transaction-id db) 1))
 
 (defn get-expired-concepts
   [db provider concept-type]
-  (->> @(:concepts-atom db)
+  (->> @(:concepts db)
        (filter #(= (:provider-id provider) (:provider-id %)))
        (filter #(= concept-type (:concept-type %)))
        latest-revisions
@@ -404,7 +377,7 @@
 
 (defn get-tombstoned-concept-revisions
   [db provider concept-type tombstone-cut-off-date limit]
-  (->> @(:concepts-atom db)
+  (->> @(:concepts db)
        (filter #(= concept-type (:concept-type %)))
        (filter #(= (:provider-id provider) (:provider-id %)))
        (filter :deleted)
@@ -419,7 +392,7 @@
           (->> concepts
                (sort-by :revision-id)
                (drop-last max-versions)))]
-   (->> @(:concepts-atom db)
+   (->> @(:concepts db)
         (filter #(= concept-type (:concept-type %)))
         (filter #(= (:provider-id provider) (:provider-id %)))
         (group-by :concept-id)
@@ -445,7 +418,7 @@
    :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
    :get-old-concept-revisions get-old-concept-revisions})
 
-(extend MemoryDB
+(extend MemoryStore
         concepts/ConceptsStore
         concept-store-behaviour)
 
@@ -455,19 +428,19 @@
 
 (defn save-provider
   [db {:keys [provider-id] :as provider}]
-  (swap! (:providers-atom db) assoc provider-id provider))
+  (swap! (:providers db) assoc provider-id provider))
 
 (defn get-providers
   [db]
-  (vals @(:providers-atom db)))
+  (vals @(:providers db)))
 
 (defn get-provider
   [db provider-id]
-  (@(:providers-atom db) provider-id))
+  (@(:providers db) provider-id))
 
 (defn update-provider
   [db {:keys [provider-id] :as provider}]
-  (swap! (:providers-atom db) assoc provider-id provider))
+  (swap! (:providers db) assoc provider-id provider))
 
 (defn delete-provider
   [db provider]
@@ -499,11 +472,11 @@
                                                          {:target-provider-id (:provider-id provider)})]
    (force-delete db concept-type pv/cmr-provider concept-id revision-id))
   ;; finally delete the provider
-  (swap! (:providers-atom db) dissoc (:provider-id provider)))
+  (swap! (:providers db) dissoc (:provider-id provider)))
 
 (defn reset-providers
   [db]
-  (reset! (:providers-atom db) {}))
+  (reset! (:providers db) {}))
 
 (def provider-store-behaviour
   {:save-provider save-provider
@@ -513,12 +486,12 @@
    :delete-provider delete-provider
    :reset-providers reset-providers})
 
-(extend MemoryDB
+(extend MemoryStore
         providers/ProvidersStore
         provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MemoryDB Constructor
+;; MemoryStore Constructor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-db
@@ -526,13 +499,8 @@
   ([]
    (create-db []))
   ([concepts]
-   ;; XXX as part of being self-documenting, let's use map->MemoryDB here
-   ;;     so we can look at the keys and know to what each corresponds in
-   ;      the record ...
-   ;; sort by revision-id reversed so latest will be first
-   (->MemoryDB (atom (reverse (sort-by :revision-id concepts)))
-               ;; XXX WAT; no calling into other implementations;
-               ;      split this out into a common ns
-               (atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
-               (atom 0)
-               (atom {}))))
+   (connection/create-db
+    {:concepts concepts
+     ;; XXX WAT; no calling into other implementations;
+     ;      split this out into a common ns
+     :next-id cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM})))

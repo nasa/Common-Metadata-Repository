@@ -104,7 +104,7 @@ Example un-healthy response body:
     "problem" : {
       "oracle" : {
         "ok?" : false,
-        "problem" : "db-spec cmr.metadata_db.data.memory_db.MemoryDB@aead584 is missing a required parameter"
+        "problem" : "db-spec cmr.common.memorydb.connection.MemoryStore@aead584 is missing a required parameter"
       },
       "echo" : {
         "ok?" : true

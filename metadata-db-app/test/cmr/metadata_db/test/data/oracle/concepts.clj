@@ -1,21 +1,23 @@
 (ns cmr.metadata-db.test.data.oracle.concepts
-  (:require [clojure.test :refer :all]
-            [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.oracle.concepts.collection]
-            [cmr.metadata-db.data.oracle.concepts.granule]
-            [clojure.java.jdbc :as j]
-            [clj-time.format :as f]
-            [clj-time.coerce :as cr]
-            [clj-time.core :as t]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.util :as util]
-            [cmr.metadata-db.config :as mdb-config])
-  (:import javax.sql.rowset.serial.SerialBlob
-           java.util.zip.GZIPInputStream
-           java.io.ByteArrayInputStream
-           oracle.sql.TIMESTAMPTZ))
+  (:require
+   [clj-time.coerce :as cr]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.java.jdbc :as j]
+   [clojure.test :refer :all]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.oracle.concepts :as c]
+   [cmr.metadata-db.data.oracle.concepts.collection]
+   [cmr.metadata-db.data.oracle.concepts.granule]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as oracle])
+  (:import
+   (javax.sql.rowset.serial SerialBlob)
+   (java.util.zip GZIPInputStream)
+   (java.io ByteArrayInputStream)
+   (oracle.sql TIMESTAMPTZ)))
 
 (defn mock-blob
   "Create a mock blob"

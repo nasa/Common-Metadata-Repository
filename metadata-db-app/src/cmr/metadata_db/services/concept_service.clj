@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.services.concept-service
-  "Sevices to support the business logic of the metadata db."
+  "Services to support the business logic of the metadata db."
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
@@ -22,6 +22,15 @@
    [cmr.metadata-db.services.search-service :as search]
    [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
+  ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
+  ;;     as a result of this is a leak from implementation into a separate part
+  ;;     of the code ... not to mention that whatever is happing is is 100%
+  ;;     implicit and chock-a-block with side effects. I believe the reason we
+  ;;     do this is to work around issues with multimethods. We really need to
+  ;;     refactor our multimethod code -- and this isn't the only reason
+  ;;     (multimethods use slower code under the hood). If we really do need
+  ;;     the flexible polymorphism that multimethods provide, then let's
+  ;;     rethink our code reuse stragegy around multimethods.
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
    [cmr.metadata-db.data.oracle.concepts.collection]
