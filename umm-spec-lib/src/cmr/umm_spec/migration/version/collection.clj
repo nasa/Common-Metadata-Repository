@@ -8,6 +8,7 @@
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
+   [cmr.umm-spec.migration.doi-migration :as doi]
    [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
@@ -45,24 +46,6 @@
   (if (nil? (:Description attribute))
      (assoc attribute :Description u/not-provided)
      attribute))
-
-(defn- migrate-doi-up
-  "Migrate :DOI from CollectionCitation level up to collection level."
-  [c]
-  (if-let [doi-obj (some :DOI (:CollectionCitations c))]
-    (-> c
-      (update-in-each [:CollectionCitations] dissoc :DOI)
-      (assoc :DOI doi-obj))
-    c))
-
-(defn- migrate-doi-down
-  "Migrate :DOI from collection level down to CollectionCitation level."
-  [c]
-  (if-let [doi-obj (:DOI c)]
-    (-> c
-      (update-in-each [:CollectionCitations] assoc :DOI doi-obj)
-      (dissoc :DOI))
-    c))
 
 (defn- add-related-urls
   "Add required RelatedUrls in version 1.8 if missing in version 1.9"
@@ -198,7 +181,7 @@
 (defmethod interface/migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
-      migrate-doi-up
+      doi/migrate-doi-up
       related-url/dissoc-titles-from-contact-information
       (update :RelatedUrls related-url/array-of-urls->url)
       (update-in-each [:RelatedUrls] related-url/relation->url-content-type)
@@ -214,7 +197,7 @@
 (defmethod interface/migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
   (-> c
-      migrate-doi-down
+      doi/migrate-doi-down
       related-url/migrate-down-from-1_9
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
       (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)
@@ -234,11 +217,14 @@
       ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
       util/remove-empty-maps
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
-      char-data-type-normalization/migrate-up))
+      char-data-type-normalization/migrate-up
+      doi/migrate-missing-reason))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
       coll-progress-migration/migrate-down
       (util/update-in-all [:RelatedUrls :GetData] dissoc :MimeType)
-      (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)))
+      (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
+      (update :DOI dissoc :MissingReason :Explanation)
+      util/remove-empty-maps))
