@@ -6,16 +6,16 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 ;; Tests all granule search when allow-all-granule-params-flag is false
-;; Existing tests should cover the case when the flag is set to true. 
-(deftest allow-all-granule-params-flag-false-search-test 
+;; Existing tests should cover the case when the flag is set to true.
+(deftest allow-all-granule-params-flag-false-search-test
   (let [saved-flag-value (concepts-search/allow-all-granule-params-flag)
-        saved-header-value (concepts-search/allow-all-gran-header) 
+        saved-header-value (concepts-search/allow-all-gran-header)
         _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! false))
         _ (side/eval-form `(concepts-search/set-allow-all-gran-header! "allow-all-gran"))
-        header1 {"client-id" "testing", "allow-all-gran" true} 
-        header2 {"client-id" "testing", "allow-all-gran" false} 
+        header1 {"client-id" "testing", "allow-all-gran" true}
+        header2 {"client-id" "testing", "allow-all-gran" false}
         header3 {"client-id" "testing"}
-        header4 {"allow-all-gran" true} 
+        header4 {"allow-all-gran" true}
         header5 {"allow-all-gran" false}
         header6 {}
         params1 {:provider "PROV1"}
@@ -40,7 +40,7 @@
         params9 {"temporal[]" "2010-12-12T12:00:00Z,"}
         params10 {"page_num" 2 "page_size" 5}
         ;; With allow-all-granule-params-flag being set to false, all granule query is allowed
-        ;; only when client-id is present and allow-all-gran header is set to true. 
+        ;; only when client-id is present and allow-all-gran header is set to true.
         result1 (search/find-refs :granule {} {:headers header1})
         ;; Without the proper headers and collection constriants, these should be rejected
         result2 (search/find-refs :granule {} {:headers header2})
@@ -73,14 +73,14 @@
         result14 (search/find-refs :granule params8)
         result15 (search/find-refs :granule params9)
         result16 (search/find-refs :granule params10)
-        err-msg "The CMR does not currently allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov." 
-        err-msg-illegal-service-id "Invalid concept_id [S1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID." 
-        err-msg-illegal-variable-id "Invalid concept_id [V1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID." 
-        err-msg-illegal-service-id-in-array "Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID." 
-        err-msg-illegal-number-id "Invalid concept_id [1]. For granule queries concept_id must be either a granule or collection concept ID." 
+        err-msg "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov." 
+        err-msg-illegal-service-id "Invalid concept_id [S1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
+        err-msg-illegal-variable-id "Invalid concept_id [V1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
+        err-msg-illegal-service-id-in-array "Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID."
+        err-msg-illegal-number-id "Invalid concept_id [1]. For granule queries concept_id must be either a granule or collection concept ID."
         _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! ~saved-flag-value))
         _ (side/eval-form `(concepts-search/set-allow-all-gran-header! ~saved-header-value))]
-    (is (= nil 
+    (is (= nil
            (:errors result1)))
     (is (= [err-msg]
            (:errors result2)))
@@ -102,9 +102,9 @@
            (:errors result9-alias)))
     (is (= nil
            (:errors result9-collection)))
-    (is (= [err-msg-illegal-service-id] 
+    (is (= [err-msg-illegal-service-id]
            (:errors result9-service)))
-    (is (= [err-msg-illegal-variable-id] 
+    (is (= [err-msg-illegal-variable-id]
            (:errors result9-variable)))
     (is (= [err-msg]
            (:errors result9-empty-array)))
@@ -113,7 +113,7 @@
     (is (= [err-msg]
            (:errors result9-empty)))
     (is (= [err-msg-illegal-number-id]
-           (:errors result9-number))) 
+           (:errors result9-number)))
     (is (= nil
            (:errors result10)))
     (is (= nil
@@ -134,4 +134,3 @@
            (:errors result15)))
     (is (= [err-msg]
            (:errors result16)))))
-

@@ -21,10 +21,10 @@
 ;;; Constants and Utility Functions
 (defconfig allow-all-granule-params-flag
   "Flag that indicates if we allow all granule queries."
-  {:default true :type Boolean}) 
+  {:default true :type Boolean})
 
 (defconfig allow-all-gran-header
-  "This is the header that allows operators to run all granule queries when 
+  "This is the header that allows operators to run all granule queries when
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
 
@@ -90,7 +90,7 @@
 (defn- handle-all-granule-params
   "Throws error if all granule params needs to be rejected."
   [headers]
-  (let [err-msg (str "The CMR does not currently allow querying across granules in all "
+  (let [err-msg (str "The CMR does not allow querying across granules in all "
                      "collections. To help optimize your search, you should limit your "
                      "query using conditions that identify one or more collections, "
                      "such as provider, provider_id, concept_id, collection_concept_id, "
@@ -98,7 +98,7 @@
                      "Forum at https://wiki.earthdata.nasa.gov/display/CMR/"
                      "Granule+Queries+Now+Require+Collection+Identifiers for more "
                      "information, and for any questions please contact "
-                     "support@earthdata.nasa.gov.")]  
+                     "support@earthdata.nasa.gov.")]
     (when (reject-all-granule-query? headers)
       (svc-errors/throw-service-error :bad-request err-msg))))
 
@@ -111,12 +111,12 @@
                                   [concept-id-param])]
       (some #(not (re-find #"^[GC]" %)) concept-id-param-list))))
 
-(defn empty-string-values? 
+(defn empty-string-values?
   "This function is used by remove-map-keys function.
    The keys will be removed if their values are empty strings, or if it's sequential and
    only contain empty strings.
-   Note:  When you pass a parameter without = sign, it is considered a nil value and get  
-   filtered out before getting to the params; with the = sign, no value, it becomes empty 
+   Note:  When you pass a parameter without = sign, it is considered a nil value and get
+   filtered out before getting to the params; with the = sign, no value, it becomes empty
    string."
   [v]
   (if (sequential? v)
@@ -126,7 +126,7 @@
 (defn- all-granule-params?
   "Returns true if it's a all granule query params.
    Note: parameters with scroll-id don't need to be checked because it inherits the search
-   parameters from the original query, which would have been handled already." 
+   parameters from the original query, which would have been handled already."
   [scroll-id coll-constraints]
   (and (not (some? scroll-id))
        (empty? coll-constraints)))
@@ -140,15 +140,15 @@
     (let [params (->> params
                       util/map-keys->kebab-case
                       lp/replace-parameter-aliases
-                      (util/remove-map-keys empty-string-values?)) 
+                      (util/remove-map-keys empty-string-values?))
           constraints (select-keys params all-gran-validation/granule-limiting-search-fields)
           concept-id-param (:concept-id constraints)
           illegal-concept-id-msg (str "Invalid concept_id [" concept-id-param
                                       "]. For granule queries concept_id must be"
                                       " either a granule or collection concept ID.")]
       (if (illegal-concept-id-in-granule-query? concept-id-param)
-        (svc-errors/throw-service-error :bad-request illegal-concept-id-msg) 
-        (when (all-granule-params? scroll-id constraints) 
+        (svc-errors/throw-service-error :bad-request illegal-concept-id-msg)
+        (when (all-granule-params? scroll-id constraints)
             (handle-all-granule-params headers))))))
 
 (defn- find-concepts-by-parameters
