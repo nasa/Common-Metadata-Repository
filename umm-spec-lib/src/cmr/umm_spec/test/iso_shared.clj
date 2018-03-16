@@ -96,6 +96,9 @@
 (defn expected-doi
   "Returns the expected DOI."
   [doi]
-  (let [updated-doi (util/remove-nil-keys (dissoc doi :MissingReason :Explanation))]
-    (when (seq updated-doi)
-      (cmn/map->DoiType updated-doi))))
+  (let [explanation (when (:Explanation doi)
+                      (string/trim (:Explanation doi)))
+        updated-doi (util/remove-nil-keys (assoc doi :Explanation explanation))]
+    (if (seq updated-doi)
+      (cmn/map->DoiType updated-doi)
+      (cmn/map->DoiType {:MissingReason "Not Applicable"}))))

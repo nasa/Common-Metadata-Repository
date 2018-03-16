@@ -76,8 +76,8 @@
 (defn- generate-doi
   "Returns the DOI field."
   [c]
-  (let [doi (util/remove-nil-keys (dissoc (:DOI c) :MissingReason :Explanation))]
-    (when (seq doi)
+  (let [doi (util/remove-nil-keys (:DOI c))]
+    (if (seq (:DOI doi))
       [:gmd:identifier
        [:gmd:MD_Identifier
          (when-let [authority (:Authority doi)]
@@ -93,7 +93,13 @@
                                    :codeListValue ""} "authority"]]]]]])
          [:gmd:code [:gco:CharacterString (:DOI doi)]]
          [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         [:gmd:description [:gco:CharacterString "DOI"]]]])))
+         [:gmd:description [:gco:CharacterString "DOI"]]]]
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+         [:gmd:code {:gco:nilReason "inapplicable"}]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         (when-let [explanation (:Explanation doi)]
+           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
 
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."

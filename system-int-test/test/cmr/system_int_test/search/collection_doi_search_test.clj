@@ -13,36 +13,40 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-doi
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
-                        (-> exp-conv/curr-ingest-ver-example-collection-record
-                            (assoc :ShortName "CMR3674SN1")
-                            (assoc :EntryTitle "CMR3674ET1")
-                            (assoc :DOI (cm/map->DoiType
-                                         {:DOI "doi1" :Authority "auth1"})))
-                        {:format :umm-json
-                         :accept-format :json})
-        coll2 (d/ingest-umm-spec-collection "PROV1"
-                        (-> exp-conv/curr-ingest-ver-example-collection-record
-                            (assoc :ShortName "CMR3674SN2")
-                            (assoc :EntryTitle "CMR3674ET2")
-                            (assoc :DOI (cm/map->DoiType
-                                         {:DOI "doi2" :Authority "auth2"})))
-                        {:format :umm-json
-                         :accept-format :json})
-        coll3 (d/ingest-umm-spec-collection "PROV1"
-                              (-> exp-conv/curr-ingest-ver-example-collection-record
-                                  (assoc :ShortName "BlankDOI")
-                                  (assoc :EntryTitle "BlankDOIIIIIII")
-                                  (assoc :DOI (cm/map->DoiType
-                                               {:DOI "Not provided" :Authority "auth3"})))
-                              {:format :umm-json
-                               :accept-format :json})
-        no-doi (d/ingest-umm-spec-collection "PROV1"
-                              (-> exp-conv/curr-ingest-ver-example-collection-record
-                                  (assoc :ShortName "noDOI")
-                                  (assoc :EntryTitle "These Are Not The DOIs You're Looking For"))
-                              {:format :umm-json
-                               :accept-format :json})]
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (-> exp-conv/curr-ingest-ver-example-collection-record
+                   (assoc :ShortName "CMR3674SN1")
+                   (assoc :EntryTitle "CMR3674ET1")
+                   (assoc :DOI (cm/map->DoiType
+                                {:DOI "doi1" :Authority "auth1"})))
+               {:format :umm-json
+                :accept-format :json})
+        coll2 (d/ingest-umm-spec-collection
+               "PROV1"
+               (-> exp-conv/curr-ingest-ver-example-collection-record
+                   (assoc :ShortName "CMR3674SN2")
+                   (assoc :EntryTitle "CMR3674ET2")
+                   (assoc :DOI (cm/map->DoiType
+                                {:DOI "doi2" :Authority "auth2"})))
+               {:format :umm-json
+                :accept-format :json})
+        coll3 (d/ingest-umm-spec-collection
+               "PROV1"
+               (-> exp-conv/curr-ingest-ver-example-collection-record
+                   (assoc :ShortName "BlankDOI")
+                   (assoc :EntryTitle "BlankDOIIIIIII")
+                   (assoc :DOI (cm/map->DoiType
+                                {:DOI "Not provided" :Authority "auth3"})))
+               {:format :umm-json
+                :accept-format :json})
+        no-doi (d/ingest-umm-spec-collection
+                "PROV1"
+                (-> exp-conv/curr-ingest-ver-example-collection-record
+                    (assoc :ShortName "noDOI")
+                    (assoc :EntryTitle "These Are Not The DOIs You're Looking For"))
+                {:format :umm-json
+                 :accept-format :json})]
     (index/wait-until-indexed)
 
     (testing "search collections by doi"
