@@ -7,6 +7,15 @@
    [clojure.string :as string]
    [cmr.common.mime-types :as mt]))
 
+(def EXPIRED_CONCEPTS_BATCH_SIZE
+  "The batch size to retrieve expired concepts"
+  5000)
+
+(def INITIAL_CONCEPT_NUM
+  "The number to use as the numeric value for the first concept. Chosen to be larger than the current
+  largest sequence in Catalog REST in operations which is 1005488460 as of this writing."
+  1200000000)
+
 (def mime-type->db-format-map
   "A mapping of mime type strings to the strings they are stored in the database as. The existing ones
   here match what Catalog REST stores and must continue to match that. Adding new ones is allowed

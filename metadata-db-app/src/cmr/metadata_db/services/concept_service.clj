@@ -30,7 +30,7 @@
   ;;     refactor our multimethod code -- and this isn't the only reason
   ;;     (multimethods use slower code under the hood). If we really do need
   ;;     the flexible polymorphism that multimethods provide, then let's
-  ;;     rethink our code reuse stragegy around multimethods.
+  ;;     rethink our code reuse strategy around multimethods.
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
    [cmr.metadata-db.data.oracle.concepts.collection]

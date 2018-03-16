@@ -1,4 +1,4 @@
-(ns cmr.ingest.data.memorydb
+(ns cmr.ingest.data.memory-db
   "Stores and retrieves the hashes of the ACLs for a provider."
   (:require
    [cheshire.core :as json]
