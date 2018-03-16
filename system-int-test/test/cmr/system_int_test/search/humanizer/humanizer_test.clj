@@ -34,7 +34,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token ABC does not exist"]}
+            :errors ["Token [ABC] does not exist"]}
            (hu/update-humanizers "ABC" (hu/make-humanizers)))))
 
   (testing "Create without permission"
