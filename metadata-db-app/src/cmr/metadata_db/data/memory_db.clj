@@ -6,17 +6,17 @@
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.memorydb.connection :as connection]
+   [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
-   [cmr.metadata-db.data.const :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
+   [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
-   (cmr.common.memorydb.connection MemoryStore)))
+   (cmr.common.memory_db.connection MemoryStore)))
 
 ;; XXX find-latest-concepts is used by after-save which is defined before
 ;;     find-latest-concepts is. This bears closer examination, since the
@@ -115,7 +115,7 @@
   [db provider concept]
   (let [{:keys [concept-id native-id concept-type provider-id]} concept
         {existing-concept-id :concept-id
-         existing-native-id :native-id} (->> (deref (:concepts db))
+         existing-native-id :native-id} (->> @(:concepts-atom db)
                                              (filter #(= concept-type (:concept-type %)))
                                              (filter #(= provider-id (:provider-id %)))
                                              (filter #(or (= concept-id (:concept-id %))
@@ -175,14 +175,14 @@
   ;; XXX Looking at search-with-params, seems like it might need to be
   ;;     in a utility ns for use by all impls
   (let [found-concepts (mapcat #(concepts/search-with-params
-                                @(:concepts db)
+                                @(:concepts-atom db)
                                 (assoc params :provider-id (:provider-id %)))
                               providers)]
     (concepts->find-result found-concepts params)))
 
 (defn find-latest-concepts
   [db provider params]
-  (let [latest-concepts (latest-revisions @(:concepts db))
+  (let [latest-concepts (latest-revisions @(:concepts-atom db))
         found-concepts (concepts/search-with-params
                         latest-concepts
                         (assoc params :provider-id (:provider-id provider)))]
@@ -203,7 +203,7 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-       num (swap! (:next-id db) inc)]
+       num (swap! (:next-id-atom db) inc)]
    (cc/build-concept-id {:concept-type concept-type
                          :sequence-number num
                          :provider-id provider-id})))
@@ -212,7 +212,7 @@
   [db concept-type provider native-id]
   (let [provider-id (:provider-id provider)
        concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
-   (->> @(:concepts db)
+   (->> @(:concepts-atom db)
         (filter (fn [c]
                   (and (= concept-type (:concept-type c))
                        (= provider-id (:provider-id c))
@@ -223,7 +223,7 @@
 (defn get-granule-concept-ids
   [db provider native-id]
   (let [provider-id (:provider-id provider)
-        matched-gran (->> @(:concepts db)
+        matched-gran (->> @(:concepts-atom db)
                           (filter (fn [c]
                                    (and (= :granule (:concept-type c))
                                         (= provider-id (:provider-id c))
@@ -241,7 +241,7 @@
                     (and (= concept-type (:concept-type c))
                          (= (:provider-id provider) (:provider-id c))
                          (= concept-id (:concept-id c))))
-                   @(:concepts db))]
+                   @(:concepts-atom db))]
     (->> revisions
          (sort-by :revision-id)
          last)))
@@ -256,7 +256,7 @@
                   (= (:provider-id provider) (:provider-id c))
                   (= concept-id (:concept-id c))
                   (= revision-id (:revision-id c))))
-            @(:concepts db)))))
+            @(:concepts-atom db)))))
 
 (defn get-concept
   ([db concept-type provider concept-id]
@@ -290,7 +290,7 @@
                                  concept-map)
                                concept-map))
                             {}
-                            @(:concepts db))]
+                            @(:concepts-atom db))]
    (keep (partial get concept-map) concept-ids)))
 
 (defn get-transactions-for-concept
@@ -298,7 +298,7 @@
   (keep (fn [{:keys [concept-id revision-id transaction-id]}]
          (when (= con-id concept-id)
            {:revision-id revision-id :transaction-id transaction-id}))
-       @(:concepts db)))
+       @(:concepts-atom db)))
 
 (defn save-concept
   [db provider concept]
@@ -319,7 +319,7 @@
                               [:created-at]
                               #(or % (f/unparse (f/formatters :date-time) (tk/now))))
                    concept)
-         concept (assoc concept :transaction-id (swap! (:next-transaction-id db) inc))
+         concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
          concept (if (= concept-type :granule)
                    (-> concept
                        (dissoc :user-id)
@@ -330,14 +330,14 @@
              (get-concept db concept-type provider concept-id revision-id))
        {:error :revision-id-conflict}
        (do
-         (swap! (:concepts db) (fn [concepts]
+         (swap! (:concepts-atom db) (fn [concepts]
                                      (after-save db (conj concepts concept)
                                                  concept)))
          nil)))))
 
 (defn force-delete
   [db concept-type provider concept-id revision-id]
-  (swap! (:concepts db)
+  (swap! (:concepts-atom db)
          #(filter
            (fn [c]
             (not (and (= concept-type (:concept-type c))
@@ -353,7 +353,7 @@
 
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
-  (->> @(:concepts db)
+  (->> @(:concepts-atom db)
       (filter #(= (:provider-id provider) (:provider-id %)))
       (filter #(= concept-type (:concept-type %)))
       (group-by (comp :parent-collection-id :extra-fields))
@@ -362,14 +362,14 @@
 
 (defn reset
   [db]
-  (reset! (:concepts db) [])
+  (reset! (:concepts-atom db) [])
   ;; XXX WAT; no calling into other implementations; split this out into a common ns
-  (reset! (:next-id db) (dec INITIAL_CONCEPT_NUM))
-  (reset! (:next-transaction-id db) 1))
+  (reset! (:next-id-atom db) (dec INITIAL_CONCEPT_NUM))
+  (reset! (:next-transaction-id-atom db) 1))
 
 (defn get-expired-concepts
   [db provider concept-type]
-  (->> @(:concepts db)
+  (->> @(:concepts-atom db)
        (filter #(= (:provider-id provider) (:provider-id %)))
        (filter #(= concept-type (:concept-type %)))
        latest-revisions
@@ -378,7 +378,7 @@
 
 (defn get-tombstoned-concept-revisions
   [db provider concept-type tombstone-cut-off-date limit]
-  (->> @(:concepts db)
+  (->> @(:concepts-atom db)
        (filter #(= concept-type (:concept-type %)))
        (filter #(= (:provider-id provider) (:provider-id %)))
        (filter :deleted)
@@ -393,7 +393,7 @@
           (->> concepts
                (sort-by :revision-id)
                (drop-last max-versions)))]
-   (->> @(:concepts db)
+   (->> @(:concepts-atom db)
         (filter #(= concept-type (:concept-type %)))
         (filter #(= (:provider-id provider) (:provider-id %)))
         (group-by :concept-id)
@@ -429,19 +429,19 @@
 
 (defn save-provider
   [db {:keys [provider-id] :as provider}]
-  (swap! (:providers db) assoc provider-id provider))
+  (swap! (:providers-atom db) assoc provider-id provider))
 
 (defn get-providers
   [db]
-  (vals @(:providers db)))
+  (vals @(:providers-atom db)))
 
 (defn get-provider
   [db provider-id]
-  (@(:providers db) provider-id))
+  (@(:providers-atom db) provider-id))
 
 (defn update-provider
   [db {:keys [provider-id] :as provider}]
-  (swap! (:providers db) assoc provider-id provider))
+  (swap! (:providers-atom db) assoc provider-id provider))
 
 (defn delete-provider
   [db provider]
@@ -473,11 +473,11 @@
                                                          {:target-provider-id (:provider-id provider)})]
    (force-delete db concept-type pv/cmr-provider concept-id revision-id))
   ;; finally delete the provider
-  (swap! (:providers db) dissoc (:provider-id provider)))
+  (swap! (:providers-atom db) dissoc (:provider-id provider)))
 
 (defn reset-providers
   [db]
-  (reset! (:providers db) {}))
+  (reset! (:providers-atom db) {}))
 
 (def provider-store-behaviour
   {:save-provider save-provider
@@ -504,5 +504,5 @@
    (create-db []))
   ([concepts]
    (connection/create-db
-    {:concepts concepts
-     :next-id INITIAL_CONCEPT_NUM})))
+    {:concepts-atom concepts
+     :next-id-atom INITIAL_CONCEPT_NUM})))

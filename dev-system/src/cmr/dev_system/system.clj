@@ -20,7 +20,7 @@
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
    [cmr.ingest.config :as ingest-config]
-   [cmr.ingest.data.memorydb :as ingest-data]
+   [cmr.ingest.data.memory-db :as ingest-data]
    [cmr.ingest.system :as ingest-system]
    [cmr.message-queue.config :as rmq-conf]
    [cmr.message-queue.queue.memory-queue :as mem-queue]

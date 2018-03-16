@@ -1,7 +1,7 @@
 (ns migrations.009-create-concept-id-seq
   (:require
    [config.mdb-migrate-helper :as h]
-   [cmr.metadata-db.data.const :refer [INITIAL_CONCEPT_NUM]]))
+   [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]))
 
 (defn up
   "Migrates the database up to version 9."
