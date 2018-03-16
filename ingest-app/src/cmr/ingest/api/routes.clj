@@ -5,6 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-context-user-augmenter :as augmenter]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer (debug info warn error)]
@@ -21,6 +22,9 @@
    [cmr.ingest.services.jobs :as jobs]
    [compojure.core :refer [DELETE GET POST PUT context routes]]
    [drift.execute :as drift]))
+
+(def URS_TOKEN_MAX_LENGTH 100)
+(def CMR_INGEST_SEPARATOR "CMR_INGEST:")
 
 (def db-migration-routes
   (POST "/db-migrate"
@@ -69,6 +73,24 @@
             ctx)
            {:status 200}))))
 
+(defn- add-cmr-ingest-to-context
+  "Add CMR Ingest prefix to token in the request context of the given request.
+   This function should be called on routes that will ingest into CMR.
+   The CMR Ingest prefix is used to indicates to legacy services that when
+   validating the Launchpad token, the NAMS CMR Ingest group should also be checked.
+   Ingest will only be allowed if the user is in the NAMS CMR Ingest group and
+   also has the right ACLs which is based on Earthdata Login uid."
+  [request]
+  (let [token (-> request :request-context :token)]
+    (if (> (count token) URS_TOKEN_MAX_LENGTH)
+      ;; for Launchpad token add CMR_INGEST: prefix so that legacy service
+      ;; can do extra vaidation to check if the user has signed up for
+      ;; CMR Ingest workflow.
+      (-> request
+          (update-in [:request-context :token] #(str CMR_INGEST_SEPARATOR %))
+          (update-in [:request-context] augmenter/add-user-id-and-sids-to-context))
+      request)))
+
 (def ingest-routes
   (routes
     ;; Provider ingest routes
@@ -83,10 +105,10 @@
        (context ["/collections/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (collections/ingest-collection provider-id native-id request))
+           (collections/ingest-collection provider-id native-id (add-cmr-ingest-to-context request)))
          (DELETE "/"
            request
-           (collections/delete-collection provider-id native-id request)))
+           (collections/delete-collection provider-id native-id (add-cmr-ingest-to-context request))))
        ;; Granules
        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
          (POST "/"
@@ -95,31 +117,31 @@
        (context ["/granules/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (granules/ingest-granule provider-id native-id request))
+           (granules/ingest-granule provider-id native-id (add-cmr-ingest-to-context request)))
          (DELETE "/"
            request
-           (granules/delete-granule provider-id native-id request)))
+           (granules/delete-granule provider-id native-id (add-cmr-ingest-to-context request))))
        ;; Variables
        (context ["/variables/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (variables/ingest-variable provider-id native-id request))
+           (variables/ingest-variable provider-id native-id (add-cmr-ingest-to-context request)))
          (DELETE "/"
            request
-           (variables/delete-variable provider-id native-id request)))
+           (variables/delete-variable provider-id native-id (add-cmr-ingest-to-context request))))
        ;; Services
        (context ["/services/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (services/ingest-service provider-id native-id request))
+           (services/ingest-service provider-id native-id (add-cmr-ingest-to-context request)))
          (DELETE "/"
            request
-           (services/delete-service provider-id native-id request)))
+           (services/delete-service provider-id native-id (add-cmr-ingest-to-context request))))
        ;; Bulk updates
        (context "/bulk-update/collections" []
          (POST "/"
            request
-           (bulk/bulk-update-collections provider-id request))
+           (bulk/bulk-update-collections provider-id (add-cmr-ingest-to-context request)))
          (GET "/status" ; Gets all tasks for provider
            request
            (bulk/get-provider-tasks provider-id request))

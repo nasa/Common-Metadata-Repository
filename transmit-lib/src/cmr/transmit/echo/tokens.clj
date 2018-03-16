@@ -48,9 +48,9 @@
                                              :form-params {:id token}})]
       (case (int status)
         200 (get-in parsed [:token_info :user_name])
-        401 (errors/throw-service-error
+        401 (errors/throw-service-errors
              :unauthorized
-             (format "Token %s does not exist" token))
+             (:errors (json/decode body true)))
         404 (errors/throw-service-error
              :unauthorized
              (format "Token %s does not exist" token))
