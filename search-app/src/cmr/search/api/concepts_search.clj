@@ -85,7 +85,7 @@
   [headers]
   (and (false? (allow-all-granule-params-flag))
        (or (not (some? (get headers "client-id")))
-           (not (= "true" (get headers (allow-all-gran-header)))))))
+           (not (= "true" (get headers (string/lower-case (allow-all-gran-header))))))))
 
 (defn- handle-all-granule-params
   "Throws error if all granule params needs to be rejected."
@@ -149,7 +149,7 @@
       (if (illegal-concept-id-in-granule-query? concept-id-param)
         (svc-errors/throw-service-error :bad-request illegal-concept-id-msg)
         (when (all-granule-params? scroll-id constraints)
-            (handle-all-granule-params headers))))))
+          (handle-all-granule-params headers))))))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and

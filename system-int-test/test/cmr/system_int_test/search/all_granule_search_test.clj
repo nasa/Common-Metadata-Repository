@@ -11,12 +11,13 @@
   (let [saved-flag-value (concepts-search/allow-all-granule-params-flag)
         saved-header-value (concepts-search/allow-all-gran-header)
         _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! false))
-        _ (side/eval-form `(concepts-search/set-allow-all-gran-header! "allow-all-gran"))
-        header1 {"client-id" "testing", "allow-all-gran" true}
-        header2 {"client-id" "testing", "allow-all-gran" false}
+        _ (side/eval-form `(concepts-search/set-allow-all-gran-header! "ALL_GRANS_2172"))
+        header1 {"client-id" "testing", "ALL_GRANS_2172" true}
+        header1-insensitive {"client-id" "testing", "alL_GrAnS_2172" true}
+        header2 {"client-id" "testing", "ALL_GRANS_2172" false}
         header3 {"client-id" "testing"}
-        header4 {"allow-all-gran" true}
-        header5 {"allow-all-gran" false}
+        header4 {"ALL_GRANS_2172" true}
+        header5 {"ALL_GRANS_2172" false}
         header6 {}
         params1 {:provider "PROV1"}
         params2 {:provider_id "PROV1"}
@@ -42,6 +43,9 @@
         ;; With allow-all-granule-params-flag being set to false, all granule query is allowed
         ;; only when client-id is present and allow-all-gran header is set to true.
         result1 (search/find-refs :granule {} {:headers header1})
+        ;; allow-all-gran header is case insensitive
+        result1-insensitive (search/find-refs :granule {} {:headers header1-insensitive})
+
         ;; Without the proper headers and collection constriants, these should be rejected
         result2 (search/find-refs :granule {} {:headers header2})
         result3 (search/find-refs :granule {} {:headers header3})
@@ -73,7 +77,7 @@
         result14 (search/find-refs :granule params8)
         result15 (search/find-refs :granule params9)
         result16 (search/find-refs :granule params10)
-        err-msg "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov." 
+        err-msg "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov."
         err-msg-illegal-service-id "Invalid concept_id [S1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
         err-msg-illegal-variable-id "Invalid concept_id [V1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
         err-msg-illegal-service-id-in-array "Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID."
@@ -82,6 +86,8 @@
         _ (side/eval-form `(concepts-search/set-allow-all-gran-header! ~saved-header-value))]
     (is (= nil
            (:errors result1)))
+    (is (= nil
+           (:errors result1-insensitive)))
     (is (= [err-msg]
            (:errors result2)))
     (is (= [err-msg]
