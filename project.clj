@@ -23,7 +23,8 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [clojusc/twig "0.3.2"]
-    [org.clojure/clojure "1.8.0"]]
+    [org.clojure/clojure "1.8.0"]
+    [spootnik/kinsky "0.1.21"]]
   :profiles {
     :ubercompile {
       :aot :all}
@@ -71,17 +72,13 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
-    ;; Docker database server
-    "docker-db-create"
+    ;; Docker kafka server
+    "kafka-create"
       ["shell" "resources/scripts/docker-create.sh"]
-    "docker-db-start"
-      ["shell" "docker" "start" "-i" "hexagram-orientdb"]
-    "docker-db-stop"
-      ["shell" "docker" "stop" "hexagram-orientdb"]
-    "docker-db-destroy"
-      ["shell" "docker" "rm" "hexagram-orientdb"]
-    ;; Embedded database server
-    "embedded-db" ["do"
-      ["clean"]
-      ["with-profile" "+server" "run"]]})
+    "kafka-start"
+      ["shell" "docker" "start" "-i" "hexagram-kafka"]
+    "kafka-stop"
+      ["shell" "docker" "stop" "hexagram-kafka"]
+    "kafka-destroy"
+      ["shell" "docker" "rm" "hexagram-kafka"]})
 
