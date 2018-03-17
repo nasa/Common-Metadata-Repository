@@ -73,12 +73,6 @@
       ]
     "ltest" ["with-profile" "+test" "ltest"]
     ;; Docker kafka server
-    "kafka-create"
-      ["shell" "resources/scripts/docker-create.sh"]
-    "kafka-start"
-      ["shell" "docker" "start" "-i" "hexagram-kafka"]
-    "kafka-stop"
-      ["shell" "docker" "stop" "hexagram-kafka"]
-    "kafka-destroy"
-      ["shell" "docker" "rm" "hexagram-kafka"]})
+    "kafka"
+      ["shell" "resources/scripts/start-kafka.sh"]})
 

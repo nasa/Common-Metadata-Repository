@@ -1,8 +1,11 @@
 #!/bin/bash
 
-docker run \
-  -p 2181:2181 \
-  -p 9092:9092 \
-  -e ADVERTISED_HOST=`docker-machine ip \`docker-machine active\`` \
-  -e ADVERTISED_PORT=9092 \
-  hexagram30/kafka:2.12-1.0.1
+KAFKA_REPO=https://github.com/hexagram30/kafka-docker.git
+KAFKA_CLONE_DIR=kafka
+
+if [[ ! -e "$KAFKA_CLONE_DIR" ]]; then
+	git clone $KAFKA_REPO $KAFKA_CLONE_DIR
+fi
+
+cd $KAFKA_CLONE_DIR && \
+	docker-compose up
