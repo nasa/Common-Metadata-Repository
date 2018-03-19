@@ -3,12 +3,12 @@
 
 **Contents**
 
-* [REST API](#rest-api-)
-* [JVM Library](#jvm-library-)
-* [Client Library](#client-library-)
+* REST API
+* JVM Library
+* Client Library
 
 
-## REST API [&#x219F;](#contents)
+## REST API
 
 The CMR Graph REST API is accessible via the endpoint
 [http://localhost:3012](http://localhost:3012), following the port numbering
@@ -77,11 +77,11 @@ $ curl --silent "http://localhost:3012/demo/movie/search?q=Matrix"|jq .
 ```
 
 
-## JVM Library [&#x219F;](#contents)
+## JVM Library
 
 TBD
 
 
-## Client Library  [&#x219F;](#contents)
+## Client Library
 
 TBD

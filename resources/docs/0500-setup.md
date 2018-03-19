@@ -3,16 +3,16 @@
 
 **Contents**
 
-* [Start](#start-)
-* [Stop](#stop-)
-* [CMR Graph System](#cmr-graph-system-)
+* Start
+* Stop
+* CMR Graph System
 
 
 Docker is used to provide developers with the infrastructure necessary to
 work effectively on CMR Graph.
 
 
-### Start [&#x219F;](#contents)
+### Start
 
 To start this supporting infrastructure, you can use the `lein` alias we
 have provided:
@@ -35,7 +35,7 @@ Once all the containers are running, you can access web resources via
 localhost, as demonstrated in the "Connecting" documentation.
 
 
-### Stop [&#x219F;](#contents)
+### Stop
 
 Stopping (in a different terminal) is done in a similar manner as start:
 
@@ -44,7 +44,7 @@ $ lein stop-infra
 ```
 
 
-### CMR Graph System [&#x219F;](#contents)
+### CMR Graph System
 
 If you don't need the REPL, you can start the CMR Graph system with the
 following:
