@@ -104,7 +104,7 @@ your option) any later version.
 
 [logo]: https://avatars2.githubusercontent.com/u/32934967?s=200&v=4
 [api-docs]: http://cmr-exchange.github.io/cmr-graph/current/
-[marginalia-docs]: http://cmr-exchange.github.io/cmr-graph/current/9800-marginalia.html
+[marginalia-docs]: http://cmr-exchange.github.io/cmr-graph/current/marginalia.html
 [setup-docs]: http://cmr-exchange.github.io/cmr-graph/current/0500-setup.html
 [connecting-docs]: http://cmr-exchange.github.io/cmr-graph/current/0750-connecting.html
 [usage-docs]: http://cmr-exchange.github.io/cmr-graph/current/1000-usage.html
