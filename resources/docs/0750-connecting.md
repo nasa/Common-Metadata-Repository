@@ -4,11 +4,12 @@
 **Contents**
 
 * Web Interfaces
-  * Neo4j Web Console
-  * Kibana Web Console
-  * Elasticsearch
-* Neo4j Shell
-* Bash
+   * Neo4j Web Console
+   * Kibana Web Console
+   * Elasticsearch
+* In-Container Shells
+   * Neo4j Shell
+   * Bash Shells
 
 
 ## Web Interfaces
@@ -52,7 +53,9 @@ is available here:
 * http://localhost:9211/
 
 
-## Neo4j Shell
+## In-Container Shells
+
+### Neo4j Shell
 
 You can run the Neo4j shell on the container by executing the following:
 
@@ -68,7 +71,7 @@ neo4j>
 ```
 
 
-## Bash
+### Bash Shells
 
 Should you wish to bring up a system shell on the containers, you can execute
 any of the following:
