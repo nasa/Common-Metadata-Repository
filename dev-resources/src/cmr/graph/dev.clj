@@ -21,6 +21,7 @@
    [cmr.graph.config :as config]
    [cmr.graph.demo.movie :as movie-demo]
    [cmr.graph.dev.system :as dev-system]
+   [cmr.graph.health :as health]
    [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,6 +44,13 @@
 (def shutdown #'dev-system/shutdown)
 (def system (fn [] dev-system/system))
 
+(defn system-arg
+  []
+  (if-let [system (system)]
+    system
+    (throw (new Exception
+                "System data structure is nil; have you run (startup)?"))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,9 +67,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Demo functions
-(def get-movie #(movie-demo/get-movie (neo4j/get-conn (system)) %))
-(def search-movie #(movie-demo/search (neo4j/get-conn (system)) %))
-(def get-movie-graph #(movie-demo/get-graph (neo4j/get-conn (system)) %))
+(def get-movie #(movie-demo/get-movie (neo4j/get-conn (system-arg)) %))
+(def search-movie #(movie-demo/search (neo4j/get-conn (system-arg)) %))
+(def get-movie-graph #(movie-demo/get-graph (neo4j/get-conn (system-arg)) %))
+
+;;; Health functions
+(def current-health #(health/components-ok? (system-arg)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

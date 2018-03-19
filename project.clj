@@ -41,13 +41,14 @@
     :dev {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]]
+      :plugins [
+        [lein-shell "0.5.0"]
+        [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
         :init-ns cmr.graph.dev
         :prompt ~get-prompt
-        :init ~(println (get-banner))}
-      :plugins [
-        [lein-shell "0.5.0"]]}
+        :init ~(println (get-banner))}}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []

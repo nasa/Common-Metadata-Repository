@@ -301,6 +301,16 @@ nil
 nil
 ```
 
+Additional convenience functions provided in the `cmr.graph.dev` namespace,
+for use in the REPL:
+
+* `banner`
+* `current-health`
+* `refresh` (does a reload of changed namespaces; shouldn't be used with a
+  running system)
+* `reset` (stops a running system, reloads the changed namespaces, and restarts
+  the system)
+
 
 ## License [&#x219F;](#contents)
 
