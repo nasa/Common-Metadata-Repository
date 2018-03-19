@@ -64,9 +64,26 @@
       :plugins [
         [lein-ltest "0.3.0"]]
       :test-selectors {
-        :select :select}}}
+        :select :select}}
+    :docs {
+      :dependencies [
+        [clojang/codox-theme "0.2.0-SNAPSHOT"]]
+      :plugins [
+        [lein-codox "0.10.3"]
+        [lein-marginalia "0.9.1"]]
+      :codox {
+        :project {
+          :name "CMR Graph"
+          :description "A service and API for querying CMR metadata relationships"}
+        :namespaces [#"^cmr\.graph\.(?!dev)"]
+        :metadata {
+          :doc/format :markdown
+          :doc "Documentation forthcoming"}
+        :themes [:clojang]
+        :doc-paths ["resources/docs"]
+        :output-path "docs/current"}}}
   :aliases {
-    ;; Dev Aliases
+    ;; Dev & Testing Aliases
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
@@ -82,6 +99,16 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    ;; Documentation
+    "codox" ["with-profile" "+docs"
+      "codox"]
+    "marginalia" ["with-profile" "+docs"
+      "marg" "--dir" "docs/current"
+             "--file" "marginalia.html"
+             "--name" "Clojure Protocol Buffer Library"]
+    "docs" ["do"
+      ["codox"]
+      ["marginalia"]]
     ;; Application
     "start-cmr-graph"
       ["trampoline" "run"]
