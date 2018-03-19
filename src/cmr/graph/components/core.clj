@@ -4,7 +4,7 @@
     [cmr.graph.components.elastic :as elastic]
     [cmr.graph.components.httpd :as httpd]
     [cmr.graph.components.logging :as logging]
-    [cmr.graph.components.neo :as neo]
+    [cmr.graph.components.neo4j :as neo4j]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,10 +19,10 @@
              (logging/create-component)
              [:config])})
 
-(def neo
-  {:neo (component/using
-         (neo/create-component)
-         [:config :logging])})
+(def neo4j
+  {:neo4j (component/using
+           (neo4j/create-component)
+           [:config :logging])})
 
 (def elastic
   {:elastic (component/using
@@ -32,7 +32,7 @@
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :neo :elastic])})
+           [:config :logging :neo4j :elastic])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,14 +43,14 @@
   (component/map->SystemMap
     (merge cfg
            log
-           neo)))
+           neo4j)))
 
 (defn initialize-with-web
   []
   (component/map->SystemMap
     (merge cfg
            log
-           neo
+           neo4j
            elastic
            httpd)))
 

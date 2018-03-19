@@ -7,28 +7,29 @@
    [taoensso.timbre :as log]))
 
 (defn get-graph
-  [conn limit]
-  (let   [lim (if (some? limit)
-               (Integer/parseInt limit)
-                     100)
-          result (cy/tquery conn query/graph {:limit lim})
-          nodes (map (fn [{:strs [cast movie]}]
-                       (concat [{:title movie
-                                 :label :movie}]
-                               (map (fn [x] {:title x
-                                             :label :actor})
-                                    cast)))
-                     result)
-          nodes (distinct (apply concat nodes))
-          nodes-index (into {} (map-indexed #(vector %2 %1) nodes))
-          links (map (fn [{:strs [cast movie]}]
-                       (let [target   (nodes-index {:title movie :label :movie})]
-                         (map (fn [x]
-                                {:target target
-                                 :source (nodes-index {:title x :label :actor})})
-                                     cast)))
-                     result)]
-  {:nodes nodes :links (flatten links)}))
+  ([conn]
+    (get-graph conn 100))
+  ([conn limit]
+    (when (string? limit)
+      (get-graph conn (Integer/parseInt limit)))
+    (let   [result (cy/tquery conn query/graph {:limit limit})
+            nodes (map (fn [{:strs [cast movie]}]
+                         (concat [{:title movie
+                                   :label :movie}]
+                                 (map (fn [x] {:title x
+                                               :label :actor})
+                                      cast)))
+                       result)
+            nodes (distinct (apply concat nodes))
+            nodes-index (into {} (map-indexed #(vector %2 %1) nodes))
+            links (map (fn [{:strs [cast movie]}]
+                         (let [target   (nodes-index {:title movie :label :movie})]
+                           (map (fn [x]
+                                  {:target target
+                                   :source (nodes-index {:title x :label :actor})})
+                                       cast)))
+                       result)]
+    {:nodes nodes :links (flatten links)})))
 
 (defn search
   [conn q]

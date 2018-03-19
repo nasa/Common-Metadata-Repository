@@ -23,7 +23,7 @@
 
 (defn movie-demo
   [httpd-component]
-  (let [conn (get-in httpd-component [:neo :conn])]
+  (let [conn (get-in httpd-component [:neo4j :conn])]
     [["/demo/movie/graph/:limit" {:get (handler/movie-demo-graph conn)}]
      ["/demo/movie/search" {:get (handler/movie-demo-search conn)}]
      ["/demo/movie/title/:title" {:get (handler/movie-demo-title conn)}]]))

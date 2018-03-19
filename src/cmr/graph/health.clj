@@ -28,7 +28,7 @@
 
 (defn neo4j-ok?
   [component]
-  (http-ok? (get-in component [:neo :conn :endpoint :uri])))
+  (http-ok? (get-in component [:neo4j :conn :endpoint :uri])))
 
 (defn components-ok?
   [component]

@@ -1,4 +1,4 @@
-(ns cmr.graph.components.neo
+(ns cmr.graph.components.neo4j
   (:require
    [clojurewerkz.neocons.rest :as nr]
    [cmr.graph.components.config :as config]
@@ -9,7 +9,9 @@
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; TBD
+(defn get-conn
+  [system]
+  (get-in system [:neo4j :conn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
