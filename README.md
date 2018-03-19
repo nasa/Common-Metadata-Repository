@@ -244,6 +244,63 @@ as the log messages show:
 2018-03-10T00:07:18.934 [nREPL-worker-1] INFO cmr.graph.components.httpd:23 - Starting httpd component ...
 ```
 
+A convenience function has been provided for use in the REPL which returns
+the dynamic var where the system state is stored:
+
+```clj
+[cmr.graph.dev] λ=> (system)
+```
+
+Convenience wrappers have been provided for the movie demo functions in the
+REPL dev namespaces, automatically pulling the Neo4j connection information
+from the system data structure:
+
+```clj
+[cmr.graph.dev] λ=> (pprint (search-movie "Matr"))
+({:movie
+  {:tagline "Welcome to the Real World",
+   :title "The Matrix",
+   :released 1999}}
+ {:movie
+  {:tagline "Free your mind",
+   :title "The Matrix Reloaded",
+   :released 2003}}
+ {:movie
+  {:tagline "Everything that has a beginning has an end",
+   :title "The Matrix Revolutions",
+   :released 2003}})
+nil
+```
+
+```clj
+[cmr.graph.dev] λ=> (pprint (get-movie "The Matrix"))
+{"title" "The Matrix",
+ "cast"
+ [{:role ["Emil"], :name "Emil Eifrem", :job "acted"}
+  {:role nil, :name "Joel Silver", :job "produced"}
+  {:role nil, :name "Lana Wachowski", :job "directed"}
+  {:role nil, :name "Lilly Wachowski", :job "directed"}
+  {:role ["Agent Smith"], :name "Hugo Weaving", :job "acted"}
+  {:role ["Morpheus"], :name "Laurence Fishburne", :job "acted"}
+  {:role ["Trinity"], :name "Carrie-Anne Moss", :job "acted"}
+  {:role ["Neo"], :name "Keanu Reeves", :job "acted"}]}
+nil
+```
+
+```clj
+[cmr.graph.dev] λ=> (pprint (get-movie-graph 100))
+{:nodes
+ ({:title "Apollo 13", :label :movie}
+  {:title "Tom Hanks", :label :actor}
+  {:title "Kevin Bacon", :label :actor}
+  ...)
+ :links
+ ({:target 0, :source 1}
+  {:target 0, :source 2}
+  {:target 0, :source 3})}
+nil
+```
+
 
 ## License [&#x219F;](#contents)
 

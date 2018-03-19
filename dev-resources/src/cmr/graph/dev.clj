@@ -17,7 +17,9 @@
    [clojurewerkz.neocons.rest.relationships :as nrl]
    [clojusc.twig :as logger]
    [cmr.graph.components.core :as components]
+   [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.config :as config]
+   [cmr.graph.demo.movie :as movie-demo]
    [cmr.graph.dev.system :as dev-system]
    [com.stuartsierra.component :as component]))
 
@@ -39,6 +41,7 @@
 
 (def startup #'dev-system/startup)
 (def shutdown #'dev-system/shutdown)
+(def system (fn [] dev-system/system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,7 +58,10 @@
 ;;;   Data   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; TBD
+;;; Demo functions
+(def get-movie #(movie-demo/get-movie (neo4j/get-conn (system)) %))
+(def search-movie #(movie-demo/search (neo4j/get-conn (system)) %))
+(def get-movie-graph #(movie-demo/get-graph (neo4j/get-conn (system)) %))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

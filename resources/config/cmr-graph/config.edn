@@ -5,7 +5,7 @@
  :httpd
   {:port 3012}
  :logging
-  {:level :trace
+  {:level :debug
    :nss [cmr.graph]}
  :neo4j
   {:host "127.0.0.1"
