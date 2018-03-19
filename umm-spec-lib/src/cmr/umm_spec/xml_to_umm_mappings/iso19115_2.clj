@@ -186,12 +186,13 @@
                                             "[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']")))]
   (when-let [online-resource
              (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
-    {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
-     :Protocol (char-string-value online-resource "gmd:protocol")
-     :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
-     :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
-     :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
-     :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
+    (when-let [linkage (value-of online-resource "gmd:linkage/gmd:URL")]
+      {:Linkage (url/format-url linkage sanitize?)
+       :Protocol (char-string-value online-resource "gmd:protocol")
+       :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
+       :Name (char-string-value online-resource ":gmd:name")
+       :Description (char-string-value online-resource "gmd:description")
+       :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")}))))
 
 (defn- parse-doi-for-publication-reference
   "Returns the DOI field within a publication reference."

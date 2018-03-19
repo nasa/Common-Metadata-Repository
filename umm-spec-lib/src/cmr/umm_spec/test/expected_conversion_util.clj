@@ -109,23 +109,11 @@
   (when (seq addresses)
     [(first addresses)]))
 
-(defn sanitize-online-resource
-  "Sanitize the OnlineResource URL (Linkage)"
-  [online-resource]
-  (if (:Linkage online-resource)
-    (update online-resource :Linkage #(url/format-url % true))
-    online-resource))
-
 (defn dif-online-resource
-  "Sanitize the URL, set Name and Description, and dissoc unmapped fields"
+  "Sanitize the URL and dissoc unmapped fields"
   [online-resource]
   (cmn/map->OnlineResourceType
-   (-> online-resource
-       sanitize-online-resource
-       (update :Linkage #(su/with-default-url % true))
-       (select-keys [:Linkage])
-       (assoc :Name dif-util/dif-online-resource-name)
-       (assoc :Description dif-util/dif-online-resource-description))))
+   (select-keys (update online-resource :Linkage #(url/format-url % true)) [:Linkage])))
 
 (defn- check-nil-pub-ref
  "If the online resource name and description are the only fields in the publication
@@ -230,5 +218,7 @@
   (-> pub-ref
       (update-in [:DOI] expected-dif-doi)
       (update :ISBN su/format-isbn)
-      (update :OnlineResource dif-online-resource)
+      (as-> pr (if (:OnlineResource pr)
+                 (update pr :OnlineResource dif-online-resource)
+                 pr))
       check-nil-pub-ref))

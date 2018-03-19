@@ -84,10 +84,12 @@
               [:gco:CharacterString (:Protocol online-resource)]]
              [:gmd:applicationProfile
               [:gco:CharacterString (:ApplicationProfile online-resource)]]
+           (when-let [name (:Name online-resource)]
              [:gmd:name
-              [:gco:CharacterString (:Name online-resource)]]
+              [:gco:CharacterString name]])
+           (when-let [description (:Description online-resource)]
              [:gmd:description
-              [:gco:CharacterString (:Description online-resource)]]
+              [:gco:CharacterString description]])
              [:gmd:function
               [:gmd:CI_OnLineFunctionCode {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
                                            :codeListValue (:Function online-resource)}(:Function online-resource)]]]]]]

@@ -284,13 +284,10 @@
 (defn- expected-collection-citations
   "Adds OnlineResource Name and Description to CollectionCitations"
   [collection-citations]
-  (for [collection-citation collection-citations
-        :let [linkage (get-in collection-citation [:OnlineResource :Linkage])]]
-    (-> collection-citation
-        (assoc-in [:OnlineResource :Name] "Dataset Citation")
-        (assoc-in [:OnlineResource :Description] "Dataset Citation")
-        (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
-        (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol))))
+  (for [collection-citation collection-citations]
+    (if (:OnlineResource collection-citation)
+      (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
+      collection-citation)))
 
 (def coll-progress-enum-list
   "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"

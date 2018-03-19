@@ -51,8 +51,8 @@
  (when online-resource
   (-> online-resource
       (update :Linkage #(url/format-url % true))
-      (update :Name #(su/with-default % true))
-      (update :Description #(str (su/with-default % true) " PublicationReference:")))))
+      (update :MimeType #(when % nil))
+      (update :Description #(when % (str  %  " PublicationReference:"))))))
 
 (defn- expected-doi-in-publication-reference
   "Returns the expected DOI field in a publication reference."
@@ -344,7 +344,12 @@
   [collection-citations]
   (if collection-citations
     (conj [] (cmn/map->ResourceCitationType
-               (iso-shared/trim-collection-citation (first collection-citations))))
+               (-> collection-citations
+                   first
+                   iso-shared/trim-collection-citation
+                   (as-> cc (if (:OnlineResource cc)
+                              (update cc :OnlineResource #(assoc % :MimeType nil))
+                              cc))))) 
     [{}]))
 
 (defn umm-expected-conversion-iso19115

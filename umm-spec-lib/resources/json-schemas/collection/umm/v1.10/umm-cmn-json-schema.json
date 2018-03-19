@@ -423,9 +423,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
+        },
+        "MimeType": {
+          "description": "The mime type of the online resource.",
+          "$ref": "#/definitions/URLMimeTypeEnum"
         }
       },
-      "required": ["Linkage", "Name", "Description"]
+      "required": ["Linkage"]
     },
     "FileSizeType": {
       "description": "Represents a data file size.",

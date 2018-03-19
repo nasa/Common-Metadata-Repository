@@ -66,7 +66,8 @@
        [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
        [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
        [:Dataset_DOI (get-in c [:DOI :DOI])]
-       [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]])))
+       (when-let [online-resource (:OnlineResource collection-citation)]
+         [:Online_Resource (:Linkage online-resource)])])))
 
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."

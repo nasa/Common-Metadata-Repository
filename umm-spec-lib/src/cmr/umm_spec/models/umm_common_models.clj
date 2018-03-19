@@ -674,6 +674,9 @@
    ;; The function of the online resource. In ISO where this class originated the valid values are:
    ;; download, information, offlineAccess, order, and search.
    Function
+
+   ;; The mime type of the online resource.
+   MimeType
   ])
 (record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 

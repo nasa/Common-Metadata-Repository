@@ -191,8 +191,10 @@
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
                [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
-               [:gmd:name (char-string (:Name online-resource))]
-               [:gmd:description (char-string (str (:Description online-resource) " PublicationReference:"))]
+             (when-let [name (:Name online-resource)]
+               [:gmd:name (char-string name)])
+             (when-let [description (:Description online-resource)]
+               [:gmd:description (char-string (str description " PublicationReference:"))])
                [:gmd:function
                 [:gmd:CI_OnLineFunctionCode
                  {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")

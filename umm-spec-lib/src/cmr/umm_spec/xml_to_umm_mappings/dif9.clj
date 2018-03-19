@@ -116,9 +116,8 @@
        :IssueIdentification (value-of data-set-citation "Issue_Identification")
        :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
        :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
-       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
-                        :Name "Data Set Citation"
-                        :Description "Data Set Citation"}})))
+       :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")] 
+                         {:Linkage linkage})})))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
