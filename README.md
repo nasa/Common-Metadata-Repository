@@ -34,7 +34,6 @@ Future explorations:
 
 ## Documentation [&#x219F;](#contents)
 
-
 ### Dependencies [&#x219F;](#contents)
 
 * Java
@@ -64,14 +63,14 @@ $ lein start-infra
 $ lein start-cmr-graph
 ```
 
-Be sure to check out the "Documentation" section below to links with more
-details on setup and use of CMR Graph.
+Be sure to check out the "Guides" section below for links to more details on
+setup and use of CMR Graph.
 
 
 ### Example Usage [&#x219F;](#contents)
 
 For a quick taste of using CMR Graph, we've put a snippet of code below.
-See the links in the "Documentation" section below for more detailed examples
+See the links in the "Guides" section below for links to more detailed examples
 and other usage.
 
 ```
