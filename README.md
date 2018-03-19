@@ -31,6 +31,9 @@ Future explorations:
 * JanusGraph
 * Clojure Ogre
 
+A separate "CMR Recommend" service that utilizes the graph database service
+to identify data sets the Earthdata Search user may be interested in.
+
 
 ## Documentation [&#x219F;](#contents)
 
