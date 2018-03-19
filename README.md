@@ -10,6 +10,7 @@
 * [Setup](#setup-)
    * [Neo4j](#neo4j-)
    * [Kibana](#kibana-)
+   * [Elasticsearch](#elasticsearch-)
 * [Connecting](#connecting-)
    * [Neo4j Shell](#neo4j-shell-)
    * [Bash](#bash-)
@@ -89,6 +90,14 @@ following:
 ```
 $ lein start-cmr-graph
 ```
+
+
+### Elasticsearch  [&#x219F;](#contents)
+
+If you want to use this setup for more then just a week or so, you'll want to
+get a free Basic Elasticsearch license. To do this, navigate to
+[the management tab][kibana-management] and click "Licsen Magagement" in the
+main window, following the instructions for adding a new Basic license.
 
 
 ## Connecting [&#x219F;](#contents)
@@ -256,5 +265,6 @@ your option) any later version.
 
 [kibana-query]: resources/images/kibana-query.png
 [kibana-query-thumb]: resources/images/kibana-query-thumb.png
+[kibana-management]: http://localhost:5601/app/kibana#/management
 
 [repl]: resources/images/repl-screen.png
