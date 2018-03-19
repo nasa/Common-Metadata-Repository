@@ -24,7 +24,7 @@
    [drift.execute :as drift]))
 
 (def URS_TOKEN_MAX_LENGTH 100)
-(def CMR_INGEST_SEPARATOR "CMR_INGEST:")
+(def WRITE_ACCESS_SEPARATOR "WRITE_ACCESS:")
 
 (def db-migration-routes
   (POST "/db-migrate"
@@ -73,8 +73,14 @@
             ctx)
            {:status 200}))))
 
-(defn- add-cmr-ingest-to-context
-  "Add CMR Ingest prefix to token in the request context of the given request.
+(defn- is-launchpad-token?
+  "Returns true if the given token is a launchpad token.
+   Currently we only check the length of the token to decide."
+  [token]
+  (> (count token) URS_TOKEN_MAX_LENGTH))
+
+(defn- add-write-access-to-request
+  "Add Write Access prefix to token in the request context of the given request.
    This function should be called on routes that will ingest into CMR.
    The CMR Ingest prefix is used to indicates to legacy services that when
    validating the Launchpad token, the NAMS CMR Ingest group should also be checked.
@@ -82,12 +88,16 @@
    also has the right ACLs which is based on Earthdata Login uid."
   [request]
   (let [token (-> request :request-context :token)]
-    (if (> (count token) URS_TOKEN_MAX_LENGTH)
+    (if (is-launchpad-token? token)
       ;; for Launchpad token add CMR_INGEST: prefix so that legacy service
-      ;; can do extra vaidation to check if the user has signed up for
+      ;; can do extra validation to check if the user has been approved for
       ;; CMR Ingest workflow.
       (-> request
-          (update-in [:request-context :token] #(str CMR_INGEST_SEPARATOR %))
+          (update-in [:request-context :token] #(str WRITE_ACCESS_SEPARATOR %))
+          ;; the next line is needed because we had the ring handler tied to the context
+          ;; when the ring handler is added to the middleware stack.
+          ;; Now we updated the token inside the context, we need to update the handler
+          ;; to be tied to the new context to use the updated token.
           (update-in [:request-context] augmenter/add-user-id-and-sids-to-context))
       request)))
 
@@ -105,10 +115,10 @@
        (context ["/collections/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (collections/ingest-collection provider-id native-id (add-cmr-ingest-to-context request)))
+           (collections/ingest-collection provider-id native-id (add-write-access-to-request request)))
          (DELETE "/"
            request
-           (collections/delete-collection provider-id native-id (add-cmr-ingest-to-context request))))
+           (collections/delete-collection provider-id native-id (add-write-access-to-request request))))
        ;; Granules
        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
          (POST "/"
@@ -117,31 +127,31 @@
        (context ["/granules/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (granules/ingest-granule provider-id native-id (add-cmr-ingest-to-context request)))
+           (granules/ingest-granule provider-id native-id (add-write-access-to-request request)))
          (DELETE "/"
            request
-           (granules/delete-granule provider-id native-id (add-cmr-ingest-to-context request))))
+           (granules/delete-granule provider-id native-id (add-write-access-to-request request))))
        ;; Variables
        (context ["/variables/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (variables/ingest-variable provider-id native-id (add-cmr-ingest-to-context request)))
+           (variables/ingest-variable provider-id native-id (add-write-access-to-request request)))
          (DELETE "/"
            request
-           (variables/delete-variable provider-id native-id (add-cmr-ingest-to-context request))))
+           (variables/delete-variable provider-id native-id (add-write-access-to-request request))))
        ;; Services
        (context ["/services/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
-           (services/ingest-service provider-id native-id (add-cmr-ingest-to-context request)))
+           (services/ingest-service provider-id native-id (add-write-access-to-request request)))
          (DELETE "/"
            request
-           (services/delete-service provider-id native-id (add-cmr-ingest-to-context request))))
+           (services/delete-service provider-id native-id (add-write-access-to-request request))))
        ;; Bulk updates
        (context "/bulk-update/collections" []
          (POST "/"
            request
-           (bulk/bulk-update-collections provider-id (add-cmr-ingest-to-context request)))
+           (bulk/bulk-update-collections provider-id (add-write-access-to-request request)))
          (GET "/status" ; Gets all tasks for provider
            request
            (bulk/get-provider-tasks provider-id request))

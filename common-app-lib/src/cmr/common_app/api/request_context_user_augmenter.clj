@@ -73,7 +73,7 @@
      (errors/throw-service-error :unauthorized token-required-message)))))
 
 (defn add-user-id-and-sids-to-context
-  "Adds information to the context including the user is and sids. Lazy assoc with a delay so we don't
+  "Adds information to the context including the user id and sids. Lazy assoc with a delay so we don't
   do the expensive work until we need the sids or user id. This is called for every search api
   call, so don't want this to affect performance."
   [context]
