@@ -1,5 +1,7 @@
 version: '3'
 services:
+
+  ###########################################################################
   neo4j:
     image: neo4j:3.3.3
     container_name: cmr-graph-neo4j
@@ -13,6 +15,7 @@ services:
     networks:
       - cmr-graph-net
 
+  ###########################################################################
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
     container_name: cmr-graph-elastic
@@ -21,7 +24,9 @@ services:
       - transport.host=127.0.0.1
       - ELASTIC_PASSWORD=kibana
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      #- xpack.security.enabled=false
+      #- xpack.monitoring.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -32,6 +37,8 @@ services:
       - 9211:9200
     networks:
       - cmr-graph-net
+
+  ###########################################################################
   kibana:
     image: docker.elastic.co/kibana/kibana:6.2.2
     container_name: cmr-graph-kibana
@@ -54,6 +61,7 @@ services:
     networks:
       - cmr-graph-net
 
+  ###########################################################################
   # apm_server:
   #   image: docker.elastic.co/apm/apm-server:6.2.2
   #   container_name: cmr-graph-apm-server
@@ -66,6 +74,7 @@ services:
   #   networks:
   #     - cmr-graph-net
 
+  ###########################################################################
   setup_kibana:
     image: centos:7
     container_name: cmr-graph-setup-kibana
@@ -78,6 +87,7 @@ services:
     networks:
       - cmr-graph-net
 
+  ###########################################################################
   # setup_apm_server:
   #   image: docker.elastic.co/apm/apm-server:6.2.2
   #   container_name: setup_apm_server
