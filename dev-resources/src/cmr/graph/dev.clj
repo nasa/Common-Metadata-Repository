@@ -1,4 +1,8 @@
 (ns cmr.graph.dev
+  "CMR Graph development namespace.
+
+  This namespace is particularly useful when doing active development on the
+  CMR Graph application."
   (:require
    [cheshire.core :as json]
    [clj-http.client :as httpc]
@@ -20,36 +24,40 @@
    [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.config :as config]
    [cmr.graph.demo.movie :as movie-demo]
-   [cmr.graph.dev.system :as dev-system]
    [cmr.graph.health :as health]
+   [cmr.graph.system :as system-api]
    [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(logger/set-level! ['cmr.graph] :info)
-(dev-system/set-system-ns "cmr.graph.components.core")
+(logger/set-level! '[cmr.graph] :info)
+(system-api/set-system-ns "cmr.graph.components.core")
 
 (defn banner
   []
   (println (slurp (io/resource "text/banner.txt")))
   :ok)
 
+(defn system-arg
+  []
+  (if-let [system (system-api/get-system)]
+    system
+    (throw (new Exception
+                (str "System data structure is not defined; "
+                     "have you run (startup)?")))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def startup #'dev-system/startup)
-(def shutdown #'dev-system/shutdown)
-(def system (fn [] dev-system/system))
+(def startup #'system-api/startup)
+(def shutdown #'system-api/shutdown)
 
-(defn system-arg
+(defn system
   []
-  (if-let [system (system)]
-    system
-    (throw (new Exception
-                "System data structure is nil; have you run (startup)?"))))
+  (system-api/get-system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,8 +65,9 @@
 
 (defn reset
   []
-  (dev-system/shutdown)
-  (repl/refresh :after 'cmr.graph.dev.system/startup))
+  (system-api/stop)
+  (system-api/deinit)
+  (repl/refresh :after 'cmr.graph.system/startup))
 
 (def refresh #'repl/refresh)
 
