@@ -27,7 +27,7 @@ Earth science data they care about.
 
 Future explorations:
 
-* Apache Tinkerpop
+* Apache TinkerPop
 * JanusGraph
 * Clojure Ogre
 
@@ -53,6 +53,10 @@ to it in order for Elasticsearch and Kibana to run.
 For an interactive environment:
 ```
 $ lein start-infra
+```
+
+Then, in another terminal:
+```
 $ lein repl
 ```
 ```clj
@@ -60,11 +64,34 @@ $ lein repl
 ```
 
 For a non-interactive environment:
-
 ```
 $ lein start-infra
+```
+and:
+```
 $ lein start-cmr-graph
 ```
+
+#### Ingesting Demo Data
+
+If you want to exercise the movie demo portions of CMR Graph, you will need to
+ingest the movie data. In particular, once the infrastructure is up:
+
+1. Visit the Neo4j web console at http://localhost:7474/browser/.
+1. In the "Jump into code" box, click the "Write Code" button.
+1. In the new section that appears at the top of the page, click the "Create
+   a Graph" button in the "Movie Graph" box.
+1. In the tutorial carousel that appears at the top of the page, click the
+   right arrow.
+1. In the next frame of the carousel, there is a little "play" button at the
+   top left of the code (right before the first `CREATE` statement): click it.
+1. A code section now appears at the top of the page with a "play" button at
+   the far right: click it.
+
+At this point, your instance of Neo4j should have the demo movie data.
+
+
+#### Read More
 
 Be sure to check out the "Guides" section below for links to more details on
 setup and use of CMR Graph.
@@ -84,7 +111,7 @@ TBD
 ### Guides [&#x219F;](#contents)
 
 * [Setup][setup-docs]
-* [Conecting to the Infrastructure][connecting-docs]
+* [Connecting to the Infrastructure][connecting-docs]
 * [Usage Examples][usage-docs]
 * [Development Environment][dev-docs]
 
