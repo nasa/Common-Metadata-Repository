@@ -111,7 +111,7 @@ TBD
 ```
 
 
-### Guides [&#x219F;](#contents)
+### Project Guides [&#x219F;](#contents)
 
 * [Setup][setup-docs]
 * [Connecting to the Infrastructure][connecting-docs]
@@ -119,10 +119,16 @@ TBD
 * [Development Environment][dev-docs]
 
 
-### Reference [&#x219F;](#contents)
+### Project Reference [&#x219F;](#contents)
 
 * [API Reference][api-docs]
 * [Marginalia][marginalia-docs]
+
+
+### Related Resources
+
+* [Neo4j Cypher cheatsheet][cheatsheet]
+* [Neo4j Manual: Cypher][cypher]
 
 
 ## License [&#x219F;](#contents)
@@ -142,3 +148,5 @@ your option) any later version.
 [connecting-docs]: http://cmr-exchange.github.io/cmr-graph/current/0750-connecting.html
 [usage-docs]: http://cmr-exchange.github.io/cmr-graph/current/1000-usage.html
 [dev-docs]: http://cmr-exchange.github.io/cmr-graph/current/2000-dev.html
+[cypher]: https://neo4j.com/docs/developer-manual/current/cypher/
+[cheatsheet]: https://neo4j.com/docs/cypher-refcard/current/
