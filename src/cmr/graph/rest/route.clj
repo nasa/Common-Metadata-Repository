@@ -1,5 +1,6 @@
 (ns cmr.graph.rest.route
   (:require
+   [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.health :as health]
    [cmr.graph.rest.handler :as handler]
    [reitit.ring :as ring]
@@ -23,7 +24,7 @@
 
 (defn movie-demo
   [httpd-component]
-  (let [conn (get-in httpd-component [:neo4j :conn])]
+  (let [conn (neo4j/get-conn httpd-component)]
     [["/demo/movie/graph/:limit" {:get (handler/movie-demo-graph conn)}]
      ["/demo/movie/search" {:get (handler/movie-demo-search conn)}]
      ["/demo/movie/title/:title" {:get (handler/movie-demo-title conn)}]]))
