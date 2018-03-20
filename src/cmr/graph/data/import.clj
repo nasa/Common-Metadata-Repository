@@ -3,7 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.data.csv :as csv]))
+   [clojure.data.csv :as csv]
+   [cmr.graph.data.statement :as statement]))
 
 (def json-collections-filename
   "data/all_public_collections_from_es.json")
@@ -23,7 +24,7 @@
 
 (def relevant-fields
   "List of fields to parse from a collection record."
-  [:concept-id :provider-id :related-urls :data-center :version-id :metadata-format])
+  [:concept-id :provider-id :entry-id :related-urls :data-center :version-id :metadata-format])
 
 (defn parse-url-into-nodes
   "Parses a single URL field into all the nodes we want to create for the URL."
@@ -67,10 +68,15 @@
 
 (comment
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
+ (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
 
  (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
                        (str "resources/" full-csv-file))
 
  (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
-                       (str "resources/" csv-file)))
+                       (str "resources/" csv-file))
+ (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
+ (println
+  (statement/neo4j-statements (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file)))))
+  ))
