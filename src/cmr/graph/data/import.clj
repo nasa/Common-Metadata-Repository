@@ -11,8 +11,11 @@
 (def test-file
   "data/testfile.json")
 
-(def csv-file
+(def test-csv-file
   "data/collections.csv")
+
+(def full-csv-file
+  "data/all_collections.csv")
 
 (def url-fields
   "List of fields we are interested in parsing from a given URL."
@@ -64,5 +67,10 @@
 
 (comment
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
+ (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
+
+ (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                       (str "resources/" full-csv-file))
+
  (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
                        (str "resources/" csv-file)))
