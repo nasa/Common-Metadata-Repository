@@ -40,7 +40,8 @@
       :aot :all}
     :dev {
       :dependencies [
-        [org.clojure/tools.namespace "0.2.11"]]
+        [org.clojure/tools.namespace "0.2.11"]
+        [proto-repl "0.3.1"]]
       :plugins [
         [lein-shell "0.5.0"]
         [venantius/ultra "0.5.2"]]
