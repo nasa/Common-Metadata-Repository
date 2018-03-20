@@ -4,14 +4,18 @@
   :license {
     :name "Apache License, Version 2.0"
     :url "https://opensource.org/licenses/Apache-2.0"}
-  :exclusions [org.clojure/clojure]
+  :exclusions [
+    org.apache.maven.wagon/wagon-provider-api
+    org.clojure/clojure
+    potemkin]
   :dependencies [
-    [clj-http "3.7.0"]
-    [cljs-http "0.1.43"]
-    [clojusc/ltest "0.2.0"]
+    [clj-http "3.8.0"]
+    [cljs-http "0.1.44"]
+    [clojusc/ltest "0.3.0"]
+    [org.apache.maven.wagon/wagon-provider-api "2.10"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/clojurescript "1.9.946"]
-    [org.clojure/core.async "0.3.443"]
+    [org.clojure/clojurescript "1.10.191"]
+    [org.clojure/core.async "0.4.474"]
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
     [potemkin "0.4.4"]]
@@ -43,13 +47,21 @@
         :system :system}
       }
     :lint {
-      :source-paths ^:replace ["src"]
+      :exclusions ^:replace [
+        clj-http
+        org.clojure/clojure
+        org.clojure/tools.namespace]
+      :dependencies ^:replace [
+        [clj-http "2.2.0"]
+        [org.clojure/clojure "1.8.0"]
+        [org.clojure/tools.namespace "0.2.11"]]
+      :source-paths ^:replace ["src/clj" "src/cljc"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.4"]
-        [lein-ancient "0.6.12"]
-        [lein-bikeshed "0.4.1"]
-        [lein-kibit "0.1.5"]
+        [jonase/eastwood "0.2.5"]
+        [lein-ancient "0.6.14"]
+        [lein-bikeshed "0.5.1"]
+        [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
     :cljs {
       :source-paths ^:replace ["src/cljs" "src/cljc"]}
@@ -104,9 +116,13 @@
       ^{:doc "Use the ltest runner for verbose, colourful test output"}
       ["with-profile" "+test"
        "run" "-m" "cmr.client.testing.runner"]
-    "check-deps"
-      ^{:doc "Check to see if any dependencies are out of date"}
-      ["with-profile" "lint" "ancient" ":all"]
+    "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
+    "check-jars" ["with-profile" "+lint" "do"
+      ["deps" ":tree"]
+      ["deps" ":plugin-tree"]]
+    "check-deps" ["do"
+      ["check-jars"]
+      ["check-vers"]]
     "lint"
       ^{:doc "Run linting tools against the source"}
       ["with-profile" "+test" "kibit"]
