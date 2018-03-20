@@ -46,7 +46,7 @@
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
-        :init-ns cmr.graph.dev
+        :init-ns user
         :prompt ~get-prompt
         :init ~(println (get-banner))}}
     :lint {
