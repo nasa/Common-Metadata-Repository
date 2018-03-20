@@ -9,6 +9,7 @@
 (defn rest-api-routes
   [httpd-component]
   (concat
+   (route/collections httpd-component)
    (route/movie-demo httpd-component)
    (route/admin httpd-component)))
 
