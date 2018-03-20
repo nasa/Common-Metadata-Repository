@@ -42,7 +42,7 @@
 
 (def collection-columns
   "Columns in the collections CSV file."
-  ["concept-id" "provider-id" "data-center" "version-id" "metadata-format"])
+  ["ConceptId" "ProviderId" "DataCenter" "VersionId" "MetadataFormat"])
 
 (defn collection->row
   "Returns a row to write to the collections CSV file for a given collection."
