@@ -5,4 +5,8 @@
 
 (defn get-all
   [conn]
-  (cy/tquery conn query/all))
+  (cy/tquery conn query/get-all))
+
+(defn delete-all
+  [conn]
+  (cy/tquery conn query/delete-all))

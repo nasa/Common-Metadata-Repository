@@ -13,7 +13,8 @@
 (defn collections
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/collections" {:get (handler/get-collections conn)}]]))
+    [["/collections" {:get (handler/get-collections conn)
+                      :delete (handler/delete-collections conn)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
