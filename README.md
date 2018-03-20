@@ -22,7 +22,7 @@
 This is an experimental project created as part of a 2-day Hackfest for
 improved relational data and discovery for NASA's Earthdata Search system.
 In particular, here we are exploring the use of graph databases and related
-indexing methodologies with the aim of helping uses find out more about the
+indexing methodologies with the aim of helping users find out more about the
 Earth science data they care about.
 
 Future explorations:
