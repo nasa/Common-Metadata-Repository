@@ -28,6 +28,7 @@
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
+    [digest "1.4.6"]
     [http-kit "2.2.0"]
     [metosin/reitit "0.1.0"]
     [metosin/ring-http-response "0.9.0"]
