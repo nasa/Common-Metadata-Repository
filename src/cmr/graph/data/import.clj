@@ -10,14 +10,26 @@
 (def test-file
   "data/testfile.json")
 
+(def url-fields
+  "List of fields we are interested in parsing from a given URL."
+  [:type :url])
+
 (def relevant-fields
   "List of fields to parse from a collection record."
   [:concept-id :provider-id :related-urls :data-center :version-id :metadata-format])
 
+(defn parse-url-into-nodes
+  "Parses a single URL field into all the nodes we want to create for the URL."
+  [url]
+  (select-keys (json/parse-string url true) url-fields))
+
 (defn prepare-collection-for-import
   "Returns only the relevant JSON fields from the provided collection record for import into neo4j."
   [collection]
-  (select-keys (:fields collection) relevant-fields))
+  (update (select-keys (:fields collection) relevant-fields)
+          :related-urls
+          (fn [urls]
+            (mapv parse-url-into-nodes urls))))
 
 (defn read-json-file
   "Reads a JSON file into memory"
@@ -26,4 +38,4 @@
 
 (comment
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
- (prepare-collection-for-import (first (:hits (:hits (read-json-file test-file))))))
+ (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file)))))
