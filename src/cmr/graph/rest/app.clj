@@ -10,8 +10,7 @@
   [httpd-component]
   (concat
    (route/movie-demo httpd-component)
-   (route/health httpd-component)
-   route/ping))
+   (route/admin httpd-component)))
 
 (defn app
   [httpd-component]
