@@ -12,7 +12,7 @@
 
 (def relevant-fields
   "List of fields to parse from a collection record."
-  [:concept-id :provider-id :related-urls :data-center :version-id])
+  [:concept-id :provider-id :related-urls :data-center :version-id :metadata-format])
 
 (defn prepare-collection-for-import
   "Returns only the relevant JSON fields from the provided collection record for import into neo4j."
