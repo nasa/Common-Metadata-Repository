@@ -55,6 +55,9 @@ For an interactive environment:
 $ lein start-infra
 ```
 
+Note that Elasticsearch and Kibana used in this setup need 4GB of free space
+in Docker; be sure your settings have been updated to account for this.
+
 Then, in another terminal:
 ```
 $ lein repl
