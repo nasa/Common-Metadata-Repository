@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-client "0.2.0"
   :description "A Clojure(Script) Client for NASA's Common Metadata Repository"
   :url "https://github.com/oubiwann/cmr-client"
   :license {
@@ -81,7 +81,7 @@
           :doc/format :markdown
           :doc "Documentation forthcoming"}
         :themes [:rdash]
-        :doc-paths ["docs/md"]
+        :doc-paths ["resources/docs"]
         :output-path "docs/current"}}}
   :cljsbuild {
     :builds [
