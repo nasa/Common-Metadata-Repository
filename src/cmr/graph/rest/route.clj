@@ -13,8 +13,15 @@
 (defn collections
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/collections" {:get (handler/get-collections conn)
-                      :delete (handler/delete-collections conn)}]]))
+    [["/collections" {
+      :get (handler/get-collections conn)
+      :delete (handler/delete-collections conn)}]
+     ["/collection" {
+      :post (handler/add-collection conn)}]
+     ["/collection/:concept-id" {
+      :get (handler/get-collection conn)
+      :delete (handler/delete-collection conn)
+      :update (handler/update-collection conn)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,9 +36,12 @@
 (defn movie-demo
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/demo/movie/graph/:limit" {:get (handler/movie-demo-graph conn)}]
-     ["/demo/movie/search" {:get (handler/movie-demo-search conn)}]
-     ["/demo/movie/title/:title" {:get (handler/movie-demo-title conn)}]]))
+    [["/demo/movie/graph/:limit" {
+      :get (handler/movie-demo-graph conn)}]
+     ["/demo/movie/search" {
+      :get (handler/movie-demo-search conn)}]
+     ["/demo/movie/title/:title" {
+      :get (handler/movie-demo-title conn)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,9 +49,11 @@
 
 (defn admin
   [httpd-component]
-  [["/health" {:get (handler/health httpd-component)}]
-   ["/ping" {:get handler/ping
-             :post handler/ping}]])
+  [["/health" {
+    :get (handler/health httpd-component)}]
+   ["/ping" {
+    :get handler/ping
+    :post handler/ping}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

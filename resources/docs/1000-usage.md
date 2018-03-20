@@ -16,12 +16,23 @@ conventions of the CMR.
 
 For this endpoint, the following resources have been defined:
 
-* `GET /health`
-* `GET /ping`
-* `POST /ping`
-* `GET /demo/movie/graph/:limit`
-* `GET /demo/movie/search?q=`
-* `GET /demo/movie/title/:title`
+Collection Routes
+* `GET    /collections`
+* `DELETE /collections`
+* `POST   /collection`
+* `GET    /collection/:concept-id`
+* `DELETE /collection/:concept-id`
+* `UPDATE /collection/:concept-id`
+
+Admin Routes:
+* `GET    /health`
+* `GET    /ping`
+* `POST   /ping`
+
+Demo Routes:
+* `GET    /demo/movie/graph/:limit`
+* `GET    /demo/movie/search?q=`
+* `GET    /demo/movie/title/:title`
 
 Examples:
 

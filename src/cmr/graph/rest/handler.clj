@@ -26,6 +26,43 @@
          (collections/delete-all)
          (response/json request))))
 
+(defn add-collection
+  [conn]
+  (fn [request]
+    (->> request
+         :body
+         slurp
+         ;(collections/add-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))
+
+(defn get-collection
+  [conn]
+  (fn [request]
+    (->> [:path-params :concept-id]
+         (get-in request)
+         ;(collections/get-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))
+
+(defn delete-collection
+  [conn]
+  (fn [request]
+    (->> [:path-params :concept-id]
+         (get-in request)
+         ;(collections/delete-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))
+
+(defn update-collection
+  [conn]
+  (fn [request]
+    (->> [:path-params :concept-id]
+         (get-in request)
+         ;(collections/update-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Demo Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
