@@ -10,8 +10,9 @@
 (defn movie-demo-graph
   [conn]
   (fn [request]
-    (->> [:path-params :title]
+    (->> [:path-params :limit]
          (get-in request)
+         Integer.
          (movie/get-graph conn)
          (response/json request))))
 
