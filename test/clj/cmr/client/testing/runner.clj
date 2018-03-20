@@ -1,5 +1,6 @@
 (ns cmr.client.testing.runner
   (:require
+   [clojure.string :as string]
    [cmr.client.tests]
    [ltest.core :as ltest])
   (:gen-class))
@@ -17,7 +18,7 @@
 (defn print-header
   []
   (println)
-  (println (apply str (repeat 80 "=")))
+  (println (string/join (repeat 80 "=")))
   (println "CMR Client Test Runner")
   (println (apply str (repeat 80 "=")))
   (println))

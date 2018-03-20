@@ -13,7 +13,7 @@
     [cljs-http "0.1.44"]
     [clojusc/ltest "0.3.0"]
     [org.apache.maven.wagon/wagon-provider-api "2.10"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.9.0"]
     [org.clojure/clojurescript "1.10.191"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/data.json "0.2.6"]
@@ -25,7 +25,7 @@
       :aot :all}
     :dev {
       :dependencies [
-        [leiningen-core "2.7.1"]
+        [leiningen-core "2.8.1"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-cljsbuild "1.1.7"]
@@ -59,7 +59,7 @@
       :test-paths ^:replace []
       :plugins [
         [jonase/eastwood "0.2.5"]
-        [lein-ancient "0.6.14"]
+        [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
@@ -70,7 +70,7 @@
         [codox-theme-rdash "0.1.2"]]
       :plugins [
         [lein-codox "0.10.3"]
-        [lein-marginalia "0.9.0"]
+        [lein-marginalia "0.9.1"]
         [lein-simpleton "1.3.0"]]
       :codox {
         :project {
@@ -120,12 +120,14 @@
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
       ["deps" ":plugin-tree"]]
-    "check-deps" ["do"
-      ["check-jars"]
-      ["check-vers"]]
+    "check-deps"
+      ^{:doc "Check to see if any dependencies are out of date or if jars are conflicting"}
+      ["do"
+        ["check-jars"]
+        ["check-vers"]]
     "lint"
       ^{:doc "Run linting tools against the source"}
-      ["with-profile" "+test" "kibit"]
+      ["with-profile" "+lint" "kibit"]
     "docs"
       ^{:doc "Generate API documentation"}
       ["with-profile" "+docs" "do"
@@ -133,12 +135,13 @@
         ; ["marg" "--dir" "docs/current"
         ;         "--file" "marginalia.html"
         ;         "--name" "sockets"]
-        ["shell" "cp" "resources/public/cdn.html" "docs"]]
+        ;["shell" "cp" "resources/public/cdn.html" "docs"]
+        ]
     "build"
       ^{:doc "Perform the build tasks"}
       ["with-profile" "+test" "do"
         ["check-deps"]
-        ;["lint"]
+        ["lint"]
         ["test"]
         ["compile"]
         ["docs"]
