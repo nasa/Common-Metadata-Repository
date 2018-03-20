@@ -32,6 +32,7 @@
     [metosin/reitit "0.1.0"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
+    [org.clojure/data.csv "0.1.4"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
   :main cmr.graph.core
