@@ -22,6 +22,9 @@
   {:access-control
     {:service "/access-control"
      :local ":3011"}
+   :graph
+     {:service "/graph"
+      :local ":3012"}
    :ingest
     {:service "/ingest"
      :local ":3002"}
@@ -37,13 +40,15 @@
 
 (def default-environment-type
   "Default deployment type for the CMR client."
-  :prod)
+  :local)
 
 (def default-endpoints
-  "A map of the CMR client's default service endpoints."
+  "A map of the CMR client's default local endpoints."
   {:access-control (str (default-environment-type hosts)
-                        (get-in endpoints [:access-control :service]))
+                        (get-in endpoints [:access-control :local]))
+   :graph (str (default-environment-type hosts)
+                (get-in endpoints [:graph :local]))
    :ingest (str (default-environment-type hosts)
-                (get-in endpoints [:ingest :service]))
+                (get-in endpoints [:ingest :local]))
    :search (str (default-environment-type hosts)
-                (get-in endpoints [:search :service]))})
+                (get-in endpoints [:search :local]))})
