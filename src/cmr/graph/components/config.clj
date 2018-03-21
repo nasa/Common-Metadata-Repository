@@ -32,6 +32,10 @@
   [system]
   (get-in (get-cfg system) [:httpd :port]))
 
+(defn http-docroot
+  [system]
+  (get-in (get-cfg system) [:httpd :docroot]))
+
 (defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))

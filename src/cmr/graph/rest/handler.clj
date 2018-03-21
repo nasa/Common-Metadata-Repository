@@ -1,5 +1,6 @@
 (ns cmr.graph.rest.handler
   (:require
+   [clojure.java.io :as io]
    [clojurewerkz.neocons.rest.cypher :as cypher]
    [cmr.graph.data.import :as data-import]
    [clojusc.twig :as twig]
@@ -7,6 +8,7 @@
    [cmr.graph.demo.movie :as movie]
    [cmr.graph.health :as health]
    [cmr.graph.rest.response :as response]
+   [ring.middleware.file :as file-middleware]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -107,6 +109,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Demo Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn gui-demo-files
+  [docroot]
+  (fn [request]
+    (if-let [doc-resource (.getPath (io/resource docroot))]
+      (file-middleware/file-request request doc-resource))))
 
 (defn movie-demo-graph
   [conn]

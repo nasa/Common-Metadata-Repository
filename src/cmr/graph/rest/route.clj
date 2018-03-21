@@ -1,5 +1,6 @@
 (ns cmr.graph.rest.route
   (:require
+   [cmr.graph.components.config :as config]
    [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.health :as health]
    [cmr.graph.rest.handler :as handler]
@@ -46,6 +47,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Demo Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn gui-demo
+  [httpd-component]
+  (let [docroot (config/http-docroot httpd-component)]
+    [["/gui-demo/*" {
+      :get (handler/gui-demo-files docroot)}]]))
 
 (defn movie-demo
   [httpd-component]

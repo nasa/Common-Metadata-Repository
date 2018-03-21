@@ -1,5 +1,6 @@
 (ns cmr.graph.rest.app
   (:require
+   [clojure.java.io :as io]
    [cmr.graph.rest.handler :as handler]
    [cmr.graph.rest.middleware :as middleware]
    [cmr.graph.rest.route :as route]
@@ -12,6 +13,7 @@
   (concat
    (route/collections httpd-component)
    (route/relationships httpd-component)
+   (route/gui-demo httpd-component)
    (route/movie-demo httpd-component)
    (route/admin httpd-component)
    (route/dangerous httpd-component)))
