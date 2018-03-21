@@ -23,17 +23,13 @@
 
 (defn cors
   [request response]
-  (log/debug "Got request:" request)
-  (log/debug "Got response:" response)
-  (log/debug "Got request-method:" (:request-method request))
-  (if (= :options (:request-method request))
-    (do
-      (log/debug "Setting CORS response headers ...")
-      (-> response
-          (response/content-type "text/plain; charset=utf-8")
-          (response/header "Access-Control-Allow-Origin" "*")
-          (response/header "Access-Control-Allow-Methods" "POST, PUT, GET, DELETE, OPTIONS")
-          (response/header "Access-Control-Allow-Headers" "Content-Type")
-          (response/header "Access-Control-Max-Age" "2592000")
-          ((fn [x] (log/debug "New response:" x) x))))
+  (case (:request-method request)
+    :options (-> response
+                 (response/content-type "text/plain; charset=utf-8")
+                 (response/header "Access-Control-Allow-Origin" "*")
+                 (response/header "Access-Control-Allow-Methods" "POST, PUT, GET, DELETE, OPTIONS")
+                 (response/header "Access-Control-Allow-Headers" "Content-Type")
+                 (response/header "Access-Control-Max-Age" "2592000")
+                 ((fn [x] (log/debug "New response:" x) x)))
+    :get (response/header response "Access-Control-Allow-Origin" "*")
     response))
