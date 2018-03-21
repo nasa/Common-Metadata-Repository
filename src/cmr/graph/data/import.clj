@@ -12,11 +12,26 @@
 (def test-file
   "data/testfile.json")
 
-(def test-csv-file
+(def collection-csv-file
   "data/collections.csv")
 
-(def full-csv-file
-  "data/all_collections.csv")
+(def url-csv-file
+  "data/urls.csv")
+
+(def url-types-csv-file
+  "data/url_types.csv")
+
+(def providers-csv-file
+  "data/providers.csv")
+
+(def formats-csv-file
+  "data/formats.csv")
+
+(def data-centers-csv-file
+  "data/data_centers.csv")
+
+(def version-ids-csv-file
+  "data/version_ids.csv")
 
 (def url-fields
   "List of fields we are interested in parsing from a given URL."
@@ -65,6 +80,57 @@
     (csv/write-csv csv-file [collection-columns])
     (csv/write-csv csv-file (mapv collection->row collections))))
 
+(defn write-url-csv
+  "Creates the URL csv file"
+  [collections output-filename]
+  (let [unique-urls (->> (mapcat :related-urls collections)
+                         (keep :url)
+                         set)]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["Url"]])
+      (csv/write-csv csv-file (mapv (fn [url] [url]) unique-urls)))))
+
+(defn write-url-type-csv
+  "Creates the URL types csv file"
+  [collections output-filename]
+  (let [unique-url-types (->> (mapcat :related-urls collections)
+                              (keep :type)
+                              set)]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["UrlType"]])
+      (csv/write-csv csv-file (mapv (fn [url-type] [url-type]) unique-url-types)))))
+
+(defn write-providers-csv
+  "Creates the providers csv file"
+  [collections output-filename]
+  (let [providers (set (mapcat :provider-id collections))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["ProviderId"]])
+      (csv/write-csv csv-file (mapv (fn [provider] [provider]) providers)))))
+
+(defn write-formats-csv
+  "Creates the metadata formats csv file"
+  [collections output-filename]
+  (let [metadata-formats (set (mapcat :metadata-format collections))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["MetadataFormat"]])
+      (csv/write-csv csv-file (mapv (fn [metadata-format] [metadata-format]) metadata-formats)))))
+
+(defn write-data-centers-csv
+  "Creates the Data Centers csv file"
+  [collections output-filename]
+  (let [data-centers (set (mapcat :data-center collections))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["MetadataFormat"]])
+      (csv/write-csv csv-file (mapv (fn [data-center] [data-center]) data-centers)))))
+
+(defn write-version-ids-csv
+  "Creates the version IDs csv file"
+  [collections output-filename]
+  (let [version-ids (set (mapcat :version-id collections))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["VersionId"]])
+      (csv/write-csv csv-file (mapv (fn [version-id] [version-id]) version-ids)))))
 
 (comment
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
@@ -72,11 +138,24 @@
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
 
  (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
-                       (str "resources/" full-csv-file))
+                       (str "resources/" collection-csv-file))
 
- (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
-                       (str "resources/" csv-file))
+ (write-url-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                (str "resources/" url-csv-file))
+
+ (write-url-type-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                     (str "resources/" url-types-csv-file))
+ (write-providers-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                      (str "resources/" providers-csv-file))
+
+ (write-formats-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                    (str "resources/" formats-csv-file))
+ (write-data-centers-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                         (str "resources/" data-centers-csv-file))
+
+ (write-version-ids-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                        (str "resources/" version-ids-csv-file))
+
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (println
-  (statement/neo4j-statements (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file)))))
-  ))
+  (statement/neo4j-statements (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file)))))))
