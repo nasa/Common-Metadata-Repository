@@ -5,6 +5,7 @@
    [clojure.java.io :as io]
    [clojure.data.csv :as csv]
    [cmr.graph.data.statement :as statement]
+   [cmr.graph.data.tags :as tags]
    [digest :as digest]))
 
 (def json-collections-filename
@@ -22,18 +23,29 @@
 (def collection-data-center-csv-file
   "data/collection_and_data_centers.csv")
 
+(def collection-tag-csv-file
+  "data/collection_and_tags.csv")
+
 (def url-fields
   "List of fields we are interested in parsing from a given URL."
   [:type :url])
 
 (def relevant-fields
   "List of fields to parse from a collection record."
-  [:concept-id :provider-id :entry-id :related-urls :data-center :version-id :metadata-format])
+  [:concept-id :provider-id :entry-id :related-urls :data-center :version-id :metadata-format
+   :tags-gzip-b64])
 
 (defn parse-url-into-nodes
   "Parses a single URL field into all the nodes we want to create for the URL."
   [url]
   (select-keys (json/parse-string url true) url-fields))
+
+(defn- parse-tags
+  "Returns each of the tags and associated data from the provided Elasticsearch tags-gzip-b64
+  field."
+  [tags-gzip-b64]
+  (when tags-gzip-b64
+    (tags/gzip-base64-tag->edn tags-gzip-b64)))
 
 (defn md5-leo
   "When a hash just isn't good enough."
@@ -109,7 +121,23 @@
       (csv/write-csv csv-file [["CollectionMD5Leo" "DataCenter"]])
       (csv/write-csv csv-file rows))))
 
+(defn- construct-collection-tag-row
+  "Creates a collection data center row for a relationship CSV file."
+  [collection tag]
+  (let [[tag-key tag-association-data] tag]
+    [(md5-leo (first (:concept-id collection)))
+     tag-key]))
 
+(defn write-collection-tags-relationship-csv
+  "Creates the collection<->tag relationship csv file."
+  [collections output-filename]
+  (let [rows (doall
+              (for [collection collections
+                    tag (parse-tags (first (:tags-gzip-b64 collection)))]
+                (construct-collection-tag-row collection tag)))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["CollectionMD5Leo" "TagKey"]])
+      (csv/write-csv csv-file rows))))
 
 (comment
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
@@ -124,6 +152,9 @@
 
  (write-collection-data-center-relationship-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
                                                 (str "resources/" collection-data-center-csv-file))
+
+ (write-collection-tags-relationship-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                                         (str "resources/" collection-tag-csv-file))
 
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (println
