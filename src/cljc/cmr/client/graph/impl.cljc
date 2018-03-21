@@ -31,9 +31,25 @@
                  (http-util/merge-header
                    http-options (base/get-token-header this))))))
 
+(defn get-collection-url-relation
+  "See protocol defintion for docstring."
+  ([this concept-id]
+   (get-collection-url-relation this concept-id {}))
+  ([this concept-id http-options]
+   (-> this
+       :http-client
+       (http/get
+        (base/get-url this
+                      (str "/relationships/related-urls/collections/"
+                           concept-id))
+        (http-util/merge-header http-options (base/get-token-header this))))))
+
 #?(:clj
 (def client-behaviour
   "A map of method names to implementations.
 
   Intended for use by the `extend` protocol function."
-  {:get-movie get-movie}))
+  {;; Demo Graph API
+   :get-movie get-movie
+   ;; Actual CMR Graph API
+   :get-collection-url-relation get-collection-url-relation}))

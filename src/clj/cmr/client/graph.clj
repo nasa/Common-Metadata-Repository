@@ -21,6 +21,7 @@
     get-token-header
     get-url]
   [cmr.client.graph.protocol
+    get-collection-url-relation
     get-movie])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

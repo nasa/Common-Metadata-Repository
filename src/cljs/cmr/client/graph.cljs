@@ -22,6 +22,7 @@
     get-token-header
     get-url]
   [cmr.client.graph.protocol
+    get-collection-url-relation
     get-movie])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,6 +43,11 @@
 
 (extend-type CMRGraphClientData
   CMRGraphAPI
+  (get-collection-url-relation
+    ([this concept-id]
+     (get-collection-url-relation this concept-id {}))
+    ([this concept-id http-options]
+     (graph/get-collection-url-relation this concept-id http-options)))
   (get-movie
     ([this query-str]
      (get-movie this query-str {}))
