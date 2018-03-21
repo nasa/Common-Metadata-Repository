@@ -37,6 +37,9 @@
 (def collection-url-csv-file
   "data/collection_and_urls.csv")
 
+(def collection-data-center-csv-file
+  "data/collection_and_data_centers.csv")
+
 (def url-fields
   "List of fields we are interested in parsing from a given URL."
   [:type :url])
@@ -160,6 +163,12 @@
    (:url url)
    (:type url)])
 
+(defn construct-collection-data-center-row
+  "Creates a collection data center row for a relationship CSV file."
+  [collection data-center]
+  [(md5-leo (first (:concept-id collection)))
+   data-center])
+
 (defn write-collection-url-relationship-csv
   "Creates the collection<->url relationship csv file."
   [collections output-filename]
@@ -170,6 +179,18 @@
     (with-open [csv-file (io/writer output-filename)]
       (csv/write-csv csv-file [["CollectionMD5Leo" "URL" "URLType"]])
       (csv/write-csv csv-file rows))))
+
+(defn write-collection-data-center-relationship-csv
+  "Creates the collection<->data centers relationship csv file."
+  [collections output-filename]
+  (let [rows (doall
+              (for [collection collections
+                    data-center (:data-center collection)]
+                (construct-collection-data-center-row collection data-center)))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["CollectionMD5Leo" "DataCenter"]])
+      (csv/write-csv csv-file rows))))
+
 
 
 (comment
@@ -198,6 +219,9 @@
 
  (write-collection-url-relationship-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
                                         (str "resources/" collection-url-csv-file))
+
+ (write-collection-data-center-relationship-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                                                (str "resources/" collection-data-center-csv-file))
 
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (println
