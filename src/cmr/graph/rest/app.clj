@@ -13,7 +13,7 @@
   (concat
    (route/collections httpd-component)
    (route/relationships httpd-component)
-   (route/gui-demo httpd-component)
+   (route/static httpd-component)
    (route/movie-demo httpd-component)
    (route/admin httpd-component)
    (route/dangerous httpd-component)))

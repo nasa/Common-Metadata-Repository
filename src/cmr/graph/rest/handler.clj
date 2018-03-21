@@ -110,12 +110,6 @@
 ;;;   Demo Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn gui-demo-files
-  [docroot]
-  (fn [request]
-    (if-let [doc-resource (.getPath (io/resource docroot))]
-      (file-middleware/file-request request doc-resource))))
-
 (defn movie-demo-graph
   [conn]
   (fn [request]
@@ -217,3 +211,9 @@
 (def fallback
   (fn [request]
     (response/not-found request)))
+
+(defn static-files
+  [docroot]
+  (fn [request]
+    (if-let [doc-resource (.getPath (io/resource docroot))]
+      (file-middleware/file-request request doc-resource))))

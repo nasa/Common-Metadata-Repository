@@ -48,12 +48,6 @@
 ;;;   Demo Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn gui-demo
-  [httpd-component]
-  (let [docroot (config/http-docroot httpd-component)]
-    [["/gui-demo/*" {
-      :get (handler/gui-demo-files docroot)}]]))
-
 (defn movie-demo
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
@@ -66,6 +60,16 @@
      ["/demo/movie/title/:title" {
       :get (handler/movie-demo-title conn)
       :options handler/ok}]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Static Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn static
+  [httpd-component]
+  (let [docroot (config/http-docroot httpd-component)]
+    [["/static/*" {
+      :get (handler/static-files docroot)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
