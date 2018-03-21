@@ -15,6 +15,12 @@
       response/ok
       (response/content-type "application/json")))
 
+(defn text
+  [_request data]
+  (-> data
+      response/ok
+      (response/content-type "text/plain")))
+
 (defn not-found
   [_request]
   (response/content-type

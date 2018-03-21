@@ -1,5 +1,6 @@
 (ns cmr.graph.rest.handler
   (:require
+   [clojurewerkz.neocons.rest.cypher :as cypher]
    [clojusc.twig :as twig]
    [cmr.graph.collections.core :as collections]
    [cmr.graph.demo.movie :as movie]
@@ -119,6 +120,38 @@
 (def ping
   (fn [request]
     (response/json request {:result :pong})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   DANGEROUS!!! REMOVE ME!!! *Injection Handlers   ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn cypher-injection-get
+  "Call with something like this:
+
+  $ curl http://localhost:3012/queries/cypher?q='MATCH%20(people:Person)%20RETURN%20people.name%20LIMIT%2010;'
+
+  But don't, really. Since we're going to delete this :-)"
+  [conn]
+  (fn [request]
+    (->> [:params :q]
+         (get-in request)
+         (codec/percent-decode)
+         (cypher/tquery conn)
+         (response/json request))))
+
+(defn cypher-injection-post
+  "Call with something like this:
+
+  $ curl -XPOST -H 'Content-Type: text/plain' http://localhost:3012/queries/cypher -d 'MATCH (people:Person) RETURN people.name LIMIT 10;'
+
+  But don't, really. Since we're going to delete this :-)"
+  [conn]
+  (fn [request]
+    (->> request
+         :body
+         slurp
+         (cypher/tquery conn)
+         (response/json request))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

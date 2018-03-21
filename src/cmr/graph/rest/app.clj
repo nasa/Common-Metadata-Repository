@@ -12,7 +12,8 @@
   (concat
    (route/collections httpd-component)
    (route/movie-demo httpd-component)
-   (route/admin httpd-component)))
+   (route/admin httpd-component)
+   (route/dangerous httpd-component)))
 
 (defn app
   [httpd-component]
