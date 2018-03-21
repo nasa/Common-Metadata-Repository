@@ -5,14 +5,12 @@
     :name "Apache License, Version 2.0"
     :url "https://opensource.org/licenses/Apache-2.0"}
   :exclusions [
-    org.apache.maven.wagon/wagon-provider-api
     org.clojure/clojure
     potemkin]
   :dependencies [
     [clj-http "3.8.0"]
     [cljs-http "0.1.44"]
     [clojusc/ltest "0.3.0"]
-    [org.apache.maven.wagon/wagon-provider-api "2.10"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/clojurescript "1.10.217"]
     [org.clojure/core.async "0.4.474"]
@@ -48,11 +46,9 @@
       }
     :lint {
       :exclusions ^:replace [
-        clj-http
         org.clojure/clojure
         org.clojure/tools.namespace]
       :dependencies ^:replace [
-        [clj-http "2.2.0"]
         [org.clojure/clojure "1.9.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ^:replace ["src/clj" "src/cljc"]
