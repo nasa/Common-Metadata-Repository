@@ -71,7 +71,7 @@
                  :get (handler/health httpd-component)
                  :options handler/ok}]
      ["/reset" {
-                :get (handler/reset conn)
+                :delete (handler/reset conn)
                 :options handler/ok}]
      ["/ping" {
                :get handler/ping
