@@ -93,6 +93,26 @@ ingest the movie data. In particular, once the infrastructure is up:
 
 At this point, your instance of Neo4j should have the demo movie data.
 
+#### Ingesting Collection Data
+
+1.  CREATE CONSTRAINT ON (url:Url) ASSERT url.name IS UNIQUE
+2.  CREATE CONSTRAINT ON (urlType:UrlType) ASSERT urlType.name IS UNIQUE
+3.  CREATE CONSTRAINT ON (coll:Collection) ASSERT coll.md5Leo IS UNIQUE
+4.  ```LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collections.csv" AS csvLine
+MERGE (format:MetadataFormat {name: csvLine.MetadataFormat})
+MERGE (version:Version {name: csvLine.VersionId})
+MERGE (provider:Provider {name: csvLine.ProviderId})
+CREATE (coll:Collection {md5Leo: csvLine.MD5Leo, conceptId: csvLine.ConceptId})
+CREATE (coll)-[:OWNED_BY]->(provider)
+CREATE (coll)-[:FORMATTED_IN]->(format)
+CREATE (coll)-[:VERSION_IS]->(version)```
+5.  ```USING PERIODIC COMMIT 500
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_urls.csv" AS csvLine
+MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
+MERGE (url:Url { name: csvLine.URL})
+MERGE (urlType:UrlType { name: csvLine.URLType})
+CREATE (coll)-[:LINKS_TO]->(url)
+CREATE (url)-[:HAS_TYPE]->(urlType)```
 
 #### Read More
 

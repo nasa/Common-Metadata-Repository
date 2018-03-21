@@ -173,21 +173,6 @@
 
 
 (comment
-
- ;; Loading all the data locally
-;  LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collections.csv" AS csvLine)
-; MERGE (format:MetadataFormat {name: csvLine.MetadataFormat})
-; MERGE (version:Version {name: csvLine.VersionId})
-; MERGE (provider:Provider {name: csvLine.ProviderId})
-; CREATE (coll:Collection {md5Leo: csvLine.MD5Leo, conceptId: csvLine.ConceptId})
-; CREATE (coll)-[:OWNED_BY]->(provider)
-; CREATE (coll)-[:FORMATTED_IN]->(format)
-; CREATE (coll)-[:VERSION_IS]->(version)
-;; Step 2
-; CREATE CONSTRAINT ON (coll:Collection) ASSERT coll.md5Leo IS UNIQUE
-;; Step 3
-;
-
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
