@@ -1,0 +1,85 @@
+/* Styles for the feedback icon and dialog. This CSS will be included
+ * on the client site.
+ */
+/* The "feedback-" prefix used in this file looks like noise, but it's
+important to prevent conflict with a feedback API consumer's CSS */
+#feedback-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10001;
+  font-family: Helvetica, Arial, sans-serif;
+  padding-left: 50%; }
+  #feedback-container #feedback-overlay {
+    background: #000;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+    filter: alpha(opacity=20);
+    -moz-opacity: 0.2;
+    -khtml-opacity: 0.2;
+    opacity: 0.2;
+    position: fixed;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 10001; }
+  #feedback-container #feedback-dialog {
+    background: #fff;
+    position: absolute;
+    z-index: 10002;
+    -webkit-transition: width 0.5s, height 0.5s, margin-left 0.5s;
+    -moz-transition: width 0.5s, height 0.5s, margin-left 0.5s;
+    transition: width 0.5s, height 0.5s, margin-left 0.5s;
+    width: 0;
+    height: 0; }
+    #feedback-container #feedback-dialog.open {
+      width: 664px;
+      height: 444px; }
+    #feedback-container #feedback-dialog.minimized {
+      width: 665px;
+      height: 222px; }
+      #feedback-container #feedback-dialog.minimized #feedback-button-close {
+        display: block; }
+    #feedback-container #feedback-dialog iframe {
+      overflow: scroll;
+      display: block;
+      width: 100%;
+      height: 100%; }
+    #feedback-container #feedback-dialog #feedback-header {
+      background: #333;
+      height: 24px;
+      text-align: right; }
+      #feedback-container #feedback-dialog #feedback-header a {
+        color: #fff;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 8px;
+        text-decoration: none; }
+        #feedback-container #feedback-dialog #feedback-header a:hover {
+          text-decoration: underline; }
+    #feedback-container #feedback-dialog #feedback-button-close {
+      display: none;
+      position: absolute;
+      top: 154px;
+      left: 32px;
+      background: #eee;
+      border: 2px solid #ddd;
+      border-radius: 3px;
+      -webkit-border-radius: 3px;
+      color: #333;
+      cursor: pointer;
+      float: right;
+      font-size: 14px;
+      padding: 3px 24px; }
+      #feedback-container #feedback-dialog #feedback-button-close:hover {
+        background: #ddd;
+        border-color: #b9b9b9; }
+
+#feedback-link {
+  -webkit-transition: left 0.25s;
+  -moz-transition: left 0.25s;
+  transition: left 0.25s;
+  cursor: pointer;
+  left: -7px;
+  position: fixed; }
+  #feedback-link:hover, #feedback-link:focus {
+    left: 0; }
