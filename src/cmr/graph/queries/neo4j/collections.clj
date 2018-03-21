@@ -4,6 +4,8 @@
 
 (def get-all "MATCH (collection:Collection) RETURN collection;")
 (def delete-all "MATCH (collection:Collection) DELETE collection;")
+(def delete-all-cascade "MATCH (collection:Collection) DETATCH DELETE collection;")
+
 (defn get-urls-by-concept-id
   [concept-id]
   (format "match (c:Collection)-[:HAS]->(u:URL) where c.ConceptId='%s' return u.Href;"
