@@ -13,26 +13,30 @@
 (defn collections
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/collections" {
-      :get (handler/get-collections conn)
-      :delete (handler/delete-collections conn)
-      :post (handler/add-collections conn)
-      :options handler/ok}]
-     ["/collection" {
-      :post (handler/add-collection conn)
-      :options handler/ok}]
-     ["/collection/:concept-id" {
-      :get (handler/get-collection conn)
-      :delete (handler/delete-collection conn)
-      :put (handler/update-collection conn)
-      :options handler/ok}]]))
+    [["/collections"
+      {:get (handler/get-collections conn)
+       :delete (handler/delete-collections conn)
+       :post (handler/add-collections conn)
+       :options handler/ok}]
+     ["/collections/import"
+      {:post (handler/import-collection-data conn)
+       :options handler/ok}]
+     ["/collection"
+      {:post (handler/add-collection conn)
+       :options handler/ok}]
+     ["/collection/:concept-id"
+      {:get (handler/get-collection conn)
+       :delete (handler/delete-collection conn)
+       :put (handler/update-collection conn)
+       :options handler/ok}]]))
 
 (defn relationships
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/relationships/related-urls/collections/:concept-id" {
-      :get (handler/get-collections-via-related-urls conn)
-      :options handler/ok}]]))
+    [["/relationships/related-urls/collections/:concept-id"
+      {:get (handler/get-collections-via-related-urls conn)
+       :options handler/ok}]]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

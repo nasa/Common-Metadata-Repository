@@ -1,6 +1,7 @@
 (ns cmr.graph.rest.handler
   (:require
    [clojurewerkz.neocons.rest.cypher :as cypher]
+   [cmr.graph.data.import :as data-import]
    [clojusc.twig :as twig]
    [cmr.graph.collections.core :as collections]
    [cmr.graph.demo.movie :as movie]
@@ -95,6 +96,13 @@
           result (collections/get-concept-ids-by-urls conn related-urls)
           concept-ids (distinct (map #(get % "c.conceptId") result))]
       (response/json request concept-ids))))
+
+(defn import-collection-data
+  "Imports all of our collection data."
+  [conn]
+  (fn [request]
+    (data-import/import-all-data conn)
+    (response/ok request)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Demo Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
