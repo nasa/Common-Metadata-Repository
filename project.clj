@@ -63,7 +63,7 @@
       :source-paths ^:replace ["src/cljs" "src/cljc"]}
     :docs {
       :dependencies [
-        [codox-theme-rdash "0.1.2"]]
+        [clojang/codox-theme "0.2.0-SNAPSHOT"]]
       :plugins [
         [lein-codox "0.10.3"]
         [lein-marginalia "0.9.1"]
@@ -76,7 +76,7 @@
         :metadata {
           :doc/format :markdown
           :doc "Documentation forthcoming"}
-        :themes [:rdash]
+        :themes [:clojang]
         :doc-paths ["resources/docs"]
         :output-path "docs/current"}}}
   :cljsbuild {
