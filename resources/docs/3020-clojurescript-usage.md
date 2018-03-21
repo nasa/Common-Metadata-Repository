@@ -7,7 +7,7 @@ $ rlwrap lein figwheel
 ```
 
 Then open up a browser to
-[http://localhost:3449/dev](http://localhost:3449/dev) so that the REPL can
+[http://localhost:3449/dev.html][local-web-repl] so that the REPL can
 connect to it.
 
 Back in the terminal where you started the REPL:
