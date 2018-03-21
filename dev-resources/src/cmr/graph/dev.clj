@@ -1,4 +1,4 @@
-(ns user
+(ns cmr.graph.dev
   "CMR Graph development namespace.
 
   This namespace is particularly useful when doing active development on the
@@ -85,7 +85,7 @@
 (defn reset
   []
   (shutdown)
-  (repl/refresh :after 'user/startup))
+  (repl/refresh :after 'cmr.graph.dev/startup))
 
 (def refresh #'repl/refresh)
 
