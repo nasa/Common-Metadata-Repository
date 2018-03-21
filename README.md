@@ -109,7 +109,7 @@ For a quick taste of using CMR Graph, we've put a snippet of JavaScript code
 below, using the experimental CMR Client. See the links in the "Guides"
 section below for links to more detailed examples and other usage.
 
-```
+```js
 var client = cmr.client.graph.create_client({"return-body?": true});
 var channel = cmr.client.graph.get_collection_url_relation(
 	client, "C1276812863-GES_DISC");
