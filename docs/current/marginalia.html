@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>Clojure Protocol Buffer Library -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/cmr-exchange/cmr-graph">Clojure Protocol Buffer Library</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>A service and API for querying CMR metadata relationships</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojurewerkz/elastisch</td><td class="dotted"><hr /></td><td class="dep-version">3.0.0</td></tr><tr><td class="dep-name">clojurewerkz/neocons</td><td class="dotted"><hr /></td><td class="dep-version">3.2.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.2.0</td></tr><tr><td class="dep-name">metosin/reitit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.graph.demo.movie">cmr.graph.demo.movie</a></li><li><a href="#cmr.graph.queries.neo4j.demo.movie">cmr.graph.queries.neo4j.demo.movie</a></li><li><a href="#cmr.graph.core">cmr.graph.core</a></li><li><a href="#cmr.graph.components.neo4j">cmr.graph.components.neo4j</a></li><li><a href="#cmr.graph.components.core">cmr.graph.components.core</a></li><li><a href="#cmr.graph.components.logging">cmr.graph.components.logging</a></li><li><a href="#cmr.graph.components.elastic">cmr.graph.components.elastic</a></li><li><a href="#cmr.graph.components.config">cmr.graph.components.config</a></li><li><a href="#cmr.graph.components.httpd">cmr.graph.components.httpd</a></li><li><a href="#cmr.graph.health">cmr.graph.health</a></li><li><a href="#cmr.graph.dev.system">cmr.graph.dev.system</a></li><li><a href="#cmr.graph.rest.route">cmr.graph.rest.route</a></li><li><a href="#cmr.graph.rest.app">cmr.graph.rest.app</a></li><li><a href="#cmr.graph.rest.handler">cmr.graph.rest.handler</a></li><li><a href="#cmr.graph.rest.response">cmr.graph.rest.response</a></li><li><a href="#cmr.graph.config">cmr.graph.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.demo.movie" name="cmr.graph.demo.movie"><h1 class="project-name">cmr.graph.demo.movie</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojurewerkz/elastisch</td><td class="dotted"><hr /></td><td class="dep-version">3.0.0</td></tr><tr><td class="dep-name">clojurewerkz/neocons</td><td class="dotted"><hr /></td><td class="dep-version">3.2.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">digest</td><td class="dotted"><hr /></td><td class="dep-version">1.4.6</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.2.0</td></tr><tr><td class="dep-name">metosin/reitit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/data.csv</td><td class="dotted"><hr /></td><td class="dep-version">0.1.4</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.graph.demo.movie">cmr.graph.demo.movie</a></li><li><a href="#cmr.graph.queries.neo4j.demo.movie">cmr.graph.queries.neo4j.demo.movie</a></li><li><a href="#cmr.graph.queries.neo4j.collections">cmr.graph.queries.neo4j.collections</a></li><li><a href="#cmr.graph.core">cmr.graph.core</a></li><li><a href="#cmr.graph.system.impl.state">cmr.graph.system.impl.state</a></li><li><a href="#cmr.graph.system.impl.management">cmr.graph.system.impl.management</a></li><li><a href="#cmr.graph.system.core">cmr.graph.system.core</a></li><li><a href="#cmr.graph.components.neo4j">cmr.graph.components.neo4j</a></li><li><a href="#cmr.graph.components.core">cmr.graph.components.core</a></li><li><a href="#cmr.graph.components.logging">cmr.graph.components.logging</a></li><li><a href="#cmr.graph.components.elastic">cmr.graph.components.elastic</a></li><li><a href="#cmr.graph.components.config">cmr.graph.components.config</a></li><li><a href="#cmr.graph.components.httpd">cmr.graph.components.httpd</a></li><li><a href="#cmr.graph.health">cmr.graph.health</a></li><li><a href="#cmr.graph.collections.core">cmr.graph.collections.core</a></li><li><a href="#cmr.graph.data.statement">cmr.graph.data.statement</a></li><li><a href="#cmr.graph.data.import">cmr.graph.data.import</a></li><li><a href="#cmr.graph.rest.route">cmr.graph.rest.route</a></li><li><a href="#cmr.graph.rest.app">cmr.graph.rest.app</a></li><li><a href="#cmr.graph.rest.handler">cmr.graph.rest.handler</a></li><li><a href="#cmr.graph.rest.response">cmr.graph.rest.response</a></li><li><a href="#cmr.graph.config">cmr.graph.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.demo.movie" name="cmr.graph.demo.movie"><h1 class="project-name">cmr.graph.demo.movie</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.demo.movie
   (:require
    [clojure.string :as string]
@@ -2920,7 +2920,10 @@ net.brehaut.ClojureTools = (function (SH) {
             RETURN movie.title as title,
                    collect({name:person.name,
                             job:head(split(lower(type(r)),'_')),
-                            role:r.roles}) as cast LIMIT 1;&quot;)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.core" name="cmr.graph.core"><h1 class="project-name">cmr.graph.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+                            role:r.roles}) as cast LIMIT 1;&quot;)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.queries.neo4j.collections" name="cmr.graph.queries.neo4j.collections"><h1 class="project-name">cmr.graph.queries.neo4j.collections</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.queries.neo4j.collections)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def get-all &quot;MATCH (c:Collection) RETURN c;&quot;)
+(def delete-all &quot;MATCH (c:Collection) DELETE c;&quot;)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.core" name="cmr.graph.core"><h1 class="project-name">cmr.graph.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.core
   (:require
    [clojusc.twig :as logger]
@@ -2959,7 +2962,200 @@ net.brehaut.ClojureTools = (function (SH) {
   (let [system (componemts/init)]
     (component/start system)
     (java/add-shutdown-handler #(shutdown system)))
-  (log/info startup-message))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.components.neo4j" name="cmr.graph.components.neo4j"><h1 class="project-name">cmr.graph.components.neo4j</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  (log/info startup-message))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.system.impl.state" name="cmr.graph.system.impl.state"><h1 class="project-name">cmr.graph.system.impl.state</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>CMR Graph system management.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.system.impl.state
+  (:require
+    [com.stuartsierra.component :as component]
+    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  State Atom   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def ^:dynamic *state*
+  (atom {:status :stopped
+         :system nil
+         :ns }))</pre></td></tr><tr><td class="docs"><p>  System State Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord StateTracker [])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-state
+  [_this]
+  @*state*)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn set-state
+  [_this new-state]
+  (reset! *state* new-state))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-status
+  [this]
+  (:status (get-state this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn set-status
+  [this value]
+  (set-state this (assoc (get-state this) :status value)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-system
+  [this]
+  (:system (get-state this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn set-system
+  [this value]
+  (set-state this (assoc (get-state this) :system value)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-system-ns
+  [this]
+  (:ns (get-state this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn set-system-ns
+  [this an-ns]
+  (set-state this (assoc (get-state this) :ns an-ns)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def behaviour
+  {:get-state get-state
+   :set-state set-state
+   :get-status get-status
+   :set-status set-status
+   :get-system get-system
+   :set-system set-system
+   :get-system-ns get-system-ns
+   :set-system-ns set-system-ns})</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-state-tracker
+  []
+  (-&gt;StateTracker))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.system.impl.management" name="cmr.graph.system.impl.management"><h1 class="project-name">cmr.graph.system.impl.management</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>CMR Graph system management.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.system.impl.management
+  (:require
+    [cmr.graph.system.impl.state :as state]
+    [com.stuartsierra.component :as component]
+    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def valid-stop-transitions #{:started :running})
+(def invalid-init-transitions #{:initialized :started :running})
+(def invalid-deinit-transitions #{:started :running})
+(def invalid-start-transitions #{:started :running})
+(def invalid-stop-transitions #{:stopped})
+(def invalid-startup-transitions #{:running})
+(def invalid-shutdown-transitions #{:uninitialized :shutdown})</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- resolve-by-name
+  [an-ns a-fun]
+  (resolve (symbol (str an-ns &quot;/&quot; a-fun))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- call-by-name
+  [an-ns a-fun &amp; args]
+  (apply (resolve-by-name an-ns a-fun) args))</pre></td></tr><tr><td class="docs"><p>  State Management Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord StateManager [state])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn init
+  ([this]
+    (init this :default))
+  ([this mode]
+    (if (contains? invalid-init-transitions (state/get-status (:state this)))
+      (log/warn &quot;System has aready been initialized.&quot;)
+      (do
+        (state/set-system (:state this)
+                          (call-by-name (state/get-system-ns (:state this))
+                                        &quot;init&quot;))
+        (state/set-status (:state this) :initialized)))
+    (state/get-status (:state this))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn deinit
+  [this]
+  (if (contains? invalid-deinit-transitions (state/get-status (:state this)))
+    (log/error &quot;System is not stopped; please stop before deinitializing.&quot;)
+    (do
+      (state/set-system (:state this) nil)
+      (state/set-status (:state this) :uninitialized)))
+  (state/get-status (:state this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn start
+  ([this]
+    (start this :default))
+  ([this mode]
+    (when (nil? (state/get-status (:state this)))
+      (init mode))
+    (if (contains? invalid-start-transitions (state/get-status (:state this)))
+      (log/warn &quot;System has already been started.&quot;)
+      (do
+        (state/set-system (:state this)
+                          (component/start (state/get-system (:state this))))
+        (state/set-status (:state this) :started)))
+    (state/get-status (:state this))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn stop
+  [this]
+  (if (contains? invalid-stop-transitions (state/get-status (:state this)))
+    (log/warn &quot;System already stopped.&quot;)
+    (do
+      (state/set-system (:state this)
+                        (component/stop (state/get-system (:state this))))
+      (state/set-status (:state this) :stopped)))
+  (state/get-status (:state this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn restart
+  ([this]
+    (restart this :default))
+  ([this mode]
+    (stop this)
+    (start this mode)))</pre></td></tr><tr><td class="docs"><p>Initialize a system and start all of its components.</p>
+
+<p>  This is essentially a convenience wrapper for <code>init</code> + <code>start</code>.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn startup
+  ([this]
+    (startup this :default))
+  ([this mode]
+    (if (contains? invalid-startup-transitions (state/get-status (:state this)))
+      (log/warn &quot;System is already running.&quot;)
+      (do
+        (when-not (contains? invalid-init-transitions
+                             (state/get-status (:state this)))
+          (init this mode))
+        (when-not (contains? invalid-start-transitions
+                            (state/get-status (:state this)))
+          (start this mode))
+        (state/set-status (:state this) :running)
+        (state/get-status (:state this))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn shutdown
+  [this]
+  &quot;Stop a running system and de-initialize it.
+  This is essentially a convenience wrapper for `stop` + `deinit`.&quot;
+  (if (contains? invalid-shutdown-transitions (state/get-status (:state this)))
+    (log/warn &quot;System is already shutdown.&quot;)
+    (do
+      (when-not (contains? invalid-stop-transitions
+                           (state/get-status (:state this)))
+        (stop this))
+      (when-not (contains? invalid-deinit-transitions
+                           (state/get-status (:state this)))
+        (deinit this))
+      (state/set-status (:state this) :shutdown)
+      (state/get-status (:state this)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def behaviour
+  {:init init
+   :deinit deinit
+   :start start
+   :stop stop
+   :restart restart
+   :startup startup
+   :shutdown shutdown})</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-state-manager
+  []
+  (-&gt;StateManager (state/create-state-tracker)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.system.core" name="cmr.graph.system.core"><h1 class="project-name">cmr.graph.system.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>CMR Graph system management API.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.system.core
+  (:require
+    [cmr.graph.system.impl.management :as management]
+    [cmr.graph.system.impl.state :as state])
+  (:import
+    (cmr.graph.system.impl.management StateManager)
+    (cmr.graph.system.impl.state StateTracker)))</pre></td></tr><tr><td class="docs"><p>  System State API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defprotocol StateTrackerAPI
+  (get-state [this])
+  (set-state [this new-state])
+  (get-status [this])
+  (set-status [this value])
+  (get-system [this])
+  (set-system [this value])
+  (get-system-ns [this])
+  (set-system-ns [this value]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(extend StateTracker
+        StateTrackerAPI
+        state/behaviour)</pre></td></tr><tr><td class="docs"><p>  State Management API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defprotocol StateManagementAPI
+  (init [this] [this mode])
+  (deinit [this])
+  (start [this] [this mode])
+  (stop [this])
+  (restart [this] [this mode])
+  (startup [this] [this mode])
+  (shutdown [this]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(extend StateManager
+        StateManagementAPI
+        management/behaviour)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def create-state-manager #'management/create-state-manager)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.components.neo4j" name="cmr.graph.components.neo4j"><h1 class="project-name">cmr.graph.components.neo4j</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.components.neo4j
   (:require
    [clojurewerkz.neocons.rest :as nr]
@@ -3244,150 +3440,179 @@ net.brehaut.ClojureTools = (function (SH) {
    :httpd {:ok? true}
    :elastic {:ok? (elastic-ok? component)}
    :logging {:ok? (logging-ok? component)}
-   :neo4j {:ok? (neo4j-ok? component)}})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.dev.system" name="cmr.graph.dev.system"><h1 class="project-name">cmr.graph.dev.system</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>CMR Graph development namespace</p>
-
-<p>  This namespace is particularly useful when doing active development on the
-  CMR Graph application.</p>
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.dev.system
+   :neo4j {:ok? (neo4j-ok? component)}})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.collections.core" name="cmr.graph.collections.core"><h1 class="project-name">cmr.graph.collections.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.collections.core
   (:require
-    [clojure.pprint :refer [pprint]]
-    [clojure.tools.namespace.repl :as repl]
-    [clojusc.twig :as logger]
-    [com.stuartsierra.component :as component]
-    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  State &amp; Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def ^:dynamic state :stopped)
-(def ^:dynamic system nil)
-(def ^:dynamic system-ns )
-(def valid-stop-transitions #{:started :running})
-(def invalid-init-transitions #{:initialized :started :running})
-(def invalid-deinit-transitions #{:started :running})
-(def invalid-start-transitions #{:started :running})
-(def invalid-stop-transitions #{:stopped})
-(def invalid-startup-transitions #{:running})
-(def invalid-shutdown-transitions #{:uninitialized :shutdown})</pre></td></tr><tr><td class="docs"><p>  Initial Setup &amp; Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(logger/set-level! ['cmr.graph] :info)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn resolve-by-name
-  [an-ns a-fun]
-  (resolve (symbol (str an-ns &quot;/&quot; a-fun))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn call-by-name
-  [an-ns a-fun &amp; args]
-  (apply (resolve-by-name an-ns a-fun) args))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn set-system-ns
-  [an-ns]
-  (alter-var-root #'system-ns (constantly an-ns)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn set-system
-  [value]
-  (alter-var-root #'system (constantly value)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn set-state
-  [value]
-  (alter-var-root #'state (constantly value)))</pre></td></tr><tr><td class="docs"><p>  State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn init
-  ([]
-    (init :default))
-  ([mode]
-    (if (contains? invalid-init-transitions state)
-      (log/warn &quot;System has aready been initialized.&quot;)
-      (do
-        (set-system (call-by-name system-ns &quot;init&quot;))
-        (set-state :initialized)))
-    state))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn deinit
-  []
-  (if (contains? invalid-deinit-transitions state)
-    (log/error &quot;System is not stopped; please stop before deinitializing.&quot;)
-    (do
-      (set-system nil)
-      (set-state :uninitialized)))
-  state)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn start
-  ([]
-    (start :default))
-  ([mode]
-    (when (nil? system)
-      (init mode))
-    (if (contains? invalid-start-transitions state)
-      (log/warn &quot;System has already been started.&quot;)
-      (do
-        (set-system (component/start system))
-        (set-state :started)))
-    state))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn stop
-  []
-  (if (contains? invalid-stop-transitions state)
-    (log/warn &quot;System already stopped.&quot;)
-    (do
-      (set-system (component/stop system))
-      (set-state :stopped)))
-  state)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn restart
-  ([]
-    (restart :default))
-  ([mode]
-    (stop)
-    (start mode)))</pre></td></tr><tr><td class="docs"><p>Initialize a system and start all of its components.</p>
+   [cheshire.core :as json]
+   [clojurewerkz.neocons.rest.cypher :as cy]
+   [cmr.graph.queries.neo4j.collections :as query]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-all
+  [conn]
+  (cy/tquery conn query/get-all))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn delete-all
+  [conn]
+  (cy/tquery conn query/delete-all))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn add-collection
+  [conn ^String json])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-collection
+  [conn ^String concept-id])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn delete-collection
+  [conn ^String concept-id])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn update-collection
+  [conn ^String concept-id])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.data.statement" name="cmr.graph.data.statement"><h1 class="project-name">cmr.graph.data.statement</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Functions for converting a collection into neo4j create statements.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.data.statement
+  (:require
+   [clojure.string :as string]
+   [digest :as digest]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- coll-concept-id-key
+  [coll]
+  (string/replace (first (:concept-id coll)) &quot;-&quot; ))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- coll-&gt;provider-node
+  [coll]
+  (let [provider-id (first (:provider-id coll))]
+    [(format &quot;CREATE (%s:Provider {ShortName:'%s'})&quot;
+             provider-id provider-id)]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- coll-&gt;coll-stmts
+  [coll]
+  (let [{:keys [provider-id entry-id version-id]} coll
+        provider-id (first provider-id)
+        entry-id (first entry-id)
+        version-id (first version-id)]
+    [(format &quot;CREATE (%s:Collection {EntryId:'%s', Version:'%s'})&quot;
+             (coll-concept-id-key coll) entry-id version-id)
+     (format &quot;CREATE (%s)-[:PROVIDES {type:['collection']}]-&gt;(%s)&quot;
+             provider-id (coll-concept-id-key coll))]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- url-type-&gt;stmt
+  [url-type coll-key]
+  (let [url-type-key (str &quot;A&quot; (digest/md5 url-type))]
+  [(format &quot;CREATE (%s:UrlType {Value:'%s'})&quot;
+           url-type-key url-type)
+   (format &quot;CREATE (%s)-[:LINKS {type:['collection']}]-&gt;(%s)&quot;
+           url-type-key coll-key)]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- url-&gt;stmt
+  [url coll-key]
+  (let [url-key (str &quot;A&quot; (digest/md5 url))]
+    [(format &quot;CREATE (%s:URL {Href:'%s'})&quot;
+             url-key url)
+     (format &quot;CREATE (%s)-[:HAS]-&gt;(%s)&quot;
+             coll-key url-key)
+     (format &quot;CREATE (%s)-[:IS_IN]-&gt;(%s)&quot;
+             url-key coll-key)]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- coll-&gt;related-urls-stmts
+  [coll]
+  (let [{:keys [related-urls]} coll
+        url-types (distinct (mapv :type related-urls))
+        urls (distinct (mapv :url related-urls))
+        coll-key (coll-concept-id-key coll)]
+    (concat (mapcat #(url-type-&gt;stmt % coll-key) url-types)
+            (mapcat #(url-&gt;stmt % coll-key) urls))))</pre></td></tr><tr><td class="docs"><p>Returns the neo4j create statements for the given collection</p>
+</td><td class="codes"><pre class="brush: clojure">(defn coll-&gt;create-stmts
+  [coll]
+  (concat
+   (coll-&gt;provider-node coll)
+   (coll-&gt;coll-stmts coll)
+   (coll-&gt;related-urls-stmts coll)))</pre></td></tr><tr><td class="docs"><p>Returns the neo4j statements for building the graph of the given collections.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn neo4j-statements
+  [colls]
+  (string/join &quot;\n&quot; (distinct (mapcat coll-&gt;create-stmts colls))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.data.import" name="cmr.graph.data.import"><h1 class="project-name">cmr.graph.data.import</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Functions for importing data into neo4j.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.data.import
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.data.csv :as csv]
+   [cmr.graph.data.statement :as statement]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def json-collections-filename
+  &quot;data/all_public_collections_from_es.json&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def test-file
+  &quot;data/testfile.json&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def test-csv-file
+  &quot;data/collections.csv&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def full-csv-file
+  &quot;data/all_collections.csv&quot;)</pre></td></tr><tr><td class="docs"><p>List of fields we are interested in parsing from a given URL.</p>
+</td><td class="codes"><pre class="brush: clojure">(def url-fields
+  [:type :url])</pre></td></tr><tr><td class="docs"><p>List of fields to parse from a collection record.</p>
+</td><td class="codes"><pre class="brush: clojure">(def relevant-fields
+  [:concept-id :provider-id :entry-id :related-urls :data-center :version-id :metadata-format])</pre></td></tr><tr><td class="docs"><p>Parses a single URL field into all the nodes we want to create for the URL.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn parse-url-into-nodes
+  [url]
+  (select-keys (json/parse-string url true) url-fields))</pre></td></tr><tr><td class="docs"><p>Returns only the relevant JSON fields from the provided collection record for import into neo4j.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn prepare-collection-for-import
+  [collection]
+  (update (select-keys (:fields collection) relevant-fields)
+          :related-urls
+          (fn [urls]
+            (mapv parse-url-into-nodes urls))))</pre></td></tr><tr><td class="docs"><p>Reads a JSON file into memory</p>
+</td><td class="codes"><pre class="brush: clojure">(defn read-json-file
+  [filename]
+  (json/parse-string (slurp (io/resource filename)) true))</pre></td></tr><tr><td class="docs"><p>Columns in the collections CSV file.</p>
+</td><td class="codes"><pre class="brush: clojure">(def collection-columns
+  [&quot;ConceptId&quot; &quot;ProviderId&quot; &quot;DataCenter&quot; &quot;VersionId&quot; &quot;MetadataFormat&quot;])</pre></td></tr><tr><td class="docs"><p>Returns a row to write to the collections CSV file for a given collection.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn collection-&gt;row
+  [collection]
+  (let [{:keys [provider-id concept-id data-center version-id metadata-format]} collection]
+    [(first concept-id)
+     (first provider-id)
+     (first data-center)
+     (first version-id)
+     (first metadata-format)]))</pre></td></tr><tr><td class="docs"><p>Creates the collection csv file</p>
+</td><td class="codes"><pre class="brush: clojure">(defn write-collection-csv
+  [collections output-filename]
+  (with-open [csv-file (io/writer output-filename)]
+    (csv/write-csv csv-file [collection-columns])
+    (csv/write-csv csv-file (mapv collection-&gt;row collections))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(comment
+ (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
+ (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
+ (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
 
-<p>  This is essentially a convenience wrapper for <code>init</code> + <code>start</code>.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn startup
-  ([]
-    (startup :default))
-  ([mode]
-    (if (contains? invalid-startup-transitions state)
-      (log/warn &quot;System is already running.&quot;)
-      (do
-        (when-not (contains? invalid-init-transitions state)
-          (init mode))
-        (when-not (contains? invalid-start-transitions state)
-          (start mode))
-        (set-state :running)
-        state))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn shutdown
-  []
-  &quot;Stop a running system and de-initialize it.
-  This is essentially a convenience wrapper for `stop` + `deinit`.&quot;
-  (if (contains? invalid-shutdown-transitions state)
-    (log/warn &quot;System is already shutdown.&quot;)
-    (do
-      (when-not (contains? invalid-stop-transitions state)
-        (stop))
-      (when-not (contains? invalid-deinit-transitions state)
-        (deinit))
-      (set-state :shutdown)
-      state)))</pre></td></tr><tr><td class="docs"><p>  Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn reset
-  []
-  (stop)
-  (deinit)
-  (repl/refresh :after 'cmr.graph.dev.system/startup))</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def reload #'repl/refresh)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.rest.route" name="cmr.graph.rest.route"><h1 class="project-name">cmr.graph.rest.route</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+ (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                       (str &quot;resources/&quot; full-csv-file))
+
+ (write-collection-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
+                       (str &quot;resources/&quot; csv-file))
+ (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
+ (println
+  (statement/neo4j-statements (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file)))))
+  ))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.rest.route" name="cmr.graph.rest.route"><h1 class="project-name">cmr.graph.rest.route</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.rest.route
   (:require
+   [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.health :as health]
    [cmr.graph.rest.handler :as handler]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  CMR Graph Database Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn collections
+  [httpd-component]
+  (let [conn (neo4j/get-conn httpd-component)]
+    [[&quot;/collections&quot; {
+      :get (handler/get-collections conn)
+      :delete (handler/delete-collections conn)}]
+     [&quot;/collection&quot; {
+      :post (handler/add-collection conn)}]
+     [&quot;/collection/:concept-id&quot; {
+      :get (handler/get-collection conn)
+      :delete (handler/delete-collection conn)
+      :update (handler/update-collection conn)}]]))</pre></td></tr><tr><td class="docs"><p>  CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>  Demo Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn movie-demo
   [httpd-component]
-  (let [conn (get-in httpd-component [:neo4j :conn])]
-    [[&quot;/demo/movie/graph/:limit&quot; {:get (handler/movie-demo-graph conn)}]
-     [&quot;/demo/movie/search&quot; {:get (handler/movie-demo-search conn)}]
-     [&quot;/demo/movie/title/:title&quot; {:get (handler/movie-demo-title conn)}]]))</pre></td></tr><tr><td class="docs"><p>  Health Route   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+  (let [conn (neo4j/get-conn httpd-component)]
+    [[&quot;/demo/movie/graph/:limit&quot; {
+      :get (handler/movie-demo-graph conn)}]
+     [&quot;/demo/movie/search&quot; {
+      :get (handler/movie-demo-search conn)}]
+     [&quot;/demo/movie/title/:title&quot; {
+      :get (handler/movie-demo-title conn)}]]))</pre></td></tr><tr><td class="docs"><p>  Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn health
+</td><td class="codes"><pre class="brush: clojure">(defn admin
   [httpd-component]
-  [[&quot;/health&quot; {:get (handler/health httpd-component)}]])</pre></td></tr><tr><td class="docs"><p>  Ping Route   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def ping
-  [[&quot;/ping&quot; {:get handler/ping
-             :post handler/ping}]])</pre></td></tr><tr><td class="docs"><p>  Utility Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+  [[&quot;/health&quot; {
+    :get (handler/health httpd-component)}]
+   [&quot;/ping&quot; {
+    :get handler/ping
+    :post handler/ping}]])</pre></td></tr><tr><td class="docs"><p>  Utility Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.rest.app" name="cmr.graph.rest.app"><h1 class="project-name">cmr.graph.rest.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.rest.app
   (:require
@@ -3399,9 +3624,9 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defn rest-api-routes
   [httpd-component]
   (concat
+   (route/collections httpd-component)
    (route/movie-demo httpd-component)
-   (route/health httpd-component)
-   route/ping))</pre></td></tr><tr><td class="docs">
+   (route/admin httpd-component)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn app
   [httpd-component]
   (-&gt; httpd-component
@@ -3412,16 +3637,65 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.graph.rest.handler
   (:require
    [clojusc.twig :as twig]
+   [cmr.graph.collections.core :as collections]
    [cmr.graph.demo.movie :as movie]
    [cmr.graph.health :as health]
    [cmr.graph.rest.response :as response]
    [ring.util.codec :as codec]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Graph Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-collections
+  [conn]
+  (fn [request]
+    (-&gt;&gt; conn
+         (collections/get-all)
+         (response/json request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn delete-collections
+  [conn]
+  (fn [request]
+    (-&gt;&gt; conn
+         (collections/delete-all)
+         (response/json request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn add-collection
+  [conn]
+  (fn [request]
+    (-&gt;&gt; request
+         :body
+         slurp
+         ;(collections/add-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-collection
+  [conn]
+  (fn [request]
+    (-&gt;&gt; [:path-params :concept-id]
+         (get-in request)
+         ;(collections/get-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn delete-collection
+  [conn]
+  (fn [request]
+    (-&gt;&gt; [:path-params :concept-id]
+         (get-in request)
+         ;(collections/delete-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn update-collection
+  [conn]
+  (fn [request]
+    (-&gt;&gt; [:path-params :concept-id]
+         (get-in request)
+         ;(collections/update-collection conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))</pre></td></tr><tr><td class="docs"><p>  Demo Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn movie-demo-graph
   [conn]
   (fn [request]
-    (-&gt;&gt; [:path-params :title]
+    (-&gt;&gt; [:path-params :limit]
          (get-in request)
+         Integer.
          (movie/get-graph conn)
          (response/json request))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn movie-demo-search
@@ -3438,7 +3712,8 @@ net.brehaut.ClojureTools = (function (SH) {
          (get-in request)
          (codec/percent-decode)
          (movie/get-movie conn)
-         (response/json request))))</pre></td></tr><tr><td class="docs">
+         (response/json request))))</pre></td></tr><tr><td class="docs"><p>  Admin Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn health
   [component]
   (fn [request]
@@ -3447,7 +3722,8 @@ net.brehaut.ClojureTools = (function (SH) {
          (response/json request))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def ping
   (fn [request]
-    (response/json request {:result :pong})))</pre></td></tr><tr><td class="docs">
+    (response/json request {:result :pong})))</pre></td></tr><tr><td class="docs"><p>  404 Handler   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def fallback
   (fn [request]
     (response/not-found request)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.graph.rest.response" name="cmr.graph.rest.response"><h1 class="project-name">cmr.graph.rest.response</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
@@ -3477,7 +3753,7 @@ net.brehaut.ClojureTools = (function (SH) {
     (data config-file))
   ([filename]
     (with-open [rdr (io/reader (io/resource filename))]
-      (edn/read (new java.io.PushbackReader rdr)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.graph.demo.movie">cmr.graph.demo.movie</li><li class="floating-toc-li" id="floating-toc_cmr.graph.queries.neo4j.demo.movie">cmr.graph.queries.neo4j.demo.movie</li><li class="floating-toc-li" id="floating-toc_cmr.graph.core">cmr.graph.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.neo4j">cmr.graph.components.neo4j</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.core">cmr.graph.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.logging">cmr.graph.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.elastic">cmr.graph.components.elastic</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.config">cmr.graph.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.httpd">cmr.graph.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.graph.health">cmr.graph.health</li><li class="floating-toc-li" id="floating-toc_cmr.graph.dev.system">cmr.graph.dev.system</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.route">cmr.graph.rest.route</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.app">cmr.graph.rest.app</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.handler">cmr.graph.rest.handler</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.response">cmr.graph.rest.response</li><li class="floating-toc-li" id="floating-toc_cmr.graph.config">cmr.graph.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+      (edn/read (new java.io.PushbackReader rdr)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.graph.demo.movie">cmr.graph.demo.movie</li><li class="floating-toc-li" id="floating-toc_cmr.graph.queries.neo4j.demo.movie">cmr.graph.queries.neo4j.demo.movie</li><li class="floating-toc-li" id="floating-toc_cmr.graph.queries.neo4j.collections">cmr.graph.queries.neo4j.collections</li><li class="floating-toc-li" id="floating-toc_cmr.graph.core">cmr.graph.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.system.impl.state">cmr.graph.system.impl.state</li><li class="floating-toc-li" id="floating-toc_cmr.graph.system.impl.management">cmr.graph.system.impl.management</li><li class="floating-toc-li" id="floating-toc_cmr.graph.system.core">cmr.graph.system.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.neo4j">cmr.graph.components.neo4j</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.core">cmr.graph.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.logging">cmr.graph.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.elastic">cmr.graph.components.elastic</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.config">cmr.graph.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.graph.components.httpd">cmr.graph.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.graph.health">cmr.graph.health</li><li class="floating-toc-li" id="floating-toc_cmr.graph.collections.core">cmr.graph.collections.core</li><li class="floating-toc-li" id="floating-toc_cmr.graph.data.statement">cmr.graph.data.statement</li><li class="floating-toc-li" id="floating-toc_cmr.graph.data.import">cmr.graph.data.import</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.route">cmr.graph.rest.route</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.app">cmr.graph.rest.app</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.handler">cmr.graph.rest.handler</li><li class="floating-toc-li" id="floating-toc_cmr.graph.rest.response">cmr.graph.rest.response</li><li class="floating-toc-li" id="floating-toc_cmr.graph.config">cmr.graph.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
