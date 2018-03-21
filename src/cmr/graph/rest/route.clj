@@ -27,6 +27,12 @@
       :put (handler/update-collection conn)
       :options handler/ok}]]))
 
+(defn relationships
+  [httpd-component]
+  (let [conn (neo4j/get-conn httpd-component)]
+    [["/relationships/related-urls/collections/:concept-id" {
+      :get (handler/get-collections-via-related-urls conn)
+      :options handler/ok}]]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

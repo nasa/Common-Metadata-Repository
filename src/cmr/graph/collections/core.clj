@@ -33,3 +33,11 @@
 (defn update-collection
   [conn ^String concept-id]
   )
+
+(defn get-collections-via-related-urls
+  [conn ^String concept-id]
+  (cypher/tquery conn (query/get-urls-by-concept-id concept-id)))
+
+(defn get-concept-ids-by-urls
+  [conn urls]
+  (cypher/tquery conn (query/get-concept-ids-by-urls urls)))

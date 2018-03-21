@@ -16,12 +16,13 @@
 
 (defn- coll->coll-stmts
   [coll]
-  (let [{:keys [provider-id entry-id version-id]} coll
+  (let [{:keys [provider-id concept-id entry-id version-id]} coll
         provider-id (first provider-id)
+        concept-id (first concept-id)
         entry-id (first entry-id)
         version-id (first version-id)]
-    [(format "CREATE (%s:Collection {EntryId:'%s', Version:'%s'})"
-             (coll-concept-id-key coll) entry-id version-id)
+    [(format "CREATE (%s:Collection {ConceptId: '%s', EntryId:'%s', Version:'%s'})"
+             (coll-concept-id-key coll) concept-id entry-id version-id)
      (format "CREATE (%s)-[:PROVIDES {type:['collection']}]->(%s)"
              provider-id (coll-concept-id-key coll))]))
 
