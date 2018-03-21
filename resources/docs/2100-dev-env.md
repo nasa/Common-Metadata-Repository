@@ -3,17 +3,18 @@
 
 **Contents**
 
-* The REPL
+* nREPL
+* Proto-REPL
 * System
 * Code Reloading
 * Convenience Functions
 
 
-## The REPL
+## nREPL
 
 To write new code for CMR Graph, you'll need to have the infrastructure running
-as described in the "Setup" docs, and then you'll want to start up
-the REPL:
+as described in the "Setup" docs, and then you'll want to start up a REPL. The
+primary development REPL for CMR Graph is a terminal-based nREPL:
 
 ```
 $ lein repl
@@ -63,6 +64,14 @@ Java HotSpot(TM) 64-Bit Server VM 1.8.0_161-b12
 
 [cmr.graph.dev] λ=>
 ```
+
+
+## Proto-REPL
+
+For those using the Atom editor, CMR Graph also offers support for Proto-REPL.
+To this end, the `user` ns has been provied at `dev-resources/src/user.clj`. It
+is essentially a wrapper for `cmr.graph.dev` (and can be removed once Proto-REPL
+supports configurable starting namespaces, as `lein` does).
 
 
 ## System
