@@ -1,7 +1,7 @@
-MetadataFormat
-iso19115
-dif
-echo10
-dif10
-iso-smap
-umm-json
+MD5Leo,MetadataFormat
+A9efb105dfbd2870b28d7b2f9e0740bee,iso19115
+A3d863c71460b491cf99ae2506b27aca7,dif
+A89532380149ff89fe79b98d4f8adf3c6,echo10
+A71f04903790a0287dcdc9ec3a626b1a3,dif10
+A1e72c07651abee8014b37fa2a16d5c66,iso-smap
+Aac2873b731acc1d2ec3ab7c626f3b136,umm-json

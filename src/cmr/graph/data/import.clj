@@ -4,7 +4,8 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.data.csv :as csv]
-   [cmr.graph.data.statement :as statement]))
+   [cmr.graph.data.statement :as statement]
+   [digest :as digest]))
 
 (def json-collections-filename
   "data/all_public_collections_from_es.json")
@@ -46,6 +47,11 @@
   [url]
   (select-keys (json/parse-string url true) url-fields))
 
+(defn md5-leo
+  "When a hash just isn't good enough."
+  [value]
+  (str "A" (digest/md5 value)))
+
 (defn prepare-collection-for-import
   "Returns only the relevant JSON fields from the provided collection record for import into neo4j."
   [collection]
@@ -61,15 +67,15 @@
 
 (def collection-columns
   "Columns in the collections CSV file."
-  ["ConceptId" "ProviderId" "DataCenter" "VersionId" "MetadataFormat"])
+  ["MD5Leo" "ConceptId" "ProviderId" "VersionId" "MetadataFormat"])
 
 (defn collection->row
   "Returns a row to write to the collections CSV file for a given collection."
   [collection]
-  (let [{:keys [provider-id concept-id data-center version-id metadata-format]} collection]
-    [(first concept-id)
+  (let [{:keys [provider-id concept-id version-id metadata-format]} collection]
+    [(md5-leo (first concept-id))
+     (first concept-id)
      (first provider-id)
-     (first data-center)
      (first version-id)
      (first metadata-format)]))
 
@@ -87,8 +93,10 @@
                          (keep :url)
                          set)]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["Url"]])
-      (csv/write-csv csv-file (mapv (fn [url] [url]) unique-urls)))))
+      (csv/write-csv csv-file [["MD5Leo" "Url"]])
+      (csv/write-csv csv-file (mapv (fn [url]
+                                      [(md5-leo url) url])
+                                    unique-urls)))))
 
 (defn write-url-type-csv
   "Creates the URL types csv file"
@@ -97,42 +105,54 @@
                               (keep :type)
                               set)]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["UrlType"]])
-      (csv/write-csv csv-file (mapv (fn [url-type] [url-type]) unique-url-types)))))
+      (csv/write-csv csv-file [["MD5Leo" "UrlType"]])
+      (csv/write-csv csv-file (mapv (fn [url-type]
+                                      [(md5-leo url-type) url-type])
+                                    unique-url-types)))))
 
 (defn write-providers-csv
   "Creates the providers csv file"
   [collections output-filename]
   (let [providers (set (mapcat :provider-id collections))]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["ProviderId"]])
-      (csv/write-csv csv-file (mapv (fn [provider] [provider]) providers)))))
+      (csv/write-csv csv-file [["MD5Leo" "ProviderId"]])
+      (csv/write-csv csv-file (mapv (fn [provider]
+                                      [(md5-leo provider) provider])
+                                    providers)))))
 
 (defn write-formats-csv
   "Creates the metadata formats csv file"
   [collections output-filename]
   (let [metadata-formats (set (mapcat :metadata-format collections))]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["MetadataFormat"]])
-      (csv/write-csv csv-file (mapv (fn [metadata-format] [metadata-format]) metadata-formats)))))
+      (csv/write-csv csv-file [["MD5Leo" "MetadataFormat"]])
+      (csv/write-csv csv-file (mapv (fn [metadata-format]
+                                      [(md5-leo metadata-format) metadata-format])
+                                    metadata-formats)))))
 
 (defn write-data-centers-csv
   "Creates the Data Centers csv file"
   [collections output-filename]
   (let [data-centers (set (mapcat :data-center collections))]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["MetadataFormat"]])
-      (csv/write-csv csv-file (mapv (fn [data-center] [data-center]) data-centers)))))
+      (csv/write-csv csv-file [["MD5Leo" "DataCenter"]])
+      (csv/write-csv csv-file (mapv (fn [data-center]
+                                      [(md5-leo data-center) data-center])
+                                    data-centers)))))
 
 (defn write-version-ids-csv
   "Creates the version IDs csv file"
   [collections output-filename]
   (let [version-ids (set (mapcat :version-id collections))]
     (with-open [csv-file (io/writer output-filename)]
-      (csv/write-csv csv-file [["VersionId"]])
-      (csv/write-csv csv-file (mapv (fn [version-id] [version-id]) version-ids)))))
+      (csv/write-csv csv-file [["MD5Leo" "VersionId"]])
+      (csv/write-csv csv-file (mapv (fn [version-id]
+                                      [(md5-leo version-id) version-id])
+                                    version-ids)))))
 
 (comment
+
+
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
