@@ -153,6 +153,15 @@
     (collections/reset conn)
     (response/ok request)))
 
+(defn reload
+  [conn]
+  (fn [request]
+    ;; delete things in small increments to avoid hanging the system
+    (collections/delete-all-cascade conn)
+    (collections/reset conn)
+    (data-import/import-all-data conn)
+    (response/ok request)))
+
 (def ping
   (fn [request]
     (response/json request {:result :pong})))

@@ -73,6 +73,8 @@
      ["/reset" {
                 :delete (handler/reset conn)
                 :options handler/ok}]
+     ["/reload" {:post (handler/reload conn)
+                 :options handler/ok}]
      ["/ping" {
                :get handler/ping
                :post handler/ping
