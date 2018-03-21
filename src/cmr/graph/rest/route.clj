@@ -87,9 +87,10 @@
 (defn dangerous
   [httpd-component]
   (let [conn (neo4j/get-conn httpd-component)]
-    [["/queries/cypher" {
-      :get (handler/cypher-injection-get conn)
-      :post (handler/cypher-injection-post conn)}]]))
+    [["/queries/cypher"
+      {:get (handler/cypher-injection-get conn)
+       :post (handler/cypher-injection-post conn)
+       :options handler/ok}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
