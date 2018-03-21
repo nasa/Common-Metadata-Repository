@@ -26,7 +26,19 @@
          (collections/delete-all)
          (response/json request))))
 
+(defn add-collections
+  "Expects the body to be a JSON payload of an array of node objects."
+  [conn]
+  (fn [request]
+    (->> request
+         :body
+         slurp
+         ;(collections/batch-add conn)
+         ((fn [_] {:error :not-implemented}))
+         (response/json request))))
+
 (defn add-collection
+  "Expects the body to be a JSON payload of a node object."
   [conn]
   (fn [request]
     (->> request

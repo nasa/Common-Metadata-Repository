@@ -1,16 +1,22 @@
 (ns cmr.graph.collections.core
   (:require
    [cheshire.core :as json]
-   [clojurewerkz.neocons.rest.cypher :as cy]
+   [clojurewerkz.neocons.rest.cypher :as cypher]
+   [clojurewerkz.neocons.rest.nodes :as nodes]
+   [clojurewerkz.neocons.rest.relationships :as relations]
    [cmr.graph.queries.neo4j.collections :as query]))
 
 (defn get-all
   [conn]
-  (cy/tquery conn query/get-all))
+  (cypher/tquery conn query/get-all))
 
 (defn delete-all
   [conn]
-  (cy/tquery conn query/delete-all))
+  (cypher/tquery conn query/delete-all))
+
+(defn batch-add
+  [conn ^String json]
+  )
 
 (defn add-collection
   [conn ^String json]

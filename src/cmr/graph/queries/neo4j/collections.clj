@@ -1,4 +1,4 @@
 (ns cmr.graph.queries.neo4j.collections)
 
-(def get-all "MATCH (c:Collection) RETURN c;")
-(def delete-all "MATCH (c:Collection) DELETE c;")
+(def get-all "MATCH (collection:Collection) RETURN collection;")
+(def delete-all "MATCH (collection:Collection) DELETE collection;")

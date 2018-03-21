@@ -15,13 +15,14 @@
   (let [conn (neo4j/get-conn httpd-component)]
     [["/collections" {
       :get (handler/get-collections conn)
-      :delete (handler/delete-collections conn)}]
+      :delete (handler/delete-collections conn)
+      :post (handler/add-collections conn)}]
      ["/collection" {
       :post (handler/add-collection conn)}]
      ["/collection/:concept-id" {
       :get (handler/get-collection conn)
       :delete (handler/delete-collection conn)
-      :update (handler/update-collection conn)}]]))
+      :put (handler/update-collection conn)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
