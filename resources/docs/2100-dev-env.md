@@ -48,7 +48,7 @@ _/ ___\ /     \_  __ \  ______  / ___\_  __ \__  \ \____ \|  |  \
     XXxx++--..                     "i                    :"
     `XXXxx+++--'                     t.                .P
       `XXXxxx'                         #c.          .z#
-         ""                               ^#*heee*#"
+         ``                               ^#*heee*#"
 
 
 nREPL server started on port 53287 on host 127.0.0.1 - nrepl://127.0.0.1:53287
