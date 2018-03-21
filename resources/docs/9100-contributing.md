@@ -37,4 +37,4 @@ follow:
 
 <!-- Named page links below: /-->
 
-[create-issue]: https://github.com/oubiwann/cmr-client/issues/new
+[create-issue]: https://github.com/cmr-exchange/cmr-client/issues/new

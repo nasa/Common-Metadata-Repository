@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oubiwann/cmr-client.git"
+    "url": "git+https://github.com/cmr-exchange/cmr-client.git"
   },
   "keywords": [
     "client",
@@ -27,9 +27,9 @@
   "author": "Duncan McGreggor",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/oubiwann/cmr-client/issues"
+    "url": "https://github.com/cmr-exchange/cmr-client/issues"
   },
-  "homepage": "https://github.com/oubiwann/cmr-client",
+  "homepage": "https://github.com/cmr-exchange/cmr-client",
   "files": [
     "dist"
   ]

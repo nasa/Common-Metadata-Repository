@@ -88,6 +88,6 @@ Distributed under the Apache License, Version 2.0.
 [clojure]: https://clojure.org/
 [clojurescript]: https://clojurescript.org/
 [javascript]: https://developer.mozilla.org/en-US/docs/Web/JavaScript
-[client-api-docs]: https://oubiwann.github.io/cmr-client/current/
-[guides]: https://oubiwann.github.io/cmr-client/current/3000-guides.html
-[contributing-docs]: https://oubiwann.github.io/cmr-client/current/9100-contributing.html
+[client-api-docs]: https://cmr-exchange.github.io/cmr-client/current/
+[guides]: https://cmr-exchange.github.io/cmr-client/current/3000-guides.html
+[contributing-docs]: https://cmr-exchange.github.io/cmr-client/current/9100-contributing.html

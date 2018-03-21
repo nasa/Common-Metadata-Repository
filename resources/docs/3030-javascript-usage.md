@@ -40,4 +40,4 @@ See the [example html page][example-html-page] if you'd like to try this out.
 
 [npm]: https://www.npmjs.com/package/@nasa-earthdata/cmr
 [npm-cdn]: https://unpkg.com/
-[example-html-page]: https://oubiwann.github.io/cmr-client/cdn.html
+[example-html-page]: https://cmr-exchange.github.io/cmr-client/cdn.html
