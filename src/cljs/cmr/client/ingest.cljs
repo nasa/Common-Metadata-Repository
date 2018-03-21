@@ -38,11 +38,11 @@
     [this segment]
     (base-impl/get-url this segment))
   (get-token
-    [this segment]
-    (base/get-token this segment))
+    [this]
+    (base/get-token this))
   (get-token-header
-    [this segment]
-    (base/get-token-header this segment)))
+    [this]
+    (base/get-token-header this)))
 
 (extend-type CMRIngestClientData
   CMRIngestAPI
