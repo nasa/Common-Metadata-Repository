@@ -34,6 +34,9 @@
 (def version-ids-csv-file
   "data/version_ids.csv")
 
+(def collection-url-csv-file
+  "data/collection_and_urls.csv")
+
 (def url-fields
   "List of fields we are interested in parsing from a given URL."
   [:type :url])
@@ -150,8 +153,40 @@
                                       [(md5-leo version-id) version-id])
                                     version-ids)))))
 
+(defn construct-collection-url-row
+  "Creates a collection URL row for a relationship CSV file."
+  [collection url]
+  [(md5-leo (first (:concept-id collection)))
+   (:url url)
+   (:type url)])
+
+(defn write-collection-url-relationship-csv
+  "Creates the collection<->url relationship csv file."
+  [collections output-filename]
+  (let [rows (doall
+              (for [collection collections
+                    url (:related-urls collection)]
+                (construct-collection-url-row collection url)))]
+    (with-open [csv-file (io/writer output-filename)]
+      (csv/write-csv csv-file [["CollectionMD5Leo" "URL" "URLType"]])
+      (csv/write-csv csv-file rows))))
+
+
 (comment
 
+ ;; Loading all the data locally
+;  LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collections.csv" AS csvLine)
+; MERGE (format:MetadataFormat {name: csvLine.MetadataFormat})
+; MERGE (version:Version {name: csvLine.VersionId})
+; MERGE (provider:Provider {name: csvLine.ProviderId})
+; CREATE (coll:Collection {md5Leo: csvLine.MD5Leo, conceptId: csvLine.ConceptId})
+; CREATE (coll)-[:OWNED_BY]->(provider)
+; CREATE (coll)-[:FORMATTED_IN]->(format)
+; CREATE (coll)-[:VERSION_IS]->(version)
+;; Step 2
+; CREATE CONSTRAINT ON (coll:Collection) ASSERT coll.md5Leo IS UNIQUE
+;; Step 3
+;
 
  (prepare-collection-for-import (first (:hits (:hits (read-json-file json-collections-filename)))))
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
@@ -175,6 +210,9 @@
 
  (write-version-ids-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
                         (str "resources/" version-ids-csv-file))
+
+ (write-collection-url-relationship-csv (mapv prepare-collection-for-import (:hits (:hits (read-json-file json-collections-filename))))
+                                        (str "resources/" collection-url-csv-file))
 
  (mapv prepare-collection-for-import (:hits (:hits (read-json-file test-file))))
  (println
