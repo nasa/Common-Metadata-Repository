@@ -108,23 +108,26 @@ MERGE (provider:Provider {name: csvLine.ProviderId})
 CREATE (coll:Collection {md5Leo: csvLine.MD5Leo, conceptId: csvLine.ConceptId})
 CREATE (coll)-[:OWNED_BY]->(provider)
 CREATE (coll)-[:FORMATTED_IN]->(format)
-CREATE (coll)-[:VERSION_IS]->(version)```
+CREATE (coll)-[:VERSION_IS]->(version)
+```
 
-6.  ```cypher
+6. ```cypher
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_urls.csv" AS csvLine
 MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
 MERGE (url:Url { name: csvLine.URL})
 MERGE (urlType:UrlType { name: csvLine.URLType})
 CREATE (coll)-[:LINKS_TO]->(url)
-CREATE (url)-[:HAS_TYPE]->(urlType)```
+CREATE (url)-[:HAS_TYPE]->(urlType)
+```
 
 7. ```cypher
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_data_centers.csv" AS csvLine
 MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
 MERGE (dataCenter:DataCenter { name: csvLine.DataCenter})
-CREATE (coll)-[:AFFILIATED_WITH]->(dataCenter)```
+CREATE (coll)-[:AFFILIATED_WITH]->(dataCenter)
+```
 
 #### Read More
 
