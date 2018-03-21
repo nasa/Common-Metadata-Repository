@@ -10,9 +10,27 @@
 <h2><a href="#rest-api" name="rest-api"></a>REST API</h2>
 <p>The CMR Graph REST API is accessible via the endpoint <a href="http://localhost:3012">http://localhost:3012</a>, following the port numbering conventions of the CMR.</p>
 <p>For this endpoint, the following resources have been defined:</p>
-<p>Collection Routes * <code>GET    /collections</code> * <code>DELETE /collections</code> * <code>POST   /collection</code> * <code>GET    /collection/:concept-id</code> * <code>DELETE /collection/:concept-id</code> * <code>UPDATE /collection/:concept-id</code></p>
-<p>Admin Routes: * <code>GET    /health</code> * <code>GET    /ping</code> * <code>POST   /ping</code></p>
-<p>Demo Routes: * <code>GET    /demo/movie/graph/:limit</code> * <code>GET    /demo/movie/search?q=</code> * <code>GET    /demo/movie/title/:title</code></p>
+<p>Collection Routes</p>
+<ul>
+  <li><code>GET    /collections</code></li>
+  <li><code>DELETE /collections</code></li>
+  <li><code>POST   /collection</code></li>
+  <li><code>GET    /collection/:concept-id</code></li>
+  <li><code>DELETE /collection/:concept-id</code></li>
+  <li><code>UPDATE /collection/:concept-id</code></li>
+</ul>
+<p>Admin Routes:</p>
+<ul>
+  <li><code>GET    /health</code></li>
+  <li><code>GET    /ping</code></li>
+  <li><code>POST   /ping</code></li>
+</ul>
+<p>Demo Routes:</p>
+<ul>
+  <li><code>GET    /demo/movie/graph/:limit</code></li>
+  <li><code>GET    /demo/movie/search?q=</code></li>
+  <li><code>GET    /demo/movie/title/:title</code></li>
+</ul>
 <p>Examples:</p>
 <pre><code>$ curl --silent "http://localhost:3012/health"|jq .
 </code></pre>

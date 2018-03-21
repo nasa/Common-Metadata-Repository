@@ -17,6 +17,7 @@ conventions of the CMR.
 For this endpoint, the following resources have been defined:
 
 Collection Routes
+
 * `GET    /collections`
 * `DELETE /collections`
 * `POST   /collection`
@@ -25,11 +26,13 @@ Collection Routes
 * `UPDATE /collection/:concept-id`
 
 Admin Routes:
+
 * `GET    /health`
 * `GET    /ping`
 * `POST   /ping`
 
 Demo Routes:
+
 * `GET    /demo/movie/graph/:limit`
 * `GET    /demo/movie/search?q=`
 * `GET    /demo/movie/title/:title`
