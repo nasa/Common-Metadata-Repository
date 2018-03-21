@@ -79,14 +79,14 @@
 (defn- get-related-urls
   [conn concept-id]
   (let [result (collections/get-collections-via-related-urls conn concept-id)]
-    (map #(get % "u.Href") result)))
+    (map #(get % "u.name") result)))
 
 (defn get-collections-via-related-urls
   [conn]
   (fn [request]
     (let [related-urls (get-related-urls conn (get-in request [:path-params :concept-id]))
           result (collections/get-concept-ids-by-urls conn related-urls)
-          concept-ids (distinct (map #(get % "c.ConceptId") result))]
+          concept-ids (distinct (map #(get % "c.conceptId") result))]
       (response/json request concept-ids))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

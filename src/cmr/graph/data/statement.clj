@@ -21,7 +21,7 @@
         concept-id (first concept-id)
         entry-id (first entry-id)
         version-id (first version-id)]
-    [(format "CREATE (%s:Collection {ConceptId: '%s', EntryId:'%s', Version:'%s'})"
+    [(format "CREATE (%s:Collection {conceptId: '%s', entryId:'%s', version:'%s'})"
              (coll-concept-id-key coll) concept-id entry-id version-id)
      (format "CREATE (%s)-[:PROVIDES {type:['collection']}]->(%s)"
              provider-id (coll-concept-id-key coll))]))
@@ -37,9 +37,9 @@
 (defn- url->stmt
   [url coll-key]
   (let [url-key (str "A" (digest/md5 url))]
-    [(format "CREATE (%s:URL {Href:'%s'})"
+    [(format "CREATE (%s:Url {name:'%s'})"
              url-key url)
-     (format "CREATE (%s)-[:HAS]->(%s)"
+     (format "CREATE (%s)-[:LINKS_TO]->(%s)"
              coll-key url-key)
      (format "CREATE (%s)-[:IS_IN]->(%s)"
              url-key coll-key)]))

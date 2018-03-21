@@ -8,10 +8,10 @@
 
 (defn get-urls-by-concept-id
   [concept-id]
-  (format "match (c:Collection)-[:HAS]->(u:URL) where c.ConceptId='%s' return u.Href;"
+  (format "match (c:Collection)-[:LINKS_TO]->(u:Url) where c.conceptId='%s' return u.name;"
           concept-id))
 
 (defn get-concept-ids-by-urls
   [urls]
-  (format "match (c:Collection)-[:HAS]->(u:URL) where u.Href in [%s] return c.ConceptId;"
+  (format "match (c:Collection)-[:LINKS_TO]->(u:Url) where u.name in [%s] return c.conceptId;"
           (string/join "," (map #(format "'%s'" %) urls))))
