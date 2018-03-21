@@ -4,4 +4,4 @@
    [cmr.client.common.const :as const]))
 
 (deftest default-environment-type
-  (is (= :prod const/default-environment-type)))
+  (is (= :local const/default-environment-type)))
