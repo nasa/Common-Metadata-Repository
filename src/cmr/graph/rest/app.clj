@@ -1,6 +1,7 @@
 (ns cmr.graph.rest.app
   (:require
    [cmr.graph.rest.handler :as handler]
+   [cmr.graph.rest.middleware :as middleware]
    [cmr.graph.rest.route :as route]
    [ring.middleware.defaults :as ring-defaults]
    [reitit.ring :as ring]
@@ -19,4 +20,5 @@
       rest-api-routes
       ring/router
       (ring/ring-handler handler/fallback)
-      (ring-defaults/wrap-defaults ring-defaults/api-defaults)))
+      (ring-defaults/wrap-defaults ring-defaults/api-defaults)
+      (middleware/wrap-cors)))

@@ -40,7 +40,8 @@
     [["/demo/movie/graph/:limit" {
       :get (handler/movie-demo-graph conn)}]
      ["/demo/movie/search" {
-      :get (handler/movie-demo-search conn)}]
+      :get (handler/movie-demo-search conn)
+      :options handler/ok}]
      ["/demo/movie/title/:title" {
       :get (handler/movie-demo-title conn)}]]))
 
