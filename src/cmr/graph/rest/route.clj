@@ -66,13 +66,17 @@
 
 (defn admin
   [httpd-component]
-  [["/health" {
-    :get (handler/health httpd-component)
-    :options handler/ok}]
-   ["/ping" {
-    :get handler/ping
-    :post handler/ping
-    :options handler/ok}]])
+  (let [conn (neo4j/get-conn httpd-component)]
+    [["/health" {
+                 :get (handler/health httpd-component)
+                 :options handler/ok}]
+     ["/reset" {
+                :get (handler/reset conn)
+                :options handler/ok}]
+     ["/ping" {
+               :get handler/ping
+               :post handler/ping
+               :options handler/ok}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   DANGEROUS!!! REMOVE ME!!! *Injection Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;

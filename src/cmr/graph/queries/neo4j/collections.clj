@@ -2,6 +2,8 @@
   (:require
    [clojure.string :as string]))
 
+(def reset "MATCH (n) DETACH DELETE n;")
+
 (def get-all "MATCH (collection:Collection) RETURN collection;")
 (def delete-all "MATCH (collection:Collection) DELETE collection;")
 (def delete-all-cascade "MATCH (collection:Collection) DETACH DELETE collection;")

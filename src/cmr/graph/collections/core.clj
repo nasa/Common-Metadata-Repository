@@ -6,6 +6,10 @@
    [clojurewerkz.neocons.rest.relationships :as relations]
    [cmr.graph.queries.neo4j.collections :as query]))
 
+(defn reset
+  [conn]
+  (cypher/tquery conn query/reset))
+
 (defn get-all
   [conn]
   (cypher/tquery conn query/get-all))
