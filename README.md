@@ -99,7 +99,8 @@ At this point, your instance of Neo4j should have the demo movie data.
 2. `CREATE CONSTRAINT ON (urlType:UrlType) ASSERT urlType.name IS UNIQUE`
 3. `CREATE CONSTRAINT ON (coll:Collection) ASSERT coll.md5Leo IS UNIQUE`
 4. `CREATE CONSTRAINT ON (dataCenter:DataCenter) ASSERT dataCenter.name IS UNIQUE`
-5.  ```cypher
+5. `CREATE CONSTRAINT ON (tag:Tag) ASSERT tag.name IS UNIQUE`
+6.  ```cypher
     LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collections.csv" AS csvLine
     MERGE (format:MetadataFormat {name: csvLine.MetadataFormat})
     MERGE (version:Version {name: csvLine.VersionId})
@@ -109,7 +110,7 @@ At this point, your instance of Neo4j should have the demo movie data.
     CREATE (coll)-[:FORMATTED_IN]->(format)
     CREATE (coll)-[:VERSION_IS]->(version)
     ```
-6.  ```cypher
+7.  ```cypher
     USING PERIODIC COMMIT 500
     LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_urls.csv" AS csvLine
     MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
@@ -118,12 +119,19 @@ At this point, your instance of Neo4j should have the demo movie data.
     CREATE (coll)-[:LINKS_TO]->(url)
     CREATE (url)-[:HAS_TYPE]->(urlType)
     ```
-7.  ```cypher
+8.  ```cypher
     USING PERIODIC COMMIT 500
     LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_data_centers.csv" AS csvLine
     MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
     MERGE (dataCenter:DataCenter { name: csvLine.DataCenter})
     CREATE (coll)-[:AFFILIATED_WITH]->(dataCenter)
+    ```
+9.  ```cypher
+    USING PERIODIC COMMIT 500
+    LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/cmr-exchange/cmr-graph/master/resources/data/collection_and_tags.csv" AS csvLine
+    MATCH (coll:Collection { md5Leo: csvLine.CollectionMD5Leo})
+    MERGE (tag:Tag { name: csvLine.TagKey})
+    CREATE (coll)-[:TAGGED_WITH]->(tag)
     ```
 
 #### Read More
