@@ -23,9 +23,14 @@
 (defn delete-collections
   [conn]
   (fn [request]
-    (->> conn
-         (collections/delete-all)
-         (response/json request))))
+    (let [cascade? (get-in request [:params :cascade])]
+      (if (= "true" cascade?)
+        (->> conn
+             (collections/delete-all-cascade)
+             (response/json request))
+        (->> conn
+             (collections/delete-all)
+             (response/json request))))))
 
 (defn add-collections
   "Expects the body to be a JSON payload of an array of node objects."
@@ -84,7 +89,9 @@
 (defn get-collections-via-related-urls
   [conn]
   (fn [request]
-    (let [related-urls (get-related-urls conn (get-in request [:path-params :concept-id]))
+    (let [related-urls (get-related-urls
+                        conn
+                        (get-in request [:path-params :concept-id]))
           result (collections/get-concept-ids-by-urls conn related-urls)
           concept-ids (distinct (map #(get % "c.conceptId") result))]
       (response/json request concept-ids))))

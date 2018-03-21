@@ -14,6 +14,10 @@
   [conn]
   (cypher/tquery conn query/delete-all))
 
+(defn delete-all-cascade
+  [conn]
+  (cypher/tquery conn query/delete-all-cascade))
+
 (defn batch-add
   [conn ^String json]
   )
