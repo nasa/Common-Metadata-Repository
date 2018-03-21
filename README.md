@@ -105,13 +105,26 @@ setup and use of CMR Graph.
 
 ### Example Usage [&#x219F;](#contents)
 
-For a quick taste of using CMR Graph, we've put a snippet of code below.
-See the links in the "Guides" section below for links to more detailed examples
-and other usage.
+For a quick taste of using CMR Graph, we've put a snippet of JavaScript code
+below, using the experimental CMR Client. See the links in the "Guides"
+section below for links to more detailed examples and other usage.
 
 ```
-TBD
+var client = cmr.client.graph.create_client({"return-body?": true});
+var channel = cmr.client.graph.get_collection_url_relation(
+	client, "C1276812863-GES_DISC");
+cmr.client.common.util.with_callback(channel, function(data) {
+  var formatted_output = JSON.stringify(data, null, 2);
+  document.getElementById("data").innerHTML = formatted_output;
+});
 ```
+
+This does require a running CMR Graph system (Neo4j + CMR Graph REST
+server; follow the instructions above to start them up). If you have
+everything running, you can make that call in your web developer tools
+JavaScript console at:
+
+* http://localhost:3012/static/gui-demo/edsc.html
 
 
 ### Project Guides [&#x219F;](#contents)
