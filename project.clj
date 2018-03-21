@@ -14,7 +14,7 @@
     [clojusc/ltest "0.3.0"]
     [org.apache.maven.wagon/wagon-provider-api "2.10"]
     [org.clojure/clojure "1.9.0"]
-    [org.clojure/clojurescript "1.10.191"]
+    [org.clojure/clojurescript "1.10.217"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
@@ -29,7 +29,7 @@
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-cljsbuild "1.1.7"]
-        [lein-figwheel "0.5.14"]
+        [lein-figwheel "0.5.15"]
         [lein-shell "0.5.0"]]
       :resource-paths ["dev-resources" "test/data" "test/clj"]
       :source-paths ["src/clj" "src/cljc" "test/clj" "dev-resources/src"]
@@ -53,7 +53,7 @@
         org.clojure/tools.namespace]
       :dependencies ^:replace [
         [clj-http "2.2.0"]
-        [org.clojure/clojure "1.8.0"]
+        [org.clojure/clojure "1.9.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ^:replace ["src/clj" "src/cljc"]
       :test-paths ^:replace []
@@ -140,7 +140,7 @@
     "build"
       ^{:doc "Perform the build tasks"}
       ["with-profile" "+test" "do"
-        ["check-deps"]
+        ;["check-deps"]
         ["lint"]
         ["test"]
         ["compile"]
