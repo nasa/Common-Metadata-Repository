@@ -20,7 +20,7 @@ similar_collections = {
                             collectionId: meta["concept-id"],
                             provider: meta["provider-id"],
                             shortName: umm["ShortName"],
-                            collectionUrl: "https://cmr.earthdata.nasa.gov/search/concepts/" + conceptId + meta["revision-id"]
+                            collectionUrl: "https://cmr.earthdata.nasa.gov/search/concepts/" + conceptId + "/" + meta["revision-id"]
                         })
                     })
             })
