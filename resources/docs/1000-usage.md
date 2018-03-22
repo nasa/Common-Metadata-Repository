@@ -20,22 +20,38 @@ Collection Routes
 
 * `GET    /collections`
 * `DELETE /collections`
+* `POST   /collections/import`
 * `POST   /collection`
 * `GET    /collection/:concept-id`
 * `DELETE /collection/:concept-id`
 * `UPDATE /collection/:concept-id`
 
-Admin Routes:
+Relationship Routes
+
+* `GET    /relationships/related-urls/collections/:concept-id`
+
+Queries
+
+* `GET    /queries/cypher`
+* `POST   /queries/cypher`
+
+Admin Routes
 
 * `GET    /health`
 * `GET    /ping`
 * `POST   /ping`
+* `DELETE /reset`
+* `POST   /reload`
 
-Demo Routes:
+Demo Routes
 
 * `GET    /demo/movie/graph/:limit`
 * `GET    /demo/movie/search?q=`
 * `GET    /demo/movie/title/:title`
+
+Static Routes
+
+* `GET    /static/*`
 
 Examples:
 
