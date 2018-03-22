@@ -25,7 +25,14 @@ interfaces leveraging standard protocols and APIs.
 
 ## About the CMR Client
 
-TBD
+This project is an experimental implementation that allows JVM users (Java,
+Scala, Clojure, Groovy, etc.), Node.js users, and JavaScript users to make 
+calls to the CMR's published REST API. 
+
+In addition, this project aims to produce a unified codebase that could be 
+used in testing by the CMR team, eliminating the need for an enormouse amount 
+of old, hard-to-use, hard-to-maintain testing fixtures and one-off utility 
+functions that currently exists in the CMR codebase.
 
 ## Source Code
 
