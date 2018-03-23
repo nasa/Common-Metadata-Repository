@@ -10,6 +10,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -231,7 +232,12 @@
    :DirectoryNames (dif-util/parse-idn-node doc)
    :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
+   :UseConstraints (when-let [description (su/truncate
+                                            (value-of doc "/DIF/Use_Constraints")
+                                            su/USECONSTRAINTS_MAX
+                                            sanitize?)]
+                     {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                     {:Description description})}) 
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")

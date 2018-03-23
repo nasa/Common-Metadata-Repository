@@ -21,6 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
@@ -253,12 +254,7 @@
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (parse-access-constraints doc sanitize?)
-      :UseConstraints
-      (su/truncate
-       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                    #"(?s)^(?!Restriction Comment:).+")
-       su/USECONSTRAINTS_MAX
-       sanitize?)
+      :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
       :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")

@@ -159,7 +159,8 @@
        [:Long_Name LongName]])
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    [:Use_Constraints (:UseConstraints c)]
+    (when-let [description (get-in c [:UseConstraints :Description])]
+      [:Use_Constraints (:Description description)])
     (dif-util/generate-dataset-language :Data_Set_Language (:DataLanguage c))
     (center/generate-data-centers c)
     (for [distribution (:Distributions c)]

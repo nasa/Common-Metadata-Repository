@@ -1486,12 +1486,6 @@
       "minLength": 1,
       "maxLength": 12000
     },
-    "UseConstraintsType": {
-      "description": "Free-text information about how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 20000
-    },
     "MetadataAssociateTypeEnum": {
       "description": "The set of supported values for MetadataAssociationType.Type.",
       "type": "string",

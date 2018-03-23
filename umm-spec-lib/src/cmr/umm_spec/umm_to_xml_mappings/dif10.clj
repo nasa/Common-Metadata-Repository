@@ -321,7 +321,8 @@
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    [:Use_Constraints (:UseConstraints c)]
+    (when-let [description (get-in c [:UseConstraints :Description])]
+      [:Use_Constraints (:Description description)]) 
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (:Distributions c)]

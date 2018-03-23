@@ -19,7 +19,7 @@
   300)
 
 (def USECONSTRAINTS_MAX
-  20000)
+  4000)
 
 (def QUALITY_MAX
   12000)

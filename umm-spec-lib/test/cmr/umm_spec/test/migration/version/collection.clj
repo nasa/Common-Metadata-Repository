@@ -1536,12 +1536,21 @@
                :Type "Atmosphere Layer"}
               {:Value "There is no limit if you believe -Bob Ross",
                :Type "Maximum Altitude"}]
-           (get-in result [:SpatialExtent :VerticalSpatialDomains]))))
+           (get-in result [:SpatialExtent :VerticalSpatialDomains])))))
    (testing "DOI MissingReason and Explanation"
      (is (= {:MissingReason "Not Applicable"}
             (get (vm/migrate-umm {} :collection "1.9" "1.10"
                                  {:DOI nil})
-                 :DOI))))))
+                 :DOI))))
+   (testing "UseConstraints migration from 1.9.0 to 1.10.0"
+    (is (= {:Description "description"}
+         (:UseConstraints
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                          {:UseConstraints "description"}))))
+    (is (nil?
+         (:UseConstraints
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                          {}))))))
 
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
@@ -1581,7 +1590,18 @@
            (get (vm/migrate-umm {} :collection "1.10" "1.9"
                                 {:DOI {:MissingReason "Not Applicable"
                                        :Explanation "This is an explanation."}})
-                :DOI)))))
+                :DOI))))
+
+  (testing "UseConstraints migration from version 1.10 to 1.9"
+     (is (= "description"
+         (:UseConstraints
+           (vm/migrate-umm {} :collection "1.10" "1.9"
+                          {:UseConstraints {:Description "description"
+                                            :LicenseText "license text"}}))))
+     (is (nil?
+         (:UseConstraints
+           (vm/migrate-umm {} :collection "1.10" "1.9"
+                          {:UseConstraints {:LicenseUrl {:Linkage "https://www.nasa.examplelicenseurl.gov"}}}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems

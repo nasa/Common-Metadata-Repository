@@ -34,6 +34,29 @@
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
 
+(defn- generate-user-constraints
+  "Returns the constraints appropriate for the given metadata."
+  [c]
+  (let [use-constraints (:UseConstraints c)
+        ;; (:Description use-consstraints) is a record that contains :Description.
+        description (:Description (:Description use-constraints))
+        license-url (:LicenseUrl use-constraints)
+        license-text (:LicenseText use-constraints)]
+     (when (or description license-url license-text)
+       [:gmd:resourceConstraints
+        [:gmd:MD_LegalConstraints
+        (when description
+          [:gmd:useLimitation (char-string description)])
+        (when (or license-url license-text)
+          [:gmd:useConstraints
+            [:gmd:MD_RestrictionCode 
+              {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+               :codeListValue "otherRestrictions"} "otherRestrictions"]])
+        (when license-url
+          [:gmd:otherConstraints (char-string (str "LicenseUrl:" (:Linkage license-url)))])
+        (when license-text
+          [:gmd:otherConstraints (char-string (str "LicenseText:" license-text))])]])))
+
 (defn- generate-spatial-extent
   "Returns ISO SMAP SpatialExtent content generator instructions"
   [spatial-extent]
@@ -167,6 +190,7 @@
             (for [instrument (distinct (mapcat :Instruments (:Platforms c)))]
               [:gmd:keyword
                (char-string (kws/smap-keyword-str instrument))])]]
+          (generate-user-constraints c)
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (first (:TilingIdentificationSystems c))

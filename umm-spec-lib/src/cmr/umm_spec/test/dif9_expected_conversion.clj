@@ -298,4 +298,6 @@
         (update :DataLanguage conversion-util/dif-expected-data-language)
         (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
         (update-in [:CollectionCitations] expected-collection-citations (:Version umm-coll))
+        (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
+                                 {:Description description}))
         js/parse-umm-c)))

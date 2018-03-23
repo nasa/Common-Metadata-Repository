@@ -199,10 +199,22 @@
       (update-in-each [:CollectionCitations] sanitize-online-resource)
       (update-in-each [:CollectionCitations] sanitize-umm-online-resource-function)))
 
+(defn- sanitize-umm-use-constraints
+  "Sanitize UseConstraints data.
+   Even though the schema will fail the validation
+   when both LicenseUrl and LicenseText are present,
+   somehow it still gets generated."
+  [record]
+  (if (and (get-in record [:UseConstraints :LicenseUrl])
+           (get-in record [:UseConstraints :LicenseText]))
+    (assoc-in record [:UseConstraints :LicenseText] nil)
+    record)) 
+     
 (defn sanitized-umm-c-record
   "Returns the sanitized version of the given umm-c record."
   [record]
   (-> record
+      sanitize-umm-use-constraints
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to eng to make it through the validation.
       (set-if-exist :DataLanguage "eng")

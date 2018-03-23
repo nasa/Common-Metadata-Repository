@@ -235,6 +235,16 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
 
+;; This sub-element either contains a license summary or free-text description that details the
+;; permitted use or limitation of this collection.
+(defrecord UseConstraintsDescriptionType
+  [
+   ;; This sub-element either contains a license summary or free-text description that details the
+   ;; permitted use or limitation of this collection.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing UseConstraintsDescriptionType)
+
 ;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
 ;; SpatialKeywords. Each tier must have data in the tier above it.
 (defrecord LocationKeywordType
@@ -413,6 +423,25 @@
    LongName
   ])
 (record-pretty-printer/enable-record-pretty-printing DirectoryNameType)
+
+;; This element defines how the data may or may not be used after access is granted to assure the
+;; protection of privacy or intellectual property. This includes license text, license URL, or any
+;; special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the
+;; data set. Data providers may request acknowledgement of the data from users and claim no
+;; responsibility for quality and completeness of data.
+(defrecord UseConstraintsType
+  [
+   Description
+
+   ;; This element holds the URL and associated information to access the License on the web. If
+   ;; this element is used the LicenseText element cannot be used.
+   LicenseUrl
+
+   ;; This element holds the actual license text. If this element is used the LicenseUrl element
+   ;; cannot be used.
+   LicenseText
+  ])
+(record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
 
 (defrecord VerticalCoordinateSystemType
   [

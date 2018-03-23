@@ -326,4 +326,6 @@
       (update-in [:CollectionCitations] expected-collection-citations)
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
+      (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
+                               {:Description description}))
       js/parse-umm-c))

@@ -15,6 +15,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
@@ -33,6 +34,9 @@
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
        "/gmd:identificationInfo/gmd:MD_DataIdentification"))
+
+(def constraints-xpath
+  (str md-identification-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
 (def citation-base-xpath
   (str md-identification-base-xpath
@@ -136,6 +140,7 @@
                              sanitize?)
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
+       :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (platform/parse-platforms doc base-xpath sanitize?)
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
