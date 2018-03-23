@@ -27,17 +27,18 @@
 
 (defn old-revision-concept-cleanup
   [context]
+  ;; cleanup CMR system concepts
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag-association)
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag)
+  (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
+  (concept-service/delete-old-revisions context pv/cmr-provider :service-association)
+  ;; cleanup provider specific tables
   (doseq [provider (provider-service/get-providers context)]
     (concept-service/delete-old-revisions context provider :collection)
     (concept-service/delete-old-revisions context provider :granule)
     (concept-service/delete-old-revisions context provider :variable)
     (concept-service/delete-old-revisions context provider :service)
-    (concept-service/delete-old-revisions context provider :access-group))
-  ;; cleanup system provider concepts
-  (concept-service/delete-old-revisions context pv/cmr-provider :tag)
-  (concept-service/delete-old-revisions context pv/cmr-provider :tag-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :service-association))
+    (concept-service/delete-old-revisions context provider :access-group)))
 
 (def-stateful-job OldRevisionConceptCleanupJob
   [ctx system]
