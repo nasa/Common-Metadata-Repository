@@ -1543,7 +1543,9 @@
                                  {:DOI nil})
                  :DOI))))
    (testing "UseConstraints migration from 1.9.0 to 1.10.0"
-    (is (= {:Description "description"}
+    (is (= (umm-c/map->UseConstraintsType 
+             {:Description (umm-c/map->UseConstraintsDescriptionType
+                             {:Description "description"})})
          (:UseConstraints
            (vm/migrate-umm {} :collection "1.9" "1.10"
                           {:UseConstraints "description"}))))
@@ -1596,12 +1598,16 @@
      (is (= "description"
          (:UseConstraints
            (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:UseConstraints {:Description "description"
-                                            :LicenseText "license text"}}))))
+                          {:UseConstraints (umm-c/map->UseConstraintsType
+                                             {:Description (umm-c/map->UseConstraintsDescriptionType
+                                                             {:Description "description"})
+                                              :LicenseText "license text"})}))))
      (is (nil?
          (:UseConstraints
            (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:UseConstraints {:LicenseUrl {:Linkage "https://www.nasa.examplelicenseurl.gov"}}}))))))
+                          {:UseConstraints (umm-c/map->UseConstraintsType
+                                             {:LicenseUrl (umm-cmn/map->OnlineResourceType 
+                                                            {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems

@@ -91,9 +91,11 @@
                                                   :MaximumValue 10.0}}]
     :AccessConstraints {:Description "Restriction Comment: Access constraints"
                         :Value "0"}
-    :UseConstraints {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                    {:Description "example-collection-record Description"})
-                     :LicenseUrl {:Linkage "http://example-collection-record.com"}}
+    :UseConstraints (umm-coll-models/map->UseConstraintsType 
+                      {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                      {:Description "example-collection-record Description"})
+                       :LicenseUrl (cmn/map->OnlineResourceType
+                                     {:Linkage "http://example-collection-record.com"})})
     :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
                      :DistributionMedia "8 track"
                      :DistributionFormat "Animated GIF"

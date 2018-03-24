@@ -14,6 +14,7 @@
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.migration.version.interface :as interface]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]
@@ -220,7 +221,11 @@
       char-data-type-normalization/migrate-up
       doi/migrate-missing-reason-up
       (assoc :UseConstraints (when-let [description (:UseConstraints c)]
-                               {:Description description}))))
+                               ;; UseConstraints is string in 1.9, object in 1.10. 
+                               ;; This string becomes Description in 1.10, which is also an object.
+                               (umm-coll-models/map->UseConstraintsType 
+                                 {:Description (umm-coll-models/map->UseConstraintsDescriptionType 
+                                                {:Description description})})))))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
@@ -230,4 +235,6 @@
       (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
       doi/migrate-missing-reason-down
       (assoc :UseConstraints (when-let [description (get-in c [:UseConstraints :Description])]
-                               description))))
+                               ;; Description in 1.10 is object/record.
+                               ;; It needs to be converted to string when becoming UseConstraints in 1.9.i
+                               (:Description description)))))
