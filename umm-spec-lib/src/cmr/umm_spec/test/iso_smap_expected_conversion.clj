@@ -307,13 +307,6 @@
                               cc)))))
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
 
-(defn- expected-use-constraints
-  "Returns the expected UseConstraints."
-  [use-constraints]
-  (if-let [linkage (get-in use-constraints [:LicenseUrl :Linkage])]
-    (assoc use-constraints :LicenseUrl (cmn/map->OnlineResourceType {:Linkage linkage}))
-    use-constraints))
-
 (defn umm-expected-conversion-iso-smap
   "Change the UMM to what is expected when translating from ISO SMAP so that it can
    be compared to the actual translation."
@@ -337,7 +330,7 @@
                                  (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
                                "Technical Contact"))
       (update :CollectionCitations expected-collection-citations)
-      (update :UseConstraints expected-use-constraints) 
+      (update :UseConstraints iso-shared/expected-use-constraints) 
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
       (assoc :TemporalKeywords nil)

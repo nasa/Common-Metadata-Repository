@@ -47,15 +47,16 @@
                linkage (get-license-value other-constraints-list "licenseurl")   
                license-text (when-not linkage
                               (get-license-value other-constraints-list "licensetext"))]]
-      (util/remove-nil-keys
-        {:Description (when description
-                        (umm-coll-models/map->UseConstraintsDescriptionType
-                          {:Description description}))
-         :LicenseUrl (when linkage
-                       (umm-cmn-models/map->OnlineResourceType
-                         {:Linkage linkage}))
-         :LicenseText (when-not linkage
-                        license-text)})))
+      (umm-coll-models/map->UseConstraintsType
+        (util/remove-nil-keys
+          {:Description (when description
+                          (umm-coll-models/map->UseConstraintsDescriptionType
+                            {:Description description}))
+           :LicenseUrl (when linkage
+                         (umm-cmn-models/map->OnlineResourceType
+                           {:Linkage linkage}))
+           :LicenseText (when-not linkage
+                          license-text)}))))
 
 (defn parse-use-constraints
   "Parse the use constraints from XML resource constraint.

@@ -327,5 +327,7 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
       (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
-                               {:Description description}))
+                               (umm-c/map->UseConstraintsType
+                                 ;; description from umm-coll is already an object.
+                                 {:Description description})))
       js/parse-umm-c))

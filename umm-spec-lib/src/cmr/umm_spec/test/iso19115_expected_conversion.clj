@@ -352,13 +352,6 @@
                               cc))))) 
     [{}]))
 
-(defn- expected-use-constraints
-  "Returns the expected UseConstraints."
-  [use-constraints]
-  (if (:LicenseUrl use-constraints)
-    (update use-constraints :LicenseUrl #(select-keys % [:Linkage]))
-    use-constraints))
-
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -398,5 +391,5 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
-      (update :UseConstraints expected-use-constraints)  
+      (update :UseConstraints iso-shared/expected-use-constraints)  
       js/parse-umm-c))
