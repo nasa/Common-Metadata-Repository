@@ -92,8 +92,10 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.10"))
-  (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version!
+                          umm-version/current-collection-version))
+        c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
                           {:format :echo10})
@@ -108,7 +110,7 @@
                                                          :long-name "c8-dif10"})
                            {:format :dif10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/curr-ingest-ver-example-collection-record
+                               exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         ;; An item ingested with and XML preprocessing line to ensure this is tested
@@ -202,12 +204,14 @@
               "ECHO10" :echo10
               "DIF" :dif
               "DIF10" :dif10
-              "ISO" :iso19115))))))
-  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.9")))
+              "ISO" :iso19115)))))
+  (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 (deftest collection-umm-json-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.10"))
-  (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version!
+                          umm-version/current-collection-version))
+        c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
                                                               :description "updated"})
@@ -215,7 +219,7 @@
         c2-echo (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "c2-echo"})
                           {:format :echo10})
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/curr-ingest-ver-example-collection-record
+                               exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
         latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
@@ -247,12 +251,15 @@
        {:all-revisions true})
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
-                           c10-umm-json [latest-umm-format]})))
-  (dev-sys-util/eval-in-dev-sys `(common-config/set-collection-umm-version! "1.9")))
+                           c10-umm-json [latest-umm-format]}))
+  (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version!
+                          umm-version/current-collection-version))
+       c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected
                                                   ;; results. It will be present in metadata.
@@ -293,7 +300,7 @@
                            {:format :dif10})
 
         c10-umm-json (d/ingest "PROV1"
-                               exp-conv/curr-ingest-ver-example-collection-record
+                               exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
 
@@ -386,7 +393,6 @@
          :dif10 all-colls
          (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
 
-
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
             location (:location (first (:refs refs)))]
@@ -412,7 +418,8 @@
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
          :echo10 all-colls
-         (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
+         (search/find-metadata :collection :echo10 {:echo-compatible true}))))
+   (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
@@ -737,7 +744,10 @@
 
 (deftest organizations-in-json-correctly-ordered
   (testing "the organizations field in JSON response is correctly ordered by archive-center, distribution center, then the rest"
-    (let [distribution-org (dc/org :distribution-center "distribution-org")
+    (let [accepted-version (common-config/collection-umm-version)
+          _ (side/eval-form `(common-config/set-collection-umm-version!
+                          umm-version/current-collection-version))
+          distribution-org (dc/org :distribution-center "distribution-org")
           distribution-org-1 (dc/org :distribution-center "distribution-org-1")
           archive-org (dc/org :archive-center "archive-org")
           originating-org (dc/org :originating-center "originating-org")
@@ -776,7 +786,7 @@
                 {:format :iso19115})
 
       (d/ingest "PROV1"
-                (assoc exp-conv/curr-ingest-ver-example-collection-record :ShortName "S-UMM-JSON")
+                (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
                 {:format :umm-json
                  :accept-format :json})
       (index/wait-until-indexed)
@@ -805,4 +815,5 @@
         "S-ISO19115" ["archive-org"]
 
         "UMM-JSON has an archive center and processing center"
-        "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"]))))
+        "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"])
+     (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version)))))
