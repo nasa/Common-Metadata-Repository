@@ -100,7 +100,10 @@
                    (if (mt/umm-json? (:format concept))
                      (let [umm-version (mt/version-of (:format concept))
                            accept-version (config/ingest-accept-umm-version (:concept-type concept))]
-                       (if (>= 0 (compare umm-version accept-version))
+                       ;; when the umm-version goes to v1.10 and accept-version is v1.9, we need
+                       ;; to compare the numbers after the dot.  
+                       (if (>= 0 (compare (Integer. (last (str/split umm-version #"\.")))
+                                          (Integer. (last (str/split accept-version #"\.")))))
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)
                                                      (:metadata concept))

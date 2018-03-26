@@ -6,6 +6,8 @@
     [clj-time.core :as t]
     [clj-time.format :as f]
     [clojure.test :refer :all]
+    [cmr.common-app.config :as common-config]
+    [cmr.common-app.test.side-api :as side]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :refer [are2]]
     [cmr.system-int-test.data2.core :as d]
@@ -147,6 +149,9 @@
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
     ;; test for each UMM JSON version
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version! 
+                          ver/current-collection-version))]
     (doseq [v (ver/versions :collection)]
       (let [coll      expected-conversion/example-collection-record
             mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
@@ -256,7 +261,8 @@
               [] {:browsable false}
 
               "bounding box"
-              [result] {:bounding_box "-180,-90,180,90"})))))
+              [result] {:bounding_box "-180,-90,180,90"})))
+    (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version)))))
 
 ;; Tests that over the lifecycle of a collection and granule the right data will be found.
 ;; Test Outline
