@@ -1543,12 +1543,11 @@
                                  {:DOI nil})
                  :DOI))))
    (testing "UseConstraints migration from 1.9.0 to 1.10.0"
-    (is (= (umm-c/map->UseConstraintsType 
-             {:Description (umm-c/map->UseConstraintsDescriptionType
-                             {:Description "description"})})
-         (:UseConstraints
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:UseConstraints "description"}))))
+    (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
+                           {:Description "description"})}
+           (:UseConstraints
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:UseConstraints "description"}))))
     (is (nil?
          (:UseConstraints
            (vm/migrate-umm {} :collection "1.9" "1.10"

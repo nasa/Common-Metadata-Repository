@@ -220,12 +220,13 @@
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up
       doi/migrate-missing-reason-up
-      (assoc :UseConstraints (when-let [description (:UseConstraints c)]
-                               ;; UseConstraints is string in 1.9, object in 1.10. 
-                               ;; This string becomes Description in 1.10, which is also an object.
-                               (umm-coll-models/map->UseConstraintsType 
-                                 {:Description (umm-coll-models/map->UseConstraintsDescriptionType 
-                                                {:Description description})})))))
+      ;; Can't do (assoc :UseConstraints (when-let [description (:UseConstraints c)]... because when :UseConstraints
+      ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
+      (as-> coll (if-let [description (:UseConstraints c)]
+                   (assoc coll :UseConstraints 
+                               {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                               {:Description description})})
+                   coll))))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
