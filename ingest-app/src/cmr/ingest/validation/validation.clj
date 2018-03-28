@@ -94,6 +94,20 @@
      :ISOTopicCategories (match-kms-keywords-validation
                           kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)}))
 
+(defn- pad-zeros-to-version
+  "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
+  [version]
+  (let [version-splitted (str/split version #"\.")]
+    (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
+
+(defn- compare-versions-with-padded-zeros
+  "Compare the umm-version and accepted umm-version
+   with padded 0's."
+  [umm-version accepted-umm-version]
+  (let [umm-version-with-padded-zeros (pad-zeros-to-version umm-version)
+        accepted-umm-version-with-padded-zeros (pad-zeros-to-version accepted-umm-version)]
+    (compare umm-version-with-padded-zeros accepted-umm-version-with-padded-zeros))) 
+
 (defn validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
@@ -102,8 +116,7 @@
                            accept-version (config/ingest-accept-umm-version (:concept-type concept))]
                        ;; when the umm-version goes to v1.10 and accept-version is v1.9, we need
                        ;; to compare the numbers after the dot.  
-                       (if (>= 0 (compare (Integer. (last (str/split umm-version #"\.")))
-                                          (Integer. (last (str/split accept-version #"\.")))))
+                       (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)
                                                      (:metadata concept))
