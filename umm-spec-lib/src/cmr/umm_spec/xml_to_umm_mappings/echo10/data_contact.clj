@@ -20,6 +20,7 @@
     "DISTRIBUTOR" "DISTRIBUTOR"
     "Data Originator" "ORIGINATOR"
     "author" "ORIGINATOR"
+    "ORIGINATOR" "ORIGINATOR"
     "PROCESSOR" "PROCESSOR"
     "Producer" "PROCESSOR"})
 
@@ -45,7 +46,9 @@
   "Science Software Development Manager" "Science Software Development"
   "Deputy Science Software Development Manager" "Science Software Development"
   "Sea Ice Algorithms" "Science Software Development"
-  "Snow Algorithms" "Science Software Development"})
+  "Snow Algorithms" "Science Software Development"
+  "Science Contact" "Science Contact"
+  "Science Software Development" "Science Software Development"})
 
 (def default-contact-person-role
   "Technical Contact")

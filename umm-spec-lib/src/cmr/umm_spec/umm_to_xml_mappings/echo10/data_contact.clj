@@ -6,7 +6,7 @@
 (def umm-data-center-role->echo10-contact-organization-role
  {"ARCHIVER" "ARCHIVER"
   "DISTRIBUTOR" "DISTRIBUTOR"
-  "ORIGINATOR" "Data Originator"
+  "ORIGINATOR" "ORIGINATOR"
   "PROCESSOR" "PROCESSOR"})
 
 (def umm-contact-person-role->echo10-contact-person-role
@@ -16,7 +16,7 @@
   "Investigator" "INVESTIGATOR"
   "Metadata Author" "METADATA AUTHOR"
   "User Services" "User Services"
-  "Science Software Development" "Science Software Development Manager"})
+  "Science Software Development" "Science Software Development"})
 
 (def default-echo10-contact-role
  "TECHNICAL CONTACT")
