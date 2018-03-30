@@ -329,6 +329,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:versionId (collections only)          | provider defined version id of the collection                                                                        |
 | echo:collectionDataType (collections only) | type of the collection, e.g. Science Quality or Near Real Time                                                       |
 | echo:producerGranuleId (granules only)     | producer granule id of the granule                                                                                   |
+| echo:collectionConceptId (granules only)   | collection concept id of the granule                                                                                 |
 | echo:granuleSizeMB (granules only)         | granule size in megabytes                                                                                            |
 | echo:originalFormat                        | original metadata format                                                                                             |
 | echo:dataCenter                            | data center providing the metadata                                                                                   |
