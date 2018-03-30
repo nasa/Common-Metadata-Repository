@@ -1,0 +1,24 @@
+(ns cmr.opendap.rest.app
+  (:require
+   [clojure.java.io :as io]
+   [cmr.opendap.rest.handler :as handler]
+   [cmr.opendap.rest.middleware :as middleware]
+   [cmr.opendap.rest.route :as route]
+   [ring.middleware.defaults :as ring-defaults]
+   [reitit.ring :as ring]
+   [taoensso.timbre :as log]))
+
+(defn rest-api-routes
+  [httpd-component]
+  (concat
+   (route/static httpd-component)
+   (route/admin httpd-component)))
+
+(defn app
+  [httpd-component]
+  (-> httpd-component
+      rest-api-routes
+      ring/router
+      (ring/ring-handler handler/fallback)
+      (ring-defaults/wrap-defaults ring-defaults/api-defaults)
+      (middleware/wrap-cors)))
