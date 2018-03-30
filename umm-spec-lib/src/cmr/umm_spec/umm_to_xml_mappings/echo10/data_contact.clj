@@ -12,7 +12,7 @@
 (def umm-contact-person-role->echo10-contact-person-role
  {"Data Center Contact" "DATA CENTER CONTACT"
   "Technical Contact" "TECHNICAL CONTACT"
-  "Science Contact" "Technical Contact for Science"
+  "Science Contact" "Science Contact"
   "Investigator" "INVESTIGATOR"
   "Metadata Author" "METADATA AUTHOR"
   "User Services" "User Services"
