@@ -191,8 +191,10 @@
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
                [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
-               [:gmd:name (char-string (:Name online-resource))]
-               [:gmd:description (char-string (str (:Description online-resource) " PublicationReference:"))]
+             (when-let [name (:Name online-resource)]
+               [:gmd:name (char-string name)])
+             (when-let [description (:Description online-resource)]
+               [:gmd:description (char-string (str description " PublicationReference:"))])
                [:gmd:function
                 [:gmd:CI_OnLineFunctionCode
                  {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")
@@ -230,15 +232,30 @@
   [c]
   (let [description (get-in c [:AccessConstraints :Description])
         value (get-in c [:AccessConstraints :Value])
-        use-constraints (:UseConstraints c)]
+        use-constraints (:UseConstraints c)
+        uc-description (:Description (:Description use-constraints))
+        license-url (:LicenseUrl use-constraints)
+        license-text (:LicenseText use-constraints)]
     [:gmd:resourceConstraints
      (when (or description value use-constraints)
        [:gmd:MD_LegalConstraints
-        (when use-constraints
-          [:gmd:useLimitation (char-string (:UseConstraints c))])
+        (when uc-description
+          [:gmd:useLimitation 
+            [:gco:CharacterString uc-description]]) 
         (when description
           [:gmd:useLimitation
             [:gco:CharacterString (str "Restriction Comment: " description)]])
+        (when (or license-url license-text)
+          [:gmd:useConstraints
+            [:gmd:MD_RestrictionCode 
+              {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+               :codeListValue "otherRestrictions"} "otherRestrictions"]])
+        (when license-url
+          [:gmd:otherConstraints 
+            [:gco:CharacterString (str "LicenseUrl:" (:Linkage license-url))]])
+        (when license-text
+          [:gmd:otherConstraints 
+            [:gco:CharacterString (str "LicenseText:" license-text)]])
         (when value
           [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" value)]])])]))

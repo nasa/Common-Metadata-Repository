@@ -8,12 +8,6 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as util]))
 
-(def dif-online-resource-name
- "Reference Online Resource")
-
-(def dif-online-resource-description
- "Reference Online Resource")
-
 ;; For now, we assume DIF9 and DIF10 contain the same IDN_Nodes structures
 ;; after confirming with the system engineer people - even though some of DIF10 files
 ;; contain different structures.
@@ -307,10 +301,7 @@
   (values-at doc "DIF/ISO_Topic_Category"))
 
 (defn parse-publication-reference-online-resouce
- "Parse the Online Resource from the XML publication reference. Name and description are hardcoded."
+ "Parse the Online Resource from the XML publication reference."
  [pub-ref sanitize?]
- {:Linkage (util/with-default-url
-            (url/format-url (value-of pub-ref "Online_Resource") sanitize?)
-            sanitize?)
-  :Name dif-online-resource-name
-  :Description dif-online-resource-description})
+ (when-let [linkage (value-of pub-ref "Online_Resource")]
+   {:Linkage (url/format-url linkage sanitize?)}))

@@ -876,6 +876,38 @@ Cite as: Forgy Coleman, C. and US DOC; NOAA; NESDIS; National Oceanographic Data
             </gmd:resourceConstraints>
             <gmd:resourceConstraints>
                 <gmd:MD_LegalConstraints>
+                   <gmd:useLimitation>
+                      <gco:CharacterString>This product must not be used for the purposes of determining water quality.</gco:CharacterString>
+                   </gmd:useLimitation>
+                   <gmd:useConstraints>
+                     <gmd:MD_RestrictionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                   </gmd:useConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>licenseURL: https://www.nasa.examplelicenseurl.gov</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>LICENSETEXT: Sample license text so that the review has an idea of what to put here: Apache License Version 2.0, January 2004  http://www.apache.org/licenses/ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 1. Definitions. License shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document. ...</gco:CharacterString>
+                   </gmd:otherConstraints>
+                </gmd:MD_LegalConstraints>
+            </gmd:resourceConstraints>
+            <gmd:resourceConstraints>
+                <gmd:MD_LegalConstraints>
+                   <gmd:useLimitation>
+                      <gco:CharacterString>This product must not be used for the purposes of determining water quality2.</gco:CharacterString>
+                   </gmd:useLimitation>
+                   <gmd:useConstraints>
+                     <gmd:MD_RestrictionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                   </gmd:useConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>LicenseUrl: https://www.nasa.examplelicenseurl.gov2</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>LicenseText: Sample license text so that the review has an idea of what to put here: Apache License Version 2.0, January 2004  http://www.apache.org/licenses/ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 1. Definitions. License shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document2. ...</gco:CharacterString>
+                   </gmd:otherConstraints>
+                </gmd:MD_LegalConstraints>
+            </gmd:resourceConstraints>
+            <gmd:resourceConstraints>
+                <gmd:MD_LegalConstraints>
                     <gmd:accessConstraints>
                         <gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
                     </gmd:accessConstraints>

@@ -21,6 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
@@ -186,12 +187,13 @@
                                             "[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']")))]
   (when-let [online-resource
              (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
-    {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
-     :Protocol (char-string-value online-resource "gmd:protocol")
-     :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
-     :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
-     :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
-     :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
+    (when-let [linkage (value-of online-resource "gmd:linkage/gmd:URL")]
+      {:Linkage (url/format-url linkage sanitize?)
+       :Protocol (char-string-value online-resource "gmd:protocol")
+       :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
+       :Name (char-string-value online-resource ":gmd:name")
+       :Description (char-string-value online-resource "gmd:description")
+       :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")}))))
 
 (defn- parse-doi-for-publication-reference
   "Returns the DOI field within a publication reference."
@@ -252,12 +254,7 @@
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (parse-access-constraints doc sanitize?)
-      :UseConstraints
-      (su/truncate
-       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                    #"(?s)^(?!Restriction Comment:).+")
-       su/USECONSTRAINTS_MAX
-       sanitize?)
+      :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
       :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")

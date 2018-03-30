@@ -298,8 +298,13 @@
   [collection-citations]
   (if collection-citations
     (conj [] (cmn/map->ResourceCitationType
-               (iso-shared/trim-collection-citation
-                 (update (first collection-citations) :Title #(if % % su/not-provided)))))
+               (-> collection-citations
+                   first
+                   (update :Title #(if % % su/not-provided))
+                   iso-shared/trim-collection-citation
+                   (as-> cc (if (:OnlineResource cc)
+                              (update cc :OnlineResource #(assoc % :MimeType nil))
+                              cc)))))
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
 
 (defn umm-expected-conversion-iso-smap
@@ -325,7 +330,7 @@
                                  (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
                                "Technical Contact"))
       (update :CollectionCitations expected-collection-citations)
-      (assoc :UseConstraints nil)
+      (update :UseConstraints iso-shared/expected-use-constraints) 
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
       (assoc :TemporalKeywords nil)

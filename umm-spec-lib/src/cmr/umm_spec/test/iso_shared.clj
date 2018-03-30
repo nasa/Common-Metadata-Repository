@@ -13,6 +13,13 @@
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
 
+(defn expected-use-constraints
+  "Returns the expected UseConstraints."
+  [use-constraints]
+  (if-let [linkage (get-in use-constraints [:LicenseUrl :Linkage])]
+    (assoc use-constraints :LicenseUrl (cmn/map->OnlineResourceType {:Linkage linkage}))
+    use-constraints))
+
 (defn- create-contact-person
   "Creates a contact person given the info of a creator, editor and publisher"
   [person]

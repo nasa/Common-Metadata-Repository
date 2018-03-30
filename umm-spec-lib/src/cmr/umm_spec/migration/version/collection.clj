@@ -14,6 +14,7 @@
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.migration.version.interface :as interface]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]
@@ -218,7 +219,14 @@
       util/remove-empty-maps
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up
-      doi/migrate-missing-reason-up))
+      doi/migrate-missing-reason-up
+      ;; Can't do (assoc :UseConstraints (when-let [description (:UseConstraints c)]... because when :UseConstraints
+      ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
+      (as-> coll (if-let [description (:UseConstraints c)]
+                   (assoc coll :UseConstraints 
+                               {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                               {:Description description})})
+                   coll))))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
@@ -226,4 +234,10 @@
       coll-progress-migration/migrate-down
       (util/update-in-all [:RelatedUrls :GetData] dissoc :MimeType)
       (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
-      doi/migrate-missing-reason-down))
+      doi/migrate-missing-reason-down
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-down)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-down) 
+      (assoc :UseConstraints (when-let [description (get-in c [:UseConstraints :Description])]
+                               ;; Description in 1.10 is object/record.
+                               ;; It needs to be converted to string when becoming UseConstraints in 1.9.i
+                               (:Description description)))))

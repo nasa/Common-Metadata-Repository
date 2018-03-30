@@ -242,7 +242,8 @@
            [:Persistent_Identifier
             [:Type "DOI"]
             [:Identifier doi]])
-         [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]]))))
+         (when-let [online-resource (:OnlineResource collection-citation)]
+           [:Online_Resource (:Linkage online-resource)])]))))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -320,7 +321,8 @@
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    [:Use_Constraints (:UseConstraints c)]
+    (when-let [description (get-in c [:UseConstraints :Description])]
+      [:Use_Constraints (:Description description)]) 
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (:Distributions c)]

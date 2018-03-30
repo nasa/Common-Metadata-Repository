@@ -66,7 +66,8 @@
        [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
        [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
        [:Dataset_DOI (get-in c [:DOI :DOI])]
-       [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]])))
+       (when-let [online-resource (:OnlineResource collection-citation)]
+         [:Online_Resource (:Linkage online-resource)])])))
 
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
@@ -158,7 +159,8 @@
        [:Long_Name LongName]])
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    [:Use_Constraints (:UseConstraints c)]
+    (when-let [description (get-in c [:UseConstraints :Description])]
+      [:Use_Constraints (:Description description)])
     (dif-util/generate-dataset-language :Data_Set_Language (:DataLanguage c))
     (center/generate-data-centers c)
     (for [distribution (:Distributions c)]

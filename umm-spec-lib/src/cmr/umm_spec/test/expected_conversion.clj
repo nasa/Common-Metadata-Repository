@@ -10,6 +10,7 @@
    [cmr.common-app.config :as common-config]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as core]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.models.umm-service-models]
    [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
@@ -90,7 +91,11 @@
                                                   :MaximumValue 10.0}}]
     :AccessConstraints {:Description "Restriction Comment: Access constraints"
                         :Value "0"}
-    :UseConstraints "Restriction Flag: Use constraints"
+    :UseConstraints (umm-coll-models/map->UseConstraintsType 
+                      {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                      {:Description "example-collection-record Description"})
+                       :LicenseUrl (cmn/map->OnlineResourceType
+                                     {:Linkage "http://example-collection-record.com"})})
     :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
                      :DistributionMedia "8 track"
                      :DistributionFormat "Animated GIF"
