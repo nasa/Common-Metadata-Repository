@@ -1593,20 +1593,40 @@
                                        :Explanation "This is an explanation."}})
                 :DOI))))
 
+  (testing "CollectionCitation's OnlineResource migration from version 1.10 to 1.9"
+    (let [result (vm/migrate-umm {} :collection "1.10" "1.9"
+                   {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                           :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                           :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                           :OnlineResource {:Linkage "www.google.com"
+                                                            :Name "URL Title"
+                                                            :Description "URL Description"
+                                                            :MimeType "application/json"}}]
+                    :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
+       (is (= {:Linkage "www.google.com" 
+               :Name "URL Title"
+               :Description "URL Description"}
+              (:OnlineResource (first (:CollectionCitations result)))))
+
+       (is (= {:Linkage "www.google.com" 
+               :Name "Not provided" 
+               :Description "Not provided"}
+              (:OnlineResource (first (:PublicationReferences result)))))))  
+
   (testing "UseConstraints migration from version 1.10 to 1.9"
-     (is (= "description"
-         (:UseConstraints
-           (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:UseConstraints (umm-c/map->UseConstraintsType
-                                             {:Description (umm-c/map->UseConstraintsDescriptionType
-                                                             {:Description "description"})
-                                              :LicenseText "license text"})}))))
-     (is (nil?
-         (:UseConstraints
-           (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:UseConstraints (umm-c/map->UseConstraintsType
-                                             {:LicenseUrl (umm-cmn/map->OnlineResourceType 
-                                                            {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
+    (is (= "description"
+        (:UseConstraints
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:UseConstraints (umm-c/map->UseConstraintsType
+                                            {:Description (umm-c/map->UseConstraintsDescriptionType
+                                                            {:Description "description"})
+                                             :LicenseText "license text"})}))))
+    (is (nil?
+        (:UseConstraints
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:UseConstraints (umm-c/map->UseConstraintsType
+                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType 
+                                                           {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems

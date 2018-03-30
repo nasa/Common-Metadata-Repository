@@ -86,6 +86,17 @@
       (assoc :Relation relation)
       (dissoc :URLContentType :Type :Subtype :GetData :GetService))))
 
+(defn migrate-online-resource-down
+  "Migrate online-resource from version 1.10 to 1.9. 
+   Need to remove MimeType, add default for Name and Description if they don't exist."
+  [element]
+  (if-let [ol-resource (:OnlineResource element)]
+    (-> element
+        (assoc :OnlineResource {:Linkage (:Linkage ol-resource)
+                                :Name (util/with-default (:Name ol-resource) true)
+                                :Description (util/with-default (:Description ol-resource) true)}))
+    element))
+
 (defn migrate-related-url-to-online-resource
   "Migrate the RelatedUrl in the element to Online Resource.
   Applies to RelatedUrls in UMM spec v1.8 and lower."

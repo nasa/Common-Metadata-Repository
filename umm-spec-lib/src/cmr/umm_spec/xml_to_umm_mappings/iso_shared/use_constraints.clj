@@ -40,23 +40,32 @@
 (defn- get-use-constraints
   "Get the use constraints."
   [constraints-list sanitize?]
-  (for [constraints constraints-list
-         :let [description-list (select constraints "gmd:useLimitation")
-               description (get-description-value description-list sanitize?)
-               other-constraints-list (select constraints "gmd:otherConstraints")
-               linkage (get-license-value other-constraints-list "licenseurl")   
-               license-text (when-not linkage
-                              (get-license-value other-constraints-list "licensetext"))]]
-      (umm-coll-models/map->UseConstraintsType
-        (util/remove-nil-keys
-          {:Description (when description
-                          (umm-coll-models/map->UseConstraintsDescriptionType
-                            {:Description description}))
-           :LicenseUrl (when linkage
-                         (umm-cmn-models/map->OnlineResourceType
-                           {:Linkage linkage}))
-           :LicenseText (when-not linkage
-                          license-text)}))))
+  (loop [cnt (count constraints-list) [constraints & t] constraints-list use-constraints-list []]
+    (let [num-constraints (count constraints-list)
+          description-list (select constraints "gmd:useLimitation")
+          description (get-description-value description-list sanitize?)
+          other-constraints-list (select constraints "gmd:otherConstraints")
+          linkage (get-license-value other-constraints-list "licenseurl")
+          license-text (when-not linkage
+                         (get-license-value other-constraints-list "licensetext"))
+          use-constraints (when (or description linkage license-text)
+                            [(umm-coll-models/map->UseConstraintsType
+                               (util/remove-nil-keys
+                                 {:Description (when description
+                                                 (umm-coll-models/map->UseConstraintsDescriptionType
+                                                   {:Description description}))
+                                  :LicenseUrl (when linkage
+                                                (umm-cmn-models/map->OnlineResourceType
+                                                  {:Linkage linkage}))
+                                  :LicenseText (when-not linkage
+                                                 license-text)}))])]
+      ;; when linkage is not nil, this is the use-consstraints we need. break out.
+      ;; otherwise, go through constraints-list to get all the use-constraints.
+      (if linkage
+        use-constraints
+        (if (zero? cnt)
+          use-constraints-list
+          (recur (dec cnt) t (concat use-constraints-list use-constraints)))))))
 
 (defn parse-use-constraints
   "Parse the use constraints from XML resource constraint.
@@ -67,7 +76,7 @@
   [doc constraints-xpath sanitize?]
   (let [constraints-list (seq (select doc constraints-xpath))
         use-constraints-list (get-use-constraints constraints-list sanitize?)
-        first-non-empty (some #(when (seq %) %) use-constraints-list)
+        first-non-empty (some #(when (seq (util/remove-nil-keys %)) %) use-constraints-list)
         first-with-license (some #(when (or (:LicenseUrl %) (:LicenseText %)) %) 
                                 use-constraints-list)]
     (if first-with-license
