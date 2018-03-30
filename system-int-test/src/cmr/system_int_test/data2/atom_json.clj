@@ -144,13 +144,14 @@
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
                 cloud-cover coordinate-system points boxes polygons lines
-                orbit orbit-calculated-spatial-domains]} json-entry
+                orbit orbit-calculated-spatial-domains collection-concept-id]} json-entry
         shapes (json-geometry->shapes coordinate-system points boxes polygons lines)]
     (util/remove-nil-keys
       {:id id
        :title title
        :updated updated
        :dataset-id dataset-id
+       :collection-concept-id collection-concept-id
        :producer-granule-id producer-granule-id
        :size (parse-double granule-size)
        :original-format original-format

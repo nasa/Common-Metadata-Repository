@@ -180,6 +180,7 @@
      :title (cx/string-at-path entry-elem [:title])
      :updated (cx/string-at-path entry-elem [:updated])
      :dataset-id (cx/string-at-path entry-elem [:datasetId])
+     :collection-concept-id (cx/string-at-path entry-elem [:collectionConceptId])
      :producer-granule-id (cx/string-at-path entry-elem [:producerGranuleId])
      :size (cx/double-at-path entry-elem [:granuleSizeMB])
      :original-format (cx/string-at-path entry-elem [:originalFormat])
@@ -354,6 +355,7 @@
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
                 beginning-date-time ending-date-time single-date-time day-night cloud-cover format-key
                 orbit-calculated-spatial-domains]} granule
+        coll-concept-id (:concept-id coll)
         related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
         update-time (get-in granule [:data-provider-timestamps :update-time])
@@ -365,25 +367,26 @@
                             (get-in granule [:spatial-coverage :geometries]))
         shapes (concat granule-shapes (dg/granule->orbit-shapes granule coll))]
     (util/remove-nil-keys
-      {:id concept-id
-       :title granule-ur
-       :dataset-id dataset-id
-       :producer-granule-id producer-gran-id
-       :updated (str update-time)
-       :coordinate-system (or coordinate-system "NO_SPATIAL") ; UMM-C defaults to NO_SPATIAL
-       :size size
-       :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
-       :data-center (:provider-id (cu/parse-concept-id concept-id))
-       :links (seq (granule-related-urls->links related-urls))
-       :orbit (when orbit (into {} orbit))
-       :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
-       :start (some->> (:temporal granule) (sed/start-date :granule))
-       :end (some->> (:temporal granule) (sed/end-date :granule))
-       :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
-       :browse-flag (not (empty? (ru/browse-urls related-urls)))
-       :day-night-flag day-night
-       :cloud-cover cloud-cover
-       :shapes (seq shapes)})))
+     {:id concept-id
+      :title granule-ur
+      :dataset-id dataset-id
+      :collection-concept-id coll-concept-id
+      :producer-granule-id producer-gran-id
+      :updated (str update-time)
+      :coordinate-system (or coordinate-system "NO_SPATIAL") ; UMM-C defaults to NO_SPATIAL
+      :size size
+      :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
+      :data-center (:provider-id (cu/parse-concept-id concept-id))
+      :links (seq (granule-related-urls->links related-urls))
+      :orbit (when orbit (into {} orbit))
+      :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
+      :start (some->> (:temporal granule) (sed/start-date :granule))
+      :end (some->> (:temporal granule) (sed/end-date :granule))
+      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
+      :browse-flag (not (empty? (ru/browse-urls related-urls)))
+      :day-night-flag day-night
+      :cloud-cover cloud-cover
+      :shapes (seq shapes)})))
 
 (defn granules->expected-atom
   "Returns the atom map of the granules"
