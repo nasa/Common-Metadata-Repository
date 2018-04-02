@@ -1,51 +1,66 @@
-
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact
   "Defines mappings and parsing from ECHO10 contact elements into UMM records
    data center and contact person fields."
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.util :as u]))
 
-(def echo10-contact-role->umm-data-center-role
-   {"ARCHIVER" "ARCHIVER"
-    "Archive" "ARCHIVER"
+(def echo10-contact-role->umm-data-center-role-map
+   {"archiver" "ARCHIVER"
+    "archive" "ARCHIVER"
     "archiving data center" "ARCHIVER"
-    "CUSTODIAN" "ARCHIVER"
-    "Data Manager" "ARCHIVER"
+    "custodian" "ARCHIVER"
+    "data manager" "ARCHIVER"
     "internal data center" "ARCHIVER"
-    "DATA CENTER CONTACT" "ARCHIVER"
-    "DISTRIBUTOR" "DISTRIBUTOR"
-    "Data Originator" "ORIGINATOR"
+    "data center contact" "ARCHIVER"
+    "distributor" "DISTRIBUTOR"
+    "data originator" "ORIGINATOR"
     "author" "ORIGINATOR"
-    "PROCESSOR" "PROCESSOR"
-    "Producer" "PROCESSOR"})
+    "originator" "ORIGINATOR"
+    "processor" "PROCESSOR"
+    "producer" "PROCESSOR"})
 
 (def default-data-center-role
   "ARCHIVER")
 
-(def echo10-job-position->umm-contact-person-role
- {"DATA CENTER CONTACT" "Data Center Contact"
-  "Primary Contact" "Data Center Contact"
-  "TECHNICAL CONTACT" "Technical Contact"
-  "Product Team Leader" "Technical Contact"
-  "Technical Contact for Science" "Science Contact"
-  "GLAS Science Team Leader" "Science Contact"
-  "ICESAT Project Scientist" "Science Contact"
-  "INVESTIGATOR" "Investigator"
-  "Associate Principal Investigator" "Investigator"
-  "METADATA AUTHOR" "Metadata Author"
-  "DIF AUTHOR" "Metadata Author"
-  "TECHNICAL CONTACT, DIF AUTHOR" "Metadata Author"
-  "NSIDC USER Services" "User Services"
-  "User Services" "User Services"
-  "GHRC USER SERVICES" "User Services"
-  "Science Software Development Manager" "Science Software Development"
-  "Deputy Science Software Development Manager" "Science Software Development"
-  "Sea Ice Algorithms" "Science Software Development"
-  "Snow Algorithms" "Science Software Development"})
+(def echo10-job-position->umm-contact-person-role-map
+ {"data center contact" "Data Center Contact"
+  "primary contact" "Data Center Contact"
+  "technical contact" "Technical Contact"
+  "product team leader" "Technical Contact"
+  "technical contact for science" "Science Contact"
+  "glas science team leader" "Science Contact"
+  "icesat project scientist" "Science Contact"
+  "investigator" "Investigator"
+  "associate principal investigator" "Investigator"
+  "metadata author" "Metadata Author"
+  "dif author" "Metadata Author"
+  "technical contact, dif author" "Metadata Author"
+  "nsidc user services" "User Services"
+  "user services" "User Services"
+  "ghrc user services" "User Services"
+  "science software development manager" "Science Software Development"
+  "deputy science software development manager" "Science Software Development"
+  "sea ice algorithms" "Science Software Development"
+  "snow algorithms" "Science Software Development"
+  "science contact" "Science Contact"
+  "science software development" "Science Software Development"})
+
+(defn echo10-contact-role->umm-data-center-role
+  "Maps echo 10 contact role to umm data center role"
+  [contact-role]
+  (get echo10-contact-role->umm-data-center-role-map (string/lower-case (or contact-role
+                                                                            ""))))
+
+(defn echo10-job-position->umm-contact-person-role
+  "Maps echo 10 job position ot umm contact person role"
+  [job-position]
+  (get echo10-job-position->umm-contact-person-role-map (string/lower-case (or job-position
+                                                                               ""))))
 
 (def default-contact-person-role
   "Technical Contact")
