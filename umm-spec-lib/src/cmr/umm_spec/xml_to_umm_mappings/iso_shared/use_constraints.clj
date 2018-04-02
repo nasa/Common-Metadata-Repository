@@ -41,44 +41,43 @@
   "Get the use constraints."
   [constraints-list sanitize?]
   (loop [cnt (count constraints-list) [constraints & t] constraints-list use-constraints-list []]
-    (let [num-constraints (count constraints-list)
-          description-list (select constraints "gmd:useLimitation")
-          description (get-description-value description-list sanitize?)
+    (let [description-list (select constraints "gmd:useLimitation")
           other-constraints-list (select constraints "gmd:otherConstraints")
+          description (get-description-value description-list sanitize?)
           linkage (get-license-value other-constraints-list "licenseurl")
           license-text (when-not linkage
                          (get-license-value other-constraints-list "licensetext"))
           use-constraints (when (or description linkage license-text)
                             [(umm-coll-models/map->UseConstraintsType
-                               (util/remove-nil-keys
-                                 {:Description (when description
-                                                 (umm-coll-models/map->UseConstraintsDescriptionType
-                                                   {:Description description}))
-                                  :LicenseUrl (when linkage
-                                                (umm-cmn-models/map->OnlineResourceType
-                                                  {:Linkage linkage}))
-                                  :LicenseText (when-not linkage
-                                                 license-text)}))])]
-      ;; when linkage is not nil, this is the use-consstraints we need. break out.
-      ;; otherwise, go through constraints-list to get all the use-constraints.
-      (if linkage
-        use-constraints
-        (if (zero? cnt)
-          use-constraints-list
-          (recur (dec cnt) t (concat use-constraints-list use-constraints)))))))
+                               {:Description (when description
+                                               (umm-coll-models/map->UseConstraintsDescriptionType
+                                                 {:Description description}))
+                                :LicenseUrl (when linkage
+                                              (umm-cmn-models/map->OnlineResourceType
+                                                {:Linkage linkage}))
+                                :LicenseText license-text})])]
+      ;; Go through constraints-list to get all the use-constraints.
+      (if (zero? cnt)
+        use-constraints-list
+        (recur (dec cnt) t (concat use-constraints-list use-constraints))))))
 
 (defn parse-use-constraints
   "Parse the use constraints from XML resource constraint.
    constraints-xpath is: 
    /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints.
-   We want to return the first set of use-constraints that contains the license info. If there is no license info, 
-   return the first use-constraints that contains Description."
+   We want to find the first Description, the first LicenseUrl and the first LicenseText, and then return UseConstraints
+   as one of the combinations in the following order, if the values exist: 
+   {:Description first-desc :LicenseUrl first-lic-url}, {:Description first-desc :LicenseText first-lic-text},
+   {:Description first-desc}, {:LicenseUrl first-lic-url} and {:LicenseText first-lic-text}. "
   [doc constraints-xpath sanitize?]
   (let [constraints-list (seq (select doc constraints-xpath))
         use-constraints-list (get-use-constraints constraints-list sanitize?)
-        first-non-empty (some #(when (seq (util/remove-nil-keys %)) %) use-constraints-list)
-        first-with-license (some #(when (or (:LicenseUrl %) (:LicenseText %)) %) 
-                                use-constraints-list)]
-    (if first-with-license
-      first-with-license
-      first-non-empty)))
+        first-description (:Description (some #(when (:Description %) %) use-constraints-list))
+        first-license-url (:LicenseUrl (some #(when (:LicenseUrl %) %) use-constraints-list))
+        first-license-text (:LicenseText (some #(when (:LicenseText %) %) use-constraints-list))]
+    (when (or first-description first-license-url first-license-text)
+      (umm-coll-models/map->UseConstraintsType
+        {:Description first-description
+         :LicenseUrl first-license-url
+         :LicenseText (when-not first-license-url
+                        first-license-text)})))) 

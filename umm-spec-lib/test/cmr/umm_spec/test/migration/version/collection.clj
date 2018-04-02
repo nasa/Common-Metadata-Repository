@@ -1542,6 +1542,26 @@
             (get (vm/migrate-umm {} :collection "1.9" "1.10"
                                  {:DOI nil})
                  :DOI))))
+   
+   (testing "CollectionCitation's OnlineResource migration from version 1.9 to 1.10"
+    (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
+                   {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                           :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                           :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                           :OnlineResource {:Linkage "www.google.com"
+                                                            :Name "URL Title"
+                                                            :Description "URL Description"}}]
+                    :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"
+                                                              :Name "Not provided"
+                                                              :Description "Not provided"}}]})]
+       (is (= {:Linkage "www.google.com"
+               :Name "URL Title"
+               :Description "URL Description"}
+              (:OnlineResource (first (:CollectionCitations result)))))
+
+       (is (= {:Linkage "www.google.com"}
+              (:OnlineResource (first (:PublicationReferences result)))))))  
+
    (testing "UseConstraints migration from 1.9.0 to 1.10.0"
     (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
                            {:Description "description"})}
