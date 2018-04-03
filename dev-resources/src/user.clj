@@ -11,10 +11,6 @@
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
-   [clojurewerkz.neocons.rest.cypher :as ncy]
-   [clojurewerkz.neocons.rest.nodes :as nn]
-   [clojurewerkz.neocons.rest.paths :as np]
-   [clojurewerkz.neocons.rest.relationships :as nrl]
    [cmr.opendap.dev :as dev]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
