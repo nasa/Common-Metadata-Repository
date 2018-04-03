@@ -105,7 +105,8 @@
 
 (defn migrate-online-resource-up
   "Migrate online-resource from version 1.9 to 1.10.
-   Need to remove Name and Description if their values are util/not-provided."
+   Need to remove Name and Description if their values are util/not-provided
+   because they are artificially added when migrating from 1.10 to 1.9."
   [element]
   (if-let [ol-resource (:OnlineResource element)]
     (assoc element :OnlineResource (remove-default-name-description ol-resource))
