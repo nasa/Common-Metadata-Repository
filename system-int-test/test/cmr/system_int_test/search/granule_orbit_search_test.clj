@@ -528,8 +528,8 @@
   ;; 2. Evaluate this block to find all the mbrs.
   ;; It will print out "Elapsed time: XXXX msecs" when it's done
   (def matching-mbrs
-    ; (future (time (doall (filter mbr-finds-granule? (create-mbrs 45.0 90.0 -55.0 55.0 3)))))
-    ;; Create mbrs all over the globe
+    "Creates mbrs all over the globe as search areas. Returns any mbrs which find granules in the
+    local system. Takes awhile to run, so performed as a future."
     (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3))))))
 
 
