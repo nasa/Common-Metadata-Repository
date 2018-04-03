@@ -58,4 +58,5 @@
   [conn-mgr]
   ;; XXX how much can we minimize round-tripping here?
   ;;     this may require creating divergent logic/impls ...
-  {:error :not-implemented})
+  (fn [request]
+    {:error :not-implemented}))
