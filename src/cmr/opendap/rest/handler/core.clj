@@ -1,4 +1,4 @@
-(ns cmr.opendap.rest.handler
+(ns cmr.opendap.rest.handler.core
   "This namespace defines the handlers for REST API resources.
 
   Simple handlers will only need to make a call to a library and then have that
@@ -6,7 +6,8 @@
   handlers will need to perform additional tasks. For example, in order of
   increasing complexity:
   * utilize non-default, non-trivial response functions
-  * operate on the obtained data with various transformations
+  * operate on the obtained data with various transformations, including
+    extracting form data, query strings, etc.
   * take advantage of middleware functions that encapsulate complicated
     business logic"
   (:require
@@ -17,12 +18,6 @@
    [ring.middleware.file :as file-middleware]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   OPeNDAP Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TBD
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

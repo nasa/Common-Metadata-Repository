@@ -1,7 +1,7 @@
 (ns cmr.opendap.rest.app
   (:require
    [clojure.java.io :as io]
-   [cmr.opendap.rest.handler :as handler]
+   [cmr.opendap.rest.handler.core :as handler]
    [cmr.opendap.rest.middleware :as middleware]
    [cmr.opendap.rest.route :as route]
    [ring.middleware.defaults :as ring-defaults]
@@ -11,6 +11,7 @@
 (defn rest-api-routes
   [httpd-component]
   (concat
+   (route/ous httpd-component)
    (route/static httpd-component)
    (route/admin httpd-component)))
 
