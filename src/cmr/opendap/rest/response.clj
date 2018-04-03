@@ -1,4 +1,9 @@
 (ns cmr.opendap.rest.response
+  "This namespace defines a default set of transform functions suitable for use
+  in presenting results to HTTP clients.
+
+  Ring-based middleeware may take advantage of these functions either by
+  single use or composition."
   (:require
    [cheshire.core :as json]
    [ring.util.http-response :as response]
