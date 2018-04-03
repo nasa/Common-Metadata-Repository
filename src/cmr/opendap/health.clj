@@ -26,6 +26,5 @@
   [component]
   {:config {:ok? (config-ok? component)}
    :httpd {:ok? true}
-   :elastic {:ok? (elastic-ok? component)}
    :logging {:ok? (logging-ok? component)}
    :opendap {:ok? (opendap-ok?)}})
