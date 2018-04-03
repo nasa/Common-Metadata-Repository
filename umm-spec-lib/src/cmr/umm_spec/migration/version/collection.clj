@@ -220,6 +220,8 @@
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up
       doi/migrate-missing-reason-up
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-up)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-up)
       ;; Can't do (assoc :UseConstraints (when-let [description (:UseConstraints c)]... because when :UseConstraints
       ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
       (as-> coll (if-let [description (:UseConstraints c)]

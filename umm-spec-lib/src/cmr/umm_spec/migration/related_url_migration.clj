@@ -91,10 +91,25 @@
    Need to remove MimeType, add default for Name and Description if they don't exist."
   [element]
   (if-let [ol-resource (:OnlineResource element)]
-    (-> element
-        (assoc :OnlineResource {:Linkage (:Linkage ol-resource)
-                                :Name (util/with-default (:Name ol-resource) true)
-                                :Description (util/with-default (:Description ol-resource) true)}))
+    (assoc element :OnlineResource {:Linkage (:Linkage ol-resource)
+                                    :Name (util/with-default (:Name ol-resource) true)
+                                    :Description (util/with-default (:Description ol-resource) true)})
+    element))
+
+(defn- remove-default-name-description
+  "Remove default Name and Description from online-resource."
+  [online-resource]
+  (apply dissoc online-resource (for [[k v] (select-keys online-resource [:Name :Description])
+                                      :when (= util/not-provided v)]
+                                  k))) 
+
+(defn migrate-online-resource-up
+  "Migrate online-resource from version 1.9 to 1.10.
+   Need to remove Name and Description if their values are util/not-provided
+   because they are artificially added when migrating from 1.10 to 1.9."
+  [element]
+  (if-let [ol-resource (:OnlineResource element)]
+    (assoc element :OnlineResource (remove-default-name-description ol-resource))
     element))
 
 (defn migrate-related-url-to-online-resource
