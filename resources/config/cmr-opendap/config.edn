@@ -1,14 +1,6 @@
-{:elastic
-  {:host "127.0.0.1"
-   :port 9211
-   :timeout 10}
- :httpd
+{:httpd
   {:port 3012
    :docroot "public"}
  :logging
   {:level :debug
-   :nss [cmr.opendap]}
- :neo4j
-  {:host "127.0.0.1"
-   :port 7474
-   :db-path "/db/data"}}
+   :nss [cmr.opendap]}}
