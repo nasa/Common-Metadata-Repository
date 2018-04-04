@@ -9,6 +9,7 @@
 
 * [About](#about-)
 * [Dependencies](#dependencies-)
+* [Running the Tests](#running-the-tests-)
 * [Documentation](#documentation-)
   * [Quick Start](#quick-start-)
   * [Project Guides](#project-guides-)
@@ -25,6 +26,23 @@ TBD
 
 * Java
 * `lein`
+
+
+## Running the Tests [&#x219F;](#contents)
+
+To run just the unit tests, use this command:
+
+```
+$ lein ltest :unit
+```
+
+Similarly, for just the integration tests:
+
+```
+$ lein ltest :integration
+```
+
+The default behaviour of `lein ltest` runs all tests types.
 
 
 ## Documentation [&#x219F;](#contents)
