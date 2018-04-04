@@ -2,6 +2,7 @@
   (:require
     [clojusc.dev.system.core :as system-api]
     [clojusc.twig :as logger]
+    [cmr.opendap.components.config :as config]
     [cmr.opendap.components.testing]))
 
 ;; Hide logging as much as possible before the system starts up, which shuld
@@ -27,7 +28,11 @@
   []
   (system-api/get-system (:state @*mgr*)))
 
-(defn with-test-system
+(defn http-port
+  []
+  (config/http-port (system)))
+
+(defn with-system
   [test-fn]
   (startup)
   (test-fn)
