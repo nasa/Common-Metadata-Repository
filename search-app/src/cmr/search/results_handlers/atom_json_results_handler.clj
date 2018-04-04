@@ -101,7 +101,7 @@
                        :title title
                        :updated updated
                        :dataset_id dataset-id
-                       :collection-concept-id collection-concept-id
+                       :collection_concept_id collection-concept-id
                        :producer_granule_id producer-gran-id
                        :granule_size size
                        :original_format original-format
