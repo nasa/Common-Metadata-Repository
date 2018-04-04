@@ -67,7 +67,8 @@
       :plugins [
         [lein-ltest "0.3.0"]]
       :test-selectors {
-        :select :select}}
+        :unit (complement :integration)
+        :integration :integration}}
     :docs {
       :dependencies [
         [clojang/codox-theme "0.2.0-SNAPSHOT"]]
