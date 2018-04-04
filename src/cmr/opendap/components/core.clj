@@ -22,6 +22,11 @@
            (httpd/create-component)
            [:config :logging])})
 
+(def httpd-without-logging
+  {:httpd (component/using
+           (httpd/create-component)
+           [:config])})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,8 +44,15 @@
            log
            httpd)))
 
+(defn initialize-without-logging
+  []
+  (component/map->SystemMap
+    (merge cfg
+           httpd-without-logging)))
+
 (def init-lookup
   {:basic #'initialize-bare-bones
+   :testing #'initialize-without-logging
    :web #'initialize-with-web})
 
 (defn init
