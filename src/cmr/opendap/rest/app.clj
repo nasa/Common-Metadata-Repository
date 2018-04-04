@@ -13,7 +13,8 @@
   (concat
    (route/ous httpd-component)
    (route/static httpd-component)
-   (route/admin httpd-component)))
+   (route/admin httpd-component)
+   route/testing))
 
 (defn app
   [httpd-component]

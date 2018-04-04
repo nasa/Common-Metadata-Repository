@@ -54,7 +54,13 @@
     :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; TBD
+(def testing
+  [["/testing/401" {:get (core-handler/status :unauthorized)}]
+   ["/testing/403" {:get (core-handler/status :forbidden)}]
+   ["/testing/404" {:get (core-handler/status :not-found)}]
+   ["/testing/405" {:get (core-handler/status :method-not-allowed)}]
+   ["/testing/500" {:get (core-handler/status :internal-server-error)}]
+   ["/testing/503" {:get (core-handler/status :service-unavailable)}]])

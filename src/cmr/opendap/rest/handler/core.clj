@@ -38,6 +38,11 @@
 ;;;   Utility Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn status
+  [status-keyword]
+  (fn [request]
+    ((ns-resolve 'ring.util.http-response (symbol (name status-keyword))) {})))
+
 (def ok
   (fn [request]
     (response/ok request)))
