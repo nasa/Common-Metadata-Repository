@@ -165,7 +165,11 @@
       :Description description}
      (when (= "DistributionURL" (:URLContentType url-type))
        (case (:Type url-type)
-         "GET DATA" {:GetData nil}
+         "GET DATA" {:GetData (when (seq mime-type)
+                                {:Format (su/with-default nil sanitize?)
+                                 :MimeType mime-type
+                                 :Size 0.0
+                                 :Unit "KB"})}
          "GET SERVICE" {:GetService (when-not (or (= "Not provided" mime-type)
                                                   (nil? mime-type))
                                       {:MimeType mime-type
@@ -178,12 +182,17 @@
 (defn- parse-online-access-urls
   "Parse online access urls"
   [doc sanitize?]
-  (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")]
+  (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")
+        :let [mime-type (value-of resource "MimeType")]]
     {:URL (url/format-url (value-of resource "URL") sanitize?)
      :Description (value-of resource "URLDescription")
      :URLContentType "DistributionURL"
      :Type "GET DATA"
-     :GetData nil}))
+     :GetData (when (seq mime-type)
+                {:Format (su/with-default nil sanitize?)
+                 :MimeType mime-type
+                 :Size 0.0
+                 :Unit "KB"})}))
 
 (defn- parse-browse-urls
   "Parse browse urls"

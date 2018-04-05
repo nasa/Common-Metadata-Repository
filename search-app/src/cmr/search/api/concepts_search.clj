@@ -5,17 +5,28 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
+   [cmr.common.util :as util]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
+   [cmr.search.validators.all-granule-validation :as all-gran-validation]
    [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
+(defconfig allow-all-granule-params-flag
+  "Flag that indicates if we allow all granule queries."
+  {:default true :type Boolean})
+
+(defconfig allow-all-gran-header
+  "This is the header that allows operators to run all granule queries when
+   allow-all-granule-params-flag is set to false."
+  {:default "Must be changed"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -47,6 +58,99 @@
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
+(defconfig block-queries
+  "Indicates whether we are going to block a specific excessive query."
+  {:type Boolean
+   :default true})
+
+(defn- block-excessive-queries
+  "Temporary solution to prevent a specific query from overloading the CMR search resources."
+  [ctx concept-type result-format params]
+  (when (and (block-queries)
+             (= concept-type :granule)
+             (= :json result-format)
+             (= "MCD43A4" (:short_name params))
+             (contains? params ""))
+    (warn (format "Blocking %s query from client %s in format %s with params %s."
+                  (name concept-type)
+                  (:client-id ctx)
+                  (rfh/printable-result-format result-format)
+                  (pr-str params)))
+    (svc-errors/throw-service-error
+      :too-many-requests
+      "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
+
+(defn- reject-all-granule-query?
+  "Return true if the all granule query will be rejected."
+  [headers]
+  (and (false? (allow-all-granule-params-flag))
+       (or (not (some? (get headers "client-id")))
+           (not (= "true" (get headers (string/lower-case (allow-all-gran-header))))))))
+
+(defn- handle-all-granule-params
+  "Throws error if all granule params needs to be rejected."
+  [headers]
+  (let [err-msg (str "The CMR does not allow querying across granules in all "
+                     "collections. To help optimize your search, you should limit your "
+                     "query using conditions that identify one or more collections, "
+                     "such as provider, provider_id, concept_id, collection_concept_id, "
+                     "short_name, version or entry_title. Visit the CMR Client Developer "
+                     "Forum at https://wiki.earthdata.nasa.gov/display/CMR/"
+                     "Granule+Queries+Now+Require+Collection+Identifiers for more "
+                     "information, and for any questions please contact "
+                     "support@earthdata.nasa.gov.")]
+    (when (reject-all-granule-query? headers)
+      (svc-errors/throw-service-error :bad-request err-msg))))
+
+(defn- illegal-concept-id-in-granule-query?
+  "Check to see if any concept ids are not starting with G and C."
+  [concept-id-param]
+  (when (some? concept-id-param)
+    (let [concept-id-param-list (if (sequential? concept-id-param)
+                                  (remove #(= "" %) concept-id-param)
+                                  [concept-id-param])]
+      (some #(not (re-find #"^[GC]" %)) concept-id-param-list))))
+
+(defn empty-string-values?
+  "This function is used by remove-map-keys function.
+   The keys will be removed if their values are empty strings, or if it's sequential and
+   only contain empty strings.
+   Note:  When you pass a parameter without = sign, it is considered a nil value and get
+   filtered out before getting to the params; with the = sign, no value, it becomes empty
+   string."
+  [v]
+  (if (sequential? v)
+    (empty? (remove #(= "" %) v))
+    (= "" v)))
+
+(defn- all-granule-params?
+  "Returns true if it's a all granule query params.
+   Note: parameters with scroll-id don't need to be checked because it inherits the search
+   parameters from the original query, which would have been handled already."
+  [scroll-id coll-constraints]
+  (and (not (some? scroll-id))
+       (empty? coll-constraints)))
+
+(defn- handle-granule-search-params
+  "Check the params when it is a granule search query."
+  [headers concept-type params scroll-id]
+  (when (= :granule concept-type)
+    ;; Check to see if any concept-id(s) are not starting with C or G. If so, bad request.
+    ;; otherwise, check to see if it's all-granule-params?, if so, handle it.
+    (let [params (->> params
+                      util/map-keys->kebab-case
+                      lp/replace-parameter-aliases
+                      (util/remove-map-keys empty-string-values?))
+          constraints (select-keys params all-gran-validation/granule-limiting-search-fields)
+          concept-id-param (:concept-id constraints)
+          illegal-concept-id-msg (str "Invalid concept_id [" concept-id-param
+                                      "]. For granule queries concept_id must be"
+                                      " either a granule or collection concept ID.")]
+      (if (illegal-concept-id-in-granule-query? concept-id-param)
+        (svc-errors/throw-service-error :bad-request illegal-concept-id-msg)
+        (when (all-granule-params? scroll-id constraints)
+          (handle-all-granule-params headers))))))
+
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and
   return the response"
@@ -59,14 +163,16 @@
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
+        _ (block-excessive-queries ctx concept-type result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (if cached-search-params
                         cached-search-params
                         (lp/process-legacy-psa params))
+        _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (if (:scroll-id results)    
+    (if (:scroll-id results)
       (core-api/search-response ctx results search-params)
       (core-api/search-response ctx results))))
 

@@ -43,6 +43,15 @@
    (format "%s Subtype: %s" description Subtype)
    description)))
 
+(defn- generate-distribution-name
+  "Generate operation description from GetData values"
+  [Format MimeType]
+  (let [description (format "Format: %s " (su/with-default Format))
+        description (if (seq MimeType)
+                      (str description (format "MimeType: %s " (su/with-default MimeType)))
+                      description)]
+    (str/trim description)))
+
 (defn generate-browse-urls
   "Returns content generator instructions for a browse url"
   [c]
@@ -58,7 +67,8 @@
 
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url.
-  encode-types=true will encode the Type and Subtype into the description field."
+  Used when mapping data contacts. encode-types=true will encode the Type and Subtype into the
+  description field."
   [online-resource-url open-tag encode-types]
   (when online-resource-url
    (let [{:keys [URL Description Type]}  online-resource-url
@@ -84,12 +94,68 @@
            {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
             :codeListValue code}]]]])))
 
+(defn generate-distributor-online-resource-url
+  "Returns content generator instructions for an online resource url along with the distributor."
+  [online-resource-url open-tag encode-types]
+  (when online-resource-url
+   (let [{:keys [URL Description Type GetData]}  online-resource-url
+         description (if encode-types
+                      (generate-description-with-types online-resource-url)
+                      Description)
+         name (type->name Type)
+         format (:Format GetData)
+         mime-type (:MimeType GetData)
+         code (if (= "GET DATA" Type) "download" "information")]
+     (when-not (= "GET SERVICE" Type)
+       [:gmd:distributor
+        [:gmd:MD_Distributor
+         [:gmd:distributorContact {:gco:nilReason "missing"}]
+         [:gmd:distributionOrderProcess
+          [:gmd:MD_StandardOrderProcess
+           [:gmd:fees
+            (char-string (or (:Fees GetData) ""))]]]
+         [:gmd:distributorFormat
+          [:gmd:MD_Format
+           [:gmd:name
+            (char-string
+             (generate-distribution-name format mime-type))]
+           [:gmd:version {:gco:nilReason "unknown"}]
+           [:gmd:specification
+            ""]]]
+         [:gmd:distributorTransferOptions
+          [:gmd:MD_DigitalTransferOptions
+           [:gmd:unitsOfDistribution
+            (char-string (:Unit GetData))]
+           [:gmd:transferSize
+            [:gco:Real (:Size GetData)]]
+           [open-tag
+            [:gmd:CI_OnlineResource
+             [:gmd:linkage
+              [:gmd:URL URL]]
+             [:gmd:protocol
+              (char-string (url/protocol URL))]
+             [:gmd:name
+              (char-string name)]
+             (if description
+               [:gmd:description
+                (if (seq (:Checksum GetData))
+                  (char-string (str description " Checksum: " (:Checksum GetData)))
+                  (char-string description))]
+               [:gmd:description {:gco:nilReason "missing"}])
+             [:gmd:function
+              [:gmd:CI_OnLineFunctionCode
+               {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
+                :codeListValue code}]]]]]]]]))))
+
 (defn- generate-operation-description
   "Generate operation description from GetService values"
-  [MimeType DataID DataType]
+  [MimeType DataID DataType Format]
   (let [operation-description (format "MimeType: %s " (su/with-default MimeType))
         operation-description (str operation-description (format "DataID: %s " (su/with-default DataID)))
-        operation-description (str operation-description (format "DataType: %s " (su/with-default DataType)))]
+        operation-description (str operation-description (format "DataType: %s " (su/with-default DataType)))
+        operation-description (if (seq Format)
+                                (str operation-description (format "Format: %s " (su/with-default Format)))
+                                operation-description)]
     (str/trim operation-description)))
 
 (defn generate-service-related-url
@@ -99,9 +165,9 @@
                                  (= "GET SERVICE" (:Type %)))
                            related-urls)
        :let [{URL :URL Description :Description} service-url
-             {:keys [MimeType Protocol FullName DataID DataType URI]}  (:GetService service-url)
+             {:keys [MimeType Protocol FullName DataID DataType URI Format]}  (:GetService service-url)
              URI (remove #(= URL %) URI)
-             operation-description (generate-operation-description MimeType DataID DataType)
+             operation-description (generate-operation-description MimeType DataID DataType Format)
              url-type-desc (generate-description-with-types
                              (dissoc service-url :Description))]] ; Don't want description
   [:gmd:identificationInfo
@@ -204,10 +270,5 @@
                 [:gmd:transferSize
                  [:gco:Real (:Size size)]]]])
             (when (zero? idx))]])
-        [:gmd:distributor
-         [:gmd:MD_Distributor
-          contact-element
-          [:gmd:distributorTransferOptions
-           [:gmd:MD_DigitalTransferOptions
-            (for [related-url related-urls]
-              (generate-online-resource-url related-url :gmd:onLine true))]]]]))))
+        (for [related-url related-urls]
+          (generate-distributor-online-resource-url related-url :gmd:onLine true))))))

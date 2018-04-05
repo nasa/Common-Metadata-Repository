@@ -1,24 +1,26 @@
 (ns cmr.system-int-test.search.granule-orbit-search-test
-  "Tests for spatial search with obital back tracking."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.search.granule-spatial-search-test :as st]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as derived]
-            [cmr.spatial.codec :as codec]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.common.util :as u]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  "Tests for spatial search with orbital back tracking."
+  (:require
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [cmr.common.util :as u]
+   [cmr.spatial.codec :as codec]
+   [cmr.spatial.derived :as derived]
+   [cmr.spatial.kml :as kml]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.search.granule-spatial-search-test :as st]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -42,6 +44,43 @@
                                      orbit
                                      nil)}
                 other-attribs))))))
+
+(deftest orbit-bug-CMR-4722
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "OMSO2-collection"
+                                                   :format-key :dif10})
+        granule (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :concept-id "C4-PROV1"
+                                                      :native-id "OMSO2-granule"
+                                                      :format-key :echo10})]
+    (index/wait-until-indexed)
+
+    (testing "Orbit search crossing the equator for OMSO2 granules."
+      (u/are3
+        [items wnes]
+        (let [found (search/find-refs :granule
+                                      {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                       :provider "PROV1"
+                                       :page-size 50})
+              matches? (d/refs-match? items found)]
+          (when-not matches?
+            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+          matches?)
+
+        "Rectangle that should find the granule"
+        [granule] [150 70 170 60]
+
+        "Rectangle not crossing the equator that should not find the granule"
+        [] [-128.32 53.602 -46.758 1.241]))))
+
+        ;; Test that needs to be fixed with CMR-4722
+        ; "CMR-4722: Search crossing the equator should not erroneously find the granule"
+        ; [] [-128.32 53.602 -46.758 -1.241]))))
 
 ;; This tests searching for bounding boxes or polygons that cross the start circular
 ;; latitude of the collection with fractional orbit granules. This was added to test
@@ -405,20 +444,37 @@
 
     [coll (make-gran coll "gran1" 7.28116 -50 :asc 50 :asc)]))
 
+(defn- ingest-CMR-4722-data
+  []
+  (let [coll1 (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :native-id "orbit3"
+                                                    :format-key :dif10})
+        g1 (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                {:provider-id "PROV1"
+                                                 :concept-type :granule
+                                                 :concept-id "C1-PROV1"
+                                                 :native-id "granule1"
+                                                 :format-key :echo10})]
+    [coll1 g1]))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Visualization code
 
 (defn- mbr-finds-granule?
   [mbr]
-  (let [resp (search/find-refs :granule {:bounding-box (codec/url-encode mbr) :page-size 0})]
+  (let [resp (search/find-refs :granule {:bounding-box (codec/url-encode mbr) :page-size 0 :provider "PROV1"})]
     (> (:hits resp) 0)))
 
 (defn- polygon-finds-granule?
   [coords]
   (let [resp (search/find-refs
                :granule
-               {:polygon (apply st/search-poly coords)
+               {:provider "PROV1"
+                :polygon (apply st/search-poly coords)
                 :page-size 0})]
     (> (:hits resp) 0)))
 
@@ -459,10 +515,11 @@
     (dev-sys-util/reset)
     (taoensso.timbre/set-level! :warn) ; turn down log level
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-    #_(ingest-orbit-coll-and-granules-north-pole)
-    #_(ingest-orbit-coll-and-granules-prime-meridian)
-    #_(ingest-orbit-coll-and-granule)
-    (ingest-orbit-coll-and-granule-swath))
+    ; (ingest-orbit-coll-and-granules-north-pole)
+    ; (ingest-orbit-coll-and-granules-prime-meridian)
+    ; (ingest-orbit-coll-and-granule)
+    ; (ingest-orbit-coll-and-granule-swath)
+    (ingest-CMR-4722-data))
 
   ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
   (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
@@ -471,6 +528,8 @@
   ;; 2. Evaluate this block to find all the mbrs.
   ;; It will print out "Elapsed time: XXXX msecs" when it's done
   (def matching-mbrs
+    "Creates mbrs all over the globe as search areas. Returns any mbrs which find granules in the
+    local system. Takes awhile to run, so performed as a future."
     (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3))))))
 
 
@@ -484,7 +543,6 @@
 
   (mbr-finds-granule? (m/mbr 40 30 45 24))
 
-
   ;; How many were found? This will block on the future
   (count @matching-mbrs)
   (count @matching-polys)
@@ -492,13 +550,11 @@
   ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
   ;; Google Earth will open when you evaluate it. (as long as you've installed it)
   ;; You can give different tests unique names. Otherwise it will overwrite the file.
-  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
+  (kml/display-shapes @matching-mbrs "start_circ_pos_50.kml")
 
-  (ge-helper/display-shapes "start_circ_pos_50_poly.kml" @matching-polys)
+  (kml/display-shapes @matching-polys "start_circ_pos_50_poly.kml")
 
   ;; visualize the kml representation
   (do (spit "granule_kml.kml"
             (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
     (clojure.java.shell/sh "open" "granule_kml.kml")))
-
-

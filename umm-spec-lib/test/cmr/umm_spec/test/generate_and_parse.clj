@@ -140,8 +140,7 @@
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
-         (is (= (convert-to-sets expected) (convert-to-sets actual))
-
+         (is (= expected actual)
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 
@@ -198,11 +197,11 @@
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (let [umm-record (js/parse-umm-c
-                        (assoc umm-record
-                               :DataDates [{:Date (t/date-time 2012)
-                                            :Type "CREATE"}
-                                           {:Date (t/date-time 2013)
-                                            :Type "UPDATE"}]))
+                      (assoc umm-record
+                             :DataDates [{:Date (t/date-time 2012)
+                                          :Type "CREATE"}
+                                         {:Date (t/date-time 2013)
+                                          :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison

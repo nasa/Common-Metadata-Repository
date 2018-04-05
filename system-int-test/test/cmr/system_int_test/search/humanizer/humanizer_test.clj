@@ -4,6 +4,8 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as u]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.test.side-api :as side]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -12,7 +14,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as transmit-config]
-   [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]
+   [cmr.umm-spec.versioning :as versioning]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -34,7 +37,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token ABC does not exist"]}
+            :errors ["Token [ABC] does not exist"]}
            (hu/update-humanizers "ABC" (hu/make-humanizers)))))
 
   (testing "Create without permission"
@@ -136,6 +139,9 @@
       (is (= expected-humanizers (hu/get-humanizers))))))
 
 (deftest humanizer-report-test
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version!
+                          versioning/current-collection-version))]
   (testing "Humanizer report saved successfully"
     (let [humanizers (hu/make-humanizers)
           ;; Ingest humanizers
@@ -199,9 +205,13 @@
               regenerated-report (search/get-humanizers-report
                                   {:regenerate true :token transmit-config/mock-echo-system-token})]
           (is (= initial-report report-unchanged-by-recent-ingest))
-          (is (= expected-report2 regenerated-report)))))))
+          (is (= expected-report2 regenerated-report))))))
+      (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 (deftest humanizer-report-permissions
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version!
+                          versioning/current-collection-version))]
   (testing "Anyone can request the humanizer report"
     ;; ingest a collection and refresh cache to avoid the wait and retry in the get-all-collections code.
     (d/ingest-umm-spec-collection
@@ -237,4 +247,5 @@
     (index/wait-until-indexed)
     (search/refresh-collection-metadata-cache)
       (is (= 200 (:status (search/get-humanizers-report-raw {:regenerate true
-                                                             :token admin-user-token})))))))
+                                                             :token admin-user-token}))))))
+  (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))

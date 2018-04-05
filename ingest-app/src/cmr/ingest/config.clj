@@ -1,6 +1,7 @@
 (ns cmr.ingest.config
   "Contains functions to retrieve metadata db specific configuration"
   (:require
+   [cmr.common-app.config :as common-config]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.message-queue.config :as queue-config]
    [cmr.oracle.config :as oracle-config]
@@ -14,11 +15,6 @@
 (defconfig bulk-update-enabled
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})
-
-(defconfig collection-umm-version
-  "Defines the latest collection umm version accepted by ingest - it's the latest official version.
-   This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.9"})
 
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.
@@ -34,7 +30,7 @@
   "Returns the latest umm version accepted by ingest for the given concept-type."
   [concept-type]
   (get
-   {:collection (collection-umm-version)
+   {:collection (common-config/collection-umm-version)
     :variable (variable-umm-version)
     :service (service-umm-version)}
    concept-type))

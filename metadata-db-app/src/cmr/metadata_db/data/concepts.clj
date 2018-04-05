@@ -10,6 +10,7 @@
     [db providers params]
     "Finds concepts by the given parameters")
 
+  ;; XXX maybe we can combine this definition with just the regular find-latest-concepts ...
   (find-concepts-in-batches
     [db provider params batch-size]
     [db provider params batch-size start-index]

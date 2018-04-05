@@ -6,6 +6,7 @@
     [clojure.set :as set]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.common-app.config :as common-config]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info warn error)]
@@ -242,7 +243,9 @@
                            ;; found even if the collection has been reindexed recently.
                            ;; otherwise, use granule-end-date
                            granule-end-date)
-        humanized-values (humanizer/collection-humanizers-elastic context collection)]
+        humanized-values (humanizer/collection-humanizers-elastic context collection)
+        tags (map tag/tag-association->elastic-doc tag-associations)
+        has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))]
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi.lowercase doi-lowercase
@@ -253,7 +256,12 @@
             :user-id user-id
             :permitted-group-ids permitted-group-ids
             ;; If there's an entry in the collection granule aggregates then the collection has granules.
-            :has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
+            :has-granules has-granules
+            :has-granules-or-cwic (or
+                                   has-granules
+                                   (some?
+                                    (some #(= (common-config/cwic-tag) %)
+                                          (map :tag-key.lowercase tags))))
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title (str/trim entry-title)
@@ -342,7 +350,7 @@
             :temporal-keyword.lowercase (map str/lower-case temporal-keywords)
 
             ;; tags
-            :tags (map tag/tag-association->elastic-doc tag-associations)
+            :tags tags
             ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
             ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},

@@ -362,14 +362,19 @@
   [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
    {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
 
+(def service-all-revision-sub-sort-fields
+  "Defines the sub sort fields for an all revisions service search."
+  [{(q2e/query-field->elastic-field :concept-id :service) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :service) {:order "desc"}}])
+
+(def service-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision service search."
+  [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :service) {:order "asc"}}])
+
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
   [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
-
-(defmethod q2e/concept-type->sub-sort-fields :service
-  [_]
-  [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
-   {(q2e/query-field->elastic-field :provider :service) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection
@@ -395,6 +400,16 @@
         sub-sort-fields (if (:all-revisions? query)
                           (all-revision-sub-sort-fields :variable)
                           variable-latest-sub-sort-fields)]
+    (concat (or specified-sort default-sort) sub-sort-fields)))
+
+(defmethod q2e/query->sort-params :service
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          service-all-revision-sub-sort-fields
+                          service-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple

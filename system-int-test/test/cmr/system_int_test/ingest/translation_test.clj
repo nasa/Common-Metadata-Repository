@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.translation-test
   (:require
     [clj-time.core :as t]
+    [clojure.java.io :as io]
     [clojure.test :refer :all]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :refer [update-in-each]]
@@ -82,6 +83,22 @@
         (if (and (= "dif" (name input-format)) (= "echo10" (name output-format)))
           (is (= expected (assoc parsed-umm-json :DataDates nil)))
           (is (= expected parsed-umm-json)))))
+
+    (testing (format "Translating iso19115 to umm-json produces the right UseConstraints")
+      (let [input-format :iso19115
+            output-format :umm-json
+            options {:skip-sanitize-umm-c false}
+            input-xml (slurp (io/resource "CMR-4839-4651/iso19115_artificial_test_data.xml"))
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= (umm-c/map->UseConstraintsType 
+                 {:Description (umm-c/map->UseConstraintsDescriptionType 
+                                 {:Description "First Description"})
+                  :LicenseUrl (umm-cmn/map->OnlineResourceType
+                                {:Linkage " https://www.nasa.examplelicenseurl1.gov"})})
+               (:UseConstraints parsed-umm-json)))
+        (is (= 200 status))))
 
     (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
       (let [input-format :iso19115

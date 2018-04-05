@@ -1135,392 +1135,392 @@
 (deftest migrate-1_9-up-to-1_10
   (testing "Characteristics data type migration from version 1.9 to 1.10"
     (is (= [(umm-cmn/map->PlatformType
-          {:ShortName "Platform 1"
-           :LongName "Example Platform Long Name 1"
-           :Type "Aircraft"
-           :Characteristics [{:Name "OrbitalPeriod"
-                              :Description "Orbital period in decimal minutes."
-                              :DataType "STRING"
-                              :Unit "Minutes"
-                              :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "INT"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "FLOAT"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "INT"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "BOOLEAN"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "DATE"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "TIME"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "DATETIME"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "DATE_STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "TIME_STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "DATETIME_STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}
-                              {:Name "OrbitalPeriod"
-                               :Description "Orbital period in decimal minutes."
-                               :DataType "STRING"
-                               :Unit "Minutes"
-                               :Value "96.7"}]
-           :Instruments [(umm-cmn/map->InstrumentType
-                           {:ShortName "An Instrument"
-                            :LongName "The Full Name of An Instrument v123.4"
-                            :Technique "Two cans and a string"
-                            :NumberOfInstruments 1
-                            :OperationalModes ["on" "off"]
-                            :Characteristics [{:Name "Signal to Noise Ratio"
-                                               :Description "Is that necessary?"
-                                               :DataType "STRING"
-                                               :Unit "dB"
-                                               :Value "10"}]
-                            :ComposedOf [(umm-cmn/map->InstrumentChildType
-                                           {:ShortName "ABC"
-                                            :LongName "Long Range Sensor"
-                                            :Characteristics [{:Name "Signal to Noise Ratio"
-                                                               :Description "Is that necessary?"
-                                                               :DataType "STRING"
-                                                               :Unit "dB"
-                                                               :Value "10"}]
-                                            :Technique "Drunken Fist"})]})]})]
-        (:Platforms
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-            {:Platforms [{:ShortName "Platform 1"
-                          :LongName "Example Platform Long Name 1"
-                          :Type "Aircraft"
-                          :Characteristics [{:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "time/Direction (ascending)"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Time/direction (descending)"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "VarchaR"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Integer"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Radiocarbon Dates"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "String"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Float"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "int"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "boolean"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Date"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Time"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Datetime"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Date_String"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "time_string"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "Datetime_String"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "randomstring"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}
-                                            {:Name "OrbitalPeriod"
-                                             :Description "Orbital period in decimal minutes."
-                                             :DataType "not applicable"
-                                             :Unit "Minutes"
-                                             :Value "96.7"}]
-                          :Instruments [{:ShortName "An Instrument"
-                                         :LongName "The Full Name of An Instrument v123.4"
-                                         :Technique "Two cans and a string"
-                                         :NumberOfInstruments 1
-                                         :OperationalModes ["on" "off"]
-                                         :Characteristics [{:Name "Signal to Noise Ratio"
-                                                            :Description "Is that necessary?"
-                                                            :DataType "randomstring"
-                                                            :Unit "dB"
-                                                            :Value "10"}]
-                                         :ComposedOf [{:ShortName "ABC"
-                                                       :LongName "Long Range Sensor"
-                                                       :Characteristics [{:Name "Signal to Noise Ratio"
-                                                                          :Description "Is that necessary?"
-                                                                          :DataType "not applicable"
-                                                                          :Unit "dB"
-                                                                          :Value "10"}]
-                                                       :Technique "Drunken Fist"}]}]}]})))))
+             {:ShortName "Platform 1"
+              :LongName "Example Platform Long Name 1"
+              :Type "Aircraft"
+              :Characteristics [{:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "INT"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "FLOAT"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "INT"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "BOOLEAN"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "DATE"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "TIME"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "DATETIME"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "DATE_STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "TIME_STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "DATETIME_STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}
+                                {:Name "OrbitalPeriod"
+                                 :Description "Orbital period in decimal minutes."
+                                 :DataType "STRING"
+                                 :Unit "Minutes"
+                                 :Value "96.7"}]
+              :Instruments [(umm-cmn/map->InstrumentType
+                              {:ShortName "An Instrument"
+                               :LongName "The Full Name of An Instrument v123.4"
+                               :Technique "Two cans and a string"
+                               :NumberOfInstruments 1
+                               :OperationalModes ["on" "off"]
+                               :Characteristics [{:Name "Signal to Noise Ratio"
+                                                  :Description "Is that necessary?"
+                                                  :DataType "STRING"
+                                                  :Unit "dB"
+                                                  :Value "10"}]
+                               :ComposedOf [(umm-cmn/map->InstrumentChildType
+                                              {:ShortName "ABC"
+                                               :LongName "Long Range Sensor"
+                                               :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                  :Description "Is that necessary?"
+                                                                  :DataType "STRING"
+                                                                  :Unit "dB"
+                                                                  :Value "10"}]
+                                               :Technique "Drunken Fist"})]})]})]
+         (:Platforms
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+             {:Platforms [{:ShortName "Platform 1"
+                           :LongName "Example Platform Long Name 1"
+                           :Type "Aircraft"
+                           :Characteristics [{:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "time/Direction (ascending)"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Time/direction (descending)"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "VarchaR"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Integer"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Radiocarbon Dates"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "String"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Float"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "int"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "boolean"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Date"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Time"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Datetime"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Date_String"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "time_string"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "Datetime_String"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "randomstring"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}
+                                             {:Name "OrbitalPeriod"
+                                              :Description "Orbital period in decimal minutes."
+                                              :DataType "not applicable"
+                                              :Unit "Minutes"
+                                              :Value "96.7"}]
+                           :Instruments [{:ShortName "An Instrument"
+                                          :LongName "The Full Name of An Instrument v123.4"
+                                          :Technique "Two cans and a string"
+                                          :NumberOfInstruments 1
+                                          :OperationalModes ["on" "off"]
+                                          :Characteristics [{:Name "Signal to Noise Ratio"
+                                                             :Description "Is that necessary?"
+                                                             :DataType "randomstring"
+                                                             :Unit "dB"
+                                                             :Value "10"}]
+                                          :ComposedOf [{:ShortName "ABC"
+                                                        :LongName "Long Range Sensor"
+                                                        :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                           :Description "Is that necessary?"
+                                                                           :DataType "not applicable"
+                                                                           :Unit "dB"
+                                                                           :Value "10"}]
+                                                        :Technique "Drunken Fist"}]}]}]})))))
   (testing "GeographicCoordinateUnits migration from version 1.9 to 1.10"
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem
-            {:GeographicCoordinateUnits "Decimal Degrees"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem
-                               {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
+            {:GeographicCoordinateSystem
+             {:GeographicCoordinateUnits "Decimal Degrees"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem
-            {:GeographicCoordinateUnits "Kilometers"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem
-                               {:GeographicCoordinateUnits "kiLometers"}}}}))))
+            {:GeographicCoordinateSystem
+             {:GeographicCoordinateUnits "Kilometers"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "kiLometers"}}}}))))
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem
-            {:GeographicCoordinateUnits "Meters"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem
-                               {:GeographicCoordinateUnits "mEters"}}}}))))
+            {:GeographicCoordinateSystem
+             {:GeographicCoordinateUnits "Meters"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "mEters"}}}}))))
     (is (= nil
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem
-                               {:GeographicCoordinateUnits "randomstring"}}}})))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:HorizontalCoordinateSystem
+                                 {:GeographicCoordinateSystem
+                                   {:GeographicCoordinateUnits "randomstring"}}}})))))
   (testing "DistanceUnits migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
-            :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
-                              :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
+             :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
+                                  :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
-            :DepthSystemDefinition {:DistanceUnits "Feet"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
-                              :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
+             :DepthSystemDefinition {:DistanceUnits "Feet"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
+                                  :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
-            :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                              :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+             :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
-            :DepthSystemDefinition {:DistanceUnits "Meters"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                              :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+             :DepthSystemDefinition {:DistanceUnits "Meters"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
-            :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                              :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+             :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                              :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+            {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                              :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
     (is (= nil
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                              :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
+           (:SpatialInformation
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:SpatialInformation
+                               {:VerticalCoordinateSystem
+                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
   (testing "EncodingMethod migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
-           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
-            :DepthSystemDefinition {:DistanceUnits "Meters"}}}
-       (:SpatialInformation
-         (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:SpatialInformation
-                           {:VerticalCoordinateSystem
-                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"
-                                                         :EncodingMethod "testing"}
-                              :DepthSystemDefinition {:DistanceUnits "meTers"
-                                                      :EncodingMethod "testing"}}}})))))
+            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+             :DepthSystemDefinition {:DistanceUnits "Meters"}}}
+         (:SpatialInformation
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"
+                                                           :EncodingMethod "testing"}
+                                :DepthSystemDefinition {:DistanceUnits "meTers"
+                                                        :EncodingMethod "testing"}}}})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
     (is (= [{:PrecisionOfSeconds "3"
-           :EndsAtPresentFlag "false"
-           :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                             :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                            {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
-          {:PrecisionOfSeconds "3"
-           :EndsAtPresentFlag "false"
-           :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                             :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                            {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]
-        (:TemporalExtents
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:TemporalExtents [{:TemporalRangeType "temp range 1"
-                                             :PrecisionOfSeconds "3"
-                                             :EndsAtPresentFlag "false"
-                                             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
-                                            {:TemporalRangeType "temp range 2"
-                                             :PrecisionOfSeconds "3"
-                                             :EndsAtPresentFlag "false"
-                                             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
+             :EndsAtPresentFlag "false"
+             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+            {:PrecisionOfSeconds "3"
+             :EndsAtPresentFlag "false"
+             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]
+         (:TemporalExtents
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:TemporalExtents [{:TemporalRangeType "temp range 1"
+                                               :PrecisionOfSeconds "3"
+                                               :EndsAtPresentFlag "false"
+                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+                                              {:TemporalRangeType "temp range 2"
+                                               :PrecisionOfSeconds "3"
+                                               :EndsAtPresentFlag "false"
+                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
   (testing "CollectionProgress migration from version 1.9 to 1.10"
     (is (= u/NOT-PROVIDED
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:CollectionProgress "ACTIVE"}))))
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:CollectionProgress "ACTIVE"}))))
     (is (= "PLANNED"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:CollectionProgress "planned"}))))
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:CollectionProgress "planned"}))))
     (is (= "ACTIVE"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:CollectionProgress "IN WORK"}))))
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:CollectionProgress "IN WORK"}))))
     (is (= u/NOT-PROVIDED
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:CollectionProgress "NOT PROVIDED"}))))
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {:CollectionProgress "NOT APPLICABLE"}))))
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                           {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "COMPLETE"}))))
+                           {:CollectionProgress "COMPLETE"})))))
   (testing "VerticalSpatialDomains migration from 1.9.0 to 1.10.0"
     (let [vsds {:SpatialExtent
                 {:VerticalSpatialDomains [{:Type "An Invalid Type"
@@ -1536,30 +1536,117 @@
                :Type "Atmosphere Layer"}
               {:Value "There is no limit if you believe -Bob Ross",
                :Type "Maximum Altitude"}]
-           (get-in result [:SpatialExtent :VerticalSpatialDomains])))))))
+           (get-in result [:SpatialExtent :VerticalSpatialDomains])))))
+   (testing "DOI MissingReason and Explanation"
+     (is (= {:MissingReason "Not Applicable"}
+            (get (vm/migrate-umm {} :collection "1.9" "1.10"
+                                 {:DOI nil})
+                 :DOI))))
+   
+   (testing "CollectionCitation's OnlineResource migration from version 1.9 to 1.10"
+    (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
+                   {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                           :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                           :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                           :OnlineResource {:Linkage "www.google.com"
+                                                            :Name "URL Title"
+                                                            :Description "URL Description"}}]
+                    :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"
+                                                              :Name "Not provided"
+                                                              :Description "Not provided"}}]})]
+       (is (= {:Linkage "www.google.com"
+               :Name "URL Title"
+               :Description "URL Description"}
+              (:OnlineResource (first (:CollectionCitations result)))))
+
+       (is (= {:Linkage "www.google.com"}
+              (:OnlineResource (first (:PublicationReferences result)))))))  
+
+   (testing "UseConstraints migration from 1.9.0 to 1.10.0"
+    (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
+                           {:Description "description"})}
+           (:UseConstraints
+             (vm/migrate-umm {} :collection "1.9" "1.10"
+                             {:UseConstraints "description"}))))
+    (is (nil?
+         (:UseConstraints
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                          {}))))))
 
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
     (is (= "PLANNED"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "PLANNED"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "PLANNED"}))))
     (is (= "IN WORK"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "ACTIVE"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "ACTIVE"}))))
     (is (= u/NOT-PROVIDED
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "NOT PROVIDED"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
-        (:CollectionProgress
-          (vm/migrate-umm {} :collection "1.10" "1.9"
-                         {:CollectionProgress "NOT APPLICABLE"}))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                             {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:CollectionProgress "COMPLETE"}))))))
+           (:CollectionProgress
+             (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "COMPLETE"})))))
+
+  (testing "RelatedUrls GET DATA and GET SERVICE new schema"
+    (is (= {}
+           (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
+                                   {:RelatedUrls [{:GetData {:MimeType "application/json"}}]})
+                   [:RelatedUrls 0 :GetData])))
+    (is (= {}
+           (get-in (vm/migrate-umm {} :collection "1.10" "1.9"
+                                   {:RelatedUrls [{:GetService {:Format "ascii"}}]})
+                   [:RelatedUrls 0 :GetService]))))
+
+  (testing "DOI MissingReason and Explanation"
+    (is (= nil
+           (get (vm/migrate-umm {} :collection "1.10" "1.9"
+                                {:DOI {:MissingReason "Not Applicable"
+                                       :Explanation "This is an explanation."}})
+                :DOI))))
+
+  (testing "CollectionCitation's OnlineResource migration from version 1.10 to 1.9"
+    (let [result (vm/migrate-umm {} :collection "1.10" "1.9"
+                   {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                           :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                           :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                           :OnlineResource {:Linkage "www.google.com"
+                                                            :Name "URL Title"
+                                                            :Description "URL Description"
+                                                            :MimeType "application/json"}}]
+                    :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
+       (is (= {:Linkage "www.google.com" 
+               :Name "URL Title"
+               :Description "URL Description"}
+              (:OnlineResource (first (:CollectionCitations result)))))
+
+       (is (= {:Linkage "www.google.com" 
+               :Name "Not provided" 
+               :Description "Not provided"}
+              (:OnlineResource (first (:PublicationReferences result)))))))  
+
+  (testing "UseConstraints migration from version 1.10 to 1.9"
+    (is (= "description"
+        (:UseConstraints
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:UseConstraints (umm-c/map->UseConstraintsType
+                                            {:Description (umm-c/map->UseConstraintsDescriptionType
+                                                            {:Description "description"})
+                                             :LicenseText "license text"})}))))
+    (is (nil?
+        (:UseConstraints
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:UseConstraints (umm-c/map->UseConstraintsType
+                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType 
+                                                           {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems

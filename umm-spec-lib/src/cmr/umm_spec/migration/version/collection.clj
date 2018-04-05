@@ -8,11 +8,13 @@
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
+   [cmr.umm-spec.migration.doi-migration :as doi]
    [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.migration.version.interface :as interface]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]
@@ -45,24 +47,6 @@
   (if (nil? (:Description attribute))
      (assoc attribute :Description u/not-provided)
      attribute))
-
-(defn- migrate-doi-up
-  "Migrate :DOI from CollectionCitation level up to collection level."
-  [c]
-  (if-let [doi-obj (some :DOI (:CollectionCitations c))]
-    (-> c
-      (update-in-each [:CollectionCitations] dissoc :DOI)
-      (assoc :DOI doi-obj))
-    c))
-
-(defn- migrate-doi-down
-  "Migrate :DOI from collection level down to CollectionCitation level."
-  [c]
-  (if-let [doi-obj (:DOI c)]
-    (-> c
-      (update-in-each [:CollectionCitations] assoc :DOI doi-obj)
-      (dissoc :DOI))
-    c))
 
 (defn- add-related-urls
   "Add required RelatedUrls in version 1.8 if missing in version 1.9"
@@ -198,7 +182,7 @@
 (defmethod interface/migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
-      migrate-doi-up
+      doi/migrate-doi-up
       related-url/dissoc-titles-from-contact-information
       (update :RelatedUrls related-url/array-of-urls->url)
       (update-in-each [:RelatedUrls] related-url/relation->url-content-type)
@@ -214,7 +198,7 @@
 (defmethod interface/migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
   (-> c
-      migrate-doi-down
+      doi/migrate-doi-down
       related-url/migrate-down-from-1_9
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
       (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)
@@ -234,9 +218,28 @@
       ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
       util/remove-empty-maps
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
-      char-data-type-normalization/migrate-up))
+      char-data-type-normalization/migrate-up
+      doi/migrate-missing-reason-up
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-up)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-up)
+      ;; Can't do (assoc :UseConstraints (when-let [description (:UseConstraints c)]... because when :UseConstraints
+      ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
+      (as-> coll (if-let [description (:UseConstraints c)]
+                   (assoc coll :UseConstraints 
+                               {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                               {:Description description})})
+                   coll))))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
-      coll-progress-migration/migrate-down))
+      coll-progress-migration/migrate-down
+      (util/update-in-all [:RelatedUrls :GetData] dissoc :MimeType)
+      (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
+      doi/migrate-missing-reason-down
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-down)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-down) 
+      (assoc :UseConstraints (when-let [description (get-in c [:UseConstraints :Description])]
+                               ;; Description in 1.10 is object/record.
+                               ;; It needs to be converted to string when becoming UseConstraints in 1.9.i
+                               (:Description description)))))

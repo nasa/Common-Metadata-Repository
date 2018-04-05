@@ -7,12 +7,14 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as config]
+   [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.versioning :as versioning]))
 
 (def versioned-content-type
@@ -20,8 +22,8 @@
   (mime-types/with-version
    mime-types/umm-json versioning/current-service-version))
 
-(def default-opts
-  "Default HTTP client options for use in the tests below."
+(def default-ingest-opts
+  "Default HTTP client options for use when ingesting services using the functions below."
   {:accept-format :json
    :content-type mime-types/umm-json})
 
@@ -29,7 +31,7 @@
   "A little testing utility function that adds a user token to the default
   headers (HTTP client options)."
   [token]
-  (merge default-opts {:token token}))
+  (merge default-ingest-opts {:token token}))
 
 (defn grant-all-service-fixture
   "A test fixture that grants all users the ability to create and modify services."
@@ -38,32 +40,30 @@
   (f))
 
 (defn make-service-concept
+  "Convenience function for creating a service concept"
   ([]
-    (make-service-concept {}))
+   (make-service-concept {}))
   ([metadata-attrs]
-    (make-service-concept metadata-attrs {}))
+   (make-service-concept metadata-attrs {}))
   ([metadata-attrs attrs]
-    (-> (merge {:provider-id "PROV1"} metadata-attrs)
-        (data-umm-s/service-concept)
-        (assoc :format versioned-content-type)
-        (merge attrs)))
+   (make-service-concept metadata-attrs attrs 0))
   ([metadata-attrs attrs idx]
-    (-> (merge {:provider-id "PROV1"} metadata-attrs)
-        (data-umm-s/service-concept idx)
-        (assoc :format versioned-content-type)
-        (merge attrs))))
+   (-> (merge {:provider-id "PROV1"} metadata-attrs)
+       (data-umm-s/service-concept idx)
+       (assoc :format versioned-content-type)
+       (merge attrs))))
 
 (defn ingest-service
   "A convenience function for ingesting a service during tests."
   ([]
-    (ingest-service (make-service-concept)))
+   (ingest-service (make-service-concept)))
   ([service-concept]
-    (ingest-service service-concept default-opts))
+   (ingest-service service-concept default-ingest-opts))
   ([service-concept opts]
-    (let [result (ingest-util/ingest-concept service-concept opts)
-          attrs (select-keys service-concept
-                             [:provider-id :native-id :metadata])]
-      (merge result attrs))))
+   (let [result (ingest-util/ingest-concept service-concept opts)
+         attrs (select-keys service-concept
+                            [:provider-id :native-id :metadata])]
+     (merge result attrs))))
 
 (defn ingest-service-with-attrs
   "Helper function to ingest a service with the given service attributes."
@@ -74,14 +74,27 @@
   ([metadata-attrs attrs idx]
    (ingest-service (make-service-concept metadata-attrs attrs idx))))
 
-(defn search
-  "Searches for services using the given parameters."
+(defn search-refs
+  "Searches for services using the given parameters and requesting the XML references format."
   ([]
-    (search {}))
+   (search-refs {}))
   ([params]
-    (search params {}))
+   (search-refs params {}))
   ([params options]
-    (search/find-refs :service params options)))
+   (search/find-refs :service params options)))
+
+(defn search-json
+  "Searches for services using the given parameters and requesting the JSON format."
+  ([]
+   (search-json {}))
+  ([params]
+   (search-json params {}))
+  ([params options]
+   (search/process-response
+    (transmit-search/search-for-services
+      (s/context) params (merge options
+                                {:raw? true
+                                 :http-options {:accept :json}})))))
 
 (defn service-result->xml-result
   [service]
@@ -90,24 +103,58 @@
                          (config/search-host)
                          (config/search-port))
         id (:concept-id service)
-        revision (:revision-id service)]
-    (-> service
-        (assoc :id id
-               :location (format "%s/%s/%s" base-url id revision))
-        (select-keys [:id :revision-id :location]))))
+        revision (:revision-id service)
+        deleted (:deleted service)
+        location (if deleted
+                   []
+                   [:location (format "%s/%s/%s" base-url id revision)])]
+    (select-keys
+      (apply assoc service (concat [:id id] location))
+      [:id :revision-id :location :deleted])))
+
+(def ^:private json-field-names
+  "List of fields expected in a service JSON response."
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name])
+
+(defn extract-name-from-metadata
+  "Pulls the name out of the metadata field in the provided service concept."
+  [service]
+  (:Name (json/parse-string (:metadata service) true)))
+
+(defn extract-long-name-from-metadata
+  "Pulls the long name out of the metadata field in the provided service concept."
+  [service]
+  (:LongName (json/parse-string (:metadata service) true)))
+
+(defn get-expected-service-json
+  "For the given service return the expected service JSON."
+  [service]
+  (let [service-json-fields (select-keys
+                             (assoc service
+                                    :name (extract-name-from-metadata service)
+                                    :long-name (extract-long-name-from-metadata service))
+                             json-field-names)]
+    (if (:deleted service-json-fields)
+      (dissoc service-json-fields :long-name)
+      service-json-fields)))
 
 (defn assert-service-search
-  "Verifies the service search results"
+  "Verifies the service search results. The response must be provided in JSON format."
   [services response]
-  (let [expected-items (set (map service-result->xml-result services))
-        expected-response {:hits (count services)
-                           :refs expected-items}]
+  (let [expected-items (-> (map get-expected-service-json services) seq set)
+        expected-response {:status 200
+                           :hits (count services)
+                           :items expected-items}]
     (is (:took response))
     (is (= expected-response
            (-> response
-               (select-keys [:status :hits :refs])
-               (util/update-in-each [:refs] dissoc :name)
-               (update :refs set))))))
+               (select-keys [:status :hits :items])
+               (update :items set))))))
+
+(defn assert-service-references-match
+  "Verifies the service references"
+  [services response]
+  (d/refs-match? services response))
 
 (defn- coll-service-association->expected-service-association
   "Returns the expected service association for the given collection concept id to
@@ -117,8 +164,8 @@
   (let [[[coll-concept-id coll-revision-id] service-association] coll-service-association
         {:keys [concept-id revision-id]} service-association
         associated-item (if coll-revision-id
-                      {:concept-id coll-concept-id :revision-id coll-revision-id}
-                      {:concept-id coll-concept-id})
+                          {:concept-id coll-concept-id :revision-id coll-revision-id}
+                          {:concept-id coll-concept-id})
         errors (select-keys service-association [:errors :warnings])]
     (if (seq errors)
       (merge {:associated-item associated-item} errors)

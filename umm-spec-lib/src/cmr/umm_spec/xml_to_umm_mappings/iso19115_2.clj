@@ -17,9 +17,11 @@
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
@@ -185,34 +187,47 @@
                                             "[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']")))]
   (when-let [online-resource
              (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
-    {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
-     :Protocol (char-string-value online-resource "gmd:protocol")
-     :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
-     :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
-     :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
-     :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
+    (when-let [linkage (value-of online-resource "gmd:linkage/gmd:URL")]
+      {:Linkage (url/format-url linkage sanitize?)
+       :Protocol (char-string-value online-resource "gmd:protocol")
+       :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
+       :Name (char-string-value online-resource ":gmd:name")
+       :Description (char-string-value online-resource "gmd:description")
+       :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")}))))
 
-(defn- parse-doi
-  "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
-   Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
-   [[nil]
-    [nil {:DOI \"doi1\" :Authority \"auth1\"} {:DOI \"doi2\" :Authority \"auth2\"}]
-    [{:DOI \"doi3\" :Authority \"auth3\"]]
-   We will pick the first DOI for now."
-  [doc]
-  (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
-                          "gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString")
-        indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
-                          "gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString")
-        doi-list (for [ci-ct (select doc citation-base-xpath)]
-                   (for [gmd-id (select ci-ct "gmd:identifier")]
-                     (when (and (= (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString") "DOI")
-                                (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString")
-                                   "gov.nasa.esdis.umm.doi"))
-                       {:DOI (value-of gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
-                        :Authority (or (value-of gmd-id orgname-path)
-                                       (value-of gmd-id orgname-path))})))]
-    (first (first (remove empty? (map #(remove nil? %) doi-list))))))
+(defn- parse-doi-for-publication-reference
+  "Returns the DOI field within a publication reference."
+  [pub-ref]
+  (when-let [doi-value (char-string-value pub-ref "gmd:identifier/gmd:MD_Identifier/gmd:code")]
+    {:DOI doi-value}))
+
+(defn- parse-publication-references
+  "Returns the publication references."
+  [doc md-data-id-el sanitize?]
+  (for [publication (select md-data-id-el publication-xpath)
+        :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
+              online-resource (parse-online-resource publication sanitize?)
+              select-party (fn [name xpath]
+                             (char-string-value publication
+                                                (str (format role-xpath name) xpath)))]
+         :when (or (nil? (:Description online-resource))
+                   (not (string/includes? (:Description online-resource) "PublicationURL")))]
+    {:Author (select-party "author" "/gmd:organisationName")
+     :PublicationDate (date/sanitize-and-parse-date
+                       (str (date-at publication
+                                     (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                          "gmd:date/gco:Date")))
+                       sanitize?)
+     :Title (char-string-value publication "gmd:title")
+     :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
+     :Edition (char-string-value publication "gmd:edition")
+     :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
+     :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
+     :Publisher (select-party "publisher" "/gmd:organisationName")
+     :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
+     :DOI (parse-doi-for-publication-reference publication)
+     :OnlineResource (parse-online-resource publication sanitize?)
+     :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")}))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -226,7 +241,7 @@
      (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
      {:ShortName (char-string-value id-el "gmd:code")
       :EntryTitle (char-string-value citation-el "gmd:title")
-      :DOI (parse-doi doc)
+      :DOI (doi/parse-doi doc citation-base-xpath)
       :Version (char-string-value citation-el "gmd:edition")
       :VersionDescription version-description
       :Abstract abstract
@@ -239,12 +254,7 @@
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (parse-access-constraints doc sanitize?)
-      :UseConstraints
-      (su/truncate
-       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                    #"(?s)^(?!Restriction Comment:).+")
-       su/USECONSTRAINTS_MAX
-       sanitize?)
+      :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
       :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")
@@ -266,30 +276,7 @@
       :Platforms (platform/parse-platforms doc "" sanitize?)
       :Projects (project/parse-projects doc projects-xpath sanitize?)
 
-      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
-                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
-                                         online-resource (parse-online-resource publication sanitize?)
-                                         select-party (fn [name xpath]
-                                                        (char-string-value publication
-                                                                           (str (format role-xpath name) xpath)))]
-                                    :when (or (nil? (:Description online-resource))
-                                              (not (string/includes? (:Description online-resource) "PublicationURL")))]
-                               {:Author (select-party "author" "/gmd:organisationName")
-                                :PublicationDate (date/sanitize-and-parse-date
-                                                  (str (date-at publication
-                                                                (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
-                                                                     "gmd:date/gco:Date")))
-                                                  sanitize?)
-                                :Title (char-string-value publication "gmd:title")
-                                :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
-                                :Edition (char-string-value publication "gmd:edition")
-                                :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
-                                :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
-                                :Publisher (select-party "publisher" "/gmd:organisationName")
-                                :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
-                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
-                                :OnlineResource (parse-online-resource publication sanitize?)
-                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
+      :PublicationReferences (parse-publication-references doc md-data-id-el sanitize?)
       :MetadataAssociations (ma/xml-elem->metadata-associations doc)
       :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el

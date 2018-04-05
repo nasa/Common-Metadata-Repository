@@ -136,16 +136,16 @@
       (.setSQLForValidateConnection "select 1 from DUAL"))))
 
 (defrecord OracleStore
-  [
-   ;; The database spec.
+  [;; The database spec.
    spec
 
    ;; The database pool of connections
-   datasource
+   datasource]
 
-   ]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; CMR Component Implementation
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start [this system]
@@ -165,7 +165,9 @@
         (dissoc this :datasource)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OracleStore Constructor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-db
   "Creates and returns the database connection pool."

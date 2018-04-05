@@ -72,11 +72,11 @@
     (when token-required-message
      (errors/throw-service-error :unauthorized token-required-message)))))
 
-(defn- add-user-id-and-sids-to-context
-  "Adds information to the context including the user is and sids. Lazy assoc with a delay so we don't
+(defn add-user-id-and-sids-to-context
+  "Adds information to the context including the user id and sids. Lazy assoc with a delay so we don't
   do the expensive work until we need the sids or user id. This is called for every search api
   call, so don't want this to affect performance."
-  [context params headers]
+  [context]
   (-> context
       (util/lazy-assoc :sids (context->sids context))
       (util/lazy-assoc :user-id (context->user-id context))))
@@ -86,7 +86,7 @@
   It expects the request context is already associated with the request."
   [handler]
   (fn [request]
-    (let [{:keys [request-context params headers]} request]
+    (let [{:keys [request-context]} request]
       (-> request
-          (update-in [:request-context] add-user-id-and-sids-to-context params headers)
+          (update-in [:request-context] add-user-id-and-sids-to-context)
           (handler)))))

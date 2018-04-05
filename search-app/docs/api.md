@@ -160,6 +160,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Searching for Services](#searching-for-services)
         * [Service Search Parameters](#service-search-params)
         * [Service Search Response](#service-search-response)
+    * [Retrieving All Revisions of a Service](#retrieving-all-revisions-of-a-service)
     * [Sorting Service Results](#sorting-service-results)
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
@@ -328,6 +329,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:versionId (collections only)          | provider defined version id of the collection                                                                        |
 | echo:collectionDataType (collections only) | type of the collection, e.g. Science Quality or Near Real Time                                                       |
 | echo:producerGranuleId (granules only)     | producer granule id of the granule                                                                                   |
+| echo:collectionConceptId (granules only)   | collection concept id of the granule                                                                                 |
 | echo:granuleSizeMB (granules only)         | granule size in megabytes                                                                                            |
 | echo:originalFormat                        | original metadata format                                                                                             |
 | echo:dataCenter                            | data center providing the metadata                                                                                   |
@@ -1649,6 +1651,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
+  * `has_granules_or_cwic` - Sorts collections by whether they have granules or they are tagged as a CWIC collection. Collections with granules or are CWIC tagged are sorted before collections without granules or a CWIC tag.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
@@ -1693,7 +1696,7 @@ __Sample response__
 ```
 
 ### <a name="granule-search-by-parameters"></a> Granule Search By Parameters
-Search performance for granule searches is significantly improved by including an identifier that limits the search to a certain collection or subset of collections. Examples of parameters which limit the scope of the search include collection_concept_id, short_name, entry_title, or provider.
+**Note:** The CMR does not permit queries across all granules in all collections in order to provide fast search responses. Granule queries must target a subset of the collections in the CMR using a condition like provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title.
 
 #### <a name="find-all-granules"></a> Find all granules for a collection.
 
@@ -1762,8 +1765,6 @@ For granule additional attributes search, the default is searching for the attri
 
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
-
-**Note:** The CMR does not permit spatial queries across all granules in all collections in order to provide fast search responses. Spatial granule queries must target a subset of the collections in the CMR using a condition like provider, concept_id (referencing one collection), short_name, or entry_title.
 
 ##### <a name="g-polygon"></a> Polygon
 
@@ -3513,7 +3514,7 @@ A service enables data to be accessed via a universal resource locator, and has 
 
 #### <a name="searching-for-services"></a> Searching for Services
 
-Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference response formats is supported for services search.
+Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference, JSON, and UMM JSON response formats are supported for services search.
 
 Service search results are paged. See [Paging Details](#paging-details) for more information on how to page through service search results.
 
@@ -3597,6 +3598,61 @@ Content-Length: 393
     </references>
 </results>
 ```
+##### JSON
+The JSON response includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of services with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * name
+  * long_name
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/services.json?pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 944
+
+{
+  "hits" : 4,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "S1200000012-PROV2",
+    "revision_id" : 1,
+    "provider_id" : "PROV2",
+    "native_id" : "svc3",
+    "name" : "a sub for service2",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000013-PROV2",
+    "revision_id" : 1,
+    "provider_id" : "PROV2",
+    "native_id" : "serv4",
+    "name" : "s.other",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000010-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "SVC1",
+    "name" : "Service1",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  }, {
+    "concept_id" : "S1200000011-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "svc2",
+    "name" : "Service2",
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+  } ]
+}
+```
 ##### UMM JSON
 The UMM JSON response contains meta-metadata of the service and the UMM fields.
 
@@ -3667,6 +3723,42 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf
     }
   ]
 }
+```
+
+##### <a name="retrieving-all-revisions-of-a-service"></a> Retrieving All Revisions of a Service
+
+In addition to retrieving the latest revision for a service parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/services?concept_id=S1200000010-PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>3</took>
+        <references>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <location>http://localhost:3003/concepts/S1200000010-PROV1/3</location>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <deleted>true</deleted>
+                <revision-id>2</revision-id>
+            </reference>
+            <reference>
+                <name>Service1</name>
+                <id>S1200000010-PROV1</id>
+                <location>http://localhost:3003/concepts/S1200000010-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
 ```
 
 ##### <a name="sorting-service-results"></a> Sorting Service Results

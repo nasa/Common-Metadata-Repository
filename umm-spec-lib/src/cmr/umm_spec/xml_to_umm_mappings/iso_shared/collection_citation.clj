@@ -154,12 +154,13 @@
               description (value-of online-resource-party description-xpath)
               function (value-of online-resource-party function-xpath)]]
     (util/remove-nil-keys
-      {:Linkage linkage
-       :Protocol protocol
-       :ApplicationProfile app-profile
-       :Name name
-       :Description description
-       :Function function})))
+      (when linkage
+        {:Linkage linkage
+         :Protocol protocol
+         :ApplicationProfile app-profile
+         :Name name
+         :Description description
+         :Function function}))))
 
 (defn parse-collection-citation
   "Parse the Collection Citation from XML resource citation"

@@ -70,9 +70,10 @@
    ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
    ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
    ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
-   ;; not stored here; it should be stored as a RelatedURL. Authority is the registry that registers
-   ;; the DOI. For ESDIS records the value of http://dx.doi.org should be used. While this element
-   ;; is not required, NASA records should include a DOI when it is applicable.
+   ;; not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible
+   ;; for creating the DOI is described in the Authority element. For ESDIS records the value of
+   ;; https://doi.org/ should be used. While this element is not required, NASA metadata providers
+   ;; are strongly encouraged to include DOI and DOI Authority for their collections.
    DOI
 
    ;; This element describes any data/service related URLs that include project home pages,
@@ -233,6 +234,16 @@
    EndDate
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
+
+;; This sub-element either contains a license summary or free-text description that details the
+;; permitted use or limitation of this collection.
+(defrecord UseConstraintsDescriptionType
+  [
+   ;; This sub-element either contains a license summary or free-text description that details the
+   ;; permitted use or limitation of this collection.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing UseConstraintsDescriptionType)
 
 ;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
 ;; SpatialKeywords. Each tier must have data in the tier above it.
@@ -412,6 +423,25 @@
    LongName
   ])
 (record-pretty-printer/enable-record-pretty-printing DirectoryNameType)
+
+;; This element defines how the data may or may not be used after access is granted to assure the
+;; protection of privacy or intellectual property. This includes license text, license URL, or any
+;; special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the
+;; data set. Data providers may request acknowledgement of the data from users and claim no
+;; responsibility for quality and completeness of data.
+(defrecord UseConstraintsType
+  [
+   Description
+
+   ;; This element holds the URL and associated information to access the License on the web. If
+   ;; this element is used the LicenseText element cannot be used.
+   LicenseUrl
+
+   ;; This element holds the actual license text. If this element is used the LicenseUrl element
+   ;; cannot be used.
+   LicenseText
+  ])
+(record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
 
 (defrecord VerticalCoordinateSystemType
   [

@@ -134,7 +134,18 @@
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
 
+(defn- generate-doi-for-publication-reference
+  "Generates the DOI portion of a publication reference."
+  [pub-ref]
+  (let [doi (util/remove-nil-keys (dissoc (:DOI pub-ref) :MissingReason :Explanation))]
+    (when (seq doi)
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+        [:gmd:code (char-string (:DOI doi))]
+        [:gmd:description (char-string "DOI")]]])))
+
 (defn- generate-publication-references
+  "Returns the publication references."
   [pub-refs]
   (for [pub-ref pub-refs
         ;; Title and PublicationDate are required fields in ISO
@@ -154,11 +165,7 @@
               {:codeList (str (:iso iso/code-lists) "#CI_DateTypeCode")
                :codeListValue "publication"} "publication"]]]])
         [:gmd:edition (char-string (:Edition pub-ref))]
-        (when (:DOI pub-ref)
-          [:gmd:identifier
-           [:gmd:MD_Identifier
-            [:gmd:code (char-string (get-in pub-ref [:DOI :DOI]))]
-            [:gmd:description (char-string "DOI")]]])
+        (generate-doi-for-publication-reference pub-ref)
         [:gmd:citedResponsibleParty
          [:gmd:CI_ResponsibleParty
           [:gmd:organisationName (char-string (:Author pub-ref))]
@@ -184,8 +191,10 @@
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
                [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
-               [:gmd:name (char-string (:Name online-resource))]
-               [:gmd:description (char-string (str (:Description online-resource) " PublicationReference:"))]
+             (when-let [name (:Name online-resource)]
+               [:gmd:name (char-string name)])
+             (when-let [description (:Description online-resource)]
+               [:gmd:description (char-string (str description " PublicationReference:"))])
                [:gmd:function
                 [:gmd:CI_OnLineFunctionCode
                  {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")
@@ -223,18 +232,61 @@
   [c]
   (let [description (get-in c [:AccessConstraints :Description])
         value (get-in c [:AccessConstraints :Value])
-        use-constraints (:UseConstraints c)]
+        use-constraints (:UseConstraints c)
+        uc-description (:Description (:Description use-constraints))
+        license-url (:LicenseUrl use-constraints)
+        license-text (:LicenseText use-constraints)]
     [:gmd:resourceConstraints
      (when (or description value use-constraints)
        [:gmd:MD_LegalConstraints
-        (when use-constraints
-          [:gmd:useLimitation (char-string (:UseConstraints c))])
+        (when uc-description
+          [:gmd:useLimitation 
+            [:gco:CharacterString uc-description]]) 
         (when description
           [:gmd:useLimitation
             [:gco:CharacterString (str "Restriction Comment: " description)]])
+        (when (or license-url license-text)
+          [:gmd:useConstraints
+            [:gmd:MD_RestrictionCode 
+              {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+               :codeListValue "otherRestrictions"} "otherRestrictions"]])
+        (when license-url
+          [:gmd:otherConstraints 
+            [:gco:CharacterString (str "LicenseUrl:" (:Linkage license-url))]])
+        (when license-text
+          [:gmd:otherConstraints 
+            [:gco:CharacterString (str "LicenseText:" license-text)]])
         (when value
           [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
+
+(defn- generate-doi
+  "Returns the DOI field."
+  [c]
+  (let [doi (util/remove-nil-keys (:DOI c))]
+    (if (seq (:DOI doi))
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+         (when-let [authority (:Authority doi)]
+           [:gmd:authority
+            [:gmd:CI_Citation
+             [:gmd:title [:gco:CharacterString ""]]
+             [:gmd:date ""]
+             [:gmd:citedResponsibleParty
+              [:gmd:CI_ResponsibleParty
+               [:gmd:organisationName [:gco:CharacterString authority]]
+               [:gmd:role
+                [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                   :codeListValue ""} "authority"]]]]]])
+         [:gmd:code [:gco:CharacterString (:DOI doi)]]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         [:gmd:description [:gco:CharacterString "DOI"]]]]
+      [:gmd:identifier
+       [:gmd:MD_Identifier
+         [:gmd:code {:gco:nilReason "inapplicable"}]
+         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+         (when-let [explanation (:Explanation doi)]
+           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
 
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
@@ -277,23 +329,7 @@
               [:gmd:MD_Identifier
                 [:gmd:code (char-string (:ShortName c))]
                 [:gmd:version (char-string (:Version c))]]]
-            (when-let [doi (:DOI c)]
-              [:gmd:identifier
-                [:gmd:MD_Identifier
-                  (when-let [authority (:Authority doi)]
-                    [:gmd:authority
-                     [:gmd:CI_Citation
-                      [:gmd:title [:gco:CharacterString ""]]
-                      [:gmd:date ""]
-                      [:gmd:citedResponsibleParty
-                       [:gmd:CI_ResponsibleParty
-                        [:gmd:organisationName [:gco:CharacterString authority]]
-                        [:gmd:role
-                         [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                            :codeListValue ""} "authority"]]]]]])
-                  [:gmd:code [:gco:CharacterString (:DOI doi)]]
-                  [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-                  [:gmd:description [:gco:CharacterString "DOI"]]]])
+            (generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
               [:gmd:identifier
                 [:gmd:MD_Identifier

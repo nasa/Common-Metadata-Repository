@@ -1,40 +1,40 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
-    [cheshire.core :as cheshire]
-    [clj-time.core :as t]
-    [clj-time.core :as t]
-    [clj-time.format :as f]
-    [clojure.edn :as edn]
-    [clojure.string :as s]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common.cache :as cache]
-    [cmr.common.concepts :as cs]
-    [cmr.common.config :refer [defconfig]]
-    [cmr.common.date-time-parser :as date]
-    [cmr.common.lifecycle :as lifecycle]
-    [cmr.common.log :as log :refer (debug info warn error)]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.time-keeper :as tk]
-    [cmr.common.util :as util]
-    [cmr.elastic-utils.connect :as es-util]
-    [cmr.indexer.config :as config]
-    [cmr.indexer.data.concept-parser :as cp]
-    [cmr.indexer.data.concepts.deleted-granule :as dg]
-    [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
-    [cmr.indexer.data.index-set :as idx-set]
-    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
-    [cmr.message-queue.config :as qcfg]
-    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
-    [cmr.message-queue.services.queue :as queue]
-    [cmr.transmit.cubby :as cubby]
-    [cmr.transmit.echo.rest :as rest]
-    [cmr.transmit.index-set :as tis]
-    [cmr.transmit.metadata-db :as meta-db]
-    [cmr.transmit.metadata-db2 :as meta-db2]
-    [cmr.umm.umm-core :as umm]))
+   [cheshire.core :as cheshire]
+   [clj-time.core :as t]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.edn :as edn]
+   [clojure.string :as s]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as cs]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.date-time-parser :as date]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.connect :as es-util]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.concept-parser :as cp]
+   [cmr.indexer.data.concepts.deleted-granule :as dg]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
+   [cmr.indexer.data.index-set :as idx-set]
+   [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
+   [cmr.message-queue.config :as qcfg]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.message-queue.services.queue :as queue]
+   [cmr.transmit.cubby :as cubby]
+   [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.index-set :as tis]
+   [cmr.transmit.metadata-db :as meta-db]
+   [cmr.transmit.metadata-db2 :as meta-db2]
+   [cmr.umm.umm-core :as umm]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -100,6 +100,10 @@
                        (assoc concept :variable-associations variable-associations)))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
+
+(defmethod prepare-batch :service
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
@@ -401,17 +405,18 @@
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
-(defn- index-variable
-  "Index the associated variable concept of the given variable concept id."
-  [context variable-concept-id options]
-  (let [var-concept (meta-db/get-latest-concept context variable-concept-id)
-        parsed-var-concept (cp/parse-concept context var-concept)]
-    (index-concept context var-concept parsed-var-concept options)))
+(defn- index-associated-concept
+  "Given a concept id, index the concept to which it refers."
+  [context concept-id options]
+  (let [concept (meta-db/get-latest-concept context concept-id)
+        parsed-concept (cp/parse-concept context concept)]
+    (index-concept context concept parsed-concept options)))
 
 (defn- index-associated-variable
   "Index the associated variable concept of the given variable association concept."
   [context concept options]
-  (index-variable context (get-in concept [:extra-fields :variable-concept-id]) options))
+  (index-associated-concept
+   context (get-in concept [:extra-fields :variable-concept-id]) options))
 
 (defn- reindex-associated-variables
   "Reindex variables associated with the collection"
@@ -419,14 +424,15 @@
   (let [var-associations (meta-db/get-associations-by-collection-concept-id
                           context coll-concept-id coll-revision-id :variable-association)]
     (doseq [association var-associations]
-      (index-variable context (get-in association [:extra-fields :variable-concept-id]) {}))))
+      (index-associated-concept
+       context (get-in association [:extra-fields :variable-concept-id]) {}))))
 
 (defmethod index-concept :tag-association
-  [context concept parsed-concept options]
+  [context concept _parsed-concept options]
   (index-associated-collection context concept options))
 
 (defmethod index-concept :variable-association
-  [context concept parsed-concept options]
+  [context concept _parsed-concept options]
   (index-associated-collection context concept options)
   (index-associated-variable context concept {})
   (index-associated-variable context concept {:all-revisions-index? true}))

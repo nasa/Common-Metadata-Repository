@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.services.provider-service
-  (:require [cmr.metadata-db.data.providers :as providers]
-            [cmr.metadata-db.services.util :as mdb-util]
-            [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.provider-validation :as pv]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.common.util :as util]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as cmsg]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.providers :as providers]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-validation :as pv]
+   [cmr.metadata-db.services.util :as mdb-util]))
 
 (defn create-provider
   "Save a provider and setup concept tables in the database."

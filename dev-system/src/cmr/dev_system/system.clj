@@ -229,7 +229,7 @@
 (defmethod create-ingest-app :in-memory
   [db-type queue-broker]
   (assoc (ingest-system/create-system)
-         :db (ingest-data/create-in-memory-db)
+         :db (ingest-data/create-db)
          :queue-broker queue-broker
          :scheduler (jobs/create-non-running-scheduler)))
 

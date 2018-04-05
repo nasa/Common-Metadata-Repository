@@ -1,6 +1,45 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
+    "UseConstraintsDescriptionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.",
+      "properties": {
+        "Description": {
+          "description": "This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    },
+    "UseConstraintsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+      "properties": {
+        "Description": { 
+          "$ref": "#/definitions/UseConstraintsDescriptionType"
+        },
+        "LicenseUrl": {
+          "description": "This element holds the URL and associated information to access the License on the web. If this element is used the LicenseText element cannot be used.",
+          "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
+        },
+        "LicenseText": {
+          "description": "This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        }
+      },
+      "anyOf": [
+          {"required": ["Description"]},
+          {"required": ["LicenseUrl"]},
+          {"required": ["LicenseText"]}
+      ],
+      "not": {"required": ["LicenseUrl", "LicenseText"]}
+    },
     "DirectoryNameType": {
       "type": "object",
       "additionalProperties": false,
@@ -352,7 +391,7 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
     },
     "DOI": {
-        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. Authority is the registry that registers the DOI. For ESDIS records the value of http://dx.doi.org should be used. While this element is not required, NASA records should include a DOI when it is applicable.",
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections.",
         "$ref": "umm-cmn-json-schema.json#/definitions/DoiType"
     },
     "Abstract": {
@@ -423,7 +462,7 @@
     },
     "UseConstraints": {
       "description": "Designed to protect privacy and/or intellectual property by allowing the author to specify how the collection may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness. Note: Use Constraints describe how the item may be used once access has been granted; and is distinct from Access Constraints, which refers to any constraints in accessing the item.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/UseConstraintsType"
+      "$ref": "#/definitions/UseConstraintsType"
     },
     "AccessConstraints": {
       "description": "Allows the author to constrain access to the collection. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining collection data. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",

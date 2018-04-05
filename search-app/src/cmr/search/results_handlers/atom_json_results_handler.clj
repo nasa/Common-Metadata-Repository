@@ -94,13 +94,14 @@
   [results concept-type reference]
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
-                day-night cloud-cover coordinate-system shapes
+                collection-concept-id day-night cloud-cover coordinate-system shapes
                 orbit orbit-calculated-spatial-domains]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
                        :title title
                        :updated updated
                        :dataset_id dataset-id
+                       :collection_concept_id collection-concept-id
                        :producer_granule_id producer-gran-id
                        :granule_size size
                        :original_format original-format

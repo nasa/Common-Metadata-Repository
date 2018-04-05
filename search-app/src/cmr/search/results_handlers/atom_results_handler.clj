@@ -456,13 +456,14 @@
   [results concept-type reference]
   (let [{:keys [id score title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
-                day-night cloud-cover coordinate-system shapes
+                collection-concept-id day-night cloud-cover coordinate-system shapes
                 orbit orbit-calculated-spatial-domains]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
                (x/element :updated {} updated)
                (x/element :echo:datasetId {} dataset-id)
+               (x/element :echo:collectionConceptId {} collection-concept-id)
                (when producer-gran-id (x/element :echo:producerGranuleId {} producer-gran-id))
                (when size (x/element :echo:granuleSizeMB {} size))
                (x/element :echo:originalFormat {} original-format)

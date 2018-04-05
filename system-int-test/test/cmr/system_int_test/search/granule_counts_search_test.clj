@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util]
+   [cmr.common-app.config :as common-config]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
@@ -380,7 +381,7 @@
                [coll1 coll5])
         tag2 (tags/save-tag
                user1-token
-               (tags/make-tag {:tag-key "org.ceos.wgiss.cwic.granules.prod"})
+               (tags/make-tag {:tag-key (common-config/cwic-tag)})
                [coll2 coll6 coll7 coll8 coll9 coll10 coll11 coll12 coll13 coll14
                 coll15 coll16 coll17])]
 
@@ -427,3 +428,42 @@
                                        {:has_granules_or_cwic false
                                         :page-size 20}
                                        {:snake-kebab? false})))))
+
+(deftest search-collections-has-granules-or-cwic-sort-test
+  (let [coll1 (make-coll 1 m/whole-world nil)
+        coll2 (make-coll 2 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil)
+        coll4 (make-coll 4 m/whole-world nil)
+        coll5 (make-coll 5 m/whole-world nil)
+        coll6 (make-coll 6 m/whole-world nil)
+
+        _ (index/wait-until-indexed)
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+              user1-token
+              (tags/make-tag {:tag-key "NON-CWIC"})
+              [coll1 coll2])
+        tag2 (tags/save-tag
+              user1-token
+              (tags/make-tag {:tag-key (common-config/cwic-tag)})
+              [coll3 coll4])]
+
+    (make-gran coll1 (p/point 0 0) nil)
+    (make-gran coll3 (p/point 0 0) nil)
+    (make-gran coll5 (p/point 0 0) nil)
+
+    (index/wait-until-indexed)
+    ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/full-refresh-collection-granule-aggregate-cache)
+    ;; Reindex all the collections to get the latest information.
+    (ingest/reindex-all-collections)
+    (index/wait-until-indexed)
+    (testing "Sorting by has-granules-or-cwic"
+      (is (d/refs-match-order? [coll1 coll3 coll4 coll5 coll2 coll6]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["has_granules_or_cwic"
+                                                                         "revision-date"]})))
+      (is (d/refs-match-order? [coll2 coll6 coll1 coll3 coll4 coll5]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["-has_granules_or_cwic"
+                                                                         "revision-date"]}))))))

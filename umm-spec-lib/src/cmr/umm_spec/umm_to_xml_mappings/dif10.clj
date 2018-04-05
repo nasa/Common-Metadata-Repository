@@ -185,7 +185,8 @@
           :let [[type subtype] (dif-util/umm-url-type->dif-umm-content-type
                                 (util/remove-nil-keys
                                  (select-keys related-url [:URLContentType :Type :Subtype])))
-                mime-type (get-in related-url [:GetService :MimeType])
+                mime-type (or (get-in related-url [:GetService :MimeType])
+                              (get-in related-url [:GetData :MimeType]))
                 protocol (get-in related-url [:GetService :Protocol])]]
       [:Related_URL
        [:URL_Content_Type
@@ -205,7 +206,7 @@
   determined."
   [c]
   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                          (get coll-progress-mapping (string/upper-case coll-progress)))] 
+                          (get coll-progress-mapping (string/upper-case coll-progress)))]
     [:Dataset_Progress c-progress]))
 
 (defn- dif10-product-level-id
@@ -241,7 +242,8 @@
            [:Persistent_Identifier
             [:Type "DOI"]
             [:Identifier doi]])
-         [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]]))))
+         (when-let [online-resource (:OnlineResource collection-citation)]
+           [:Online_Resource (:Linkage online-resource)])]))))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -319,7 +321,8 @@
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    [:Use_Constraints (:UseConstraints c)]
+    (when-let [description (get-in c [:UseConstraints :Description])]
+      [:Use_Constraints (:Description description)]) 
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (:Distributions c)]

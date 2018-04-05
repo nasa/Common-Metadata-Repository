@@ -15,6 +15,7 @@
   (fn [schema type-name schema-type]
     (cond
       (:type schema-type) (:type schema-type)
+      (:oneOf schema-type) "oneOf"
       (:$ref schema-type) :$ref)))
 
 (defmethod schema-type->generator :default
@@ -36,7 +37,7 @@
   with keys properties, required, and additionalProperties. This is used to handle a normal object
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :required :additionalProperties} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties :not} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
@@ -88,15 +89,15 @@
     (if (= uniq-keys #{:required})
       ;; Using oneOfs with each only specifying :required
       (let [field-sets (mapv (comp set (partial mapv keyword)) (mapv :required one-of))
-              all-required-fields (reduce into field-sets)
-              all-fields (set (keys (:properties schema-type)))
-              one-of-types (for [field-set field-sets
-                                 :let [excluded-fields (set/difference all-required-fields field-set)]]
-                             (-> schema-type
-                                 (update-in [:properties] #(apply dissoc % excluded-fields))
-                                 (update-in [:required] concat field-set)
-                                 (dissoc :oneOf)))]
-          (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of-types)))
+            all-required-fields (reduce into field-sets)
+            all-fields (set (keys (:properties schema-type)))
+            one-of-types (for [field-set field-sets
+                               :let [excluded-fields (set/difference all-required-fields field-set)]]
+                           (-> schema-type
+                               (update-in [:properties] #(apply dissoc % excluded-fields))
+                               (update-in [:required] concat field-set)
+                               (dissoc :oneOf)))]
+        (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of-types)))
       ;; Using oneOf with each specifying the full object mapping
       (do
         ;; These fields aren't supported in schema-type if oneOf is used with other fields
@@ -107,7 +108,7 @@
 
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
+  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf :not} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (object-one-of->generator schema type-name schema-type)
     ;; else
@@ -121,6 +122,10 @@
       (object-like-schema-type->generator
         schema type-name
         (select-keys schema-type [:properties :required :additionalProperties])))))
+
+(defmethod schema-type->generator "oneOf"
+  [schema type-name schema-type]
+  (object-one-of->generator schema type-name schema-type))
 
 (def array-min-items 0)
 (def array-max-items 5)

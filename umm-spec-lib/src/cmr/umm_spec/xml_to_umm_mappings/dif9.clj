@@ -4,12 +4,13 @@
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
     [clojure.string :as string]
-    [cmr.common.util :as common-util]
+    [cmr.common.util :as util]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
@@ -116,9 +117,8 @@
        :IssueIdentification (value-of data-set-citation "Issue_Identification")
        :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
        :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
-       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
-                        :Name "Data Set Citation"
-                        :Description "Data Set Citation"}})))
+       :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")] 
+                         {:Linkage linkage})})))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
@@ -128,8 +128,10 @@
                                          (value-of dsc "Version"))))
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
-     :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
-                                {:DOI (value-of dsc "Dataset_DOI")})))
+     :DOI (first (for [dsc (select doc "DIF/Data_Set_Citation")
+                       :let [doi (value-of dsc "Dataset_DOI")]
+                       :when doi]
+                   {:DOI doi}))
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
@@ -148,7 +150,7 @@
                            coll-progress-mapping
                            doc
                            "/DIF/Data_Set_Progress"
-                           sanitize?) 
+                           sanitize?)
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")
@@ -159,7 +161,13 @@
                              :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
      :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-     :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
+     :UseConstraints (when-let [description (su/truncate
+                                              (value-of doc "/DIF/Use_Constraints")
+                                              su/USECONSTRAINTS_MAX
+                                              sanitize?)]
+                       (umm-coll-models/map->UseConstraintsType
+                         {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                         {:Description description})}))
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
@@ -198,7 +206,8 @@
                                              :Publisher
                                              :Pages
                                              [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
-                                             [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                             [:DOI (when-let [doi (value-of pub-ref "DOI")]
+                                                     {:DOI doi})]
                                              [:OnlineResource (dif-util/parse-publication-reference-online-resouce pub-ref sanitize?)]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")

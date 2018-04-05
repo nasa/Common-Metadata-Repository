@@ -51,6 +51,8 @@
         ;; This is needed for a nested properties def in an allOf
         (:properties type-def) "object"
 
+        (:oneOf type-def) "oneOf"
+
         ;; This will trigger an error
         :else
         (throw (Exception. (str "Unable to resolve ref on " (pr-str type-def)))))))
@@ -104,6 +106,10 @@
 (defmethod resolve-ref "array"
   [schema-name type-def]
   (update-in type-def [:items] (partial resolve-ref schema-name)))
+
+(defmethod resolve-ref "oneOf"
+  [schema-name type-def]
+  (resolve-one-of schema-name type-def))
 
 ;;; No resolution
 
@@ -301,6 +307,13 @@
        " value: "
        val))
 
+(defn- top-level-one-of-definition
+  "Returns true if the definition is a oneOf definition with multiple potential object definitions."
+  [type-definition]
+  (and (:oneOf type-definition)
+       (seq (filter #(= "object" (:type %))
+                    (:oneOf type-definition)))))
+
 (defn coerce
   "Returns x coerced according to a JSON schema type type definition."
   ([schema x]
@@ -308,7 +321,10 @@
   ([schema type-definition x]
    (let [type-name (or (-> type-definition :$ref :type-name)
                        (:root schema))
-         [schema type-definition] (resolve-$refs [schema type-definition])]
+         [schema type-definition] (resolve-$refs [schema type-definition])
+         type-definition (if (top-level-one-of-definition type-definition)
+                           (assoc type-definition :type "oneOf")
+                           type-definition)]
      (case (:type type-definition)
 
        "string"  (case (:format type-definition)
@@ -330,6 +346,9 @@
                    (= "true" x)
                    (boolean x))
 
+       ;; Note that this would not support creating records for any fields within a oneOf that
+       ;; could also potentially be records. Those would just stay as maps instead of records.
+       "oneOf" ((record-ctor schema type-name) x)
 
        ;; The most important job of this function:
        "object"  (let [ctor (record-ctor schema type-name)

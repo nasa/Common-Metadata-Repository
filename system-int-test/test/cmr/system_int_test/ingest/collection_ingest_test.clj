@@ -9,12 +9,12 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.ingest.config :as config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -607,7 +607,7 @@
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata test-context exc/example-collection-record :umm-json)
+  (let [json (umm-spec/generate-metadata test-context exc/curr-ingest-ver-example-collection-record :umm-json)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
@@ -632,7 +632,7 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc exc/example-collection-record
+    (let [json (umm-spec/generate-metadata test-context (assoc exc/curr-ingest-ver-example-collection-record
                                                          :DataDates
                                                          [{:Date "invalid date"
                                                            :Type "CREATE"}])
@@ -658,15 +658,15 @@
     (is (= 201 (:status response)))))
 
 (deftest ingest-higher-than-accepted-umm-version
-  (let [accepted-version (config/collection-umm-version)
-        _ (side/eval-form `(config/set-collection-umm-version! "1.8"))
+  (let [accepted-version (common-config/collection-umm-version)
+        _ (side/eval-form `(common-config/set-collection-umm-version! "1.8"))
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
                   :format       "application/vnd.nasa.cmr.umm+json;version=1.9"
                   :metadata     "{\"foo\":\"bar\"}"}
         response (ingest/ingest-concept coll-map {:accept-format :json})
-        _ (side/eval-form `(config/set-collection-umm-version! ~accepted-version))]
+        _ (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))]
     (is (= 400 (:status response)))
     (is (= [(str "UMM JSON version 1.8 or lower can be ingested. Any version above that is considered in-development and cannot be ingested at this time.")]
            (:errors response)))))

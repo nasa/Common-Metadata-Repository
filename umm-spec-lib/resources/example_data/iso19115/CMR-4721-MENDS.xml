@@ -1,0 +1,697 @@
+<gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
+    xmlns:gco="http://www.isotc211.org/2005/gco"
+    xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:gmi="http://www.isotc211.org/2005/gmi"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:gmx="http://www.isotc211.org/2005/gmx"
+    xmlns:gsr="http://www.isotc211.org/2005/gsr"
+    xmlns:gss="http://www.isotc211.org/2005/gss"
+    xmlns:gts="http://www.isotc211.org/2005/gts"
+    xmlns:srv="http://www.isotc211.org/2005/srv"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd http://www.isotc211.org/2005/gco https://cdn.earthdata.nasa.gov/iso/gco/1.0/gco.xsd http://www.isotc211.org/2005/gmd https://cdn.earthdata.nasa.gov/iso/gmd/1.0/gmd.xsd http://www.isotc211.org/2005/gmi https://cdn.earthdata.nasa.gov/iso/gmi/1.0/gmi.xsd http://www.opengis.net/gml/3.2 https://cdn.earthdata.nasa.gov/iso/gml/1.0/gml.xsd http://www.isotc211.org/2005/gmx https://cdn.earthdata.nasa.gov/iso/gmx/1.0/gmx.xsd http://www.isotc211.org/2005/gsr https://cdn.earthdata.nasa.gov/iso/gsr/1.0/gsr.xsd http://www.isotc211.org/2005/gss https://cdn.earthdata.nasa.gov/iso/gss/1.0/gss.xsd http://www.isotc211.org/2005/gts https://cdn.earthdata.nasa.gov/iso/gts/1.0/gts.xsd http://www.isotc211.org/2005/srv https://cdn.earthdata.nasa.gov/iso/srv/1.0/srv.xsd">
+    <gmd:fileIdentifier>
+        <gco:CharacterString>UMM JSON 4569</gco:CharacterString>
+    </gmd:fileIdentifier>
+    <gmd:language>
+        <gco:CharacterString>eng</gco:CharacterString>
+    </gmd:language>
+    <gmd:characterSet>
+        <gmd:MD_CharacterSetCode
+            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+    </gmd:characterSet>
+    <gmd:hierarchyLevel>
+        <gmd:MD_ScopeCode
+            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+    </gmd:hierarchyLevel>
+    <gmd:contact>
+        <gmd:CI_ResponsibleParty>
+            <gmd:organisationName>
+                <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+            </gmd:organisationName>
+            <gmd:contactInfo>
+                <gmd:CI_Contact>
+                    <gmd:phone>
+                        <gmd:CI_Telephone>
+                            <gmd:voice>
+                                <gco:CharacterString>1 303 492 6199 x</gco:CharacterString>
+                            </gmd:voice>
+                            <gmd:facsimile>
+                                <gco:CharacterString>1 303 492 2468 x</gco:CharacterString>
+                            </gmd:facsimile>
+                        </gmd:CI_Telephone>
+                    </gmd:phone>
+                    <gmd:address>
+                        <gmd:CI_Address>
+                            <gmd:electronicMailAddress>
+                                <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                            </gmd:electronicMailAddress>
+                        </gmd:CI_Address>
+                    </gmd:address>
+                    <gmd:onlineResource>
+                        <gmd:CI_OnlineResource>
+                            <gmd:linkage>
+                                <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                            </gmd:linkage>
+                            <gmd:protocol>
+                                <gco:CharacterString>http</gco:CharacterString>
+                            </gmd:protocol>
+                            <gmd:description gco:nilReason="missing"/>
+                            <gmd:function>
+                                <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                            </gmd:function>
+                        </gmd:CI_OnlineResource>
+                    </gmd:onlineResource>
+                </gmd:CI_Contact>
+            </gmd:contactInfo>
+            <gmd:role>
+                <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+            </gmd:role>
+        </gmd:CI_ResponsibleParty>
+    </gmd:contact>
+    <gmd:contact>
+        <gmd:CI_ResponsibleParty>
+            <gmd:organisationName>
+                <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+            </gmd:organisationName>
+            <gmd:role>
+                <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+            </gmd:role>
+        </gmd:CI_ResponsibleParty>
+    </gmd:contact>
+    <gmd:dateStamp>
+        <gco:DateTime>1970-01-01T00:00:00.000Z</gco:DateTime>
+    </gmd:dateStamp>
+    <gmd:metadataStandardName>
+        <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data</gco:CharacterString>
+    </gmd:metadataStandardName>
+    <gmd:metadataStandardVersion>
+        <gco:CharacterString>ISO 19115-2:2009(E)</gco:CharacterString>
+    </gmd:metadataStandardVersion>
+    <gmd:identificationInfo>
+        <gmd:MD_DataIdentification>
+            <gmd:citation>
+                <gmd:CI_Citation>
+                    <gmd:title>
+                        <gco:CharacterString>UMM JSON 4569</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date>
+                        <gmd:CI_Date>
+                            <gmd:date>
+                                <gco:DateTime>1970-01-01T00:00:00</gco:DateTime>
+                            </gmd:date>
+                            <gmd:dateType>
+                                <gmd:CI_DateTypeCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                            </gmd:dateType>
+                        </gmd:CI_Date>
+                    </gmd:date>
+                    <gmd:edition>
+                        <gco:CharacterString>3</gco:CharacterString>
+                    </gmd:edition>
+                    <gmd:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>UMM_JSON 4569</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:version>
+                                <gco:CharacterString>3</gco:CharacterString>
+                            </gmd:version>
+                        </gmd:MD_Identifier>
+                    </gmd:identifier>
+                    <gmd:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code gco:nilReason="inapplicable"/>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Explanation: This is the explanation.</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmd:identifier>
+                </gmd:CI_Citation>
+            </gmd:citation>
+            <gmd:abstract>
+                <gco:CharacterString>UMM JSON Example. Version Description: </gco:CharacterString>
+            </gmd:abstract>
+            <gmd:purpose gco:nilReason="missing"/>
+            <gmd:status>
+                <gmd:MD_ProgressCode
+                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="completed">completed</gmd:MD_ProgressCode>
+            </gmd:status>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:phone>
+                                <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199 x</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468 x</gco:CharacterString>
+                                    </gmd:facsimile>
+                                </gmd:CI_Telephone>
+                            </gmd:phone>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                            <gmd:onlineResource>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:protocol>
+                                    <gco:CharacterString>http</gco:CharacterString>
+                                    </gmd:protocol>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:function>
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                                    </gmd:function>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onlineResource>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:phone>
+                                <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199 x</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468 x</gco:CharacterString>
+                                    </gmd:facsimile>
+                                </gmd:CI_Telephone>
+                            </gmd:phone>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                            <gmd:onlineResource>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:protocol>
+                                    <gco:CharacterString>http</gco:CharacterString>
+                                    </gmd:protocol>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:function>
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                                    </gmd:function>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onlineResource>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>ShortName</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:onlineResource>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:protocol>
+                                    <gco:CharacterString>http</gco:CharacterString>
+                                    </gmd:protocol>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:function>
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                                    </gmd:function>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onlineResource>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="processor">processor</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:individualName>
+                        <gco:CharacterString>Smith</gco:CharacterString>
+                    </gmd:individualName>
+                    <gmd:organisationName>
+                        <gco:CharacterString>ShortName</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>earth science services 1 &gt; data analysis and visualization &gt; calibration/validation &gt; NONE &gt; NONE &gt; NONE &gt; NONE</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>earth science services 2 &gt; data analysis and visualization &gt; calibration/validation &gt; NONE &gt; NONE &gt; NONE &gt; NONE</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>CONTINENT &gt; ASIA &gt; WESTERN ASIA &gt; MIDDLE EAST &gt; GAZA STRIP &gt; NONE</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>CONTINENT &gt; GAZA &gt; WESTERN ASIA &gt; NONE &gt; NONE &gt; NONE</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="place">place</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>a340-600-1 &gt; airbus a340-600-1</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>a340-600-2 &gt; airbus a340-600</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>a340-600-3 &gt; airbus a340-600</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="platform">platform</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>atm &gt; airborne topographic mapper</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>atm &gt; airborne topographic mapper</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="instrument">instrument</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+            </gmd:language>
+            <gmd:extent>
+                <gmd:EX_Extent id="boundingExtent">
+                    <gmd:description>
+                        <gco:CharacterString>SpatialGranuleSpatialRepresentation=NO_SPATIAL</gco:CharacterString>
+                    </gmd:description>
+                    <gmd:temporalElement>
+                        <gmd:EX_TemporalExtent>
+                            <gmd:extent>
+                                <gml:TimePeriod gml:id="d24313c36-3b87-4254-9327-1c85cbec394b">
+                                    <gml:beginPosition>2001-01-01T00:00:00.000Z</gml:beginPosition>
+                                    <gml:endPosition>2002-01-01T00:00:00.000Z</gml:endPosition>
+                                </gml:TimePeriod>
+                            </gmd:extent>
+                        </gmd:EX_TemporalExtent>
+                    </gmd:temporalElement>
+                    <gmd:temporalElement>
+                        <gmd:EX_TemporalExtent>
+                            <gmd:extent>
+                                <gml:TimePeriod gml:id="deec3b411-22bf-46ef-b030-f1b5aed85b51">
+                                    <gml:beginPosition>2003-01-01T00:00:00.000Z</gml:beginPosition>
+                                    <gml:endPosition>2004-01-01T00:00:00.000Z</gml:endPosition>
+                                </gml:TimePeriod>
+                            </gmd:extent>
+                        </gmd:EX_TemporalExtent>
+                    </gmd:temporalElement>
+                </gmd:EX_Extent>
+            </gmd:extent>
+            <gmd:processingLevel>
+                <gmd:MD_Identifier>
+                    <gmd:code>
+                        <gco:CharacterString>3</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                        <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                    </gmd:codeSpace>
+                    <gmd:description>
+                        <gco:CharacterString>Processing level description</gco:CharacterString>
+                    </gmd:description>
+                </gmd:MD_Identifier>
+            </gmd:processingLevel>
+        </gmd:MD_DataIdentification>
+    </gmd:identificationInfo>
+    <gmd:contentInfo>
+        <gmd:MD_ImageDescription>
+            <gmd:attributeDescription/>
+            <gmd:contentType/>
+            <gmd:processingLevelCode>
+                <gmd:MD_Identifier>
+                    <gmd:code>
+                        <gco:CharacterString>3</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                        <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                    </gmd:codeSpace>
+                    <gmd:description>
+                        <gco:CharacterString>Processing level description</gco:CharacterString>
+                    </gmd:description>
+                </gmd:MD_Identifier>
+            </gmd:processingLevelCode>
+        </gmd:MD_ImageDescription>
+    </gmd:contentInfo>
+    <gmd:distributionInfo>
+        <gmd:MD_Distribution>
+            <gmd:distributor>
+                <gmd:MD_Distributor>
+                    <gmd:distributorContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>ShortName &amp;gt; Hydrogeophysics Group, Aarhus University </gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199 x</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468 x</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:protocol>
+                                    <gco:CharacterString>http</gco:CharacterString>
+                                    </gmd:protocol>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode codeList="" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:distributorContact>
+                </gmd:MD_Distributor>
+            </gmd:distributor>
+        </gmd:MD_Distribution>
+    </gmd:distributionInfo>
+    <gmd:dataQualityInfo>
+        <gmd:DQ_DataQuality>
+            <gmd:scope>
+                <gmd:DQ_Scope>
+                    <gmd:level>
+                        <gmd:MD_ScopeCode
+                            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                    </gmd:level>
+                </gmd:DQ_Scope>
+            </gmd:scope>
+            <gmd:report>
+                <gmd:DQ_AccuracyOfATimeMeasurement>
+                    <gmd:measureIdentification>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>PrecisionOfSeconds</gco:CharacterString>
+                            </gmd:code>
+                        </gmd:MD_Identifier>
+                    </gmd:measureIdentification>
+                    <gmd:result>
+                        <gmd:DQ_QuantitativeResult>
+                            <gmd:valueUnit/>
+                            <gmd:value>
+                                <gco:Record xsi:type="gco:Real_PropertyType">
+                                    <gco:Real>3</gco:Real>
+                                </gco:Record>
+                            </gmd:value>
+                        </gmd:DQ_QuantitativeResult>
+                    </gmd:result>
+                </gmd:DQ_AccuracyOfATimeMeasurement>
+            </gmd:report>
+            <gmd:lineage>
+                <gmd:LI_Lineage>
+                    <gmd:processStep>
+                        <gmi:LE_ProcessStep>
+                            <gmd:description gco:nilReason="unknown"/>
+                        </gmi:LE_ProcessStep>
+                    </gmd:processStep>
+                    <gmd:processStep>
+                        <gmd:LI_ProcessStep>
+                            <gmd:description gco:nilReason="missing"/>
+                            <gmd:processor>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>ShortName</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:protocol>
+                                    <gco:CharacterString>http</gco:CharacterString>
+                                    </gmd:protocol>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode codeList="" codeListValue="processor">processor</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:processor>
+                        </gmd:LI_ProcessStep>
+                    </gmd:processStep>
+                </gmd:LI_Lineage>
+            </gmd:lineage>
+        </gmd:DQ_DataQuality>
+    </gmd:dataQualityInfo>
+    <gmi:acquisitionInformation>
+        <gmi:MI_AcquisitionInformation>
+            <gmi:instrument>
+                <eos:EOS_Instrument id="dabef3b95-72aa-439f-94ce-fb501968216c">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>atm</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.instrumentshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>airborne topographic mapper</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:type>
+                        <gco:CharacterString>testing</gco:CharacterString>
+                    </gmi:type>
+                    <gmi:mountedOn xlink:href="#d221cdac2-718c-4e4d-9746-78f694eba602"/>
+                    <eos:otherProperty>
+                        <gco:Record>
+                            <eos:AdditionalAttributes>
+                                <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="instrumentInformation">instrumentInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>OperationalMode</gco:CharacterString>
+                                    </eos:name>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>mode1</gco:CharacterString>
+                                    </eos:value>
+                                </eos:AdditionalAttribute>
+                                <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="instrumentInformation">instrumentInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>OperationalMode</gco:CharacterString>
+                                    </eos:name>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>mode2</gco:CharacterString>
+                                    </eos:value>
+                                </eos:AdditionalAttribute>
+                            </eos:AdditionalAttributes>
+                        </gco:Record>
+                    </eos:otherProperty>
+                </eos:EOS_Instrument>
+            </gmi:instrument>
+            <gmi:instrument>
+                <eos:EOS_Instrument id="d1ac762bf-8490-4a0f-8dea-14562f319caf">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>atm</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.instrumentshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>airborne topographic mapper</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:type>
+                        <gco:CharacterString>Not provided</gco:CharacterString>
+                    </gmi:type>
+                    <gmi:mountedOn xlink:href="#d2ea8e273-0e14-4cdb-bc03-18de8b0d46e0"/>
+                </eos:EOS_Instrument>
+            </gmi:instrument>
+            <gmi:platform>
+                <eos:EOS_Platform id="dd024d60d-29ef-40d0-84e2-3de82643d4ba">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>a340-600-1</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>airbus a340-600-1</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:description>
+                        <gco:CharacterString>Aircraft1</gco:CharacterString>
+                    </gmi:description>
+                    <gmi:instrument gco:nilReason="inapplicable"/>
+                </eos:EOS_Platform>
+            </gmi:platform>
+            <gmi:platform>
+                <eos:EOS_Platform id="d221cdac2-718c-4e4d-9746-78f694eba602">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>a340-600-2</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>airbus a340-600</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:description>
+                        <gco:CharacterString>Aircraft</gco:CharacterString>
+                    </gmi:description>
+                    <gmi:instrument xlink:href="#dabef3b95-72aa-439f-94ce-fb501968216c"/>
+                </eos:EOS_Platform>
+            </gmi:platform>
+            <gmi:platform>
+                <eos:EOS_Platform id="d2ea8e273-0e14-4cdb-bc03-18de8b0d46e0">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>a340-600-3</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>airbus a340-600</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:description>
+                        <gco:CharacterString>Aircraft</gco:CharacterString>
+                    </gmi:description>
+                    <gmi:instrument xlink:href="#d1ac762bf-8490-4a0f-8dea-14562f319caf"/>
+                </eos:EOS_Platform>
+            </gmi:platform>
+        </gmi:MI_AcquisitionInformation>
+    </gmi:acquisitionInformation>
+</gmi:MI_Metadata>

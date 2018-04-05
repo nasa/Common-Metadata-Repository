@@ -13,6 +13,13 @@
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
 
+(defn expected-use-constraints
+  "Returns the expected UseConstraints."
+  [use-constraints]
+  (if-let [linkage (get-in use-constraints [:LicenseUrl :Linkage])]
+    (assoc use-constraints :LicenseUrl (cmn/map->OnlineResourceType {:Linkage linkage}))
+    use-constraints))
+
 (defn- create-contact-person
   "Creates a contact person given the info of a creator, editor and publisher"
   [person]
@@ -92,3 +99,13 @@
        (map iso-topic-categories/xml->umm-iso-topic-category-map)
        (remove nil?)
        seq))
+
+(defn expected-doi
+  "Returns the expected DOI."
+  [doi]
+  (let [explanation (when (:Explanation doi)
+                      (string/trim (:Explanation doi)))
+        updated-doi (util/remove-nil-keys (assoc doi :Explanation explanation))]
+    (if (seq updated-doi)
+      (cmn/map->DoiType updated-doi)
+      (cmn/map->DoiType {:MissingReason "Not Applicable"}))))

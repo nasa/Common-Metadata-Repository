@@ -31,15 +31,11 @@
         keyword-values (keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)]
     (if deleted
-      ;; This is only called by re-indexing (bulk indexing)
-      ;; Regular deleted services would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
        :revision-id revision-id
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
-       :long-name long-name 
-       :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
@@ -52,7 +48,7 @@
        :deleted deleted
        :service-name service-name
        :service-name.lowercase (string/lower-case service-name)
-       :long-name long-name 
+       :long-name long-name
        :long-name.lowercase (string/lower-case long-name)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)

@@ -51,8 +51,15 @@
  (when online-resource
   (-> online-resource
       (update :Linkage #(url/format-url % true))
-      (update :Name #(su/with-default % true))
-      (update :Description #(str (su/with-default % true) " PublicationReference:")))))
+      (assoc :MimeType nil)
+      (update :Description #(when % (str  %  " PublicationReference:"))))))
+
+(defn- expected-doi-in-publication-reference
+  "Returns the expected DOI field in a publication reference."
+  [doi]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :Explanation :MissingReason))]
+    (when (seq updated-doi)
+      (cmn/map->DoiType updated-doi))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
@@ -61,7 +68,7 @@
              :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :PublicationPlace nil)
-             (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+             (update-in [:DOI] expected-doi-in-publication-reference)
              (update-in [:PublicationDate] conversion-util/date-time->date)
              (update :ISBN su/format-isbn)
              (update :OnlineResource expected-online-resource)))))
@@ -80,6 +87,19 @@
           (-> related-url
               (update :URL #(url/format-url % true)))))))
 
+(defn- expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (and (= "DistributionURL" (:URLContentType related-url))
+           (= "GET DATA" (:Type related-url)))
+    (if (nil? (:GetData related-url))
+      (assoc related-url :GetData (cmn/map->GetDataType
+                                   {:Format su/not-provided
+                                    :Size 0.0
+                                    :Unit "KB"}))
+      related-url)
+    related-url))
+
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
   [related-url]
@@ -89,12 +109,13 @@
       (if (and (= "DistributionURL" (:URLContentType related-url))
                (= "GET SERVICE" (:Type related-url)))
           (if (nil? (:GetService related-url))
-            (assoc related-url :GetService {:MimeType su/not-provided
-                                            :Protocol su/not-provided
-                                            :FullName su/not-provided
-                                            :DataID su/not-provided
-                                            :DataType su/not-provided
-                                            :URI URI})
+            (assoc related-url :GetService (cmn/map->GetServiceType
+                                              {:MimeType su/not-provided
+                                               :Protocol su/not-provided
+                                               :FullName su/not-provided
+                                               :DataID su/not-provided
+                                               :DataType su/not-provided
+                                               :URI URI}))
             (assoc-in related-url [:GetService :URI] URI))
           (dissoc related-url :GetService))))
 
@@ -107,10 +128,12 @@
    (seq (for [related-url
               (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
-          (-> related-url
-              (dissoc :FileSize :MimeType :GetData)
-              expected-related-url-get-service
-              (update :Description #(when % (string/trim %))))))))
+          (cmn/map->RelatedUrlType
+           (-> related-url
+               (dissoc :FileSize :MimeType)
+               expected-related-url-get-service
+               expected-related-url-get-data
+               (update :Description #(when % (string/trim %)))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -321,7 +344,12 @@
   [collection-citations]
   (if collection-citations
     (conj [] (cmn/map->ResourceCitationType
-               (iso-shared/trim-collection-citation (first collection-citations))))
+               (-> collection-citations
+                   first
+                   iso-shared/trim-collection-citation
+                   (as-> cc (if (:OnlineResource cc)
+                              (update cc :OnlineResource #(assoc % :MimeType nil))
+                              cc))))) 
     [{}]))
 
 (defn umm-expected-conversion-iso19115
@@ -362,4 +390,6 @@
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
+      (update :DOI iso-shared/expected-doi)
+      (update :UseConstraints iso-shared/expected-use-constraints)  
       js/parse-umm-c))

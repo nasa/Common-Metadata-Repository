@@ -254,18 +254,13 @@
   "Adds OnlineResource Name and Description to CollectionCitations"
   [collection-citations version]
   (if (empty? collection-citations)
-    [{:Version version
-      :OnlineResource {:Linkage su/not-provided-url
-                       :Name "Data Set Citation"
-                       :Description "Data Set Citation"}}]
-    (for [collection-citation collection-citations
-          :let [linkage (get-in collection-citation [:OnlineResource :Linkage])]]
-      (-> collection-citation
-          (assoc-in [:OnlineResource :Name] "Data Set Citation")
-          (assoc-in [:OnlineResource :Description] "Data Set Citation")
-          (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
-          (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol)
-          (assoc :Version version)))))
+    [{:Version version}]
+    (for [collection-citation collection-citations]
+      (if (:OnlineResource collection-citation)
+        (assoc (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
+          :Version version)
+        (assoc collection-citation 
+          :Version version)))))
 
 (defn umm-expected-conversion-dif9
   [umm-coll]
@@ -303,4 +298,7 @@
         (update :DataLanguage conversion-util/dif-expected-data-language)
         (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
         (update-in [:CollectionCitations] expected-collection-citations (:Version umm-coll))
+        (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
+                                 (umm-c/map->UseConstraintsType
+                                   {:Description description})))
         js/parse-umm-c)))

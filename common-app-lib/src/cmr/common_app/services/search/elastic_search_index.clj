@@ -122,7 +122,7 @@
 (defmethod send-query-to-elastic :default
   [context query]
   (let [elastic-query (q2e/query->elastic query)
-        {sort-params :sort-params
+        {sort-params :sort
          aggregations :aggs
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)

@@ -14,7 +14,7 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-      "b45096f"))
+      "038b76b94f2"))
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -73,7 +73,8 @@
                             ~cmr-metadata-preview-repo
                             ~metadata-preview-commit]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
-            "install!" ["do" ["clean-gems" "install-gems" "install" "clean"]]
+            "install" ["do" "clean-gems," "install-gems," "install," "clean"]
+            "install!" "install"
             "internal-install!" ["with-profile" "+internal-repos" "do"
                                   ["clean-gems" "install-gems" "install" "clean"]]
             ;; Alias to test2junit for consistency with lein-test-out

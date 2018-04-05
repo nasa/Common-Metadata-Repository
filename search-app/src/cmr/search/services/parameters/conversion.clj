@@ -338,7 +338,8 @@
   (update query-attribs :sort-keys
           (fn [sort-keys]
             (seq (for [{:keys [field order] :as sort-key} sort-keys]
-                   (if (= field :has-granules)
+                   (if (or (= field :has-granules)
+                           (= field :has-granules-or-cwic))
                      {:field field :order (if (= order :asc) :desc :asc)}
                      sort-key))))))
 
@@ -405,6 +406,13 @@
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                  :variable params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+
+(defmethod common-params/parse-query-level-params :service
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :service params)]
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 

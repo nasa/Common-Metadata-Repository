@@ -10,6 +10,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -193,9 +194,8 @@
         :IssueIdentification (value-of data-set-citation "Issue_Identification")
         :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
         :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
-        :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
-                         :Name "Dataset Citation"
-                         :Description "Dataset Citation"}}))))
+        :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")]
+                          {:Linkage linkage})}))))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
@@ -232,7 +232,13 @@
    :DirectoryNames (dif-util/parse-idn-node doc)
    :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
+   :UseConstraints (when-let [description (su/truncate
+                                            (value-of doc "/DIF/Use_Constraints")
+                                            su/USECONSTRAINTS_MAX
+                                            sanitize?)]
+                     (umm-coll-models/map->UseConstraintsType 
+                       {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                       {:Description description})}))
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")

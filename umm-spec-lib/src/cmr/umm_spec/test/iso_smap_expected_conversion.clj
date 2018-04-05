@@ -25,6 +25,19 @@
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
 
+(defn- expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (and (= "DistributionURL" (:URLContentType related-url))
+           (= "GET DATA" (:Type related-url)))
+    (if (nil? (:GetData related-url))
+      (assoc related-url :GetData (cmn/map->GetDataType
+                                   {:Format su/not-provided
+                                    :Size 0.0
+                                    :Unit "KB"}))
+      related-url)
+    related-url))
+
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
   [related-url]
@@ -34,7 +47,7 @@
       (if (and (= "DistributionURL" (:URLContentType related-url))
                (= "GET SERVICE" (:Type related-url)))
           (if (nil? (:GetService related-url))
-            (assoc related-url :GetService (map->GetServiceType
+            (assoc related-url :GetService (cmn/map->GetServiceType
                                               {:MimeType su/not-provided
                                                :Protocol su/not-provided
                                                :FullName su/not-provided
@@ -53,8 +66,8 @@
          (-> related-url
              (update :URL #(url/format-url % true))
              (update :Description #(when % (string/trim %)))
-             (expected-related-url-get-service)
-             (assoc :GetData nil)))))
+             expected-related-url-get-data
+             expected-related-url-get-service))))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
@@ -285,8 +298,13 @@
   [collection-citations]
   (if collection-citations
     (conj [] (cmn/map->ResourceCitationType
-               (iso-shared/trim-collection-citation
-                 (update (first collection-citations) :Title #(if % % su/not-provided)))))
+               (-> collection-citations
+                   first
+                   (update :Title #(if % % su/not-provided))
+                   iso-shared/trim-collection-citation
+                   (as-> cc (if (:OnlineResource cc)
+                              (update cc :OnlineResource #(assoc % :MimeType nil))
+                              cc)))))
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
 
 (defn umm-expected-conversion-iso-smap
@@ -312,7 +330,7 @@
                                  (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
                                "Technical Contact"))
       (update :CollectionCitations expected-collection-citations)
-      (assoc :UseConstraints nil)
+      (update :UseConstraints iso-shared/expected-use-constraints) 
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
       (assoc :TemporalKeywords nil)
@@ -327,4 +345,5 @@
       (assoc :MetadataDates nil)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
-      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
+      (update :DOI iso-shared/expected-doi)))

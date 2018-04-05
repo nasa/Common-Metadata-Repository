@@ -306,6 +306,10 @@
                 "description": "The format of the data.",
                 "$ref": "#/definitions/GetDataTypeFormatEnum"
             },
+            "MimeType": {
+                "description": "The mime type of the service.",
+                "$ref": "#/definitions/URLMimeTypeEnum"
+            },
             "Size": {
                 "description": "The size of the data.",
                "type": "number"
@@ -335,6 +339,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+            "Format": {
+                "description": "The format of the data.",
+                "$ref": "#/definitions/GetDataTypeFormatEnum"
+            },
             "MimeType": {
                 "description": "The mime type of the service.",
                 "$ref": "#/definitions/URLMimeTypeEnum"
@@ -415,9 +423,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
+        },
+        "MimeType": {
+          "description": "The mime type of the online resource.",
+          "$ref": "#/definitions/URLMimeTypeEnum"
         }
       },
-      "required": ["Linkage", "Name", "Description"]
+      "required": ["Linkage"]
     },
     "FileSizeType": {
       "description": "Represents a data file size.",
@@ -509,22 +521,42 @@
       }
     },
     "DoiType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. Authority is the registry that registers the DOI. For ESDIS records the value of http://dx.doi.org should be used. While this element is not required, NASA records should include a DOI when it is applicable.",
-      "properties": {
-        "Authority": {
-          "description": "Authority is the registry that registers the DOI. For ESDIS records the value of http://dx.doi.org should be used.",
-          "$ref": "#/definitions/AuthorityType"
+      "oneOf": [{
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.",
+        "properties": {
+          "Authority": {
+            "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+            "$ref": "#/definitions/AuthorityType"
+          },
+          "DOI": {
+            "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
         },
-        "DOI": {
-          "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. While this element is not required, NASA records should include a DOI when it is applicable.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["DOI"]
+        "required": ["DOI"]
+      }, {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element stores the fact that the DOI (Digital Object Identifier) is not applicable.",
+        "properties": {
+          "MissingReason": {
+            "description": "This element stores the fact that a DOI (Digital Object Identifier) is not applicable for this record.",
+            "type": "string",
+            "enum": ["Not Applicable"]
+          },
+          "Explanation": {
+            "description": "This element describes the reason the DOI is not applicable.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": ["MissingReason"]
+      }]
     },
     "AccessConstraintsType": {
       "type": "object",
@@ -1453,12 +1485,6 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 12000
-    },
-    "UseConstraintsType": {
-      "description": "Free-text information about how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 20000
     },
     "MetadataAssociateTypeEnum": {
       "description": "The set of supported values for MetadataAssociationType.Type.",

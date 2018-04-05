@@ -30,7 +30,6 @@
         find-var
         var-get)))
 
-
 (def ^:private MAX_LINE_SIZE
   "Defines the maximum line size for Clojure files."
   100)
@@ -111,7 +110,7 @@
   "Converts a JSON Schema definition into a record description if it's appropriate to have a record
   for it. Returns nil otherwise."
   [type-name type-def]
-  (when (= "object" (:type type-def))
+  (when (or (= "object" (:type type-def)) (:oneOf type-def))
     (let [merged-properties (apply merge (:properties type-def)
                                    (map :properties (:oneOf type-def)))]
       {:record-name (name type-name)
@@ -197,5 +196,3 @@
   (generated-file-warning js/umm-c-schema-file)
 
   )
-
-
