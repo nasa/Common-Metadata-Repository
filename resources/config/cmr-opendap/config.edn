@@ -1,4 +1,8 @@
-{:httpd
+{:caching
+  {:type :ttl
+   :ttl {:minutes 15}
+   :init {}}
+ :httpd
   {:port 3012
    :docroot "public"}
  :logging

@@ -16,13 +16,28 @@
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn http-port
+(defn cache-init
   [system]
-  (get-in (get-cfg system) [:httpd :port]))
+  (get-in (get-cfg system) [:caching :init]))
+
+(defn cache-ttl
+  [system]
+  (* (get-in (get-cfg system) [:caching :ttl :minutes]) ; minutes
+     60 ; seconds
+     1000 ; milliseconds
+     ))
+
+(defn cache-type
+  [system]
+  (get-in (get-cfg system) [:caching :type]))
 
 (defn http-docroot
   [system]
   (get-in (get-cfg system) [:httpd :docroot]))
+
+(defn http-port
+  [system]
+  (get-in (get-cfg system) [:httpd :port]))
 
 (defn log-level
   [system]
