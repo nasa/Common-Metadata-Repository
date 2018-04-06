@@ -1,5 +1,6 @@
 (ns cmr.opendap.components.core
   (:require
+    [cmr.opendap.components.caching :as caching]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.httpd :as httpd]
     [cmr.opendap.components.logging :as logging]
@@ -17,15 +18,20 @@
              (logging/create-component)
              [:config])})
 
+(def cache
+  {:caching (component/using
+             (caching/create-component)
+             [:config :logging])})
+
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging])})
+           [:config :logging :caching])})
 
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config])})
+           [:config :caching])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,6 +48,7 @@
   (component/map->SystemMap
     (merge cfg
            log
+           cache
            httpd)))
 
 (defn initialize-without-logging
