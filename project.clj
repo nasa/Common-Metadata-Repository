@@ -32,6 +32,7 @@
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
+    [org.clojure/core.cache "0.7.1"]
     [ring/ring-core "1.6.3"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
