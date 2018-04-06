@@ -20,7 +20,7 @@
   [httpd-component]
   (-> httpd-component
       rest-api-routes
-      ring/router
+      (ring/router {:data {:middleware [middleware/wrap-enforce-roles]}})
       (ring/ring-handler handler/fallback)
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
       (middleware/wrap-cors)))

@@ -5,8 +5,6 @@
   handed off to the relevant request handler function."
   (:require
    [cmr.opendap.components.config :as config]
-   ;; XXX create connection pool manager component
-   ;; [cmr.opendap.components.httpc :as httpc]
    [cmr.opendap.health :as health]
    [cmr.opendap.rest.handler.collection :as collection-handler]
    [cmr.opendap.rest.handler.core :as core-handler]
@@ -19,7 +17,6 @@
 
 (defn ous
   [httpd-component]
-  ;; (let [conn-mgr (httpc/get-connection-manager httpd-component)]
   (let [conn-mgr :not-implemented]
     [["/opendap/ous/collections" {
       :post (collection-handler/batch-generate conn-mgr)
@@ -46,7 +43,8 @@
 (defn admin
   [httpd-component]
   [["/health" {
-    :get (core-handler/health httpd-component)
+    :get {:handler (core-handler/health httpd-component)
+          :roles #{:admin}}
     :options core-handler/ok}]
    ["/ping" {
     :get core-handler/ping
