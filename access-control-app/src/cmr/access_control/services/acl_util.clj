@@ -124,7 +124,8 @@
    entry-titles, return the ACL such that both are unioned with each other."
   [context acl]
   (if-let [collection-identifier (get-in acl [:catalog-item-identity :collection-identifier])]
-    (let [entry-titles (:entry-titles collection-identifier)
+    (let [start-time (System/currentTimeMillis)
+          entry-titles (:entry-titles collection-identifier)
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
@@ -139,7 +140,11 @@
           collection-identifier (-> collection-identifier
                                     (assoc :entry-titles entry-titles)
                                     (assoc :concept-ids synced-concept-ids)
-                                    util/remove-nil-keys)]
+                                    util/remove-nil-keys)
+          total-took (- (System/currentTimeMillis) start-time)]
+      (info (format "ACL entry-titles/concept-ids sync finished, %s entries synced in %d ms."
+                    (count entry-titles)
+                    total-took))
       (when (seq dropped-concept-ids)
         (warn (format "Dropping non existent collection concept-ids from collection identifier: %s"
                       (vec dropped-concept-ids))))
