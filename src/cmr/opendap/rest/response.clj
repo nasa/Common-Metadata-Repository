@@ -30,7 +30,7 @@
   [_request]
   (response/content-type
    (response/not-found "Not Found")
-   "plain/text"))
+   "text/plain"))
 
 (defn cors
   [request response]
