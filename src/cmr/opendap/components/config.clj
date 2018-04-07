@@ -20,7 +20,11 @@
   [system]
   (get-in (get-cfg system) [:caching :init]))
 
-(defn cache-ttl
+(defn cache-lru-threshold
+  [system]
+  (get-in (get-cfg system) [:caching :lru :threshold]))
+
+(defn cache-ttl-ms
   [system]
   (* (get-in (get-cfg system) [:caching :ttl :minutes]) ; minutes
      60 ; seconds

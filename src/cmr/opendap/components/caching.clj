@@ -9,14 +9,7 @@
 ;;;   Support/utility Data & Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-ttl-cache
-  [system]
-  (let [ttl (config/cache-ttl system)
-        init (config/cache-init system)
-        cache (cache/ttl-cache-factory init :ttl ttl)]
-    (log/debug "Creating TTL Cache with time-to-live of" ttl)
-    (log/trace "Starting value:" init)
-    (atom cache)))
+;; TBD
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,8 +17,16 @@
 
 (defn create-cache
   [system]
-  (case (config/cache-type system)
-    :ttl (create-ttl-cache system)))
+  (let [init (config/cache-init system)
+        ttl (config/cache-ttl-ms system)
+        threshold (config/cache-lru-threshold system)
+        cache (-> init
+                  (cache/ttl-cache-factory :ttl ttl)
+                  (cache/lru-cache-factory :threshold threshold))]
+    (log/debug "Creating TTL Cache with time-to-live of" ttl)
+    (log/debug "Composing with LRU cache with threshold (item count)" threshold)
+    (log/trace "Starting value:" init)
+    (atom cache)))
 
 (defn get-cache
   [system]
