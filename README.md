@@ -49,7 +49,24 @@ The default behaviour of `lein ltest` runs all tests types.
 
 ### Quick Start [&#x219F;](#contents)
 
-TBD
+With dependencies installed and repo cloned, switch to the project directory
+and start the REPL:
+
+```
+$ lein repl
+```
+
+Then bring up the system:
+
+```clj
+(startup)
+```
+
+When done:
+
+```clj
+(shutdown)
+```
 
 
 ### Project Guides [&#x219F;](#contents)
