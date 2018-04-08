@@ -7,11 +7,11 @@
   that supports startup and shutdown."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as httpc]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
-   [cmr.opendap.dev :as dev]))
+   [cmr.opendap.dev :as dev]
+   [org.httpkit.client :as httpc]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

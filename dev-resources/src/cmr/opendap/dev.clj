@@ -11,6 +11,7 @@
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.core]
     [com.stuartsierra.component :as component]
+    [org.httpkit.client :as httpc]
     [trifl.java :refer [show-methods]])
   (:import
     (java.net URI)
