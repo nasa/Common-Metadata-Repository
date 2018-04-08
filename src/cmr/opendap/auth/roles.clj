@@ -1,12 +1,13 @@
 (ns cmr.opendap.auth.roles
   (:require
    [clojure.set :as set]
-   [cmr.opendap.auth.permissions :as permissions]
+   [cmr.opendap.auth.acls :as acls]
    [cmr.opendap.components.caching :as caching]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
 (def management-acl :INGEST_MANAGEMENT_ACL)
+(def echo-management-query {:system_object (name management-acl)})
 
 (defn route-annotation
   "It is expected that the route annotation for roles is of the form:
@@ -24,10 +25,10 @@
 
 (defn admin
   [base-url token user-id]
-  (let [perms (permissions/acl base-url
-                               token
-                               user-id
-                               {:system_object (name management-acl)})]
+  (let [perms (acls/check-access base-url
+                                 token
+                                 user-id
+                                 echo-management-query)]
     (if (seq (management-acl @perms))
       #{:admin}
       #{})))
@@ -39,6 +40,6 @@
                   #(admin base-url token user-id)))
 
 (defn admin?
-  [system roles base-url token user-id]
+  [system route-roles base-url token user-id]
   (seq (set/intersection (cached-admin system base-url token user-id)
-                         roles)))
+                         route-roles)))
