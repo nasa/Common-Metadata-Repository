@@ -23,7 +23,6 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.0"]
-    [clj-http "3.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
