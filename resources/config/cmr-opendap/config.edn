@@ -3,7 +3,8 @@
    :ttl
     {:minutes 60}
    :lru
-    {:threshold 1000}}
+    {:threshold 1000}
+   :dumpfile "data/cache/dump.edn"}
  :cmr
   {:base-url "https://cmr.sit.earthdata.nasa.gov"}
  :httpd
