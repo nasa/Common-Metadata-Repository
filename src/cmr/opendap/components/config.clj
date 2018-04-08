@@ -16,6 +16,10 @@
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn cache-dumpfile
+  [system]
+  (get-in (get-cfg system) [:caching :dumpfile]))
+
 (defn cache-init
   [system]
   (get-in (get-cfg system) [:caching :init]))

@@ -1,6 +1,7 @@
 (ns cmr.opendap.components.caching
   (:require
     [clojure.core.cache :as cache]
+    [clojure.java.io :as io]
     [com.stuartsierra.component :as component]
     [cmr.opendap.components.config :as config]
     [taoensso.timbre :as log]))
@@ -9,7 +10,20 @@
 ;;;   Support/utility Data & Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TBD
+(defn load-cache
+  [system]
+  (if-let [sys system]
+    (if-let [filename (config/cache-dumpfile system)]
+      (read-string
+        (slurp filename)))))
+
+(defn dump-cache
+  [system cache-data]
+  (let [dumpfile (config/cache-dumpfile system)]
+    (io/make-parents dumpfile)
+    (spit
+      dumpfile
+      (prn-str cache-data))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,7 +31,8 @@
 
 (defn create-cache
   [system]
-  (let [init (config/cache-init system)
+  (let [init (merge (config/cache-init system)
+                    (load-cache system))
         ttl (config/cache-ttl-ms system)
         threshold (config/cache-lru-threshold system)
         cache (-> init
@@ -67,6 +82,7 @@
 (defn stop
   [this]
   (log/info "Stopping caching component ...")
+  (dump-cache this @(:cache this))
   (log/debug "Stopped caching component.")
   (assoc this :cache nil))
 
