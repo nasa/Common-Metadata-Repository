@@ -25,7 +25,10 @@
 
 (defn reitit-auth
   [system]
-  "This auth middleware specific to reitit. For more details, see the docstring
-  above for `wrap-auth`."
+  "This auth middleware is specific to reitit, providing the data structure
+  necessary that will allow for the extraction of roles and permissions
+  settings from the request.
+
+  For more details, see the docstring above for `wrap-auth`."
   {:data
     {:middleware [#(wrap-auth % system)]}})

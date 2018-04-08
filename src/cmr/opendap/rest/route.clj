@@ -19,7 +19,15 @@
   [httpd-component]
   (let [conn-mgr :not-implemented]
     [["/opendap/ous/collections" {
-      :post (collection-handler/batch-generate conn-mgr)
+      :post {
+        :handler (collection-handler/batch-generate conn-mgr)
+        ;; XXX protecting collections will be a little different than
+        ;;     protecting a single collection, since the concept-id isn't in
+        ;;     the path-params. Instead, we'll have to parse the body, extract
+        ;;     the concepts ids from that, create an ACL query containing
+        ;;     multiple concept ids, and then check those results.
+        ;:permission #{...}
+        }
       :options core-handler/ok}]
      ["/opendap/ous/collection/:concept-id" {
       :get {

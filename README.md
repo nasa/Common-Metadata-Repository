@@ -47,8 +47,8 @@ Just system tests:
 $ lein ltest :system
 ```
 
-The default behaviour of `lein ltest` runs both unit and integration. To run
-all tests, use `lein ltest :all`.
+The default behaviour of `lein ltest` runs both unit and integration tests. To
+run all tests, use `lein ltest :all`.
 
 
 ## Documentation [&#x219F;](#contents)
@@ -95,7 +95,6 @@ Then bring up the system:
 ```
 ```
 2018-04-07T15:26:54.830 [nREPL-worker-0] INFO cmr.opendap.components.config:62 - Starting config component ...
-2018-04-07T15:26:54.834 [nREPL-worker-0] DEBUG cmr.opendap.components.config:63 - Started config component.
 2018-04-07T15:26:54.837 [nREPL-worker-0] INFO cmr.opendap.components.logging:22 - Starting logging component ...
 2018-04-07T15:26:54.845 [nREPL-worker-0] INFO cmr.opendap.components.caching:56 - Starting caching component ...
 2018-04-07T15:26:54.855 [nREPL-worker-0] INFO cmr.opendap.components.httpd:23 - Starting httpd component ...
