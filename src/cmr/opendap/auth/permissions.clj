@@ -9,11 +9,6 @@
    [taoensso.timbre :as log]))
 
 (def permissions-resource "/access-control/permissions")
-(def management-acl :INGEST_MANAGEMENT_ACL)
-
-(defn admin-key
-  [token]
-  (str "admin:" token))
 
 (defn parse-acl-permissions
   [data]
@@ -37,29 +32,6 @@
                        (request/add-client-id)
                        ((fn [x] (log/trace "Prepared request:" x) x)))
                     #(response/client-handler % parse-acl-permissions))))
-
-(defn admin
-  [base-url token user-id]
-  (let [perms (acl
-               base-url
-               token
-               user-id
-               {:system_object (name management-acl)})]
-    (if (seq (management-acl @perms))
-      #{:admin}
-      #{})))
-
-(defn cached-admin
-  [system base-url token user-id]
-  (caching/lookup
-   system
-   (admin-key token)
-   #(admin base-url token user-id)))
-
-(defn admin?
-  [system roles base-url token user-id]
-  (seq (set/intersection (cached-admin system base-url token user-id)
-                         roles)))
 
 (defn concept?
   [base-url token user-id concept-id]

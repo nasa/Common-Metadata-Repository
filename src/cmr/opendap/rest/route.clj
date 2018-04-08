@@ -44,11 +44,9 @@
   [httpd-component]
   [["/health" {
     :get {
-      :handler (core-handler/health httpd-component)
-      :roles #{:admin}}
+      :handler (core-handler/health httpd-component)}
     :options {
-      :handler core-handler/ok
-      :roles #{:admin}}}]
+      :handler core-handler/ok}}]
    ["/ping" {
     :get {
       :handler core-handler/ping
