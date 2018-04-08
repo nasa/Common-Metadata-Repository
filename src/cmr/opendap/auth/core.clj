@@ -53,8 +53,9 @@
                user-id)
 
               route-permissions
-              (check-permissions system handler request route-permissions
-               cmr-base-url user-token user-id))))
+              (check-permissions
+               system handler request route-permissions cmr-base-url
+               user-token user-id))))
     (do
       (log/warn "ECHO token not provided for protected resource")
       (response/not-allowed errors/token-required))))
@@ -62,8 +63,8 @@
 (defn check-route-access
   [system handler request]
   ;; Before performing any GETs/POSTs against CMR Access Control or ECHO,
-  ;; let's make sure that's actually necessary, only doing it in the event
-  ;; that the route is annotated for roles/permissions.
+  ;; let's make sure that's actually necessary, only doing it in the cases
+  ;; where the route is annotated for roles/permissions.
   (let [route-roles (roles/route-annotation request)
         route-permissions (permissions/route-annotation request)]
     (if (or route-roles route-permissions)
@@ -72,7 +73,8 @@
                         "routes; checking ACLs ..."))
         (log/debug "route-roles:" route-roles)
         (log/debug "route-permissions:" route-permissions)
-        (check-roles-permissions system handler request route-roles route-permissions))
+        (check-roles-permissions
+         system handler request route-roles route-permissions))
       (do
         (log/debug (str "Neither roles nor permissions were annotated in "
                         "the routes; skipping ACL check ..."))

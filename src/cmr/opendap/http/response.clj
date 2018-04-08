@@ -13,8 +13,7 @@
   [{:keys [status headers body error]} parse-fn]
   (log/debug "Handling client response ...")
   (cond error
-        (do
-          (log/error error))
+        (log/error error)
         (>= status 400)
         (do
           (log/error status)

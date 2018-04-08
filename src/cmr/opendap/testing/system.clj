@@ -5,7 +5,7 @@
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.testing]))
 
-;; Hide logging as much as possible before the system starts up, which shuld
+;; Hide logging as much as possible before the system starts up, which should
 ;; disable logging entirely for tests.
 (logger/set-level! '[] :fatal)
 

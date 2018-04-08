@@ -28,6 +28,11 @@
            (httpd/create-component)
            [:config :logging :caching])})
 
+(def cache-without-logging
+  {:caching (component/using
+             (caching/create-component)
+             [:config])})
+
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
@@ -55,6 +60,7 @@
   []
   (component/map->SystemMap
     (merge cfg
+           cache-without-logging
            httpd-without-logging)))
 
 (def init-lookup
