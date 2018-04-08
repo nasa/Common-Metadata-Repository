@@ -42,7 +42,13 @@ Similarly, for just the integration tests:
 $ lein ltest :integration
 ```
 
-The default behaviour of `lein ltest` runs all tests types.
+Just system tests:
+```
+$ lein ltest :system
+```
+
+The default behaviour of `lein ltest` runs both unit and integration. To run
+all tests, use `lein ltest :all`.
 
 
 ## Documentation [&#x219F;](#contents)
