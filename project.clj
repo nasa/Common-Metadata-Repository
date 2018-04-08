@@ -27,7 +27,6 @@
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
-    [gov.nasa.earthdata/cmr-client "0.3.0-SNAPSHOT"]
     [http-kit "2.2.0"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
