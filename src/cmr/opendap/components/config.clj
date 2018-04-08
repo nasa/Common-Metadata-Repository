@@ -35,6 +35,10 @@
   [system]
   (get-in (get-cfg system) [:caching :type]))
 
+(defn cmr-base-url
+  [system]
+  (get-in (get-cfg system) [:cmr :base-url]))
+
 (defn http-docroot
   [system]
   (get-in (get-cfg system) [:httpd :docroot]))

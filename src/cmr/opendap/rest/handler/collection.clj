@@ -4,7 +4,7 @@
    [clojure.java.io :as io]
    ;; XXX implement the OUS collection business logic
    ;; [cmr.opendap.ous.collection :as collection]
-   [cmr.opendap.rest.response :as response]
+   [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

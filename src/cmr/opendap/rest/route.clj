@@ -43,13 +43,22 @@
 (defn admin
   [httpd-component]
   [["/health" {
-    :get {:handler (core-handler/health httpd-component)
-          :roles #{:admin}}
-    :options core-handler/ok}]
+    :get {
+      :handler (core-handler/health httpd-component)
+      :roles #{:admin}}
+    :options {
+      :handler core-handler/ok
+      :roles #{:admin}}}]
    ["/ping" {
-    :get core-handler/ping
-    :post core-handler/ping
-    :options core-handler/ok}]])
+    :get {
+      :handler core-handler/ping
+      :roles #{:admin}}
+    :post {
+      :handler core-handler/ping
+      :roles #{:admin}}
+    :options {
+      :handler core-handler/ok
+      :roles #{:admin}}}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

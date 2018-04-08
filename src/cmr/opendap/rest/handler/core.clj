@@ -14,7 +14,7 @@
    [clojure.java.io :as io]
    [clojusc.twig :as twig]
    [cmr.opendap.health :as health]
-   [cmr.opendap.rest.response :as response]
+   [cmr.opendap.http.response :as response]
    [ring.middleware.file :as file-middleware]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))

@@ -4,9 +4,11 @@
     {:minutes 60}
    :lru
     {:threshold 1000}}
+ :cmr
+  {:base-url "https://cmr.sit.earthdata.nasa.gov"}
  :httpd
   {:port 3012
    :docroot "public"}
  :logging
   {:level :debug
-   :nss [cmr.opendap]}}
+   :nss [cmr.opendap org.httpkit]}}

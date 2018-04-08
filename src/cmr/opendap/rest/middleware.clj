@@ -1,8 +1,11 @@
 (ns cmr.opendap.rest.middleware
   "Custom ring middleware for CMR Graph."
   (:require
-   [clojure.set :as set]
-   [cmr.opendap.rest.response :as response]
+   [cmr.opendap.auth.permissions :as permissions]
+   [cmr.opendap.auth.token :as token]
+   [cmr.opendap.components.caching :as caching]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.response :as response]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -12,16 +15,28 @@
     (response/cors request (handler request))))
 
 (defn wrap-enforce-roles
-  [handler]
-  (fn [{:keys [::roles] :as request}]
-    (println "Running perms middleware ...")
-    (println "request:" request)
-    (let [required (some-> request (ring/get-match) :data :roles)]
-      (println "required:" required)
-      (println "get-match:" (ring/get-match request))
-      (println "data:" (:data (ring/get-match request)))
-      (println "data keys:" (keys (:data (ring/get-match request))))
-      (println "roles:" (:roles (:get (:data (ring/get-match request)))))
-      (if (and (seq required) (not (set/subset? required roles)))
-        {:status 403, :body "You do not have permissions to access that resource."}
+  [handler system]
+  (fn [request]
+    (log/debug "Running perms middleware ...")
+    (let [roles (get-in (ring/get-match request) [:data :get :roles])
+          cmr-base-url (config/cmr-base-url system)
+          user-token (token/extract request)
+          user-id (token/->cached-user system cmr-base-url user-token)]
+      (log/trace "cmr-base-url:" cmr-base-url)
+      (log/trace "user-token:" user-token)
+      (log/trace "user-id:" user-id)
+      (log/debug "roles:" roles)
+      ;; XXX For now, there is only the admin role in the CMR, so we'll just
+      ;;     keep this specific to that, for now. Later, if more roles are
+      ;;     used, we'll want to make this more generic ...
+      (if roles
+        (if (permissions/admin? system roles cmr-base-url user-token user-id)
+          (handler request)
+          (response/not-allowed
+            "You do not have permissions to access that resource."))
         (handler request)))))
+
+(defn reitit-enforce-roles
+  [system]
+  {:data
+    {:middleware [#(wrap-enforce-roles % system)]}})

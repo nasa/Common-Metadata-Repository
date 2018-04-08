@@ -37,13 +37,19 @@
   (swap! (get-cache system) cache/evict item-key))
 
 (defn lookup
-  [system item-key]
-  (cache/lookup @(get-cache system) item-key))
-
-(defn through-cache!
-  [system item-key val-fn]
-  (swap! (get-cache system) cache/through-cache item-key val-fn)
-  (lookup system item-key))
+  ([system item-key]
+    (cache/lookup @(get-cache system) item-key))
+  ([system item-key value-fn]
+    (let [ch @(get-cache system)]
+      (if (cache/has? ch item-key)
+        (do
+          (log/debugf "Cache has key %s; skipping value function ..."
+                      item-key)
+          (cache/hit ch item-key))
+        (when-let [value (value-fn)]
+          (log/debug "Cache miss; calling value function ...")
+          (swap! (get-cache system) #(cache/miss % item-key value)))))
+    (lookup system item-key)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
