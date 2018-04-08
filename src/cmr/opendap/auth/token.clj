@@ -24,7 +24,7 @@
 
 (defn parse-token-data
   [xml-str]
-  (log/debug "Got token XML data:" xml-str)
+  (log/trace "Got token XML data:" xml-str)
   (first
     (remove nil?
       (mapcat #(when (map? %)
