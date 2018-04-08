@@ -22,8 +22,12 @@
       :post (collection-handler/batch-generate conn-mgr)
       :options core-handler/ok}]
      ["/opendap/ous/collection/:concept-id" {
-      :get (collection-handler/generate-urls conn-mgr)
-      :post (collection-handler/generate-urls conn-mgr)
+      :get {
+        :handler (collection-handler/generate-urls conn-mgr)
+        :permissions #{:read}}
+      :post {
+        :handler (collection-handler/generate-urls conn-mgr)
+        :permissions #{:read}}
       :options core-handler/ok}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,10 +47,8 @@
 (defn admin
   [httpd-component]
   [["/health" {
-    :get {
-      :handler (core-handler/health httpd-component)}
-    :options {
-      :handler core-handler/ok}}]
+    :get (core-handler/health httpd-component)
+    :options core-handler/ok}]
    ["/ping" {
     :get {
       :handler core-handler/ping
@@ -54,9 +56,7 @@
     :post {
       :handler core-handler/ping
       :roles #{:admin}}
-    :options {
-      :handler core-handler/ok
-      :roles #{:admin}}}]])
+    :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

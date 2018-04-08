@@ -20,7 +20,7 @@
   [httpd-component]
   (-> httpd-component
       rest-api-routes
-      (ring/router (middleware/reitit-acls httpd-component))
+      (ring/router (middleware/reitit-auth httpd-component))
       (ring/ring-handler handler/fallback)
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
       (middleware/wrap-cors)))
