@@ -5,9 +5,9 @@
   Definition used for system tests:
   * https://en.wikipedia.org/wiki/Software_testing#System_testing"
   (:require
-    [clj-http.client :as httpc]
     [clojure.test :refer :all]
-    [cmr.opendap.testing.system :as test-system])
+    [cmr.opendap.testing.system :as test-system]
+    [org.httpkit.client :as httpc]  )
   (:import
     (clojure.lang ExceptionInfo)))
 

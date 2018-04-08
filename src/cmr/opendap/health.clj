@@ -1,6 +1,4 @@
-(ns cmr.opendap.health
-  (:require
-   [clj-http.client :as httpc]))
+(ns cmr.opendap.health)
 
 (defn has-data?
   [x]
