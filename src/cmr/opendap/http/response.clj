@@ -1,13 +1,27 @@
-(ns cmr.opendap.rest.response
+(ns cmr.opendap.http.response
   "This namespace defines a default set of transform functions suitable for use
   in presenting results to HTTP clients.
 
-  Ring-based middleeware may take advantage of these functions either by
-  single use or composition."
+  Note that ring-based middleeware may take advantage of these functions either
+  by single use or composition."
   (:require
    [cheshire.core :as json]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]))
+
+(defn client-handler
+  [{:keys [status headers body error]} parse-fn]
+  (log/debug "Handling client response ...")
+  (cond error
+        (do
+          (log/error error))
+        (>= status 400)
+        (do
+          (log/error status)
+          (log/debug "Headers:" headers)
+          (log/debug "Body:" body))
+        :else
+        (parse-fn body)))
 
 (defn ok
   [_request & args]
@@ -31,6 +45,12 @@
   (response/content-type
    (response/not-found "Not Found")
    "text/plain"))
+
+(defn not-allowed
+  [data]
+  (-> data
+      response/forbidden
+      (response/content-type "text/plain")))
 
 (defn cors
   [request response]
