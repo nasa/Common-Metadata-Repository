@@ -9,6 +9,16 @@
 (def management-acl :INGEST_MANAGEMENT_ACL)
 (def echo-management-query {:system_object (name management-acl)})
 
+(defn admin-key
+  [token]
+  (str "admin:" token))
+
+(defn cmr-acl->reitit-acl
+  [cmr-acl]
+  (if (seq (management-acl cmr-acl))
+    #{:admin}
+    #{}))
+
 (defn route-annotation
   "It is expected that the route annotation for roles is of the form:
 
@@ -19,19 +29,13 @@
   [request]
   (get-in (ring/get-match request) [:data :get :roles]))
 
-(defn admin-key
-  [token]
-  (str "admin:" token))
-
 (defn admin
   [base-url token user-id]
   (let [perms (acls/check-access base-url
                                  token
                                  user-id
                                  echo-management-query)]
-    (if (seq (management-acl @perms))
-      #{:admin}
-      #{})))
+    (cmr-acl->reitit-acl @perms)))
 
 (defn cached-admin
   [system base-url token user-id]
