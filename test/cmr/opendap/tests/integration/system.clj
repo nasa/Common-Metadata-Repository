@@ -1,4 +1,4 @@
-(ns ^{:integration true} cmr.opendap.tests.system
+(ns ^:integration cmr.opendap.tests.integration.system
   "Tests for ensuring the proper setup of a testing system.
 
   Note: this namespace is exclusively for integration tests; all tests defined

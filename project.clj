@@ -69,8 +69,10 @@
       :plugins [
         [lein-ltest "0.3.0"]]
       :test-selectors {
-        :unit (complement :integration)
-        :integration :integration}}
+        :unit #(not (or (:integration %) (:system %)))
+        :integration :integration
+        :system :system
+        :default (complement :system)}}
     :docs {
       :dependencies [
         [clojang/codox-theme "0.2.0-SNAPSHOT"]]
@@ -117,14 +119,4 @@
       ["marginalia"]]
     ;; Application
     "start-cmr-opendap"
-      ["trampoline" "run"]
-    ;; Docker Aliases
-    "docker-clean" [
-      "shell"
-      "docker" "system" "prune" "-f"]
-    "start-infra" [
-      "shell"
-      "docker-compose" "-f" "resources/docker/docker-compose.yml" "up"]
-    "stop-infra" [
-      "shell"
-      "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]})
+      ["trampoline" "run"]})
