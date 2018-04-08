@@ -3,6 +3,7 @@
   (:require
     [clojure.java.io :as io]
     [clojure.pprint :refer [pprint]]
+    [clojure.set :as set]
     [clojure.tools.namespace.repl :as repl]
     [clojusc.dev.system.core :as system-api]
     [clojusc.twig :as logger]
