@@ -77,7 +77,10 @@
    ;; `subset` is used to indicate desired spatial subsetting and is used in
    ;; URL queries like so:
    ;;  `?subset=lat(22,34)&subset=lon(169,200)`
-   subset])
+   subset
+   ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
+   ;; to using `subset` for spatial-subsetting.
+   bounding-box])
 
 (defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
@@ -113,5 +116,9 @@
         collection-params-keys)))
 
 (defn get-opendap-urls
-  []
-  )
+  [params]
+  (cond (collection-params? params)
+        (map->CollectionParams params)
+        (ous-prototype-params? params)
+        (map->OusPrototypeParams params)
+        :else {:error :unsupported-parameters}))
