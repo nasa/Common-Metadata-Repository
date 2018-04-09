@@ -331,7 +331,15 @@
                                 :throw-exceptions false
                                 :headers (ch/context->http-headers context)}))
         status (int (:status response))
-        body (json/decode (:body response))
+        ;; For CMR-4841 - log the first 255 characters of the response body if
+        ;; the parsing of the html throws exception. 
+        response-body (:body response)
+        first-255-body (subs response-body 0 (min 255 (.length response-body)))
+        body (try
+               (json/decode response-body)
+               (catch Exception e 
+                 (info "Exception occurred while parsing the response body: " first-255-body)
+                 (throw e)))
         {:strs [concept-id revision-id]} body]
     (case status
       422
