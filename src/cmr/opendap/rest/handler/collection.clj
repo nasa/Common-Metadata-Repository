@@ -2,8 +2,7 @@
   "This namespace defines the REST API handlers for collection resources."
   (:require
    [clojure.java.io :as io]
-   ;; XXX implement the OUS collection business logic
-   ;; [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
 
