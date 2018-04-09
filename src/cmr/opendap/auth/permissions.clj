@@ -20,7 +20,14 @@
 (defn cmr-acl->reitit-acl
   [cmr-acl]
   (log/debug "Got CMR ACL:" cmr-acl)
-  (cond (nil? cmr-acl) #{}
+  (cond (nil? cmr-acl)
+        #{}
+
+        (map? cmr-acl)
+        (->> cmr-acl
+             (map (fn [[k v]] [(keyword k) (set (map keyword v))]))
+             (into {}))
+
         :else cmr-acl))
 
 (defn route-concept-id
@@ -38,7 +45,8 @@
   (log/trace "Request:" request)
   (reitit-acl-data
    (route-concept-id request)
-   (get-in (ring/get-match request) [:data :get :permissions])))
+   (cmr-acl->reitit-acl
+    (get-in (ring/get-match request) [:data :get :permissions]))))
 
 (defn concept
   [base-url token user-id concept-id]
@@ -46,6 +54,7 @@
                                  token
                                  user-id
                                  (echo-concept-query concept-id))]
+    (log/debug "Got perms:" @perms)
     (cmr-acl->reitit-acl @perms)))
 
 (defn cached-concept
@@ -55,10 +64,12 @@
                   #(concept base-url token user-id concept-id)))
 
 (defn concept?
-  [system roles base-url token user-id concept-id]
-  (seq (set/intersection (cached-concept system
+  [system perms base-url token user-id concept-id]
+  (let [id (keyword concept-id)
+        required (cmr-acl->reitit-acl perms)
+        concept-perms (cached-concept system
                                          base-url
                                          token
                                          user-id
-                                         concept-id)
-                         roles)))
+                                         concept-id)]
+    (seq (set/intersection (id required) (id concept-perms)))))

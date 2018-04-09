@@ -14,8 +14,10 @@
   [system]
   (if-let [sys system]
     (if-let [filename (config/cache-dumpfile system)]
-      (read-string
-        (slurp filename)))))
+      (try
+        (read-string
+          (slurp filename))
+        (catch Exception _ nil)))))
 
 (defn dump-cache
   [system cache-data]
