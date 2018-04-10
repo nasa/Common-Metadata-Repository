@@ -334,11 +334,11 @@
         ;; For CMR-4841 - log the first 255 characters of the response body if
         ;; the parsing of the html throws exception. 
         response-body (:body response)
-        response-body-logged (subs response-body 0 (min 255 (.length response-body)))
+        response-body-logged (subs response-body 0 (min 255 (count response-body)))
         body (try
                (json/decode response-body)
                (catch Exception e 
-                 (info "Exception occurred while parsing the response body: " response-body-logged)
+                 (warn "Exception occurred while parsing the response body: " response-body-logged)
                  (throw e)))
         {:strs [concept-id revision-id]} body]
     (case status
