@@ -11,8 +11,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- generate-via-get
-  "XXX"
+  "Private function for creating OPeNDAP URLs when supplied with an HTTP
+  GET."
   [request concept-id]
+  (log/debug "Generating URLs based on HTTP GET ...")
   (->> request
        :params
        (merge {:collection-id concept-id})
@@ -20,7 +22,8 @@
        (response/json request)))
 
 (defn- generate-via-post
-  "XXX"
+  "Private function for creating OPeNDAP URLs when supplied with an HTTP
+  POST."
   [request concept-id]
   (->> request
        :body
@@ -39,8 +42,10 @@
 (def generate-urls
   "XXX"
   (fn [request]
+    (log/debug "Method-dispatching for URLs generation ...")
+    (log/trace "request:" request)
     (let [concept-id (get-in request [:path-params :concept-id])]
-      (case (:method request)
+      (case (:request-method request)
         :get (generate-via-get request concept-id)
         :post (generate-via-post request concept-id)
         (unsupported-method request)))))

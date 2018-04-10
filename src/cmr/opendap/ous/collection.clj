@@ -69,7 +69,7 @@
    granules
    ;; `exclude-granules?` is a boolean when set to true causes granules list
    ;; to be a blacklist.
-   exclude-granules?
+   exclude-granules
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables

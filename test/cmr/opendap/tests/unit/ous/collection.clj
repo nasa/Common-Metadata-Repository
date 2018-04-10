@@ -7,7 +7,7 @@
 (deftest params-keys
   (is (= #{:coverage :rangesubset}
          collection/ous-prototype-params-keys))
-  (is (= #{:exclude-granules? :collection-id :variables :granules
+  (is (= #{:exclude-granules :collection-id :variables :granules
            :bounding-box}
          collection/collection-params-keys)))
 

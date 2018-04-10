@@ -39,7 +39,7 @@ $ lein ltest :unit
 Similarly, for just the integration tests:
 
 ```
-$ lein ltest :integration
+$ CMR_SIT_TOKEN=`cat ~/.cmr/tokens/sit` lein ltest :integration
 ```
 
 Just system tests:
