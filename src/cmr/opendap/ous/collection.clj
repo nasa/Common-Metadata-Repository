@@ -1,14 +1,15 @@
 (ns cmr.opendap.ous.collection
   (:require
    [clojure.set :as set]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constants and Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def shared-keys
-  #{:format :subset})
+  #{:collection-id :format :subset})
 
 (defn ->seq
   [data]
@@ -78,6 +79,12 @@
    (set (keys (map->OusPrototypeParams {})))
    shared-keys))
 
+(defn ous-prototype-params?
+  [params]
+  (seq (set/intersection
+        (set (keys params))
+        ous-prototype-params-keys)))
+
 (defn create-ous-prototype-params
   [params]
   (map->OusPrototypeParams params))
@@ -123,6 +130,12 @@
    (set (keys (map->CollectionParams {})))
    shared-keys))
 
+(defn collection-params?
+  [params]
+  (seq (set/intersection
+        (set (keys params))
+        collection-params-keys)))
+
 (defn create-collection-params
   [params]
   (map->CollectionParams
@@ -130,22 +143,19 @@
       :granules (->seq (:granules params))
       :variables (->seq (:variables params)))))
 
-(defn ous-prototype-params?
-  [params]
-  (seq (set/intersection
-        (set (keys params))
-        ous-prototype-params-keys)))
-
-(defn collection-params?
-  [params]
-  (seq (set/intersection
-        (set (keys params))
-        collection-params-keys)))
-
 (defn get-opendap-urls
   [params]
+  (log/trace "Got params:" params)
   (cond (collection-params? params)
-        (create-collection-params params)
+        (do
+          (log/trace "Parameters are of type `collection` ...")
+          (create-collection-params params))
         (ous-prototype-params? params)
-        (create-ous-prototype-params params)
+        (do
+          (log/trace "Parameters are of type `ous-prototype` ...")
+          (create-ous-prototype-params params))
+        (:collection-id params)
+        (do
+          (log/trace "Found collection id; assuming `collection` ...")
+          (create-collection-params params))
         :else {:error :unsupported-parameters}))

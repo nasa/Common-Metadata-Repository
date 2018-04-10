@@ -305,3 +305,59 @@
               :subset nil
               :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
              (util/parse-response response))))))
+
+(deftest ous-collection-get-with-prototype-params
+  (testing "GET with coverage ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                  collection-id)
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
+              :rangesubset nil
+              :subset nil}
+             (util/parse-response response)))))
+  (testing "GET with coverage and rangesubset ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                  collection-id
+                                  "&rangesubset=V1200241812-EDF_OPS,V1200241813-EDF_OPS")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
+              :rangesubset "V1200241812-EDF_OPS,V1200241813-EDF_OPS"
+              :subset nil}
+             (util/parse-response response)))))
+  (testing "GET with coverage and subset ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                  collection-id
+                                  "&subset=lat(56.109375,67.640625)"
+                                  "&subset=lon(-9.984375,19.828125)")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
+              :rangesubset nil
+              :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}
+             (util/parse-response response))))))
