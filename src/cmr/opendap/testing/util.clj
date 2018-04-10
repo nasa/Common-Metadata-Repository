@@ -1,6 +1,7 @@
 (ns cmr.opendap.testing.util
   (:require
    [cheshire.core :as json]
+   [clojure.java.io :as io]
    [clojure.string :as string])
   (:import
    (clojure.lang Keyword)))
@@ -12,6 +13,17 @@
     (catch Exception e
       {:error {:msg "Couldn't parse body."
                :body (:body response)}})))
+
+(defn create-json-payload
+  [data]
+  {:body (json/generate-string data)})
+
+(defn create-json-stream-payload
+  [data]
+  {:body (io/input-stream
+          (byte-array
+           (map (comp byte int)
+            (json/generate-string data))))})
 
 (defn get-env-token
   [^Keyword deployment]

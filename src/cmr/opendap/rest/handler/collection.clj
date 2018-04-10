@@ -1,6 +1,7 @@
 (ns cmr.opendap.rest.handler.collection
   "This namespace defines the REST API handlers for collection resources."
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
    [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.http.response :as response]
@@ -27,10 +28,10 @@
   [request concept-id]
   (->> request
        :body
-       slurp
-       ;; XXX see note about params above, in sister function
-       ;(collection/get-opendap-urls conn-mgr params)
-       ((fn [_] {:error :not-implemented}))
+       (slurp)
+       (#(json/parse-string % true))
+       (merge {:collection-id concept-id})
+       (collection/get-opendap-urls)
        (response/json request)))
 
 (defn unsupported-method

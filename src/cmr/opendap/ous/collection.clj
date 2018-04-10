@@ -1,10 +1,25 @@
 (ns cmr.opendap.ous.collection
   (:require
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [clojure.string :as string]))
 
-;;; We're going to codify parameters with records to keep things well
-;;; documented. Additionally, this will make converting between parameter
-;;; schemes an explicit operation on explicit data.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants and Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def shared-keys
+  #{:format :subset})
+
+(defn ->seq
+  [data]
+  (cond (nil? data) []
+        (empty? data) []
+        (coll? data) data
+        (string? data) (string/split data #",")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Notes on representing spatial extents.
 ;;
@@ -38,6 +53,10 @@
 ;;  `southWest = LatLng(56.109375,-9.984375);`
 ;;  `northEast = LatLng(67.640625,19.828125);`
 
+;;; We're going to codify parameters with records to keep things well
+;;; documented. Additionally, this will make converting between parameter
+;;; schemes an explicit operation on explicit data.
+
 (defrecord OusPrototypeParams
   [;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
@@ -54,6 +73,15 @@
    ;;  `?subset=lat(22,34)&subset=lon(169,200)`
    subset])
 
+(def ous-prototype-params-keys
+  (set/difference
+   (set (keys (map->OusPrototypeParams {})))
+   shared-keys))
+
+(defn create-ous-prototype-params
+  [params]
+  (map->OusPrototypeParams params))
+
 (defrecord CollectionParams
   [;; `collection-id` is the concept id for the collection in question. Note
    ;; that the collection concept id is not provided in query params,
@@ -67,7 +95,7 @@
    ;; `granules` is list of granule concept ids; default behaviour is a
    ;; whitelist.
    granules
-   ;; `exclude-granules?` is a boolean when set to true causes granules list
+   ;; `exclude-granules` is a boolean when set to true causes granules list
    ;; to be a blacklist.
    exclude-granules
    ;; `variables` is a list of variables to be speficied when creating the
@@ -90,18 +118,17 @@
    ;; `collections` is a list of `CollectionParams` records.
    collections])
 
-(def shared-keys
-  #{:format :subset})
-
-(def ous-prototype-params-keys
-  (set/difference
-   (set (keys (map->OusPrototypeParams {})))
-   shared-keys))
-
 (def collection-params-keys
   (set/difference
    (set (keys (map->CollectionParams {})))
    shared-keys))
+
+(defn create-collection-params
+  [params]
+  (map->CollectionParams
+    (assoc params
+      :granules (->seq (:granules params))
+      :variables (->seq (:variables params)))))
 
 (defn ous-prototype-params?
   [params]
@@ -118,7 +145,7 @@
 (defn get-opendap-urls
   [params]
   (cond (collection-params? params)
-        (map->CollectionParams params)
+        (create-collection-params params)
         (ous-prototype-params? params)
-        (map->OusPrototypeParams params)
+        (create-ous-prototype-params params)
         :else {:error :unsupported-parameters}))

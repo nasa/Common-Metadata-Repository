@@ -43,9 +43,27 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules nil
+              :granules []
               :exclude-granules nil
-              :variables nil
+              :variables []
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "GET one variable ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?variables=V1200241812-EDF_OPS")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables ["V1200241812-EDF_OPS"]
               :subset nil
               :bounding-box nil}
              (util/parse-response response)))))
@@ -61,9 +79,9 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules nil
+              :granules []
               :exclude-granules nil
-              :variables "V1200241812-EDF_OPS,V1200241813-EDF_OPS"
+              :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
               :subset nil
               :bounding-box nil}
              (util/parse-response response)))))
@@ -79,9 +97,9 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules "G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+              :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules nil
-              :variables nil
+              :variables []
               :subset nil
               :bounding-box nil}
              (util/parse-response response)))))
@@ -98,9 +116,9 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules "G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+              :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules "true"
-              :variables nil
+              :variables []
               :subset nil
               :bounding-box nil}
              (util/parse-response response)))))
@@ -117,9 +135,9 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules nil
+              :granules []
               :exclude-granules nil
-              :variables nil
+              :variables []
               :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
               :bounding-box nil}
              (util/parse-response response)))))
@@ -136,9 +154,154 @@
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format nil
-              :granules nil
+              :granules []
               :exclude-granules nil
-              :variables nil
+              :variables []
+              :subset nil
+              :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
+             (util/parse-response response))))))
+
+(deftest ous-collection-post-with-collection-params
+  (testing "Minimal POST ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {})
+                      (request/add-token-header
+                       {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables []
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST with one variable ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:variables ["V1200241812-EDF_OPS"]})
+                       (request/add-token-header {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables ["V1200241812-EDF_OPS"]
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST with variables ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:variables ["V1200241812-EDF_OPS"
+                                    "V1200241813-EDF_OPS"]})
+                       (request/add-token-header {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST with granules ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:granules ["G1200187775-EDF_OPS"
+                                   "G1200245955-EDF_OPS"]})
+                      (request/add-token-header
+                       {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
+              :exclude-granules nil
+              :variables []
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST without granules ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:granules ["G1200187775-EDF_OPS"
+                                   "G1200245955-EDF_OPS"]
+                        :exclude-granules "true"})
+                      (request/add-token-header
+                       {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
+              :exclude-granules "true"
+              :variables []
+              :subset nil
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST with subset ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:subset ["lat(56.109375,67.640625)"
+                                 "lon(-9.984375,19.828125)"]})
+                      (request/add-token-header
+                       {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables []
+              :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
+              :bounding-box nil}
+             (util/parse-response response)))))
+  (testing "POST with bounding box ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/post
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                             (test-system/http-port)
+                             collection-id)
+                     (merge
+                      (util/create-json-payload
+                       {:bounding-box "-9.984375,56.109375,19.828125,67.640625"})
+                      (request/add-token-header
+                       {} (util/get-sit-token))))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format nil
+              :granules []
+              :exclude-granules nil
+              :variables []
               :subset nil
               :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
              (util/parse-response response))))))
