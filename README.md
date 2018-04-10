@@ -9,6 +9,7 @@
 
 * [About](#about-)
 * [Dependencies](#dependencies-)
+* [Configuration](#configuration-)
 * [Running the Tests](#running-the-tests-)
 * [Documentation](#documentation-)
   * [Quick Start](#quick-start-)
@@ -26,6 +27,18 @@ TBD
 
 * Java
 * `lein`
+
+
+## Configuration [&#x219F;](#contents)
+
+cmr-opendap is configured in several ways:
+
+* Low-level, component-based configuration: this is done with the file
+  `resources/config/cmr-opendap/config.edn`
+* Sensitive authorization information, in particular, tokens: these are
+  expected to be in `~/.cmr/tokens/sit`, `~/.cmr/tokens/uat`, and
+  `~/.cmr/tokens/prod` (no data structure; just the token value itself)
+* Environment variables: these are used for deployment.
 
 
 ## Running the Tests [&#x219F;](#contents)
