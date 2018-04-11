@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
 
@@ -19,7 +19,7 @@
   (->> request
        :params
        (merge {:collection-id concept-id})
-       (collection/get-opendap-urls)
+       (ous/get-opendap-urls)
        (response/json request)))
 
 (defn- generate-via-post
@@ -31,7 +31,7 @@
        (slurp)
        (#(json/parse-string % true))
        (merge {:collection-id concept-id})
-       (collection/get-opendap-urls)
+       (ous/get-opendap-urls)
        (response/json request)))
 
 (defn unsupported-method

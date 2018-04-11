@@ -2,10 +2,11 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.ous.util :as util]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Constants and Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def default-format "nc")
@@ -13,66 +14,9 @@
 (def shared-keys
   #{:collection-id :format :subset})
 
-(defn normalize-param
-  [param]
-  (-> param
-      name
-      (string/replace "_" "-")
-      (string/lower-case)
-      keyword))
-
-(defn normalize-params
-  [params]
-  (->> params
-       (map (fn [[k v]] [(normalize-param k) v]))
-       (into {})))
-
-(defn ->seq
-  [data]
-  (cond (nil? data) []
-        (empty? data) []
-        (coll? data) data
-        (string? data) (string/split data #",")))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Records and Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Notes on representing spatial extents.
-;;
-;; EDSC uses URL-encoded long/lat numbers representing a bounding box
-;; Note that the ordering is the same as that used by CMR (see below).
-;;  `-9.984375%2C56.109375%2C19.828125%2C67.640625`
-;; which URL-decodes to:
-;;  `-9.984375,56.109375,19.828125,67.640625`
-;;
-;; OPeNDAP download URLs have something I haven't figured out yet; given that
-;; one of the numbers if over 180, it can't be degrees ... it might be what
-;; WCS uses for `x` and `y`?
-;;  `Latitude[22:34],Longitude[169:200]`
-;;
-;; The OUS Prototype uses the WCS standard for lat/long:
-;;  `SUBSET=axis[,crs](low,high)`
-;; For lat/long this takes the following form:
-;;  `subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
-;;
-;; CMR supports bounding spatial extents by describing a rectangle using four
-;; comma-separated values:
-;;  1. lower left longitude
-;;  2. lower left latitude
-;;  3. upper right longitude
-;;  4. upper right latitude
-;; For example:
-;;  `bounding_box==-9.984375,56.109375,19.828125,67.640625`
-;;
-;; Google's APIs use lower left, upper right, but the specify lat first, then
-;; long:
-;;  `southWest = LatLng(56.109375,-9.984375);`
-;;  `northEast = LatLng(67.640625,19.828125);`
-
-;;; We're going to codify parameters with records to keep things well
-;;; documented. Additionally, this will make converting between parameter
-;;; schemes an explicit operation on explicit data.
 
 (defrecord OusPrototypeParams
   [;; `format` is any of the formats supported by the target OPeNDAP server,
@@ -159,23 +103,17 @@
   (map->CollectionParams
     (assoc params
       :format (or (:format params) default-format)
-      :granules (->seq (:granules params))
-      :variables (->seq (:variables params)))))
+      :granules (util/->seq (:granules params))
+      :variables (util/->seq (:variables params)))))
 
-(defn get-opendap-urls
-  [raw-params]
-  (log/trace "Got params:" raw-params)
-  (let [params (normalize-params raw-params)]
-    (cond (collection-params? params)
-          (do
-            (log/trace "Parameters are of type `collection` ...")
-            (create-collection-params params))
-          (ous-prototype-params? params)
-          (do
-            (log/trace "Parameters are of type `ous-prototype` ...")
-            (create-ous-prototype-params params))
-          (:collection-id params)
-          (do
-            (log/trace "Found collection id; assuming `collection` ...")
-            (create-collection-params params))
-          :else {:error :unsupported-parameters})))
+(defn params?
+  [type params]
+  (case type
+    :v1 (ous-prototype-params? params)
+    :v2 (collection-params? params)))
+
+(defn create-params
+  [type params]
+  (case type
+    :v1 (create-ous-prototype-params params)
+    :v2 (create-collection-params params)))
