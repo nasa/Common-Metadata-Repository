@@ -106,6 +106,10 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    "build" ["do"
+      ["ltest" ":unit"]
+      ["ubercompile"]
+      ["uberjar"]]
     ;; Documentation
     "codox" ["with-profile" "+docs"
       "codox"]
