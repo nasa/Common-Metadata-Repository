@@ -13,7 +13,7 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def service-concept-1-0
-  {:CoverageType {:Type "SPATIAL_POINT"}
+  {:Coverage {:Type "SPATIAL_POINT"}
    :AccessConstraints ["TEST"]
    :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
                 :Type "GET SERVICE"
@@ -23,8 +23,8 @@
                   :Type "GET SERVICE"
                   :URLContentType "CollectionURL"}]
    :AccessConstraints "TEST"
-   :CoverageType {:CoverageSpatialExtentType {:CoverageSpatialExtentTypeType
-                                              "SPATIAL_POINT"}}})
+   :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentType
+                                      "SPATIAL_POINT"}}})
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:service ["1.0" "1.1"]}}
@@ -43,7 +43,7 @@
 (deftest migrate-1_0-up-to-1_1
   (is (= service-concept-1-1
          (vm/migrate-umm {} :service "1.0" "1.1"
-                            {:CoverageType {:Type "SPATIAL_POINT"}
+                            {:Coverage {:Type "SPATIAL_POINT"}
                              :AccessConstraints ["TEST"]
                              :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
                                           :Type "GET SERVICE"
@@ -56,7 +56,7 @@
                                          :Type "GET SERVICE"
                                          :URLContentType "CollectionURL"}]
                           :AccessConstraints "TEST"
-                          :CoverageType {:CoverageSpatialExtentType {:CoverageSpatialExtentTypeType
-                                                                     "SPATIAL_POINT"}
-                                         :CoverageTemporalExtentType {:CoverageTemporalExtentTypeType
-                                                                      "TIME_STAMP"}}}))))
+                          :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentType
+                                                             "SPATIAL_POINT"}
+                                     :CoverageTemporalExtent {:CoverageTemporalExtentType
+                                                              "TIME_STAMP"}}}))))
