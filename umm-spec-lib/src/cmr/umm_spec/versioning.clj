@@ -11,7 +11,7 @@
   The sequence must be updated when new schema versions are added for the concept type."
   {:collection ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.9" "1.10"]
    :variable ["1.0" "1.1"]
-   :service ["1.0"]})
+   :service ["1.0" "1.1"]})
 
 (def current-collection-version
   "The current version of the collection UMM schema."
