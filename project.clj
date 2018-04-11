@@ -107,7 +107,7 @@
       ]
     "ltest" ["with-profile" "+test" "ltest"]
     "build" ["do"
-      ["ltest" ":unit"]
+      ["ltest" ":all"]
       ["ubercompile"]
       ["uberjar"]]
     ;; Documentation
