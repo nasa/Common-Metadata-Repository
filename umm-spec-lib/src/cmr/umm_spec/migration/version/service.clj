@@ -15,7 +15,7 @@
   "Migrate CoverageType changes down from 1.1 to 1.0"
   [coverage-type]
   (-> coverage-type
-      (assoc :Type (get-in coverage-type [:CoverageSpatialExtentType :CoverageSpatialExtentTypeType]))
+      (assoc :Type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentType]))
       (update :CoverageTemporalExtent dissoc :CoverageTemporalExtentType)
       (update :CoverageSpatialExtent dissoc :CoverageSpatialExtentType)))
 
@@ -38,7 +38,7 @@
       (update :UseConstraints #(util/trunc % 1024))
       (update-in [:ServiceQuality :Lineage] #(util/trunc % 100))
       (assoc :RelatedURLs [(:RelatedURL v)])
-      (update :CoverageType migrate-coverage-type-up)
+      (update :Coverage migrate-coverage-type-up)
       (dissoc :RelatedURL)
       util/remove-empty-maps))
 
@@ -48,6 +48,6 @@
       (assoc :AccessConstraints [(:AccessConstraints v)])
       (assoc :RelatedURL (first (:RelatedURLs v)))
       (update :RelatedURL migrate-related-url-subtype-down)
-      (update :CoverageType migrate-coverage-type-down)
+      (update :Coverage migrate-coverage-type-down)
       (dissoc :RelatedURLs)
       util/remove-empty-maps))
