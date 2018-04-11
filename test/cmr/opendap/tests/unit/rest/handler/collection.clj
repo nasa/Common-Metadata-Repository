@@ -10,7 +10,7 @@
   (let [pvt-func #'collection/generate-via-get
         concept-id :C123-PROV]
     (is (= {:collection-id "C123-PROV"
-            :format nil
+            :format "nc"
             :granules []
             :exclude-granules nil
             :variables []
@@ -19,7 +19,7 @@
            (util/parse-response
             (pvt-func {:params {}} concept-id))))
     (is (= {:collection-id "C123-PROV"
-            :format nil
+            :format "nc"
             :granules []
             :exclude-granules nil
             :variables ["V1-PROV" "V2-PROV"]
@@ -37,7 +37,7 @@
   (let [pvt-func #'collection/generate-via-post
         concept-id :C123-PROV]
     (is (= {:collection-id "C123-PROV"
-            :format nil
+            :format "nc"
             :granules []
             :exclude-granules nil
             :variables []
@@ -46,7 +46,7 @@
            (util/parse-response
             (pvt-func (util/create-json-stream-payload {}) concept-id))))
     (is (= {:collection-id "C123-PROV"
-            :format nil
+            :format "nc"
             :granules []
             :exclude-granules nil
             :variables ["V1-PROV" "V2-PROV"]

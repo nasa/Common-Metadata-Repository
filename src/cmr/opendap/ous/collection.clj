@@ -8,6 +8,8 @@
 ;;;   Constants and Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def default-format "nc")
+
 (def shared-keys
   #{:collection-id :format :subset})
 
@@ -101,7 +103,9 @@
 
 (defn create-ous-prototype-params
   [params]
-  (map->OusPrototypeParams params))
+  (map->OusPrototypeParams
+    (assoc params
+      :format (or (:format params) default-format))))
 
 (defrecord CollectionParams
   [;; `collection-id` is the concept id for the collection in question. Note
@@ -154,6 +158,7 @@
   [params]
   (map->CollectionParams
     (assoc params
+      :format (or (:format params) default-format)
       :granules (->seq (:granules params))
       :variables (->seq (:variables params)))))
 

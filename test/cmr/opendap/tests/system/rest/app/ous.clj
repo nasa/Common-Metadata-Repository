@@ -26,7 +26,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -44,7 +44,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables ["V1200241812-EDF_OPS"]
@@ -62,7 +62,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
@@ -80,7 +80,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules nil
               :variables []
@@ -99,7 +99,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules "true"
               :variables []
@@ -118,7 +118,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -137,7 +137,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -160,7 +160,7 @@
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -180,7 +180,7 @@
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables ["V1200241812-EDF_OPS"]
@@ -201,7 +201,7 @@
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
@@ -223,7 +223,7 @@
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules nil
               :variables []
@@ -246,7 +246,7 @@
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
               :exclude-granules "true"
               :variables []
@@ -268,7 +268,7 @@
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -289,7 +289,7 @@
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
@@ -310,7 +310,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
               :rangesubset nil
               :subset nil}
@@ -328,7 +328,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
               :rangesubset "V1200241812-EDF_OPS,V1200241813-EDF_OPS"
               :subset nil}
@@ -347,7 +347,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
               :rangesubset nil
               :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}
@@ -367,7 +367,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS,C1200187767-EDF_OPS"
               :rangesubset "V1200241812-EDF_OPS,V1200241813-EDF_OPS"
               :subset nil}
@@ -384,7 +384,7 @@
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format nil
+              :format "nc"
               :granules []
               :exclude-granules nil
               :variables []
