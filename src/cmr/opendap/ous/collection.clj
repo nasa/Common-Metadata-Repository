@@ -11,6 +11,20 @@
 (def shared-keys
   #{:collection-id :format :subset})
 
+(defn normalize-param
+  [param]
+  (-> param
+      name
+      (string/replace "_" "-")
+      (string/lower-case)
+      keyword))
+
+(defn normalize-params
+  [params]
+  (->> params
+       (map (fn [[k v]] [(normalize-param k) v]))
+       (into {})))
+
 (defn ->seq
   [data]
   (cond (nil? data) []
@@ -144,18 +158,19 @@
       :variables (->seq (:variables params)))))
 
 (defn get-opendap-urls
-  [params]
-  (log/trace "Got params:" params)
-  (cond (collection-params? params)
-        (do
-          (log/trace "Parameters are of type `collection` ...")
-          (create-collection-params params))
-        (ous-prototype-params? params)
-        (do
-          (log/trace "Parameters are of type `ous-prototype` ...")
-          (create-ous-prototype-params params))
-        (:collection-id params)
-        (do
-          (log/trace "Found collection id; assuming `collection` ...")
-          (create-collection-params params))
-        :else {:error :unsupported-parameters}))
+  [raw-params]
+  (log/trace "Got params:" raw-params)
+  (let [params (normalize-params raw-params)]
+    (cond (collection-params? params)
+          (do
+            (log/trace "Parameters are of type `collection` ...")
+            (create-collection-params params))
+          (ous-prototype-params? params)
+          (do
+            (log/trace "Parameters are of type `ous-prototype` ...")
+            (create-ous-prototype-params params))
+          (:collection-id params)
+          (do
+            (log/trace "Found collection id; assuming `collection` ...")
+            (create-collection-params params))
+          :else {:error :unsupported-parameters})))
