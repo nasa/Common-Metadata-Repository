@@ -47,6 +47,7 @@
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
       :plugins [
+        [lein-project-version "0.1.0"]
         [lein-shell "0.5.0"]
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]
@@ -107,10 +108,16 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    "version" ["do"
+      ["version"]
+      ["shell" "echo" "-n" "CMR-OPeNDAP: "]
+      ["project-version"]]
+    "procfile" ["shell" "resources/scripts/make-procfile"]
     "build" ["do"
       ["ltest" ":all"]
       ["ubercompile"]
-      ["uberjar"]]
+      ["uberjar"]
+      ["procfile"]]
     ;; Documentation
     "codox" ["with-profile" "+docs"
       "codox"]
