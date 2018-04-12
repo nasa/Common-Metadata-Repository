@@ -37,6 +37,7 @@
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
   :main cmr.opendap.core
+  :aot [cmr.opendap.core]
   :profiles {
     :ubercompile {
       :aot :all}
