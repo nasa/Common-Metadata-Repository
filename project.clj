@@ -68,7 +68,9 @@
       :dependencies [
         [clojusc/ltest "0.3.0"]]
       :plugins [
-        [lein-ltest "0.3.0"]]
+        [lein-ltest "0.3.0"]
+        [test2junit "1.4.0"]]
+      :test2junit-output-dir "junit-test-results"
       :test-selectors {
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
@@ -108,6 +110,7 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    "junit" ["with-profile" "+test" "test2junit"]
     "version" ["do"
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
@@ -115,6 +118,7 @@
     "procfile" ["shell" "resources/scripts/make-procfile"]
     "build" ["do"
       ["ltest" ":all"]
+      ["junit" ":all"]
       ["ubercompile"]
       ["uberjar"]
       ["procfile"]]
