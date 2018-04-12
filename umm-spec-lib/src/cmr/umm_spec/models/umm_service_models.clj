@@ -5,10 +5,6 @@
 
 (defrecord UMM-S
   [
-   ;; This element contains important information about the universal resource locator (URL) for the
-   ;; service.
-   RelatedURL
-
    ;; This element contains important information about the coverage for the service.
    Coverage
 
@@ -52,6 +48,10 @@
 
    ;; The name of the service, software, or tool.
    Name
+
+   ;; This element contains important information about the universal resource locator (URL) for the
+   ;; service.
+   RelatedURLs
 
    ;; A brief description of the service.
    Description
