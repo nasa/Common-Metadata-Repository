@@ -5,6 +5,7 @@
    [clojure.string :as str]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.request-write-access-augmenter :as augmenter]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -113,8 +114,9 @@
   (context "/tags" []
 
     ;; Create a new tag
-    (POST "/" {:keys [request-context headers body]}
-      (create-tag request-context headers (slurp body)))
+    (POST "/" request
+      (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+        (create-tag request-context headers (slurp body))))
 
     ;; Search for tags
     (GET "/" {:keys [request-context params]}
@@ -127,32 +129,38 @@
         (get-tag request-context (str/lower-case tag-key)))
 
       ;; Delete a tag
-      (DELETE "/" {:keys [request-context]}
-        (delete-tag request-context (str/lower-case tag-key)))
+      (DELETE "/" request
+        (let [{:keys [request-context]} (augmenter/add-write-access-to-request request)]
+          (delete-tag request-context (str/lower-case tag-key))))
 
       ;; Update a tag
-      (PUT "/" {:keys [request-context headers body]}
-        (update-tag request-context headers (slurp body) (str/lower-case tag-key)))
+      (PUT "/" request
+        (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+          (update-tag request-context headers (slurp body) (str/lower-case tag-key))))
 
       (context "/associations" []
 
         ;; Associate a tag with a list of collections
-        (POST "/" {:keys [request-context headers body]}
-          (associate-tag-to-collections
-            request-context headers (slurp body) (str/lower-case tag-key)))
+        (POST "/" request
+          (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+            (associate-tag-to-collections
+             request-context headers (slurp body) (str/lower-case tag-key))))
 
         ;; Dissociate a tag with a list of collections
-        (DELETE "/" {:keys [request-context headers body]}
-          (dissociate-tag-to-collections
-            request-context headers (slurp body) (str/lower-case tag-key)))
+        (DELETE "/" request
+          (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+            (dissociate-tag-to-collections
+             request-context headers (slurp body) (str/lower-case tag-key))))
 
         (context "/by_query" []
           ;; Associate a tag with collections
-          (POST "/" {:keys [request-context headers body]}
-            (associate-tag-by-query
-              request-context headers (slurp body) (str/lower-case tag-key)))
+          (POST "/" request
+            (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+              (associate-tag-by-query
+               request-context headers (slurp body) (str/lower-case tag-key))))
 
           ;; Dissociate a tag with collections
-          (DELETE "/" {:keys [request-context headers body]}
-            (dissociate-tag-by-query
-              request-context headers (slurp body) (str/lower-case tag-key))))))))
+          (DELETE "/" request
+            (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+              (dissociate-tag-by-query
+               request-context headers (slurp body) (str/lower-case tag-key)))))))))
