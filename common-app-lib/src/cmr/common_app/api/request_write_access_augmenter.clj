@@ -9,7 +9,7 @@
 (def URS_TOKEN_MAX_LENGTH 100)
 (def WRITE_ACCESS_SEPARATOR "WRITE_ACCESS:")
 
-(defn- is-launchpad-token?
+(defn is-launchpad-token?
   "Returns true if the given token is a launchpad token.
    Currently we only check the length of the token to decide."
   [token]
