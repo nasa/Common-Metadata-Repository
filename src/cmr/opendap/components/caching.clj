@@ -72,7 +72,7 @@
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord Caching [])
+(defrecord Caching [cache])
 
 (defn start
   [this]
@@ -84,7 +84,9 @@
 (defn stop
   [this]
   (log/info "Stopping caching component ...")
-  (dump-cache this @(:cache this))
+  (if-let [cache-ref (:cache this)]
+    (if-let [cache @cache-ref]
+      (dump-cache this cache)))
   (log/debug "Stopped caching component.")
   (assoc this :cache nil))
 
