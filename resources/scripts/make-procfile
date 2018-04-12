@@ -1,0 +1,9 @@
+#!/bin/bash
+
+VERSION=`lein project-version|tail -1`
+(
+cat <<EOF
+web: java -jar \$JVM_OPTS cmr-opendap-$VERSION-standalone.jar
+EOF
+) > Procfile
+echo "CMR-OPeNDAP NGAP Procfile created."
