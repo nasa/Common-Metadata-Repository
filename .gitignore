@@ -1,6 +1,7 @@
 /target
 /classes
 /checkouts
+build.xml
 pom.xml
 pom.xml.asc
 *.jar
@@ -11,3 +12,4 @@ pom.xml.asc
 .hg/
 /third-party
 /data/cache
+/junit-test-results
