@@ -243,3 +243,16 @@
       (is (= {:status 404
               :errors ["Tag could not be found with tag-key [tag2]"]}
              (tags/delete-tag token "tag2"))))))
+
+;; This test really only paritally tests the mock, don't have a good way to test the token
+;; that is patched with WRITE_ACCESS_SEPARATOR and sent to legacy services.
+(deftest create-tag-with-launchpad-token-test
+  (testing "Successful creation with launchpad token"
+    (let [tag-key "tag1"
+          tag (tags/make-tag {:tag-key tag-key})
+          token (e/login-with-launchpad-token (s/context) "user1")
+          {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
+      (is (= 201 status))
+      (is concept-id)
+      (is (= 1 revision-id))
+      (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id))))

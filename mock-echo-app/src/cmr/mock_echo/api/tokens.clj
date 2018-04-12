@@ -3,9 +3,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common-app.api.request-write-access-augmenter :as augmenter]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as svc-errors]
    [cmr.mock-echo.api.api-helpers :as ah]
+   [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.mock-echo.data.token-db :as token-db]
    [compojure.core :refer :all]))
 
@@ -47,7 +50,13 @@
 (defn- get-token-info-mock
   "Returns the mock token info for the token with the given token id"
   [context token-id]
-  (let [{:keys [username client_id id]} (get-token-or-error context token-id)]
+  ;; for launchpad token, remove WRITE_ACCESS_SEPARATOR and padding before searching
+  (let [token-id (if augmenter/is-launchpad-token?
+                   (-> token-id
+                       (string/replace echo-util/LAUNCHPAD_TOKEN_PADDING "")
+                       (string/replace augmenter/WRITE_ACCESS_SEPARATOR ""))
+                   token-id)
+        {:keys [username client_id id]} (get-token-or-error context token-id)]
     {:token_info {:user_name username
                   :client_id client_id
                   :guest (= username "guest")
