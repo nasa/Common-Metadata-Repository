@@ -13,18 +13,20 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def service-concept-1-0
-  {:Coverage {:Type "SPATIAL_POINT"}
-   :AccessConstraints ["TEST"]
-   :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
+  {:RelatedURL {:URLContentType "CollectionURL"
+                :Description "OPeNDAP Service"
                 :Type "GET SERVICE"
-                :URLContentType "CollectionURL"}})
+                :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"},
+   :Coverage {:Type "SPATIAL_POINT"}
+   :AccessConstraints ["TEST"]})
+
 (def service-concept-1-1
-  {:RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
-                  :Type "GET SERVICE"
-                  :URLContentType "CollectionURL"}]
+  {:Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType "SPATIAL_POINT"}}
    :AccessConstraints "TEST"
-   :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
-                                      "SPATIAL_POINT"}}})
+   :RelatedURLs [{:URLContentType "CollectionURL"
+                  :Description "OPeNDAP Service"
+                  :Type "GET SERVICE"
+                  :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}]})
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:service ["1.0" "1.1"]}}
@@ -43,20 +45,20 @@
 (deftest migrate-1_0-up-to-1_1
   (is (= service-concept-1-1
          (vm/migrate-umm {} :service "1.0" "1.1"
-                            {:Coverage {:Type "SPATIAL_POINT"}
-                             :AccessConstraints ["TEST"]
-                             :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
-                                          :Type "GET SERVICE"
-                                          :URLContentType "CollectionURL"}}))))
+           {:Coverage {:Type "SPATIAL_POINT"}
+            :AccessConstraints ["TEST"]
+            :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
+                         :Type "GET SERVICE"
+                         :URLContentType "CollectionURL"}}))))
 
 (deftest migrate-1_1-down-to-1_0
   (is (= service-concept-1-0
          (vm/migrate-umm {} :service "1.1" "1.0"
-                         {:RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
-                                         :Type "GET SERVICE"
-                                         :URLContentType "CollectionURL"}]
-                          :AccessConstraints "TEST"
-                          :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
-                                                             "SPATIAL_POINT"}
-                                     :CoverageTemporalExtent {:CoverageTemporalExtentTypeType
-                                                              "TIME_STAMP"}}}))))
+           {:RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
+                           :Type "GET SERVICE"
+                           :URLContentType "CollectionURL"}]
+            :AccessConstraints "TEST"
+            :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
+                                               "SPATIAL_POINT"}
+                       :CoverageTemporalExtent {:CoverageTemporalExtentTypeType
+                                                "TIME_STAMP"}}}))))
