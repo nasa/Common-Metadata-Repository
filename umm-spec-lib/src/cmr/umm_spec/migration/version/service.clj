@@ -15,16 +15,16 @@
   "Migrate CoverageType changes down from 1.1 to 1.0"
   [coverage-type]
   (-> coverage-type
-      (assoc :Type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentType]))
-      (update :CoverageTemporalExtent dissoc :CoverageTemporalExtentType)
-      (update :CoverageSpatialExtent dissoc :CoverageSpatialExtentType)))
+      (assoc :Type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType]))
+      (update :CoverageTemporalExtent dissoc :CoverageTemporalExtentTypeType)
+      (update :CoverageSpatialExtent dissoc :CoverageSpatialExtentTypeType)))
 
 (defn- migrate-coverage-type-up
   "Migrate CoverageType changes up from 1.0 to 1.1"
   [coverage-type]
   (-> coverage-type
       (update :CoverageSpatialExtent
-              assoc :CoverageSpatialExtentType (get coverage-type :Type))
+              assoc :CoverageSpatialExtentTypeType (get coverage-type :Type))
       (dissoc :Type)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

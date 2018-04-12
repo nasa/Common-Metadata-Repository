@@ -23,7 +23,7 @@
                   :Type "GET SERVICE"
                   :URLContentType "CollectionURL"}]
    :AccessConstraints "TEST"
-   :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentType
+   :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
                                       "SPATIAL_POINT"}}})
 
 (deftest test-version-steps
@@ -56,7 +56,7 @@
                                          :Type "GET SERVICE"
                                          :URLContentType "CollectionURL"}]
                           :AccessConstraints "TEST"
-                          :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentType
+                          :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
                                                              "SPATIAL_POINT"}
-                                     :CoverageTemporalExtent {:CoverageTemporalExtentType
+                                     :CoverageTemporalExtent {:CoverageTemporalExtentTypeType
                                                               "TIME_STAMP"}}}))))

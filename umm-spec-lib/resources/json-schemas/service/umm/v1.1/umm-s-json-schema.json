@@ -496,7 +496,7 @@
       "properties": {
         "CoverageSpatialExtentTypeType": {
           "description": "Type of the spatial extent for the coverage available from the service..",
-          "$ref": "#/definitions/CoverageSpatialTypeEnum"
+          "$ref": "#/definitions/CoverageSpatialExtentTypeEnum"
         },
         "Uuid": {
           "description": "Uuid of the spatial extent.",
@@ -537,7 +537,7 @@
       "properties": {
         "CoverageTemporalExtentTypeType": {
           "description": "The type of the temporal extent for the coverage available from the service.",
-          "$ref": "#/definitions/CoverageTemporalTypeEnum"
+          "$ref": "#/definitions/CoverageTemporalExtentTypeEnum"
         },
         "CoverageTimePoints": {
           "description": "Points in time representing the temporal extent of the layer or coverage.",
@@ -576,12 +576,12 @@
         }
       }
     },
-    "CoverageSpatialTypeEnum": {
+    "CoverageSpatialExtentTypeEnum": {
       "description": "This element is used to identify the coverage spatial type, either: point, linestring, bounding box or polygon.",
       "type": "string",
       "enum": ["SPATIAL_POINT", "SPATIAL_LINE_STRING", "BOUNDING_BOX", "SPATIAL_POLYGON"]
     },
-    "CoverageTemporalTypeEnum": {
+    "CoverageTemporalExtentTypeEnum": {
       "description": "This element is used to identify the coverage temporal type, either: time stamp, time series, or time average.",
       "type": "string",
       "enum": ["TIME_STAMP", "TIME_SERIES", "TIME_AVERAGE"]
