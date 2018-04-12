@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
+   [cmr.common.log :as log]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.location-keywords :as lk]
@@ -59,6 +60,10 @@
 
 (defn migrate-umm
   [context concept-type source-version dest-version data]
+  (log/info "concept-type" concept-type)
+  (log/info "source-version" source-version)
+  (log/info "dest-version" dest-version)
+  (log/info "data" data)
   (if (= source-version dest-version)
     data
     ;; Migrating across versions is just reducing over the discrete steps between each version.
