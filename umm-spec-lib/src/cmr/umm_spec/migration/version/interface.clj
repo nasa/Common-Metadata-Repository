@@ -1,6 +1,8 @@
 (ns cmr.umm-spec.migration.version.interface
   "Contains the interface definition for migrating between versions of UMM
-  schemas.")
+  schemas."
+  (:require
+   [cmr.common.log :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Interface for Migrating Between Versions
@@ -17,6 +19,7 @@
 
 (defmethod migrate-umm-version :default
   [context concept & _]
+  (log/error "DBG:1234" concept)
   ;; Do nothing by default. This lets us skip over "holes" in the version
   ;; sequence, where the UMM version may be updated but a particular concept
   ;; type's schema may not be affected.

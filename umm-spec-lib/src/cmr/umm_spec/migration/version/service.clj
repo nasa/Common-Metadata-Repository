@@ -31,22 +31,22 @@
  ;;; Service Migration Implementations
 
 (defmethod interface/migrate-umm-version [:service "1.0" "1.1"]
-  [context v & _]
-  (-> v
-      (assoc :AccessConstraints (first (:AccessConstraints v)))
+  [context s & _]
+  (-> s
+      (assoc :AccessConstraints (first (:AccessConstraints s)))
       (update :AccessConstraints #(util/trunc % 1024))
       (update :UseConstraints #(util/trunc % 1024))
       (update-in [:ServiceQuality :Lineage] #(util/trunc % 100))
-      (assoc :RelatedURLs [(:RelatedURL v)])
+      (assoc :RelatedURLs [(:RelatedURL s)])
       (update :Coverage migrate-coverage-type-up)
       (dissoc :RelatedURL)
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.1" "1.0"]
-  [context v & _]
-  (-> v
-      (assoc :AccessConstraints [(:AccessConstraints v)])
-      (assoc :RelatedURL (first (:RelatedURLs v)))
+  [context s & _]
+  (-> s
+      (assoc :AccessConstraints [(:AccessConstraints s)])
+      (assoc :RelatedURL (first (:RelatedURLs s)))
       (update :RelatedURL migrate-related-url-subtype-down)
       (update :Coverage migrate-coverage-type-down)
       (dissoc :RelatedURLs)
