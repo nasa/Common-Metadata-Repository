@@ -27,7 +27,7 @@
        ;; fully populated.
        "granule_ur VARCHAR(250),
         transaction_id INTEGER DEFAULT 0 NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL"))
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP"))
 
 (defmethod granule-column-sql true
   [provider]
