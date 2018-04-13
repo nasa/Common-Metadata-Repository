@@ -3,7 +3,7 @@
   See the test file for examples."
   (:require [cmr.common.date-time-parser :as p]
             [cmr.common.services.errors :as errors]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.java.io :as io])
   (:import javax.xml.validation.SchemaFactory
            javax.xml.XMLConstants
@@ -25,8 +25,17 @@
   (let [processing-regex #"<\?.*?\?>"
         doctype-regex #"<!DOCTYPE.*?>"]
     (-> xml
-        (str/replace processing-regex "")
-        (str/replace doctype-regex ""))))
+        (string/replace processing-regex "")
+        (string/replace doctype-regex ""))))
+
+(defn escape-xml
+  "Escape special characters in given string for xml representation."
+  [s]
+  (string/escape s {\< "&lt;"
+                    \> "&gt;"
+                    \& "&amp;"
+                    \' "&apos;"
+                    \" "&quot;"}))
 
 (defn- children-by-tag
   "Extracts the child elements with the given tag name."
@@ -175,4 +184,3 @@
     (.setEncoding output "UTF-8")
     (.write writer document output)
     (str (.getCharacterStream output))))
-

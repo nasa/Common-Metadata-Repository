@@ -10,7 +10,7 @@
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as u]
+   [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.query-execution :as qe]
@@ -70,7 +70,7 @@
         elastic-matches (get-in elastic-results [:hits :hits])
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
-        [req-time items] (u/time-execution
+        [req-time items] (util/time-execution
                           (metadata-cache/get-formatted-concept-revisions
                            context concept-type tuples result-format))
         ;; add tags to result items if necessary
@@ -115,7 +115,7 @@
   "Returns the metadata. Xml escape the special characters in UMM JSON metadata if applicable."
   [format metadata]
   (if (mt/umm-json? format)
-    (string/escape metadata {\< "&lt;", \> "&gt;", \& "&amp;"})
+    (cx/escape-xml metadata)
     metadata))
 
 (defmulti metadata-item->result-string
