@@ -204,7 +204,7 @@
             :revision-date-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
-            :created-at created-at
+            :created-at (or created-at revision-date)
             :start-date (index-util/date->elastic start-date)
             :start-date-doc-values (index-util/date->elastic start-date)
             :end-date (index-util/date->elastic end-date)
