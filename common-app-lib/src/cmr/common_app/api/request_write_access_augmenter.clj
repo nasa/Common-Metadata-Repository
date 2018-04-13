@@ -4,7 +4,10 @@
    The CMR Ingest prefix is used to indicate to legacy services that when
    validating the Launchpad token, the NAMS CMR Ingest group should also be checked."
   (:require
-   [cmr.common-app.api.request-context-user-augmenter :as augmenter]))
+   [cmr.common-app.api.request-context-user-augmenter :as augmenter]
+   [cmr.common-app.config :as config]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as transmit-config]))
 
 (def URS_TOKEN_MAX_LENGTH 100)
 (def WRITE_ACCESS_SEPARATOR "WRITE_ACCESS:")
@@ -24,6 +27,13 @@
    also has the right ACLs which is based on Earthdata Login uid."
   [request]
   (let [token (-> request :request-context :token)]
+    (when (and (config/launchpad-token-enforced)
+               (not (is-launchpad-token? token))
+               (not= (transmit-config/echo-system-token) token))
+      (errors/throw-service-error
+       :bad-request
+       (format "Launchpad token is required. Token [%s] is not a launchpad token." token)))
+
     (if (is-launchpad-token? token)
       ;; for Launchpad token add CMR_INGEST: prefix so that legacy service
       ;; can do extra validation to check if the user has been approved for
