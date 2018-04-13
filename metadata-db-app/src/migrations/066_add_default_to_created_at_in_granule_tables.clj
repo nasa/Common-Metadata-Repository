@@ -1,9 +1,7 @@
 (ns migrations.066-add-default-to-created-at-in-granule-tables
   "Add default value SYSTIMESTAMP to created_at column in granule tables."
   (:require
-   [clojure.java.jdbc :as j]
-   [config.mdb-migrate-helper :as h]
-   [config.migrate-config :as config]))
+   [config.mdb-migrate-helper :as h]))
 
 (defn- add-default-to-created-at
   []
