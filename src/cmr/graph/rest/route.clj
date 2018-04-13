@@ -36,7 +36,10 @@
   (let [conn (neo4j/get-conn httpd-component)]
     [["/relationships/related-urls/collections/:concept-id"
       {:get (handler/get-collections-via-related-urls conn)
-       :options handler/ok}]]))
+       :options handler/ok}]
+     ["/relationships/providers/related-urls/:provider-name"
+       {:get (handler/get-urls-via-provider conn)
+        :options handler/ok}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Elasticsearch Graph Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

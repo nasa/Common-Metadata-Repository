@@ -99,6 +99,14 @@
           concept-ids (distinct (map #(get % "c.conceptId") result))]
       (response/json request concept-ids))))
 
+(defn get-urls-via-provider
+  [conn]
+  (fn [request]
+    (let [provider (get-in request [:path-params :provider-name])
+          result (collections/get-urls-via-provider conn provider)
+          urls (distinct (map #(get % "u.name") result))]
+      (response/json request urls))))
+
 (defn import-collection-data
   "Imports all of our collection data."
   [conn]
