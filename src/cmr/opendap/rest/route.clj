@@ -17,7 +17,8 @@
 
 (defn ous
   [httpd-component]
-  [["/ous/collections" {
+  [["/" {:get core-handler/ok}]
+   ["/ous/collections" {
     :post {
       :handler collection-handler/batch-generate
       ;; XXX protecting collections will be a little different than
