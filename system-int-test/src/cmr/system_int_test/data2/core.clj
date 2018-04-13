@@ -11,6 +11,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
+   [cmr.search.results-handlers.metadata-results-handler :as metadata-results-handler]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -255,8 +256,12 @@
     (let [metadata (umm-legacy/generate-metadata context umm-record original-format)
           umm-spec-parsed (umm-spec/parse-metadata
                            context concept-type
-                           original-format metadata)]
-      (umm-spec/generate-metadata context umm-spec-parsed format-key))))
+                           original-format metadata)
+          expected (umm-spec/generate-metadata context umm-spec-parsed format-key)]
+      ;; umm-json metadata is xml escaped in native response,
+      ;; so we xml escape the expected metadata for comparison
+      (metadata-results-handler/xml-escape-umm-json-metadata
+       (mime-types/format->mime-type format-key) expected))))
 
 (defmulti item->metadata-result
   "Converts an item into the expected metadata result"

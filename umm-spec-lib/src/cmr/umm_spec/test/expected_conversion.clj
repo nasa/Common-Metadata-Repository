@@ -91,7 +91,7 @@
                                                   :MaximumValue 10.0}}]
     :AccessConstraints {:Description "Restriction Comment: Access constraints"
                         :Value "0"}
-    :UseConstraints (umm-coll-models/map->UseConstraintsType 
+    :UseConstraints (umm-coll-models/map->UseConstraintsType
                       {:Description (umm-coll-models/map->UseConstraintsDescriptionType
                                       {:Description "example-collection-record Description"})
                        :LicenseUrl (cmn/map->OnlineResourceType
@@ -151,7 +151,7 @@
     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
-                   :URL "http://www.foo.com"
+                   :URL "http://www.foo.com?a=1&ver=5"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
                    :Subtype "ECHO"
