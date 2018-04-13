@@ -19,7 +19,6 @@
 
 (defmethod migrate-umm-version :default
   [context concept & _]
-  (log/error "DBG:1234" concept)
   ;; Do nothing by default. This lets us skip over "holes" in the version
   ;; sequence, where the UMM version may be updated but a particular concept
   ;; type's schema may not be affected.

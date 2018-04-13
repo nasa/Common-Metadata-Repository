@@ -33,7 +33,6 @@
 
 (defmethod interface/migrate-umm-version [:service "1.0" "1.1"]
   [context s & _]
-  (log/error "DBG: MIGRATING SERVICE UP 1.0 to 1.1" s)
   (-> s
       (assoc :AccessConstraints (first (:AccessConstraints s)))
       (update :AccessConstraints #(util/trunc % 1024))
@@ -46,7 +45,6 @@
 
 (defmethod interface/migrate-umm-version [:service "1.1" "1.0"]
   [context s & _]
-  (log/error "DBG: MIGRATING SERVICE DOWN 1.1 to 1.0" s)
   (-> s
       (assoc :AccessConstraints [(:AccessConstraints s)])
       (assoc :RelatedURL (first (:RelatedURLs s)))

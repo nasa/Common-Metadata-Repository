@@ -129,13 +129,12 @@
    :LongName :LongName
    :Name :Name
    :Version :Version
-   ;; Nested single-value data
-   :RelatedURL #(related-url->keywords (:RelatedURL %))
    ;; Simple multi-valued data
    :AncillaryKeywords :AncillaryKeywords
    :ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
    :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
    :Platforms #(mapcat platform->keywords (:Platforms %))
+   :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 

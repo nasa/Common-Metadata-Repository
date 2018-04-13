@@ -61,10 +61,6 @@
 
 (defn migrate-umm
   [context concept-type source-version dest-version data]
-  (log/error "concept-type" concept-type)
-  (log/error "source-version" source-version)
-  (log/error "dest-version" dest-version)
-  (log/error "data" data)
   (if (= source-version dest-version)
     data
     ;; Migrating across versions is just reducing over the discrete steps between each version.
