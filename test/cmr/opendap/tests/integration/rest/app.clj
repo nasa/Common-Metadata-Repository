@@ -65,7 +65,7 @@
   (testing "Minimal get"
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
-                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                     (format "http://localhost:%s/ous/collection/%s"
                              (test-system/http-port)
                              collection-id))]
       (is (= 403 (:status response)))
