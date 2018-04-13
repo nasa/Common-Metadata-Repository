@@ -24,7 +24,7 @@
                      :ContactGroups
                      :ContactPersons
                      :Platforms
-                     :RelatedURL
+                     :RelatedURLs
                      :ScienceKeywords
                      :ServiceKeywords
                      :ServiceOrganizations]

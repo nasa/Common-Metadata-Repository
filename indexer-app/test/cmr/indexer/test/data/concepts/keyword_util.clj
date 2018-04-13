@@ -14,12 +14,11 @@
    :Type "OPeNDAP"
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
-   :RelatedURL {
-     :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-     :Description "OPeNDAP Service"
-     :Type "GET SERVICE"
-     :Subtype "ACCESS WEB SERVICE"
-     :URLContentType "CollectionURL"}
+   :RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                  :Description "OPeNDAP Service"
+                  :Type "GET SERVICE"
+                  :Subtype "ACCESS WEB SERVICE"
+                  :URLContentType "CollectionURL"}]
    :ContactPersons [
      {:Roles ["AUTHOR"]
       :ContactInformation {
@@ -128,7 +127,7 @@
   (is (= ["Airbus A340-600" "A340-600" "Senso-matic Wonder Eye 4B" "SMWE4B"]
          ((:Platforms keyword-util/fields->fn-mapper) sample-umm-service-concept)))
   (is (= ["OPeNDAP Service" "ACCESS WEB SERVICE" "GET SERVICE" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" "CollectionURL"]
-         ((:RelatedURL keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((:RelatedURLs keyword-util/fields->fn-mapper) sample-umm-service-concept)))
   (is (= ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION" nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING" "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
          ((:ScienceKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
   (is (= ["DATA ANALYSIS AND VISUALIZATION" nil nil "VISUALIZATION/IMAGE PROCESSING" "DATA ANALYSIS AND VISUALIZATION" nil nil nil nil nil nil "STATISTICAL APPLICATIONS"]
@@ -144,7 +143,7 @@
   (is (= ["ACCESS WEB SERVICE" "CollectionURL" "GET SERVICE" "OPeNDAP Service" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
          (sort
           (keyword-util/concept-key->keywords
-           sample-umm-service-concept :RelatedURL))))
+           sample-umm-service-concept :RelatedURLs))))
   (is (= ["ATMOSPHERE" "ATMOSPHERIC WINDS" "DATA ANALYSIS AND VISUALIZATION" "EARTH SCIENCE SERVICES" "GEOGRAPHIC INFORMATION SYSTEMS" "MICROWAVE" "MICROWAVE IMAGERY" "RADAR" "SCIENCE CAT 3" "SCIENCE TERM 3" "SCIENCE TOPIC 3" "SPECTRAL/ENGINEERING" "SURFACE WINDS"]
          (sort
           (keyword-util/concept-key->keywords
@@ -156,7 +155,7 @@
               "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ "
               "level3 nasa opendap opendap service service web")
         (keyword-util/concept-key->keyword-text
-         sample-umm-service-concept :RelatedURL)))
+         sample-umm-service-concept :RelatedURLs)))
   (is (= (str "3 analysis and atmosphere atmospheric atmospheric winds cat "
               "data data analysis and visualization earth earth science "
               "services engineering geographic geographic information systems "
@@ -182,7 +181,7 @@
                      :ContactGroups
                      :ContactPersons
                      :Platforms
-                     :RelatedURL
+                     :RelatedURLs
                      :ScienceKeywords
                      :ServiceKeywords
                      :ServiceOrganizations]]
@@ -222,7 +221,7 @@
                      :ContactGroups
                      :ContactPersons
                      :Platforms
-                     :RelatedURL
+                     :RelatedURLs
                      :ScienceKeywords
                      :ServiceKeywords
                      :ServiceOrganizations]]

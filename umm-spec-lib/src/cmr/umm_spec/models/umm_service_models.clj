@@ -5,10 +5,6 @@
 
 (defrecord UMM-S
   [
-   ;; This element contains important information about the universal resource locator (URL) for the
-   ;; service.
-   RelatedURL
-
    ;; This element contains important information about the coverage for the service.
    Coverage
 
@@ -52,6 +48,10 @@
 
    ;; The name of the service, software, or tool.
    Name
+
+   ;; This element contains important information about the universal resource locator (URL) for the
+   ;; service.
+   RelatedURLs
 
    ;; A brief description of the service.
    Description
@@ -168,9 +168,6 @@
    ;; This is the long name of the service organization.
    LongName
 
-   ;; Uuid of the service organization.
-   Uuid
-
    ;; This is the contact groups of the service organization.
    ContactGroups
 
@@ -200,17 +197,13 @@
 ;; This element describes coverage information.
 (defrecord CoverageType
   [
-   ;; The temporal resolution of the coverage available from the service.
-   TemporalResolution
+   ;; The name of the coverage available from the service.
+   Name
 
-   ;; Path relative to the root universal resource locator for the coverage.
-   RelativePath
-
-   ;; The unit of the temporal resolution of the coverage available from the service.
-   TemporalResolutionUnit
-
-   ;; The temporal extent of the coverage available from the service.
-   CoverageTemporalExtent
+   ;; The spatial extent of the coverage available from the service. These are coordinate pairs
+   ;; which describe either the point, line string, or polygon representing the spatial extent. The
+   ;; bounding box is described by the west, south, east and north ordinates
+   CoverageSpatialExtent
 
    ;; The spatial resolution of the coverage available from the service.
    SpatialResolution
@@ -218,16 +211,17 @@
    ;; The unit of the spatial resolution of the coverage available from the service.
    SpatialResolutionUnit
 
-   ;; The spatial extent of the coverage available from the service. These are coordinate pairs
-   ;; which describe either the point, line string, or polygon representing the spatial extent. The
-   ;; bounding box is described by the west, south, east and north ordinates
-   CoverageSpatialExtent
+   ;; The temporal extent of the coverage available from the service.
+   CoverageTemporalExtent
 
-   ;; The name of the coverage available from the service.
-   Name
+   ;; The temporal resolution of the coverage available from the service.
+   TemporalResolution
 
-   ;; The type of the coverage available from the service.
-   Type
+   ;; The unit of the temporal resolution of the coverage available from the service.
+   TemporalResolutionUnit
+
+   ;; Path relative to the root universal resource locator for the coverage.
+   RelativePath
   ])
 (record-pretty-printer/enable-record-pretty-printing CoverageType)
 
@@ -247,6 +241,9 @@
 
 (defrecord CoverageTemporalExtentType
   [
+   ;; The type of the temporal extent for the coverage available from the service.
+   CoverageTemporalExtentTypeType
+
    ;; Points in time representing the temporal extent of the layer or coverage.
    CoverageTimePoints
 
@@ -261,10 +258,10 @@
    ;; The minimum x ordinate of the bounding box.
    MinX
 
-   ;; The minimum x ordinate of the bounding box.
+   ;; The minimum y ordinate of the bounding box.
    MinY
 
-   ;; The maximum y ordinate of the bounding box.
+   ;; The maximum x ordinate of the bounding box.
    MaxX
 
    ;; The maximum y ordinate of the bounding box.
@@ -342,8 +339,8 @@
 
 (defrecord CoverageSpatialExtentType
   [
-   ;; Type of the spatial extent.
-   Type
+   ;; Type of the spatial extent for the coverage available from the service..
+   CoverageSpatialExtentTypeType
 
    ;; Uuid of the spatial extent.
    Uuid
