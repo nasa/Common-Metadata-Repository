@@ -23,6 +23,8 @@
 (def service-concept-1-1
   {:Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType "SPATIAL_POINT"}}
    :AccessConstraints "TEST"
+   :ServiceOrganizations [{:Roles ["SERVICE PROVIDER"]
+                           :ShortName "TEST ShortName"}]
    :RelatedURLs [{:URLContentType "CollectionURL"
                   :Description "OPeNDAP Service"
                   :Type "GET SERVICE"
@@ -47,6 +49,9 @@
          (vm/migrate-umm {} :service "1.0" "1.1"
            {:Coverage {:Type "SPATIAL_POINT"}
             :AccessConstraints ["TEST"]
+            :ServiceOrganizations [{:Roles ["SERVICE PROVIDER"]
+                                    :ShortName "TEST ShortName"
+                                    :Uuid "TEST Uuid"}]
             :RelatedURL {:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
                          :Type "GET SERVICE"
                          :URLContentType "CollectionURL"}}))))
