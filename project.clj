@@ -45,6 +45,7 @@
     :local {
       :dependencies [
         [clojusc/dev-system "0.1.0"]
+        [environ "1.1.0"]
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
       :plugins [
@@ -53,6 +54,7 @@
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]}
     :dev {
+      :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
       :repl-options {
         :init-ns cmr.opendap.dev
         :prompt ~get-prompt
