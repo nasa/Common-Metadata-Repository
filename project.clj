@@ -36,12 +36,13 @@
     [ring/ring-core "1.6.3"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
+  :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Xms2g" "-Xmx2g"]
   :main cmr.opendap.core
   :aot [cmr.opendap.core]
   :profiles {
     :ubercompile {
       :aot :all}
-    :dev {
+    :local {
       :dependencies [
         [clojusc/dev-system "0.1.0"]
         [org.clojure/tools.namespace "0.2.11"]
@@ -50,7 +51,8 @@
         [lein-project-version "0.1.0"]
         [lein-shell "0.5.0"]
         [venantius/ultra "0.5.2"]]
-      :source-paths ["dev-resources/src"]
+      :source-paths ["dev-resources/src"]}
+    :dev {
       :repl-options {
         :init-ns cmr.opendap.dev
         :prompt ~get-prompt
@@ -95,6 +97,7 @@
         :output-path "docs/current"}}}
   :aliases {
     ;; Dev & Testing Aliases
+    "repl" ["with-profile" "+local" "repl"]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
