@@ -26,6 +26,7 @@
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
+    [environ "1.1.0"]
     [http-kit "2.2.0"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
@@ -42,10 +43,11 @@
   :profiles {
     :ubercompile {
       :aot :all}
+    :system {
+      :dependencies [
+        [clojusc/dev-system "0.1.0"]]}
     :local {
       :dependencies [
-        [clojusc/dev-system "0.1.0"]
-        [environ "1.1.0"]
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
       :plugins [
@@ -99,7 +101,7 @@
         :output-path "docs/current"}}}
   :aliases {
     ;; Dev & Testing Aliases
-    "repl" ["with-profile" "+local" "repl"]
+    "repl" ["with-profile" "+local,+system" "repl"]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
@@ -114,8 +116,8 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test" "ltest"]
-    "junit" ["with-profile" "+test" "test2junit"]
+    "ltest" ["with-profile" "+test,+system" "ltest"]
+    "junit" ["with-profile" "+test,+system" "test2junit"]
     "version" ["do"
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
