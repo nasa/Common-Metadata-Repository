@@ -41,6 +41,7 @@
       (assoc :RelatedURLs [(:RelatedURL s)])
       (update :Coverage migrate-coverage-type-up)
       (dissoc :RelatedURL)
+      (util/update-in-each [:ServiceOrganizations] dissoc :Uuid)
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.1" "1.0"]
