@@ -14,26 +14,6 @@
   [system]
   (into {} (get-in system [:config :data])))
 
-(defn get-env-cfg
-  [env-var]
-  (System/getenv env-var))
-
-(defn xform
-  [^Keyword type value]
-  (case type
-    :int (Integer/parseInt value)
-    value))
-
-(defn pull-env-var
-  [cfg-data [env-var {:keys [keys type]}]]
-  (if-let [env (get-env-cfg env-var)]
-    (assoc-in cfg-data keys (xform type env))
-    cfg-data))
-
-(defn pull-env-vars
-  [cfg-data vars-data]
-  (map (partial pull-env-var cfg-data) vars-data))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,8 +51,8 @@
 
 (defn http-port
   [system]
-
-  (get-in (get-cfg system) [:httpd :port]))
+  (or (get-in (get-cfg system) [:cmr :opendap :port])
+      (get-in (get-cfg system) [:httpd :port])))
 
 (defn log-level
   [system]
@@ -92,11 +72,7 @@
   [this]
   (log/info "Starting config component ...")
   (log/debug "Started config component.")
-  (let [cfg (pull-env-vars (config/data)
-                           ;; XXX Eventually, we're going to add env pull-ins
-                           ;;     for other EECS vars, too ...
-                           {"CMR_OPENDAP_PORT" {:keys [:httpd :port]
-                                                :type :int}})]
+  (let [cfg (config/data)]
     (log/debug "Built configuration:" (into {} cfg))
     (assoc this :data cfg)))
 
