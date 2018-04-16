@@ -33,23 +33,65 @@ TBD
 
 cmr-opendap is configured in several ways:
 
-* Configuration file (see `resources/config/cmr-opendap/config.edn`) - this is
+* **Configuration file** (see `resources/config/cmr-opendap/config.edn`) - this is
   generally for providing more-or-less static defaults.
-* Java system properties - provided either with the `-Dsome.prop.name=value` as
+* **Java system properties** - provided either with the `-Dsome.prop.name=value` as
   a command line option, or in the `project.clj` file with
-  `:jvm-opts=["-Dcmr.some.prop.name=value"]`. Note that only property names
+  `:jvm-opts=["-Dcmr.some.prop.name=value"]`. This is the recommanded way to set
+  values for local development environments. Note that only property names
   starting with "cmr." will be recognized. Also: configration will be nested
   under keys created from the property name, so the above example would be
   available as `{:cmr {:some {:prop {:name "value"}}}}`. Values that can be
   parsed as integers are converted to integers in the resulting configuration
   data structure.
-* Environment variables - this is the recommanded way to set different
+* **Environment variables** - this is the recommanded way to override
   configuration values in different deployment environments. Environment
   variables must be prefixed with `CMR_`. Variables names are split on
-  underscore in the same way that system properties are split on the period
+  underscores in the same way that system properties are split on the period
   character. As such, when executing `CMR_SOME_PROP_NAME=value lein run`,
   the configuration data will have the same nested data as show above,
-  namely: `{:cmr {:some {:prop {:name "value"}}}}`.
+  namely: `{:cmr {:some {:prop {:name "value"}}}}`. As with system property
+  conifguration, environment variables that can be based as integers, are.
+
+In deployment environments, the following data structure is expected and
+utilized by the application:
+
+```clj
+ {:cmr
+   {:opendap
+   	 {:public
+   	 	{:protocol ""
+   	 	 :host ""
+   	     :port nnn}
+   	  :host ""
+   	  :port nnn
+   	  :relative
+   	    {:root
+   	      {:url ""}}
+   	  :version "x.y.z"}}
+   {:access
+     {:control
+     	{:protocol ""
+     	 :host ""
+     	 :port nnn}}}
+   {:echo
+     {:rest
+     	{:protocol ""
+     	 :host ""
+     	 :port nnn
+     	 :context ""}}}
+   {:ingest
+     {:protocol ""
+ 	  :host ""
+ 	  :port nnn}}
+   {:search
+     {:protocol ""
+ 	  :host ""
+ 	  :port nnn}}}
+```
+
+These are used in production as well as when running system (and some
+integration) tests.
 
 
 ## Running the Tests [&#x219F;](#contents)
