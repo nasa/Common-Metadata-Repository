@@ -2,34 +2,67 @@
   (:require
    [cmr.opendap.const :as const]
    [org.httpkit.client :as httpc]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log])
+  (:refer-clojure :exclude [get]))
 
 (def default-options
   {:user-agent const/user-agent
    :insecure? true})
 
 (defn options
-  [request & opts]
-  (apply assoc (concat [request] opts)))
+  [req & opts]
+  (apply assoc (concat [req] opts)))
 
 (defn get-header
-  [request field]
-  (get-in request [:headers field]))
+  [req field]
+  (get-in req [:headers field]))
 
 (defn add-header
-  [request field value]
-  (assoc-in request [:headers field] value))
+  [req field value]
+  (assoc-in req [:headers field] value))
 
 (defn add-token-header
-  [request token]
-  (add-header request "Echo-Token" token))
+  ([token]
+    (add-token-header {} token))
+  ([req token]
+    (add-header req "Echo-Token" token)))
+
+(defn add-user-agent
+  [req]
+  (add-header req "User-Agent" const/user-agent))
 
 (defn add-form-ct
-  [request]
-  (add-header request "Content-Type" "application/x-www-form-urlencoded"))
+  [req]
+  (add-header req "Content-Type" "application/x-www-form-urlencoded"))
 
 (defn add-client-id
-  [request]
-  (add-header request "Client-Id" "cmr-opendap-token-checker"))
+  [req]
+  (add-header req "Client-Id" "cmr-opendap-token-checker"))
 
+(defn request
+  [method url req]
+  (httpc/request (-> default-options
+                     (add-client-id)
+                     (add-user-agent)
+                     (merge req)
+                     (assoc :url url :method method))))
 
+(defn async-get
+  ([url]
+    (async-get url {}))
+  ([url req]
+    (request :get url req)))
+
+(defn async-post
+  ([url]
+    (async-post url {:body nil}))
+  ([url req]
+    (request :post url req)))
+
+(defn get
+  [& args]
+  @(apply async-get args))
+
+(defn post
+  [& args]
+  @(apply async-post args))

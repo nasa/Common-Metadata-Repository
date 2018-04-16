@@ -6,7 +6,6 @@
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [org.httpkit.client :as httpc]
    [taoensso.timbre :as log]))
 
 (def token-info-resource "/tokens/get_token_info")
@@ -36,13 +35,13 @@
   [base-url token]
   (let [url (str base-url token-info-resource)
         data (str "id=" token)]
-    (httpc/request (-> request/default-options
-                       (request/options :method :post :url url :body data)
-                       (request/add-token-header token)
-                       (request/add-form-ct)
-                       (request/add-client-id)
-                       ((fn [x] (log/trace "Prepared request:" x) x)))
-                   #(response/client-handler % parse-token-data))))
+    (request/async-post
+      url
+      (-> {:body data}
+          (request/add-token-header token)
+          (request/add-form-ct)
+          ((fn [x] (log/trace "Prepared request:" x) x)))
+      #(response/client-handler % parse-token-data))))
 
 (defn ->user
   [base-url token]
