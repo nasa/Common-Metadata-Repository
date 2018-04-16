@@ -5,6 +5,11 @@
    :lru
     {:threshold 1000}
    :dumpfile "data/cache/dump.edn"}
+ ;; XXX Change this to use the same parts that the rest of the CMR uses,
+ ;;     namely scheme, host, port. path ... we use the below base-url for
+ ;;     hitting access-control and search, so we'll want to split this out
+ ;;     into searate configs for each of those; at that point, we'll be able
+ ;;     to update the config loading in the config component.
  :cmr
   {:base-url "https://cmr.sit.earthdata.nasa.gov"}
  :httpd
