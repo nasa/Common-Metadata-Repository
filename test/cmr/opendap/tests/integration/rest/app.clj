@@ -21,6 +21,15 @@
 
 (use-fixtures :once test-system/with-system)
 
+(deftest root-route
+  (testing "root route ..."
+    (let [response @(httpc/get (format "http://localhost:%s/"
+                                       (test-system/http-port)))]
+      (is (= 200 (:status response))))
+    (let [response @(httpc/head (format "http://localhost:%s/"
+                                        (test-system/http-port)))]
+      (is (= 200 (:status response))))))
+
 (deftest admin-routes
   (testing "health route ..."
     (let [response @(httpc/get (format "http://localhost:%s/health"
