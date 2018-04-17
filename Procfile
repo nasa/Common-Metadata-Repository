@@ -1,1 +1,1 @@
-web: lein start-cmr-opendap
+web: lein trampoline run
