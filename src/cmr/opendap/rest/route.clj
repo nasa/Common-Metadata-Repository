@@ -17,10 +17,10 @@
 
 (defn ous
   [httpd-component]
-  [["/" {
+  [["/opendap" {
     :get core-handler/ok
     :head core-handler/ok}]
-   ["/ous/collections" {
+   ["/opendap/ous/collections" {
     :post {
       :handler collection-handler/batch-generate
       ;; XXX protecting collections will be a little different than
@@ -31,7 +31,7 @@
       ;:permission #{...}
       }
     :options core-handler/ok}]
-   ["/ous/collection/:concept-id" {
+   ["/opendap/ous/collection/:concept-id" {
     :get {
       :handler collection-handler/generate-urls
       :permissions #{:read}}
@@ -47,7 +47,7 @@
 (defn static
   [httpd-component]
   (let [docroot (config/http-docroot httpd-component)]
-    [["/site/*" {
+    [["/opendap/site/*" {
       :get (core-handler/static-files docroot)}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,10 +56,10 @@
 
 (defn admin
   [httpd-component]
-  [["/health" {
+  [["/opendap/health" {
     :get (core-handler/health httpd-component)
     :options core-handler/ok}]
-   ["/ping" {
+   ["/opendap/ping" {
     :get {
       :handler core-handler/ping
       :roles #{:admin}}
