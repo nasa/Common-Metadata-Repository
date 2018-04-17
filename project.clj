@@ -124,8 +124,8 @@
       ["project-version"]]
     "procfile" ["shell" "resources/scripts/make-procfile"]
     "build" ["do"
-      ["ltest" ":all"]
-      ["junit" ":all"]
+      ["ltest" ":unit"]
+      ["junit" ":unit"]
       ["ubercompile"]
       ["uberjar"]
       ["procfile"]]
