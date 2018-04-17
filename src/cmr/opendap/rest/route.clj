@@ -17,7 +17,9 @@
 
 (defn ous
   [httpd-component]
-  [["/" {:get core-handler/ok}]
+  [["/" {
+    :get core-handler/ok
+    :head core-handler/ok}]
    ["/ous/collections" {
     :post {
       :handler collection-handler/batch-generate
