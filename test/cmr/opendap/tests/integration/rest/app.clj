@@ -23,16 +23,23 @@
 
 (deftest root-route
   (testing "root route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/"
+    (let [response @(httpc/get (format "http://localhost:%s/opendap"
                                        (test-system/http-port)))]
       (is (= 200 (:status response))))
-    (let [response @(httpc/head (format "http://localhost:%s/"
+    (let [response @(httpc/head (format "http://localhost:%s/opendap"
+                                        (test-system/http-port)))]
+      (is (= 200 (:status response)))))
+  (testing "root route with trailing slash ..."
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/"
+                                       (test-system/http-port)))]
+      (is (= 200 (:status response))))
+    (let [response @(httpc/head (format "http://localhost:%s/opendap/"
                                         (test-system/http-port)))]
       (is (= 200 (:status response))))))
 
 (deftest admin-routes
   (testing "health route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/health"
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/health"
                                        (test-system/http-port)))]
       (is (= 200 (:status response)))
       (is (= {:config {:ok? true}
@@ -40,7 +47,7 @@
               :logging {:ok? false}}
              (json/parse-string (:body response) true)))))
   (testing "protected admin route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/ping"
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/ping"
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
       (is (= "An ECHO token is required to access this resource."
@@ -48,22 +55,22 @@
 
 (deftest testing-routes
   (is 401
-      (:status @(httpc/get (format "http://localhost:%s/testing/401"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/401"
                                    (test-system/http-port)))))
   (is 403
-      (:status @(httpc/get (format "http://localhost:%s/testing/403"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/403"
                                    (test-system/http-port)))))
   (is 404
-      (:status @(httpc/get (format "http://localhost:%s/testing/404"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/404"
                                    (test-system/http-port)))))
   (is 405
-      (:status @(httpc/get (format "http://localhost:%s/testing/405"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/405"
                                    (test-system/http-port)))))
   (is 500
-      (:status @(httpc/get (format "http://localhost:%s/testing/500"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/500"
                                    (test-system/http-port)))))
   (is 503
-      (:status @(httpc/get (format "http://localhost:%s/testing/503"
+      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/503"
 
                                    (test-system/http-port))))))
 
@@ -74,7 +81,7 @@
   (testing "Minimal get"
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format "http://localhost:%s/opendap/ous/collection/%s"
                              (test-system/http-port)
                              collection-id))]
       (is (= 403 (:status response)))

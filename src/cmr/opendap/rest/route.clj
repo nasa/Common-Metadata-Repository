@@ -20,6 +20,9 @@
   [["/opendap" {
     :get core-handler/ok
     :head core-handler/ok}]
+   ["/opendap/" {
+    :get core-handler/ok
+    :head core-handler/ok}]
    ["/opendap/ous/collections" {
     :post {
       :handler collection-handler/batch-generate

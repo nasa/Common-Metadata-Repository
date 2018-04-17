@@ -17,14 +17,16 @@
 
 (deftest admin-routes
   (testing "ping routes ..."
-    (let [response @(httpc/get (format "http://localhost:%s/ping"
+    (let [response @(httpc/get (format (str "http://localhost:%s"
+                                            "/opendap/ping")
                                        (test-system/http-port))
                                (request/add-token-header
                                 {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= {:result "pong"}
              (util/parse-response response))))
-    (let [response @(httpc/post (format "http://localhost:%s/ping"
+    (let [response @(httpc/post (format (str "http://localhost:%s"
+                                             "/opendap/ping")
                                         (test-system/http-port))
                                 (request/add-token-header
                                  {} (util/get-sit-token)))]
@@ -36,7 +38,8 @@
   (testing "Minimal GET ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
@@ -53,7 +56,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?variables=V1200241812-EDF_OPS")
                              (test-system/http-port)
                              collection-id)
@@ -71,7 +74,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?variables=V1200241812-EDF_OPS,V1200241813-EDF_OPS")
                              (test-system/http-port)
                              collection-id)
@@ -89,7 +92,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS")
                              (test-system/http-port)
                              collection-id)
@@ -107,7 +110,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
                                   "&exclude-granules=true")
                              (test-system/http-port)
@@ -126,7 +129,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?subset=lat(56.109375,67.640625)"
                                   "&subset=lon(-9.984375,19.828125)")
                              (test-system/http-port)
@@ -145,7 +148,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?bounding-box="
                                   "-9.984375,56.109375,19.828125,67.640625")
                              (test-system/http-port)
@@ -165,7 +168,8 @@
   (testing "Minimal POST ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -185,7 +189,8 @@
   (testing "POST with one variable ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -204,7 +209,8 @@
   (testing "POST with variables ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -224,7 +230,8 @@
   (testing "POST with granules ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -245,7 +252,8 @@
   (testing "POST without granules ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -267,7 +275,8 @@
   (testing "POST with subset ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -288,7 +297,8 @@
   (testing "POST with bounding box ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
-                     (format "http://localhost:%s/ous/collection/%s"
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s")
                              (test-system/http-port)
                              collection-id)
                      (merge
@@ -311,7 +321,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
                                   collection-id)
                              (test-system/http-port)
@@ -328,7 +338,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
                                   collection-id
                                   "&rangesubset=V1200241812-EDF_OPS,V1200241813-EDF_OPS")
@@ -346,7 +356,7 @@
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/ous/collection/%s"
+                                  "/opendap/ous/collection/%s"
                                   "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
                                   collection-id
                                   "&subset=lat(56.109375,67.640625)"
