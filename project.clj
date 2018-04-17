@@ -122,7 +122,7 @@
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
-    "procfile" ["shell" "resources/scripts/make-procfile"]
+    "procfile" ["with-profile" "+local" "shell" "resources/scripts/make-procfile"]
     "build" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]
