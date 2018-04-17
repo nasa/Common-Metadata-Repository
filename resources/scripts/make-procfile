@@ -1,9 +1,0 @@
-#!/bin/bash
-
-VERSION=`lein with-profile +local project-version|tail -1`
-(
-cat <<EOF
-web: lein trampoline run
-EOF
-) > Procfile
-echo "CMR-OPeNDAP NGAP Procfile created."

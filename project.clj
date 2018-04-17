@@ -122,17 +122,14 @@
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
-    "procfile" ["with-profile" "+local" "shell" "resources/scripts/make-procfile"]
     "build-lite" ["do"
       ["ltest" ":unit"]
-      ["junit" ":unit"]
-      ["procfile"]]
+      ["junit" ":unit"]]
     "build" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]
       ["ubercompile"]
-      ["uberjar"]
-      ["procfile"]]
+      ["uberjar"]]
     ;; Documentation
     "codox" ["with-profile" "+docs"
       "codox"]
