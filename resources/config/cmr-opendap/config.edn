@@ -22,9 +22,7 @@
     {:rest
       {:protocol "https"
        :host "cmr.sit.earthdata.nasa.gov"
-       :relative
-         {:root
-           {:url "/access-control"}}}}
+       :context "/legacy-services/rest"}}
    :opendap
     {:protocol "https"
      :host "cmr.sit.earthdata.nasa.gov"

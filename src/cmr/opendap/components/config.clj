@@ -55,6 +55,12 @@
   [system service]
   (config/service->url (get-service system service)))
 
+(def get-access-control-url #(get-service-url % :access-control))
+(def get-echo-rest-url #(get-service-url % :echo-rest))
+(def get-ingest-url #(get-service-url % :ingest))
+(def get-opendap-url #(get-service-url % :opendap))
+(def get-search-url #(get-service-url % :search))
+
 (defn http-docroot
   [system]
   (get-in (get-cfg system) [:httpd :docroot]))

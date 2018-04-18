@@ -69,4 +69,6 @@
   [^Keyword service]
   (format "%s%s"
           (service->base-url service)
-          (or (get-in service [:relative :root :url]) "/")))
+          (or (get-in service [:relative :root :url])
+              (:context service)
+              "/")))
