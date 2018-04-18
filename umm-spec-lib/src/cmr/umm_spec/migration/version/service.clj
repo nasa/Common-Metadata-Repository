@@ -13,7 +13,7 @@
     related-url))
 
 (defn- migrate-types-down
-  "Migrates CoverageSpatialExtent and CoverageTemporalExtent types"
+  "Migrates CoverageSpatialExtent and CoverageTemporalExtent types from 1.1 to 1.0"
   [coverage-type]
   (if-let [type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType])]
     (-> coverage-type
