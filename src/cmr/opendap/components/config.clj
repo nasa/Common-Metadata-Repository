@@ -89,7 +89,7 @@
   (log/info "Starting config component ...")
   (log/debug "Started config component.")
   (let [cfg (config/data)]
-    (log/debug "Built configuration:" (into {} cfg))
+    (log/debug "Built configuration:" cfg)
     (assoc this :data cfg)))
 
 (defn stop
