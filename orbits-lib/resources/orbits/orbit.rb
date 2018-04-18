@@ -300,7 +300,8 @@ module Orbits
       # the swath width is measured perpendicular to the orbit, but the
       # Java code makes this assumption.  This case should almost never
       # happen.  When it does, the numbers are likely close enough.
-      if coord.phi == 0
+
+      if coord.phi.abs <= EPSILON
         return [Coordinate.phi_theta(0, coord.theta - swath_width_rad / 2),
                 Coordinate.phi_theta(0, coord.theta + swath_width_rad / 2)]
       end
@@ -415,7 +416,7 @@ module Orbits
         # We can't just compute constants for the line, because `b` could be near 0.
         # Let's deal with that special case first.
 
-        if b.abs < 0.000001
+        if b.abs < EPSILON
 
           # If `b = 0`, then the plane's equation is:
           #
@@ -429,7 +430,7 @@ module Orbits
           # case, we have an orbit that follows the equator.  If coord lies within the
           # swath, then every orbit will cover the point, otherwise no orbits will.
 
-          if a.abs < 0.000001
+          if a.abs < EPSILON
             if coord.phi.abs < swath_width_rad / 2
               return [Coordinate.phi_theta(0, -PI), Coordinate.phi_theta(0, PI)]
             else
