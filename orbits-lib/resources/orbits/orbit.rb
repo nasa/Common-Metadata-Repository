@@ -416,7 +416,7 @@ module Orbits
         # We can't just compute constants for the line, because `b` could be near 0.
         # Let's deal with that special case first.
 
-        if b.abs < EPSILON
+        if b.abs < 0.000001
 
           # If `b = 0`, then the plane's equation is:
           #
@@ -430,7 +430,7 @@ module Orbits
           # case, we have an orbit that follows the equator.  If coord lies within the
           # swath, then every orbit will cover the point, otherwise no orbits will.
 
-          if a.abs < EPSILON
+          if a.abs < 0.000001
             if coord.phi.abs < swath_width_rad / 2
               return [Coordinate.phi_theta(0, -PI), Coordinate.phi_theta(0, PI)]
             else
