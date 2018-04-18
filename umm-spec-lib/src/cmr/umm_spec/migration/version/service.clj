@@ -12,21 +12,34 @@
     (assoc related-url :SubType nil)
     related-url))
 
+(defn- migrate-types-down
+  "Migrates CoverageSpatialExtent and CoverageTemporalExtent types"
+  [coverage-type]
+  (if-let [type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType])]
+    (-> coverage-type
+        (assoc :Type type)
+        (assoc-in [:CoverageSpatialExtent :Type] type))))
+
 (defn- migrate-coverage-type-down
   "Migrate CoverageType changes down from 1.1 to 1.0"
   [coverage-type]
   (-> coverage-type
       (assoc :Type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType]))
-      (update :CoverageTemporalExtent dissoc :CoverageTemporalExtentTypeType)
+      migrate-types-down
+      (update :CoverageTemporalExtent dissoc :CoverageTemporalExtentType)
       (update :CoverageSpatialExtent dissoc :CoverageSpatialExtentTypeType)))
 
 (defn- migrate-coverage-type-up
   "Migrate CoverageType changes up from 1.0 to 1.1"
   [coverage-type]
-  (-> coverage-type
-      (update :CoverageSpatialExtent
-              assoc :CoverageSpatialExtentTypeType (get coverage-type :Type))
-      (dissoc :Type)))
+  (if-let [type (or (get-in coverage-type [:CoverageSpatialExtent :Type])
+                    (get coverage-type :Type))]
+    (-> coverage-type
+        (update :CoverageSpatialExtent
+                assoc :CoverageSpatialExtentTypeType type)
+        (update :CoverageSpatialExtent dissoc :Type)
+        (dissoc :Type))
+    (dissoc coverage-type :Type)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations

@@ -17,7 +17,8 @@
                 :Description "OPeNDAP Service"
                 :Type "GET SERVICE"
                 :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"},
-   :Coverage {:Type "SPATIAL_POINT"}
+   :Coverage {:Type "SPATIAL_POINT"
+              :CoverageSpatialExtent {:Type "SPATIAL_POINT"}}
    :AccessConstraints [(apply str (repeat 1024 "x"))]
    :UseConstraints [(apply str (repeat 1024 "x"))]
    :ServiceQuality {:QualityFlag "Available"
@@ -72,6 +73,4 @@
             :ServiceQuality {:QualityFlag "Available"
                              :Lineage (apply str (repeat 4000 "x"))}
             :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
-                                               "SPATIAL_POINT"}
-                       :CoverageTemporalExtent {:CoverageTemporalExtentTypeType
-                                                "TIME_STAMP"}}}))))
+                                               "SPATIAL_POINT"}}}))))
