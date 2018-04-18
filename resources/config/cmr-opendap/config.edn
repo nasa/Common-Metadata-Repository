@@ -28,7 +28,7 @@
      :host "cmr.sit.earthdata.nasa.gov"
      :relative
   	     {:root
-  	       {:url "/access-control"}}}
+  	       {:url "/opendap"}}}
    :search
     {:protocol "https"
      :host "cmr.sit.earthdata.nasa.gov"
