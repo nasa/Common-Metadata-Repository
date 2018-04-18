@@ -10,23 +10,21 @@
    [taoensso.timbre :as log]))
 
 (defn check-roles
-  [system handler request route-roles cmr-base-url user-token user-id]
+  [system handler request route-roles user-token user-id]
   (log/debug "Roles annotated in routes ...")
   (if (roles/admin? system
                     route-roles
-                    cmr-base-url
                     user-token
                     user-id)
     (handler request)
     (response/not-allowed errors/no-permissions)))
 
 (defn check-permissions
-  [system handler request route-permissions cmr-base-url user-token user-id]
+  [system handler request route-permissions user-token user-id]
   (let [concept-id (permissions/route-concept-id request)]
     (log/debug "Permissions annotated in routes ...")
     (if (permissions/concept? system
                               route-permissions
-                              cmr-base-url
                               user-token
                               user-id
                               concept-id)
@@ -38,9 +36,7 @@
   (if-let [user-token (token/extract request)]
     (do
       (log/debug "ECHO token provided; proceeding ...")
-      (let [cmr-base-url (config/cmr-base-url system)
-            user-id (token/->cached-user system cmr-base-url user-token)]
-        (log/trace "cmr-base-url:" cmr-base-url)
+      (let [user-id (token/->cached-user system user-token)]
         (log/trace "user-token:" user-token)
         (log/trace "user-id:" user-id)
         (cond ;; XXX For now, there is only the admin role in the CMR, so
@@ -49,13 +45,11 @@
               ;;     generic ...
               route-roles
               (check-roles
-               system handler request route-roles cmr-base-url user-token
-               user-id)
+               system handler request route-roles user-token user-id)
 
               route-permissions
               (check-permissions
-               system handler request route-permissions cmr-base-url
-               user-token user-id))))
+               system handler request route-permissions user-token user-id))))
     (do
       (log/warn "ECHO token not provided for protected resource")
       (response/not-allowed errors/token-required))))

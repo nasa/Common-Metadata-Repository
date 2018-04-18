@@ -2,13 +2,14 @@
   (:require
    [clojure.data.xml :as xml]
    [cmr.opendap.components.caching :as caching]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [org.httpkit.client :as httpc]
    [taoensso.timbre :as log]))
 
-(def token-info-resource "/legacy-services/rest/tokens/get_token_info")
+(def token-info-resource "/tokens/get_token_info")
 
 (defn token-data-key
   [token]
@@ -48,8 +49,8 @@
   @(get-token-info base-url token))
 
 (defn ->cached-user
-  [system base-url token]
+  [system token]
   (caching/lookup
    system
    (user-id-key token)
-   #(->user base-url token)))
+   #(->user (config/get-echo-rest-url system) token)))

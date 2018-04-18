@@ -3,6 +3,7 @@
    [clojure.set :as set]
    [cmr.opendap.auth.acls :as acls]
    [cmr.opendap.components.caching :as caching]
+   [cmr.opendap.components.config :as config]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -38,12 +39,14 @@
     (cmr-acl->reitit-acl @perms)))
 
 (defn cached-admin
-  [system base-url token user-id]
+  [system token user-id]
   (caching/lookup system
                   (admin-key token)
-                  #(admin base-url token user-id)))
+                  #(admin (config/get-access-control-url system)
+                          token
+                          user-id)))
 
 (defn admin?
-  [system route-roles base-url token user-id]
-  (seq (set/intersection (cached-admin system base-url token user-id)
+  [system route-roles token user-id]
+  (seq (set/intersection (cached-admin system token user-id)
                          route-roles)))

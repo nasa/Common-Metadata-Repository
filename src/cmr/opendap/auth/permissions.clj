@@ -3,6 +3,7 @@
    [clojure.set :as set]
    [cmr.opendap.auth.acls :as acls]
    [cmr.opendap.components.caching :as caching]
+   [cmr.opendap.components.config :as config]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -58,18 +59,20 @@
     (cmr-acl->reitit-acl @perms)))
 
 (defn cached-concept
-  [system base-url token user-id concept-id]
+  [system token user-id concept-id]
   (caching/lookup system
                   (concept-key token)
-                  #(concept base-url token user-id concept-id)))
+                  #(concept (config/get-access-control-url system)
+                            token
+                            user-id
+                            concept-id)))
 
 (defn concept?
-  [system perms base-url token user-id concept-id]
+  [system perms token user-id concept-id]
   (let [id (keyword concept-id)
         required (cmr-acl->reitit-acl perms)
         concept-perms (cached-concept system
-                                         base-url
-                                         token
-                                         user-id
-                                         concept-id)]
+                                      token
+                                      user-id
+                                      concept-id)]
     (seq (set/intersection (id required) (id concept-perms)))))

@@ -8,7 +8,7 @@
    [org.httpkit.client :as httpc]
    [taoensso.timbre :as log]))
 
-(def acl-resource "/access-control/permissions")
+(def permissions-resource "/permissions")
 
 (defn parse-response
   [data]
@@ -20,7 +20,7 @@
 
 (defn check-access
   [base-url token user-id acl-query]
-  (let [url (str base-url acl-resource)]
+  (let [url (str base-url permissions-resource)]
     (httpc/request (-> request/default-options
                        (request/options
                         :method :get
