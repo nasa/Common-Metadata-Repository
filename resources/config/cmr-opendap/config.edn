@@ -11,7 +11,32 @@
  ;;     into searate configs for each of those; at that point, we'll be able
  ;;     to update the config loading in the config component.
  :cmr
-  {:base-url "https://cmr.sit.earthdata.nasa.gov"}
+  {:access
+  	{:control
+  	  {:protocol "https"
+  	   :host "cmr.sit.earthdata.nasa.gov"
+  	   :relative
+  	     {:root
+  	       {:url "/access-control"}}}}
+   :echo
+    {:rest
+      {:protocol "https"
+       :host "cmr.sit.earthdata.nasa.gov"
+       :relative
+         {:root
+           {:url "/access-control"}}}}
+   :opendap
+    {:protocol "https"
+     :host "cmr.sit.earthdata.nasa.gov"
+     :relative
+  	     {:root
+  	       {:url "/access-control"}}}
+   :search
+    {:protocol "https"
+     :host "cmr.sit.earthdata.nasa.gov"
+     :relative
+  	   {:root
+  	     {:url "/search"}}}}
  :httpd
   {:port 3012
    :docroot "public"}
