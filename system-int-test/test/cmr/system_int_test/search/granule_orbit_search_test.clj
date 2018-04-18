@@ -76,11 +76,10 @@
         [granule] [150 70 170 60]
 
         "Rectangle not crossing the equator that should not find the granule"
-        [] [-128.32 53.602 -46.758 1.241]))))
+        [] [-128.32 53.602 -46.758 1.241]
 
-        ;; Test that needs to be fixed with CMR-4722
-        ; "CMR-4722: Search crossing the equator should not erroneously find the granule"
-        ; [] [-128.32 53.602 -46.758 -1.241]))))
+        "CMR-4722: Search crossing the equator should not erroneously find the granule"
+        [] [-128.32 53.602 -46.758 -1.241]))))
 
 ;; This tests searching for bounding boxes or polygons that cross the start circular
 ;; latitude of the collection with fractional orbit granules. This was added to test
@@ -223,9 +222,9 @@
                 matches?)
 
               "Orbits crossing a rectangle over the equator and anti-meridian"
-              [g2 g7 g9] [145 45 -145 -45] nil
+              [g2 g7] [145 45 -145 -45] nil
               "Orbits crossing a rectangle over the equator and meridian"
-              [g1 g3 g8 g9] [-45 45 45 -45] nil
+              [g1 g3 g8] [-45 45 45 -45] nil
               "Orbits crossing a rectangle in the western hemisphere near the north pole"
               [g5] [-90 89 -45 85] nil
               "Orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian"

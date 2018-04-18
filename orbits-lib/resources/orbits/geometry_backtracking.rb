@@ -96,6 +96,11 @@ module Orbits
         return [[lat_range, LongitudeCoverage.full]]
       end
 
+      # Shift north and south off start latitude a bit if there is an exact match,
+      # so that math could work.
+      north = start_lat_rad - EPSILON if north == start_lat_rad
+      south = start_lat_rad + EPSILON if south == start_lat_rad
+
       # If the northern part of the bounding rectangle is above the orbit's starting latitude
       # and the southern part is below, split into two bounding rectangles, one entirely above
       # and one entirely below and backtrack each
