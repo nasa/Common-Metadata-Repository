@@ -3,7 +3,10 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [environ.core :as environ]))
+   [cmr.opendap.util :as util]
+   [environ.core :as environ])
+  (:import
+    (clojure.lang Keyword)))
 
 (def config-file "config/cmr-opendap/config.edn")
 
@@ -31,12 +34,39 @@
 (defn env-props-data
   []
   (->> (#'environ/read-system-props)
-       (merge (#'environ/read-system-env))
+       (util/deep-merge (#'environ/read-system-env))
        (map cmr-only)
        (remove nil?)
        (reduce nest-vars {})))
 
 (defn data
   []
-  (merge (cfg-data)
-         (env-props-data)))
+  (util/deep-merge (cfg-data)
+                   (env-props-data)))
+
+(defn service-keys
+  "We need to special-case two-word services, as split by the environment and
+  system property parser above."
+  [^Keyword service]
+  (cond (or (= service :access)
+            (= service :access-control))
+        [:access :control]
+
+        (or (= service :echo)
+            (= service :echo-rest))
+        [:echo :rest]
+
+        :else [service]))
+
+(defn service->base-url
+  [^Keyword service]
+  (format "%s://%s:%s"
+          (or (:protocol service) "https")
+          (:host service)
+          (or (:port service) "443")))
+
+(defn service->url
+  [^Keyword service]
+  (format "%s%s"
+          (service->base-url service)
+          (or (get-in service [:relative :root :url]) "/")))

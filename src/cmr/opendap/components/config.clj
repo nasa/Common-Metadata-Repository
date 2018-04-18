@@ -41,9 +41,19 @@
   [system]
   (get-in (get-cfg system) [:caching :type]))
 
+(defn get-service
+  [system service]
+  (let [svc-cfg (get-in (get-cfg system)
+                        (concat [:cmr] (config/service-keys service)))]
+    svc-cfg))
+
 (defn cmr-base-url
   [system]
-  (get-in (get-cfg system) [:cmr :base-url]))
+  (config/service->base-url (get-service system :search)))
+
+(defn get-service-url
+  [system service]
+  (config/service->url (get-service system service)))
 
 (defn http-docroot
   [system]
