@@ -43,6 +43,42 @@
                                      nil)}
                 other-attribs))))))
 
+(deftest orbit-bug-CMR-4722
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "OMSO2-collection"
+                                                   :format-key :dif10})
+        granule (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :concept-id "C4-PROV1"
+                                                      :native-id "OMSO2-granule"
+                                                      :format-key :echo10})]
+    (index/wait-until-indexed)
+
+    (testing "Orbit search crossing the equator for OMSO2 granules."
+      (u/are3
+        [items wnes]
+        (let [found (search/find-refs :granule
+                                      {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                       :provider "PROV1"
+                                       :page-size 50})
+              matches? (d/refs-match? items found)]
+          (when-not matches?
+            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+          matches?)
+
+        "Rectangle that should find the granule"
+        [granule] [150 70 170 60]
+
+        "Rectangle not crossing the equator that should not find the granule"
+        [] [-128.32 53.602 -46.758 1.241]
+
+        "CMR-4722: Search crossing the equator should not erroneously find the granule"
+        [] [-128.32 53.602 -46.758 -1.241]))))
+
 ;; This tests searching for bounding boxes or polygons that cross the start circular
 ;; latitude of the collection with fractional orbit granules. This was added to test
 ;; the fix for this issue as described in CMR-1168 and uses the collection/granules from
@@ -184,9 +220,9 @@
                 matches?)
 
               "Orbits crossing a rectangle over the equator and anti-meridian"
-              [g2 g7 g9] [145 45 -145 -45] nil
+              [g2 g7] [145 45 -145 -45] nil
               "Orbits crossing a rectangle over the equator and meridian"
-              [g1 g3 g8 g9] [-45 45 45 -45] nil
+              [g1 g3 g8] [-45 45 45 -45] nil
               "Orbits crossing a rectangle in the western hemisphere near the north pole"
               [g5] [-90 89 -45 85] nil
               "Orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian"
