@@ -35,10 +35,8 @@
   [context s & _]
   (-> s
       (assoc :AccessConstraints (first (:AccessConstraints s)))
-      (update :AccessConstraints #(util/trunc % 1024))
-      (update :UseConstraints #(util/trunc % 1024))
-      (update-in [:ServiceQuality :Lineage] #(util/trunc % 100))
       (assoc :RelatedURLs [(:RelatedURL s)])
+      (assoc :UseConstraints (first (:UseConstraints s)))
       (update :Coverage migrate-coverage-type-up)
       (dissoc :RelatedURL)
       (util/update-in-each [:ServiceOrganizations] dissoc :Uuid)
@@ -47,7 +45,9 @@
 (defmethod interface/migrate-umm-version [:service "1.1" "1.0"]
   [context s & _]
   (-> s
-      (assoc :AccessConstraints [(:AccessConstraints s)])
+      (assoc :AccessConstraints [(util/trunc (:AccessConstraints s) 1024)])
+      (assoc :UseConstraints [(util/trunc (:UseConstraints s) 1024)])
+      (update-in [:ServiceQuality :Lineage] #(util/trunc % 100))
       (assoc :RelatedURL (first (:RelatedURLs s)))
       (update :RelatedURL migrate-related-url-subtype-down)
       (update :Coverage migrate-coverage-type-down)

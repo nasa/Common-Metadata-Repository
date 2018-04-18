@@ -18,11 +18,15 @@
                 :Type "GET SERVICE"
                 :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"},
    :Coverage {:Type "SPATIAL_POINT"}
-   :AccessConstraints ["TEST"]})
+   :AccessConstraints [(apply str (repeat 1024 "x"))]
+   :UseConstraints [(apply str (repeat 1024 "x"))]
+   :ServiceQuality {:QualityFlag "Available"
+                    :Lineage (apply str (repeat 100 "x"))}})
 
 (def service-concept-1-1
   {:Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType "SPATIAL_POINT"}}
    :AccessConstraints "TEST"
+   :UseConstraints "TEST"
    :ServiceOrganizations [{:Roles ["SERVICE PROVIDER"]
                            :ShortName "TEST ShortName"}]
    :RelatedURLs [{:URLContentType "CollectionURL"
@@ -49,6 +53,7 @@
          (vm/migrate-umm {} :service "1.0" "1.1"
            {:Coverage {:Type "SPATIAL_POINT"}
             :AccessConstraints ["TEST"]
+            :UseConstraints ["TEST"]
             :ServiceOrganizations [{:Roles ["SERVICE PROVIDER"]
                                     :ShortName "TEST ShortName"
                                     :Uuid "TEST Uuid"}]
@@ -62,7 +67,10 @@
            {:RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" :Description "OPeNDAP Service"
                            :Type "GET SERVICE"
                            :URLContentType "CollectionURL"}]
-            :AccessConstraints "TEST"
+            :AccessConstraints (apply str (repeat 4000 "x"))
+            :UseConstraints (apply str (repeat 20000 "x"))
+            :ServiceQuality {:QualityFlag "Available"
+                             :Lineage (apply str (repeat 4000 "x"))}
             :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
                                                "SPATIAL_POINT"}
                        :CoverageTemporalExtent {:CoverageTemporalExtentTypeType
