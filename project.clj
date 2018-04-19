@@ -23,13 +23,18 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [clojusc/twig "0.3.2"]
+    [hexagram30/common "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
-    [spootnik/kinsky "0.1.21"]]
+    [org.clojure/core.async "0.4.474"]
+    ;[spootnik/kinsky "0.1.22"]
+    ]
   :profiles {
     :ubercompile {
       :aot :all}
     :dev {
       :dependencies [
+        [clojusc/dev-system "0.1.0"]
+        [clojusc/trifl "0.2.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-shell "0.5.0"]
@@ -55,6 +60,9 @@
         :main hxgm30.event.server}}
   :aliases {
     ;; Dev Aliases
+    "repl" ["do"
+      ["clean"]
+      ["repl"]]
     "ubercompile" ["do"
       ["clean"]
       ["with-profile" "+ubercompile" "compile"]]

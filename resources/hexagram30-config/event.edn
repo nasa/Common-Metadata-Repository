@@ -1,0 +1,5 @@
+{:event-system {
+   :type :core-async}
+ :logging {
+   :level :debug
+   :nss [io.netty hxgm30]}}
