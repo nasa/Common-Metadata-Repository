@@ -7,15 +7,7 @@
 
 ## Usage
 
-Standalone:
-
-```
-$ lein kafka-create
-$ lein kafka-start
-```
-
-For use as part of a component-based system, see
-[hxgm30.mush.components.event][comp-event].
+TBD
 
 
 ## License
