@@ -27,7 +27,7 @@
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
-    [http-kit "2.2.0"]
+    [http-kit "2.3.0"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
     [metosin/ring-http-response "0.9.0"]
