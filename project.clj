@@ -103,7 +103,9 @@
         :output-path "docs/current"}}}
   :aliases {
     ;; Dev & Testing Aliases
-    "repl" ["with-profile" "+local,+system" "repl"]
+    "repl" ["do"
+      ["clean"]
+      ["with-profile" "+local,+system" "repl"]]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
