@@ -27,6 +27,7 @@
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
+    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
@@ -86,10 +87,13 @@
         :default (complement :system)}}
     :docs {
       :dependencies [
-        [clojang/codox-theme "0.2.0-SNAPSHOT"]]
+        [clojang/codox-theme "0.2.0-SNAPSHOT"]
+        [markdown-clj "1.0.2"]
+        [selmer "1.11.7"]]
       :plugins [
         [lein-codox "0.10.3"]
         [lein-marginalia "0.9.1"]]
+      :source-paths ["resources/docs/src"]
       :codox {
         :project {
           :name "CMR OPeNDAP"
@@ -99,7 +103,7 @@
           :doc/format :markdown
           :doc "Documentation forthcoming"}
         :themes [:clojang]
-        :doc-paths ["resources/docs"]
+        :doc-paths ["resources/docs/markdown"]
         :output-path "docs/current"}}}
   :aliases {
     ;; Dev & Testing Aliases
@@ -135,8 +139,7 @@
       ["ubercompile"]
       ["uberjar"]]
     ;; Documentation
-    "codox" ["with-profile" "+docs"
-      "codox"]
+    "codox" ["with-profile" "+docs" "codox"]
     "marginalia" ["with-profile" "+docs"
       "marg" "--dir" "docs/current"
              "--file" "marginalia.html"
