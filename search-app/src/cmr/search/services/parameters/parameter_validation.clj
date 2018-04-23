@@ -36,7 +36,7 @@
     cpv/basic-params-config
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
-                     :all-revisions}
+                     :all-revisions :facets-size}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -195,7 +195,7 @@
 (defmethod cpv/valid-query-level-params :collection
   [_]
   #{:include-granule-counts :include-has-granules :include-facets :hierarchical-facets
-    :include-highlights :include-tags :all-revisions :echo-compatible :boosts})
+    :include-highlights :include-tags :all-revisions :echo-compatible :boosts :facets-size})
 
 (defmethod cpv/valid-query-level-options :collection
   [_]
@@ -552,6 +552,16 @@
       [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
                include-facets)])))
 
+(defn- collection-facets-size-validation
+  "Validates that the facets-size parameter has a value positive integer value."
+  [concept-type params]
+  (when-let [facets-size (:facets-size params)]
+    (when-not (and (not (sequential? facets-size)) 
+                   (integer? (read-string facets-size)) 
+                   (< 0 (Integer. facets-size)))
+      [(format "Collection parameter facets-size must take a value of a positive integer, but was [%s]"
+               facets-size)])))
+
 (defn- granule-include-facets-validation
   "Validates that the include_facets parameter has a value of v2."
   [concept-type params]
@@ -708,7 +718,8 @@
                  no-highlight-options-without-highlights-validation
                  highlights-numeric-options-validation
                  include-tags-parameter-validation
-                 collection-include-facets-validation])
+                 collection-include-facets-validation
+                 collection-facets-size-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation

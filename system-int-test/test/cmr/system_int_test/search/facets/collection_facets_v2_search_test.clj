@@ -67,6 +67,15 @@
    (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
+(defn- search-and-return-v2-facets-errors
+  "Returns the facets returned by a search requesting v2 facets."
+  ([]
+   (search-and-return-v2-facets {}))
+  ([search-params]
+   (index/wait-until-indexed)
+   (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
+     (get-in (search/find-concepts-json :collection query-params) [:errors]))))
+
 (deftest all-facets-v2-test
   (dev-sys-util/eval-in-dev-sys
    `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
@@ -103,6 +112,15 @@
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
+  (testing "Facets size applied for facets"
+    (is (= fr/expected-v2-facets-apply-links-with-facets-size 
+           (search-and-return-v2-facets {:facets-size "1"}))))
+  (testing "Empty facets size applied for facets"
+    (is (= fr/expected-v2-facets-apply-links-with-empty-facets-size
+           (search-and-return-v2-facets {:facets-size ""}))))
+  (testing "Invalid facets size applied for facets"
+    (is (= ["Collection parameter facets-size must take a value of a positive integer, but was [a]"] 
+           (search-and-return-v2-facets-errors {:facets-size "a"}))))
   (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
                                                 :topic "Topic1"
                                                 :term "Term1"
