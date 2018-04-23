@@ -24,23 +24,20 @@
     :get core-handler/ok
     :head core-handler/ok}]
    ["/opendap/ous/collections" {
-    :post {
-      :handler collection-handler/batch-generate
-      ;; XXX protecting collections will be a little different than
-      ;;     protecting a single collection, since the concept-id isn't in
-      ;;     the path-params. Instead, we'll have to parse the body, extract
-      ;;     the concepts ids from that, create an ACL query containing
-      ;;     multiple concept ids, and then check those results.
-      ;:permission #{...}
-      }
+    :post {:handler collection-handler/batch-generate
+          ;; XXX protecting collections will be a little different than
+          ;;     protecting a single collection, since the concept-id isn't in
+          ;;     the path-params. Instead, we'll have to parse the body,
+          ;;     extract the concepts ids from that, create an ACL query
+          ;;     containing multiple concept ids, and then check those results.
+          ;; :permission #{...?}
+          }
     :options core-handler/ok}]
    ["/opendap/ous/collection/:concept-id" {
-    :get {
-      :handler collection-handler/generate-urls
-      :permissions #{:read}}
-    :post {
-      :handler collection-handler/generate-urls
-      :permissions #{:read}}
+    :get {:handler collection-handler/generate-urls
+          :permissions #{:read}}
+    :post {:handler collection-handler/generate-urls
+           :permissions #{:read}}
     :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,12 +60,10 @@
     :get (core-handler/health httpd-component)
     :options core-handler/ok}]
    ["/opendap/ping" {
-    :get {
-      :handler core-handler/ping
-      :roles #{:admin}}
-    :post {
-      :handler core-handler/ping
-      :roles #{:admin}}
+    :get {:handler core-handler/ping
+          :roles #{:admin}}
+    :post {:handler core-handler/ping
+           :roles #{:admin}}
     :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
