@@ -17,6 +17,7 @@
    [cmr.opendap.http.response :as response]
    [ring.middleware.file :as file-middleware]
    [ring.util.codec :as codec]
+   [ring.util.http-response :as ring-response]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,5 +55,21 @@
 (defn static-files
   [docroot]
   (fn [request]
+    (log/debug "Docroot:" (io/resource docroot))
+    (log/debug "Docroot path:" (.getPath (io/resource docroot)))
+    (log/debug "request-method:" (:request-method request))
+    (log/debug "request-method:" (:request-method request))
     (if-let [doc-resource (.getPath (io/resource docroot))]
-      (file-middleware/file-request request doc-resource))))
+      (do
+        (log/debug "Found resource; serving content ...")
+        (log/debug "Response:" (file-middleware/file-request request doc-resource))
+        (file-middleware/file-request request doc-resource))
+      (do
+        (log/debug "Didn't find resource!")
+        (response/not-found request)))))
+
+(defn text-file
+  [filepath]
+  (fn [request]
+    (if-let [file-resource (io/resource filepath)]
+      (response/text request (slurp file-resource)))))

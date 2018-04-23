@@ -46,9 +46,13 @@
 
 (defn static
   [httpd-component]
-  (let [docroot (config/http-docroot httpd-component)]
-    [["/opendap/site/*" {
-      :get (core-handler/static-files docroot)}]]))
+  [["/opendap/site/*" {
+    :get (core-handler/static-files
+          (config/http-docroot httpd-component))}]
+   ;; Google verification files
+   ["/opendap/googled099d52314962514.html" {
+    :get (core-handler/text-file
+          "public/site/verifications/googled099d52314962514.html")}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
