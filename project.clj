@@ -37,7 +37,9 @@
     [ring/ring-core "1.6.3"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-defaults "0.3.1"]]
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Xms2g" "-Xmx2g"]
+  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+             "-Xms2g"
+             "-Xmx2g"]
   :main cmr.opendap.core
   :aot [cmr.opendap.core]
   :profiles {
