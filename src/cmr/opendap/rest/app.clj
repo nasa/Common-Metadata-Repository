@@ -13,6 +13,7 @@
   (concat
    (route/ous httpd-component)
    (route/static httpd-component)
+   (route/redirects httpd-component)
    (route/admin httpd-component)
    route/testing))
 

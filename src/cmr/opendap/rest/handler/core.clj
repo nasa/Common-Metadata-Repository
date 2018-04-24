@@ -17,7 +17,8 @@
    [cmr.opendap.http.response :as response]
    [ring.middleware.file :as file-middleware]
    [ring.util.codec :as codec]
-   [ring.util.http-response :as ring-response]
+   [ring.util.http-response]
+   [ring.util.response :as ring-response]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -73,3 +74,8 @@
   (fn [request]
     (if-let [file-resource (io/resource filepath)]
       (response/text request (slurp file-resource)))))
+
+(defn permanent-redirect
+  [location]
+  (fn [request]
+    (ring-response/redirect location :moved-permanently)))
