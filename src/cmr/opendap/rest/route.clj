@@ -59,7 +59,7 @@
    ;; Google verification files
    ["/opendap/googled099d52314962514.html" {
     :get (core-handler/text-file
-          "public/site/verifications/googled099d52314962514.html")}]])
+          "public/verifications/googled099d52314962514.html")}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
