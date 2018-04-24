@@ -37,7 +37,9 @@
   	     {:url "/search"}}}}
  :httpd
   {:port 3012
-   :docroot "public"}
+   :docroot "public"
+   :docs "public/docs"
+   :assets "public/assets"}
  :logging
   {:level :debug
    :nss [cmr.opendap org.httpkit]}}

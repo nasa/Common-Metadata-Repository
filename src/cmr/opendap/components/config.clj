@@ -65,6 +65,14 @@
   [system]
   (get-in (get-cfg system) [:httpd :docroot]))
 
+(defn http-assets
+  [system]
+  (get-in (get-cfg system) [:httpd :assets]))
+
+(defn http-docs
+  [system]
+  (get-in (get-cfg system) [:httpd :docs]))
+
 (defn http-port
   [system]
   (or (get-in (get-cfg system) [:cmr :opendap :port])
