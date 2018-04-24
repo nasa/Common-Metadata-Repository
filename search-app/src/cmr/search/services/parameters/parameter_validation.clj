@@ -559,8 +559,15 @@
     (when-not (and (not (sequential? facets-size)) 
                    (integer? (read-string facets-size)) 
                    (< 0 (Integer. facets-size)))
-      [(format "Collection parameter facets-size must take a value of a positive integer, but was [%s]"
+      [(format "Collection parameter facets_size must take a value of a positive integer, but was [%s]"
                facets-size)])))
+
+(defn- no-facets-size-without-include-facets-v2
+  "Validates that the include-facets parameter is set to v2 if facets-size is set." 
+  [concept-type params]
+  (when (and (:facets-size params)
+             (not= "v2" (:include-facets params)))
+    ["facets_size option is not allowed unless the include_facets is v2."]))
 
 (defn- granule-include-facets-validation
   "Validates that the include_facets parameter has a value of v2."
@@ -719,6 +726,7 @@
                  highlights-numeric-options-validation
                  include-tags-parameter-validation
                  collection-include-facets-validation
+                 no-facets-size-without-include-facets-v2
                  collection-facets-size-validation])
    :granule (concat
              cpv/common-validations

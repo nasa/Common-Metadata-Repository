@@ -119,7 +119,7 @@
     (is (= fr/expected-v2-facets-apply-links-with-empty-facets-size
            (search-and-return-v2-facets {:facets-size ""}))))
   (testing "Invalid facets size applied for facets"
-    (is (= ["Collection parameter facets-size must take a value of a positive integer, but was [a]"] 
+    (is (= ["Collection parameter facets_size must take a value of a positive integer, but was [a]"] 
            (search-and-return-v2-facets-errors {:facets-size "a"}))))
   (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
                                                 :topic "Topic1"
