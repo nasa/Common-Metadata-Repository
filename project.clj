@@ -29,6 +29,7 @@
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
+    [markdown-clj "1.0.2"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
     [metosin/ring-http-response "0.9.0"]
@@ -37,7 +38,8 @@
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-core "1.6.3"]
     [ring/ring-codec "1.1.0"]
-    [ring/ring-defaults "0.3.1"]]
+    [ring/ring-defaults "0.3.1"]
+    [selmer "1.11.7"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
@@ -87,9 +89,7 @@
         :default (complement :system)}}
     :docs {
       :dependencies [
-        [clojang/codox-theme "0.2.0-SNAPSHOT"]
-        [markdown-clj "1.0.2"]
-        [selmer "1.11.7"]]
+        [clojang/codox-theme "0.2.0-SNAPSHOT"]]
       :plugins [
         [lein-codox "0.10.3"]
         [lein-marginalia "0.9.1"]]
@@ -97,14 +97,14 @@
       :codox {
         :project {
           :name "CMR OPeNDAP"
-          :description "OPeNDAP Integration in the CMR"}
+          :description "OPeNDAP/CMR Integration"}
         :namespaces [#"^cmr\.opendap\.(?!dev)"]
         :metadata {
           :doc/format :markdown
           :doc "Documentation forthcoming"}
         :themes [:clojang]
         :doc-paths ["resources/docs/markdown"]
-        :output-path "docs/current"}}}
+        :output-path "resources/public/docs/reference"}}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
@@ -141,9 +141,9 @@
     ;; Documentation
     "codox" ["with-profile" "+docs" "codox"]
     "marginalia" ["with-profile" "+docs"
-      "marg" "--dir" "docs/current"
-             "--file" "marginalia.html"
-             "--name" "Clojure Protocol Buffer Library"]
+      "marg" "--dir" "resources/public/docs/marginalia"
+             "--file" "index.html"
+             "--name" "OPeNDAP/CMR Integration"]
     "docs" ["do"
       ["codox"]
       ["marginalia"]]
