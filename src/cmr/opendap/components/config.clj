@@ -57,12 +57,12 @@
   "This function returns the cmr-opendap URL with a trailing slash, but without
   the 'opendap' appended."
   [system]
-  (str (config/service->base-url (get-service system :opendap)) "/"))
+  (str (config/service->base-public-url (get-service system :opendap)) "/"))
 
 (defn opendap-url
   "This function returns the cmr-opendap URL with a trailing slash."
   [system]
-  (str (config/service->url (get-service system :opendap)) "/"))
+  (str (config/service->public-url (get-service system :opendap)) "/"))
 
 (defn get-service-url
   [system service]

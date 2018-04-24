@@ -72,3 +72,19 @@
           (or (get-in service [:relative :root :url])
               (:context service)
               "/")))
+
+(defn service->base-public-url
+  [^Keyword service]
+  (let [protocol (or (get-in service [:public :protocol]) "https")
+        host (get-in service [:public :host])]
+    (if (= "https" protocol)
+      (format "%s://%s" protocol host)
+      (format "%s://%s:%s" protocol host (get-in service [:public :port])))))
+
+(defn service->public-url
+  [^Keyword service]
+  (format "%s%s"
+          (service->base-public-url service)
+          (or (get-in service [:relative :root :url])
+              (:context service)
+              "/")))
