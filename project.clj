@@ -126,6 +126,18 @@
       ]
     "ltest" ["with-profile" "+test,+system" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
+    ;; Documentation
+    "codox" ["with-profile" "+docs" "codox"]
+    "marginalia" ["with-profile" "+docs"
+      "marg" "--dir" "resources/public/docs/marginalia"
+             "--file" "index.html"
+             "--name" "OPeNDAP/CMR Integration"]
+    "generate-html" ["with-profile" "+docs"
+      "run" "-m" "cmr.opendap.site.static"]
+    "generate-static" ["do"
+      ["codox"]
+      ["marginalia"]
+      ["generate-html"]]
     "version" ["do"
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
@@ -136,17 +148,10 @@
     "build" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]
+      ["generate-static"]
       ["ubercompile"]
       ["uberjar"]]
-    ;; Documentation
-    "codox" ["with-profile" "+docs" "codox"]
-    "marginalia" ["with-profile" "+docs"
-      "marg" "--dir" "resources/public/docs/marginalia"
-             "--file" "index.html"
-             "--name" "OPeNDAP/CMR Integration"]
-    "docs" ["do"
-      ["codox"]
-      ["marginalia"]]
+
     ;; Application
     "start-cmr-opendap"
       ["trampoline" "run"]})
