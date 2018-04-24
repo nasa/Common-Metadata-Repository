@@ -12,7 +12,9 @@
 
 (defn- get-cfg
   [system]
-  (into {} (get-in system [:config :data])))
+  (->> [:config :data]
+       (get-in system)
+       (into {})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,10 +53,22 @@
   [system]
   (config/service->base-url (get-service system :search)))
 
+(defn opendap-base-url
+  "This function returns the cmr-opendap URL with a trailing slash, but without
+  the 'opendap' appended."
+  [system]
+  (str (config/service->base-url (get-service system :opendap)) "/"))
+
+(defn opendap-url
+  "This function returns the cmr-opendap URL with a trailing slash."
+  [system]
+  (str (config/service->url (get-service system :opendap)) "/"))
+
 (defn get-service-url
   [system service]
   (config/service->url (get-service system service)))
 
+;; The URLs returned by these functions have no trailing slash:
 (def get-access-control-url #(get-service-url % :access-control))
 (def get-echo-rest-url #(get-service-url % :echo-rest))
 (def get-ingest-url #(get-service-url % :ingest))
@@ -104,7 +118,7 @@
   [this]
   (log/info "Stopping config component ...")
   (log/debug "Stopped config component.")
-  (assoc this :data nil))
+  this)
 
 (def lifecycle-behaviour
   {:start start

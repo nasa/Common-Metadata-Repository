@@ -33,6 +33,7 @@
   (config/http-port (system)))
 
 (defn with-system
+  "Testing fixture for system and integration tests."
   [test-fn]
   (startup)
   (test-fn)

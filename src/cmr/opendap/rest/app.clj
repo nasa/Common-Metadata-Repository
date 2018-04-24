@@ -11,7 +11,8 @@
 (defn rest-api-routes
   [httpd-component]
   (concat
-   (route/ous httpd-component)
+   (route/main httpd-component)
+   (route/ous-api httpd-component)
    (route/redirects httpd-component)
    (route/static httpd-component)
    (route/admin httpd-component)
@@ -22,7 +23,12 @@
   (-> httpd-component
       rest-api-routes
       (ring/router (middleware/reitit-auth httpd-component))
-      (ring/ring-handler handler/fallback)
+      ;(ring/ring-handler handler/fallback)
+      ring/ring-handler
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
-      (middleware/wrap-trailing-slash)
-      (middleware/wrap-cors)))
+      (middleware/wrap-resource httpd-component)
+      middleware/wrap-trailing-slash
+      middleware/wrap-cors
+      (middleware/wrap-not-found)
+      ;middleware/wrap-debug
+      ))

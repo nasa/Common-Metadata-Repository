@@ -38,8 +38,8 @@
  :httpd
   {:port 3012
    :docroot "public"
-   :docs "public/docs"
-   :assets "public/assets"}
+   :docs "resources/public/docs"
+   :assets "resources/public/assets"}
  :logging
   {:level :debug
    :nss [cmr.opendap org.httpkit]}}

@@ -8,6 +8,7 @@
    [cmr.opendap.health :as health]
    [cmr.opendap.rest.handler.collection :as collection-handler]
    [cmr.opendap.rest.handler.core :as core-handler]
+   [cmr.opendap.site.pages :as pages]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -15,12 +16,21 @@
 ;;;   CMR OPeNDAP Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ous
+(defn main
   [httpd-component]
   [["/opendap" {
-    :get (core-handler/html-file "public/index.html")
+    :get (core-handler/dynamic-page
+          pages/home
+          {:base-url (config/opendap-url httpd-component)})
     :head core-handler/ok}]
-   ["/opendap/ous/collections" {
+   ["/opendap/docs" {
+    :get (core-handler/dynamic-page
+          pages/opendap-docs
+          {:base-url (config/opendap-url httpd-component)})}]])
+
+(defn ous-api
+  [httpd-component]
+  [["/opendap/ous/collections" {
     :post {:handler collection-handler/batch-generate
           ;; XXX protecting collections will be a little different than
           ;;     protecting a single collection, since the concept-id isn't in
@@ -50,13 +60,7 @@
 
 (defn static
   [httpd-component]
-  [["/opendap/assets/*" {
-    :get (core-handler/static-files
-          (config/http-assets httpd-component))}]
-   ["/opendap/docs/*" {
-    :get (core-handler/static-files
-          (config/http-docs httpd-component))}]
-   ;; Google verification files
+  [;; Google verification files
    ["/opendap/googled099d52314962514.html" {
     :get (core-handler/text-file
           "public/verifications/googled099d52314962514.html")}]])
