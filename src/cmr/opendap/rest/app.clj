@@ -12,8 +12,8 @@
   [httpd-component]
   (concat
    (route/ous httpd-component)
-   (route/static httpd-component)
    (route/redirects httpd-component)
+   (route/static httpd-component)
    (route/admin httpd-component)
    route/testing))
 
@@ -24,4 +24,5 @@
       (ring/router (middleware/reitit-auth httpd-component))
       (ring/ring-handler handler/fallback)
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
+      (middleware/wrap-trailing-slash)
       (middleware/wrap-cors)))

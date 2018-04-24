@@ -11,6 +11,17 @@
   (fn [request]
     (response/cors request (handler request))))
 
+(defn wrap-trailing-slash
+  "Ring-based middleware forremoving a single trailing slash from the end of the
+  URI, if present."
+  [handler]
+  (fn [request]
+    (let [uri (:uri request)]
+      (handler (assoc request :uri (if (and (not (= "/" uri))
+                                            (.endsWith uri "/"))
+                                     (subs uri 0 (dec (count uri)))
+                                     uri))))))
+
 (defn wrap-auth
   "Ring-based middleware for supporting the protection of routes using the CMR
   Access Control service and CMR Legacy ECHO support.
