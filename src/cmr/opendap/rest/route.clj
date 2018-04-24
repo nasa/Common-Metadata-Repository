@@ -18,10 +18,7 @@
 (defn ous
   [httpd-component]
   [["/opendap" {
-    :get core-handler/ok
-    :head core-handler/ok}]
-   ["/opendap/" {
-    :get core-handler/ok
+    :get (core-handler/html-file "public/index.html")
     :head core-handler/ok}]
    ["/opendap/ous/collections" {
     :post {:handler collection-handler/batch-generate
@@ -44,22 +41,25 @@
 ;;;   Static & Redirect Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn static
-  [httpd-component]
-  [["/opendap/site/*" {
-    :get (core-handler/static-files
-          (config/http-docroot httpd-component))}]
-   ;; Google verification files
-   ["/opendap/googled099d52314962514.html" {
-    :get (core-handler/text-file
-          "public/site/verifications/googled099d52314962514.html")}]])
-
 (defn redirects
   [httpd-component]
   [["/opendap/robots.txt" {
     :get (core-handler/permanent-redirect
           (str (config/get-search-url httpd-component)
                "/robots.txt"))}]])
+
+(defn static
+  [httpd-component]
+  [["/opendap/assets/*" {
+    :get (core-handler/static-files
+          (config/http-assets httpd-component))}]
+   ["/opendap/docs/*" {
+    :get (core-handler/static-files
+          (config/http-docs httpd-component))}]
+   ;; Google verification files
+   ["/opendap/googled099d52314962514.html" {
+    :get (core-handler/text-file
+          "public/site/verifications/googled099d52314962514.html")}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
