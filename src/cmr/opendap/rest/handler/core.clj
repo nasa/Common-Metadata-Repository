@@ -75,6 +75,12 @@
     (if-let [file-resource (io/resource filepath)]
       (response/text request (slurp file-resource)))))
 
+(defn html-file
+  [filepath]
+  (fn [request]
+    (if-let [file-resource (io/resource filepath)]
+      (response/html request (slurp file-resource)))))
+
 (defn permanent-redirect
   [location]
   (fn [request]

@@ -39,6 +39,12 @@
       response/ok
       (response/content-type "text/plain")))
 
+(defn html
+  [_request data]
+  (-> data
+      response/ok
+      (response/content-type "text/html")))
+
 (defn not-found
   [_request]
   (response/content-type
