@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.rest.app
+(ns ^:system cmr.opendap.tests.system.rest.app.ous
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 
@@ -14,25 +14,6 @@
     (clojure.lang ExceptionInfo)))
 
 (use-fixtures :once test-system/with-system)
-
-(deftest admin-routes
-  (testing "ping routes ..."
-    (let [response @(httpc/get (format (str "http://localhost:%s"
-                                            "/opendap/ping")
-                                       (test-system/http-port))
-                               (request/add-token-header
-                                {} (util/get-sit-token)))]
-      (is (= 200 (:status response)))
-      (is (= {:result "pong"}
-             (util/parse-response response))))
-    (let [response @(httpc/post (format (str "http://localhost:%s"
-                                             "/opendap/ping")
-                                        (test-system/http-port))
-                                (request/add-token-header
-                                 {} (util/get-sit-token)))]
-      (is (= 200 (:status response)))
-      (is (= {:result "pong"}
-             (util/parse-response response))))))
 
 (deftest ous-collection-get-with-collection-params
   (testing "Minimal GET ..."

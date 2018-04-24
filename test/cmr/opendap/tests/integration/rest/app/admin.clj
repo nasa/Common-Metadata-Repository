@@ -1,4 +1,4 @@
-(ns ^:integration cmr.opendap.tests.integration.rest.app
+(ns ^:integration cmr.opendap.tests.integration.rest.app.admin
   "Note: this namespace is exclusively for integration tests; all tests defined
   here will use one or more integration test fixtures.
 
@@ -20,22 +20,6 @@
    (clojure.lang ExceptionInfo)))
 
 (use-fixtures :once test-system/with-system)
-
-(deftest root-route
-  (testing "root route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap"
-                                       (test-system/http-port)))]
-      (is (= 200 (:status response))))
-    (let [response @(httpc/head (format "http://localhost:%s/opendap"
-                                        (test-system/http-port)))]
-      (is (= 200 (:status response)))))
-  (testing "root route with trailing slash ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/"
-                                       (test-system/http-port)))]
-      (is (= 200 (:status response))))
-    (let [response @(httpc/head (format "http://localhost:%s/opendap/"
-                                        (test-system/http-port)))]
-      (is (= 200 (:status response))))))
 
 (deftest admin-routes
   (testing "health route ..."
@@ -71,19 +55,4 @@
                                    (test-system/http-port)))))
   (is 503
       (:status @(httpc/get (format "http://localhost:%s/opendap/testing/503"
-
                                    (test-system/http-port))))))
-
-(deftest ous-collection-get-without-token
-  "Note that when a token is not provided, the request doesn't make it past
-  the network boundaries of CMR OPeNDAP, as such this is an integration test.
-  With tokens, however, it does: those tests are system tests."
-  (testing "Minimal get"
-    (let [collection-id "C1200187767-EDF_OPS"
-          response @(httpc/get
-                     (format "http://localhost:%s/opendap/ous/collection/%s"
-                             (test-system/http-port)
-                             collection-id))]
-      (is (= 403 (:status response)))
-      (is (= "An ECHO token is required to access this resource."
-             (:body response))))))
