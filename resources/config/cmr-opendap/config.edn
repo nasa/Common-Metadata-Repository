@@ -39,7 +39,10 @@
   {:port 3012
    :docroot "public"
    :docs "resources/public/docs"
-   :assets "resources/public/assets"}
+   :assets "resources/public/assets"
+   :index-dirs #{"/opendap/docs"
+                 "/opendap/docs/marginalia"
+                 "/opendap/docs/reference"}}
  :logging
   {:level :debug
    :nss [cmr.opendap org.httpkit]}}
