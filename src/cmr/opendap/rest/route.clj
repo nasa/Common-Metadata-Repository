@@ -22,8 +22,13 @@
     :get (core-handler/dynamic-page
           pages/home
           {:base-url (config/opendap-url httpd-component)})
-    :head core-handler/ok}]
-   ["/opendap/dox" {
+    :head core-handler/ok}]])
+
+(defn docs
+  "Note that these routes only cover part of the docs; the rest are supplied
+  via static content from specific directories (done in middleware)."
+  [httpd-component]
+  [["/opendap/docs" {
     :get (core-handler/dynamic-page
           pages/opendap-docs
           {:base-url (config/opendap-url httpd-component)})}]])

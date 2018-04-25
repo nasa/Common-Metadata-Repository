@@ -49,10 +49,6 @@
     (fn [request]
       (let [response (handler request)]
         (cond
-          (contains? (config/http-skip-static system)
-                     (:uri request))
-          response
-
           (contains? (config/http-index-dirs system)
                      (:uri request))
           (rign-response/content-type response content-type)
@@ -63,20 +59,28 @@
 (defn wrap-resource
   [handler system]
   (let [docs-resource (config/http-docs system)
-        assets-resource (config/http-assets system)]
-    ()
-    (-> handler
-        (ring-file/wrap-file docs-resource {:allow-symlinks? true})
-        (ring-file/wrap-file assets-resource {:allow-symlinks? true})
-        (wrap-directory-resource system)
-        (ring-ct/wrap-content-type)
-        (ring-nm/wrap-not-modified))))
+        assets-resource (config/http-assets system)
+        compound-handler (-> handler
+                             (ring-file/wrap-file
+                              docs-resource {:allow-symlinks? true})
+                             (ring-file/wrap-file
+                              assets-resource {:allow-symlinks? true})
+                             (wrap-directory-resource system)
+                             (ring-ct/wrap-content-type)
+                             (ring-nm/wrap-not-modified))]
+    (fn [request]
+      (if (contains? (config/http-skip-static system)
+                     (:uri request))
+        (handler request)
+        (compound-handler request)))))
 
 (defn wrap-not-found
   [handler system]
   (fn [request]
     (let [response (handler request)
           status (:status response)]
+      (when (nil? status)
+        (log/debug "Got nil status in not-found middleware ..."))
       (if (or (= 404 status) (nil? status))
         (assoc (pages/not-found
                 request
