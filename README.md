@@ -1,5 +1,7 @@
 # cmr-site-templates
 
+DEPRECATED: this is now hosted inside CMR-proper as a subproject.
+
 This is the collection of base Selmer templates used by CMR applications and
 services for its documentation HTML pages and other HTML resources published
 for browser consumption as part of the service deployment.
