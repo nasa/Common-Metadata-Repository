@@ -23,7 +23,7 @@
           pages/home
           {:base-url (config/opendap-url httpd-component)})
     :head core-handler/ok}]
-   ["/opendap/docs" {
+   ["/opendap/dox" {
     :get (core-handler/dynamic-page
           pages/opendap-docs
           {:base-url (config/opendap-url httpd-component)})}]])

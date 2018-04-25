@@ -40,8 +40,8 @@
    :docroot "public"
    :docs "resources/public/docs"
    :assets "resources/public/assets"
-   :index-dirs #{"/opendap/docs"
-                 "/opendap/docs/marginalia"
+   :skip-static #{"/opendap/docs"}
+   :index-dirs #{"/opendap/docs/marginalia"
                  "/opendap/docs/reference"}}
  :logging
   {:level :debug

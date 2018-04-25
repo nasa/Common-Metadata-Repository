@@ -96,6 +96,10 @@
   [system]
   (get-in (get-cfg system) [:httpd :index-dirs]))
 
+(defn http-skip-static
+  [system]
+  (get-in (get-cfg system) [:httpd :skip-static]))
+
 (defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))

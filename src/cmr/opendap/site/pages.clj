@@ -4,7 +4,8 @@
   (:require
    [cmr.opendap.site.data :as data]
    [selmer.parser :as selmer]
-   [ring.util.response :as response]))
+   [ring.util.response :as response]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Page Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,6 +38,7 @@
 (defn opendap-docs
   "Prepare the top-level search docs page."
   [request data]
+  (log/debug "Calling opendap-docs page ...")
   (render-html
    "templates/opendap-docs.html"
    (data/base-dynamic data)))

@@ -72,8 +72,7 @@
 
 (defn dynamic-page
   [page-fn data]
-  (fn [request]
-    (page-fn request data)))
+  #(page-fn % data))
 
 (defn permanent-redirect
   [location]

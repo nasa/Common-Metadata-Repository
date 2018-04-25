@@ -47,21 +47,24 @@
     (wrap-directory-resource handler system "text/html"))
   ([handler system content-type]
     (fn [request]
-      (log/debug "Got request:" (into {} request))
-      (log/debug "Got content type:" (:content-type request))
-      (log/debug "Got uri:" (:uri request))
-      (cond
-        (contains? (config/http-index-dirs system)
-                   (:uri request))
-        (rign-response/content-type (handler request) content-type)
+      (let [response (handler request)]
+        (cond
+          (contains? (config/http-skip-static system)
+                     (:uri request))
+          response
 
-        :else
-        (handler request)))))
+          (contains? (config/http-index-dirs system)
+                     (:uri request))
+          (rign-response/content-type response content-type)
+
+          :else
+          response)))))
 
 (defn wrap-resource
   [handler system]
   (let [docs-resource (config/http-docs system)
         assets-resource (config/http-assets system)]
+    ()
     (-> handler
         (ring-file/wrap-file docs-resource {:allow-symlinks? true})
         (ring-file/wrap-file assets-resource {:allow-symlinks? true})
@@ -70,12 +73,15 @@
         (ring-nm/wrap-not-modified))))
 
 (defn wrap-not-found
-  [handler]
+  [handler system]
   (fn [request]
     (let [response (handler request)
           status (:status response)]
       (if (or (= 404 status) (nil? status))
-        (assoc (pages/not-found request) :status 404)
+        (assoc (pages/not-found
+                request
+                {:base-url (config/opendap-url system)})
+               :status 404)
         response))))
 
 (defn wrap-auth

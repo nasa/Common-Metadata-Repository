@@ -31,4 +31,4 @@
         (middleware/wrap-resource httpd-component)
         middleware/wrap-trailing-slash
         middleware/wrap-cors
-        (middleware/wrap-not-found))))
+        (middleware/wrap-not-found httpd-component))))
