@@ -75,7 +75,6 @@
   ([]
    (search-and-return-v2-facets {}))
   ([search-params]
-   (index/wait-until-indexed)
    (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
      (get-in (search/find-concepts-json :collection query-params) [:errors]))))
 
