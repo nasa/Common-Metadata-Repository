@@ -92,6 +92,10 @@
   (or (get-in (get-cfg system) [:cmr :opendap :port])
       (get-in (get-cfg system) [:httpd :port])))
 
+(defn http-index-dirs
+  [system]
+  (get-in (get-cfg system) [:httpd :index-dirs]))
+
 (defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))
