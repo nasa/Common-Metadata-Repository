@@ -3275,10 +3275,12 @@ schemes an explicit operation on explicit data.</p>
     (last maps)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.core
   (:require
+   [clojusc.twig :as logger]
    [cmr.opendap.components.core :as components]
    [com.stuartsierra.component :as component]
    [trifl.java :as trifl])
   (:gen-class))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(logger/set-level! '[cmr.opendap] :info)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
   (let [system (components/init)]
@@ -3540,7 +3542,9 @@ disable logging entirely for tests.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- get-cfg
   [system]
-  (into {} (get-in system [:config :data])))</pre></td></tr><tr><td class="docs"><p>  Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+  (-&gt;&gt; [:config :data]
+       (get-in system)
+       (into {})))</pre></td></tr><tr><td class="docs"><p>  Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn cache-dumpfile
   [system]
@@ -3566,21 +3570,28 @@ disable logging entirely for tests.</p>
     svc-cfg))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn cmr-base-url
   [system]
-  (config/service-&gt;base-url (get-service system :search)))</pre></td></tr><tr><td class="docs">
+  (config/service-&gt;base-url (get-service system :search)))</pre></td></tr><tr><td class="docs"><p>This function returns the cmr-opendap URL with a trailing slash, but without
+  the 'opendap' appended.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn opendap-base-url
+  [system]
+  (str (config/service-&gt;base-public-url (get-service system :opendap)) &quot;/&quot;))</pre></td></tr><tr><td class="docs"><p>This function returns the cmr-opendap URL with a trailing slash.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn opendap-url
+  [system]
+  (str (config/service-&gt;public-url (get-service system :opendap)) &quot;/&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-service-url
   [system service]
-  (config/service-&gt;url (get-service system service)))</pre></td></tr><tr><td class="docs">
+  (config/service-&gt;url (get-service system service)))</pre></td></tr><tr><td class="docs"><p>The URLs returned by these functions have no trailing slash:</p>
 </td><td class="codes"><pre class="brush: clojure">(def get-access-control-url #(get-service-url % :access-control))
 (def get-echo-rest-url #(get-service-url % :echo-rest))
 (def get-ingest-url #(get-service-url % :ingest))
 (def get-opendap-url #(get-service-url % :opendap))
 (def get-search-url #(get-service-url % :search))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn http-docroot
-  [system]
-  (get-in (get-cfg system) [:httpd :docroot]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn http-assets
   [system]
   (get-in (get-cfg system) [:httpd :assets]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-docroot
+  [system]
+  (get-in (get-cfg system) [:httpd :docroot]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn http-docs
   [system]
   (get-in (get-cfg system) [:httpd :docs]))</pre></td></tr><tr><td class="docs">
@@ -3588,6 +3599,24 @@ disable logging entirely for tests.</p>
   [system]
   (or (get-in (get-cfg system) [:cmr :opendap :port])
       (get-in (get-cfg system) [:httpd :port])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-index-dirs
+  [system]
+  (get-in (get-cfg system) [:httpd :index-dirs]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-replace-base-url
+  [system]
+  (get-in (get-cfg system) [:httpd :replace-base-url]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-rest-docs-base-url-template
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :base-url-template]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-rest-docs-outdir
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :outdir]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-rest-docs-source
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :source]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn http-skip-static
+  [system]
+  (get-in (get-cfg system) [:httpd :skip-static]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))</pre></td></tr><tr><td class="docs">
@@ -3607,7 +3636,7 @@ disable logging entirely for tests.</p>
   [this]
   (log/info &quot;Stopping config component ...&quot;)
   (log/debug &quot;Stopped config component.&quot;)
-  (assoc this :data nil))</pre></td></tr><tr><td class="docs">
+  this)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def lifecycle-behaviour
   {:start start
    :stop stop})</pre></td></tr><tr><td class="docs">
@@ -3788,62 +3817,69 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defmulti base-page
   :execution-context)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defmethod base-page :cli
-  [context]
-  (base-static))</pre></td></tr><tr><td class="docs">
+  [data]
+  (base-static data))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defmethod base-page :default
-  [context]
-  (base-dynamic context))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.pages" name="cmr.opendap.site.pages"><h1 class="project-name">cmr.opendap.site.pages</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for returning
+  [data]
+  (base-dynamic data))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.pages" name="cmr.opendap.site.pages"><h1 class="project-name">cmr.opendap.site.pages</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for returning
   ready-to-serve pages.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.site.pages
   (:require
    [cmr.opendap.site.data :as data]
    [selmer.parser :as selmer]
-   [ring.util.response :as response]))</pre></td></tr><tr><td class="docs"><p>  Page Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+   [ring.util.response :as response]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Page Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>A utility function for preparing templates.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn render-template
-  [context template page-data]
+  [template page-data]
   (response/response
    (selmer/render-file template page-data)))</pre></td></tr><tr><td class="docs"><p>A utility function for preparing HTML templates.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn render-html
-  [context template page-data]
+  [template page-data]
   (response/content-type
-   (render-template context template page-data)
+   (render-template template page-data)
    &quot;text/html&quot;))</pre></td></tr><tr><td class="docs"><p>  HTML page-genereating functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Prepare the home page template.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn home
-  [context]
+  [request data]
   (render-html
-   context
    &quot;templates/opendap-home.html&quot;
-   (data/base-page context)))</pre></td></tr><tr><td class="docs"><p>Prepare the top-level search docs page.</p>
+   (data/base-dynamic data)))</pre></td></tr><tr><td class="docs"><p>Prepare the top-level search docs page.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn opendap-docs
-  [context]
+  [request data]
+  (log/debug &quot;Calling opendap-docs page ...&quot;)
   (render-html
-   context
    &quot;templates/opendap-docs.html&quot;
-   (data/base-page context)))</pre></td></tr><tr><td class="docs"><p>Prepare the site-specific (non-API) docs page.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn opendap-site-docs
-  [context]
-  (render-html
-   context
-   &quot;templates/opendap-site-docs.html&quot;
-   (data/base-page context)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.static" name="cmr.opendap.site.static"><h1 class="project-name">cmr.opendap.site.static</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for generating
+   (data/base-dynamic data)))</pre></td></tr><tr><td class="docs"><p>Prepare the home page template.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn not-found
+  ([request]
+    (not-found request {:base-url &quot;/opendap&quot;}))
+  ([request data]
+    (render-html
+     &quot;templates/opendap-not-found.html&quot;
+     (data/base-dynamic data))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.static" name="cmr.opendap.site.static"><h1 class="project-name">cmr.opendap.site.static</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for generating
   the static resources of the top-level and site pages and sitemaps.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.site.static
   (:require
    [clojure.java.io :as io]
+   [clojusc.twig :as logger]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.components.core :as components]
    [cmr.opendap.site.data :as data]
    [com.stuartsierra.component :as component]
+   [markdown.core :as markdown]
    [selmer.parser :as selmer]
    [taoensso.timbre :as log]
    [trifl.java :as trifl])
-  (:gen-class))</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+  (:gen-class))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(logger/set-level! '[cmr.opendap] :info)</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>This is the function used by default to render templates, given data that
   the template needs to render.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate
   [target template-file data]
+  (log/debug &quot;Rendering data from template to:&quot; target)
+  (log/debug &quot;Template:&quot; template-file)
+  (log/debug &quot;Data:&quot; data)
   (io/make-parents target)
   (-&gt;&gt; data
        (selmer/render-file template-file)
@@ -3852,31 +3888,33 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-home
   [docroot base-url]
   (generate
-   (format &quot;resources/%s/index.html&quot; docroot)
+   (format &quot;%s/index.html&quot; docroot)
    &quot;templates/opendap-home.html&quot;
    {:base-url base-url}))</pre></td></tr><tr><td class="docs"><p>Generate the HTML for the CMR OPeNDAP REST API docs page.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-rest-api-docs
-  [docsdir base-url]
+  [docs-source docs-dir base-url]
   (generate
-   (format &quot;resources/%s/index.html&quot; docsdir)
+   (format &quot;%s/index.html&quot; docs-dir)
    &quot;templates/opendap-docs-static.html&quot;
-   {:base-url base-url}))</pre></td></tr><tr><td class="docs"><p>A convenience function that pulls together all the static content generators
+   {:base-url base-url
+    :page-content (markdown/md-to-html-string (slurp docs-source))}))</pre></td></tr><tr><td class="docs"><p>A convenience function that pulls together all the static content generators
   in this namespace. This is the function that should be called in the parent
   static generator namespace.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-all
-  [docroot docsdir base-url]
+  [docroot docs-source docs-dir base-url]
   (log/debug &quot;Generating static site files ...&quot;)
-  (generate-home docroot base-url)
-  (generate-rest-api-docs docsdir base-url))</pre></td></tr><tr><td class="docs">
+  ;;(generate-home docroot base-url)
+  (generate-rest-api-docs docs-source docs-dir base-url))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
-  (let [system (components/init :basic)]
-    (component/start system)
+  (let [system-init (components/init :basic)
+        system (component/start system-init)]
+    (trifl/add-shutdown-handler #(component/stop system))
     (generate-all
       (config/http-docroot system)
-      (config/http-docs system)
-      (config/cmr-base-url system))
-    (trifl/add-shutdown-handler #(component/stop system))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.health" name="cmr.opendap.health"><h1 class="project-name">cmr.opendap.health</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+      (config/http-rest-docs-source system)
+      (config/http-rest-docs-outdir system)
+      (config/http-rest-docs-base-url-template system))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.health" name="cmr.opendap.health"><h1 class="project-name">cmr.opendap.health</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.health)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn has-data?
   [x]
@@ -3978,24 +4016,14 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(def ok
   (fn [request]
     (response/ok request)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def fallback
-  (fn [request]
-    (response/not-found request)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn static-files
   [docroot]
   (fn [request]
-    (log/debug &quot;Docroot:&quot; (io/resource docroot))
-    (log/debug &quot;Docroot path:&quot; (.getPath (io/resource docroot)))
-    (log/debug &quot;request-method:&quot; (:request-method request))
-    (log/debug &quot;request-method:&quot; (:request-method request))
     (if-let [doc-resource (.getPath (io/resource docroot))]
       (do
-        (log/debug &quot;Found resource; serving content ...&quot;)
-        (log/debug &quot;Response:&quot; (file-middleware/file-request request doc-resource))
+        (log/debug &quot;doc-resource:&quot; doc-resource)
         (file-middleware/file-request request doc-resource))
-      (do
-        (log/debug &quot;Didn't find resource!&quot;)
-        (response/not-found request)))))</pre></td></tr><tr><td class="docs">
+      (response/not-found request))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn text-file
   [filepath]
   (fn [request]
@@ -4006,6 +4034,9 @@ disable logging entirely for tests.</p>
   (fn [request]
     (if-let [file-resource (io/resource filepath)]
       (response/html request (slurp file-resource)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn dynamic-page
+  [page-fn data]
+  #(page-fn % data))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn permanent-redirect
   [location]
   (fn [request]
@@ -4019,15 +4050,27 @@ disable logging entirely for tests.</p>
    [cmr.opendap.health :as health]
    [cmr.opendap.rest.handler.collection :as collection-handler]
    [cmr.opendap.rest.handler.core :as core-handler]
+   [cmr.opendap.site.pages :as pages]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  CMR OPeNDAP Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn ous
+</td><td class="codes"><pre class="brush: clojure">(defn main
   [httpd-component]
   [[&quot;/opendap&quot; {
-    :get (core-handler/html-file &quot;public/index.html&quot;)
-    :head core-handler/ok}]
-   [&quot;/opendap/ous/collections&quot; {
+    :get (core-handler/dynamic-page
+          pages/home
+          {:base-url (config/opendap-url httpd-component)})
+    :head core-handler/ok}]])</pre></td></tr><tr><td class="docs"><p>Note that these routes only cover part of the docs; the rest are supplied
+  via static content from specific directories (done in middleware).</p>
+</td><td class="codes"><pre class="brush: clojure">(defn docs
+  [httpd-component]
+  [[&quot;/opendap/docs&quot; {
+    :get (core-handler/dynamic-page
+          pages/opendap-docs
+          {:base-url (config/opendap-url httpd-component)})}]])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn ous-api
+  [httpd-component]
+  [[&quot;/opendap/ous/collections&quot; {
     :post {:handler collection-handler/batch-generate
           ;; XXX protecting collections will be a little different than
           ;;     protecting a single collection, since the concept-id isn't in
@@ -4052,16 +4095,10 @@ disable logging entirely for tests.</p>
                &quot;/robots.txt&quot;))}]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn static
   [httpd-component]
-  [[&quot;/opendap/assets/*&quot; {
-    :get (core-handler/static-files
-          (config/http-assets httpd-component))}]
-   [&quot;/opendap/docs/*&quot; {
-    :get (core-handler/static-files
-          (config/http-docs httpd-component))}]
-   ;; Google verification files
+  [;; Google verification files
    [&quot;/opendap/googled099d52314962514.html&quot; {
     :get (core-handler/text-file
-          &quot;public/site/verifications/googled099d52314962514.html&quot;)}]])</pre></td></tr><tr><td class="docs"><p>  Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+          &quot;public/verifications/googled099d52314962514.html&quot;)}]])</pre></td></tr><tr><td class="docs"><p>  Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn admin
   [httpd-component]
@@ -4084,8 +4121,17 @@ disable logging entirely for tests.</p>
    [&quot;/testing/503&quot; {:get (core-handler/status :service-unavailable)}]])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.rest.middleware" name="cmr.opendap.rest.middleware"><h1 class="project-name">cmr.opendap.rest.middleware</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Custom ring middleware for CMR Graph.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.rest.middleware
   (:require
+   [clojure.string :as string]
    [cmr.opendap.auth.core :as auth]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.http.response :as response]
+   [cmr.opendap.site.pages :as pages]
+   [ring.middleware.content-type :as ring-ct]
+   [ring.middleware.defaults :as ring-defaults]
+   [ring.middleware.file :as ring-file]
+   [ring.middleware.not-modified :as ring-nm]
+   [ring.util.request :as request]
+   [ring.util.response :as rign-response]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>Ring-based middleware for supporting CORS requests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn wrap-cors
   [handler]
@@ -4099,7 +4145,74 @@ disable logging entirely for tests.</p>
       (handler (assoc request :uri (if (and (not (= &quot;/&quot; uri))
                                             (.endsWith uri &quot;/&quot;))
                                      (subs uri 0 (dec (count uri)))
-                                     uri))))))</pre></td></tr><tr><td class="docs"><p>Ring-based middleware for supporting the protection of routes using the CMR
+                                     uri))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wrap-fallback-content-type
+  [handler default-content-type]
+  (fn [request]
+    (condp = (:content-type request)
+      nil (assoc-in (handler request)
+                    [:headers &quot;Content-Type&quot;]
+                    default-content-type)
+      &quot;application/octet-stream&quot; (assoc-in (handler request)
+                                           [:headers &quot;Content-Type&quot;]
+                                           default-content-type)
+      :else (handler request))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wrap-directory-resource
+  ([handler system]
+    (wrap-directory-resource handler system &quot;text/html&quot;))
+  ([handler system content-type]
+    (fn [request]
+      (let [response (handler request)]
+        (cond
+          (contains? (config/http-index-dirs system)
+                     (:uri request))
+          (rign-response/content-type response content-type)
+          :else
+          response)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wrap-base-url-subs
+  [handler system]
+  (fn [request]
+    (let [response (handler request)]
+      (if (contains? (config/http-replace-base-url system)
+                     (:uri request))
+        (assoc response
+               :body
+               (string/replace
+                (slurp (:body response))
+                (re-pattern (config/http-rest-docs-base-url-template system))
+                (config/opendap-url system)))
+        response))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wrap-resource
+  [handler system]
+  (let [docs-resource (config/http-docs system)
+        assets-resource (config/http-assets system)
+        compound-handler (-&gt; handler
+                             (ring-file/wrap-file
+                              docs-resource {:allow-symlinks? true})
+                             (ring-file/wrap-file
+                              assets-resource {:allow-symlinks? true})
+                             (wrap-directory-resource system)
+                             (wrap-base-url-subs system)
+                             (ring-ct/wrap-content-type)
+                             (ring-nm/wrap-not-modified))]
+    (fn [request]
+      (if (contains? (config/http-skip-static system)
+                     (:uri request))
+        (handler request)
+        (compound-handler request)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wrap-not-found
+  [handler system]
+  (fn [request]
+    (let [response (handler request)
+          status (:status response)]
+      (when (nil? status)
+        (log/debug &quot;Got nil status in not-found middleware ...&quot;))
+      (if (or (= 404 status) (nil? status))
+        (assoc (pages/not-found
+                request
+                {:base-url (config/opendap-url system)})
+               :status 404)
+        response))))</pre></td></tr><tr><td class="docs"><p>Ring-based middleware for supporting the protection of routes using the CMR
   Access Control service and CMR Legacy ECHO support.</p>
 
 <p>  In particular, this wrapper allows for the protection of routes by both roles
@@ -4121,6 +4234,7 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.rest.app
   (:require
    [clojure.java.io :as io]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.rest.handler.core :as handler]
    [cmr.opendap.rest.middleware :as middleware]
    [cmr.opendap.rest.route :as route]
@@ -4130,20 +4244,38 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn rest-api-routes
   [httpd-component]
   (concat
-   (route/ous httpd-component)
+   (route/ous-api httpd-component)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn site-routes
+  [httpd-component]
+  (concat
+   (route/main httpd-component)
+   (route/docs httpd-component)
    (route/redirects httpd-component)
-   (route/static httpd-component)
+   (route/static httpd-component)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn misc-routes
+  [httpd-component]
+  (concat
    (route/admin httpd-component)
    route/testing))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn routes
+  [httpd-component]
+  (concat
+    (rest-api-routes httpd-component)
+    (site-routes httpd-component)
+    (misc-routes httpd-component)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn app
   [httpd-component]
-  (-&gt; httpd-component
-      rest-api-routes
-      (ring/router (middleware/reitit-auth httpd-component))
-      (ring/ring-handler handler/fallback)
-      (ring-defaults/wrap-defaults ring-defaults/api-defaults)
-      (middleware/wrap-trailing-slash)
-      (middleware/wrap-cors)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.config" name="cmr.opendap.config"><h1 class="project-name">cmr.opendap.config</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  (let [docs-resource (config/http-docs httpd-component)
+        assets-resource (config/http-assets httpd-component)]
+    (-&gt; httpd-component
+        routes
+        (ring/router (middleware/reitit-auth httpd-component))
+        ring/ring-handler
+        (ring-defaults/wrap-defaults ring-defaults/api-defaults)
+        (middleware/wrap-resource httpd-component)
+        middleware/wrap-trailing-slash
+        middleware/wrap-cors
+        (middleware/wrap-not-found httpd-component))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.config" name="cmr.opendap.config"><h1 class="project-name">cmr.opendap.config</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.config
   (:require
    [clojure.edn :as edn]
@@ -4203,6 +4335,20 @@ disable logging entirely for tests.</p>
   [^Keyword service]
   (format &quot;%s%s&quot;
           (service-&gt;base-url service)
+          (or (get-in service [:relative :root :url])
+              (:context service)
+              &quot;/&quot;)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn service-&gt;base-public-url
+  [^Keyword service]
+  (let [protocol (or (get-in service [:public :protocol]) &quot;https&quot;)
+        host (get-in service [:public :host])]
+    (if (= &quot;https&quot; protocol)
+      (format &quot;%s://%s&quot; protocol host)
+      (format &quot;%s://%s:%s&quot; protocol host (get-in service [:public :port])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn service-&gt;public-url
+  [^Keyword service]
+  (format &quot;%s%s&quot;
+          (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
               &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.core">cmr.opendap.auth.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.roles">cmr.opendap.auth.roles</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.token">cmr.opendap.auth.token</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.acls">cmr.opendap.auth.acls</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing">cmr.opendap.components.testing</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.collection">cmr.opendap.rest.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.core">cmr.opendap.rest.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.route">cmr.opendap.rest.route</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.middleware">cmr.opendap.rest.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.app">cmr.opendap.rest.app</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
