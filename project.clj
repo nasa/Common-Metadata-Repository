@@ -104,7 +104,7 @@
           :doc "Documentation forthcoming"}
         :themes [:clojang]
         :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/reference"}}}
+        :output-path "resources/public/docs/opendap/docs/reference"}}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
@@ -129,7 +129,7 @@
     ;; Documentation
     "codox" ["with-profile" "+docs" "codox"]
     "marginalia" ["with-profile" "+docs"
-      "marg" "--dir" "resources/public/docs/marginalia"
+      "marg" "--dir" "resources/public/docs/opendap/docs/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
     "generate-html" ["with-profile" "+docs"
