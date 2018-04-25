@@ -58,6 +58,9 @@
                                            :Topic "Popular"
                                            :Term "Omega"}))
 
+(def facets-size-error-msg
+  "Collection parameter facets_size needs to be passed in like facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being a positive integer, which will be translated into a map with positive integer string values like {:platform \"1\" :instrument \"2\"}")
+
 (defn- search-and-return-v2-facets
   "Returns the facets returned by a search requesting v2 facets."
   ([]
@@ -116,10 +119,13 @@
     (is (= fr/expected-v2-facets-apply-links-with-facets-size 
            (search-and-return-v2-facets {:facets-size {:platform 1}}))))
   (testing "Empty facets size applied for facets"
-    (is (= ["Collection parameter facets_size must be a map with all positive integer strings, but was [{:instrument \"-1\"}]"]
+    (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
+           (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
+  (testing "Negative facets size applied for facets"
+    (is (= [(str facets-size-error-msg " but was [{:instrument \"-1\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument -1}}))))
   (testing "Invalid facets size applied for facets"
-    (is (= ["Collection parameter facets_size must be a map with all positive integer strings, but was [a]"] 
+    (is (= [(str facets-size-error-msg " but was [a].")]
            (search-and-return-v2-facets-errors {:facets-size "a"}))))
   (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
                                                 :topic "Topic1"

@@ -569,8 +569,11 @@
   (when-let [facets-size (:facets-size params)]
     (when (or (not (map? facets-size))
               (not-all-positive-integer-values? (vals facets-size))) 
-      [(format "Collection parameter facets_size must be a map with all positive integer strings, but was [%s]"
-               facets-size)])))
+      [(str "Collection parameter facets_size needs to be passed in like "
+            "facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being " 
+            "a positive integer, which will be translated into a map with positive integer string values "
+            "like {:platform \"1\" :instrument \"2\"} but was ["
+            facets-size "].")])))
 
 (defn- no-facets-size-without-include-facets-v2
   "Validates that the include-facets parameter is set to v2 if facets-size is set." 
