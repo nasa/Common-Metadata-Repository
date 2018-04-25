@@ -36,7 +36,7 @@
     cpv/basic-params-config
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
-                     :all-revisions :facets-size}
+                     :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -552,14 +552,24 @@
       [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
                include-facets)])))
 
+(defn- not-all-positive-integer-values?
+  "Returns the first value in string-values that can not be converted to positive integer."
+  [string-values] 
+  (some #(when-not (and (integer? %) (< 0 %)) %) 
+        (map #(if (and (not (sequential? %))
+                       (not (clojure.string/blank? %)))   
+                (read-string %)
+                ;; not returning % here because of the case when the only non-integer value is nil. 
+                "some-string")
+             string-values))) 
+
 (defn- collection-facets-size-validation
   "Validates that the facets-size parameter has a value positive integer value."
   [concept-type params]
   (when-let [facets-size (:facets-size params)]
-    (when-not (and (not (sequential? facets-size)) 
-                   (integer? (read-string facets-size)) 
-                   (< 0 (Integer. facets-size)))
-      [(format "Collection parameter facets_size must take a value of a positive integer, but was [%s]"
+    (when (or (not (map? facets-size))
+              (not-all-positive-integer-values? (vals facets-size))) 
+      [(format "Collection parameter facets_size must be a map with all positive integer strings, but was [%s]"
                facets-size)])))
 
 (defn- no-facets-size-without-include-facets-v2

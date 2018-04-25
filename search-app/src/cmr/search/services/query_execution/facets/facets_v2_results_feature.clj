@@ -60,13 +60,13 @@
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
-  from a collection search. Size specifies the number of results to return. Only a subset of the
-  facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [concept-type size query-params facet-fields]
+  from a collection search. values in facet-fields-map specifies the number of results to return for the facet. 
+  Only a subset of the facets are returned in the v2 facets, specifically those that help enable dataset discovery."
+  [concept-type query-params facet-fields-map]
   (into {}
-        (for [field facet-fields]
+        (for [field (keys facet-fields-map)]
           [(get (facet-fields->aggregation-fields concept-type) field)
-           (facet-query concept-type field size query-params)])))
+           (facet-query concept-type field (field facet-fields-map) query-params)])))
 
 (defn- add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
@@ -146,20 +146,30 @@
   [_]
   nil)
 
+(defn- get-facet-fields-map
+  "Returns a map with the keys being the keys in facet-fields-list
+   and the values being the related facet size in the facets-size map. 
+   If the value is not present in facets-size-map, use the default value."
+  [facet-fields-list facets-size-map]
+  (let [default-value-list (repeat (count facet-fields-list) DEFAULT_TERMS_SIZE)
+        default-facet-fields-map (zipmap facet-fields-list default-value-list)]
+    ;; update the default-facet-fields-map with the facets-size-map.
+    (select-keys (merge default-facet-fields-map facets-size-map) facet-fields-list))) 
+
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query _]
   (let [query-string (:query-string context)
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
-        query-params (parse-params query-string "UTF-8")
-        facets-size (get query-params "facets_size")
-        terms-size (if-not (string/blank? facets-size)
-                     (Integer. facets-size) 
-                     DEFAULT_TERMS_SIZE)]
+        facet-fields-map (get-facet-fields-map 
+                           facet-fields 
+                           (merge (get-in context [:params :facets_size]) 
+                                  (get-in context [:params :facets-size])))
+        query-params (parse-params query-string "UTF-8")]
     (when-let [validator (facets-validator concept-type)]
       (validator context))
-    (let [aggs-query (facets-v2-aggregations concept-type terms-size query-params facet-fields)]
+    (let [aggs-query (facets-v2-aggregations concept-type query-params facet-fields-map)]
       (assoc query :aggregations aggs-query))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
