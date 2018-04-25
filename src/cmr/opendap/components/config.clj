@@ -75,13 +75,13 @@
 (def get-opendap-url #(get-service-url % :opendap))
 (def get-search-url #(get-service-url % :search))
 
-(defn http-docroot
-  [system]
-  (get-in (get-cfg system) [:httpd :docroot]))
-
 (defn http-assets
   [system]
   (get-in (get-cfg system) [:httpd :assets]))
+
+(defn http-docroot
+  [system]
+  (get-in (get-cfg system) [:httpd :docroot]))
 
 (defn http-docs
   [system]
@@ -95,6 +95,22 @@
 (defn http-index-dirs
   [system]
   (get-in (get-cfg system) [:httpd :index-dirs]))
+
+(defn http-replace-base-url
+  [system]
+  (get-in (get-cfg system) [:httpd :replace-base-url]))
+
+(defn http-rest-docs-base-url-template
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :base-url-template]))
+
+(defn http-rest-docs-outdir
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :outdir]))
+
+(defn http-rest-docs-source
+  [system]
+  (get-in (get-cfg system) [:httpd :rest-docs :source]))
 
 (defn http-skip-static
   [system]

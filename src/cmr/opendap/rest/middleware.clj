@@ -1,6 +1,7 @@
 (ns cmr.opendap.rest.middleware
   "Custom ring middleware for CMR Graph."
   (:require
+   [clojure.string :as string]
    [cmr.opendap.auth.core :as auth]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.response :as response]
@@ -56,6 +57,20 @@
           :else
           response)))))
 
+(defn wrap-base-url-subs
+  [handler system]
+  (fn [request]
+    (let [response (handler request)]
+      (if (contains? (config/http-replace-base-url system)
+                     (:uri request))
+        (assoc response
+               :body
+               (string/replace
+                (slurp (:body response))
+                (re-pattern (config/http-rest-docs-base-url-template system))
+                (config/opendap-url system)))
+        response))))
+
 (defn wrap-resource
   [handler system]
   (let [docs-resource (config/http-docs system)
@@ -66,6 +81,7 @@
                              (ring-file/wrap-file
                               assets-resource {:allow-symlinks? true})
                              (wrap-directory-resource system)
+                             (wrap-base-url-subs system)
                              (ring-ct/wrap-content-type)
                              (ring-nm/wrap-not-modified))]
     (fn [request]

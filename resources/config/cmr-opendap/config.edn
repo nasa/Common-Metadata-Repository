@@ -40,9 +40,15 @@
    :docroot "public"
    :docs "resources/public/docs"
    :assets "resources/public/assets"
+   :rest-docs
+     {:base-url-template "%%OPENDAP_BASE_URL%%"
+      :source "resources/docs/rest-api/index.md"
+      :outdir "resources/public/docs/opendap/docs/rest-api"}
    :skip-static #{"/opendap/docs"}
+   :replace-base-url #{"/opendap/docs/rest-api"}
    :index-dirs #{"/opendap/docs/marginalia"
-                 "/opendap/docs/reference"}}
+                 "/opendap/docs/reference"
+                 "/opendap/docs/rest-api"}}
  :logging
   {:level :debug
    :nss [cmr.opendap org.httpkit]}}

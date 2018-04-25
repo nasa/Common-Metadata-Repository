@@ -8,6 +8,7 @@
    [cmr.opendap.components.core :as components]
    [cmr.opendap.site.data :as data]
    [com.stuartsierra.component :as component]
+   [markdown.core :as markdown]
    [selmer.parser :as selmer]
    [taoensso.timbre :as log]
    [trifl.java :as trifl])
@@ -39,35 +40,35 @@
   "Generate the HTML for the CMR OPeNDAP home page."
   [docroot base-url]
   (generate
-   (format "resources/%s/index.html" docroot)
+   (format "%s/index.html" docroot)
    "templates/opendap-home.html"
    {:base-url base-url}))
 
 (defn generate-rest-api-docs
   "Generate the HTML for the CMR OPeNDAP REST API docs page."
-  [docsdir base-url]
+  [docs-source docs-dir base-url]
   (generate
-   (format "resources/%s/index.html" docsdir)
+   (format "%s/index.html" docs-dir)
    "templates/opendap-docs-static.html"
-   {:base-url base-url}))
+   {:base-url base-url
+    :page-content (markdown/md-to-html-string (slurp docs-source))}))
 
 (defn generate-all
   "A convenience function that pulls together all the static content generators
   in this namespace. This is the function that should be called in the parent
   static generator namespace."
-  [docroot docsdir base-url]
+  [docroot docs-source docs-dir base-url]
   (log/debug "Generating static site files ...")
   ;;(generate-home docroot base-url)
-  ;;(generate-rest-api-docs docsdir base-url)
-  )
+  (generate-rest-api-docs docs-source docs-dir base-url))
 
 (defn -main
   [& args]
   (let [system-init (components/init :basic)
         system (component/start system-init)]
     (trifl/add-shutdown-handler #(component/stop system))
-    (log/debug "system:" (into {} system))
     (generate-all
       (config/http-docroot system)
-      (config/http-docs system)
-      (config/opendap-url system))))
+      (config/http-rest-docs-source system)
+      (config/http-rest-docs-outdir system)
+      (config/http-rest-docs-base-url-template system))))
