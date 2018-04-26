@@ -14,7 +14,7 @@
 ;;;   Constants, Data, & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def subscribers
+(def default-subscribers
   {tag/generic [:default]
    tag/subscribers-added [:default]})
 
@@ -105,7 +105,7 @@
 
 (defn subscribe-all
   ""
-  [system]
+  [system subscribers]
   (let [system (util/pubsub-component->system system)]
     (doseq [[event-type subscriber-funcs] subscribers]
       (subscribe-all-event system
@@ -116,7 +116,15 @@
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord PubSubComponent [dataflow])
+(defrecord PubSubComponent [
+  subscribers
+  ;; The 'dataflow' pubsub is intended for use in tracking low-level events
+  ;; in the system that relate to the manner in which data flows through the
+  ;; system.
+  dataflow
+  ;; The 'world' pubsub is intended for use by anything that needs to handle
+  ;; events that take place in the game world.
+  world])
 
 (defn start
   [this]
@@ -124,17 +132,23 @@
   (log/debug "Started pub-sub component.")
   (let [dataflow (pubsub/create-dataflow-pubsub
                   (config/event-system-type this))
-        component (assoc-in this [:dataflow] dataflow)]
+        world (pubsub/create-dataflow-pubsub
+               (config/event-system-type this))
+        component (assoc this :dataflow dataflow
+                              :world world)]
     (log/info "Adding subscribers ...")
-    (subscribe-all component)
+    (subscribe-all component (:subscribers this))
     component))
 
 (defn stop
   [this]
   (log/info "Stopping pub-sub component ...")
-  (if-let [pubsub-dataflow (get-in this [:dataflow])]
+  (when-let [pubsub-dataflow (:dataflow this)]
     (pubsub/delete pubsub-dataflow))
-  (let [component (assoc-in this [:dataflow] nil)]
+  (when-let [pubsub-world (:world this)]
+    (pubsub/delete pubsub-world))
+  (let [component (assoc this :dataflow nil
+                              :world nil)]
     (log/debug "Stopped pub-sub component.")
     component))
 
@@ -152,5 +166,7 @@
 
 (defn create-component
   ""
-  []
-  (map->PubSubComponent {}))
+  ([]
+   (create-component {}))
+  ([subscribers]
+   (map->PubSubComponent (merge default-subscribers subscribers))))
