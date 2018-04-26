@@ -33,6 +33,10 @@
           pages/opendap-docs
           {:base-url (config/opendap-url httpd-component)})}]])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   REST API Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn ous-api
   [httpd-component]
   [["/opendap/ous/collections" {
@@ -52,6 +56,18 @@
            :permissions #{:read}}
     :options core-handler/ok}]])
 
+(defn admin-api
+  [httpd-component]
+  [["/opendap/health" {
+    :get (core-handler/health httpd-component)
+    :options core-handler/ok}]
+   ["/opendap/ping" {
+    :get {:handler core-handler/ping
+          :roles #{:admin}}
+    :post {:handler core-handler/ping
+           :roles #{:admin}}
+    :options core-handler/ok}]])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Static & Redirect Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,22 +85,6 @@
    ["/opendap/googled099d52314962514.html" {
     :get (core-handler/text-file
           "public/verifications/googled099d52314962514.html")}]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn admin
-  [httpd-component]
-  [["/opendap/health" {
-    :get (core-handler/health httpd-component)
-    :options core-handler/ok}]
-   ["/opendap/ping" {
-    :get {:handler core-handler/ping
-          :roles #{:admin}}
-    :post {:handler core-handler/ping
-           :roles #{:admin}}
-    :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

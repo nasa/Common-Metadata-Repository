@@ -12,7 +12,8 @@
 (defn rest-api-routes
   [httpd-component]
   (concat
-   (route/ous-api httpd-component)))
+   (route/ous-api httpd-component)
+   (route/admin-api httpd-component)))
 
 (defn site-routes
   [httpd-component]
@@ -22,25 +23,19 @@
    (route/redirects httpd-component)
    (route/static httpd-component)))
 
-(defn misc-routes
-  [httpd-component]
-  (concat
-   (route/admin httpd-component)
-   route/testing))
-
-(defn routes
+(defn all-routes
   [httpd-component]
   (concat
     (rest-api-routes httpd-component)
     (site-routes httpd-component)
-    (misc-routes httpd-component)))
+    route/testing))
 
 (defn app
   [httpd-component]
   (let [docs-resource (config/http-docs httpd-component)
         assets-resource (config/http-assets httpd-component)]
     (-> httpd-component
-        routes
+        all-routes
         (ring/router (middleware/reitit-auth httpd-component))
         ring/ring-handler
         (ring-defaults/wrap-defaults ring-defaults/api-defaults)
