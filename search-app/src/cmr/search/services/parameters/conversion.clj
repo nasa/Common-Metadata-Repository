@@ -382,6 +382,7 @@
                  :result-features (seq result-features)
                  :echo-compatible? (= "true" (:echo-compatible params))
                  :all-revisions? (= "true" (:all-revisions params))
+                 :facets-size (:facets-size params)
                  :result-options (merge (when-not (str/blank? (:include-tags params))
                                           {:tags (map str/trim (str/split (:include-tags params) #","))})
                                         (when (or begin-tag end-tag snippet-length num-snippets)

@@ -166,8 +166,7 @@
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
-        facets-size (merge (get-in context [:params :facets_size])
-                           (get-in context [:params :facets-size])) 
+        facets-size (:facets-size query)
         facet-fields-map (get-facet-fields-map concept-type facet-fields facets-size)
         query-params (parse-params query-string "UTF-8")]
     (when-let [validator (facets-validator concept-type)]
