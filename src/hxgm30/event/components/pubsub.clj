@@ -190,4 +190,5 @@
   ([]
    (create-component {}))
   ([subscribers]
-   (map->PubSubComponent (merge default-subscribers subscribers))))
+   (map->PubSubComponent
+    {:subscribers (merge default-subscribers subscribers)})))
