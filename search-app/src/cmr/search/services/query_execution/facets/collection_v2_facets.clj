@@ -35,9 +35,18 @@
   "Collection facets parameters."
   (keys collection-facets-v2-params->elastic-fields))
 
+(def collection-facets-v2-params-with-default-size
+  "A map with collection facets parameters and the default term size values."
+  (zipmap collection-facets-v2-params 
+          (repeat (count collection-facets-v2-params) v2-facets/DEFAULT_TERMS_SIZE)))  
+
 (defmethod v2-facets/facets-v2-params :collection
   [_]
   collection-facets-v2-params)
+
+(defmethod v2-facets/facets-v2-params-with-default-size :collection
+  [_]
+  collection-facets-v2-params-with-default-size)
 
 (def collection-facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."

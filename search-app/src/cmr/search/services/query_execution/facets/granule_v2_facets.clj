@@ -21,9 +21,18 @@
   "Granule facet params."
   (keys granule-facet-params->elastic-fields))
 
+(def granule-facet-params-with-default-size
+  "A map with collection facets parameters and the default term size values."
+  (zipmap granule-facet-params
+          (repeat (count granule-facet-params) v2-facets/DEFAULT_TERMS_SIZE)))
+
 (defmethod v2-facets/facets-v2-params :granule
   [_]
   granule-facet-params)
+
+(defmethod v2-facets/facets-v2-params-with-default-size :granule
+  [_]
+  granule-facet-params-with-default-size)
 
 (def granule-fields->aggregation-fields
   "Defines the mapping of granule parameter names to the aggregation parameter names."

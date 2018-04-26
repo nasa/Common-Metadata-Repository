@@ -4,7 +4,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.util :as util]
@@ -34,6 +34,11 @@
   (fn [concept-type]
     concept-type))
 
+(defmulti facets-v2-params-with-default-size
+  "Returns a map of facets query params with DEFAULT_TERMS_SIZE value by concept-type"
+  (fn [concept-type]
+    concept-type))
+
 (defmulti facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
   (fn [concept-type]
@@ -60,25 +65,25 @@
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
-  from a collection search. Size specifies the number of results to return. Only a subset of the
-  facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [concept-type size query-params facet-fields]
+  from a collection search. values in facet-fields-map specifies the number of results to return for the facet. 
+  Only a subset of the facets are returned in the v2 facets, specifically those that help enable dataset discovery."
+  [concept-type query-params facet-fields-map]
   (into {}
-        (for [field facet-fields]
+        (for [field (keys facet-fields-map)]
           [(get (facet-fields->aggregation-fields concept-type) field)
-           (facet-query concept-type field size query-params)])))
+           (facet-query concept-type field (field facet-fields-map) query-params)])))
 
 (defn- add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
   and number of matching collections. For any search term provided that is not in the tuple of value
   counts, a new tuple is added with the search term and a count of 0."
   [value-counts search-terms]
-  (let [all-facet-values (map #(str/lower-case (first %)) value-counts)
+  (let [all-facet-values (map #(string/lower-case (first %)) value-counts)
         ;; Look for each of the search terms in the returned facet values compared in a case
         ;; insensitive manner. Although the comparison is case insensitive the missing-terms will
         ;; contain any of the search terms that do not appear in the facet values in their
         ;; original case.
-        missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
+        missing-terms (remove #(some (set [(string/lower-case %)]) all-facet-values) search-terms)]
     (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
 
 (defn create-prioritized-v2-facets
@@ -146,18 +151,27 @@
   [_]
   nil)
 
+(defn- get-facet-fields-map
+  "Returns a map with the keys being the keys in facet-fields-list
+  and the values being the related facet size in the facets-size map. 
+  If the value is not present in facets-size-map, use the default value.
+  Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
+  [concept-type facet-fields-list facets-size-map]
+  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map) 
+               facet-fields-list)) 
+
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query _]
   (let [query-string (:query-string context)
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        facets-size (:facets-size query)
+        facet-fields-map (get-facet-fields-map concept-type facet-fields facets-size)
         query-params (parse-params query-string "UTF-8")]
     (when-let [validator (facets-validator concept-type)]
       (validator context))
-    ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
-    ;; always use the DEFAULT_TERMS_SIZE
-    (let [aggs-query (facets-v2-aggregations concept-type DEFAULT_TERMS_SIZE query-params facet-fields)]
+    (let [aggs-query (facets-v2-aggregations concept-type query-params facet-fields-map)]
       (assoc query :aggregations aggs-query))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2

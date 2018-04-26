@@ -62,6 +62,7 @@
    :two-d-coordinate-system-name :string
    :updated-since :updated-since
    :version :string
+   :facets-size :string
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -375,12 +376,13 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)]
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
-             :hierarchical-facets :include-highlights :include-tags :all-revisions)
+             :hierarchical-facets :include-highlights :include-tags :all-revisions :facets-size)
      (-> query-attribs
          (merge {:boosts (:boosts params)
                  :result-features (seq result-features)
                  :echo-compatible? (= "true" (:echo-compatible params))
                  :all-revisions? (= "true" (:all-revisions params))
+                 :facets-size (:facets-size params)
                  :result-options (merge (when-not (str/blank? (:include-tags params))
                                           {:tags (map str/trim (str/split (:include-tags params) #","))})
                                         (when (or begin-tag end-tag snippet-length num-snippets)

@@ -195,7 +195,7 @@
 (defmethod cpv/valid-query-level-params :collection
   [_]
   #{:include-granule-counts :include-has-granules :include-facets :hierarchical-facets
-    :include-highlights :include-tags :all-revisions :echo-compatible :boosts})
+    :include-highlights :include-tags :all-revisions :echo-compatible :boosts :facets-size})
 
 (defmethod cpv/valid-query-level-options :collection
   [_]
@@ -552,6 +552,36 @@
       [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
                include-facets)])))
 
+(defn- not-all-positive-integer-values?
+  "Returns the first value in string-values that can not be converted to positive integer."
+  [string-values] 
+  (some #(when-not (and (integer? %) (< 0 %)) %) 
+        (map #(if (and (not (sequential? %))
+                       (not (clojure.string/blank? %)))   
+                (read-string %)
+                ;; not returning % here because of the case when the only non-integer value is nil. 
+                "some-string")
+             string-values))) 
+
+(defn- collection-facets-size-validation
+  "Validates that the facets-size parameter has a value positive integer value."
+  [concept-type params]
+  (when-let [facets-size (:facets-size params)]
+    (when (or (not (map? facets-size))
+              (not-all-positive-integer-values? (vals facets-size))) 
+      [(str "Collection parameter facets_size needs to be passed in like "
+            "facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being " 
+            "a positive integer, which will be translated into a map with positive integer string values "
+            "like {:platform \"1\" :instrument \"2\"} but was ["
+            facets-size "].")])))
+
+(defn- no-facets-size-without-include-facets-v2
+  "Validates that the include-facets parameter is set to v2 if facets-size is set." 
+  [concept-type params]
+  (when (and (:facets-size params)
+             (not= "v2" (:include-facets params)))
+    ["facets_size option is not allowed unless the include_facets is v2."]))
+
 (defn- granule-include-facets-validation
   "Validates that the include_facets parameter has a value of v2."
   [concept-type params]
@@ -708,7 +738,9 @@
                  no-highlight-options-without-highlights-validation
                  highlights-numeric-options-validation
                  include-tags-parameter-validation
-                 collection-include-facets-validation])
+                 collection-include-facets-validation
+                 no-facets-size-without-include-facets-v2
+                 collection-facets-size-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation

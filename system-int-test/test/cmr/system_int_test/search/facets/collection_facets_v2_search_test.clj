@@ -58,6 +58,9 @@
                                            :Topic "Popular"
                                            :Term "Omega"}))
 
+(def facets-size-error-msg
+  "Collection parameter facets_size needs to be passed in like facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being a positive integer, which will be translated into a map with positive integer string values like {:platform \"1\" :instrument \"2\"}")
+
 (defn- search-and-return-v2-facets
   "Returns the facets returned by a search requesting v2 facets."
   ([]
@@ -66,6 +69,14 @@
    (index/wait-until-indexed)
    (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
+
+(defn- search-and-return-v2-facets-errors
+  "Returns the facets returned by a search requesting v2 facets."
+  ([]
+   (search-and-return-v2-facets {}))
+  ([search-params]
+   (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
+     (get-in (search/find-concepts-json :collection query-params) [:errors]))))
 
 (deftest all-facets-v2-test
   (dev-sys-util/eval-in-dev-sys
@@ -103,6 +114,18 @@
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
+  (testing "Facets size applied for facets"
+    (is (= fr/expected-v2-facets-apply-links-with-facets-size 
+           (search-and-return-v2-facets {:facets-size {:platform 1}}))))
+  (testing "Empty facets size applied for facets"
+    (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
+           (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
+  (testing "Negative facets size applied for facets"
+    (is (= [(str facets-size-error-msg " but was [{:instrument \"-1\"}].")]
+           (search-and-return-v2-facets-errors {:facets-size {:instrument -1}}))))
+  (testing "Invalid facets size applied for facets"
+    (is (= [(str facets-size-error-msg " but was [a].")]
+           (search-and-return-v2-facets-errors {:facets-size "a"}))))
   (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
                                                 :topic "Topic1"
                                                 :term "Term1"
