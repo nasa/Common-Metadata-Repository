@@ -150,7 +150,6 @@
 (defn start
   [this]
   (log/info "Starting pub-sub component ...")
-  (log/debug "Started pub-sub component.")
   (let [dataflow (pubsub/create-dataflow-pubsub
                   (config/event-system-type this))
         world (pubsub/create-world-pubsub
@@ -159,6 +158,7 @@
                               :world world)]
     (log/info "Adding subscribers ...")
     (subscribe-all component (:subscribers this))
+    (log/debug "Started pub-sub component.")
     component))
 
 (defn stop
