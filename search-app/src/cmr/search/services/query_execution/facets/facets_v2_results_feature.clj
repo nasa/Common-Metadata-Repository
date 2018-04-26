@@ -34,6 +34,11 @@
   (fn [concept-type]
     concept-type))
 
+(defmulti facets-v2-params-with-default-size
+  "Returns a map of facets query params with DEFAULT_TERMS_SIZE value by concept-type"
+  (fn [concept-type]
+    concept-type))
+
 (defmulti facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
   (fn [concept-type]
@@ -149,12 +154,11 @@
 (defn- get-facet-fields-map
   "Returns a map with the keys being the keys in facet-fields-list
    and the values being the related facet size in the facets-size map. 
-   If the value is not present in facets-size-map, use the default value."
-  [facet-fields-list facets-size-map]
-  (let [default-value-list (repeat (count facet-fields-list) DEFAULT_TERMS_SIZE)
-        default-facet-fields-map (zipmap facet-fields-list default-value-list)]
-    ;; update the default-facet-fields-map with the facets-size-map.
-    (select-keys (merge default-facet-fields-map facets-size-map) facet-fields-list))) 
+   If the value is not present in facets-size-map, use the default value.
+   Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
+  [concept-type facet-fields-list facets-size-map]
+  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map) 
+               facet-fields-list)) 
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query _]
@@ -162,10 +166,9 @@
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
-        facet-fields-map (get-facet-fields-map 
-                           facet-fields 
-                           (merge (get-in context [:params :facets_size]) 
-                                  (get-in context [:params :facets-size])))
+        facets-size (merge (get-in context [:params :facets_size])
+                           (get-in context [:params :facets-size])) 
+        facet-fields-map (get-facet-fields-map concept-type facet-fields facets-size)
         query-params (parse-params query-string "UTF-8")]
     (when-let [validator (facets-validator concept-type)]
       (validator context))
