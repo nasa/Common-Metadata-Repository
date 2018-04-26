@@ -153,7 +153,7 @@
   (log/debug "Started pub-sub component.")
   (let [dataflow (pubsub/create-dataflow-pubsub
                   (config/event-system-type this))
-        world (pubsub/create-dataflow-pubsub
+        world (pubsub/create-world-pubsub
                (config/event-system-type this))
         component (assoc this :dataflow dataflow
                               :world world)]
