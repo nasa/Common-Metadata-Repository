@@ -153,9 +153,9 @@
 
 (defn- get-facet-fields-map
   "Returns a map with the keys being the keys in facet-fields-list
-   and the values being the related facet size in the facets-size map. 
-   If the value is not present in facets-size-map, use the default value.
-   Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
+  and the values being the related facet size in the facets-size map. 
+  If the value is not present in facets-size-map, use the default value.
+  Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
   [concept-type facet-fields-list facets-size-map]
   (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map) 
                facet-fields-list)) 
