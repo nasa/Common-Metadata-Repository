@@ -15,8 +15,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def default-subscribers
-  {tag/generic [:default]
-   tag/subscribers-added [:default]})
+  {:dataflow tag/generic [:default]
+   :dataflow tag/subscribers-added [:default]})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   PubSub Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,28 +34,37 @@
 
 (defn get-pubsub
   ""
-  [system]
-  (get-in system [:pubsub]))
+  ([system]
+   (:pubsub system))
+  ([system type]
+   (get-in system [:pubsub type])))
 
 (defn get-dataflow-pubsub
   ""
   [system]
-  (get-in system [:pubsub :dataflow]))
+  (get-pubsub system :dataflow))
+
+(defn get-world-pubsub
+  ""
+  [system]
+  (get-pubsub system :world))
 
 (defn publish
   ""
   ([system event-type]
    (publish system event-type {}))
   ([system event-type data]
+   (publish system :dataflow event-type data))
+  ([system pubsub-type event-type data]
    (if (nil? system)
      (log/error "System cannot be nil!")
      (let [system (util/pubsub-component->system system)
-           dataflow (get-dataflow-pubsub system)
-           topic (pubsub/get-topic dataflow)
-           msg (message/new-dataflow-event event-type data)]
+           pbsb (get-pubsub system pubsub-type)
+           topic (pubsub/get-topic pbsb)
+           msg (message/new-event topic event-type data)]
        (log/debug "\tPublishing message to" (message/get-route msg))
        (log/trace "Sending message data:" (message/get-payload msg))
-       (async/>!! (pubsub/get-chan dataflow) msg)))
+       (async/>!! (pubsub/get-chan pbsb) msg)))
    data))
 
 (defn publish->
@@ -63,7 +72,9 @@
   ([other-data system event-type]
    (publish-> other-data system event-type {}))
   ([other-data system event-type data]
-   (publish system event-type data)
+   (publish-> other-data system :dataflow event-type data))
+  ([other-data system pubsub-type event-type data]
+   (publish system pubsub-type event-type data)
    other-data))
 
 (defn publish->>
@@ -71,21 +82,28 @@
   ([system event-type other-data]
    (publish->> system event-type {} other-data))
   ([system event-type data other-data]
-   (publish system event-type data)
+   (publish->> system :dataflow event-type data other-data))
+  ([system pubsub-type event-type data other-data]
+   (publish system pubsub-type event-type data)
    other-data))
+
+(defn default-subscribe-fn
+  [s m]
+  (log/warn
+   "Using default subscriber callback for"
+   (message/get-route m)))
 
 (defn subscribe
   ""
   ([system event-type]
-   (subscribe system event-type (fn [s m]
-                                  (log/warn
-                                   "Using default subscriber callback for"
-                                   (message/get-route m)))))
+   (subscribe system event-type nil))
   ([system event-type func]
+   (subscribe system :dataflow event-type func))
+  ([system pubsub-type event-type func]
    (when-not (nil? system)
-     (let [dataflow (get-dataflow-pubsub system)]
+     (let [pbsb (get-pubsub system pubsub-type)]
        (async/go-loop []
-         (when-let [msg (async/<! (pubsub/get-sub dataflow event-type))]
+         (when-let [msg (async/<! (pubsub/get-sub pbsb event-type))]
            (log/debug "Received subscribed message for" (message/get-route msg))
            (log/trace "Message data:" (message/get-payload msg))
            (log/trace "Callback function:" func)
@@ -94,21 +112,24 @@
 
 (defn subscribe-all-event
   ""
-  [system event-type subscriber-funcs]
-  (doseq [func subscriber-funcs]
-    (log/debugf "\tSubscribing to %s ..." event-type)
-    (subscribe system event-type debug-subscriber)
-    (subscribe system event-type trace-subscriber)
-    (if (= func :default)
-      (subscribe system event-type)
-      (subscribe system event-type func))))
+  ([system event-type subscriber-funcs]
+   (subscribe-all-event system :dataflow event-type subscriber-funcs))
+  ([system pubsub-type event-type subscriber-funcs]
+   (doseq [func subscriber-funcs]
+     (log/debugf "\tSubscribing to %s ..." event-type)
+     (subscribe system pubsub-type event-type debug-subscriber)
+     (subscribe system pubsub-type event-type trace-subscriber)
+     (if (= func :default)
+       (subscribe system pubsub-type event-type default-subscribe-fn)
+       (subscribe system pubsub-type event-type func)))))
 
 (defn subscribe-all
   ""
   [system subscribers]
   (let [system (util/pubsub-component->system system)]
-    (doseq [[event-type subscriber-funcs] subscribers]
+    (doseq [[pubsub-type event-type subscriber-funcs] subscribers]
       (subscribe-all-event system
+                           pubsub-type
                            event-type
                            subscriber-funcs))))
 

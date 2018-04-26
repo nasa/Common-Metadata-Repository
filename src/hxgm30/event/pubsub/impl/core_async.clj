@@ -57,3 +57,7 @@
 (defn create-dataflow-pubsub
   []
   (create-pubsub topic/dataflow-events))
+
+(defn create-world-pubsub
+  []
+  (create-pubsub topic/world-events))

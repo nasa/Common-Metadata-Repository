@@ -35,3 +35,8 @@
   [^Keyword type]
   (case type
     :core-async (core-async/create-dataflow-pubsub)))
+
+(defn create-world-pubsub
+  [^Keyword type]
+  (case type
+    :core-async (core-async/create-world-pubsub)))
