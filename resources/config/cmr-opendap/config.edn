@@ -37,7 +37,6 @@
   	     {:url "/search"}}}}
  :httpd
   {:port 3012
-   :docroot "public"
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs

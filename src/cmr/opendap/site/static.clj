@@ -36,14 +36,6 @@
 ;;;   Content Generators   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn generate-home
-  "Generate the HTML for the CMR OPeNDAP home page."
-  [docroot base-url]
-  (generate
-   (format "%s/index.html" docroot)
-   "templates/opendap-home.html"
-   {:base-url base-url}))
-
 (defn generate-rest-api-docs
   "Generate the HTML for the CMR OPeNDAP REST API docs page."
   [docs-source docs-dir base-url]
@@ -57,9 +49,8 @@
   "A convenience function that pulls together all the static content generators
   in this namespace. This is the function that should be called in the parent
   static generator namespace."
-  [docroot docs-source docs-dir base-url]
+  [docs-source docs-dir base-url]
   (log/debug "Generating static site files ...")
-  ;;(generate-home docroot base-url)
   (generate-rest-api-docs docs-source docs-dir base-url))
 
 (defn -main
@@ -68,7 +59,6 @@
         system (component/start system-init)]
     (trifl/add-shutdown-handler #(component/stop system))
     (generate-all
-      (config/http-docroot system)
       (config/http-rest-docs-source system)
       (config/http-rest-docs-outdir system)
       (config/http-rest-docs-base-url-template system))))

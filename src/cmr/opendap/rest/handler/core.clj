@@ -49,15 +49,6 @@
   (fn [request]
     (response/ok request)))
 
-(defn static-files
-  [docroot]
-  (fn [request]
-    (if-let [doc-resource (.getPath (io/resource docroot))]
-      (do
-        (log/debug "doc-resource:" doc-resource)
-        (file-middleware/file-request request doc-resource))
-      (response/not-found request))))
-
 (defn text-file
   [filepath]
   (fn [request]

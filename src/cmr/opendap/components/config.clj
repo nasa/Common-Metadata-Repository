@@ -79,10 +79,6 @@
   [system]
   (get-in (get-cfg system) [:httpd :assets]))
 
-(defn http-docroot
-  [system]
-  (get-in (get-cfg system) [:httpd :docroot]))
-
 (defn http-docs
   [system]
   (get-in (get-cfg system) [:httpd :docs]))
