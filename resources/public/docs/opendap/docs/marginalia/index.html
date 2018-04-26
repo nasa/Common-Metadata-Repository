@@ -3589,9 +3589,6 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn http-assets
   [system]
   (get-in (get-cfg system) [:httpd :assets]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn http-docroot
-  [system]
-  (get-in (get-cfg system) [:httpd :docroot]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn http-docs
   [system]
   (get-in (get-cfg system) [:httpd :docs]))</pre></td></tr><tr><td class="docs">
@@ -3884,13 +3881,7 @@ disable logging entirely for tests.</p>
   (-&gt;&gt; data
        (selmer/render-file template-file)
        (spit target)))</pre></td></tr><tr><td class="docs"><p>  Content Generators   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Generate the HTML for the CMR OPeNDAP home page.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn generate-home
-  [docroot base-url]
-  (generate
-   (format &quot;%s/index.html&quot; docroot)
-   &quot;templates/opendap-home.html&quot;
-   {:base-url base-url}))</pre></td></tr><tr><td class="docs"><p>Generate the HTML for the CMR OPeNDAP REST API docs page.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Generate the HTML for the CMR OPeNDAP REST API docs page.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-rest-api-docs
   [docs-source docs-dir base-url]
   (generate
@@ -3901,9 +3892,8 @@ disable logging entirely for tests.</p>
   in this namespace. This is the function that should be called in the parent
   static generator namespace.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-all
-  [docroot docs-source docs-dir base-url]
+  [docs-source docs-dir base-url]
   (log/debug &quot;Generating static site files ...&quot;)
-  ;;(generate-home docroot base-url)
   (generate-rest-api-docs docs-source docs-dir base-url))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
@@ -3911,7 +3901,6 @@ disable logging entirely for tests.</p>
         system (component/start system-init)]
     (trifl/add-shutdown-handler #(component/stop system))
     (generate-all
-      (config/http-docroot system)
       (config/http-rest-docs-source system)
       (config/http-rest-docs-outdir system)
       (config/http-rest-docs-base-url-template system))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.health" name="cmr.opendap.health"><h1 class="project-name">cmr.opendap.health</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
@@ -4016,14 +4005,6 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(def ok
   (fn [request]
     (response/ok request)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn static-files
-  [docroot]
-  (fn [request]
-    (if-let [doc-resource (.getPath (io/resource docroot))]
-      (do
-        (log/debug &quot;doc-resource:&quot; doc-resource)
-        (file-middleware/file-request request doc-resource))
-      (response/not-found request))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn text-file
   [filepath]
   (fn [request]
