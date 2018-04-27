@@ -3,7 +3,8 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.opendap.ous.collection :as collection]
-   [cmr.opendap.ous.util :as util]
+   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,17 +50,26 @@
 (defn get-opendap-urls
   [raw-params]
   (log/trace "Got params:" raw-params)
-  (let [params (util/normalize-params raw-params)]
+  (let [start (util/now)
+        params (ous-util/normalize-params raw-params)]
     (cond (collection/params? :v2 params)
           (do
             (log/trace "Parameters are of type `collection` ...")
-            (collection/create-params :v2 params))
+            (collection/create-results
+             (collection/create-params :v2 params)
+             :elapsed (util/timed start)))
+
           (collection/params? :v1 params)
           (do
             (log/trace "Parameters are of type `ous-prototype` ...")
-            (collection/create-params :v1 params))
+            (collection/create-results
+             (collection/create-params :v1 params)
+             :elapsed (util/timed start)))
+
           (:collection-id params)
           (do
             (log/trace "Found collection id; assuming `collection` ...")
-            (collection/create-params :v2 params))
+            (collection/create-results
+             (collection/create-params :v2 params)
+             :elapsed (util/timed start)))
           :else {:error :unsupported-parameters})))

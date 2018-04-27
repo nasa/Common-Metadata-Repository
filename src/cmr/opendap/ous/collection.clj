@@ -1,4 +1,7 @@
 (ns cmr.opendap.ous.collection
+  "This namespace defines records for the accepted URL query parameters or, if
+  using HTTP POST, keys in a JSON payload. Additionall, functions for working
+  with these parameters are defined here."
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
@@ -15,7 +18,7 @@
   #{:collection-id :format :subset})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Records and Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Records and Support Functions for Queries  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord OusPrototypeParams
@@ -117,3 +120,24 @@
   (case type
     :v1 (create-ous-prototype-params params)
     :v2 (create-collection-params params)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Records and Support Functions for Responses  ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrecord CollectionResults
+  [;;
+   hits
+   ;;
+   took
+   ;;
+   items])
+
+(defn create-results
+  [results & {:keys [elapsed]}]
+  (map->CollectionResults
+    {;; Our 'hits' is simplistic for now; will change when we support
+     ;; paging, etc.
+     :hits (count results)
+     :took elapsed
+     :items results}))
