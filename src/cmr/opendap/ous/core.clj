@@ -51,25 +51,5 @@
   [raw-params]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
-        params (ous-util/normalize-params raw-params)]
-    (cond (collection/params? :v2 params)
-          (do
-            (log/trace "Parameters are of type `collection` ...")
-            (collection/create-results
-             (collection/create-params :v2 params)
-             :elapsed (util/timed start)))
-
-          (collection/params? :v1 params)
-          (do
-            (log/trace "Parameters are of type `ous-prototype` ...")
-            (collection/create-results
-             (collection/create-params :v1 params)
-             :elapsed (util/timed start)))
-
-          (:collection-id params)
-          (do
-            (log/trace "Found collection id; assuming `collection` ...")
-            (collection/create-results
-             (collection/create-params :v2 params)
-             :elapsed (util/timed start)))
-          :else {:error :unsupported-parameters})))
+        params (collection/get-params raw-params)]
+    (collection/create-results params :elapsed (util/timed start))))

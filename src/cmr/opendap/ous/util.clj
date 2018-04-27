@@ -22,3 +22,22 @@
         (empty? data) []
         (coll? data) data
         (string? data) (string/split data #",")))
+
+(defn bounding-box->subset
+  [[ll-lon ll-lat ur-lon ur-lat :as bbox]]
+  [(format "lat(%s,%s)" ll-lat ur-lat)
+   (format "lon(%s,%s)" ll-lon ur-lon)])
+
+(defn coverage->granules
+  [coverage]
+  (let [ids (filter #(string/starts-with? % "G") coverage)]
+    (if (empty? ids)
+      nil
+      ids)))
+
+(defn coverage->collection
+  [coverage]
+  (let [id (filter #(string/starts-with? % "C") coverage)]
+    (if (empty? id)
+      nil
+      (first id))))

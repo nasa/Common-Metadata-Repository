@@ -40,24 +40,29 @@
   (add-header req "Client-Id" "cmr-opendap-token-checker"))
 
 (defn request
-  [method url req]
+  [method url req & [callback]]
   (httpc/request (-> default-options
                      (add-client-id)
                      (add-user-agent)
                      (merge req)
-                     (assoc :url url :method method))))
+                     (assoc :url url :method method))
+                  callback))
 
 (defn async-get
   ([url]
     (async-get url {}))
   ([url req]
-    (request :get url req)))
+    (async-get url req nil))
+  ([url req callback]
+    (request :get url req callback)))
 
 (defn async-post
   ([url]
     (async-post url {:body nil}))
   ([url req]
-    (request :post url req)))
+    (async-post url req nil))
+  ([url req callback]
+    (request :post url req callback)))
 
 (defn get
   [& args]

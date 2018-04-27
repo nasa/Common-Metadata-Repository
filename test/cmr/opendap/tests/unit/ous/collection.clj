@@ -46,3 +46,23 @@
          (collection/collection-params?
           {:coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS"
            :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]})))))
+
+(deftest v1->v2
+  (is (= (collection/map->CollectionParams {})
+         (collection/v1->v2
+          (collection/map->OusPrototypeParams {}))))
+  (is (= (collection/map->CollectionParams
+          {:format "nc"
+           :collection-id "C123"
+           :granules ["G234" "G345" "G456"]
+           :variables ["V234" "V345" "V456"]
+           :subset ["lat(22,34)" "lon(169,200)"]})
+         (collection/v1->v2
+          (collection/map->OusPrototypeParams {
+           :format "nc"
+           :coverage ["C123"
+                      "G234"
+                      "G345"
+                      "G456"]
+           :rangesubset ["V234" "V345" "V456"]
+           :subset ["lat(22,34)" "lon(169,200)"]})))))
