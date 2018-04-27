@@ -47,7 +47,8 @@
   :aot [cmr.opendap.core]
   :profiles {
     :ubercompile {
-      :aot :all}
+      :aot :all
+      :source-paths ["test"]}
     :system {
       :dependencies [
         [clojusc/dev-system "0.1.0"]]}
