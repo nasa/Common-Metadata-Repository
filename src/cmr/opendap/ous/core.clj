@@ -2,7 +2,8 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.ous.collection.params.core :as params]
+   [cmr.opendap.ous.collection.results :as results]
    [cmr.opendap.ous.util :as ous-util]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
@@ -51,5 +52,5 @@
   [raw-params]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
-        params (collection/get-params raw-params)]
-    (collection/create-results params :elapsed (util/timed start))))
+        params (params/parse raw-params)]
+    (results/create params :elapsed (util/timed start))))

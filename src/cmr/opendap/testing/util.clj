@@ -9,7 +9,12 @@
 (defn parse-response
   [response]
   (try
-    (json/parse-string (:body response) true)
+    (let [data (json/parse-string (:body response) true)]
+      (cond
+        (not (nil? (:items data)))
+        (:items data)
+
+        :else data))
     (catch Exception e
       {:error {:msg "Couldn't parse body."
                :body (:body response)}})))

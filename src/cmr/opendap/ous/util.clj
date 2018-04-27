@@ -24,9 +24,17 @@
         (string? data) (string/split data #",")))
 
 (defn bounding-box->subset
-  [[ll-lon ll-lat ur-lon ur-lat :as bbox]]
+  [[ll-lon ll-lat ur-lon ur-lat]]
   [(format "lat(%s,%s)" ll-lat ur-lat)
    (format "lon(%s,%s)" ll-lon ur-lon)])
+
+(defn parse-subset
+  [subset]
+  )
+
+(defn subset->bounding-box
+  [elems]
+  )
 
 (defn coverage->granules
   [coverage]
