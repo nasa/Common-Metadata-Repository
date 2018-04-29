@@ -62,17 +62,13 @@
 (defn data-file->opendap-url
   [pattern-info data-file]
   (let [pattern (re-pattern (:pattern-match pattern-info))
-        data-url (:link-href data-file)
-        replacment (string/replace data-url
-                                   pattern
-                                   (str (:pattern-subs pattern-info) "$2"))]
+        data-url (:link-href data-file)]
     (if (re-matches pattern data-url)
       (do
         (log/debug "Matched!")
-        (log/debug "pattern:" pattern)
-        (log/debug "data-url:" data-url)
-        (log/debug "replacment:" replacment)
-        replacment)
+        (string/replace data-url
+                        pattern
+                        (str (:pattern-subs pattern-info) "$2")))
       (do
         (log/debug "Didn't match; trying default ...")
         (if (re-matches fallback-pattern data-url)
@@ -98,11 +94,7 @@
         services (service/get-metadata search-endpoint user-token service-ids)
         pattern-info (service/extract-pattern-info (first services))]
     (log/warn "data-files:" (into [] data-files))
-    ; (log/warn "services:" services)
     (log/warn "pattern-info:" pattern-info)
     (results/create
-     ;(assoc params :granules granules)
-     ; data-files
-     ;services
      (data-files->opendap-urls params pattern-info data-files)
      :elapsed (util/timed start))))
