@@ -10,25 +10,12 @@
 
 (def permissions-resource "/permissions")
 
-(defn parse-response
-  [data]
-  (let [str-data (slurp data)
-        json-data (json/parse-string str-data true)]
-    (log/debug "str-data:" str-data)
-    (log/debug "json-data:" json-data)
-    json-data))
-
 (defn check-access
   [base-url token user-id acl-query]
-  (let [url (str base-url permissions-resource)]
-    (httpc/request (-> request/default-options
-                       (request/options
-                        :method :get
-                        :url url
-                        :query-params (merge
-                                       {:user_id user-id}
-                                       acl-query))
-                       (request/add-token-header token)
-                       (request/add-client-id)
-                       ((fn [x] (log/trace "Prepared request:" x) x)))
-                    #(response/client-handler % parse-response))))
+  (let [url (str base-url permissions-resource)
+        req {:query-params (merge {:user_id user-id}
+                                  acl-query)}]
+    (request/async-get
+     url
+     (request/add-token-header req token)
+     response/json-handler)))

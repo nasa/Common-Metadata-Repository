@@ -10,17 +10,29 @@
    [taoensso.timbre :as log]))
 
 (defn client-handler
-  [{:keys [status headers body error]} parse-fn]
-  (log/debug "Handling client response ...")
-  (cond error
-        (log/error error)
-        (>= status 400)
-        (do
-          (log/error status)
-          (log/debug "Headers:" headers)
-          (log/debug "Body:" body))
-        :else
-        (parse-fn body)))
+  ([response]
+    (client-handler response identity))
+  ([{:keys [status headers body error]} parse-fn]
+    (log/debug "Handling client response ...")
+    (cond error
+          (log/error error)
+          (>= status 400)
+          (do
+            (log/error status)
+            (log/debug "Headers:" headers)
+            (log/debug "Body:" body))
+          :else
+          (parse-fn body))))
+
+(defn parse-json-body
+  [body]
+  (let [str-data (if (string? body) body (slurp body))
+        json-data (json/parse-string str-data true)]
+    (log/debug "str-data:" str-data)
+    (log/debug "json-data:" json-data)
+    json-data))
+
+(def json-handler #(client-handler % parse-json-body))
 
 (defn ok
   [_request & args]
