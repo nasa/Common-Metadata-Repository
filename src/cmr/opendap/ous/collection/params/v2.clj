@@ -2,7 +2,8 @@
   (:require
    [clojure.set :as set]
    [cmr.opendap.ous.collection.params.const :as const]
-   [cmr.opendap.ous.util :as util]))
+   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.util :as util]))
 
 (defrecord CollectionParams
   [;; `collection-id` is the concept id for the collection in question. Note
@@ -20,6 +21,10 @@
    ;; `exclude-granules` is a boolean when set to true causes granules list
    ;; to be a blacklist.
    exclude-granules
+   ;; XXX Is there where we want to accept the paging size for granule
+   ;;     concepts?
+   ;; granule-count
+   ;;
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables
@@ -48,8 +53,9 @@
   (map->CollectionParams
     (assoc params
       :format (or (:format params) const/default-format)
-      :granules (util/->seq (:granules params))
-      :variables (util/->seq (:variables params)))))
+      :granules (ous-util/->seq (:granules params))
+      :variables (ous-util/->seq (:variables params))
+      :exclude-granules (util/bool (:exclude-granules params)))))
 
 (defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support

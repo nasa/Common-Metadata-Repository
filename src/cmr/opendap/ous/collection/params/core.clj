@@ -29,7 +29,10 @@
     (-> params
         (assoc :collection-id collection-id
                :granules (util/coverage->granules (:coverage params))
-               :variables (:rangesubset params))
+               :variables (:rangesubset params)
+               ;; There was never an analog in v1 for exclude-granules, so set
+               ;; to false.
+               :exclude-granules false)
         (dissoc :coverage :rangesubset)
         (v2/map->CollectionParams))))
 
