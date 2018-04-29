@@ -18,8 +18,16 @@
   (get-in req [:headers field]))
 
 (defn add-header
-  [req field value]
-  (assoc-in req [:headers field] value))
+  ([field value]
+    (add-header {} field value))
+  ([req field value]
+    (assoc-in req [:headers field] value)))
+
+(defn add-accept
+  ([value]
+    (add-accept {} value))
+  ([req value]
+    (add-header req "Accept" value)))
 
 (defn add-token-header
   ([token]
@@ -28,16 +36,22 @@
     (add-header req "Echo-Token" token)))
 
 (defn add-user-agent
-  [req]
-  (add-header req "User-Agent" const/user-agent))
+  ([]
+    (add-user-agent {}))
+  ([req]
+    (add-header req "User-Agent" const/user-agent)))
 
 (defn add-form-ct
-  [req]
-  (add-header req "Content-Type" "application/x-www-form-urlencoded"))
+  ([]
+    (add-form-ct {}))
+  ([req]
+    (add-header req "Content-Type" "application/x-www-form-urlencoded")))
 
 (defn add-client-id
-  [req]
-  (add-header req "Client-Id" "cmr-opendap-token-checker"))
+  ([]
+    (add-client-id {}))
+  ([req]
+    (add-header req "Client-Id" const/client-id)))
 
 (defn request
   [method url req & [callback]]
