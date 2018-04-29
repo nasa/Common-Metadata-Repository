@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [cmr.opendap.ous.collection.params.core :as params]
    [cmr.opendap.ous.collection.results :as results]
-   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.ous.granule :as granule]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
@@ -49,8 +49,11 @@
 ;;; schemes an explicit operation on explicit data.
 
 (defn get-opendap-urls
-  [raw-params]
+  [search-endpoint user-token raw-params]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
-        params (params/parse raw-params)]
-    (results/create params :elapsed (util/timed start))))
+        params (params/parse raw-params)
+        granules (granule/get-metadata search-endpoint user-token params)]
+    (results/create
+     (assoc params :granules granules)
+     :elapsed (util/timed start))))

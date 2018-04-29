@@ -50,9 +50,9 @@
           }
     :options core-handler/ok}]
    ["/opendap/ous/collection/:concept-id" {
-    :get {:handler collection-handler/generate-urls
+    :get {:handler (collection-handler/generate-urls httpd-component)
           :permissions #{:read}}
-    :post {:handler collection-handler/generate-urls
+    :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
     :options core-handler/ok}]])
 
