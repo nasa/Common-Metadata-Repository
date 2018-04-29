@@ -2866,21 +2866,323 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>OPeNDAP/CMR Integration -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/cmr-exchange/cmr-opendap">OPeNDAP/CMR Integration</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>OPeNDAP Integration in the CMR</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.7</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.auth.core">cmr.opendap.auth.core</a></li><li><a href="#cmr.opendap.auth.roles">cmr.opendap.auth.roles</a></li><li><a href="#cmr.opendap.auth.token">cmr.opendap.auth.token</a></li><li><a href="#cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</a></li><li><a href="#cmr.opendap.auth.acls">cmr.opendap.auth.acls</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing">cmr.opendap.components.testing</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.rest.handler.collection">cmr.opendap.rest.handler.collection</a></li><li><a href="#cmr.opendap.rest.handler.core">cmr.opendap.rest.handler.core</a></li><li><a href="#cmr.opendap.rest.route">cmr.opendap.rest.route</a></li><li><a href="#cmr.opendap.rest.middleware">cmr.opendap.rest.middleware</a></li><li><a href="#cmr.opendap.rest.app">cmr.opendap.rest.app</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection" name="cmr.opendap.ous.collection"><h1 class="project-name">cmr.opendap.ous.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.7</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.ous.collection.core">cmr.opendap.ous.collection.core</a></li><li><a href="#cmr.opendap.ous.collection.params.v1">cmr.opendap.ous.collection.params.v1</a></li><li><a href="#cmr.opendap.ous.collection.params.v2">cmr.opendap.ous.collection.params.v2</a></li><li><a href="#cmr.opendap.ous.collection.params.core">cmr.opendap.ous.collection.params.core</a></li><li><a href="#cmr.opendap.ous.collection.params.const">cmr.opendap.ous.collection.params.const</a></li><li><a href="#cmr.opendap.ous.collection.results">cmr.opendap.ous.collection.results</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.util">cmr.opendap.ous.util</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.auth.core">cmr.opendap.auth.core</a></li><li><a href="#cmr.opendap.auth.roles">cmr.opendap.auth.roles</a></li><li><a href="#cmr.opendap.auth.token">cmr.opendap.auth.token</a></li><li><a href="#cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</a></li><li><a href="#cmr.opendap.auth.acls">cmr.opendap.auth.acls</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing">cmr.opendap.components.testing</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.rest.handler.collection">cmr.opendap.rest.handler.collection</a></li><li><a href="#cmr.opendap.rest.handler.core">cmr.opendap.rest.handler.core</a></li><li><a href="#cmr.opendap.rest.route">cmr.opendap.rest.route</a></li><li><a href="#cmr.opendap.rest.middleware">cmr.opendap.rest.middleware</a></li><li><a href="#cmr.opendap.rest.app">cmr.opendap.rest.app</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.core" name="cmr.opendap.ous.collection.core"><h1 class="project-name">cmr.opendap.ous.collection.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.core
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [params]
+  (str &quot;concept_id=&quot; (:collection-id params)))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, get the metadata for the
+  associated collection.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [search-endpoint user-token params]
+  (let [url (str search-endpoint
+                 &quot;/collections?&quot;
+                 (build-query params))
+        results (request/async-get url
+                 (-&gt; {}
+                     (request/add-token-header user-token)
+                     (request/add-accept &quot;application/json&quot;))
+                 response/json-handler)]
+    (log/debug &quot;Got results from CMR search:&quot; results)
+    (first (get-in @results [:feed :entry]))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-service-ids
+  [entry]
+  (get-in entry [:associations :services]))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.params.v1" name="cmr.opendap.ous.collection.params.v1"><h1 class="project-name">cmr.opendap.ous.collection.params.v1</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.params.v1
   (:require
    [clojure.set :as set]
+   [cmr.opendap.ous.collection.params.const :as const]
+   [cmr.opendap.ous.util :as util]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord OusPrototypeParams
+  [;; `format` is any of the formats supported by the target OPeNDAP server,
+   ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
+   format
+   ;; `coverage` can be:
+   ;;  * a list of granule concept ids
+   ;;  * a list of granule ccontept ids + a collection id
+   ;;  * a single collection id
+   coverage
+   ;; `rangesubset` is a list of UMM-Var names
+   rangesubset
+   ;; `subset` is used to indicate desired spatial subsetting and is a list of
+   ;; lon/lat values, as used in WCS. It is parsed from URL queries like so:
+   ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
+   ;; giving values like so:
+   ;;  `[&quot;lat(22,34)&quot; &quot;lon(169,200)&quot;]`
+   subset])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def params-keys
+  (set/difference
+   (set (keys (map-&gt;OusPrototypeParams {})))
+   const/shared-keys))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn params?
+  [params]
+  (seq (set/intersection
+        (set (keys params))
+        params-keys)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-params
+  [params]
+  (map-&gt;OusPrototypeParams
+    (assoc params :format (or (:format params)
+                              const/default-format)
+                  :coverage (util/-&gt;seq (:coverage params))
+                  :rangesubset (util/-&gt;seq (:rangesubset params)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.params.v2" name="cmr.opendap.ous.collection.params.v2"><h1 class="project-name">cmr.opendap.ous.collection.params.v2</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.params.v2
+  (:require
+   [clojure.set :as set]
+   [cmr.opendap.ous.collection.params.const :as const]
+   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.util :as util]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord CollectionParams
+  [;; `collection-id` is the concept id for the collection in question. Note
+   ;; that the collection concept id is not provided in query params,
+   ;; but in the path as part of the REST URL. Regardless, we offer it here as
+   ;; a record field.
+   collection-id
+   ;;
+   ;; `format` is any of the formats supported by the target OPeNDAP server,
+   ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
+   format
+   ;; `granules` is list of granule concept ids; default behaviour is a
+   ;; whitelist.
+   granules
+   ;; `exclude-granules` is a boolean when set to true causes granules list
+   ;; to be a blacklist.
+   exclude-granules
+   ;; XXX Is there where we want to accept the paging size for granule
+   ;;     concepts?
+   ;; granule-count
+   ;;
+   ;; `variables` is a list of variables to be speficied when creating the
+   ;; OPeNDAP URL. This is used for subsetting.
+   variables
+   ;; `spatial-subset` is used the same way as `subset` for WCS.
+   ;; `subset` is used to indicate desired spatial subsetting and is used in
+   ;; URL queries like so:
+   ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
+   subset
+   ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
+   ;; to using `subset` for spatial-subsetting.
+   bounding-box])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def params-keys
+  (set/difference
+   (set (keys (map-&gt;CollectionParams {})))
+   const/shared-keys))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn params?
+  [params]
+  (seq (set/intersection
+        (set (keys params))
+        params-keys)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-params
+  [params]
+  (map-&gt;CollectionParams
+    (assoc params
+      :format (or (:format params) const/default-format)
+      :granules (ous-util/-&gt;seq (:granules params))
+      :variables (ous-util/-&gt;seq (:variables params))
+      :exclude-granules (util/bool (:exclude-granules params)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord CollectionsParams
+  [;; This isn't defined for the OUS Prototype, since it didn't support
+   ;; submitting multiple collections at a time. As such, there is no
+   ;; prototype-oriented record for this.
+   ;;
+   ;; `collections` is a list of `CollectionParams` records.
+   collections])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.params.core" name="cmr.opendap.ous.collection.params.core"><h1 class="project-name">cmr.opendap.ous.collection.params.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines records for the accepted URL query parameters or, if
+  using HTTP POST, keys in a JSON payload. Additionall, functions for working
+  with these parameters are defined here.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.params.core
+  (:require
    [clojure.string :as string]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Constants and Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
+   [cmr.opendap.ous.collection.params.v1 :as v1]
+   [cmr.opendap.ous.collection.params.v2 :as v2]
+   [cmr.opendap.ous.util :as util]
+   [taoensso.timbre :as log])
+  (:refer-clojure :exclude [parse]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn params?
+  [type params]
+  (case type
+    :v1 (v1/params? params)
+    :v2 (v2/params? params)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-params
+  [type params]
+  (case type
+    :v1 (v1/create-params params)
+    :v2 (v2/create-params params)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn v1-&gt;v2
+  [params]
+  (let [collection-id (or (:collection-id params)
+                          (util/coverage-&gt;collection (:coverage params)))]
+    (-&gt; params
+        (assoc :collection-id collection-id
+               :granules (util/coverage-&gt;granules (:coverage params))
+               :variables (:rangesubset params)
+               ;; There was never an analog in v1 for exclude-granules, so set
+               ;; to false.
+               :exclude-granules false)
+        (dissoc :coverage :rangesubset)
+        (v2/map-&gt;CollectionParams))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse
+  [raw-params]
+  (log/trace &quot;Got params:&quot; raw-params)
+  (let [params (util/normalize-params raw-params)]
+    (cond (params? :v2 params)
+          (do
+            (log/trace &quot;Parameters are of type `collection` ...&quot;)
+            (create-params :v2 params))
+          (params? :v1 params)
+          (do
+            (log/trace &quot;Parameters are of type `ous-prototype` ...&quot;)
+            (v1-&gt;v2
+             (create-params :v1 params)))
+          (:collection-id params)
+          (do
+            (log/trace &quot;Found collection id; assuming `collection` ...&quot;)
+            (create-params :v2 params))
+          :else {:error :unsupported-parameters})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.params.const" name="cmr.opendap.ous.collection.params.const"><h1 class="project-name">cmr.opendap.ous.collection.params.const</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.params.const)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-format &quot;nc&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def shared-keys
-  #{:collection-id :format :subset})</pre></td></tr><tr><td class="docs">
+  #{:collection-id :format :subset})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.results" name="cmr.opendap.ous.collection.results"><h1 class="project-name">cmr.opendap.ous.collection.results</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection.results)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord CollectionResults
+  [;; The number of results returned
+   hits
+   ;; Number of milleseconds elapsed from start to end of call
+   took
+   ;; The actual items in the result set
+   items])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create
+  [results &amp; {:keys [elapsed]}]
+  (map-&gt;CollectionResults
+    {;; Our 'hits' is simplistic for now; will change when we support
+     ;; paging, etc.
+     :hits (count results)
+     :took elapsed
+     :items results}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.granule" name="cmr.opendap.ous.granule"><h1 class="project-name">cmr.opendap.ous.granule</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.granule
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.const :as const]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [cmr.opendap.util :as util]
+   [ring.util.codec :as codec]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-include
+  [gran-ids]
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[])=&quot;)
+                              %)
+                        gran-ids)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-exclude
+  [gran-ids]
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]=&quot;)
+                              %)
+                        gran-ids)))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
+  passed in the parameters.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [params]
+  (let [coll-id (:collection-id params)
+        gran-ids (util/remove-empty (:granules params))
+        exclude? (:exclude-granules params)]
+    (str &quot;collection_concept_id=&quot; coll-id
+         (when (seq gran-ids)
+          (str &quot;&amp;&quot;
+               (if exclude?
+                 (build-exclude gran-ids)
+                 (build-include gran-ids)))))))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, :granules, and :exclude-granules
+  keys, get the metadata for the desired granules.</p>
+
+<p>  Which granule metadata is returned depends upon the values of :granules and
+  :exclude-granules</p>
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [search-endpoint user-token params]
+  (let [url (str search-endpoint
+                 &quot;/granules?&quot;
+                 (build-query params))
+        results (request/async-get url
+                 (-&gt; {}
+                     (request/add-token-header user-token)
+                     (request/add-accept &quot;application/json&quot;))
+                 response/json-handler)]
+    (log/debug &quot;Got results from CMR search:&quot; results)
+    (get-in @results [:feed :entry])))</pre></td></tr><tr><td class="docs"><p>The criteria defined in the prototype was to iterate through the links,
+  only examining those links that were not 'inherited', and find the one
+  whose :rel value matched a particular string.</p>
+
+<p>  It is currently unclear what the best criteria for this decision is.</p>
+
+<p>XXX This logic was copied from the prototype; it is generally viewed by the
+    CMR Team &amp; the Metadata Tools Team that this approach is flawed, and
+    that adding support for this approach to UMM-S was a short-term hack.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn match-datafile-link
+  [link-data]
+  (let [rel (:rel link-data)]
+    (and (not (:inherited link-data))
+              (= const/datafile-link-rel rel))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-datafile-link
+  [granule-entry]
+  (let [link (-&gt;&gt; (:links granule-entry)
+                  (filter match-datafile-link)
+                  first)]
+    {:granule-id (:id granule-entry)
+     :link-rel (:rel link)
+     :link-href (:href link)}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util" name="cmr.opendap.ous.util"><h1 class="project-name">cmr.opendap.ous.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.util
+  (:require
+   [clojure.string :as string]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn normalize-param
+  [param]
+  (-&gt; param
+      name
+      (string/replace &quot;_&quot; &quot;-&quot;)
+      (string/lower-case)
+      keyword))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn normalize-params
+  [params]
+  (-&gt;&gt; params
+       (map (fn [[k v]] [(normalize-param k) v]))
+       (into {})))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -&gt;seq
   [data]
   (cond (nil? data) []
         (empty? data) []
         (coll? data) data
-        (string? data) (string/split data #&quot;,&quot;)))</pre></td></tr><tr><td class="docs"><p>  Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+        (string? data) (string/split data #&quot;,&quot;)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box-&gt;subset
+  [[ll-lon ll-lat ur-lon ur-lat]]
+  [(format &quot;lat(%s,%s)&quot; ll-lat ur-lat)
+   (format &quot;lon(%s,%s)&quot; ll-lon ur-lon)])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse-subset
+  [subset])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn subset-&gt;bounding-box
+  [elems])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;granules
+  [coverage]
+  (let [ids (filter #(string/starts-with? % &quot;G&quot;) coverage)]
+    (if (empty? ids)
+      nil
+      ids)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;collection
+  [coverage]
+  (let [id (filter #(string/starts-with? % &quot;C&quot;) coverage)]
+    (if (empty? id)
+      nil
+      (first id))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.core" name="cmr.opendap.ous.core"><h1 class="project-name">cmr.opendap.ous.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.core
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.opendap.ous.collection.core :as collection]
+   [cmr.opendap.ous.collection.params.core :as params]
+   [cmr.opendap.ous.collection.results :as results]
+   [cmr.opendap.ous.granule :as granule]
+   [cmr.opendap.ous.service :as service]
+   [cmr.opendap.util :as util]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Notes on representing spatial extents.</p>
 
 <p>EDSC uses URL-encoded long/lat numbers representing a bounding box
@@ -2915,99 +3217,96 @@ long:
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We're going to codify parameters with records to keep things well
 documented. Additionally, this will make converting between parameter
 schemes an explicit operation on explicit data.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
+               prototype ... and IT IS AWFUL. This is only temporary ...</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord OusPrototypeParams
-  [;; `format` is any of the formats supported by the target OPeNDAP server,
-   ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
-   format
-   ;; `coverage` can be:
-   ;;  * a list of granule concept ids
-   ;;  * a list of granule ccontept ids + a collection id
-   ;;  * a single collection id
-   coverage
-   ;; `rangesubset` is a list of comma-separated UMM-Var names
-   rangesubset
-   ;; `subset` is used to indicate desired spatial subsetting and is used in
-   ;; URL queries like so:
-   ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
-   subset])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def ous-prototype-params-keys
-  (set/difference
-   (set (keys (map-&gt;OusPrototypeParams {})))
-   shared-keys))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn ous-prototype-params?
-  [params]
-  (seq (set/intersection
-        (set (keys params))
-        ous-prototype-params-keys)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn create-ous-prototype-params
-  [params]
-  (map-&gt;OusPrototypeParams params))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord CollectionParams
-  [;; `collection-id` is the concept id for the collection in question. Note
-   ;; that the collection concept id is not provided in query params,
-   ;; but in the path as part of the REST URL. Regardless, we offer it here as
-   ;; a record field.
-   collection-id
-   ;;
-   ;; `format` is any of the formats supported by the target OPeNDAP server,
-   ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
-   format
-   ;; `granules` is list of granule concept ids; default behaviour is a
-   ;; whitelist.
-   granules
-   ;; `exclude-granules` is a boolean when set to true causes granules list
-   ;; to be a blacklist.
-   exclude-granules
-   ;; `variables` is a list of variables to be speficied when creating the
-   ;; OPeNDAP URL. This is used for subsetting.
-   variables
-   ;; `spatial-subset` is used the same way as `subset` for WCS.
-   ;; `subset` is used to indicate desired spatial subsetting and is used in
-   ;; URL queries like so:
-   ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
-   subset
-   ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
-   ;; to using `subset` for spatial-subsetting.
-   bounding-box])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord CollectionsParams
-  [;; This isn't defined for the OUS Prototype, since it didn't support
-   ;; submitting multiple collections at a time. As such, there is no
-   ;; prototype-oriented record for this.
-   ;;
-   ;; `collections` is a list of `CollectionParams` records.
-   collections])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def collection-params-keys
-  (set/difference
-   (set (keys (map-&gt;CollectionParams {})))
-   shared-keys))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn collection-params?
-  [params]
-  (seq (set/intersection
-        (set (keys params))
-        collection-params-keys)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn create-collection-params
-  [params]
-  (map-&gt;CollectionParams
-    (assoc params
-      :granules (-&gt;seq (:granules params))
-      :variables (-&gt;seq (:variables params)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/)(.*)&quot;)
+(def fallback-replacement &quot;/opendap/&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn data-file-&gt;opendap-url
+  [pattern-info data-file]
+  (let [pattern (re-pattern (:pattern-match pattern-info))
+        data-url (:link-href data-file)
+        replacment (string/replace data-url
+                                   pattern
+                                   (str (:pattern-subs pattern-info) &quot;$2&quot;))]
+    (if (re-matches pattern data-url)
+      (do
+        (log/debug &quot;Matched!&quot;)
+        (log/debug &quot;pattern:&quot; pattern)
+        (log/debug &quot;data-url:&quot; data-url)
+        (log/debug &quot;replacment:&quot; replacment)
+        replacment)
+      (do
+        (log/debug &quot;Didn't match; trying default ...&quot;)
+        (if (re-matches fallback-pattern data-url)
+          (string/replace data-url
+                          fallback-pattern
+                          (str &quot;$1&quot; fallback-replacement &quot;$3&quot;)))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn data-files-&gt;opendap-urls
+  [params pattern-info data-files]
+  (-&gt;&gt; data-files
+       (map (partial data-file-&gt;opendap-url pattern-info))
+       (map #(str % &quot;.&quot; (:format params)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-opendap-urls
-  [params]
-  (log/trace &quot;Got params:&quot; params)
-  (cond (collection-params? params)
-        (do
-          (log/trace &quot;Parameters are of type `collection` ...&quot;)
-          (create-collection-params params))
-        (ous-prototype-params? params)
-        (do
-          (log/trace &quot;Parameters are of type `ous-prototype` ...&quot;)
-          (create-ous-prototype-params params))
-        (:collection-id params)
-        (do
-          (log/trace &quot;Found collection id; assuming `collection` ...&quot;)
-          (create-collection-params params))
-        :else {:error :unsupported-parameters}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  [search-endpoint user-token raw-params]
+  (log/trace &quot;Got params:&quot; raw-params)
+  (let [start (util/now)
+        params (params/parse raw-params)
+        granules (granule/get-metadata search-endpoint user-token params)
+        data-files (map granule/extract-datafile-link granules)
+        coll (collection/get-metadata search-endpoint user-token params)
+        service-ids (collection/extract-service-ids coll)
+        services (service/get-metadata search-endpoint user-token service-ids)
+        pattern-info (service/extract-pattern-info (first services))]
+    (log/warn &quot;data-files:&quot; (into [] data-files))
+    ; (log/warn &quot;services:&quot; services)
+    (log/warn &quot;pattern-info:&quot; pattern-info)
+    (results/create
+     ;(assoc params :granules granules)
+     ; data-files
+     ;services
+     (data-files-&gt;opendap-urls params pattern-info data-files)
+     :elapsed (util/timed start))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.variable" name="cmr.opendap.ous.variable"><h1 class="project-name">cmr.opendap.ous.variable</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.variable)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [ring.util.codec :as codec]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [service-ids]
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+                              &quot;=&quot; %)
+                        service-ids)))</pre></td></tr><tr><td class="docs"><p>Given a service-id, get the metadata for the associate service.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [search-endpoint user-token service-ids]
+  (log/debug &quot;Getting service metadata for:&quot; service-ids)
+  (let [url (str search-endpoint
+                 &quot;/services?&quot;
+                 (build-query service-ids))
+        results (request/async-get url
+                 (-&gt; {}
+                     (request/add-token-header user-token)
+                     (request/add-accept &quot;application/vnd.nasa.cmr.umm+json&quot;))
+                 response/json-handler)]
+    (log/debug &quot;Got results from CMR search:&quot; results)
+    (:items @results)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn match-opendap
+  [service-data]
+  (= &quot;opendap&quot; (string/lower-case (:Type service-data))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-pattern-info
+  [service-entry]
+  (let [umm (:umm service-entry)]
+    (when (match-opendap umm)
+      {:service-id (get-in service-entry [:meta :concept-id])
+       ;; XXX WARNING!!! The regex's saved in the UMM data are broken!
+       ;;                We're manually hacking the regex to fix this ...
+       ;;                this makes things EXTREMELY FRAGILE!
+       :pattern-match (str &quot;(&quot; (:OnlineAccessURLPatternMatch umm) &quot;)(.*)&quot;)
+       :pattern-subs (:OnlineAccessURLPatternSubstitution umm)})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.core
   (:require
    [cmr.opendap.auth.permissions :as permissions]
@@ -3130,7 +3429,6 @@ schemes an explicit operation on explicit data.</p>
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [org.httpkit.client :as httpc]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def token-info-resource &quot;/tokens/get_token_info&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn token-data-key
@@ -3154,13 +3452,13 @@ schemes an explicit operation on explicit data.</p>
   [base-url token]
   (let [url (str base-url token-info-resource)
         data (str &quot;id=&quot; token)]
-    (httpc/request (-&gt; request/default-options
-                       (request/options :method :post :url url :body data)
-                       (request/add-token-header token)
-                       (request/add-form-ct)
-                       (request/add-client-id)
-                       ((fn [x] (log/trace &quot;Prepared request:&quot; x) x)))
-                   #(response/client-handler % parse-token-data))))</pre></td></tr><tr><td class="docs">
+    (request/async-post
+      url
+      (-&gt; {:body data}
+          (request/add-token-header token)
+          (request/add-form-ct)
+          ((fn [x] (log/trace &quot;Prepared request:&quot; x) x)))
+      #(response/client-handler % parse-token-data))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -&gt;user
   [base-url token]
   @(get-token-info base-url token))</pre></td></tr><tr><td class="docs">
@@ -3246,33 +3544,35 @@ schemes an explicit operation on explicit data.</p>
    [org.httpkit.client :as httpc]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def permissions-resource &quot;/permissions&quot;)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn parse-response
-  [data]
-  (let [str-data (slurp data)
-        json-data (json/parse-string str-data true)]
-    (log/debug &quot;str-data:&quot; str-data)
-    (log/debug &quot;json-data:&quot; json-data)
-    json-data))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn check-access
   [base-url token user-id acl-query]
-  (let [url (str base-url permissions-resource)]
-    (httpc/request (-&gt; request/default-options
-                       (request/options
-                        :method :get
-                        :url url
-                        :query-params (merge
-                                       {:user_id user-id}
-                                       acl-query))
-                       (request/add-token-header token)
-                       (request/add-client-id)
-                       ((fn [x] (log/trace &quot;Prepared request:&quot; x) x)))
-                    #(response/client-handler % parse-response))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.util" name="cmr.opendap.util"><h1 class="project-name">cmr.opendap.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.util)</pre></td></tr><tr><td class="docs"><p>Merge maps recursively.</p>
+  (let [url (str base-url permissions-resource)
+        req {:query-params (merge {:user_id user-id}
+                                  acl-query)}]
+    (request/async-get
+     url
+     (request/add-token-header req token)
+     response/json-handler)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.util" name="cmr.opendap.util"><h1 class="project-name">cmr.opendap.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.util)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bool
+  [arg]
+  (if (contains? #{true :true &quot;true&quot; &quot;TRUE&quot; &quot;t&quot; &quot;T&quot; 1} arg)
+    true
+    false))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn remove-empty
+  [coll]
+  (remove #(or (nil? %) (empty? %)) coll))</pre></td></tr><tr><td class="docs"><p>Merge maps recursively.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn deep-merge
   [&amp; maps]
   (if (every? #(or (map? %) (nil? %)) maps)
     (apply merge-with deep-merge maps)
-    (last maps)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+    (last maps)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn now
+  []
+  (/ (System/currentTimeMillis) 1000))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn timed
+  [start]
+  (- (now) start))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.core
   (:require
    [clojusc.twig :as logger]
@@ -3296,7 +3596,11 @@ schemes an explicit operation on explicit data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn parse-response
   [response]
   (try
-    (json/parse-string (:body response) true)
+    (let [data (json/parse-string (:body response) true)]
+      (cond
+        (not (nil? (:items data)))
+        (:items data)
+        :else data))
     (catch Exception e
       {:error {:msg &quot;Couldn't parse body.&quot;
                :body (:body response)}})))</pre></td></tr><tr><td class="docs">
@@ -3686,28 +3990,75 @@ disable logging entirely for tests.</p>
   (:require
    [cmr.opendap.const :as const]
    [org.httpkit.client :as httpc]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log])
+  (:refer-clojure :exclude [get]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def default-options
   {:user-agent const/user-agent
    :insecure? true})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn options
-  [request &amp; opts]
-  (apply assoc (concat [request] opts)))</pre></td></tr><tr><td class="docs">
+  [req &amp; opts]
+  (apply assoc (concat [req] opts)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-header
-  [request field]
-  (get-in request [:headers field]))</pre></td></tr><tr><td class="docs">
+  [req field]
+  (get-in req [:headers field]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn add-header
-  [request field value]
-  (assoc-in request [:headers field] value))</pre></td></tr><tr><td class="docs">
+  ([field value]
+    (add-header {} field value))
+  ([req field value]
+    (assoc-in req [:headers field] value)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn add-accept
+  ([value]
+    (add-accept {} value))
+  ([req value]
+    (add-header req &quot;Accept&quot; value)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn add-token-header
-  [request token]
-  (add-header request &quot;Echo-Token&quot; token))</pre></td></tr><tr><td class="docs">
+  ([token]
+    (add-token-header {} token))
+  ([req token]
+    (add-header req &quot;Echo-Token&quot; token)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn add-user-agent
+  ([]
+    (add-user-agent {}))
+  ([req]
+    (add-header req &quot;User-Agent&quot; const/user-agent)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn add-form-ct
-  [request]
-  (add-header request &quot;Content-Type&quot; &quot;application/x-www-form-urlencoded&quot;))</pre></td></tr><tr><td class="docs">
+  ([]
+    (add-form-ct {}))
+  ([req]
+    (add-header req &quot;Content-Type&quot; &quot;application/x-www-form-urlencoded&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn add-client-id
-  [request]
-  (add-header request &quot;Client-Id&quot; &quot;cmr-opendap-token-checker&quot;))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.http.response" name="cmr.opendap.http.response"><h1 class="project-name">cmr.opendap.http.response</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines a default set of transform functions suitable for use
+  ([]
+    (add-client-id {}))
+  ([req]
+    (add-header req &quot;Client-Id&quot; const/client-id)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn request
+  [method url req &amp; [callback]]
+  (httpc/request (-&gt; default-options
+                     (add-client-id)
+                     (add-user-agent)
+                     (merge req)
+                     (assoc :url url :method method))
+                  callback))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn async-get
+  ([url]
+    (async-get url {}))
+  ([url req]
+    (async-get url req nil))
+  ([url req callback]
+    (request :get url req callback)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn async-post
+  ([url]
+    (async-post url {:body nil}))
+  ([url req]
+    (async-post url req nil))
+  ([url req callback]
+    (request :post url req callback)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get
+  [&amp; args]
+  @(apply async-get args))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn post
+  [&amp; args]
+  @(apply async-post args))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.http.response" name="cmr.opendap.http.response"><h1 class="project-name">cmr.opendap.http.response</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines a default set of transform functions suitable for use
   in presenting results to HTTP clients.</p>
 
 <p>  Note that ring-based middleeware may take advantage of these functions either
@@ -3718,17 +4069,27 @@ disable logging entirely for tests.</p>
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn client-handler
-  [{:keys [status headers body error]} parse-fn]
-  (log/debug &quot;Handling client response ...&quot;)
-  (cond error
-        (log/error error)
-        (&gt;= status 400)
-        (do
-          (log/error status)
-          (log/debug &quot;Headers:&quot; headers)
-          (log/debug &quot;Body:&quot; body))
-        :else
-        (parse-fn body)))</pre></td></tr><tr><td class="docs">
+  ([response]
+    (client-handler response identity))
+  ([{:keys [status headers body error]} parse-fn]
+    (log/debug &quot;Handling client response ...&quot;)
+    (cond error
+          (log/error error)
+          (&gt;= status 400)
+          (do
+            (log/error status)
+            (log/debug &quot;Headers:&quot; headers)
+            (log/debug &quot;Body:&quot; body))
+          :else
+          (parse-fn body))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse-json-body
+  [body]
+  (let [str-data (if (string? body) body (slurp body))
+        json-data (json/parse-string str-data true)]
+    (log/trace &quot;str-data:&quot; str-data)
+    (log/trace &quot;json-data:&quot; json-data)
+    json-data))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def json-handler #(client-handler % parse-json-body))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ok
   [_request &amp; args]
   (response/ok args))</pre></td></tr><tr><td class="docs">
@@ -3769,8 +4130,10 @@ disable logging entirely for tests.</p>
                  (response/header &quot;Access-Control-Max-Age&quot; &quot;2592000&quot;))
     (response/header response &quot;Access-Control-Allow-Origin&quot; &quot;*&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.const" name="cmr.opendap.const"><h1 class="project-name">cmr.opendap.const</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.const)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def user-agent
-  &quot;CMR OPeNDAP Service/1.0 (+https://github.com/cmr-exchange/cmr-opendap)&quot;)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.data" name="cmr.opendap.site.data"><h1 class="project-name">cmr.opendap.site.data</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for generating
+</td><td class="codes"><pre class="brush: clojure">(def client-id &quot;cmr-opendap-service&quot;)
+(def user-agent
+  &quot;CMR OPeNDAP Service/1.0 (+https://github.com/cmr-exchange/cmr-opendap)&quot;)
+(def datafile-link-rel &quot;http://esipfed.org/ns/fedsearch/1.1/data#&quot;)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.site.data" name="cmr.opendap.site.data"><h1 class="project-name">cmr.opendap.site.data</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions of this namespace are specifically responsible for generating
   data structures to be consumed by site page templates.</p>
 
 <p>  Of special note: this namespace and its sibling <code>page</code> namespace are only
@@ -3925,43 +4288,49 @@ disable logging entirely for tests.</p>
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.auth.token :as token]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  OUS Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn- generate-via-get
-  [request concept-id]
+  [request search-endpoint user-token concept-id]
   (log/debug &quot;Generating URLs based on HTTP GET ...&quot;)
   (-&gt;&gt; request
        :params
        (merge {:collection-id concept-id})
-       (collection/get-opendap-urls)
+       (ous/get-opendap-urls search-endpoint user-token)
        (response/json request)))</pre></td></tr><tr><td class="docs"><p>Private function for creating OPeNDAP URLs when supplied with an HTTP
   POST.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn- generate-via-post
-  [request concept-id]
+  [request search-endpoint user-token concept-id]
   (-&gt;&gt; request
        :body
        (slurp)
        (#(json/parse-string % true))
        (merge {:collection-id concept-id})
-       (collection/get-opendap-urls)
+       (ous/get-opendap-urls search-endpoint user-token)
        (response/json request)))</pre></td></tr><tr><td class="docs"><p>XXX</p>
 </td><td class="codes"><pre class="brush: clojure">(defn unsupported-method
   [request]
   ;; XXX add error message; utilize error reporting infra
   {:error :not-implemented})</pre></td></tr><tr><td class="docs"><p>XXX</p>
-</td><td class="codes"><pre class="brush: clojure">(def generate-urls
+</td><td class="codes"><pre class="brush: clojure">(defn generate-urls
+  [component]
   (fn [request]
     (log/debug &quot;Method-dispatching for URLs generation ...&quot;)
     (log/trace &quot;request:&quot; request)
-    (let [concept-id (get-in request [:path-params :concept-id])]
+    (let [user-token (token/extract request)
+          concept-id (get-in request [:path-params :concept-id])
+          search-endpoint (config/get-search-url component)]
       (case (:request-method request)
-        :get (generate-via-get request concept-id)
-        :post (generate-via-post request concept-id)
+        :get (generate-via-get request search-endpoint user-token concept-id)
+        :post (generate-via-post request search-endpoint user-token concept-id)
         (unsupported-method request)))))</pre></td></tr><tr><td class="docs"><p>XXX</p>
-</td><td class="codes"><pre class="brush: clojure">(def batch-generate
+</td><td class="codes"><pre class="brush: clojure">(defn batch-generate
+  [component]
   ;; XXX how much can we minimize round-tripping here?
   ;;     this may require creating divergent logic/impls ...
   (fn [request]
@@ -4048,7 +4417,8 @@ disable logging entirely for tests.</p>
   [[&quot;/opendap/docs&quot; {
     :get (core-handler/dynamic-page
           pages/opendap-docs
-          {:base-url (config/opendap-url httpd-component)})}]])</pre></td></tr><tr><td class="docs">
+          {:base-url (config/opendap-url httpd-component)})}]])</pre></td></tr><tr><td class="docs"><p>  REST API Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ous-api
   [httpd-component]
   [[&quot;/opendap/ous/collections&quot; {
@@ -4062,10 +4432,21 @@ disable logging entirely for tests.</p>
           }
     :options core-handler/ok}]
    [&quot;/opendap/ous/collection/:concept-id&quot; {
-    :get {:handler collection-handler/generate-urls
+    :get {:handler (collection-handler/generate-urls httpd-component)
           :permissions #{:read}}
-    :post {:handler collection-handler/generate-urls
+    :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
+    :options core-handler/ok}]])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn admin-api
+  [httpd-component]
+  [[&quot;/opendap/health&quot; {
+    :get (core-handler/health httpd-component)
+    :options core-handler/ok}]
+   [&quot;/opendap/ping&quot; {
+    :get {:handler core-handler/ping
+          :roles #{:admin}}
+    :post {:handler core-handler/ping
+           :roles #{:admin}}
     :options core-handler/ok}]])</pre></td></tr><tr><td class="docs"><p>  Static &amp; Redirect Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn redirects
@@ -4079,19 +4460,7 @@ disable logging entirely for tests.</p>
   [;; Google verification files
    [&quot;/opendap/googled099d52314962514.html&quot; {
     :get (core-handler/text-file
-          &quot;public/verifications/googled099d52314962514.html&quot;)}]])</pre></td></tr><tr><td class="docs"><p>  Admin Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn admin
-  [httpd-component]
-  [[&quot;/opendap/health&quot; {
-    :get (core-handler/health httpd-component)
-    :options core-handler/ok}]
-   [&quot;/opendap/ping&quot; {
-    :get {:handler core-handler/ping
-          :roles #{:admin}}
-    :post {:handler core-handler/ping
-           :roles #{:admin}}
-    :options core-handler/ok}]])</pre></td></tr><tr><td class="docs"><p>  Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+          &quot;public/verifications/googled099d52314962514.html&quot;)}]])</pre></td></tr><tr><td class="docs"><p>  Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def testing
   [[&quot;/testing/401&quot; {:get (core-handler/status :unauthorized)}]
@@ -4225,7 +4594,8 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn rest-api-routes
   [httpd-component]
   (concat
-   (route/ous-api httpd-component)))</pre></td></tr><tr><td class="docs">
+   (route/ous-api httpd-component)
+   (route/admin-api httpd-component)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn site-routes
   [httpd-component]
   (concat
@@ -4233,23 +4603,18 @@ disable logging entirely for tests.</p>
    (route/docs httpd-component)
    (route/redirects httpd-component)
    (route/static httpd-component)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn misc-routes
-  [httpd-component]
-  (concat
-   (route/admin httpd-component)
-   route/testing))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn routes
+</td><td class="codes"><pre class="brush: clojure">(defn all-routes
   [httpd-component]
   (concat
     (rest-api-routes httpd-component)
     (site-routes httpd-component)
-    (misc-routes httpd-component)))</pre></td></tr><tr><td class="docs">
+    route/testing))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn app
   [httpd-component]
   (let [docs-resource (config/http-docs httpd-component)
         assets-resource (config/http-assets httpd-component)]
     (-&gt; httpd-component
-        routes
+        all-routes
         (ring/router (middleware/reitit-auth httpd-component))
         ring/ring-handler
         (ring-defaults/wrap-defaults ring-defaults/api-defaults)
@@ -4332,7 +4697,7 @@ disable logging entirely for tests.</p>
           (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
-              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.core">cmr.opendap.auth.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.roles">cmr.opendap.auth.roles</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.token">cmr.opendap.auth.token</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.acls">cmr.opendap.auth.acls</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing">cmr.opendap.components.testing</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.collection">cmr.opendap.rest.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.core">cmr.opendap.rest.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.route">cmr.opendap.rest.route</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.middleware">cmr.opendap.rest.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.app">cmr.opendap.rest.app</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.core">cmr.opendap.ous.collection.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.params.v1">cmr.opendap.ous.collection.params.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.params.v2">cmr.opendap.ous.collection.params.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.params.core">cmr.opendap.ous.collection.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.params.const">cmr.opendap.ous.collection.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection.results">cmr.opendap.ous.collection.results</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util">cmr.opendap.ous.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.core">cmr.opendap.auth.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.roles">cmr.opendap.auth.roles</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.token">cmr.opendap.auth.token</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.acls">cmr.opendap.auth.acls</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing">cmr.opendap.components.testing</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.collection">cmr.opendap.rest.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.handler.core">cmr.opendap.rest.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.route">cmr.opendap.rest.route</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.middleware">cmr.opendap.rest.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.rest.app">cmr.opendap.rest.app</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
