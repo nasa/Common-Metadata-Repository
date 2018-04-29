@@ -12,16 +12,16 @@
     (is (= {:collection-id "C123-PROV"
             :format "nc"
             :granules []
-            :exclude-granules nil
+            :exclude-granules false
             :variables []
             :subset nil
             :bounding-box nil}
            (util/parse-response
-            (pvt-func {:params {}} concept-id))))
+            (pvt-func {:params {}} "/search" "token" concept-id))))
     (is (= {:collection-id "C123-PROV"
             :format "nc"
             :granules []
-            :exclude-granules nil
+            :exclude-granules false
             :variables ["V1-PROV" "V2-PROV"]
             :subset ["lat(56.109375,67.640625)"
                      "lon(-9.984375,19.828125)"]
@@ -31,6 +31,8 @@
                        {:variables "V1-PROV,V2-PROV"
                         :subset ["lat(56.109375,67.640625)"
                                  "lon(-9.984375,19.828125)"]}}
+                      "/search"
+                      "token"
                       concept-id))))))
 
 (deftest generate-via-post
@@ -39,16 +41,19 @@
     (is (= {:collection-id "C123-PROV"
             :format "nc"
             :granules []
-            :exclude-granules nil
+            :exclude-granules false
             :variables []
             :subset nil
             :bounding-box nil}
            (util/parse-response
-            (pvt-func (util/create-json-stream-payload {}) concept-id))))
+            (pvt-func (util/create-json-stream-payload {})
+                      "/search"
+                      "token"
+                      concept-id))))
     (is (= {:collection-id "C123-PROV"
             :format "nc"
             :granules []
-            :exclude-granules nil
+            :exclude-granules false
             :variables ["V1-PROV" "V2-PROV"]
             :subset ["lat(56.109375,67.640625)"
                      "lon(-9.984375,19.828125)"]
@@ -58,4 +63,6 @@
                        {:variables "V1-PROV,V2-PROV"
                         :subset ["lat(56.109375,67.640625)"
                                  "lon(-9.984375,19.828125)"]})
+                      "/search"
+                      "token"
                       concept-id))))))

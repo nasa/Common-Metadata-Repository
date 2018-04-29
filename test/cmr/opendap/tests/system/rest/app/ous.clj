@@ -28,7 +28,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box nil}
@@ -46,7 +46,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables ["V1200241812-EDF_OPS"]
               :subset nil
               :bounding-box nil}
@@ -64,7 +64,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
               :subset nil
               :bounding-box nil}
@@ -82,7 +82,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box nil}
@@ -101,7 +101,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules "true"
+              :exclude-granules true
               :variables []
               :subset nil
               :bounding-box nil}
@@ -120,7 +120,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
               :bounding-box nil}
@@ -139,7 +139,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
@@ -162,7 +162,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box nil}
@@ -182,7 +182,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables ["V1200241812-EDF_OPS"]
               :subset nil
               :bounding-box nil}
@@ -203,7 +203,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
               :subset nil
               :bounding-box nil}
@@ -225,7 +225,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box nil}
@@ -241,14 +241,14 @@
                       (util/create-json-payload
                        {:granules ["G1200187775-EDF_OPS"
                                    "G1200245955-EDF_OPS"]
-                        :exclude-granules "true"})
+                        :exclude-granules true})
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules "true"
+              :exclude-granules true
               :variables []
               :subset nil
               :bounding-box nil}
@@ -270,7 +270,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
               :bounding-box nil}
@@ -291,7 +291,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules []
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
@@ -312,7 +312,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset nil
               :bounding-box nil}
@@ -332,7 +332,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules nil
+              :exclude-granules false
               :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
               :subset nil
               :bounding-box nil}
@@ -353,7 +353,7 @@
       (is (= {:collection-id "C1200187767-EDF_OPS"
               :format "nc"
               :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules nil
+              :exclude-granules false
               :variables []
               :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
               :bounding-box nil}
