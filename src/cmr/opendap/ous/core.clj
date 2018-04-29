@@ -2,9 +2,11 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.ous.collection.core :as collection]
    [cmr.opendap.ous.collection.params.core :as params]
    [cmr.opendap.ous.collection.results :as results]
    [cmr.opendap.ous.granule :as granule]
+   [cmr.opendap.ous.service :as service]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
@@ -48,14 +50,59 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
+
+
+
+;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
+;;                prototype ... and IT IS AWFUL. This is only temporary ...
+
+(def fallback-pattern #"(.*)(/datapool/)(.*)")
+(def fallback-replacement "/opendap/")
+
+(defn data-file->opendap-url
+  [pattern-info data-file]
+  (let [pattern (re-pattern (:pattern-match pattern-info))
+        data-url (:link-href data-file)
+        replacment (string/replace data-url
+                                   pattern
+                                   (str (:pattern-subs pattern-info) "$2"))]
+    (if (re-matches pattern data-url)
+      (do
+        (log/debug "Matched!")
+        (log/debug "pattern:" pattern)
+        (log/debug "data-url:" data-url)
+        (log/debug "replacment:" replacment)
+        replacment)
+      (do
+        (log/debug "Didn't match; trying default ...")
+        (if (re-matches fallback-pattern data-url)
+          (string/replace data-url
+                          fallback-pattern
+                          (str "$1" fallback-replacement "$3")))))))
+
+(defn data-files->opendap-urls
+  [params pattern-info data-files]
+  (->> data-files
+       (map (partial data-file->opendap-url pattern-info))
+       (map #(str % "." (:format params)))))
+
 (defn get-opendap-urls
   [search-endpoint user-token raw-params]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
         params (params/parse raw-params)
         granules (granule/get-metadata search-endpoint user-token params)
-        data-files (mapcat granule/extract-datafile-link granules)]
+        data-files (map granule/extract-datafile-link granules)
+        coll (collection/get-metadata search-endpoint user-token params)
+        service-ids (collection/extract-service-ids coll)
+        services (service/get-metadata search-endpoint user-token service-ids)
+        pattern-info (service/extract-pattern-info (first services))]
+    (log/warn "data-files:" (into [] data-files))
+    ; (log/warn "services:" services)
+    (log/warn "pattern-info:" pattern-info)
     (results/create
      ;(assoc params :granules granules)
-     data-files
+     ; data-files
+     ;services
+     (data-files->opendap-urls params pattern-info data-files)
      :elapsed (util/timed start))))

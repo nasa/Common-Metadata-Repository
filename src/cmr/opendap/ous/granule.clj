@@ -5,15 +5,19 @@
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.util :as util]
+   [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
 (defn build-include
   [gran-ids]
-  (string/join "&" (map #(str "concept_id\\[\\]=" %) gran-ids)))
+  (string/join "&" (map #(str (codec/url-encode "concept_id[])=")
+                              %)
+                        gran-ids)))
 
 (defn build-exclude
   [gran-ids]
-  (string/join "&" (map #(str "exclude\\[echo_granule_id\\]\\[\\]=" %)
+  (string/join "&" (map #(str (codec/url-encode "exclude[echo_granule_id][]=")
+                              %)
                         gran-ids)))
 
 (defn build-query
@@ -37,8 +41,7 @@
   Which granule metadata is returned depends upon the values of :granules and
   :exclude-granules"
   [search-endpoint user-token params]
-  (let [granule-query (build-query params)
-        url (str search-endpoint
+  (let [url (str search-endpoint
                  "/granules?"
                  (build-query params))
         results (request/async-get url
@@ -60,12 +63,14 @@
   It is currently unclear what the best criteria for this decision is."
   [link-data]
   (let [rel (:rel link-data)]
-    (when (and (not (:inherited link-data))
-               (= const/datafile-link-rel rel))
-      true)))
+    (and (not (:inherited link-data))
+              (= const/datafile-link-rel rel))))
 
 (defn extract-datafile-link
   [granule-entry]
-  (->> (:links granule-entry)
-       (filter match-datafile-link)
-       (map :rel)))
+  (let [link (->> (:links granule-entry)
+                  (filter match-datafile-link)
+                  first)]
+    {:granule-id (:id granule-entry)
+     :link-rel (:rel link)
+     :link-href (:href link)}))
