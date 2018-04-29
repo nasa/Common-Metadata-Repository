@@ -1,5 +1,15 @@
 (ns cmr.opendap.util)
 
+(defn bool
+  [arg]
+  (if (contains? #{true :true "true" "TRUE" "t" "T" 1} arg)
+    true
+    false))
+
+(defn remove-empty
+  [coll]
+  (remove #(or (nil? %) (empty? %)) coll))
+
 (defn deep-merge
   "Merge maps recursively."
   [& maps]
