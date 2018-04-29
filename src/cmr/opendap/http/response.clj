@@ -28,8 +28,8 @@
   [body]
   (let [str-data (if (string? body) body (slurp body))
         json-data (json/parse-string str-data true)]
-    (log/debug "str-data:" str-data)
-    (log/debug "json-data:" json-data)
+    (log/trace "str-data:" str-data)
+    (log/trace "json-data:" json-data)
     json-data))
 
 (def json-handler #(client-handler % parse-json-body))

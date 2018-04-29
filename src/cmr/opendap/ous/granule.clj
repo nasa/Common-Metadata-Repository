@@ -1,6 +1,7 @@
 (ns cmr.opendap.ous.granule
   (:require
    [clojure.string :as string]
+   [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.util :as util]
@@ -48,3 +49,23 @@
     (log/debug "Got results from CMR search:" results)
     (get-in @results [:feed :entry])))
 
+;; XXX This logic was copied from the prototype; it is generally viewed by the
+;;     CMR Team & the Metadata Tools Team that this approach is flawed, and
+;;     that adding support for this approach to UMM-S was a short-term hack.
+(defn match-datafile-link
+  "The criteria defined in the prototype was to iterate through the links,
+  only examining those links that were not 'inherited', and find the one
+  whose :rel value matched a particular string.
+
+  It is currently unclear what the best criteria for this decision is."
+  [link-data]
+  (let [rel (:rel link-data)]
+    (when (and (not (:inherited link-data))
+               (= const/datafile-link-rel rel))
+      true)))
+
+(defn extract-datafile-link
+  [granule-entry]
+  (->> (:links granule-entry)
+       (filter match-datafile-link)
+       (map :rel)))

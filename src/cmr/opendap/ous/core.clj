@@ -53,7 +53,9 @@
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
         params (params/parse raw-params)
-        granules (granule/get-metadata search-endpoint user-token params)]
+        granules (granule/get-metadata search-endpoint user-token params)
+        data-files (mapcat granule/extract-datafile-link granules)]
     (results/create
-     (assoc params :granules granules)
+     ;(assoc params :granules granules)
+     data-files
      :elapsed (util/timed start))))
