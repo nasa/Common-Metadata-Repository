@@ -10,13 +10,15 @@
 
 (defn build-include
   [gran-ids]
-  (string/join "&" (map #(str (codec/url-encode "concept_id[])=")
+  (string/join "&" (map #(str (codec/url-encode "concept_id[]")
+                              "="
                               %)
                         gran-ids)))
 
 (defn build-exclude
   [gran-ids]
-  (string/join "&" (map #(str (codec/url-encode "exclude[echo_granule_id][]=")
+  (string/join "&" (map #(str (codec/url-encode "exclude[echo_granule_id][]")
+                              "="
                               %)
                         gran-ids)))
 

@@ -30,24 +30,24 @@
             {:collection-id "C123"
              :granules ["" ""]}))))
   (testing "With granule ids ..."
-    (is (= "collection_concept_id=C123&concept_id\\[\\]=G234"
+    (is (= "collection_concept_id=C123&concept_id%5B%5D=G234"
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234"]})))
-    (is (= "collection_concept_id=C123&concept_id\\[\\]=G234&concept_id\\[\\]=G345"
+    (is (= "collection_concept_id=C123&concept_id%5B%5D=G234&concept_id%5B%5D=G345"
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234" "G345"]}))))
   (testing "With granule ids and exclude ..."
     (is (= (str "collection_concept_id=C123&"
-                "exclude\\[echo_granule_id\\]\\[\\]=G234")
+                "exclude%5Becho_granule_id%5D%5B%5D=G234")
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234"]
              :exclude-granules true})))
     (is (= (str "collection_concept_id=C123&"
-                "exclude\\[echo_granule_id\\]\\[\\]=G234&"
-                "exclude\\[echo_granule_id\\]\\[\\]=G345")
+                "exclude%5Becho_granule_id%5D%5B%5D=G234&"
+                "exclude%5Becho_granule_id%5D%5B%5D=G345")
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234" "G345"]
