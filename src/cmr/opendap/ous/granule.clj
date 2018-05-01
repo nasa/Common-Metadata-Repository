@@ -51,7 +51,7 @@
                      (request/add-token-header user-token)
                      (request/add-accept "application/json"))
                  response/json-handler)]
-    (log/debug "Got results from CMR search:" results)
+    (log/debug "Got results from CMR granule search:" results)
     (get-in @results [:feed :entry])))
 
 ;; XXX This logic was copied from the prototype; it is generally viewed by the

@@ -7,6 +7,7 @@
    [cmr.opendap.ous.collection.results :as results]
    [cmr.opendap.ous.granule :as granule]
    [cmr.opendap.ous.service :as service]
+   [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
@@ -92,9 +93,14 @@
         coll (collection/get-metadata search-endpoint user-token params)
         service-ids (collection/extract-service-ids coll)
         services (service/get-metadata search-endpoint user-token service-ids)
-        pattern-info (service/extract-pattern-info (first services))]
-    (log/warn "data-files:" (into [] data-files))
-    (log/warn "pattern-info:" pattern-info)
+        pattern-info (service/extract-pattern-info (first services))
+        all-vars (collection/extract-variable-ids coll)
+        vars (variable/get-metadata search-endpoint user-token params all-vars)
+        bounding-info (map variable/extract-bounding-info vars)]
+    (log/debug "data-files:" (into [] data-files))
+    (log/debug "pattern-info:" pattern-info)
+    (log/debug "all variable ids:" all-vars)
+    (log/debug "variable bounding-info:" (into [] bounding-info))
     (results/create
      (data-files->opendap-urls params pattern-info data-files)
      :elapsed (util/timed start))))

@@ -22,8 +22,12 @@
                      (request/add-token-header user-token)
                      (request/add-accept "application/json"))
                  response/json-handler)]
-    (log/debug "Got results from CMR search:" results)
+    (log/debug "Got results from CMR collection search:" results)
     (first (get-in @results [:feed :entry]))))
+
+(defn extract-variable-ids
+  [entry]
+  (get-in entry [:associations :variables]))
 
 (defn extract-service-ids
   [entry]

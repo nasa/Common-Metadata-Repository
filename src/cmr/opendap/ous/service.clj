@@ -25,7 +25,7 @@
                      (request/add-token-header user-token)
                      (request/add-accept "application/vnd.nasa.cmr.umm+json"))
                  response/json-handler)]
-    (log/debug "Got results from CMR search:" results)
+    (log/debug "Got results from CMR service search:" results)
     (:items @results)))
 
 (defn match-opendap
