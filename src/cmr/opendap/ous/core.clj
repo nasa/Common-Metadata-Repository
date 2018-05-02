@@ -15,6 +15,10 @@
 ;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; General caveat: the logic for this code was translated -- without domain
+;; knowledge -- from Node.js code that was established as faulty and buggy.
+;; ALL OF THIS needs to be REASSESSED with an intelligent, knowledgable eye.
+
 ;; Notes on representing spatial extents.
 ;;
 ;; EDSC uses URL-encoded long/lat numbers representing a bounding box
@@ -51,11 +55,51 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Notes from Peter L. Smith: "x/y_array_begin/end variables were ones that
+;;                             Adbul wanted to move into the service
+;;                             information, but for now these were
+;;                             hard-coded (assumptions)."
+(def x-array-begin 0)
+(def y-array-begin 0)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; For the next two, see the notes above in the constants section.
+
+(defn x-array-end [dim] (- (:x dim) 1))
+(defn y-array-end [dim] (- (:y dim) 1))
+
+;; XXX This next horrible function was created to replace the subsets.forEach
+;; call made at the end of processVariable in the ous.js file. Peter L. Smith
+;; had this to say, after I commented/asked about it's somewhat anti-intuitive
+;; behaviour:
+;;    "The code in the forEach just computes the indices into the data
+;;     arrays when start/end lat or long values are provided, and yep -
+;;     if you specify multiple lat (or long) pairs, it will effectively
+;;     just take the last."
+
+(defn spatial-subset->arrays
+  [subset]
+  )
+
 (defn ->pixels
-  [{x-dim :x y-dim :y} bounds]
-  (let [[lon-lo lat-lo lon-hi lat-hi] (map #(Integer/parseInt %) bounds)
-         x-pixel-size (/ (- lon-hi lon-lo) x-dim)
+  [{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
+  (let [x-pixel-size (/ (- lon-hi lon-lo) x-dim)
         y-pixel-size (/ (- lat-hi lat-lo) y-dim)]
+    ;; XXX Note that the x and y offsets were added here simply due to the
+    ;;     fact that these were defined in the Node.js version; upon closer
+    ;;     inspection of the Node code, it seems that these values were
+    ;;     never actually used ... let's come back and clean this up, once
+    ;;     the port has been completed.
+    ;; XXX Followup: x and y pixel sizes are only ever used in the Node.js code
+    ;;     when calculating the offsets, and those were never used ... so maybe
+    ;;     we can delete this whole function?
     {:x {:pixel-size x-pixel-size
          :offset (Math/floor (/ lon-lo x-pixel-size))}
      :y {:pixel-size y-pixel-size
@@ -65,11 +109,24 @@
   [bounding-info]
   (map #(->pixels (:dimensions %) (:bounds %)) bounding-info))
 
+(defn ->array-bounds
+  [{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
+  )
+
+(defn bounding-info->opendap-lat-lon
+  [{var-name :name opendap :opendap}]
+  (format "%s[*][%s:%s][%s:%s]"
+           var-name
+           (get-in opendap [:low :y])
+           (get-in opendap [:high :y])
+           (get-in opendap [:low :x])
+           (get-in opendap [:high :x])))
+
 (defn bounding-info->opendap-query
   [bounding-info]
   (when (seq bounding-info)
     (->> bounding-info
-         (map identity)
+         (map bounding-info->opendap-lat-lon)
          (string/join ",")
          (str "?"))))
 
@@ -108,6 +165,7 @@
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
         params (params/parse raw-params)
+        bounding-box (:bounding-box params)
         granules (granule/get-metadata search-endpoint user-token params)
         data-files (map granule/extract-datafile-link granules)
         coll (collection/get-metadata search-endpoint user-token params)
@@ -116,14 +174,12 @@
         pattern-info (service/extract-pattern-info (first services))
         all-vars (collection/extract-variable-ids coll)
         vars (variable/get-metadata search-endpoint user-token params all-vars)
-        bounding-info (map variable/extract-bounding-info vars)
-        pixels (bounding-info->pixels bounding-info)
+        bounding-info (map (partial variable/extract-bounding-info bounding-box) vars)
         query (bounding-info->opendap-query bounding-info)]
     (log/debug "data-files:" (into [] data-files))
     (log/debug "pattern-info:" pattern-info)
     (log/debug "all variable ids:" all-vars)
     (log/debug "variable bounding-info:" (into [] bounding-info))
-    (log/debug "pixels:" (into [] pixels))
     (log/debug "query:" query)
     (results/create
      (data-files->opendap-urls params pattern-info data-files query)

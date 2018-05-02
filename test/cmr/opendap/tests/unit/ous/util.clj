@@ -39,3 +39,13 @@
   (is (= "C012"
          (util/coverage->collection
           ["C012" "G123" "G234"]))))
+
+(deftest subset->bounding-box
+  (is (= [-9.984375 56.109375 19.828125 67.640625]
+         (util/subset->bounding-box
+          ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]))))
+
+(deftest bounding-box->subset
+  (is (= ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
+         (util/bounding-box->subset
+          [-9.984375 56.109375 19.828125 67.640625]))))

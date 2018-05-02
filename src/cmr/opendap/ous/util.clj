@@ -24,17 +24,38 @@
         (string? data) (string/split data #",")))
 
 (defn bounding-box->subset
-  [[ll-lon ll-lat ur-lon ur-lat]]
-  [(format "lat(%s,%s)" ll-lat ur-lat)
-   (format "lon(%s,%s)" ll-lon ur-lon)])
+  [[lon-lo lat-lo lon-hi lat-hi]]
+  [(format "lat(%s,%s)" lat-lo lat-hi)
+   (format "lon(%s,%s)" lon-lo lon-hi)])
 
-(defn parse-subset
-  [subset]
-  )
+(defn get-matches
+  [regex elems]
+  (->> elems
+       (map (comp rest (partial re-find regex)))
+       (remove empty?)
+       first))
+
+(defn subset->bounding-lat
+  [elems]
+  (get-matches
+   (re-pattern (str ".*lat\\("
+                    "\\s*(-?[0-9]+\\.?[0-9]*)\\s*,"
+                    "\\s*(-?[0-9]+\\.?[0-9]*)\\s*"))
+   elems))
+
+(defn subset->bounding-lon
+  [elems]
+  (get-matches
+   (re-pattern (str ".*lon\\("
+                    "\\s*(-?[0-9]+\\.?[0-9]*)\\s*,"
+                    "\\s*(-?[0-9]+\\.?[0-9]*)\\s*"))
+   elems))
 
 (defn subset->bounding-box
   [elems]
-  )
+  (let [[lon-lo lon-hi] (subset->bounding-lon elems)
+        [lat-lo lat-hi] (subset->bounding-lat elems)]
+    (map #(Float/parseFloat %) [lon-lo lat-lo lon-hi lat-hi])))
 
 (defn coverage->granules
   [coverage]
