@@ -38,7 +38,9 @@
   {:x (:Size (first (filter #(= "XDim" (:Name %)) dim)))
    :y (:Size (first (filter #(= "YDim" (:Name %)) dim)))})
 
-(defn parse-bounds
+(defn parse-annotated-bounds
+  "Parse bounds that are annotated with Lat and Lon, returning values
+  in the same order that CMR uses for spatial bounding boxes."
   [bounds]
   (let [lon-regex "Lon:\\s*(-?[0-9]+),\\s*(-?[0-9]+).*;\\s*"
         lat-regex "Lat:\\s*(-[0-9]+),\\s*(-?[0-9]+).*"
@@ -46,17 +48,29 @@
          (rest (re-find (re-pattern (str lon-regex lat-regex)) bounds))]
     [lon-lo lat-lo lon-hi lat-hi]))
 
-(defn extract-bounds
+(defn parse-cmr-bounds
   [bounds]
-  (let [[lon-lo lat-lo lon-hi lat-hi]
-        (if (string/starts-with? bounds "Lon")
-          (parse-bounds bounds)
-          (map string/trim (string/split bounds #",\s*")))]))
+  "Parse a list of lat/lon values ordered according to the CMR convention
+  of lower-left lon, lower-left lat, upper-right long, upper-right lat."
+  (map string/trim (string/split bounds #",\s*")))
+
+(defn parse-bounds
+  [bounds]
+  (if (string/starts-with? bounds "Lon")
+    (parse-annotated-bounds bounds)
+    (parse-cmr-bounds bounds)))
+
+(defn extract-bounds
+  [entry]
+  (->> entry
+       (#(get-in % [:umm :Characteristics :Bounds]))
+       parse-bounds
+       (map #(Integer/parseInt %))))
 
 (defn extract-bounding-info
   [entry]
   {:concept-id (get-in entry [:meta :concept-id])
    :name (get-in entry [:umm :Name])
    :dimensions (parse-dimensions (get-in entry [:umm :Dimensions]))
-   :bounds (parse-bounds (get-in entry [:umm :Characteristics :Bounds]))
+   :bounds (extract-bounds entry)
    :size (get-in entry [:umm :Characteristics :Size])})
