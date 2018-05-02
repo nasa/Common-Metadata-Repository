@@ -75,13 +75,11 @@
    :bounds (extract-bounds entry)
    :size (get-in entry [:umm :Characteristics :Size])})
 
-(defn get-dominant-bound
-  "This function is intended to be used if spatial subsetting is not
-  proivded in the query: in that case, all the bounds of all the variables
-  will be counted, and the one most-used is what will be returned."
-  [bounding-info]
-  (->> bounding-info
-       (map :bounds)
+(defn most-frequent
+  "This identifies the most frequently occuring data in a collection
+  and returns it."
+  [data]
+  (->> data
        frequencies
        ;; the 'frequencies' function puts data first; let's swap the order
        (map (fn [[k v]] [v k]))
@@ -91,3 +89,19 @@
        first
        ;; the first element is the count, the second is the bounding data
        second))
+
+(defn dominant-bounds
+  "This function is intended to be used if spatial subsetting is not
+  proivded in the query: in that case, all the bounds of all the variables
+  will be counted, and the one most-used is what will be returned."
+  [bounding-info]
+  (->> bounding-info
+       (map :bounds)
+       most-frequent))
+
+(defn dominant-dimensions
+  "Get the most common dimensions from the bounding-info."
+  [bounding-info]
+  (->> bounding-info
+       (map :dimensions)
+       most-frequent))
