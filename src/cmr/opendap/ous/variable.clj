@@ -44,10 +44,14 @@
         lat-regex "Lat:\\s*(-[0-9]+),\\s*(-?[0-9]+).*"
         [lon-lo lon-hi lat-lo lat-hi]
          (rest (re-find (re-pattern (str lon-regex lat-regex)) bounds))]
-    {:lat {:begin lat-lo
-           :end lat-hi}
-     :lon {:begin lon-lo
-           :end lon-hi}}))
+    [lon-lo lat-lo lon-hi lat-hi]))
+
+(defn extract-bounds
+  [bounds]
+  (let [[lon-lo lat-lo lon-hi lat-hi]
+        (if (string/starts-with? bounds "Lon")
+          (parse-bounds bounds)
+          (map string/trim (string/split bounds #",\s*")))]))
 
 (defn extract-bounding-info
   [entry]

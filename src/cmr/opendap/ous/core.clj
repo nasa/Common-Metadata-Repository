@@ -51,6 +51,30 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
+(defrecord Longitude [low high])
+(defrecord Latitude [low high])
+(defrecord Bounds [lat lon])
+
+(defn bounds->rec
+  [[lon-lo lat-lo lon-hi lat-hi]]
+  (map->Bounds
+    {:lat (map->Latitude {:low lat-lo :high lat-hi})
+     :lon (map->Longitude {:low lon-lo :high lon-hi})}))
+
+(defn ->pixels
+  [{x-dim :x y-dim :y} bounds]
+  (let [[lon-lo lat-lo lon-hi lat-hi] (map #(Integer/parseInt %) bounds)
+         x-pixel-size (/ (- lon-hi lon-lo) x-dim)
+        y-pixel-size (/ (- lat-hi lat-lo) y-dim)]
+    {:x {:pixel-size x-pixel-size
+         :offset (Math/floor (/ lon-lo x-pixel-size))}
+     :y {:pixel-size y-pixel-size
+         :offset (Math/floor (/ lat-lo y-pixel-size))}}))
+
+(defn bounding-info->pixels
+  [bounding-info]
+  (map #(->pixels (:dimensions %) (:bounds %)) bounding-info))
+
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
 
@@ -94,11 +118,13 @@
         pattern-info (service/extract-pattern-info (first services))
         all-vars (collection/extract-variable-ids coll)
         vars (variable/get-metadata search-endpoint user-token params all-vars)
-        bounding-info (map variable/extract-bounding-info vars)]
+        bounding-info (map variable/extract-bounding-info vars)
+        pixels (bounding-info->pixels bounding-info)]
     (log/debug "data-files:" (into [] data-files))
     (log/debug "pattern-info:" pattern-info)
     (log/debug "all variable ids:" all-vars)
     (log/debug "variable bounding-info:" (into [] bounding-info))
+    (log/debug "pixels:" (into [] pixels))
     (results/create
      (data-files->opendap-urls params pattern-info data-files)
      :elapsed (util/timed start))))
