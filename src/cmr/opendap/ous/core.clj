@@ -51,9 +51,6 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
-
-
-
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
 
@@ -66,12 +63,13 @@
         data-url (:link-href data-file)]
     (if (re-matches pattern data-url)
       (do
-        (log/debug "Matched!")
+        (log/debug "Granule URL matched provided pattern ...")
         (string/replace data-url
                         pattern
                         (str (:pattern-subs pattern-info) "$2")))
       (do
-        (log/debug "Didn't match; trying default ...")
+        (log/debug
+         "Granule URL didn't match provided pattern; trying default ...")
         (if (re-matches fallback-pattern data-url)
           (string/replace data-url
                           fallback-pattern

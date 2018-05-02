@@ -33,10 +33,26 @@
     (log/debug "Got results from CMR variable search:" results)
     (:items @results)))
 
+(defn parse-dimensions
+  [dim]
+  {:x (:Size (first (filter #(= "XDim" (:Name %)) dim)))
+   :y (:Size (first (filter #(= "YDim" (:Name %)) dim)))})
+
+(defn parse-bounds
+  [bounds]
+  (let [lon-regex "Lon:\\s*(-?[0-9]+),\\s*(-?[0-9]+).*;\\s*"
+        lat-regex "Lat:\\s*(-[0-9]+),\\s*(-?[0-9]+).*"
+        [lon-lo lon-hi lat-lo lat-hi]
+         (rest (re-find (re-pattern (str lon-regex lat-regex)) bounds))]
+    {:lat {:begin lat-lo
+           :end lat-hi}
+     :lon {:begin lon-lo
+           :end lon-hi}}))
+
 (defn extract-bounding-info
   [entry]
   {:concept-id (get-in entry [:meta :concept-id])
    :name (get-in entry [:umm :Name])
-   :dimensions (get-in entry [:umm :Dimensions])
-   :bounds (get-in entry [:umm :Characteristics :Bounds])
+   :dimensions (parse-dimensions (get-in entry [:umm :Dimensions]))
+   :bounds (parse-bounds (get-in entry [:umm :Characteristics :Bounds]))
    :size (get-in entry [:umm :Characteristics :Size])})
