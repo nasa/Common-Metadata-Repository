@@ -49,5 +49,5 @@
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
  :logging
-  {:level :debug
+  {:level :trace
    :nss [cmr.opendap org.httpkit]}}
