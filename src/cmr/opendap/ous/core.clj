@@ -51,16 +51,6 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
-(defrecord Longitude [low high])
-(defrecord Latitude [low high])
-(defrecord Bounds [lat lon])
-
-(defn bounds->rec
-  [[lon-lo lat-lo lon-hi lat-hi]]
-  (map->Bounds
-    {:lat (map->Latitude {:low lat-lo :high lat-hi})
-     :lon (map->Longitude {:low lon-lo :high lon-hi})}))
-
 (defn ->pixels
   [{x-dim :x y-dim :y} bounds]
   (let [[lon-lo lat-lo lon-hi lat-hi] (map #(Integer/parseInt %) bounds)
@@ -74,6 +64,14 @@
 (defn bounding-info->pixels
   [bounding-info]
   (map #(->pixels (:dimensions %) (:bounds %)) bounding-info))
+
+(defn bounding-info->opendap-query
+  [bounding-info]
+  (when (seq bounding-info)
+    (->> bounding-info
+         (map identity)
+         (string/join ",")
+         (str "?"))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
@@ -100,10 +98,10 @@
                           (str "$1" fallback-replacement "$3")))))))
 
 (defn data-files->opendap-urls
-  [params pattern-info data-files]
+  [params pattern-info data-files query-string]
   (->> data-files
        (map (partial data-file->opendap-url pattern-info))
-       (map #(str % "." (:format params)))))
+       (map #(str % "." (:format params) query-string))))
 
 (defn get-opendap-urls
   [search-endpoint user-token raw-params]
@@ -119,12 +117,14 @@
         all-vars (collection/extract-variable-ids coll)
         vars (variable/get-metadata search-endpoint user-token params all-vars)
         bounding-info (map variable/extract-bounding-info vars)
-        pixels (bounding-info->pixels bounding-info)]
+        pixels (bounding-info->pixels bounding-info)
+        query (bounding-info->opendap-query bounding-info)]
     (log/debug "data-files:" (into [] data-files))
     (log/debug "pattern-info:" pattern-info)
     (log/debug "all variable ids:" all-vars)
     (log/debug "variable bounding-info:" (into [] bounding-info))
     (log/debug "pixels:" (into [] pixels))
+    (log/debug "query:" query)
     (results/create
-     (data-files->opendap-urls params pattern-info data-files)
+     (data-files->opendap-urls params pattern-info data-files query)
      :elapsed (util/timed start))))
