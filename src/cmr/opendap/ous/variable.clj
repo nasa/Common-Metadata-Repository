@@ -74,3 +74,20 @@
    :dimensions (parse-dimensions (get-in entry [:umm :Dimensions]))
    :bounds (extract-bounds entry)
    :size (get-in entry [:umm :Characteristics :Size])})
+
+(defn get-dominant-bound
+  "This function is intended to be used if spatial subsetting is not
+  proivded in the query: in that case, all the bounds of all the variables
+  will be counted, and the one most-used is what will be returned."
+  [bounding-info]
+  (->> bounding-info
+       (map :bounds)
+       frequencies
+       ;; the 'frequencies' function puts data first; let's swap the order
+       (map (fn [[k v]] [v k]))
+       ;; sort in reverse order to get the highest counts first
+       (sort (comp - compare))
+       ;; just get the highest
+       first
+       ;; the first element is the count, the second is the bounding data
+       second))
