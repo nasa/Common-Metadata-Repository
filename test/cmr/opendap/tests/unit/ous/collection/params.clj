@@ -59,7 +59,8 @@
            :granules ["G234" "G345" "G456"]
            :variables ["V234" "V345" "V456"]
            :subset ["lat(22,34)" "lon(169,200)"]
-           :exclude-granules false})
+           :exclude-granules false
+           :bounding-box [169.0 22.0 200.0 34.0]})
          (params/v1->v2
           (v1/map->OusPrototypeParams {
            :format "nc"

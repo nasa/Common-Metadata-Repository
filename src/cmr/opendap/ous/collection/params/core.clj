@@ -25,14 +25,17 @@
 (defn v1->v2
   [params]
   (let [collection-id (or (:collection-id params)
-                          (util/coverage->collection (:coverage params)))]
+                          (util/coverage->collection (:coverage params)))
+        subset (:subset params)]
     (-> params
         (assoc :collection-id collection-id
                :granules (util/coverage->granules (:coverage params))
                :variables (:rangesubset params)
                ;; There was never an analog in v1 for exclude-granules, so set
                ;; to false.
-               :exclude-granules false)
+               :exclude-granules false
+               :bounding-box (when (seq subset)
+                              (util/subset->bounding-box subset)))
         (dissoc :coverage :rangesubset)
         (v2/map->CollectionParams))))
 

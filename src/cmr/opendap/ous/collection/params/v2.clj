@@ -3,7 +3,8 @@
    [clojure.set :as set]
    [cmr.opendap.ous.collection.params.const :as const]
    [cmr.opendap.ous.util :as ous-util]
-   [cmr.opendap.util :as util]))
+   [cmr.opendap.util :as util]
+   [taoensso.timbre :as log]))
 
 (defrecord CollectionParams
   [;; `collection-id` is the concept id for the collection in question. Note
@@ -31,7 +32,7 @@
    ;; `spatial-subset` is used the same way as `subset` for WCS.
    ;; `subset` is used to indicate desired spatial subsetting and is used in
    ;; URL queries like so:
-   ;;  `?subset=lat(22,34)&subset=lon(169,200)`
+   ;;  `?subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
    subset
    ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
    ;; to using `subset` for spatial-subsetting.
@@ -50,12 +51,23 @@
 
 (defn create-params
   [params]
-  (map->CollectionParams
-    (assoc params
-      :format (or (:format params) const/default-format)
-      :granules (ous-util/->seq (:granules params))
-      :variables (ous-util/->seq (:variables params))
-      :exclude-granules (util/bool (:exclude-granules params)))))
+  (let [bounding-box (ous-util/->seq (:bounding-box params))
+        subset (:subset params)]
+    (log/trace "bounding-box:" bounding-box)
+    (log/trace "subset:" subset)
+    (map->CollectionParams
+      (assoc params
+        :format (or (:format params) const/default-format)
+        :granules (ous-util/->seq (:granules params))
+        :variables (ous-util/->seq (:variables params))
+        :exclude-granules (util/bool (:exclude-granules params))
+        :subset (if (seq bounding-box)
+                 (ous-util/bounding-box->subset bounding-box)
+                 (:subset params))
+        :bounding-box (if (seq bounding-box)
+                       (mapv #(Float/parseFloat %) bounding-box)
+                       (when (seq subset)
+                        (ous-util/subset->bounding-box subset)))))))
 
 (defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
