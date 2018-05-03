@@ -38,13 +38,14 @@ Search API provides access to this metadata.
 
 ## Prerequisites
 
-- Java 1.8.0 (a.k.a. JAVA8) only; higher versions will fail.
+- Java 1.8.0 (a.k.a. JAVA8) only; higher versions are not currently supported.
 - Leiningen (http://leiningen.org) 2.5.1 or above.
   - We've had success with Homebrew and with the install script on the
     Leiningen website.
 - Ruby (used to support two legacy apps)
 - Maven (https://maven.apache.org/install.html)
-  - We've had success with Homebrew: `brew install maven`
+    - Mac OS X devs can use `brew install maven` 
+    - Linux devs can use `sudo apt-get install maven`
 
 ## Obtaining the Code
 
