@@ -12,10 +12,15 @@
 ;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-lon-lo -180)
-(def default-lon-hi 180)
-(def default-lat-lo -90)
-(def default-lat-hi 90)
+(def default-lon-lo -180.0)
+(def default-lon-hi 180.0)
+(def default-lat-lo -90.0)
+(def default-lat-hi 90.0)
+
+(def default-x-lo 0.0)
+(def default-x-hi 360.0)
+(def default-y-lo 0.0)
+(def default-y-hi 180.0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,6 +28,23 @@
 
 (defrecord Dimensions [x y])
 (defrecord ArrayLookup [low high])
+
+;; XXX There is a note in Abdul's code along these lines:
+;;         "hack for descending orbits (array index 0 is at 90 degrees
+;;         north)"
+;;     If I understand correctly, this would cause the indices for
+;;     high and low values for latitude to be reversed ... so we
+;;     reverse them here, where all OPeNDAP coords get created. This
+;;     enables proper lookup in OPeNDAP arrays.
+;;
+;;     This REALLY needs to be investigated, though.
+(defn create-opendap-lookup
+  [lon-lo lat-lo lon-hi lat-hi]
+  (map->ArrayLookup
+   {:low {:x lon-lo
+          :y lat-hi} ;; <-- swap hi for lo
+    :high {:x lon-hi
+           :y lat-lo}})) ;; <-- swap lo for hi
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,7 +66,18 @@
        (map :dimensions)
        util/most-frequent))
 
-(defn lon-lo->x
+;; XXX Can we use these instead? Why was the phase shifting written
+;;     so obtrusely? There's got to be a reason, I just don't know it ...
+(defn new-lon-phase-shift
+  [x-dim in]
+    (int (Math/floor (+ (/ x-dim 2) in))))
+
+(defn new-lat-phase-shift
+  [y-dim in]
+  (- y-dim
+     (int (Math/floor (+ (/ y-dim 2) in)))))
+
+(defn lon-lo-phase-shift
   [x-dim lon-lo]
   (-> (/ (* (- x-dim 1)
             (- lon-lo default-lon-lo))
@@ -52,7 +85,7 @@
       Math/floor
       int))
 
-(defn lon-hi->x
+(defn lon-hi-phase-shift
   [x-dim lon-hi]
   (-> (/ (* (- x-dim 1)
             (- lon-hi default-lon-lo))
@@ -75,38 +108,41 @@
 ;; y_array_begin = Math.floor((YDim-1)*(lats[0]-lat_begin)/(lat_end-lat_begin));
 ;; y_array_end = Math.ceil((YDim-1)*(lats[1]-lat_begin)/(lat_end-lat_begin));
 ;;
-;; Currently, given no domain knowledge, I have no idea whether either of
-;; these two implementations is correct.
+;; These original JS functions are re-created in Clojure here:
 
-;; XXX 🤮 I am REALLY not convinced the following function is right;
-;;     🤮 it seems that the indicies for hi/lo lats have been swapped.
-;;     🤮 This HAS TO BE investigated ...
-(defn lat-lo->y
-  ;[y-dim lat-lo] 🤮
-  [y-dim lat-hi]
-  (- y-dim
-     1
-     (-> (/ (* (- y-dim 1)
-               ;(- lat-lo default-lat-lo)) 🤮
-               (- lat-hi default-lat-lo))
-            (- default-lat-hi default-lat-lo))
-         Math/ceil
-         int)))
-
-;; XXX 🤮 I am REALLY not convinced the following function is right;
-;;     🤮 it seems that the indicies for hi/lo lats have been swapped.
-;;     🤮 This HAS TO BE investigated ...
-(defn lat-hi->y
-  ;[y-dim lat-hi] 🤮
+(defn orig-lat-lo-phase-shift
   [y-dim lat-lo]
-  (- y-dim
-     1
-     (-> (/ (* (- y-dim 1)
-               ;(- lat-hi default-lat-lo)) 🤮
-               (- lat-lo default-lat-lo))
-            (- default-lat-hi default-lat-lo))
-         Math/floor
-         int)))
+  (-> (/ (* (- y-dim 1)
+            (- lat-lo default-lat-lo))
+          (- default-lat-hi default-lat-lo))
+       Math/floor
+       int))
+
+(defn orig-lat-hi-phase-shift
+  [y-dim lat-hi]
+  (-> (/ (* (- y-dim 1)
+            (- lat-hi default-lat-lo))
+          (- default-lat-hi default-lat-lo))
+       Math/ceil
+       int))
+
+(defn lat-lo-phase-shift
+  [y-dim lat-lo]
+  (int
+    (- y-dim
+       1
+       (Math/floor (/ (* (- y-dim 1)
+                         (- lat-lo default-lat-lo))
+                      (- default-lat-hi default-lat-lo))))))
+
+(defn lat-hi-phase-shift
+  [y-dim lat-hi]
+  (int
+    (- y-dim
+       1
+       (Math/ceil (/ (* (- y-dim 1)
+                        (- lat-hi default-lat-lo))
+                     (- default-lat-hi default-lat-lo))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,17 +215,58 @@
        (map #(Float/parseFloat %))))
 
 (defn create-opendap-bounds
-  [{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
-  (let [x-lo (lon-lo->x x-dim lon-lo)
-        x-hi (lon-hi->x x-dim lon-hi)
-        y-lo (lat-lo->y y-dim lat-lo)
-        y-hi (lat-hi->y y-dim lat-hi)]
-    (map->ArrayLookup
-      {:low (map->Dimensions {:x x-lo :y y-lo})
-       :high (map->Dimensions {:x x-hi :y y-hi})})))
+  ([bounding-box]
+    (if bounding-box
+      (create-opendap-bounds
+        {:x default-x-hi :y default-y-hi}
+        bounding-box)
+      nil))
+  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
+   (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
+         x-hi (lon-hi-phase-shift x-dim lon-hi)
+         y-lo (lat-lo-phase-shift y-dim lat-lo)
+         y-hi (lat-hi-phase-shift y-dim lat-hi)]
+     (create-opendap-lookup x-lo y-lo x-hi y-hi))))
+
+(defn format-opendap-lat
+  [opendap-bounds]
+  (if opendap-bounds
+    (format "[%s:%s]"
+             (get-in opendap-bounds [:low :y])
+             (get-in opendap-bounds [:high :y]))
+    ""))
+
+(defn format-opendap-lon
+  [opendap-bounds]
+  (if opendap-bounds
+    (format "[%s:%s]"
+             (get-in opendap-bounds [:low :x])
+             (get-in opendap-bounds [:high :x]))
+    ""))
+
+(defn format-opendap-var-lat-lon
+  [opendap-bounds]
+  (if opendap-bounds
+    (format "[*]%s%s"
+      (format-opendap-lat opendap-bounds)
+      (format-opendap-lon opendap-bounds))
+    ""))
+
+(defn format-opendap-bounds
+  ([opendap-bounds]
+   (format "Latitude%s,Longitude%s"
+           (format-opendap-lat opendap-bounds)
+           (format-opendap-lon opendap-bounds)))
+  ([bound-name opendap-bounds]
+   (format "%s%s"
+            bound-name
+            (format-opendap-var-lat-lon opendap-bounds))))
 
 (defn extract-bounding-info
-  [bounding-box entry]
+  "This function is executed at the variable level, however it has general,
+  non-variable-specific bounding info passed to it in order to support
+  spatial subsetting"
+  [entry bounding-box]
   (let [dims (extract-dimensions entry)
         bounds (or bounding-box (extract-bounds entry))]
     {:concept-id (get-in entry [:meta :concept-id])
@@ -198,5 +275,3 @@
      :bounds bounds
      :opendap (create-opendap-bounds dims bounds)
      :size (get-in entry [:umm :Characteristics :Size])}))
-
-

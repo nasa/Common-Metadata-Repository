@@ -52,6 +52,12 @@
    elems))
 
 (defn subset->bounding-box
+  "In the CMR and EDSC, a bounding box is defined by the lower-left corner
+  to the upper-right, furthermore, they defined this as a flattened list,
+  ordering with longitude first. As such, a bounding box is of the form:
+  `[lower-longitude, lower-latitude, upper-longitude, upper-latitude]`.
+
+  This is the form that this function returns."
   [elems]
   (let [[lon-lo lon-hi] (subset->bounding-lon elems)
         [lat-lo lat-hi] (subset->bounding-lat elems)]

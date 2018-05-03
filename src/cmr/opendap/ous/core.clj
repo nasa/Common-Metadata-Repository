@@ -56,24 +56,8 @@
 ;;; schemes an explicit operation on explicit data.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Notes from Peter L. Smith: "x/y_array_begin/end variables were ones that
-;;                             Adbul wanted to move into the service
-;;                             information, but for now these were
-;;                             hard-coded (assumptions)."
-(def x-array-begin 0)
-(def y-array-begin 0)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; For the next two, see the notes above in the constants section.
-
-(defn x-array-end [dim] (- (:x dim) 1))
-(defn y-array-end [dim] (- (:y dim) 1))
 
 ;; XXX This next horrible function was created to replace the subsets.forEach
 ;; call made at the end of processVariable in the ous.js file. Peter L. Smith
@@ -109,26 +93,24 @@
   [bounding-info]
   (map #(->pixels (:dimensions %) (:bounds %)) bounding-info))
 
-(defn ->array-bounds
-  [{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
-  )
 
 (defn bounding-info->opendap-lat-lon
-  [{var-name :name opendap :opendap}]
-  (format "%s[*][%s:%s][%s:%s]"
-           var-name
-           (get-in opendap [:low :y])
-           (get-in opendap [:high :y])
-           (get-in opendap [:low :x])
-           (get-in opendap [:high :x])))
+  [{var-name :name opendap-bounds :opendap}]
+  (variable/format-opendap-bounds var-name opendap-bounds))
 
 (defn bounding-info->opendap-query
-  [bounding-info]
-  (when (seq bounding-info)
-    (->> bounding-info
-         (map bounding-info->opendap-lat-lon)
-         (string/join ",")
-         (str "?"))))
+  ([bounding-info]
+    (bounding-info->opendap-query bounding-info nil))
+  ([bounding-info bounding-box]
+   (when (seq bounding-info)
+     (str
+      (->> bounding-info
+           (map bounding-info->opendap-lat-lon)
+           (string/join ",")
+           (str "?"))
+      ","
+      (variable/format-opendap-bounds
+       (variable/create-opendap-bounds bounding-box))))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
@@ -174,8 +156,9 @@
         pattern-info (service/extract-pattern-info (first services))
         all-vars (collection/extract-variable-ids coll)
         vars (variable/get-metadata search-endpoint user-token params all-vars)
-        bounding-info (map (partial variable/extract-bounding-info bounding-box) vars)
-        query (bounding-info->opendap-query bounding-info)]
+        bounding-info (map #(variable/extract-bounding-info % bounding-box)
+                           vars)
+        query (bounding-info->opendap-query bounding-info bounding-box)]
     (log/debug "data-files:" (into [] data-files))
     (log/debug "pattern-info:" pattern-info)
     (log/debug "all variable ids:" all-vars)
