@@ -785,7 +785,8 @@
                 (swap! failed-concept-ids conj (:concept-id c))))))
         (recur)))))
 
-(defn func-1
+(defn force-delete
+  "Calls functions that do the deletion of concepts or that publish events to message queue."
   [context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size]
   (info "Deleting" (count concept-id-revision-id-tuples)
         "old concept revisions for provider" (:provider-id provider))
@@ -805,13 +806,13 @@
   [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size]
   (let [db (util/context->db context)]
     (loop [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-     (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
-       (func-1
-         context provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
-       (do
-         (func-1
-           context provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
-         (recur [(seq (concept-id-revision-id-tuple-finder))]))))))
+      (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
+        (force-delete
+          context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
+        (do
+          (force-delete
+            context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
+          (recur [(seq (concept-id-revision-id-tuple-finder))]))))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
@@ -844,4 +845,5 @@
          provider
          concept-type
          tombstone-cut-off-date
-         concept-truncation-batch-size))))
+         concept-truncation-batch-size)
+      concept-truncation-batch-size)))
