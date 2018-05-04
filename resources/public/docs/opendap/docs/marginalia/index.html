@@ -4847,7 +4847,7 @@ disable logging entirely for tests.</p>
    [&quot;/testing/404&quot; {:get (core-handler/status :not-found)}]
    [&quot;/testing/405&quot; {:get (core-handler/status :method-not-allowed)}]
    [&quot;/testing/500&quot; {:get (core-handler/status :internal-server-error)}]
-   [&quot;/testing/503&quot; {:get (core-handler/status :service-unavailable)}]])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.rest.middleware" name="cmr.opendap.rest.middleware"><h1 class="project-name">cmr.opendap.rest.middleware</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Custom ring middleware for CMR Graph.</p>
+   [&quot;/testing/503&quot; {:get (core-handler/status :service-unavailable)}]])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.rest.middleware" name="cmr.opendap.rest.middleware"><h1 class="project-name">cmr.opendap.rest.middleware</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Custom ring middleware for CMR OPeNDAP.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.rest.middleware
   (:require
    [clojure.string :as string]
