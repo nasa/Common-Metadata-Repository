@@ -15,7 +15,7 @@
 
 (use-fixtures :once test-system/with-system)
 
-(deftest ous-collection-get-with-collection-params
+(deftest ous-collection-get-with-v2-params
   (testing "Minimal GET ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
@@ -143,9 +143,30 @@
               :variables []
               :subset nil
               :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
+             (util/parse-response response)))))
+  (testing "GET with variables, graules, and bounding box ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?variables=V1200241812-EDF_OPS&"
+                                  "granules=G1200187775-EDF_OPS&"
+                                  "bounding-box="
+                                  "-9.984375,56.109375,19.828125,67.640625")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= {:collection-id "C1200187767-EDF_OPS"
+              :format "nc"
+              :granules []
+              :exclude-granules false
+              :variables []
+              :subset nil
+              :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
              (util/parse-response response))))))
 
-(deftest ous-collection-post-with-collection-params
+(deftest ous-collection-post-with-v2-params
   (testing "Minimal POST ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/post
@@ -159,13 +180,8 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules []
-              :exclude-granules false
-              :variables []
-              :subset nil
-              :bounding-box nil}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response)))))
   (testing "POST with one variable ..."
     (let [collection-id "C1200187767-EDF_OPS"
@@ -179,13 +195,8 @@
                        {:variables ["V1200241812-EDF_OPS"]})
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules []
-              :exclude-granules false
-              :variables ["V1200241812-EDF_OPS"]
-              :subset nil
-              :bounding-box nil}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "POST with variables ..."
     (let [collection-id "C1200187767-EDF_OPS"
@@ -200,13 +211,8 @@
                                     "V1200241813-EDF_OPS"]})
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules []
-              :exclude-granules false
-              :variables ["V1200241812-EDF_OPS" "V1200241813-EDF_OPS"]
-              :subset nil
-              :bounding-box nil}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "POST with granules ..."
     (let [collection-id "C1200187767-EDF_OPS"
@@ -222,13 +228,8 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
-              :exclude-granules false
-              :variables []
-              :subset nil
-              :bounding-box nil}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response)))))
   (testing "POST without granules ..."
     (let [collection-id "C1200187767-EDF_OPS"
@@ -267,13 +268,8 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules []
-              :exclude-granules false
-              :variables []
-              :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]
-              :bounding-box nil}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response)))))
   (testing "POST with bounding box ..."
     (let [collection-id "C1200187767-EDF_OPS"
@@ -288,16 +284,11 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= {:collection-id "C1200187767-EDF_OPS"
-              :format "nc"
-              :granules []
-              :exclude-granules false
-              :variables []
-              :subset nil
-              :bounding-box "-9.984375,56.109375,19.828125,67.640625"}
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response))))))
 
-(deftest ous-collection-get-with-prototype-params
+(deftest ous-collection-get-with-v1-params
   (testing "GET with coverage ..."
     (let [collection-id "C1200187767-EDF_OPS"
           response @(httpc/get
