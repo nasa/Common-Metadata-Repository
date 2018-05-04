@@ -215,7 +215,6 @@
 
 (defn extract-bounds
   [entry]
-  (println "Entry:" entry)
   (if entry
     (->> entry
          (#(get-in % [:umm :Characteristics :Bounds]))
