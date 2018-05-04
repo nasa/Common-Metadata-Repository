@@ -176,8 +176,12 @@
 
 (defn parse-dimensions
   [dim]
-  [(:Size (first (filter #(= "XDim" (:Name %)) dim)))
-   (:Size (first (filter #(= "YDim" (:Name %)) dim)))])
+  ;; XXX It seems that the X and Y have been swapped for at least
+  ;;     on collection's variables; Simon and I are looking into this
+  ;;     for now, we're just gonna pretend ... by changing the order
+  ;;     below :-(
+  [(:Size (first (filter #(= "YDim" (:Name %)) dim)))
+   (:Size (first (filter #(= "XDim" (:Name %)) dim)))])
 
 (defn extract-dimensions
   [entry]
@@ -275,3 +279,5 @@
      :bounds bounds
      :opendap (create-opendap-bounds dims bounds)
      :size (get-in entry [:umm :Characteristics :Size])}))
+
+
