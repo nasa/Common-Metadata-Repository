@@ -151,30 +151,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-query
-  [passed-vars default-vars]
+  [variable-ids]
   (string/join "&" (map #(str (codec/url-encode "concept_id[]")
                               "=" %)
-                        (if (seq passed-vars)
-                            passed-vars
-                            default-vars))))
+                        variable-ids)))
 
 (defn get-metadata
   "Given a 'params' data structure with a ':variables' key (which may or may
   not have values) and a list of all collection variable-ids, return the
   metadata for the passed variables, if defined, and for all associated
   variables, if params does not contain any."
-  [search-endpoint user-token params variable-ids]
-  (log/debug "Getting variable metadata for:" variable-ids)
-  (let [url (str search-endpoint
-                 "/variables?"
-                 (build-query (:variables params) variable-ids))
-        results (request/async-get url
-                 (-> {}
-                     (request/add-token-header user-token)
-                     (request/add-accept "application/vnd.nasa.cmr.umm+json"))
-                 response/json-handler)]
-    (log/debug "Got results from CMR variable search:" results)
-    (:items @results)))
+  [search-endpoint user-token {variable-ids :variables}]
+  (if (seq variable-ids)
+    (let [url (str search-endpoint
+                   "/variables?"
+                   (build-query variable-ids))
+          results (request/async-get url
+                   (-> {}
+                       (request/add-token-header user-token)
+                       (request/add-accept "application/vnd.nasa.cmr.umm+json"))
+                   response/json-handler)]
+      (log/debug "Got results from CMR variable search:" results)
+      (log/debug "Variable ids used:" variable-ids)
+      (:items @results))
+    []))
 
 (defn parse-dimensions
   [dim]
@@ -215,10 +215,13 @@
 
 (defn extract-bounds
   [entry]
-  (->> entry
-       (#(get-in % [:umm :Characteristics :Bounds]))
-       parse-bounds
-       (map #(Float/parseFloat %))))
+  (println "Entry:" entry)
+  (if entry
+    (->> entry
+         (#(get-in % [:umm :Characteristics :Bounds]))
+         parse-bounds
+         (map #(Float/parseFloat %)))
+    nil))
 
 (defn create-opendap-bounds
   ([bounding-box]
