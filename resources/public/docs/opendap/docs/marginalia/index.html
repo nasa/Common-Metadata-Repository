@@ -2905,13 +2905,16 @@ net.brehaut.ClojureTools = (function (SH) {
   [;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
    format
+   ;;
    ;; `coverage` can be:
    ;;  * a list of granule concept ids
-   ;;  * a list of granule ccontept ids + a collection id
-   ;;  * a single collection id
+   ;;  * a list of granule ccontept ids + a collection concept id
+   ;;  * a single collection concept id
    coverage
-   ;; `rangesubset` is a list of UMM-Var names
+   ;;
+   ;; `rangesubset` is a list of UMM-Var concept ids
    rangesubset
+   ;;
    ;; `subset` is used to indicate desired spatial subsetting and is a list of
    ;; lon/lat values, as used in WCS. It is parsed from URL queries like so:
    ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
@@ -2951,24 +2954,28 @@ net.brehaut.ClojureTools = (function (SH) {
    ;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
    format
+   ;;
    ;; `granules` is list of granule concept ids; default behaviour is a
    ;; whitelist.
    granules
+   ;;
    ;; `exclude-granules` is a boolean when set to true causes granules list
    ;; to be a blacklist.
    exclude-granules
-   ;; XXX Is there where we want to accept the paging size for granule
+   ;;
+   ;; XXX Is this where we want to accept the paging size for granule
    ;;     concepts?
    ;; granule-count
    ;;
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables
-   ;; `spatial-subset` is used the same way as `subset` for WCS.
-   ;; `subset` is used to indicate desired spatial subsetting and is used in
-   ;; URL queries like so:
+   ;;
+   ;; `subset` is used the same way as `subset` for WCS: to indicate desired
+   ;; spatial subsetting in URL queries like so:
    ;;  `?subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)`
    subset
+   ;;
    ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
    ;; to using `subset` for spatial-subsetting.
    bounding-box])</pre></td></tr><tr><td class="docs">
@@ -3310,7 +3317,53 @@ schemes an explicit operation on explicit data.</p>
   [params pattern-info data-files query-string]
   (-&gt;&gt; data-files
        (map (partial data-file-&gt;opendap-url pattern-info))
-       (map #(str % &quot;.&quot; (:format params) query-string))))</pre></td></tr><tr><td class="docs">
+       (map #(str % &quot;.&quot; (:format params) query-string))))</pre></td></tr><tr><td class="docs"><p>There are several variable and bounding scenarios we need to consider:</p>
+
+<ul>
+<li>no spatial subsetting and no variables - return no query string in OPeNDAP
+URL; this will give users all variables for the entire extent defined in
+the variables' metadata.</li>
+<li>variables but no spatial subsetting - return a query string with just the
+variables requested; a <code>Latitude,Longitude</code> will also be appended to the
+OPeNDAP URL; this will give users just these variables, but for the entire
+extent defined in each variable's metadata.</li>
+<li>variables and spatial subsetting - return a query string with the variables
+requested as well as the subsetting requested; this will give users just
+these variables, with data limited to the specified spatial range.</li>
+<li><p>spatial subsetting but no variables - this is a special case that needs to
+do a little more work: special subsetting without variables will link to
+an essentially empty OPeNDAP file; as such, we need to iterate through all
+the variables in the metadata and create an OPeNDAP URL query string that
+provides the sensible default of all variables.</p>
+
+<p>For each of those conditions, a different value of <code>vars</code> will be returned,
+allowing for the desired result. Respective to the bullet points above:</p></li>
+<li><p><code>vars</code> - empty vector</p></li>
+<li><code>vars</code> - metadata for all the specified variable ids</li>
+<li><code>vars</code> - metadata for all the specified variable ids</li>
+<li><code>vars</code> - metadata for all the variables associated in the collection</li>
+</ul>
+</td><td class="codes"><pre class="brush: clojure">(defn apply-bounding-conditions
+  [search-endpoint user-token coll {:keys [bounding-box variables] :as params}]
+  (log/debugf (str &quot;Applying bounding conditions with bounding box %s and &quot;
+                   &quot;variable ids %s ...&quot;)
+              bounding-box
+              variables)
+  (cond
+    ;; Condition 1 - no spatial subsetting and no variables
+    (and (nil? bounding-box) (empty? variables))
+    []
+    ;; Condition 2 - variables but no spatial subsetting
+    (and (nil? bounding-box) (not (empty? variables)))
+    (variable/get-metadata search-endpoint user-token params)
+    ;; Condition 3 - variables and spatial subsetting
+    (and bounding-box (not (empty? variables)))
+    (variable/get-metadata search-endpoint user-token params)
+    ;; Condition 4 - spatial subsetting but no variables
+    (and bounding-box (empty? variables))
+    (variable/get-metadata search-endpoint
+     user-token
+     (assoc params :variables (collection/extract-variable-ids coll)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-opendap-urls
   [search-endpoint user-token raw-params]
   (log/trace &quot;Got params:&quot; raw-params)
@@ -3323,14 +3376,12 @@ schemes an explicit operation on explicit data.</p>
         service-ids (collection/extract-service-ids coll)
         services (service/get-metadata search-endpoint user-token service-ids)
         pattern-info (service/extract-pattern-info (first services))
-        all-vars (collection/extract-variable-ids coll)
-        vars (variable/get-metadata search-endpoint user-token params all-vars)
+        vars (apply-bounding-conditions search-endpoint user-token coll params)
         bounding-info (map #(variable/extract-bounding-info % bounding-box)
                            vars)
         query (bounding-info-&gt;opendap-query bounding-info bounding-box)]
-    (log/debug &quot;data-files:&quot; (into [] data-files))
-    (log/debug &quot;pattern-info:&quot; pattern-info)
-    (log/debug &quot;all variable ids:&quot; all-vars)
+    (log/trace &quot;data-files:&quot; (into [] data-files))
+    (log/trace &quot;pattern-info:&quot; pattern-info)
     (log/debug &quot;variable bounding-info:&quot; (into [] bounding-info))
     (log/debug &quot;query:&quot; query)
     (results/create
@@ -3458,28 +3509,28 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                      (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs"><p>  Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-query
-  [passed-vars default-vars]
+  [variable-ids]
   (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
                               &quot;=&quot; %)
-                        (if (seq passed-vars)
-                            passed-vars
-                            default-vars))))</pre></td></tr><tr><td class="docs"><p>Given a 'params' data structure with a ':variables' key (which may or may
+                        variable-ids)))</pre></td></tr><tr><td class="docs"><p>Given a 'params' data structure with a ':variables' key (which may or may
   not have values) and a list of all collection variable-ids, return the
   metadata for the passed variables, if defined, and for all associated
   variables, if params does not contain any.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn get-metadata
-  [search-endpoint user-token params variable-ids]
-  (log/debug &quot;Getting variable metadata for:&quot; variable-ids)
-  (let [url (str search-endpoint
-                 &quot;/variables?&quot;
-                 (build-query (:variables params) variable-ids))
-        results (request/async-get url
-                 (-&gt; {}
-                     (request/add-token-header user-token)
-                     (request/add-accept &quot;application/vnd.nasa.cmr.umm+json&quot;))
-                 response/json-handler)]
-    (log/debug &quot;Got results from CMR variable search:&quot; results)
-    (:items @results)))</pre></td></tr><tr><td class="docs">
+  [search-endpoint user-token {variable-ids :variables}]
+  (if (seq variable-ids)
+    (let [url (str search-endpoint
+                   &quot;/variables?&quot;
+                   (build-query variable-ids))
+          results (request/async-get url
+                   (-&gt; {}
+                       (request/add-token-header user-token)
+                       (request/add-accept &quot;application/vnd.nasa.cmr.umm+json&quot;))
+                   response/json-handler)]
+      (log/debug &quot;Got results from CMR variable search:&quot; results)
+      (log/debug &quot;Variable ids used:&quot; variable-ids)
+      (:items @results))
+    []))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn parse-dimensions
   [dim]
   ;; XXX It seems that the X and Y have been swapped for at least
@@ -3513,23 +3564,23 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
     (parse-cmr-bounds bounds)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-bounds
   [entry]
-  (-&gt;&gt; entry
-       (#(get-in % [:umm :Characteristics :Bounds]))
-       parse-bounds
-       (map #(Float/parseFloat %))))</pre></td></tr><tr><td class="docs">
+  (if entry
+    (-&gt;&gt; entry
+         (#(get-in % [:umm :Characteristics :Bounds]))
+         parse-bounds
+         (map #(Float/parseFloat %)))
+    nil))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn create-opendap-bounds
   ([bounding-box]
-    (if bounding-box
-      (create-opendap-bounds
-        {:x default-x-hi :y default-y-hi}
-        bounding-box)
-      nil))
-  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
-   (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
-         x-hi (lon-hi-phase-shift x-dim lon-hi)
-         y-lo (lat-lo-phase-shift y-dim lat-lo)
-         y-hi (lat-hi-phase-shift y-dim lat-hi)]
-     (create-opendap-lookup x-lo y-lo x-hi y-hi))))</pre></td></tr><tr><td class="docs">
+   (create-opendap-bounds {:x default-x-hi :y default-y-hi} bounding-box))
+  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (if bounding-box
+     (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
+           x-hi (lon-hi-phase-shift x-dim lon-hi)
+           y-lo (lat-lo-phase-shift y-dim lat-lo)
+           y-hi (lat-hi-phase-shift y-dim lat-hi)]
+       (create-opendap-lookup x-lo y-lo x-hi y-hi))
+     nil)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat
   ([opendap-bounds]
    (format-opendap-lat opendap-bounds default-stride))
@@ -3575,12 +3626,13 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
 </td><td class="codes"><pre class="brush: clojure">(defn extract-bounding-info
   [entry bounding-box]
   (let [dims (extract-dimensions entry)
-        bounds (or bounding-box (extract-bounds entry))]
+        ; bounds (or bounding-box (extract-bounds entry))
+        ]
     {:concept-id (get-in entry [:meta :concept-id])
      :name (get-in entry [:umm :Name])
      :dimensions dims
-     :bounds bounds
-     :opendap (create-opendap-bounds dims bounds)
+     :bounds bounding-box
+     :opendap (create-opendap-bounds dims bounding-box)
      :size (get-in entry [:umm :Characteristics :Size])}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
   (:require

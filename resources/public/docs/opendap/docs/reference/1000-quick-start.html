@@ -4,32 +4,8 @@
 <p>With dependencies installed and repo cloned, switch to the project directory and start the REPL:</p>
 <pre><code>$ lein repl
 </code></pre>
-<pre><code class="text"><br /> __________ ___   ___ _________
-/   /_____/|   \ /   |    _o___)                       OPeNDAP support in
-\___\%%%%%'|____|____|___|\____\                           NASA Earthdata
- `BBBBBBBB' `BBBBBBB' `BB' `BBB'
- _________ _________  __________ ___    __ _________  _______  _________
-/    O    \    _o___)/   /_____/|   \  |  |     O   \/   O   \|    _o___)
-\_________/___|%%%%%'\___\%%%%%'|____\_|__|_________/___/%\___\___|%%%%%'
- `BBBBBBB' `B'        `BBBBBBBB' `BBBBBBB' `BBBBBBB'`BB'   `BB'`B'
-
-
-
-nREPL server started on port 52191 on host 127.0.0.1 - nrepl://127.0.0.1:52191
-REPL-y 0.3.7, nREPL 0.2.12
-Clojure 1.8.0
-Java HotSpot(TM) 64-Bit Server VM 1.8.0_91-b14
-    Docs: (doc function-name-here)
-          (find-doc "part-of-name-here")
-  Source: (source function-name-here)
- Javadoc: (javadoc java-object-or-class-here)
-    Exit: Control+D or (exit) or (quit)
- Results: Stored in vars *1, *2, *3, an exception in *e
-
-[cmr.opendap.dev] λ=&gt;
-</code></pre>
 <p>Then bring up the system:</p>
-<pre><code class="clj">(startup)
+<pre><code class="clj">[cmr.opendap.dev] λ=&gt; (startup)
 </code></pre>
 <pre><code>2018-04-07T15:26:54.830 [nREPL-worker-0] INFO cmr.opendap.components.config:62 - Starting config component ...
 2018-04-07T15:26:54.837 [nREPL-worker-0] INFO cmr.opendap.components.logging:22 - Starting logging component ...
@@ -38,5 +14,5 @@ Java HotSpot(TM) 64-Bit Server VM 1.8.0_91-b14
 </code></pre>
 <p>Hack away to your heart’s content (or use <code>curl</code> to hit the REST API at <a href="http://localhost:3012">http://localhost:3012</a>; see <code>cmr.opendap.rest.route</code> for the available resources).</p>
 <p>When done:</p>
-<pre><code class="clj">(shutdown)
+<pre><code class="clj">[cmr.opendap.dev] λ=&gt; (shutdown)
 </code></pre></div></div></div></body></html>
