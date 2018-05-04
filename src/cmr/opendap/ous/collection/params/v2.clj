@@ -16,24 +16,28 @@
    ;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
    format
+   ;;
    ;; `granules` is list of granule concept ids; default behaviour is a
    ;; whitelist.
    granules
+   ;;
    ;; `exclude-granules` is a boolean when set to true causes granules list
    ;; to be a blacklist.
    exclude-granules
-   ;; XXX Is there where we want to accept the paging size for granule
+   ;;
+   ;; XXX Is this where we want to accept the paging size for granule
    ;;     concepts?
    ;; granule-count
    ;;
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables
-   ;; `spatial-subset` is used the same way as `subset` for WCS.
-   ;; `subset` is used to indicate desired spatial subsetting and is used in
-   ;; URL queries like so:
+   ;;
+   ;; `subset` is used the same way as `subset` for WCS: to indicate desired
+   ;; spatial subsetting in URL queries like so:
    ;;  `?subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
    subset
+   ;;
    ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
    ;; to using `subset` for spatial-subsetting.
    bounding-box])

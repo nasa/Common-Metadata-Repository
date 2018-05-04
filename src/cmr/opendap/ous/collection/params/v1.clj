@@ -8,13 +8,16 @@
   [;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
    format
+   ;;
    ;; `coverage` can be:
    ;;  * a list of granule concept ids
-   ;;  * a list of granule ccontept ids + a collection id
-   ;;  * a single collection id
+   ;;  * a list of granule ccontept ids + a collection concept id
+   ;;  * a single collection concept id
    coverage
-   ;; `rangesubset` is a list of UMM-Var names
+   ;;
+   ;; `rangesubset` is a list of UMM-Var concept ids
    rangesubset
+   ;;
    ;; `subset` is used to indicate desired spatial subsetting and is a list of
    ;; lon/lat values, as used in WCS. It is parsed from URL queries like so:
    ;;  `?subset=lat(22,34)&subset=lon(169,200)`
