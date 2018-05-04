@@ -59,41 +59,6 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; XXX This next horrible function was created to replace the subsets.forEach
-;; call made at the end of processVariable in the ous.js file. Peter L. Smith
-;; had this to say, after I commented/asked about it's somewhat anti-intuitive
-;; behaviour:
-;;    "The code in the forEach just computes the indices into the data
-;;     arrays when start/end lat or long values are provided, and yep -
-;;     if you specify multiple lat (or long) pairs, it will effectively
-;;     just take the last."
-
-(defn spatial-subset->arrays
-  [subset]
-  )
-
-(defn ->pixels
-  [{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
-  (let [x-pixel-size (/ (- lon-hi lon-lo) x-dim)
-        y-pixel-size (/ (- lat-hi lat-lo) y-dim)]
-    ;; XXX Note that the x and y offsets were added here simply due to the
-    ;;     fact that these were defined in the Node.js version; upon closer
-    ;;     inspection of the Node code, it seems that these values were
-    ;;     never actually used ... let's come back and clean this up, once
-    ;;     the port has been completed.
-    ;; XXX Followup: x and y pixel sizes are only ever used in the Node.js code
-    ;;     when calculating the offsets, and those were never used ... so maybe
-    ;;     we can delete this whole function?
-    {:x {:pixel-size x-pixel-size
-         :offset (Math/floor (/ lon-lo x-pixel-size))}
-     :y {:pixel-size y-pixel-size
-         :offset (Math/floor (/ lat-lo y-pixel-size))}}))
-
-(defn bounding-info->pixels
-  [bounding-info]
-  (map #(->pixels (:dimensions %) (:bounds %)) bounding-info))
-
-
 (defn bounding-info->opendap-lat-lon
   [{var-name :name opendap-bounds :opendap}]
   (variable/format-opendap-bounds var-name opendap-bounds))
