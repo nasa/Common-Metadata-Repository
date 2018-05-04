@@ -3,9 +3,12 @@
 
 **Contents**
 
-* REST API
-* JVM Library
-* Client Library
+* REST API Overview
+* OPeNDAP URL Service
+  * Collection Resource
+* Miscellaneous Resources
+  * Health
+  * Ping
 
 
 ## REST API Overview
@@ -18,6 +21,10 @@ TBD
 This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service).
 
+### Authorized Access
+
+CMR OPeNDAP uses
+
 ### Collection Resource
 
 The following calls are supported
@@ -28,7 +35,7 @@ This can be used in the following manner:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS | \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS" | \
      jq .
 ```
 ```json
@@ -63,13 +70,61 @@ This allows the client to ask OPeNDAP to provide files in the given format.
 If not provided, the default of `nc` (NetCDF) is used. Supported formats
 depend upon the target OPeNDAP server.
 
+Parameter example:
+
+```
+format=nc
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?format=nc"
+```
+
 ##### `granules`
 
-TBD
+This allows the client to select the granules to include (or exclude) in their
+OPeNDAP queries.
+
+If not provided, all granules for the given collection will be used. If used
+in conjunction with the `exclude-granules` parameter, then all granules
+_except_ the ones passed will be used in the OPeNDAP query.
+
+
+Parameter example:
+
+```
+granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS""
+```
 
 ##### `exclude-granules`
 
-TBD
+This allows clients to perform the inverse of a granule search: all granules
+_except_ the ones passed.
+
+If not provided, a regular granule search is performed.
+
+Parameter example:
+
+```
+exclude-granules=true&granules=G1200187775-EDF_OPS"
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS""
+```
 
 ##### `variables`
 
@@ -79,7 +134,7 @@ TBD
 
 TBD
 
-### Forthingcoming
+### Forthcoming
 
 The following are coming soon:
 
