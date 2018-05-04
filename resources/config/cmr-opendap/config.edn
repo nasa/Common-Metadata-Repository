@@ -44,7 +44,8 @@
       :source "resources/docs/rest-api/index.md"
       :outdir "resources/public/docs/opendap/docs/rest-api"}
    :skip-static #{"/opendap/docs"}
-   :replace-base-url #{"/opendap/docs/rest-api"}
+   :replace-base-url #{"/opendap/docs/rest-api"
+                       "/opendap/docs/reference/2000-usage.html"}
    :index-dirs #{"/opendap/docs/marginalia"
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}

@@ -18,15 +18,17 @@ TBD
 This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service).
 
+### Collection Resource
+
 The following calls are supported
 
-* `GET     /opendap/ous/collection/:concept-id`
+* `GET /opendap/ous/collection/:concept-id`
 
-Example usage:
+This can be used in the following manner:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     http://localhost:3012/opendap/ous/collection/C1200187767-EDF_OPS | \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS | \
      jq .
 ```
 ```json
@@ -34,26 +36,66 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
   "hits": 2,
   "took": 0.621,
   "items": [
-    "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc",
-    "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"
+    "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006..."
   ]
 }
 ```
 
+#### Parameters
+
+The example above will generate a URL for downloading all the granules and all
+the variables across the globe for the given collection. To limit these, there
+are various parameters supported:
+
+* `format`
+* `granules`
+* `exclude-granules`
+* `variables`
+* `bounding-box`
+
+These may be used alone or in any combination. Details for usage are provided
+below in separate sections.
+
+##### `format`
+
+This allows the client to ask OPeNDAP to provide files in the given format.
+
+If not provided, the default of `nc` (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.
+
+##### `granules`
+
+TBD
+
+##### `exclude-granules`
+
+TBD
+
+##### `variables`
+
+TBD
+
+##### `bounding-box`
+
+TBD
+
+### Forthingcoming
+
 The following are coming soon:
 
-* `POST    /opendap/ous/collection/:concept-id`
-* `OPTIONS /opendap/ous/collection/:concept-id`
-* `POST    /opendap/ous/collections`
+* `POST /opendap/ous/collection/:concept-id`
+* `POST /opendap/ous/collections`
 
 
-## Health Endpoint
+## Miscellaneous Resources
+
+### Health
 
 * `GET     /opendap/health`
 * `OPTIONS /opendap/health`
 
 
-## Ping
+### Ping
 
 Administrative users may use a token to access the following:
 
