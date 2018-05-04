@@ -22,6 +22,8 @@
 (def default-y-lo 0.0)
 (def default-y-hi 180.0)
 
+(def default-stride 1)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -233,38 +235,52 @@
      (create-opendap-lookup x-lo y-lo x-hi y-hi))))
 
 (defn format-opendap-lat
-  [opendap-bounds]
-  (if opendap-bounds
-    (format "[%s:%s]"
-             (get-in opendap-bounds [:low :y])
-             (get-in opendap-bounds [:high :y]))
-    ""))
+  ([opendap-bounds]
+   (format-opendap-lat opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format "[%s:%s:%s]"
+              (get-in opendap-bounds [:low :y])
+              stride
+              (get-in opendap-bounds [:high :y]))
+     "")))
 
 (defn format-opendap-lon
-  [opendap-bounds]
-  (if opendap-bounds
-    (format "[%s:%s]"
-             (get-in opendap-bounds [:low :x])
-             (get-in opendap-bounds [:high :x]))
-    ""))
+  ([opendap-bounds]
+   (format-opendap-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format "[%s:%s:%s]"
+              (get-in opendap-bounds [:low :x])
+              stride
+              (get-in opendap-bounds [:high :x]))
+    "")))
 
 (defn format-opendap-var-lat-lon
-  [opendap-bounds]
-  (if opendap-bounds
-    (format "[*]%s%s"
-      (format-opendap-lat opendap-bounds)
-      (format-opendap-lon opendap-bounds))
-    ""))
+  ([opendap-bounds]
+   (format-opendap-var-lat-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format "[*]%s%s"
+       (format-opendap-lat opendap-bounds stride)
+       (format-opendap-lon opendap-bounds stride))
+     "")))
+
+(defn format-opendap-lat-lon
+  ([opendap-bounds]
+   (format-opendap-lat-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (format "Latitude%s,Longitude%s"
+           (format-opendap-lat opendap-bounds stride)
+           (format-opendap-lon opendap-bounds stride))))
 
 (defn format-opendap-bounds
-  ([opendap-bounds]
-   (format "Latitude%s,Longitude%s"
-           (format-opendap-lat opendap-bounds)
-           (format-opendap-lon opendap-bounds)))
   ([bound-name opendap-bounds]
+   (format-opendap-bounds bound-name opendap-bounds default-stride))
+  ([bound-name opendap-bounds stride]
    (format "%s%s"
             bound-name
-            (format-opendap-var-lat-lon opendap-bounds))))
+            (format-opendap-var-lat-lon opendap-bounds stride))))
 
 (defn extract-bounding-info
   "This function is executed at the variable level, however it has general,

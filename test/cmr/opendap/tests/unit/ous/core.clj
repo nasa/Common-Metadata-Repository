@@ -23,5 +23,5 @@
                           :bounds bounds
                           :opendap (variable/create-opendap-bounds
                                     dims bounds)}]]
-     (is (= "?MyVar[*][20:37][152:199],Latitude[20:37],Longitude[152:199]"
+     (is (= "?MyVar[*][20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
             (core/bounding-info->opendap-query bounding-info bounds))))))

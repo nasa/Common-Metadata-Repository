@@ -109,7 +109,7 @@
            (string/join ",")
            (str "?"))
       ","
-      (variable/format-opendap-bounds
+      (variable/format-opendap-lat-lon
        (variable/create-opendap-bounds bounding-box))))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
