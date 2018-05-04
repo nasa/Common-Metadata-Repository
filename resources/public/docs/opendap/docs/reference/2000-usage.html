@@ -11,36 +11,58 @@
 <p>TBD</p>
 <h2><a href="#opendap-url-service" name="opendap-url-service"></a>OPeNDAP URL Service</h2>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible query URLs (intended to be sent to a deployed OPeNDAP service).</p>
+<h3><a href="#collection-resource" name="collection-resource"></a>Collection Resource</h3>
 <p>The following calls are supported</p>
 <ul>
-  <li><code>GET     /opendap/ous/collection/:concept-id</code></li>
+  <li><code>GET /opendap/ous/collection/:concept-id</code></li>
 </ul>
-<p>Example usage:</p>
+<p>This can be used in the following manner:</p>
 <pre><code>curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     http://localhost:3012/opendap/ous/collection/C1200187767-EDF_OPS | \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS | \
      jq .
 </code></pre>
 <pre><code class="json">{
   "hits": 2,
   "took": 0.621,
   "items": [
-    "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc",
-    "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"
+    "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006..."
   ]
 }
 </code></pre>
+<h4><a href="#parameters" name="parameters"></a>Parameters</h4>
+<p>The example above will generate a URL for downloading all the granules and all the variables across the globe for the given collection. To limit these, there are various parameters supported:</p>
+<ul>
+  <li><code>format</code></li>
+  <li><code>granules</code></li>
+  <li><code>exclude-granules</code></li>
+  <li><code>variables</code></li>
+  <li><code>bounding-box</code></li>
+</ul>
+<p>These may be used alone or in any combination. Details for usage are provided below in separate sections.</p>
+<h5><code>format</code></h5>
+<p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
+<p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats depend upon the target OPeNDAP server.</p>
+<h5><code>granules</code></h5>
+<p>TBD</p>
+<h5><code>exclude-granules</code></h5>
+<p>TBD</p>
+<h5><code>variables</code></h5>
+<p>TBD</p>
+<h5><code>bounding-box</code></h5>
+<p>TBD</p>
+<h3><a href="#forthingcoming" name="forthingcoming"></a>Forthingcoming</h3>
 <p>The following are coming soon:</p>
 <ul>
-  <li><code>POST    /opendap/ous/collection/:concept-id</code></li>
-  <li><code>OPTIONS /opendap/ous/collection/:concept-id</code></li>
-  <li><code>POST    /opendap/ous/collections</code></li>
+  <li><code>POST /opendap/ous/collection/:concept-id</code></li>
+  <li><code>POST /opendap/ous/collections</code></li>
 </ul>
-<h2><a href="#health-endpoint" name="health-endpoint"></a>Health Endpoint</h2>
+<h2><a href="#miscellaneous-resources" name="miscellaneous-resources"></a>Miscellaneous Resources</h2>
+<h3><a href="#health" name="health"></a>Health</h3>
 <ul>
   <li><code>GET     /opendap/health</code></li>
   <li><code>OPTIONS /opendap/health</code></li>
 </ul>
-<h2><a href="#ping" name="ping"></a>Ping</h2>
+<h3><a href="#ping" name="ping"></a>Ping</h3>
 <p>Administrative users may use a token to access the following:</p>
 <ul>
   <li><code>GET     /opendap/ping</code></li>

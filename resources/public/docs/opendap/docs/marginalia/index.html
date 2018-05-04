@@ -2888,8 +2888,11 @@ net.brehaut.ClojureTools = (function (SH) {
                      (request/add-token-header user-token)
                      (request/add-accept &quot;application/json&quot;))
                  response/json-handler)]
-    (log/debug &quot;Got results from CMR search:&quot; results)
+    (log/debug &quot;Got results from CMR collection search:&quot; results)
     (first (get-in @results [:feed :entry]))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-variable-ids
+  [entry]
+  (get-in entry [:associations :variables]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-service-ids
   [entry]
   (get-in entry [:associations :services]))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection.params.v1" name="cmr.opendap.ous.collection.params.v1"><h1 class="project-name">cmr.opendap.ous.collection.params.v1</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
@@ -2936,7 +2939,8 @@ net.brehaut.ClojureTools = (function (SH) {
    [clojure.set :as set]
    [cmr.opendap.ous.collection.params.const :as const]
    [cmr.opendap.ous.util :as ous-util]
-   [cmr.opendap.util :as util]))</pre></td></tr><tr><td class="docs">
+   [cmr.opendap.util :as util]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord CollectionParams
   [;; `collection-id` is the concept id for the collection in question. Note
    ;; that the collection concept id is not provided in query params,
@@ -2963,7 +2967,7 @@ net.brehaut.ClojureTools = (function (SH) {
    ;; `spatial-subset` is used the same way as `subset` for WCS.
    ;; `subset` is used to indicate desired spatial subsetting and is used in
    ;; URL queries like so:
-   ;;  `?subset=lat(22,34)&amp;subset=lon(169,200)`
+   ;;  `?subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)`
    subset
    ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
    ;; to using `subset` for spatial-subsetting.
@@ -2979,12 +2983,23 @@ net.brehaut.ClojureTools = (function (SH) {
         params-keys)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn create-params
   [params]
-  (map-&gt;CollectionParams
-    (assoc params
-      :format (or (:format params) const/default-format)
-      :granules (ous-util/-&gt;seq (:granules params))
-      :variables (ous-util/-&gt;seq (:variables params))
-      :exclude-granules (util/bool (:exclude-granules params)))))</pre></td></tr><tr><td class="docs">
+  (let [bounding-box (ous-util/-&gt;seq (:bounding-box params))
+        subset (:subset params)]
+    (log/trace &quot;bounding-box:&quot; bounding-box)
+    (log/trace &quot;subset:&quot; subset)
+    (map-&gt;CollectionParams
+      (assoc params
+        :format (or (:format params) const/default-format)
+        :granules (ous-util/-&gt;seq (:granules params))
+        :variables (ous-util/-&gt;seq (:variables params))
+        :exclude-granules (util/bool (:exclude-granules params))
+        :subset (if (seq bounding-box)
+                 (ous-util/bounding-box-&gt;subset bounding-box)
+                 (:subset params))
+        :bounding-box (if (seq bounding-box)
+                       (mapv #(Float/parseFloat %) bounding-box)
+                       (when (seq subset)
+                        (ous-util/subset-&gt;bounding-box subset)))))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
    ;; submitting multiple collections at a time. As such, there is no
@@ -3015,14 +3030,17 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defn v1-&gt;v2
   [params]
   (let [collection-id (or (:collection-id params)
-                          (util/coverage-&gt;collection (:coverage params)))]
+                          (util/coverage-&gt;collection (:coverage params)))
+        subset (:subset params)]
     (-&gt; params
         (assoc :collection-id collection-id
                :granules (util/coverage-&gt;granules (:coverage params))
                :variables (:rangesubset params)
                ;; There was never an analog in v1 for exclude-granules, so set
                ;; to false.
-               :exclude-granules false)
+               :exclude-granules false
+               :bounding-box (when (seq subset)
+                              (util/subset-&gt;bounding-box subset)))
         (dissoc :coverage :rangesubset)
         (v2/map-&gt;CollectionParams))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn parse
@@ -3074,12 +3092,14 @@ net.brehaut.ClojureTools = (function (SH) {
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-include
   [gran-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[])=&quot;)
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+                              &quot;=&quot;
                               %)
                         gran-ids)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-exclude
   [gran-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]=&quot;)
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]&quot;)
+                              &quot;=&quot;
                               %)
                         gran-ids)))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
   passed in the parameters.</p>
@@ -3108,7 +3128,7 @@ net.brehaut.ClojureTools = (function (SH) {
                      (request/add-token-header user-token)
                      (request/add-accept &quot;application/json&quot;))
                  response/json-handler)]
-    (log/debug &quot;Got results from CMR search:&quot; results)
+    (log/debug &quot;Got results from CMR granule search:&quot; results)
     (get-in @results [:feed :entry])))</pre></td></tr><tr><td class="docs"><p>The criteria defined in the prototype was to iterate through the links,
   only examining those links that were not 'inherited', and find the one
   whose :rel value matched a particular string.</p>
@@ -3153,13 +3173,39 @@ net.brehaut.ClojureTools = (function (SH) {
         (coll? data) data
         (string? data) (string/split data #&quot;,&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn bounding-box-&gt;subset
-  [[ll-lon ll-lat ur-lon ur-lat]]
-  [(format &quot;lat(%s,%s)&quot; ll-lat ur-lat)
-   (format &quot;lon(%s,%s)&quot; ll-lon ur-lon)])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn parse-subset
-  [subset])</pre></td></tr><tr><td class="docs">
+  [[lon-lo lat-lo lon-hi lat-hi]]
+  [(format &quot;lat(%s,%s)&quot; lat-lo lat-hi)
+   (format &quot;lon(%s,%s)&quot; lon-lo lon-hi)])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-matches
+  [regex elems]
+  (-&gt;&gt; elems
+       (map (comp rest (partial re-find regex)))
+       (remove empty?)
+       first))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn subset-&gt;bounding-lat
+  [elems]
+  (get-matches
+   (re-pattern (str &quot;.*lat\\(&quot;
+                    &quot;\\s*(-?[0-9]+\\.?[0-9]*)\\s*,&quot;
+                    &quot;\\s*(-?[0-9]+\\.?[0-9]*)\\s*&quot;))
+   elems))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn subset-&gt;bounding-lon
+  [elems]
+  (get-matches
+   (re-pattern (str &quot;.*lon\\(&quot;
+                    &quot;\\s*(-?[0-9]+\\.?[0-9]*)\\s*,&quot;
+                    &quot;\\s*(-?[0-9]+\\.?[0-9]*)\\s*&quot;))
+   elems))</pre></td></tr><tr><td class="docs"><p>In the CMR and EDSC, a bounding box is defined by the lower-left corner
+  to the upper-right, furthermore, they defined this as a flattened list,
+  ordering with longitude first. As such, a bounding box is of the form:
+  <code>[lower-longitude, lower-latitude, upper-longitude, upper-latitude]</code>.</p>
+
+<p>  This is the form that this function returns.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn subset-&gt;bounding-box
-  [elems])</pre></td></tr><tr><td class="docs">
+  [elems]
+  (let [[lon-lo lon-hi] (subset-&gt;bounding-lon elems)
+        [lat-lo lat-hi] (subset-&gt;bounding-lat elems)]
+    (map #(Float/parseFloat %) [lon-lo lat-lo lon-hi lat-hi])))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;granules
   [coverage]
   (let [ids (filter #(string/starts-with? % &quot;G&quot;) coverage)]
@@ -3181,8 +3227,12 @@ net.brehaut.ClojureTools = (function (SH) {
    [cmr.opendap.ous.collection.results :as results]
    [cmr.opendap.ous.granule :as granule]
    [cmr.opendap.ous.service :as service]
+   [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>General caveat: the logic for this code was translated -- without domain
+knowledge -- from Node.js code that was established as faulty and buggy.
+ALL OF THIS needs to be REASSESSED with an intelligent, knowledgable eye.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Notes on representing spatial extents.</p>
 
 <p>EDSC uses URL-encoded long/lat numbers representing a bounding box
@@ -3217,7 +3267,24 @@ long:
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We're going to codify parameters with records to keep things well
 documented. Additionally, this will make converting between parameter
 schemes an explicit operation on explicit data.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
+</td><td class="codes"></td></tr><tr><td class="docs"><p>  Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-info-&gt;opendap-lat-lon
+  [{var-name :name opendap-bounds :opendap}]
+  (variable/format-opendap-bounds var-name opendap-bounds))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-info-&gt;opendap-query
+  ([bounding-info]
+    (bounding-info-&gt;opendap-query bounding-info nil))
+  ([bounding-info bounding-box]
+   (when (seq bounding-info)
+     (str
+      (-&gt;&gt; bounding-info
+           (map bounding-info-&gt;opendap-lat-lon)
+           (string/join &quot;,&quot;)
+           (str &quot;?&quot;))
+      &quot;,&quot;
+      (variable/format-opendap-lat-lon
+       (variable/create-opendap-bounds bounding-box))))))</pre></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
                prototype ... and IT IS AWFUL. This is only temporary ...</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/)(.*)&quot;)
@@ -3225,49 +3292,296 @@ schemes an explicit operation on explicit data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn data-file-&gt;opendap-url
   [pattern-info data-file]
   (let [pattern (re-pattern (:pattern-match pattern-info))
-        data-url (:link-href data-file)
-        replacment (string/replace data-url
-                                   pattern
-                                   (str (:pattern-subs pattern-info) &quot;$2&quot;))]
+        data-url (:link-href data-file)]
     (if (re-matches pattern data-url)
       (do
-        (log/debug &quot;Matched!&quot;)
-        (log/debug &quot;pattern:&quot; pattern)
-        (log/debug &quot;data-url:&quot; data-url)
-        (log/debug &quot;replacment:&quot; replacment)
-        replacment)
+        (log/debug &quot;Granule URL matched provided pattern ...&quot;)
+        (string/replace data-url
+                        pattern
+                        (str (:pattern-subs pattern-info) &quot;$2&quot;)))
       (do
-        (log/debug &quot;Didn't match; trying default ...&quot;)
+        (log/debug
+         &quot;Granule URL didn't match provided pattern; trying default ...&quot;)
         (if (re-matches fallback-pattern data-url)
           (string/replace data-url
                           fallback-pattern
                           (str &quot;$1&quot; fallback-replacement &quot;$3&quot;)))))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn data-files-&gt;opendap-urls
-  [params pattern-info data-files]
+  [params pattern-info data-files query-string]
   (-&gt;&gt; data-files
        (map (partial data-file-&gt;opendap-url pattern-info))
-       (map #(str % &quot;.&quot; (:format params)))))</pre></td></tr><tr><td class="docs">
+       (map #(str % &quot;.&quot; (:format params) query-string))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-opendap-urls
   [search-endpoint user-token raw-params]
   (log/trace &quot;Got params:&quot; raw-params)
   (let [start (util/now)
         params (params/parse raw-params)
+        bounding-box (:bounding-box params)
         granules (granule/get-metadata search-endpoint user-token params)
         data-files (map granule/extract-datafile-link granules)
         coll (collection/get-metadata search-endpoint user-token params)
         service-ids (collection/extract-service-ids coll)
         services (service/get-metadata search-endpoint user-token service-ids)
-        pattern-info (service/extract-pattern-info (first services))]
-    (log/warn &quot;data-files:&quot; (into [] data-files))
-    ; (log/warn &quot;services:&quot; services)
-    (log/warn &quot;pattern-info:&quot; pattern-info)
+        pattern-info (service/extract-pattern-info (first services))
+        all-vars (collection/extract-variable-ids coll)
+        vars (variable/get-metadata search-endpoint user-token params all-vars)
+        bounding-info (map #(variable/extract-bounding-info % bounding-box)
+                           vars)
+        query (bounding-info-&gt;opendap-query bounding-info bounding-box)]
+    (log/debug &quot;data-files:&quot; (into [] data-files))
+    (log/debug &quot;pattern-info:&quot; pattern-info)
+    (log/debug &quot;all variable ids:&quot; all-vars)
+    (log/debug &quot;variable bounding-info:&quot; (into [] bounding-info))
+    (log/debug &quot;query:&quot; query)
     (results/create
-     ;(assoc params :granules granules)
-     ; data-files
-     ;services
-     (data-files-&gt;opendap-urls params pattern-info data-files)
+     (data-files-&gt;opendap-urls params pattern-info data-files query)
      :elapsed (util/timed start))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.variable" name="cmr.opendap.ous.variable"><h1 class="project-name">cmr.opendap.ous.variable</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.variable)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.variable
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [cmr.opendap.util :as util]
+   [ring.util.codec :as codec]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-lon-lo -180.0)
+(def default-lon-hi 180.0)
+(def default-lat-lo -90.0)
+(def default-lat-hi 90.0)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-x-lo 0.0)
+(def default-x-hi 360.0)
+(def default-y-lo 0.0)
+(def default-y-hi 180.0)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-stride 1)</pre></td></tr><tr><td class="docs"><p>  Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord Dimensions [x y])
+(defrecord ArrayLookup [low high])</pre></td></tr><tr><td class="docs"><p>XXX There is a note in Abdul's code along these lines:
+        "hack for descending orbits (array index 0 is at 90 degrees
+        north)"
+    If I understand correctly, this would cause the indices for
+    high and low values for latitude to be reversed ... so we
+    reverse them here, where all OPeNDAP coords get created. This
+    enables proper lookup in OPeNDAP arrays.</p>
+
+<pre><code>This REALLY needs to be investigated, though.
+</code></pre>
+</td><td class="codes"><pre class="brush: clojure">(defn create-opendap-lookup
+  [lon-lo lat-lo lon-hi lat-hi]
+  (map-&gt;ArrayLookup
+   {:low {:x lon-lo
+          :y lat-hi} ;; &lt;-- swap hi for lo
+    :high {:x lon-hi
+           :y lat-lo}})) ;; &lt;-- swap lo for hi</pre></td></tr><tr><td class="docs"><p>&lt;-- swap lo for hi</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>  Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>This function is intended to be used if spatial subsetting is not
+  proivded in the query: in that case, all the bounds of all the variables
+  will be counted, and the one most-used is what will be returned.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn dominant-bounds
+  [bounding-info]
+  (-&gt;&gt; bounding-info
+       (map :bounds)
+       util/most-frequent))</pre></td></tr><tr><td class="docs"><p>Get the most common dimensions from the bounding-info.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn dominant-dimensions
+  [bounding-info]
+  (-&gt;&gt; bounding-info
+       (map :dimensions)
+       util/most-frequent))</pre></td></tr><tr><td class="docs"><p>XXX Can we use these instead? Why was the phase shifting written
+    so obtrusely? There's got to be a reason, I just don't know it ...</p>
+</td><td class="codes"><pre class="brush: clojure">(defn new-lon-phase-shift
+  [x-dim in]
+    (int (Math/floor (+ (/ x-dim 2) in))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn new-lat-phase-shift
+  [y-dim in]
+  (- y-dim
+     (int (Math/floor (+ (/ y-dim 2) in)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn lon-lo-phase-shift
+  [x-dim lon-lo]
+  (-&gt; (/ (* (- x-dim 1)
+            (- lon-lo default-lon-lo))
+         (- default-lon-hi default-lon-lo))
+      Math/floor
+      int))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn lon-hi-phase-shift
+  [x-dim lon-hi]
+  (-&gt; (/ (* (- x-dim 1)
+            (- lon-hi default-lon-lo))
+         (- default-lon-hi default-lon-lo))
+      Math/ceil
+      int))</pre></td></tr><tr><td class="docs"><p>XXX Note that the following two functions were copied from this JS:</p>
+
+<p>var lats = value.replace("lat(","").replace(")","").split(",");
+//hack for descending orbits (array index 0 is at 90 degrees north)
+y<em>array</em>end = YDim - 1 - Math.floor((YDim-1)*(lats[0]-lat<em>begin)/(lat</em>end-lat_begin));
+y<em>array</em>begin = YDim -1 - Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_begin));</p>
+
+<p>Note the "hack" JS comment ...</p>
+
+<p>This is complicated by the fact that, immediately before those lines of
+code are a conflicting set of lines overrwitten by the ones pasted above:</p>
+
+<p>y<em>array</em>begin = Math.floor((YDim-1)*(lats[0]-lat<em>begin)/(lat</em>end-lat_begin));
+y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_begin));</p>
+
+<p>These original JS functions are re-created in Clojure here:</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn orig-lat-lo-phase-shift
+  [y-dim lat-lo]
+  (-&gt; (/ (* (- y-dim 1)
+            (- lat-lo default-lat-lo))
+          (- default-lat-hi default-lat-lo))
+       Math/floor
+       int))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn orig-lat-hi-phase-shift
+  [y-dim lat-hi]
+  (-&gt; (/ (* (- y-dim 1)
+            (- lat-hi default-lat-lo))
+          (- default-lat-hi default-lat-lo))
+       Math/ceil
+       int))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn lat-lo-phase-shift
+  [y-dim lat-lo]
+  (int
+    (- y-dim
+       1
+       (Math/floor (/ (* (- y-dim 1)
+                         (- lat-lo default-lat-lo))
+                      (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn lat-hi-phase-shift
+  [y-dim lat-hi]
+  (int
+    (- y-dim
+       1
+       (Math/ceil (/ (* (- y-dim 1)
+                        (- lat-hi default-lat-lo))
+                     (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs"><p>  Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [passed-vars default-vars]
+  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+                              &quot;=&quot; %)
+                        (if (seq passed-vars)
+                            passed-vars
+                            default-vars))))</pre></td></tr><tr><td class="docs"><p>Given a 'params' data structure with a ':variables' key (which may or may
+  not have values) and a list of all collection variable-ids, return the
+  metadata for the passed variables, if defined, and for all associated
+  variables, if params does not contain any.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [search-endpoint user-token params variable-ids]
+  (log/debug &quot;Getting variable metadata for:&quot; variable-ids)
+  (let [url (str search-endpoint
+                 &quot;/variables?&quot;
+                 (build-query (:variables params) variable-ids))
+        results (request/async-get url
+                 (-&gt; {}
+                     (request/add-token-header user-token)
+                     (request/add-accept &quot;application/vnd.nasa.cmr.umm+json&quot;))
+                 response/json-handler)]
+    (log/debug &quot;Got results from CMR variable search:&quot; results)
+    (:items @results)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse-dimensions
+  [dim]
+  ;; XXX It seems that the X and Y have been swapped for at least
+  ;;     on collection's variables; Simon and I are looking into this
+  ;;     for now, we're just gonna pretend ... by changing the order
+  ;;     below :-(
+  [(:Size (first (filter #(= &quot;YDim&quot; (:Name %)) dim)))
+   (:Size (first (filter #(= &quot;XDim&quot; (:Name %)) dim)))])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-dimensions
+  [entry]
+  (-&gt;&gt; (get-in entry [:umm :Dimensions])
+       (parse-dimensions)
+       (apply -&gt;Dimensions)))</pre></td></tr><tr><td class="docs"><p>Parse bounds that are annotated with Lat and Lon, returning values
+  in the same order that CMR uses for spatial bounding boxes.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn parse-annotated-bounds
+  [bounds]
+  (let [lon-regex &quot;Lon:\\s*(-?[0-9]+),\\s*(-?[0-9]+).*;\\s*&quot;
+        lat-regex &quot;Lat:\\s*(-[0-9]+),\\s*(-?[0-9]+).*&quot;
+        [lon-lo lon-hi lat-lo lat-hi]
+         (rest (re-find (re-pattern (str lon-regex lat-regex)) bounds))]
+    [lon-lo lat-lo lon-hi lat-hi]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse-cmr-bounds
+  [bounds]
+  &quot;Parse a list of lat/lon values ordered according to the CMR convention
+  of lower-left lon, lower-left lat, upper-right long, upper-right lat.&quot;
+  (map string/trim (string/split bounds #&quot;,\s*&quot;)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn parse-bounds
+  [bounds]
+  (if (string/starts-with? bounds &quot;Lon&quot;)
+    (parse-annotated-bounds bounds)
+    (parse-cmr-bounds bounds)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-bounds
+  [entry]
+  (-&gt;&gt; entry
+       (#(get-in % [:umm :Characteristics :Bounds]))
+       parse-bounds
+       (map #(Float/parseFloat %))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-opendap-bounds
+  ([bounding-box]
+    (if bounding-box
+      (create-opendap-bounds
+        {:x default-x-hi :y default-y-hi}
+        bounding-box)
+      nil))
+  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
+   (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
+         x-hi (lon-hi-phase-shift x-dim lon-hi)
+         y-lo (lat-lo-phase-shift y-dim lat-lo)
+         y-hi (lat-hi-phase-shift y-dim lat-hi)]
+     (create-opendap-lookup x-lo y-lo x-hi y-hi))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat
+  ([opendap-bounds]
+   (format-opendap-lat opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format &quot;[%s:%s:%s]&quot;
+              (get-in opendap-bounds [:low :y])
+              stride
+              (get-in opendap-bounds [:high :y])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lon
+  ([opendap-bounds]
+   (format-opendap-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format &quot;[%s:%s:%s]&quot;
+              (get-in opendap-bounds [:low :x])
+              stride
+              (get-in opendap-bounds [:high :x])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-var-lat-lon
+  ([opendap-bounds]
+   (format-opendap-var-lat-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (if opendap-bounds
+     (format &quot;[*]%s%s&quot;
+       (format-opendap-lat opendap-bounds stride)
+       (format-opendap-lon opendap-bounds stride)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat-lon
+  ([opendap-bounds]
+   (format-opendap-lat-lon opendap-bounds default-stride))
+  ([opendap-bounds stride]
+   (format &quot;Latitude%s,Longitude%s&quot;
+           (format-opendap-lat opendap-bounds stride)
+           (format-opendap-lon opendap-bounds stride))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-bounds
+  ([bound-name opendap-bounds]
+   (format-opendap-bounds bound-name opendap-bounds default-stride))
+  ([bound-name opendap-bounds stride]
+   (format &quot;%s%s&quot;
+            bound-name
+            (format-opendap-var-lat-lon opendap-bounds stride))))</pre></td></tr><tr><td class="docs"><p>This function is executed at the variable level, however it has general,
+  non-variable-specific bounding info passed to it in order to support
+  spatial subsetting</p>
+</td><td class="codes"><pre class="brush: clojure">(defn extract-bounding-info
+  [entry bounding-box]
+  (let [dims (extract-dimensions entry)
+        bounds (or bounding-box (extract-bounds entry))]
+    {:concept-id (get-in entry [:meta :concept-id])
+     :name (get-in entry [:umm :Name])
+     :dimensions dims
+     :bounds bounds
+     :opendap (create-opendap-bounds dims bounds)
+     :size (get-in entry [:umm :Characteristics :Size])}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
   (:require
    [clojure.string :as string]
@@ -3292,7 +3606,7 @@ schemes an explicit operation on explicit data.</p>
                      (request/add-token-header user-token)
                      (request/add-accept &quot;application/vnd.nasa.cmr.umm+json&quot;))
                  response/json-handler)]
-    (log/debug &quot;Got results from CMR search:&quot; results)
+    (log/debug &quot;Got results from CMR service search:&quot; results)
     (:items @results)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn match-opendap
   [service-data]
@@ -3572,7 +3886,20 @@ schemes an explicit operation on explicit data.</p>
   (/ (System/currentTimeMillis) 1000))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn timed
   [start]
-  (- (now) start))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  (- (now) start))</pre></td></tr><tr><td class="docs"><p>This identifies the most frequently occuring data in a collection
+  and returns it.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn most-frequent
+  [data]
+  (-&gt;&gt; data
+       frequencies
+       ;; the 'frequencies' function puts data first; let's swap the order
+       (map (fn [[k v]] [v k]))
+       ;; sort in reverse order to get the highest counts first
+       (sort (comp - compare))
+       ;; just get the highest
+       first
+       ;; the first element is the count, the second is the bounding data
+       second))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.core
   (:require
    [clojusc.twig :as logger]
