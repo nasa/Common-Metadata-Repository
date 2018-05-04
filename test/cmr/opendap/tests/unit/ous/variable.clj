@@ -59,4 +59,10 @@
           bounds [-23.0625 63.5625 57.09375 66.09375]
           lookup-array (variable/create-opendap-bounds dims bounds)]
       (is (= "MyVar[*][23:27][156:237]"
+             (variable/format-opendap-bounds "MyVar" lookup-array)))))
+  (testing "Narrow band around Icelend stretching down to Africa ..."
+    (let [dims (variable/map->Dimensions {:x 360 :y 180})
+          bounds [-23.34375 25.59375 -16.03125 68.625]
+          lookup-array (variable/create-opendap-bounds dims bounds)]
+      (is (= "MyVar[*][21:65][156:164]"
              (variable/format-opendap-bounds "MyVar" lookup-array))))))
