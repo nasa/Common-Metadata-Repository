@@ -63,6 +63,9 @@ are various parameters supported:
 These may be used alone or in any combination. Details for usage are provided
 below in separate sections.
 
+Note that both hypens and underscores are supported in parameters that have
+them; you may use either, per your preference.
+
 ##### `format`
 
 This allows the client to ask OPeNDAP to provide files in the given format.
@@ -96,14 +99,14 @@ _except_ the ones passed will be used in the OPeNDAP query.
 Parameter example:
 
 ```
-granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS
 ```
 
 Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS""
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
 ##### `exclude-granules`
@@ -116,23 +119,56 @@ If not provided, a regular granule search is performed.
 Parameter example:
 
 ```
-exclude-granules=true&granules=G1200187775-EDF_OPS"
+exclude-granules=true&granules=G1200187775-EDF_OPS
 ```
 
 Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS""
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS"
 ```
 
 ##### `variables`
 
-TBD
+This proivdes clients with the ability to limit the granule data extracted
+by the OPeNDAP query to just the variables in which they are interested.
+
+If not provided, all variables associated in the collection metadata will
+be used.
+
+Parameter example:
+
+```
+variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
+```
 
 ##### `bounding-box`
 
-TBD
+This proivdes clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.
+
+If not provided, the entire spatial extent of the granule will be used.
+
+Parameter example:
+
+```
+bounding-box=-9.984375,56.109375,19.828125,67.640625
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
+```
 
 ### Forthcoming
 
