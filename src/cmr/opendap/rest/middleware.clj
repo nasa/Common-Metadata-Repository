@@ -1,5 +1,5 @@
 (ns cmr.opendap.rest.middleware
-  "Custom ring middleware for CMR Graph."
+  "Custom ring middleware for CMR OPeNDAP."
   (:require
    [clojure.string :as string]
    [cmr.opendap.auth.core :as auth]
