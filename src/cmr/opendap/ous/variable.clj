@@ -224,17 +224,15 @@
 
 (defn create-opendap-bounds
   ([bounding-box]
-    (if bounding-box
-      (create-opendap-bounds
-        {:x default-x-hi :y default-y-hi}
-        bounding-box)
-      nil))
-  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi]]
-   (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
-         x-hi (lon-hi-phase-shift x-dim lon-hi)
-         y-lo (lat-lo-phase-shift y-dim lat-lo)
-         y-hi (lat-hi-phase-shift y-dim lat-hi)]
-     (create-opendap-lookup x-lo y-lo x-hi y-hi))))
+   (create-opendap-bounds {:x default-x-hi :y default-y-hi} bounding-box))
+  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (if bounding-box
+     (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
+           x-hi (lon-hi-phase-shift x-dim lon-hi)
+           y-lo (lat-lo-phase-shift y-dim lat-lo)
+           y-hi (lat-hi-phase-shift y-dim lat-hi)]
+       (create-opendap-lookup x-lo y-lo x-hi y-hi))
+     nil)))
 
 (defn format-opendap-lat
   ([opendap-bounds]
@@ -290,12 +288,13 @@
   spatial subsetting"
   [entry bounding-box]
   (let [dims (extract-dimensions entry)
-        bounds (or bounding-box (extract-bounds entry))]
+        ; bounds (or bounding-box (extract-bounds entry))
+        ]
     {:concept-id (get-in entry [:meta :concept-id])
      :name (get-in entry [:umm :Name])
      :dimensions dims
-     :bounds bounds
-     :opendap (create-opendap-bounds dims bounds)
+     :bounds bounding-box
+     :opendap (create-opendap-bounds dims bounding-box)
      :size (get-in entry [:umm :Characteristics :Size])}))
 
 
