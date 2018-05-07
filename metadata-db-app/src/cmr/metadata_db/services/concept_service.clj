@@ -788,17 +788,18 @@
 (defn- call-force-deletes
   "Calls functions that do the deletion of concepts or that publish events to message queue."
   [context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size]
-  (info "Deleting" (count concept-id-revision-id-tuples)
-        "old concept revisions for provider" (:provider-id provider))
-  (when (and tombstone-delete?
-             (= :granule concept-type))
-    ;; Remove any reference to granule from deleted-granule index
+  (when concept-id-revision-id-tuples
+    (info "Deleting" (count concept-id-revision-id-tuples)
+          "old concept revisions for provider" (:provider-id provider))
+    (when (and tombstone-delete?
+               (= :granule concept-type))
+      ;; Remove any reference to granule from deleted-granule index
+      (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+        (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-      (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
-  (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-    ;; performs the cascading delete actions first
-    (force-delete-cascading-events context concept-type concept-id (long revision-id)))
-  (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))
+      ;; performs the cascading delete actions first
+      (force-delete-cascading-events context concept-type concept-id (long revision-id)))
+    (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples)))
 
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
@@ -812,7 +813,7 @@
         (do
           (call-force-deletes
             context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
-          (recur [(seq (concept-id-revision-id-tuple-finder))]))))))
+          (recur (seq (concept-id-revision-id-tuple-finder))))))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
