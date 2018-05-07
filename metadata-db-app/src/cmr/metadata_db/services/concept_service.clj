@@ -785,7 +785,7 @@
                 (swap! failed-concept-ids conj (:concept-id c))))))
         (recur)))))
 
-(defn force-delete
+(defn- call-force-deletes
   "Calls functions that do the deletion of concepts or that publish events to message queue."
   [context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size]
   (info "Deleting" (count concept-id-revision-id-tuples)
@@ -807,10 +807,10 @@
   (let [db (util/context->db context)]
     (loop [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
       (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
-        (force-delete
+        (call-force-deletes
           context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
         (do
-          (force-delete
+          (call-force-deletes
             context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
           (recur [(seq (concept-id-revision-id-tuple-finder))]))))))
 
