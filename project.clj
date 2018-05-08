@@ -62,7 +62,9 @@
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]}
     :dev {
-      :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
+      :jvm-opts [
+        "-Dcmr.testing.config.data=testing-value"
+        "-Dcmr.opendap.logging.color=true"]
       :repl-options {
         :init-ns cmr.opendap.dev
         :prompt ~get-prompt
