@@ -34,8 +34,9 @@ The following calls are supported
 This can be used in the following manner:
 
 ```
-curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS" | \
+curl --silent \
+     -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS" | \
      jq .
 ```
 ```json
@@ -83,7 +84,7 @@ Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?format=nc"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
 
 ##### `granules`
@@ -106,7 +107,7 @@ Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
 ##### `exclude-granules`
@@ -126,7 +127,7 @@ Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS"
 ```
 
 ##### `variables`
@@ -147,7 +148,7 @@ Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
 ##### `bounding-box`
@@ -167,7 +168,7 @@ Example usage:
 
 ```
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%/opendap/ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
 ```
 
 ### Forthcoming
