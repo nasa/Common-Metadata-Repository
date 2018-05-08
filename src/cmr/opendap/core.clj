@@ -6,7 +6,7 @@
    [trifl.java :as trifl])
   (:gen-class))
 
-(logger/set-level! '[cmr.opendap] :info)
+(logger/set-level! '[cmr.opendap] :info logger/no-color-log-formatter)
 
 (defn -main
   [& args]

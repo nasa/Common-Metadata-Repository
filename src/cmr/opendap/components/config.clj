@@ -112,6 +112,11 @@
   [system]
   (get-in (get-cfg system) [:httpd :skip-static]))
 
+(defn log-color?
+  [system]
+  (or (get-in (get-cfg system) [:cmr :opendap :logging :color])
+      (get-in (get-cfg system) [:logging :color])))
+
 (defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))

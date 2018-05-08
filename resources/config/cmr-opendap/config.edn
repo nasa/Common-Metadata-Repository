@@ -51,4 +51,5 @@
                  "/opendap/docs/rest-api"}}
  :logging
   {:level :debug
-   :nss [cmr.opendap org.httpkit]}}
+   :nss [cmr.opendap org.httpkit]
+   :color false}}

@@ -24,7 +24,11 @@
         log-nss (config/log-nss this)]
     (log/debug "Setting up logging with level" log-level)
     (log/debug "Logging namespaces:" log-nss)
-    (logger/set-level! log-nss log-level)
+    (if (config/log-color? this)
+      (do
+        (log/debug "Enabling color logging ...")
+        (logger/set-level! log-nss log-level))
+      (logger/set-level! log-nss log-level logger/no-color-log-formatter))
     (log/debug "Started logging component.")
     this))
 
