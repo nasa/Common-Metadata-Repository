@@ -65,7 +65,8 @@
           (cache/hit ch item-key))
         (when-let [value (value-fn)]
           (log/debug "Cache miss; calling value function ...")
-          (swap! (get-cache system) #(cache/miss % item-key value)))))
+          (when-not (or (nil? value) (empty? value))
+            (swap! (get-cache system) #(cache/miss % item-key value))))))
     (lookup system item-key)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
