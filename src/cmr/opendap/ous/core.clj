@@ -80,8 +80,8 @@
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
 
-(def fallback-pattern #"(.*)(/datapool/)(.*)")
-(def fallback-replacement "/opendap/")
+(def fallback-pattern #"(.*)(/datapool/DEV01)(.*)")
+(def fallback-replacement "/opendap/DEV01/user")
 
 (defn data-file->opendap-url
   [pattern-info data-file]
