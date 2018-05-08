@@ -39,8 +39,7 @@
       url
       (-> {:body data}
           (request/add-token-header token)
-          (request/add-form-ct)
-          ((fn [x] (log/trace "Prepared request:" x) x)))
+          (request/add-form-ct))
       #(response/client-handler % parse-token-data))))
 
 (defn ->user

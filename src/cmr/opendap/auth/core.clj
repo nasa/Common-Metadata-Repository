@@ -37,7 +37,7 @@
     (do
       (log/debug "ECHO token provided; proceeding ...")
       (let [user-id (token/->cached-user system user-token)]
-        (log/trace "user-token:" user-token)
+        (log/trace "user-token: [REDACTED]")
         (log/trace "user-id:" user-id)
         (cond ;; XXX For now, there is only the admin role in the CMR, so
               ;;     we'll just keep this specific to that for now. Later, if

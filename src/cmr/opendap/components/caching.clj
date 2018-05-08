@@ -60,8 +60,8 @@
     (let [ch @(get-cache system)]
       (if (cache/has? ch item-key)
         (do
-          (log/debugf "Cache has key %s; skipping value function ..."
-                      item-key)
+          (log/debug "Cache has key; skipping value function ...")
+          (log/trace "Key:" item-key)
           (cache/hit ch item-key))
         (when-let [value (value-fn)]
           (log/debug "Cache miss; calling value function ...")
