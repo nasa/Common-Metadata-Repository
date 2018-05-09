@@ -55,7 +55,8 @@
           :permissions #{:read}}
     :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
-    :options core-handler/ok}]])
+    :options core-handler/ok}]
+   ["/opendap/stream" {:get collection-handler/stream}]])
 
 (defn admin-api
   [httpd-component]

@@ -7,6 +7,8 @@
    [cmr.opendap.components.config :as config]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
+   [org.httpkit.server :as server]
+   [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,3 +65,30 @@
   ;;     this may require creating divergent logic/impls ...
   (fn [request]
     {:error :not-implemented}))
+
+(defn stream
+  ""
+  [request]
+  (log/debug "Processing stream request ...")
+  (server/with-channel request channel
+    ; (server/send! channel
+    ;               {:headers {"Content-Type" "text/event-stream; charset=utf-8"
+    ;                          "Cache-Control" "no-cache"}}
+    ;               false)
+    (log/debug "Setting 'on-close' callback ...")
+    (server/on-close channel
+                     (fn [status]
+                      (println "channel closed, " status)))
+    (log/debug "Starting loop ...")
+    (loop [id 0]
+      (log/debug "Loop id:" id)
+      (when (< id 10)
+        (timer/schedule-task
+         (* id 200) ;; send a message every 200ms
+         ; (let [msg (format "message #%s from server ..." id)]
+         ;  (server/send! channel (format "%x\r\n%s\r\n" (count msg) msg) false))) ; false => don't close after send
+         (server/send! channel
+                       (format "message #%s from server ..." id)
+                       false))
+        (recur (inc id))))
+    (timer/schedule-task 20000 (server/close channel))))
