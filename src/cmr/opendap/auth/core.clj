@@ -1,4 +1,10 @@
 (ns cmr.opendap.auth.core
+  "This namespace represents the authorization API for CMR OPeNDAP. This is
+  where the rest of the application goes when it needs to perform checks on
+  roles or permissions for a given user and/or concept.
+
+  Currently, this namespace is only used by the REST middleware that checks
+  resources for authorization."
   (:require
    [cmr.opendap.auth.permissions :as permissions]
    [cmr.opendap.auth.roles :as roles]
@@ -10,6 +16,8 @@
    [taoensso.timbre :as log]))
 
 (defn check-roles
+  "A supporting function for `check-roles-permissions` that handles the roles
+  side of things."
   [system handler request route-roles user-token user-id]
   (log/debug "Roles annotated in routes ...")
   (if (roles/admin? system
@@ -20,6 +28,8 @@
     (response/not-allowed errors/no-permissions)))
 
 (defn check-permissions
+  "A supporting function for `check-roles-permissions` that handles the
+  permissions side of things."
   [system handler request route-permissions user-token user-id]
   (let [concept-id (permissions/route-concept-id request)]
     (log/debug "Permissions annotated in routes ...")
@@ -32,6 +42,8 @@
       (response/not-allowed errors/no-permissions))))
 
 (defn check-roles-permissions
+  "A supporting function for `check-route-access` that handles the actual
+  checking."
   [system handler request route-roles route-permissions]
   (if-let [user-token (token/extract request)]
     (do
@@ -55,6 +67,11 @@
       (response/not-allowed errors/token-required))))
 
 (defn check-route-access
+  "This is the primary function for this namespace, utilized directly by CMR
+  OPeNDAP's authorization middleware. Given a request which contains
+  route-specific authorization requirements and potentially a user token,
+  it checks against these as well as the level of access require for any
+  requested concepts."
   [system handler request]
   ;; Before performing any GETs/POSTs against CMR Access Control or ECHO,
   ;; let's make sure that's actually necessary, only doing it in the cases
