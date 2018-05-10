@@ -42,7 +42,8 @@
   [httpd-component]
   [["/opendap/ous/collections" {
     :post {:handler collection-handler/batch-generate
-          ;; XXX protecting collections will be a little different than
+          ;; XXX CMR-
+          ;;     Protecting collections will be a little different than
           ;;     protecting a single collection, since the concept-id isn't in
           ;;     the path-params. Instead, we'll have to parse the body,
           ;;     extract the concepts ids from that, create an ACL query
@@ -56,7 +57,7 @@
     :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
     :options core-handler/ok}]
-   ["/opendap/stream" {:get collection-handler/stream}]])
+   ["/opendap/ous/stream" {:get collection-handler/stream}]])
 
 (defn admin-api
   [httpd-component]

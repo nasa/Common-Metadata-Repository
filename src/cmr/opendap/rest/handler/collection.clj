@@ -78,7 +78,7 @@
     (log/debug "Setting 'on-close' callback ...")
     (server/on-close channel
                      (fn [status]
-                      (println "channel closed, " status)))
+                      (println "Channel closed; status " status)))
     (log/debug "Starting loop ...")
     (loop [id 0]
       (log/debug "Loop id:" id)
@@ -87,7 +87,9 @@
          (* id 200) ;; send a message every 200ms
          ; (let [msg (format "message #%s from server ..." id)]
          ;  (server/send! channel (format "%x\r\n%s\r\n" (count msg) msg) false))) ; false => don't close after send
+         (log/debug "\tSending chunk to client ...")
          (server/send! channel
+                       ;(format "%x\r\nmessage #%s from server ..." id id)
                        (format "message #%s from server ..." id)
                        false))
         (recur (inc id))))

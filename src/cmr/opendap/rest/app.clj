@@ -38,8 +38,9 @@
         all-routes
         (ring/router (middleware/reitit-auth httpd-component))
         ring/ring-handler
-        (ring-defaults/wrap-defaults ring-defaults/api-defaults)
-        (middleware/wrap-resource httpd-component)
-        middleware/wrap-trailing-slash
-        middleware/wrap-cors
-        (middleware/wrap-not-found httpd-component))))
+        ; (ring-defaults/wrap-defaults ring-defaults/api-defaults)
+        ; (middleware/wrap-resource httpd-component)
+        ; middleware/wrap-trailing-slash
+        ; middleware/wrap-cors
+        ; (middleware/wrap-not-found httpd-component)
+        )))
