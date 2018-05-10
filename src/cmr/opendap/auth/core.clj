@@ -82,8 +82,8 @@
       (do
         (log/debug (str "Either roles or permissions were annotated in "
                         "routes; checking ACLs ..."))
-        (log/debug "route-roles:" route-roles)
-        (log/debug "route-permissions:" route-permissions)
+        (log/trace "route-roles:" route-roles)
+        (log/trace "route-permissions:" route-permissions)
         (check-roles-permissions
          system handler request route-roles route-permissions))
       (do
