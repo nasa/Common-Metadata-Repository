@@ -30,22 +30,23 @@
             {:collection-id "C123"
              :granules ["" ""]}))))
   (testing "With granule ids ..."
-    (is (= "collection_concept_id=C123&concept_id%5B%5D=G234"
+    (is (= "collection_concept_id=C123&page_size=1&concept_id%5B%5D=G234"
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234"]})))
-    (is (= "collection_concept_id=C123&concept_id%5B%5D=G234&concept_id%5B%5D=G345"
+    (is (= (str "collection_concept_id=C123&page_size=2&"
+                "concept_id%5B%5D=G234&concept_id%5B%5D=G345")
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234" "G345"]}))))
   (testing "With granule ids and exclude ..."
-    (is (= (str "collection_concept_id=C123&"
+    (is (= (str "collection_concept_id=C123&page_size=2000&"
                 "exclude%5Becho_granule_id%5D%5B%5D=G234")
            (granule/build-query
             {:collection-id "C123"
              :granules ["G234"]
              :exclude-granules true})))
-    (is (= (str "collection_concept_id=C123&"
+    (is (= (str "collection_concept_id=C123&page_size=2000&"
                 "exclude%5Becho_granule_id%5D%5B%5D=G234&"
                 "exclude%5Becho_granule_id%5D%5B%5D=G345")
            (granule/build-query

@@ -10,17 +10,27 @@
 
 (defn build-include
   [gran-ids]
-  (string/join "&" (map #(str (codec/url-encode "concept_id[]")
-                              "="
-                              %)
-                        gran-ids)))
+  (string/join
+   "&"
+   (conj
+    (map #(str (codec/url-encode "concept_id[]")
+               "="
+               %)
+         gran-ids)
+    (str "page_size=" (count gran-ids)))))
 
 (defn build-exclude
   [gran-ids]
-  (string/join "&" (map #(str (codec/url-encode "exclude[echo_granule_id][]")
-                              "="
-                              %)
-                        gran-ids)))
+  (string/join
+   "&"
+   (conj
+    (map #(str (codec/url-encode "exclude[echo_granule_id][]")
+               "="
+               %)
+         gran-ids)
+    ;; We don't know how many granule ids will be involved in an exclude,
+    ;; so we use the max page size of 2000.
+    "page_size=2000")))
 
 (defn build-query
   "Build the query string for querying granles, bassed upon the options

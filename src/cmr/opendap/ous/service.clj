@@ -9,9 +9,13 @@
 
 (defn build-query
   [service-ids]
-  (string/join "&" (map #(str (codec/url-encode "concept_id[]")
-                              "=" %)
-                        service-ids)))
+  (string/join
+   "&"
+   (conj
+    (map #(str (codec/url-encode "concept_id[]")
+               "=" %)
+         service-ids)
+    (str "page_size=" (count service-ids)))))
 
 (defn get-metadata
   "Given a service-id, get the metadata for the associate service."

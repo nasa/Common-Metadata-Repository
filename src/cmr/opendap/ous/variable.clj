@@ -152,9 +152,13 @@
 
 (defn build-query
   [variable-ids]
-  (string/join "&" (map #(str (codec/url-encode "concept_id[]")
-                              "=" %)
-                        variable-ids)))
+  (string/join
+   "&"
+   (conj
+    (map #(str (codec/url-encode "concept_id[]")
+               "=" %)
+         variable-ids)
+    (str "page_size=" (count variable-ids)))))
 
 (defn get-metadata
   "Given a 'params' data structure with a ':variables' key (which may or may
