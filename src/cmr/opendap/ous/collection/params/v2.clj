@@ -53,17 +53,26 @@
         (set (keys params))
         params-keys)))
 
+(defn not-variables-array?
+  [array]
+  (or (nil? array)
+      (empty? array)))
+
 (defn create-params
   [params]
   (let [bounding-box (ous-util/->seq (:bounding-box params))
-        subset (:subset params)]
+        subset (:subset params)
+        variables-array (ous-util/->seq (get params (keyword "variables[]")))]
     (log/trace "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
+    (log/trace "variables-array:" variables-array)
     (map->CollectionParams
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (ous-util/->seq (:granules params))
-        :variables (ous-util/->seq (:variables params))
+        :variables (if (not-variables-array? variables-array)
+                       (ous-util/->seq (:variables params))
+                       variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
                  (ous-util/bounding-box->subset bounding-box)

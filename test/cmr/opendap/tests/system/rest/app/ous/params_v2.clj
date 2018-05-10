@@ -9,7 +9,8 @@
     [cmr.opendap.http.request :as request]
     [cmr.opendap.testing.system :as test-system]
     [cmr.opendap.testing.util :as util]
-    [org.httpkit.client :as httpc])
+    [org.httpkit.client :as httpc]
+    [ring.util.codec :as codec])
   (:import
     (clojure.lang ExceptionInfo)))
 
@@ -50,6 +51,38 @@
                                   "?variables=V1200241812-EDF_OPS,V1200241813-EDF_OPS")
                              (test-system/http-port)
                              collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+             (util/parse-response response)))))
+  (testing "GET one variable in an array..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (str "http://localhost:"
+                          (test-system/http-port)
+                          "/opendap/ous/collection/"
+                          collection-id
+                          "?"
+                          (codec/url-encode "variables[]")
+                          "=V1200241812-EDF_OPS")
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"]
+             (util/parse-response response)))))
+  (testing "GET with variables in an array ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (str "http://localhost:"
+                          (test-system/http-port)
+                          "/opendap/ous/collection/"
+                          collection-id
+                          "?"
+                          (codec/url-encode "variables[]")
+                          "=V1200241812-EDF_OPS&"
+                          (codec/url-encode "variables[]")
+                          "=V1200241813-EDF_OPS")
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
       (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
