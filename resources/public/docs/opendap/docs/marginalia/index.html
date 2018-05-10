@@ -3294,8 +3294,8 @@ schemes an explicit operation on explicit data.</p>
        (variable/create-opendap-bounds bounding-box))))))</pre></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
                prototype ... and IT IS AWFUL. This is only temporary ...</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/)(.*)&quot;)
-(def fallback-replacement &quot;/opendap/&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/DEV01)(.*)&quot;)
+(def fallback-replacement &quot;/opendap/DEV01/user&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn data-file-&gt;opendap-url
   [pattern-info data-file]
   (let [pattern (re-pattern (:pattern-match pattern-info))
@@ -3672,7 +3672,12 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
        ;;                We're manually hacking the regex to fix this ...
        ;;                this makes things EXTREMELY FRAGILE!
        :pattern-match (str &quot;(&quot; (:OnlineAccessURLPatternMatch umm) &quot;)(.*)&quot;)
-       :pattern-subs (:OnlineAccessURLPatternSubstitution umm)})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+       :pattern-subs (:OnlineAccessURLPatternSubstitution umm)})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace represents the authorization API for CMR OPeNDAP. This is
+  where the rest of the application goes when it needs to perform checks on
+  roles or permissions for a given user and/or concept.</p>
+
+<p>  Currently, this namespace is only used by the REST middleware that checks
+  resources for authorization.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.core
   (:require
    [cmr.opendap.auth.permissions :as permissions]
@@ -3682,7 +3687,8 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.http.response :as response]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>A supporting function for <code>check-roles-permissions</code> that handles the roles
+  side of things.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check-roles
   [system handler request route-roles user-token user-id]
   (log/debug &quot;Roles annotated in routes ...&quot;)
@@ -3691,7 +3697,8 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                     user-token
                     user-id)
     (handler request)
-    (response/not-allowed errors/no-permissions)))</pre></td></tr><tr><td class="docs">
+    (response/not-allowed errors/no-permissions)))</pre></td></tr><tr><td class="docs"><p>A supporting function for <code>check-roles-permissions</code> that handles the
+  permissions side of things.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check-permissions
   [system handler request route-permissions user-token user-id]
   (let [concept-id (permissions/route-concept-id request)]
@@ -3702,14 +3709,15 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                               user-id
                               concept-id)
       (handler request)
-      (response/not-allowed errors/no-permissions))))</pre></td></tr><tr><td class="docs">
+      (response/not-allowed errors/no-permissions))))</pre></td></tr><tr><td class="docs"><p>A supporting function for <code>check-route-access</code> that handles the actual
+  checking.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check-roles-permissions
   [system handler request route-roles route-permissions]
   (if-let [user-token (token/extract request)]
     (do
       (log/debug &quot;ECHO token provided; proceeding ...&quot;)
       (let [user-id (token/-&gt;cached-user system user-token)]
-        (log/trace &quot;user-token:&quot; user-token)
+        (log/trace &quot;user-token: [REDACTED]&quot;)
         (log/trace &quot;user-id:&quot; user-id)
         (cond ;; XXX For now, there is only the admin role in the CMR, so
               ;;     we'll just keep this specific to that for now. Later, if
@@ -3723,7 +3731,11 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                system handler request route-permissions user-token user-id))))
     (do
       (log/warn &quot;ECHO token not provided for protected resource&quot;)
-      (response/not-allowed errors/token-required))))</pre></td></tr><tr><td class="docs">
+      (response/not-allowed errors/token-required))))</pre></td></tr><tr><td class="docs"><p>This is the primary function for this namespace, utilized directly by CMR
+  OPeNDAP's authorization middleware. Given a request which contains
+  route-specific authorization requirements and potentially a user token,
+  it checks against these as well as the level of access require for any
+  requested concepts.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check-route-access
   [system handler request]
   ;; Before performing any GETs/POSTs against CMR Access Control or ECHO,
@@ -3735,14 +3747,25 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
       (do
         (log/debug (str &quot;Either roles or permissions were annotated in &quot;
                         &quot;routes; checking ACLs ...&quot;))
-        (log/debug &quot;route-roles:&quot; route-roles)
-        (log/debug &quot;route-permissions:&quot; route-permissions)
+        (log/trace &quot;route-roles:&quot; route-roles)
+        (log/trace &quot;route-permissions:&quot; route-permissions)
         (check-roles-permissions
          system handler request route-roles route-permissions))
       (do
         (log/debug (str &quot;Neither roles nor permissions were annotated in &quot;
                         &quot;the routes; skipping ACL check ...&quot;))
-        (handler request)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.roles" name="cmr.opendap.auth.roles"><h1 class="project-name">cmr.opendap.auth.roles</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+        (handler request)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.roles" name="cmr.opendap.auth.roles"><h1 class="project-name">cmr.opendap.auth.roles</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Roles for CMR OPeNDAP are utilized in the application routes when it is
+  necessary to limit access to resources based on the role of a user.</p>
+
+<p>  Roles are included in the route definition along with the route's handler.
+  For example:
+  ```
+  [...
+   ["my/route" {
+    :get {:handler my-handlers/my-route
+          :roles #{:admin}}
+    :post ...}]
+   ...]</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.roles
   (:require
    [clojure.set :as set]
@@ -3750,9 +3773,13 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
    [reitit.ring :as ring]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def management-acl :INGEST_MANAGEMENT_ACL)
-(def echo-management-query {:system_object (name management-acl)})</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>The canonical ingest management ACL definition.</p>
+</td><td class="codes"><pre class="brush: clojure">(def management-acl
+  :INGEST_MANAGEMENT_ACL)</pre></td></tr><tr><td class="docs"><p>The query formatter used when making a roles query to the CMR Access Control
+  API. Note that only the management ACL is currently supported, and that this
+  maps below to <code>admin</code>.</p>
+</td><td class="codes"><pre class="brush: clojure">(def echo-management-query
+  {:system_object (name management-acl)})</pre></td></tr><tr><td class="docs"><p>Generate a key to be used for caching role data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn admin-key
   [token]
   (str &quot;admin:&quot; token))</pre></td></tr><tr><td class="docs">
@@ -3760,33 +3787,32 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
   [cmr-acl]
   (if (seq (management-acl cmr-acl))
     #{:admin}
-    #{}))</pre></td></tr><tr><td class="docs"><p>It is expected that the route annotation for roles is of the form:</p>
-
-<p>  :METHOD {:handler ...
-           :roles #{...}}</p>
-
-<p>  Note that currently, only the :admin role is supported.</p>
+    #{}))</pre></td></tr><tr><td class="docs"><p>Extract any roles annotated in the route associated with the given request.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn route-annotation
   [request]
-  (get-in (ring/get-match request) [:data :get :roles]))</pre></td></tr><tr><td class="docs">
+  (get-in (ring/get-match request) [:data :get :roles]))</pre></td></tr><tr><td class="docs"><p>Query the CMR Access Control API to get the roles for the given token+user.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn admin
   [base-url token user-id]
   (let [perms (acls/check-access base-url
                                  token
                                  user-id
                                  echo-management-query)]
-    (cmr-acl-&gt;reitit-acl @perms)))</pre></td></tr><tr><td class="docs">
+    (cmr-acl-&gt;reitit-acl @perms)))</pre></td></tr><tr><td class="docs"><p>Look up the roles for token+user in the cache; if there is a miss, make the
+  actual call for the lookup.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn cached-admin
   [system token user-id]
   (caching/lookup system
                   (admin-key token)
                   #(admin (config/get-access-control-url system)
                           token
-                          user-id)))</pre></td></tr><tr><td class="docs">
+                          user-id)))</pre></td></tr><tr><td class="docs"><p>Check to see if the roles of a given token+user match the required roles for
+  the route.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn admin?
   [system route-roles token user-id]
   (seq (set/intersection (cached-admin system token user-id)
-                         route-roles)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.token" name="cmr.opendap.auth.token"><h1 class="project-name">cmr.opendap.auth.token</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+                         route-roles)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.token" name="cmr.opendap.auth.token"><h1 class="project-name">cmr.opendap.auth.token</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>The functions in this API are responsible for such things as making queries
+  to CMR Access Control to get token-to-user mappings, extracting tokens from
+  request headers, and defining caching keys and related tasks.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.token
   (:require
    [clojure.data.xml :as xml]
@@ -3795,25 +3821,33 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def token-info-resource &quot;/tokens/get_token_info&quot;)</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>The path segment to the CMR Access Control API resource that is queried
+  in order to get user/token mappings.</p>
+</td><td class="codes"><pre class="brush: clojure">(def token-info-resource
+  &quot;/tokens/get_token_info&quot;)</pre></td></tr><tr><td class="docs"><p>Generate a key to be used for caching token data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn token-data-key
   [token]
-  (str &quot;token-data:&quot; token))</pre></td></tr><tr><td class="docs">
+  (str &quot;token-data:&quot; token))</pre></td></tr><tr><td class="docs"><p>Generate a key to be used for caching user-id data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn user-id-key
   [token]
-  (str &quot;user-id:&quot; token))</pre></td></tr><tr><td class="docs">
+  (str &quot;user-id:&quot; token))</pre></td></tr><tr><td class="docs"><p>Extract the value of <code>Echo-Token</code> header that was passed in the request.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn extract
   [request]
-  (request/get-header request &quot;echo-token&quot;))</pre></td></tr><tr><td class="docs">
+  (request/get-header request &quot;echo-token&quot;))</pre></td></tr><tr><td class="docs"><p>Given a parsed XML element from a get-token-info payload, extract the user
+  name.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn extract-user-name
+  [xml-element]
+  (when (= :user_name (:tag xml-element))
+   (:content xml-element)))</pre></td></tr><tr><td class="docs"><p>Parse the XML that is returned when querying the CMR Access Control API for
+  token info.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn parse-token-data
   [xml-str]
   (log/trace &quot;Got token XML data:&quot; xml-str)
   (first
     (remove nil?
-      (mapcat #(when (map? %)
-                (when (= :user_name (:tag %)) (:content %)))
-              (:content (xml/parse-str xml-str))))))</pre></td></tr><tr><td class="docs">
+      (mapcat #(when (map? %) (extract-user-name %))
+              (:content (xml/parse-str xml-str))))))</pre></td></tr><tr><td class="docs"><p>Query the CMR Access Control API for information assocated with the given
+  token.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn get-token-info
   [base-url token]
   (let [url (str base-url token-info-resource)
@@ -3822,18 +3856,30 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
       url
       (-&gt; {:body data}
           (request/add-token-header token)
-          (request/add-form-ct)
-          ((fn [x] (log/trace &quot;Prepared request:&quot; x) x)))
-      #(response/client-handler % parse-token-data))))</pre></td></tr><tr><td class="docs">
+          (request/add-form-ct))
+      #(response/client-handler % parse-token-data))))</pre></td></tr><tr><td class="docs"><p>Given a token, return the associated user name.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn -&gt;user
   [base-url token]
-  @(get-token-info base-url token))</pre></td></tr><tr><td class="docs">
+  @(get-token-info base-url token))</pre></td></tr><tr><td class="docs"><p>Look up the user for a token in the cache; if there is a miss, make the
+  actual call for the lookup.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn -&gt;cached-user
   [system token]
   (caching/lookup
    system
    (user-id-key token)
-   #(-&gt;user (config/get-echo-rest-url system) token)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.permissions" name="cmr.opendap.auth.permissions"><h1 class="project-name">cmr.opendap.auth.permissions</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+   #(-&gt;user (config/get-echo-rest-url system) token)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.permissions" name="cmr.opendap.auth.permissions"><h1 class="project-name">cmr.opendap.auth.permissions</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Permissions for CMR OPeNDAP are utilized in the application routes when it is
+  necessary to limit access to resources based on the specific capabilities
+  granted to a user.</p>
+
+<p>  Permissions are included in the route definition along with the route's
+  handler. For example:
+  ```
+  [...
+   ["my/route" {
+    :get {:handler my-handlers/my-route
+          :permissions #{:read}}
+    :post ...}]
+   ...]</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.permissions
   (:require
    [clojure.set :as set]
@@ -3841,15 +3887,25 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
    [reitit.ring :as ring]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def echo-concept-query #(hash-map :concept_id %))</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>The query formatter used when making a concept permissions query to the CMR
+  Access Control API.</p>
+</td><td class="codes"><pre class="brush: clojure">(def echo-concept-query
+  #(hash-map :concept_id %))</pre></td></tr><tr><td class="docs"><p>Generate a key to be used for caching permissions data.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn concept-key
   [token]
-  (str &quot;concept:&quot; token))</pre></td></tr><tr><td class="docs">
+  (str &quot;concept:&quot; token))</pre></td></tr><tr><td class="docs"><p>Construct permissions </p>
 </td><td class="codes"><pre class="brush: clojure">(defn reitit-acl-data
   [concept-id annotation]
   (when (and concept-id annotation)
-    {concept-id annotation}))</pre></td></tr><tr><td class="docs">
+    {concept-id annotation}))</pre></td></tr><tr><td class="docs"><p>Convert a CMR ACL to an ACL that can be matched against permissions in the
+  reitit routing library's data structure. There following conditions are
+  handled:</p>
+
+<ul>
+<li>return an empty set when a CMR ACL is nil-valued</li>
+<li>return a reitit-ready ACL when a map (representing a CMR ACL) is given</li>
+<li>return the CMR ACL as-is in all other cases.</li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(defn cmr-acl-&gt;reitit-acl
   [cmr-acl]
   (log/debug &quot;Got CMR ACL:&quot; cmr-acl)
@@ -3859,22 +3915,19 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
         (-&gt;&gt; cmr-acl
              (map (fn [[k v]] [(keyword k) (set (map keyword v))]))
              (into {}))
-        :else cmr-acl))</pre></td></tr><tr><td class="docs">
+        :else cmr-acl))</pre></td></tr><tr><td class="docs"><p>Given a request, return the concept id for which we are checking
+  permissions.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn route-concept-id
   [request]
-  (get-in request [:path-params :concept-id]))</pre></td></tr><tr><td class="docs"><p>It is expected that the route annotation for permissions is of the form:</p>
-
-<p>  :METHOD {:handler ...
-           :permissions #{...}}</p>
-
-<p>  Supported elements of the :permissions set is currently just :read.</p>
+  (get-in request [:path-params :concept-id]))</pre></td></tr><tr><td class="docs"><p>Extract any permissions annotated in the route associated with the given
+  request.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn route-annotation
   [request]
-  (log/trace &quot;Request:&quot; request)
   (reitit-acl-data
    (route-concept-id request)
    (cmr-acl-&gt;reitit-acl
-    (get-in (ring/get-match request) [:data :get :permissions]))))</pre></td></tr><tr><td class="docs">
+    (get-in (ring/get-match request) [:data :get :permissions]))))</pre></td></tr><tr><td class="docs"><p>Query the CMR Access Control API to get the permissions the given token+user
+  have for the given concept.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn concept
   [base-url token user-id concept-id]
   (let [perms (acls/check-access base-url
@@ -3882,7 +3935,8 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                                  user-id
                                  (echo-concept-query concept-id))]
     (log/debug &quot;Got perms:&quot; @perms)
-    (cmr-acl-&gt;reitit-acl @perms)))</pre></td></tr><tr><td class="docs">
+    (cmr-acl-&gt;reitit-acl @perms)))</pre></td></tr><tr><td class="docs"><p>Look up the permissions for a concept in the cache; if there is a miss,
+  make the actual call for the lookup.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn cached-concept
   [system token user-id concept-id]
   (caching/lookup system
@@ -3890,16 +3944,18 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
                   #(concept (config/get-access-control-url system)
                             token
                             user-id
-                            concept-id)))</pre></td></tr><tr><td class="docs">
+                            concept-id)))</pre></td></tr><tr><td class="docs"><p>Check to see if the concept permissions of a given token+user match the
+  required permissions for the route.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn concept?
-  [system perms token user-id concept-id]
+  [system route-perms token user-id concept-id]
   (let [id (keyword concept-id)
-        required (cmr-acl-&gt;reitit-acl perms)
+        required (cmr-acl-&gt;reitit-acl route-perms)
         concept-perms (cached-concept system
                                       token
                                       user-id
                                       concept-id)]
-    (seq (set/intersection (id required) (id concept-perms)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.acls" name="cmr.opendap.auth.acls"><h1 class="project-name">cmr.opendap.auth.acls</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+    (seq (set/intersection (id required) (id concept-perms)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.acls" name="cmr.opendap.auth.acls"><h1 class="project-name">cmr.opendap.auth.acls</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace is provided for common code needed by the roles and
+  permissions namespaces.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.auth.acls
   (:require
    [cheshire.core :as json]
@@ -3908,8 +3964,11 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [org.httpkit.client :as httpc]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def permissions-resource &quot;/permissions&quot;)</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>The path segment to the CMR Access Control API resource that is queried
+  in order to get user permissions.</p>
+</td><td class="codes"><pre class="brush: clojure">(def permissions-resource
+  &quot;/permissions&quot;)</pre></td></tr><tr><td class="docs"><p>This function is responsible for making a call to the CMR Access Control
+  permissions resource to check what has been granted for the given user.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check-access
   [base-url token user-id acl-query]
   (let [url (str base-url permissions-resource)
@@ -3959,7 +4018,7 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [com.stuartsierra.component :as component]
    [trifl.java :as trifl])
   (:gen-class))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(logger/set-level! '[cmr.opendap] :info)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(logger/set-level! '[cmr.opendap] :info logger/no-color-log-formatter)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
   (let [system (components/init)]
@@ -4080,12 +4139,13 @@ disable logging entirely for tests.</p>
     (let [ch @(get-cache system)]
       (if (cache/has? ch item-key)
         (do
-          (log/debugf &quot;Cache has key %s; skipping value function ...&quot;
-                      item-key)
+          (log/debug &quot;Cache has key; skipping value function ...&quot;)
+          (log/trace &quot;Key:&quot; item-key)
           (cache/hit ch item-key))
         (when-let [value (value-fn)]
           (log/debug &quot;Cache miss; calling value function ...&quot;)
-          (swap! (get-cache system) #(cache/miss % item-key value)))))
+          (when-not (or (nil? value) (empty? value))
+            (swap! (get-cache system) #(cache/miss % item-key value))))))
     (lookup system item-key)))</pre></td></tr><tr><td class="docs"><p>  Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord Caching [cache])</pre></td></tr><tr><td class="docs">
@@ -4188,7 +4248,11 @@ disable logging entirely for tests.</p>
         log-nss (config/log-nss this)]
     (log/debug &quot;Setting up logging with level&quot; log-level)
     (log/debug &quot;Logging namespaces:&quot; log-nss)
-    (logger/set-level! log-nss log-level)
+    (if (config/log-color? this)
+      (do
+        (log/debug &quot;Enabling color logging ...&quot;)
+        (logger/set-level! log-nss log-level))
+      (logger/set-level! log-nss log-level logger/no-color-log-formatter))
     (log/debug &quot;Started logging component.&quot;)
     this))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn stop
@@ -4297,6 +4361,10 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn http-skip-static
   [system]
   (get-in (get-cfg system) [:httpd :skip-static]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn log-color?
+  [system]
+  (or (get-in (get-cfg system) [:cmr :opendap :logging :color])
+      (get-in (get-cfg system) [:logging :color])))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn log-level
   [system]
   (get-in (get-cfg system) [:logging :level]))</pre></td></tr><tr><td class="docs">
