@@ -2,7 +2,7 @@
   "Contains functions for manipulating granule acls"
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as cqm]
@@ -51,7 +51,7 @@
   [context coll-ids-by-prov _ acls]
   (filter (fn [acl]
             (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
-                  entry-titles (map str/trim (get-in cii [:collection-identifier :entry-titles]))
+                  entry-titles (map string/trim (get-in cii [:collection-identifier :entry-titles]))
                   acl-coll-ids (->> entry-titles
                                     (map (partial coll-cache/get-collection context provider-id))
                                     ;; It's possible an ACL refers to an entry title that doesn't exist
@@ -142,7 +142,7 @@
           (reduce (fn [condition-map entry-title]
                     (if-let [{:keys [concept-id]} (coll-cache/get-collection context provider-id entry-title)]
                       (update-in condition-map [:concept-ids] conj concept-id)
-                      (update-in condition-map [:entry-titles] conj (str/trim entry-title))))
+                      (update-in condition-map [:entry-titles] conj (string/trim entry-title))))
                   {:concept-ids nil
                    :entry-titles nil}
                   entry-titles)
