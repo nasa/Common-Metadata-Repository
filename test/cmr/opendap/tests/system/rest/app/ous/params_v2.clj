@@ -55,6 +55,20 @@
       (is (= 200 (:status response)))
       (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
               "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+             (util/parse-response response)))))
+  (testing "GET with repeated variables ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?variables=V1200241812-EDF_OPS&"
+                                  "variables=V1200241813-EDF_OPS")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
              (util/parse-response response))))))
 
 (deftest collection-GET-variables-array
@@ -110,6 +124,20 @@
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s"
                                   "?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS")
+                             (test-system/http-port)
+                             collection-id)
+                     (request/add-token-header {} (util/get-sit-token)))]
+      (is (= 200 (:status response)))
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
+             (util/parse-response response)))))
+  (testing "GET with repeated granules ..."
+    (let [collection-id "C1200187767-EDF_OPS"
+          response @(httpc/get
+                     (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?granules=G1200187775-EDF_OPS&"
+                                  "granules=G1200245955-EDF_OPS")
                              (test-system/http-port)
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
