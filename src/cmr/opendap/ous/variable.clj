@@ -79,6 +79,10 @@
   (- y-dim
      (int (Math/floor (+ (/ y-dim 2) in)))))
 
+;; The following longitudinal phase shift functions are translated from the
+;; OUS Node.js prototype. It would be nice to use the more general functions
+;; above, if those work out.
+
 (defn lon-lo-phase-shift
   [x-dim lon-lo]
   (-> (/ (* (- x-dim 1)
@@ -127,6 +131,9 @@
           (- default-lat-hi default-lat-lo))
        Math/ceil
        int))
+
+;; The following latitudinal phase shift functions are what is currently being
+;; used.
 
 (defn lat-lo-phase-shift
   [y-dim lat-lo]
