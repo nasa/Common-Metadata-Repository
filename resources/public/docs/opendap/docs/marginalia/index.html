@@ -2988,17 +2988,29 @@ net.brehaut.ClojureTools = (function (SH) {
   (seq (set/intersection
         (set (keys params))
         params-keys)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn not-array?
+  [array]
+  (or (nil? array)
+      (empty? array)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn create-params
   [params]
   (let [bounding-box (ous-util/-&gt;seq (:bounding-box params))
-        subset (:subset params)]
+        subset (:subset params)
+        granules-array (ous-util/-&gt;seq (get params (keyword &quot;granules[]&quot;)))
+        variables-array (ous-util/-&gt;seq (get params (keyword &quot;variables[]&quot;)))]
     (log/trace &quot;bounding-box:&quot; bounding-box)
     (log/trace &quot;subset:&quot; subset)
+    (log/trace &quot;granules-array:&quot; granules-array)
+    (log/trace &quot;variables-array:&quot; variables-array)
     (map-&gt;CollectionParams
       (assoc params
         :format (or (:format params) const/default-format)
-        :granules (ous-util/-&gt;seq (:granules params))
-        :variables (ous-util/-&gt;seq (:variables params))
+        :granules (if (not-array? granules-array)
+                       (ous-util/-&gt;seq (:granules params))
+                       granules-array)
+        :variables (if (not-array? variables-array)
+                       (ous-util/-&gt;seq (:variables params))
+                       variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
                  (ous-util/bounding-box-&gt;subset bounding-box)
@@ -3099,16 +3111,26 @@ net.brehaut.ClojureTools = (function (SH) {
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-include
   [gran-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
-                              &quot;=&quot;
-                              %)
-                        gran-ids)))</pre></td></tr><tr><td class="docs">
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+               &quot;=&quot;
+               %)
+         gran-ids)
+    (str &quot;page_size=&quot; (count gran-ids)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-exclude
   [gran-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]&quot;)
-                              &quot;=&quot;
-                              %)
-                        gran-ids)))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]&quot;)
+               &quot;=&quot;
+               %)
+         gran-ids)
+    ;; We don't know how many granule ids will be involved in an exclude,
+    ;; so we use the max page size of 2000.
+    &quot;page_size=2000&quot;)))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
   passed in the parameters.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn build-query
   [params]
@@ -3446,7 +3468,10 @@ allowing for the desired result. Respective to the bullet points above:</p></li>
 </td><td class="codes"><pre class="brush: clojure">(defn new-lat-phase-shift
   [y-dim in]
   (- y-dim
-     (int (Math/floor (+ (/ y-dim 2) in)))))</pre></td></tr><tr><td class="docs">
+     (int (Math/floor (+ (/ y-dim 2) in)))))</pre></td></tr><tr><td class="docs"><p>The following longitudinal phase shift functions are translated from the
+OUS Node.js prototype. It would be nice to use the more general functions
+above, if those work out.</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lon-lo-phase-shift
   [x-dim lon-lo]
   (-&gt; (/ (* (- x-dim 1)
@@ -3490,7 +3515,9 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
-       int))</pre></td></tr><tr><td class="docs">
+       int))</pre></td></tr><tr><td class="docs"><p>The following latitudinal phase shift functions are what is currently being
+used.</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-lo-phase-shift
   [y-dim lat-lo]
   (int
@@ -3510,9 +3537,13 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-query
   [variable-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
-                              &quot;=&quot; %)
-                        variable-ids)))</pre></td></tr><tr><td class="docs"><p>Given a 'params' data structure with a ':variables' key (which may or may
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+               &quot;=&quot; %)
+         variable-ids)
+    (str &quot;page_size=&quot; (count variable-ids)))))</pre></td></tr><tr><td class="docs"><p>Given a 'params' data structure with a ':variables' key (which may or may
   not have values) and a list of all collection variable-ids, return the
   metadata for the passed variables, if defined, and for all associated
   variables, if params does not contain any.</p>
@@ -3644,9 +3675,13 @@ y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn build-query
   [service-ids]
-  (string/join &quot;&amp;&quot; (map #(str (codec/url-encode &quot;concept_id[]&quot;)
-                              &quot;=&quot; %)
-                        service-ids)))</pre></td></tr><tr><td class="docs"><p>Given a service-id, get the metadata for the associate service.</p>
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+               &quot;=&quot; %)
+         service-ids)
+    (str &quot;page_size=&quot; (count service-ids)))))</pre></td></tr><tr><td class="docs"><p>Given a service-id, get the metadata for the associate service.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn get-metadata
   [search-endpoint user-token service-ids]
   (log/debug &quot;Getting service metadata for:&quot; service-ids)
