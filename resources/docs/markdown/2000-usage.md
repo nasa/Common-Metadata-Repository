@@ -95,6 +95,7 @@ below in separate sections.
 Note that both hypens and underscores are supported in parameters that have
 them; you may use either, per your preference.
 
+
 ##### `format`
 
 This allows the client to ask OPeNDAP to provide files in the given format.
@@ -114,6 +115,7 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
+
 
 ##### `granules`
 
@@ -141,6 +143,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
+
 ##### `exclude-granules`
 
 This allows clients to perform the inverse of a granule search: all granules
@@ -163,6 +166,7 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS"
 ```
+
 
 ##### `variables`
 
@@ -188,6 +192,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
+
 ##### `bounding-box`
 
 This provides clients with the ability to select the spatial data to include
@@ -207,6 +212,7 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
 ```
+
 
 #### WCS-Style Parameters
 
@@ -228,6 +234,7 @@ These are show in more detail in the sub-sections below.
 Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
 request; you must chose one or the other, not both.
 
+
 ##### `format`
 
 This allows the client to ask OPeNDAP to provide files in the given format.
@@ -247,6 +254,7 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
+
 
 ##### `coverage`
 
@@ -269,6 +277,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
+
 ##### `rangesubset`
 
 This proivdes clients with the ability to limit the granule data extracted
@@ -290,6 +299,7 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
+
 
 ##### `subset`
 
