@@ -255,7 +255,7 @@ OPeNDAP queries.
 
 If not provided, all granules for the given collection will be used.
 
-The following are examples of accepted `granules` parameter usage:
+The following are examples of accepted `coverage` parameter usage:
 
 ```
 coverage=G1200187775-EDF_OPS
