@@ -15,6 +15,16 @@
 
 ## REST API Overview
 
+The REST API for CMR OPeNDAP aims to accomplish a few core goals:
+
+* Provide a straight forward means of bridging the CMR and OPeNDAP deployments
+* Provide operational insights into the CMR OPeNDAP REST service itself
+* Do both of these as simply and in as scalable a manner as possible
+
+The REST API is currently focused on generating OPeNDAP data access URLs,
+allowing users to easily download subsetted files from OPeNDAP servers
+based on metadata stored in the CMR and presented to end users by EDSC.
+
 
 ## OPeNDAP URL Service
 
