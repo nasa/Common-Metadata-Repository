@@ -3,6 +3,8 @@
 body {
     font-family: 'PT Sans', Helvetica, sans-serif;
     font-size: 14px;
+    padding: 0;
+    margin: 0;
 }
 
 a {
@@ -47,7 +49,7 @@ h3 > a:hover {
 }
 
 #header {
-    top: 0;
+    top: 32px;
     left: 0;
     right: 0;
     height: 22px;
@@ -63,6 +65,7 @@ h3 > a:hover {
     background: #eee;
     color: #333;
     padding: 0 18px;
+    padding-top: 32px;
 }
 
 .sidebar {
@@ -98,6 +101,7 @@ h3 > a:hover {
 }
 
 #content.document {
+    padding-top: 32px;
     padding-bottom: 10%;
     left: 200px;
 }
