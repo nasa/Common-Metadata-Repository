@@ -24,6 +24,24 @@ query URLs (intended to be sent to a deployed OPeNDAP service).
 
 ### Authorized Access
 
+CMR OPeNDAP requires the use of tokens in order to provide access to
+potentially protected collections, services, variables, and/or granules.
+
+A token needs to be included in each request, and this is done by sending
+a special header:
+
+```
+"Echo-Token: <YOUR_TOKEN>"
+```
+
+For example, if you have stored your token in a file:
+
+```
+"Echo-Token: `cat ~/.cmr/tokens/sit`"
+```
+
+Both ECHO as well as URS/Earthdata Login tokens are supported.
+
 
 ### Collection Resource
 
