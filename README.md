@@ -34,15 +34,6 @@ via:
 ```
 
 
-## Examples
-
-- [clojang/jiface](https://clojang.github.io/jiface/)
-- [clojang/agent](https://clojang.github.io/agent)
-- [clojang/clojang](https://clojang.github.io/clojang)
-- [clojang/zhang-agent](https://clojang.github.io/zhang-agent)
-- [clojang/zhang](https://clojang.github.io/zhang)
-
-
 ## License
 
 Copyright &copy; 2018 NASA
