@@ -4,10 +4,4 @@
   :license {:name "Eclipse Public License 1.0"
             :url "https://www.eclipse.org/legal/epl-v10.html"
             :year 2016
-            :key "epl-1.0"}
-  :profiles {
-    :test {
-      :plugins [
-        [lein-ancient "0.6.14"]]}}
-  :aliases {
-    "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]})
+            :key "epl-1.0"})
