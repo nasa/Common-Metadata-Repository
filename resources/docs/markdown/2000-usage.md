@@ -5,7 +5,9 @@
 
 * REST API Overview
 * OPeNDAP URL Service
+  * Authorized Access
   * Collection Resource
+  * Forthcoming
 * Miscellaneous Resources
   * Health
   * Ping
@@ -13,17 +15,15 @@
 
 ## REST API Overview
 
-TBD
-
 
 ## OPeNDAP URL Service
 
 This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service).
 
+
 ### Authorized Access
 
-CMR OPeNDAP uses
 
 ### Collection Resource
 
@@ -139,7 +139,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ##### `variables`
 
 This proivdes clients with the ability to limit the granule data extracted
-by the OPeNDAP query to just the variables in which they are interested.
+by the OPeNDAP query to just the variables in which you are interested.
 
 If not provided, all variables associated in the collection metadata will
 be used.
@@ -162,7 +162,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ##### `bounding-box`
 
-This proivdes clients with the ability to select the spatial data to include
+This provides clients with the ability to select the spatial data to include
 in the granule data extracted by the OPeNDAP query to an area of interest.
 
 If not provided, the entire spatial extent of the granule will be used.
@@ -179,6 +179,113 @@ Example usage:
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
 ```
+
+#### WCS-Style Parameters
+
+The original implementation of the OPeNDAP URL translation service was not a
+part of the CMR, and thus did not take into consideration the internal
+standards adopted by both the CMR and EDSC code bases. Instead, it was
+decided to follow the model of
+[WCS](http://mapserver.org/ogc/wcs_server.html#wcs-2-0-kvp-request-parameters).
+As such, the following parameters are also available, as an alternative to the
+"classic" CMR/EDSC parameters:
+
+* `format`
+* `coverage`
+* `rangesubset`
+* `subset`
+
+These are show in more detail in the sub-sections below.
+
+Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
+request; you must chose one or the other, not both.
+
+##### `format`
+
+This allows the client to ask OPeNDAP to provide files in the given format.
+
+If not provided, the default of `nc` (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.
+
+Parameter example:
+
+```
+format=nc
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
+```
+
+##### `coverage`
+
+This allows the client to select the granules to include (or exclude) in their
+OPeNDAP queries.
+
+If not provided, all granules for the given collection will be used.
+
+The following are examples of accepted `granules` parameter usage:
+
+```
+coverage=G1200187775-EDF_OPS
+coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+```
+
+##### `rangesubset`
+
+This proivdes clients with the ability to limit the granule data extracted
+by the OPeNDAP query to just the variables in which you are interested.
+
+If not provided, all variables associated in the collection metadata will
+be used.
+
+The following are examples of accepted `rangesubset` parameter usage:
+
+```
+rangesubset=V1200241812-EDF_OPS
+rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS
+```
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
+```
+
+##### `subset`
+
+This provides clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.
+
+If not provided, the entire spatial extent of the granule will be used.
+
+Parameter example:
+
+```
+subset=lat(56.109375,67.640625)
+subset=lon(-9.984375,19.828125)
+```
+
+Note that both are needed in order to define a bounding box.
+
+Example usage:
+
+```
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)"
+```
+
 
 ### Forthcoming
 
