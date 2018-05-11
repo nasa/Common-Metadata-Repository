@@ -97,10 +97,13 @@ in conjunction with the `exclude-granules` parameter, then all granules
 _except_ the ones passed will be used in the OPeNDAP query.
 
 
-Parameter example:
+The following are examples of accepted `granules` parameter usage:
 
 ```
+granules=G1200187775-EDF_OPS
 granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS
+granules=G1200187775-EDF_OPS&granules=G1200245955-EDF_OPS
+granules[]=G1200187775-EDF_OPS&granules[]=G1200245955-EDF_OPS
 ```
 
 Example usage:
@@ -113,15 +116,18 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ##### `exclude-granules`
 
 This allows clients to perform the inverse of a granule search: all granules
-_except_ the ones passed.
+_except_ the ones passed. Granules may either be pass
 
 If not provided, a regular granule search is performed.
 
-Parameter example:
+Parameter examples:
 
 ```
 exclude-granules=true&granules=G1200187775-EDF_OPS
 ```
+
+Note that the `granules` parameter here may take any of the accepted forms
+shown in the previous section.
 
 Example usage:
 
@@ -138,10 +144,13 @@ by the OPeNDAP query to just the variables in which they are interested.
 If not provided, all variables associated in the collection metadata will
 be used.
 
-Parameter example:
+The following are examples of accepted `variables` parameter usage:
 
 ```
+variables=V1200241812-EDF_OPS
 variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS
+variables=V1200241812-EDF_OPS&variables=V1200241817-EDF_OPS
+variables[]=V1200241812-EDF_OPS&variables[]=V1200241817-EDF_OPS
 ```
 
 Example usage:
