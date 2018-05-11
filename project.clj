@@ -9,6 +9,10 @@
     ;; this function is really only meant to be used by Dragon itself.
     (catch Exception _ "")))
 
+(defn get-tophat
+  []
+  (slurp (clojure.java.io/resource "eosdis/tophat-include.html")))
+
 (defn get-prompt
   [ns]
   (str "\u001B[35m[\u001B[34m"
@@ -92,7 +96,7 @@
         :default (complement :system)}}
     :docs {
       :dependencies [
-        [clojang/codox-theme "0.2.0-SNAPSHOT"]]
+        [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
       :plugins [
         [lein-codox "0.10.3"]
         [lein-marginalia "0.9.1"]]
@@ -105,7 +109,17 @@
         :metadata {
           :doc/format :markdown
           :doc "Documentation forthcoming"}
-        :themes [:clojang]
+        :themes [:eosdis]
+        :html {
+          :transforms [[:head]
+                       [:append
+                       [:script {
+                         :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+                         :id "earthdata-tophat-script"
+                         :data-show-fbm "true"
+                         :data-show-status "true"
+                         :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+                         :data-status-polling-interval "10"}]]]}
         :doc-paths ["resources/docs/markdown"]
         :output-path "resources/public/docs/opendap/docs/reference"}}}
   :aliases {
