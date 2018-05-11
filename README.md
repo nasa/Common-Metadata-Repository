@@ -33,6 +33,42 @@ via:
         :themes [:eosdis]}
 ```
 
+To add Tophat to the docs, update your `:codox` profile to incorporate the
+necessary HTML transforms. Here's a working example:
+
+```clj
+:codox {
+	:project {
+	  :name "CMR OPeNDAP"
+	  :description "OPeNDAP/CMR Integration"}
+	:namespaces [#"^cmr\.opendap\.(?!dev)"]
+	:metadata {
+	  :doc/format :markdown
+	  :doc "Documentation forthcoming"}
+	:themes [:eosdis]
+	:html {
+	  :transforms [[:head]
+	               [:append
+	                 [:script {
+	                   :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+	                   :id "earthdata-tophat-script"
+	                   :data-show-fbm "true"
+	                   :data-show-status "true"
+	                   :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+	                   :data-status-polling-interval "10"}]]
+	               [:body]
+	               [:prepend
+	                 [:div {:id "earthdata-tophat2"
+	                        :style "height: 32px;"}]]
+	               [:body]
+	               [:append
+	                 [:script {
+	                   :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+	                   :type "text/javascript"}]]]}
+	:doc-paths ["resources/docs/markdown"]
+	:output-path "resources/public/docs/opendap/docs/reference"}
+```
+
 
 ## License
 
