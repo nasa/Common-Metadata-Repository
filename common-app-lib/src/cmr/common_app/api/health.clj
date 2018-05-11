@@ -2,13 +2,14 @@
   "Defines the health routes for applications."
   (:require
    [cheshire.core :as json]
+   [cmr.common-app.api.routes :as common-routes]   
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [warn]]
    [cmr.common.mime-types :as mt]
-   [compojure.core :refer [GET]]))
+   [compojure.core :refer :all]))
 
 (def health-cache-key
   "The key used to store the health cache in the system cache map."
@@ -34,7 +35,8 @@
   (when-not ok?
     (warn "Health check failed" (pr-str dependencies)))
   {:status (if ok? 200 503)
-   :headers {"Content-Type" (mt/with-utf-8 mt/json)}
+   :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
+             common-routes/CORS_ORIGIN_HEADER "*"}
    :body (json/generate-string dependencies)})
 
 (defn- get-app-health
@@ -53,5 +55,6 @@
   takes a request-context as a parameter to determine if the application and its dependencies are
   working as expected."
   [health-fn]
+  (OPTIONS "/health" req common-routes/options-response)
   (GET "/health" {:keys [request-context]}
     (get-app-health request-context health-fn)))
