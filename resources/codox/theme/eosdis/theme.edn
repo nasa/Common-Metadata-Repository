@@ -11,7 +11,7 @@
   [:#header :h2]
   [:append
    " with the "
-   [:a {:href "https://github.com/clojang/codox-theme"} "Clojang UI"]
+   [:a {:href "https://github.com/cmr-exchange/codox-theme"} "NASA EOSDIS"]
    " theme"]]
 
  :resources
