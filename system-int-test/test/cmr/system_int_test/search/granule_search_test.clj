@@ -211,7 +211,7 @@
                   :granule-ur "SampleUR1"}
                  {:entry-title "TestCollection"
                   :granule-ur "SampleUR2"}
-                 {:entry-title "TestCollection"
+                 {:entry-title " TestCollection"
                   :granule-ur "sampleur3"}]})
 
 (deftest search-by-granule-ur
