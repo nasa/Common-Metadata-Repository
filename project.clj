@@ -9,17 +9,13 @@
     ;; this function is really only meant to be used by Dragon itself.
     (catch Exception _ "")))
 
-(defn get-tophat
-  []
-  (slurp (clojure.java.io/resource "eosdis/tophat-include.html")))
-
 (defn get-prompt
   [ns]
   (str "\u001B[35m[\u001B[34m"
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-opendap "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-opendap "1.0.0-SNAPSHOT"
   :description "OPeNDAP Integration in the CMR"
   :url "https://github.com/cmr-exchange/cmr-opendap"
   :license {
