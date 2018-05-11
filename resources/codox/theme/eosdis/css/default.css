@@ -74,16 +74,16 @@ h3 > a:hover {
 }
 
 .sidebar.primary {
-    background: #2c3e50;
-    border-right: solid 1px #2c3e50;
+    background: #141d30;
+    border-right: solid 1px #141d30;
     left: 0;
     width: 250px;
     font-size: 110%;
 }
 
 .sidebar.secondary {
-    background: #2a364f;
-    border-right: solid 1px #d7d7d7;
+    background: #252f44;
+    border-right: solid 1px #252f44;
     left: 251px;
     width: 200px;
     font-size: 110%;
