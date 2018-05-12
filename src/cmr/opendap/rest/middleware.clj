@@ -94,15 +94,24 @@
   [handler system]
   (fn [request]
     (let [response (handler request)
-          status (:status response)]
-      (when (nil? status)
-        (log/debug "Got nil status in not-found middleware ..."))
-      (if (or (= 404 status) (nil? status))
-        (assoc (pages/not-found
-                request
-                {:base-url (config/opendap-url system)})
-               :status 404)
-        response))))
+          status (:status response)
+          ct (get-in response [:headers "Content-Type"])]
+      (cond (and ct (string/includes? ct "stream"))
+            (do
+              (log/debug "Got streaming response; skipping 404 checks ...")
+              response)
+
+            (or (= 404 status) (nil? status))
+            (do
+              (when (nil? status)
+                (log/debug "Got nil status in not-found middleware ..."))
+              (assoc (pages/not-found
+                      request
+                      {:base-url (config/opendap-url system)})
+                     :status 404))
+
+            :else
+            response))))
 
 (defn wrap-auth
   "Ring-based middleware for supporting the protection of routes using the CMR

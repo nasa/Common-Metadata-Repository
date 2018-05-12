@@ -71,10 +71,6 @@
   [request]
   (log/debug "Processing stream request ...")
   (server/with-channel request channel
-    ; (server/send! channel
-    ;               {:headers {"Content-Type" "text/event-stream; charset=utf-8"
-    ;                          "Cache-Control" "no-cache"}}
-    ;               false)
     (log/debug "Setting 'on-close' callback ...")
     (server/on-close channel
                      (fn [status]
@@ -85,12 +81,9 @@
       (when (< id 10)
         (timer/schedule-task
          (* id 200) ;; send a message every 200ms
-         ; (let [msg (format "message #%s from server ..." id)]
-         ;  (server/send! channel (format "%x\r\n%s\r\n" (count msg) msg) false))) ; false => don't close after send
          (log/debug "\tSending chunk to client ...")
          (server/send! channel
-                       ;(format "%x\r\nmessage #%s from server ..." id id)
                        (format "message #%s from server ..." id)
                        false))
         (recur (inc id))))
-    (timer/schedule-task 20000 (server/close channel))))
+    (timer/schedule-task (* 10 200) (server/close channel))))
