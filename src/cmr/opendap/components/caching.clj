@@ -32,18 +32,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-cache
-  [system]
-  (let [init (merge (config/cache-init system)
-                    (load-cache system))
-        ttl (config/cache-ttl-ms system)
-        threshold (config/cache-lru-threshold system)
-        cache (-> init
-                  (cache/ttl-cache-factory :ttl ttl)
-                  (cache/lru-cache-factory :threshold threshold))]
-    (log/debug "Creating TTL Cache with time-to-live of" ttl)
-    (log/debug "Composing with LRU cache with threshold (item count)" threshold)
-    (log/trace "Starting value:" init)
-    (atom cache)))
+  ([system]
+   (create-cache system
+                 (merge (config/cache-init system)
+                        (load-cache system))))
+  ([system init-items]
+   (let [ttl (config/cache-ttl-ms system)
+         threshold (config/cache-lru-threshold system)
+         cache (-> init-items
+                   (cache/ttl-cache-factory :ttl ttl)
+                   (cache/lru-cache-factory :threshold threshold))]
+     (log/debug "Creating TTL Cache with time-to-live of" ttl)
+     (log/debug "Composing with LRU cache with threshold (item count)" threshold)
+     (log/trace "Starting value:" init-items)
+     cache)))
 
 (defn get-cache
   [system]
@@ -52,6 +54,10 @@
 (defn evict
   [system item-key]
   (swap! (get-cache system) cache/evict item-key))
+
+(defn evict-all
+  [system]
+  (reset! (get-cache system) (create-cache system (config/cache-init system))))
 
 (defn lookup
   ([system item-key]
@@ -69,6 +75,10 @@
             (swap! (get-cache system) #(cache/miss % item-key value))))))
     (lookup system item-key)))
 
+(defn lookup-all
+  [system]
+  @(get-cache system))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,7 +88,7 @@
 (defn start
   [this]
   (log/info "Starting caching component ...")
-  (let [cache (create-cache this)]
+  (let [cache (atom (create-cache this))]
     (log/debug "Started caching component.")
     (assoc this :cache cache)))
 

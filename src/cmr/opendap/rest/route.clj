@@ -6,6 +6,7 @@
   (:require
    [cmr.opendap.components.config :as config]
    [cmr.opendap.health :as health]
+   [cmr.opendap.rest.handler.cache :as cache-handler]
    [cmr.opendap.rest.handler.collection :as collection-handler]
    [cmr.opendap.rest.handler.core :as core-handler]
    [cmr.opendap.site.pages :as pages]
@@ -58,7 +59,17 @@
 
 (defn admin-api
   [httpd-component]
-  [["/opendap/health" {
+  [["/opendap/cache" {
+    :get {:handler (cache-handler/lookup-all httpd-component)
+          :roles #{:admin}}
+    :delete {:handler (cache-handler/evict-all httpd-component)
+             :roles #{:admin}}}]
+   ["/opendap/cache/:item-key" {
+    :get {:handler (cache-handler/lookup httpd-component)
+          :roles #{:admin}}
+    :delete {:handler (cache-handler/evict httpd-component)
+             :roles #{:admin}}}]
+   ["/opendap/health" {
     :get (core-handler/health httpd-component)
     :options core-handler/ok}]
    ["/opendap/ping" {

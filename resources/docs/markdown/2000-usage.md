@@ -8,7 +8,8 @@
   * Authorized Access
   * Collection Resource
   * Forthcoming
-* Miscellaneous Resources
+* Admin Resources
+  * Cache
   * Health
   * Ping
 
@@ -333,9 +334,22 @@ The following are coming soon:
 * `POST /opendap/ous/collections`
 
 
-## Miscellaneous Resources
+## Admin Resources
+
+### Cache
+
+Administrative users may use a token to access the following:
+
+* `GET    /opendap/cache`
+* `DELETE /opendap/cache`
+* `GET    /opendap/cache/:item-key`
+* `DELETE /opendap/cache/:item-key`
+
 
 ### Health
+
+Even though the `health` resources are classified as "admin", they are
+available for use by anyone.
 
 * `GET     /opendap/health`
 * `OPTIONS /opendap/health`

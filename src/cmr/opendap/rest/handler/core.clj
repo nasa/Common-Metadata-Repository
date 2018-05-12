@@ -1,5 +1,5 @@
 (ns cmr.opendap.rest.handler.core
-  "This namespace defines the handlers for REST API resources.
+  "This namespace defines the handlers for general resources.
 
   Simple handlers will only need to make a call to a library and then have that
   data prepared for the client by standard response function. More complex
