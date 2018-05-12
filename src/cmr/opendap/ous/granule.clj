@@ -46,7 +46,7 @@
                  (build-exclude gran-ids)
                  (build-include gran-ids)))))))
 
-(defn get-metadata
+(defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
   keys, get the metadata for the desired granules.
 
@@ -55,18 +55,25 @@
   [search-endpoint user-token params]
   (let [url (str search-endpoint
                  "/granules?"
-                 (build-query params))
-        results (request/async-get url
-                 (-> {}
-                     (request/add-token-header user-token)
-                     (request/add-accept "application/json"))
-                 response/json-handler)]
+                 (build-query params))]
+    (request/async-get
+     url
+     (-> {}
+         (request/add-token-header user-token)
+         (request/add-accept "application/json"))
+     response/json-handler)))
+
+(defn get-metadata
+  [search-endpoint user-token params]
+  (let [results @(async-get-metadata search-endpoint user-token params)]
     (log/debug "Got results from CMR granule search:" results)
-    (get-in @results [:feed :entry])))
+    (get-in results [:feed :entry])))
 
 ;; XXX This logic was copied from the prototype; it is generally viewed by the
 ;;     CMR Team & the Metadata Tools Team that this approach is flawed, and
 ;;     that adding support for this approach to UMM-S was a short-term hack.
+;;     Providers should not be adding arbitrary regex's to UMM-S that CMR is
+;;     then supposed to execute.
 (defn match-datafile-link
   "The criteria defined in the prototype was to iterate through the links,
   only examining those links that were not 'inherited', and find the one

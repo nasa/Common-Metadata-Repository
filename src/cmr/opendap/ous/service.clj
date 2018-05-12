@@ -17,20 +17,25 @@
          service-ids)
     (str "page_size=" (count service-ids)))))
 
-(defn get-metadata
+(defn async-get-metadata
   "Given a service-id, get the metadata for the associate service."
   [search-endpoint user-token service-ids]
   (log/debug "Getting service metadata for:" service-ids)
   (let [url (str search-endpoint
                  "/services?"
-                 (build-query service-ids))
-        results (request/async-get url
-                 (-> {}
-                     (request/add-token-header user-token)
-                     (request/add-accept "application/vnd.nasa.cmr.umm+json"))
-                 response/json-handler)]
+                 (build-query service-ids))]
+    (request/async-get
+     url
+     (-> {}
+         (request/add-token-header user-token)
+         (request/add-accept "application/vnd.nasa.cmr.umm+json"))
+     response/json-handler)))
+
+(defn get-metadata
+  [search-endpoint user-token service-ids]
+  (let [results @(async-get-metadata search-endpoint user-token service-ids)]
     (log/debug "Got results from CMR service search:" results)
-    (:items @results)))
+    (:items results)))
 
 (defn match-opendap
   [service-data]
