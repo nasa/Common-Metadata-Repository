@@ -62,14 +62,20 @@
   [request]
   (get-in request [:path-params :concept-id]))
 
+(defn- -route-annotation
+  [request]
+  (get-in (ring/get-match request) [:data :get :permissions]))
+
 (defn route-annotation
   "Extract any permissions annotated in the route associated with the given
   request."
   [request]
-  (reitit-acl-data
-   (route-concept-id request)
-   (cmr-acl->reitit-acl
-    (get-in (ring/get-match request) [:data :get :permissions]))))
+  (let [annotation (-route-annotation request)]
+    (log/debug "Permissions annotation:" annotation)
+    (when annotation
+      (reitit-acl-data
+       (route-concept-id request)
+       (cmr-acl->reitit-acl annotation)))))
 
 (defn concept
   "Query the CMR Access Control API to get the permissions the given token+user
