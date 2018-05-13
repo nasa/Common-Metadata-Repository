@@ -57,7 +57,8 @@
     :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
     :options core-handler/ok}]
-   ["/opendap/ous/stream/collection/:concept-id" {:get collection-handler/stream}]])
+   ["/opendap/ous/stream/collection/:concept-id" {
+    :get collection-handler/stream-urls}]])
 
 (defn admin-api
   [httpd-component]
