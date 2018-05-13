@@ -113,26 +113,71 @@
      user-token
      (assoc params :variables (collection/extract-variable-ids coll)))))
 
-(defn get-opendap-urls
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Stages for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; The functions originally called as part of a `let` block in
+;;; `get-opendap-urls` have been split out into stages organized by dependency.
+;;; Functions which depend only upon the parameters (or parsing of those
+;;; parameters) are placed in the first stage. Functions which depend upon
+;;; either the parameters or the results of the first stage are placed in the
+;;; second stage, etc.
+
+(defn stage1
   [search-endpoint user-token raw-params]
-  (log/trace "Got params:" raw-params)
   (let [start (util/now)
         params (params/parse raw-params)
         bounding-box (:bounding-box params)
         granules (granule/get-metadata search-endpoint user-token params)
-        data-files (map granule/extract-datafile-link granules)
-        coll (collection/get-metadata search-endpoint user-token params)
+        coll (collection/get-metadata search-endpoint user-token params)]
+    [start params bounding-box granules coll]))
+
+(defn stage2
+  [search-endpoint user-token params coll granules]
+  (let [data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
-        services (service/get-metadata search-endpoint user-token service-ids)
-        pattern-info (service/extract-pattern-info (first services))
-        vars (apply-bounding-conditions search-endpoint user-token coll params)
-        bounding-info (map #(variable/extract-bounding-info % bounding-box)
-                           vars)
-        query (bounding-info->opendap-query bounding-info bounding-box)]
+        vars (apply-bounding-conditions search-endpoint user-token coll params)]
     (log/trace "data-files:" (into [] data-files))
-    (log/trace "pattern-info:" pattern-info)
+    [data-files service-ids vars]))
+
+(defn stage3
+  [search-endpoint user-token bounding-box service-ids vars]
+  (let [services (service/get-metadata search-endpoint user-token service-ids)
+        bounding-info (map #(variable/extract-bounding-info % bounding-box)
+                           vars)]
     (log/debug "variable bounding-info:" (into [] bounding-info))
+    [services bounding-info]))
+
+(defn stage4
+  [bounding-box services bounding-info]
+  (let [pattern-info (service/extract-pattern-info (first services))
+        query (bounding-info->opendap-query bounding-info bounding-box)]
+    (log/trace "pattern-info:" pattern-info)
     (log/debug "query:" query)
+    [pattern-info query]))
+
+(defn get-opendap-urls
+  [search-endpoint user-token raw-params]
+  (log/trace "Got params:" raw-params)
+  (let [;; Stage 1
+        [start params bounding-box granules coll] (stage1 search-endpoint
+                                                          user-token
+                                                          raw-params)
+        ;; Stage 2
+        [data-files service-ids vars] (stage2 search-endpoint
+                                              user-token
+                                              params
+                                              coll
+                                              granules)
+        ;; Stage 3
+        [services bounding-info] (stage3 search-endpoint
+                                         user-token
+                                         bounding-box
+                                         service-ids
+                                         vars)
+        ;; Stage 4
+        [pattern-info query] (stage4 bounding-box services bounding-info)]
     (results/create
      (data-files->opendap-urls params pattern-info data-files query)
      :elapsed (util/timed start))))
