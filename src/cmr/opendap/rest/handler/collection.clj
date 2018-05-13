@@ -15,6 +15,16 @@
 ;;;   OUS Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- generate
+  "Private function for creating OPeNDAP URLs when supplied with an HTTP
+  GET."
+  [request search-endpoint user-token concept-id data]
+  (log/debug "Generating URLs based on HTTP GET ...")
+  (->> data
+       (merge {:collection-id concept-id})
+       (ous/get-opendap-urls search-endpoint user-token)
+       (response/json request)))
+
 (defn- generate-via-get
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET."
@@ -22,9 +32,7 @@
   (log/debug "Generating URLs based on HTTP GET ...")
   (->> request
        :params
-       (merge {:collection-id concept-id})
-       (ous/get-opendap-urls search-endpoint user-token)
-       (response/json request)))
+       (generate request search-endpoint user-token concept-id)))
 
 (defn- generate-via-post
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
@@ -34,9 +42,7 @@
        :body
        (slurp)
        (#(json/parse-string % true))
-       (merge {:collection-id concept-id})
-       (ous/get-opendap-urls search-endpoint user-token)
-       (response/json request)))
+       (generate request search-endpoint user-token concept-id)))
 
 (defn unsupported-method
   "XXX"
@@ -66,7 +72,7 @@
   (fn [request]
     {:error :not-implemented}))
 
-(defn stream
+(defn stream-urls
   ""
   [request]
   (log/debug "Processing stream request ...")
@@ -83,7 +89,8 @@
          (* id 200) ;; send a message every 200ms
          (log/debug "\tSending chunk to client ...")
          (server/send! channel
-                       (format "message #%s from server ..." id)
+                       ;(format "message #%s from server ..." id)
+                       {:status 202}
                        false))
         (recur (inc id))))
     (timer/schedule-task (* 10 200) (server/close channel))))
