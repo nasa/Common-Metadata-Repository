@@ -6,8 +6,10 @@
   by single use or composition."
   (:require
    [cheshire.core :as json]
+   [clojure.data.xml :as xml]
    [ring.util.http-response :as response]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [xml-in.core :as xml-in]))
 
 (defn client-handler
   ([response]
@@ -33,6 +35,16 @@
     json-data))
 
 (def json-handler #(client-handler % parse-json-body))
+
+(defn parse-xml-body
+  [body]
+  (let [str-data (if (string? body) body (slurp body))]
+    (xml/parse-str str-data)))
+
+(defn xml-errors
+  [body]
+  (xml-in/find-all (parse-xml-body body)
+                   [:errors :error]))
 
 (defn ok
   [_request & args]
@@ -63,12 +75,6 @@
    (response/not-found "Not Found")
    "text/plain"))
 
-(defn not-allowed
-  [data]
-  (-> data
-      response/forbidden
-      (response/content-type "text/plain")))
-
 (defn cors
   [request response]
   (case (:request-method request)
@@ -79,3 +85,19 @@
                  (response/header "Access-Control-Allow-Headers" "Content-Type")
                  (response/header "Access-Control-Max-Age" "2592000"))
     (response/header response "Access-Control-Allow-Origin" "*")))
+
+(defn errors
+  [errors]
+  {:errors errors})
+
+(defn error
+  [error]
+  (errors [error]))
+
+(defn not-allowed
+  [message]
+  (-> message
+      error
+      json/generate-string
+      response/forbidden
+      (response/content-type "application/json")))
