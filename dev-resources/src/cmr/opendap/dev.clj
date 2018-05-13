@@ -2,6 +2,7 @@
   "CMR OPeNDAP development namespace."
   (:require
     [cheshire.core :as json]
+    [clojure.data.xml :as xml]
     [clojure.java.io :as io]
     [clojure.pprint :refer [pprint]]
     [clojure.set :as set]
@@ -14,7 +15,8 @@
     [cmr.opendap.components.core]
     [com.stuartsierra.component :as component]
     [org.httpkit.client :as httpc]
-    [trifl.java :refer [show-methods]])
+    [trifl.java :refer [show-methods]]
+    [xml-in.core :as xml-in])
   (:import
     (java.net URI)
     (java.nio.file Paths)))
