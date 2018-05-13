@@ -7,24 +7,10 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in]))
-
-(defn client-handler
-  ([response]
-    (client-handler response identity))
-  ([{:keys [status headers body error]} parse-fn]
-    (log/debug "Handling client response ...")
-    (cond error
-          (log/error error)
-          (>= status 400)
-          (do
-            (log/error status)
-            (log/debug "Headers:" headers)
-            (log/debug "Body:" body))
-          :else
-          (parse-fn body))))
 
 (defn parse-json-body
   [body]
@@ -34,7 +20,9 @@
     (log/trace "json-data:" json-data)
     json-data))
 
-(def json-handler #(client-handler % parse-json-body))
+(defn json-errors
+  [body]
+  (:errors (parse-json-body body)))
 
 (defn parse-xml-body
   [body]
@@ -43,8 +31,46 @@
 
 (defn xml-errors
   [body]
-  (xml-in/find-all (parse-xml-body body)
-                   [:errors :error]))
+  (vec (xml-in/find-all (parse-xml-body body)
+                        [:errors :error])))
+
+(defn error-handler
+  [status headers body]
+  (log/error "HTTP Error status code:" status)
+  (log/trace "Headers:" headers)
+  (log/trace "Body:" body)
+  (cond (string/starts-with? (:content-type headers)
+                             "application/xml")
+        (let [errs (xml-errors body)]
+          (log/error errs)
+          {:errors errs})
+
+        (string/starts-with? (:content-type headers)
+                             "application/json")
+        (let [errs (json-errors body)]
+          (log/error errs)
+          {:errors errs})
+
+        :else
+        body))
+
+(defn client-handler
+  ([response]
+    (client-handler response identity))
+  ([{:keys [status headers body error]} parse-fn]
+    (log/debug "Handling client response ...")
+    (cond error
+          (do
+            (log/error error)
+            {:errors [error]})
+
+          (>= status 400)
+          (error-handler status headers body)
+
+          :else
+          (parse-fn body))))
+
+(def json-handler #(client-handler % parse-json-body))
 
 (defn ok
   [_request & args]
@@ -95,9 +121,11 @@
   (errors [error]))
 
 (defn not-allowed
-  [message]
-  (-> message
-      error
-      json/generate-string
-      response/forbidden
-      (response/content-type "application/json")))
+  ([message]
+   (not-allowed message []))
+  ([message other-errors]
+   (-> (conj other-errors message)
+       errors
+       json/generate-string
+       response/forbidden
+       (response/content-type "application/json"))))

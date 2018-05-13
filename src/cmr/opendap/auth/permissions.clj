@@ -45,7 +45,7 @@
   * return a reitit-ready ACL when a map (representing a CMR ACL) is given
   * return the CMR ACL as-is in all other cases."
   [cmr-acl]
-  (log/debug "Got CMR ACL:" cmr-acl)
+  (log/trace "Got CMR ACL:" cmr-acl)
   (cond (nil? cmr-acl)
         #{}
 
@@ -75,32 +75,35 @@
   "Query the CMR Access Control API to get the permissions the given token+user
   have for the given concept."
   [base-url token user-id concept-id]
-  (let [perms @(acls/check-access base-url
-                                  token
-                                  user-id
-                                  (echo-concept-query concept-id))]
-    (log/debug "Got perms:" perms)
-    (cmr-acl->reitit-acl perms)))
+  (let [result @(acls/check-access base-url
+                                   token
+                                   user-id
+                                   (echo-concept-query concept-id))
+        errors (:errors result)]
+    (if errors
+      (throw (ex-info (first errors) result))
+      (do
+        (log/debug "Got permissions:" result)
+        (cmr-acl->reitit-acl result)))))
 
 (defn cached-concept
   "Look up the permissions for a concept in the cache; if there is a miss,
   make the actual call for the lookup."
   [system token user-id concept-id]
-  (caching/lookup system
-                  (concept-key token)
-                  #(concept (config/get-access-control-url system)
-                            token
-                            user-id
-                            concept-id)))
+  (try
+    (caching/lookup system
+                    (concept-key token)
+                    #(concept (config/get-access-control-url system)
+                              token
+                              user-id
+                              concept-id))
+    (catch Exception e
+      (ex-data e))))
 
 (defn concept?
   "Check to see if the concept permissions of a given token+user match the
   required permissions for the route."
-  [system route-perms token user-id concept-id]
+  [route-perms cache-lookup concept-id]
   (let [id (keyword concept-id)
-        required (cmr-acl->reitit-acl route-perms)
-        concept-perms (cached-concept system
-                                      token
-                                      user-id
-                                      concept-id)]
-    (seq (set/intersection (id required) (id concept-perms)))))
+        required (cmr-acl->reitit-acl route-perms)]
+    (seq (set/intersection (id required) (id cache-lookup)))))

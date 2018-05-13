@@ -14,6 +14,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.opendap.http.response :as response]
    [cmr.opendap.testing.system :as test-system]
    [org.httpkit.client :as httpc])
   (:import
@@ -34,8 +35,8 @@
     (let [response @(httpc/get (format "http://localhost:%s/opendap/ping"
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
-      (is (= "An ECHO token is required to access this resource."
-             (:body response))))))
+      (is (= {:errors ["An ECHO token is required to access this resource."]}
+             (response/parse-json-body (:body response)))))))
 
 (deftest testing-routes
   (is 401

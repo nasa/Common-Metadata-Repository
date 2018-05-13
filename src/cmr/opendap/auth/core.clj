@@ -19,49 +19,60 @@
   "A supporting function for `check-roles-permissions` that handles the roles
   side of things."
   [system handler request route-roles user-token user-id]
-  (log/debug "Roles annotated in routes ...")
-  (if (roles/admin? system
-                    route-roles
-                    user-token
-                    user-id)
-    (handler request)
-    (response/not-allowed errors/no-permissions)))
+  (log/debug "Checking roles annotated in routes ...")
+  (let [lookup (roles/cached-admin system user-token user-id)
+        errors (:errors lookup)]
+    (if errors
+      (response/not-allowed errors/no-permissions errors)
+      (if (roles/admin? route-roles lookup)
+        (handler request)
+        (response/not-allowed errors/no-permissions)))))
 
 (defn check-permissions
   "A supporting function for `check-roles-permissions` that handles the
   permissions side of things."
   [system handler request route-permissions user-token user-id]
-  (let [concept-id (permissions/route-concept-id request)]
-    (log/debug "Permissions annotated in routes ...")
-    (if (permissions/concept? system
-                              route-permissions
-                              user-token
-                              user-id
-                              concept-id)
-      (handler request)
-      (response/not-allowed errors/no-permissions))))
+  (let [concept-id (permissions/route-concept-id request)
+        lookup (permissions/cached-concept
+                system user-token user-id concept-id)
+        errors (:errors lookup)]
+    (log/debug "Checking permissions annotated in routes ...")
+    (if errors
+      (response/not-allowed errors/no-permissions errors)
+      (if (permissions/concept? route-permissions
+                                lookup
+                                concept-id)
+        (handler request)
+        (response/not-allowed errors/no-permissions)))))
 
 (defn check-roles-permissions
   "A supporting function for `check-route-access` that handles the actual
   checking."
   [system handler request route-roles route-permissions]
   (if-let [user-token (token/extract request)]
-    (do
+    (let [user-lookup (token/->cached-user system user-token)
+          errors (:errors user-lookup)]
       (log/debug "ECHO token provided; proceeding ...")
-      (let [user-id (token/->cached-user system user-token)]
-        (log/trace "user-token: [REDACTED]")
-        (log/trace "user-id:" user-id)
-        (cond ;; XXX For now, there is only the admin role in the CMR, so
-              ;;     we'll just keep this specific to that for now. Later, if
-              ;;     more roles are used, we'll want to make this more
-              ;;     generic ...
-              route-roles
-              (check-roles
-               system handler request route-roles user-token user-id)
+      (if errors
+        (response/not-allowed errors/token-required errors)
+        (do
+          (log/trace "user-token: [REDACTED]")
+          (log/trace "user-id:" user-lookup)
+          (cond ;; XXX For now, there is only the admin role in the CMR, so
+                ;;     we'll just keep this specific to that for now. Later, if
+                ;;     more roles are used, we'll want to make this more
+                ;;     generic ...
+                route-roles
+                (check-roles
+                 system handler request route-roles user-token user-lookup)
 
-              route-permissions
-              (check-permissions
-               system handler request route-permissions user-token user-id))))
+                route-permissions
+                (check-permissions system
+                                   handler
+                                   request
+                                   route-permissions
+                                   user-token
+                                   user-lookup)))))
     (do
       (log/warn "ECHO token not provided for protected resource")
       (response/not-allowed errors/token-required))))
@@ -82,8 +93,8 @@
       (do
         (log/debug (str "Either roles or permissions were annotated in "
                         "routes; checking ACLs ..."))
-        (log/trace "route-roles:" route-roles)
-        (log/trace "route-permissions:" route-permissions)
+        (log/debug "route-roles:" route-roles)
+        (log/debug "route-permissions:" route-permissions)
         (check-roles-permissions
          system handler request route-roles route-permissions))
       (do

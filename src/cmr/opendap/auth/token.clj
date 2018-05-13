@@ -9,7 +9,8 @@
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [xml-in.core :as xml-in]))
 
 (def token-info-resource
   "The path segment to the CMR Access Control API resource that is queried
@@ -31,22 +32,28 @@
   [request]
   (request/get-header request "echo-token"))
 
-(defn extract-user-name
-  "Given a parsed XML element from a get-token-info payload, extract the user
-  name."
-  [xml-element]
-  (when (= :user_name (:tag xml-element))
-   (:content xml-element)))
+(defn find-xml
+  [xml-str in-keys]
+  (log/trace "Got token XML data:" xml-str)
+  (xml-in/find-first (xml/parse-str xml-str) in-keys))
 
 (defn parse-token-data
   "Parse the XML that is returned when querying the CMR Access Control API for
   token info."
   [xml-str]
-  (log/trace "Got token XML data:" xml-str)
-  (first
-    (remove nil?
-      (mapcat #(when (map? %) (extract-user-name %))
-              (:content (xml/parse-str xml-str))))))
+  (find-xml xml-str [:token_info]))
+
+(defn parse-token
+  "Parse the XML that is returned when querying the CMR Access Control API for
+  the token."
+  [xml-str]
+  (find-xml xml-str [:token_info :token]))
+
+(defn parse-username
+  "Parse the XML that is returned when querying the CMR Access Control API for
+  the username associated with the token."
+  [xml-str]
+  (find-xml xml-str [:token_info :user_name]))
 
 (defn get-token-info
   "Query the CMR Access Control API for information assocated with the given
@@ -59,18 +66,25 @@
       (-> {:body data}
           (request/add-token-header token)
           (request/add-form-ct))
-      #(response/client-handler % parse-token-data))))
+      #(response/client-handler % parse-username))))
 
 (defn ->user
   "Given a token, return the associated user name."
   [base-url token]
-  @(get-token-info base-url token))
+  (let [result @(get-token-info base-url token)
+        errors (:errors result)]
+    (if errors
+      (throw (ex-info (first errors) result))
+      result)))
 
 (defn ->cached-user
   "Look up the user for a token in the cache; if there is a miss, make the
   actual call for the lookup."
   [system token]
-  (caching/lookup
-   system
-   (user-id-key token)
-   #(->user (config/get-echo-rest-url system) token)))
+  (try
+    (caching/lookup
+     system
+     (user-id-key token)
+     #(->user (config/get-echo-rest-url system) token))
+    (catch Exception e
+      (ex-data e))))

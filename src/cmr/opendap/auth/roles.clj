@@ -36,6 +36,7 @@
 
 (defn cmr-acl->reitit-acl
   [cmr-acl]
+  (log/trace "Got CMR ACL:" cmr-acl)
   (if (seq (management-acl cmr-acl))
     #{:admin}
     #{}))
@@ -48,26 +49,32 @@
 (defn admin
   "Query the CMR Access Control API to get the roles for the given token+user."
   [base-url token user-id]
-  (let [perms @(acls/check-access base-url
-                                  token
-                                  user-id
-                                  echo-management-query)]
-    (log/debug "Got permissions:" perms)
-    (cmr-acl->reitit-acl perms)))
+  (let [result @(acls/check-access base-url
+                                   token
+                                   user-id
+                                   echo-management-query)
+        errors (:errors result)]
+    (if errors
+      (throw (ex-info (first errors) result))
+      (do
+        (log/debug "Got permissions:" result)
+        (cmr-acl->reitit-acl result)))))
 
 (defn cached-admin
   "Look up the roles for token+user in the cache; if there is a miss, make the
   actual call for the lookup."
   [system token user-id]
-  (caching/lookup system
-                  (admin-key token)
-                  #(admin (config/get-access-control-url system)
-                          token
-                          user-id)))
+  (try
+    (caching/lookup system
+                    (admin-key token)
+                    #(admin (config/get-access-control-url system)
+                            token
+                            user-id))
+    (catch Exception e
+      (ex-data e))))
 
 (defn admin?
   "Check to see if the roles of a given token+user match the required roles for
   the route."
-  [system route-roles token user-id]
-  (seq (set/intersection (cached-admin system token user-id)
-                         route-roles)))
+  [route-roles cache-lookup]
+  (seq (set/intersection cache-lookup route-roles)))

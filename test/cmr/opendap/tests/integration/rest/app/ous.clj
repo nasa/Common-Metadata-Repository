@@ -13,6 +13,7 @@
   * https://en.wikipedia.org/wiki/Software_testing#Integration_testing"
   (:require
    [clojure.test :refer :all]
+   [cmr.opendap.http.response :as response]
    [cmr.opendap.testing.system :as test-system]
    [org.httpkit.client :as httpc]))
 
@@ -29,5 +30,5 @@
                              (test-system/http-port)
                              collection-id))]
       (is (= 403 (:status response)))
-      (is (= "An ECHO token is required to access this resource."
-             (:body response))))))
+      (is (= {:errors ["An ECHO token is required to access this resource."]}
+             (response/parse-json-body (:body response)))))))
