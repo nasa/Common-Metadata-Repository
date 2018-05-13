@@ -48,11 +48,12 @@
 (defn admin
   "Query the CMR Access Control API to get the roles for the given token+user."
   [base-url token user-id]
-  (let [perms (acls/check-access base-url
-                                 token
-                                 user-id
-                                 echo-management-query)]
-    (cmr-acl->reitit-acl @perms)))
+  (let [perms @(acls/check-access base-url
+                                  token
+                                  user-id
+                                  echo-management-query)]
+    (log/debug "Got permissions:" perms)
+    (cmr-acl->reitit-acl perms)))
 
 (defn cached-admin
   "Look up the roles for token+user in the cache; if there is a miss, make the

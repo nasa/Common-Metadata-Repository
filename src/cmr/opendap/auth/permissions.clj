@@ -75,12 +75,12 @@
   "Query the CMR Access Control API to get the permissions the given token+user
   have for the given concept."
   [base-url token user-id concept-id]
-  (let [perms (acls/check-access base-url
-                                 token
-                                 user-id
-                                 (echo-concept-query concept-id))]
-    (log/debug "Got perms:" @perms)
-    (cmr-acl->reitit-acl @perms)))
+  (let [perms @(acls/check-access base-url
+                                  token
+                                  user-id
+                                  (echo-concept-query concept-id))]
+    (log/debug "Got perms:" perms)
+    (cmr-acl->reitit-acl perms)))
 
 (defn cached-concept
   "Look up the permissions for a concept in the cache; if there is a miss,
