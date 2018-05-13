@@ -24,11 +24,16 @@
          (request/add-accept "application/json"))
      response/json-handler)))
 
+(defn extract-metadata
+  [promise]
+  (let [results @promise]
+    (log/debug "Got results from CMR granule collection:" results)
+    (first (get-in results [:feed :entry]))))
+
 (defn get-metadata
   [search-endpoint user-token params]
-  (let [results @(async-get-metadata search-endpoint user-token params)]
-    (log/debug "Got results from CMR collection search:" results)
-    (first (get-in results [:feed :entry]))))
+  (let [promise (async-get-metadata search-endpoint user-token params)]
+    (extract-metadata promise)))
 
 (defn extract-variable-ids
   [entry]

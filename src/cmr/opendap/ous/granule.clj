@@ -63,11 +63,16 @@
          (request/add-accept "application/json"))
      response/json-handler)))
 
-(defn get-metadata
-  [search-endpoint user-token params]
-  (let [results @(async-get-metadata search-endpoint user-token params)]
+(defn extract-metadata
+  [promise]
+  (let [results @promise]
     (log/debug "Got results from CMR granule search:" results)
     (get-in results [:feed :entry])))
+
+(defn get-metadata
+  [search-endpoint user-token params]
+  (let [promise (async-get-metadata search-endpoint user-token params)]
+    (extract-metadata promise)))
 
 ;; XXX This logic was copied from the prototype; it is generally viewed by the
 ;;     CMR Team & the Metadata Tools Team that this approach is flawed, and

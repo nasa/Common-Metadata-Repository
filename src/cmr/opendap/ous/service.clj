@@ -31,11 +31,16 @@
          (request/add-accept "application/vnd.nasa.cmr.umm+json"))
      response/json-handler)))
 
-(defn get-metadata
-  [search-endpoint user-token service-ids]
-  (let [results @(async-get-metadata search-endpoint user-token service-ids)]
+(defn extract-metadata
+  [promise]
+  (let [results @promise]
     (log/debug "Got results from CMR service search:" results)
     (:items results)))
+
+(defn get-metadata
+  [search-endpoint user-token service-ids]
+  (let [promise (async-get-metadata search-endpoint user-token service-ids)]
+    (extract-metadata promise)))
 
 (defn match-opendap
   [service-data]
