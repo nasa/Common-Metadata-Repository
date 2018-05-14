@@ -55,6 +55,7 @@
   takes a request-context as a parameter to determine if the application and its dependencies are
   working as expected."
   [health-fn]
-  (OPTIONS "/health" req common-routes/options-response)
-  (GET "/health" {:keys [request-context]}
-    (get-app-health request-context health-fn)))
+  (context "/health" []
+    (OPTIONS "/" req common-routes/options-response)
+    (GET "/" {:keys [request-context]}
+      (get-app-health request-context health-fn))))
