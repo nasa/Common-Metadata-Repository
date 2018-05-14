@@ -117,12 +117,21 @@
 ;;;   Stages for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; The functions originally called as part of a `let` block in
-;;; `get-opendap-urls` have been split out into stages organized by dependency.
+;;; The various stage functions below were originally called as part of a `let`
+;;; block in `get-opendap-urls` but now have been split out into stages
+;;; organized by dependency.
+;;;
+;;; In particular:
+;;;
 ;;; Functions which depend only upon the parameters (or parsing of those
 ;;; parameters) are placed in the first stage. Functions which depend upon
 ;;; either the parameters or the results of the first stage are placed in the
 ;;; second stage, etc.
+;;;
+;;; The reason for this was to make it very clear when various functions
+;;; could be called as late as possible, and only call those which were
+;;; absolutely necessary at a given point. And the reason for _that_ was so
+;;; the code could be properly prepared for async execution.
 
 (defn stage1
   [search-endpoint user-token raw-params]
@@ -167,7 +176,7 @@
         pattern-info (service/extract-pattern-info (first services))
         query (bounding-info->opendap-query bounding-info bounding-box)]
     (log/trace "pattern-info:" pattern-info)
-    (log/debug "query:" query)
+    (log/debug "Generated OPeNDAP query:" query)
     (log/debug "Finishing stage 4 ...")
     [pattern-info query]))
 
