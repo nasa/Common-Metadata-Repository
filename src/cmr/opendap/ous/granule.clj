@@ -4,6 +4,7 @@
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.util :as ous-util]
    [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
@@ -38,13 +39,17 @@
   [params]
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
-        exclude? (:exclude-granules params)]
+        exclude? (:exclude-granules params)
+        bounding-box (:bounding-box params)]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
           (str "&"
                (if exclude?
                  (build-exclude gran-ids)
-                 (build-include gran-ids)))))))
+                 (build-include gran-ids))))
+         (when (seq bounding-box)
+          (str "&bounding_box="
+               (ous-util/seq->str bounding-box))))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
@@ -56,6 +61,7 @@
   (let [url (str search-endpoint
                  "/granules?"
                  (build-query params))]
+    (log/debug "Granules query to CMR:" url)
     (request/async-get
      url
      (-> {}
@@ -66,7 +72,7 @@
 (defn extract-metadata
   [promise]
   (let [results @promise]
-    (log/debug "Got results from CMR granule search:" results)
+    (log/trace "Got results from CMR granule search:" results)
     (get-in results [:feed :entry])))
 
 (defn get-metadata
