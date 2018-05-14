@@ -125,6 +125,14 @@
   [system]
   (get-in (get-cfg system) [:logging :nss]))
 
+(defn streaming-heartbeat
+  [system]
+  (get-in (get-cfg system) [:streaming :heartbeat]))
+
+(defn streaming-timeout
+  [system]
+  (get-in (get-cfg system) [:streaming :timeout]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -52,4 +52,8 @@
  :logging
   {:level :debug
    :nss [cmr.opendap org.httpkit]
-   :color false}}
+   :color false}
+ :streaming
+  {:timeout 20000 ; milliseconds 20 seconds * 1000
+   :heartbeat 200 ; milliseconds
+   }}
