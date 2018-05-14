@@ -53,6 +53,7 @@
     (let [user-lookup (token/->cached-user system user-token)
           errors (:errors user-lookup)]
       (log/debug "ECHO token provided; proceeding ...")
+      (log/trace "user-lookup:" user-lookup)
       (if errors
         (response/not-allowed errors/token-required errors)
         (do

@@ -68,7 +68,10 @@
           (error-handler status headers body)
 
           :else
-          (parse-fn body))))
+          (do
+            (log/trace "headers:" headers)
+            (log/trace "body:" body)
+            (parse-fn body)))))
 
 (def json-handler #(client-handler % parse-json-body))
 
