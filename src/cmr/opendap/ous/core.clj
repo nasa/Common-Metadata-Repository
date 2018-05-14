@@ -126,35 +126,49 @@
 
 (defn stage1
   [search-endpoint user-token raw-params]
+  (log/debug "Starting stage 1 ...")
   (let [start (util/now)
         params (params/parse raw-params)
         bounding-box (:bounding-box params)
-        granules (granule/get-metadata search-endpoint user-token params)
-        coll (collection/get-metadata search-endpoint user-token params)]
-    [start params bounding-box granules coll]))
+        grans-promise (granule/async-get-metadata
+                       search-endpoint user-token params)
+        coll-promise (collection/async-get-metadata
+                      search-endpoint user-token params)]
+    (log/debug "Finishing stage 1 ...")
+    [start params bounding-box grans-promise coll-promise]))
 
 (defn stage2
-  [search-endpoint user-token params coll granules]
-  (let [data-files (map granule/extract-datafile-link granules)
+  [search-endpoint user-token params coll-promise grans-promise]
+  (log/debug "Starting stage 2 ...")
+  (let [granules (granule/extract-metadata grans-promise)
+        coll (collection/extract-metadata coll-promise)
+        data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
         vars (apply-bounding-conditions search-endpoint user-token coll params)]
     (log/trace "data-files:" (into [] data-files))
+    (log/debug "Finishing stage 2 ...")
     [data-files service-ids vars]))
 
 (defn stage3
   [search-endpoint user-token bounding-box service-ids vars]
-  (let [services (service/get-metadata search-endpoint user-token service-ids)
+  (log/debug "Starting stage 3 ...")
+  (let [services-promise (service/async-get-metadata
+                          search-endpoint user-token service-ids)
         bounding-info (map #(variable/extract-bounding-info % bounding-box)
                            vars)]
     (log/debug "variable bounding-info:" (into [] bounding-info))
-    [services bounding-info]))
+    (log/debug "Finishing stage 3 ...")
+    [services-promise bounding-info]))
 
 (defn stage4
-  [bounding-box services bounding-info]
-  (let [pattern-info (service/extract-pattern-info (first services))
+  [bounding-box services-promise bounding-info]
+  (log/debug "Starting stage 4 ...")
+  (let [services (service/extract-metadata services-promise)
+        pattern-info (service/extract-pattern-info (first services))
         query (bounding-info->opendap-query bounding-info bounding-box)]
     (log/trace "pattern-info:" pattern-info)
     (log/debug "query:" query)
+    (log/debug "Finishing stage 4 ...")
     [pattern-info query]))
 
 (defn get-opendap-urls
