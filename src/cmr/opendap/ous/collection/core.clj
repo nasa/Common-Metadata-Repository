@@ -17,6 +17,7 @@
   (let [url (str search-endpoint
                  "/collections?"
                  (build-query params))]
+    (log/debug "Collection query to CMR:" url)
     (request/async-get
      url
      (-> {}
@@ -27,7 +28,7 @@
 (defn extract-metadata
   [promise]
   (let [results @promise]
-    (log/debug "Got results from CMR granule collection:" results)
+    (log/trace "Got results from CMR granule collection:" results)
     (first (get-in results [:feed :entry]))))
 
 (defn get-metadata

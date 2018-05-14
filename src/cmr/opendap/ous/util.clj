@@ -23,6 +23,10 @@
         (coll? data) data
         (string? data) (string/split data #",")))
 
+(defn seq->str
+  [data]
+  (string/join "," data))
+
 (defn bounding-box->subset
   [[lon-lo lat-lo lon-hi lat-hi]]
   [(format "lat(%s,%s)" lat-lo lat-hi)

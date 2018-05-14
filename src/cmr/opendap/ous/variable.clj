@@ -210,7 +210,7 @@
 (defn extract-metadata
   [promise]
   (let [results @promise]
-    (log/debug "Got results from CMR variable search:" results)
+    (log/trace "Got results from CMR variable search:" results)
     (:items results)))
 
 (defn get-metadata
@@ -223,6 +223,7 @@
     (let [url (str search-endpoint
                    "/variables?"
                    (build-query variable-ids))
+          _ (log/debug "Variables query to CMR:" url)
           promise (request/async-get url
                    (-> {}
                        (request/add-token-header user-token)

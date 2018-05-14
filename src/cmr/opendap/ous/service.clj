@@ -24,6 +24,7 @@
   (let [url (str search-endpoint
                  "/services?"
                  (build-query service-ids))]
+    (log/debug "Services query to CMR:" url)
     (request/async-get
      url
      (-> {}
@@ -34,7 +35,7 @@
 (defn extract-metadata
   [promise]
   (let [results @promise]
-    (log/debug "Got results from CMR service search:" results)
+    (log/trace "Got results from CMR service search:" results)
     (:items results)))
 
 (defn get-metadata
