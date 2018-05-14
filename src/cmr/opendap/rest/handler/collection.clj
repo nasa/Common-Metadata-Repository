@@ -2,6 +2,7 @@
   "This namespace defines the REST API handlers for collection resources."
   (:require
    [cheshire.core :as json]
+   [clojure.core.async :as async]
    [clojure.java.io :as io]
    [cmr.opendap.auth.token :as token]
    [cmr.opendap.components.config :as config]
@@ -74,23 +75,33 @@
 
 (defn stream-urls
   ""
-  [request]
-  (log/debug "Processing stream request ...")
-  (server/with-channel request channel
-    (log/debug "Setting 'on-close' callback ...")
-    (server/on-close channel
-                     (fn [status]
-                      (println "Channel closed; status " status)))
-    (log/debug "Starting loop ...")
-    (loop [id 0]
-      (log/debug "Loop id:" id)
-      (when (< id 10)
-        (timer/schedule-task
-         (* id 200) ;; send a message every 200ms
-         (log/debug "\tSending chunk to client ...")
-         (server/send! channel
-                       ;(format "message #%s from server ..." id)
-                       {:status 202}
-                       false))
-        (recur (inc id))))
-    (timer/schedule-task (* 10 200) (server/close channel))))
+  [component]
+  (fn [request]
+    (let [heartbeat (config/streaming-heartbeat component)
+          timeout (config/streaming-timeout component)
+          iterations (Math/floor (/ timeout heartbeat))]
+    (log/debug "Processing stream request ...")
+    (server/with-channel request channel
+      (log/debug "Setting 'on-close' callback ...")
+      (server/on-close channel
+                       (fn [status]
+                        (println "Channel closed; status " status)))
+      (let [result-channel (async/thread
+                              ((generate-urls component) request))]
+        (log/trace "Starting loop ...")
+        (async/go-loop [id 0]
+          (log/trace "Loop id:" id)
+          (if-let [result (async/<! result-channel)]
+            (do
+              (log/trace "Result:" result)
+              (server/send! channel result)
+              (server/close channel)
+            (when (< id iterations)
+              (timer/schedule-task
+               (* id heartbeat) ;; send a message every heartbeat period
+               (log/trace "\tSending 0-byte placeholder chunk to client ...")
+               (server/send! channel
+                             {:status 202}
+                             false))
+              (recur (inc id))))))
+        (timer/schedule-task timeout (server/close channel)))))))

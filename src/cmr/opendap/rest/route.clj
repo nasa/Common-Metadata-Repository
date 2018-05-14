@@ -58,7 +58,7 @@
            :permissions #{:read}}
     :options core-handler/ok}]
    ["/opendap/ous/stream/collection/:concept-id" {
-    :get collection-handler/stream-urls}]])
+    :get (collection-handler/stream-urls httpd-component)}]])
 
 (defn admin-api
   [httpd-component]
