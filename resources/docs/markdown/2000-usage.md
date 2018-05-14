@@ -59,8 +59,9 @@ Both ECHO as well as URS/Earthdata Login tokens are supported.
 The following calls are supported
 
 * `GET /opendap/ous/collection/:concept-id`
+* `GET /opendap/ous/stream/collection/:concept-id`
 
-This can be used in the following manner:
+These can be used in the following manner:
 
 ```
 curl --silent \
@@ -68,6 +69,16 @@ curl --silent \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS" | \
      jq .
 ```
+
+```
+curl --silent \
+     -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/stream/collection/C1200187767-EDF_OPS" | \
+     jq .
+```
+
+Both of which return the same result:
+
 ```json
 {
   "hits": 2,
@@ -77,6 +88,13 @@ curl --silent \
   ]
 }
 ```
+
+Both take the same parameters; the second one takes better, more efficient
+advantage of system resources (micro-threads and OS threads). In particular,
+the second one avoids making blocking calls in the request-processing thread;
+as such, we recommend that this resource be preferred. The only requirement is
+that your HTTP client supports streaming.
+
 
 #### Parameters
 
