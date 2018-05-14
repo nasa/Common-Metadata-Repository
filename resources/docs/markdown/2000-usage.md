@@ -147,7 +147,8 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ##### `exclude-granules`
 
-This allows clients to perform the inverse of a granule search: all granules
+This allows clients to perform the inverse of a granule search. If the
+value of this parameter is all granules
 _except_ the ones passed. Granules may either be pass
 
 If not provided, a regular granule search is performed.
