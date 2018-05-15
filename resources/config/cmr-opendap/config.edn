@@ -26,6 +26,9 @@
    :opendap
     {:protocol "https"
      :host "cmr.sit.earthdata.nasa.gov"
+     :public
+      {:protocol "https"
+       :host "cmr.sit.earthdata.nasa.gov"}
      :relative
   	     {:root
   	       {:url "/opendap"}}}
