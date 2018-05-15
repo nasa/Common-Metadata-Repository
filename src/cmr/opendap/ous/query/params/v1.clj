@@ -23,7 +23,10 @@
    ;;  `?subset=lat(22,34)&subset=lon(169,200)`
    ;; giving values like so:
    ;;  `["lat(22,34)" "lon(169,200)"]`
-   subset])
+   subset
+   ;; `timeposition` is used to indicate temporal subsetting with starting
+   ;; and ending values being ISO 8601 datetime stamps, separated by a comma.
+   timeposition])
 
 (def params-keys
   (set/difference
@@ -42,4 +45,5 @@
     (assoc params :format (or (:format params)
                               const/default-format)
                   :coverage (util/->seq (:coverage params))
-                  :rangesubset (util/->seq (:rangesubset params)))))
+                  :rangesubset (util/->seq (:rangesubset params))
+                  :timeposition (util/->seq (:timeposition params)))))
