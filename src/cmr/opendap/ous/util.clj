@@ -1,6 +1,7 @@
 (ns cmr.opendap.ous.util
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ring.util.codec :as codec]))
 
 (defn normalize-param
   [param]
@@ -26,6 +27,13 @@
 (defn seq->str
   [data]
   (string/join "," data))
+
+(defn temporal-seq->cmr-query
+  [data]
+  (let [sep (str (codec/url-encode "temporal[]") "=")]
+    (str sep
+         (string/join (str "&" sep)
+                      (map codec/url-encode data)))))
 
 (defn bounding-box->subset
   [[lon-lo lat-lo lon-hi lat-hi]]
