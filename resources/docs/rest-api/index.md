@@ -25,6 +25,24 @@ allowing users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.
 
 
+# About the Docs
+
+This API documentation provides prose in the central column, using
+the left collumn to highlight usage and code.
+
+Note that, due to some of the long URLs and query examples, the lines
+in the examples are broken up -- this is done for the sake of visiability
+on the page. When you use these to make a query you must remove newline
+breaks.
+
+<aside class="warning">
+  In many cases, copying and pasting the examples as-is will not work!
+  Line separations have been added to the examples for visual clarity; to
+  actually use these, you need to make sure extraneous newlines have been
+  removed.
+</aside>
+
+
 # Authorized Access
 
 CMR OPeNDAP requires the use of tokens in order to provide access to
@@ -112,17 +130,66 @@ The example above will generate a URL for downloading all the granules and all
 the variables across the globe for the given collection. To limit these, there
 are various parameters supported:
 
+* `bounding-box`
+* `exclude-granules`
 * `format`
 * `granules`
-* `exclude-granules`
+* `temporal`
 * `variables`
-* `bounding-box`
 
 These may be used alone or in any combination. Details for usage are provided
 below in separate sections.
 
 Note that both hypens and underscores are supported in parameters that have
 them; you may use either, per your preference.
+
+
+### `bounding-box`
+
+This provides clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.
+
+If not provided, the entire spatial extent of the granule will be used.
+
+The following are examples of accepted `bounding-box` parameter usage:
+
+* `bounding-box=-9.984375,56.109375,19.828125,67.640625`
+* `bounding_box=-9.984375,56.109375,19.828125,67.640625`
+
+
+> Use of `bounding-box` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
+     bounding-box=-9.984375,56.109375,19.828125,67.640625"
+```
+
+
+### `exclude-granules`
+
+This allows clients to perform the inverse of a granule search. If the
+value of this parameter is set to `"true"`, then all granules _except_
+the ones passed will be returned.
+
+If not provided, a regular granule search is performed.
+
+The following is an example of accepted `exclude-granules` parameter usage:
+
+* `exclude-granules=true&granules=G1200187775-EDF_OPS`
+
+Note that the `granules` parameter here may take any of the accepted forms
+shown in the previous section.
+
+> Use of `exclude-granules` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     exclude-granules=true&
+     granules=G1200187775-EDF_OPS"
+```
 
 
 ### `format`
@@ -132,7 +199,7 @@ This allows the client to ask OPeNDAP to provide files in the given format.
 If not provided, the default of `nc` (NetCDF) is used. Supported formats
 depend upon the target OPeNDAP server.
 
-Parameter example:
+The following is an example of accepted `format` parameter usage:
 
 * `format=nc`
 
@@ -165,30 +232,34 @@ The following are examples of accepted `granules` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
 
-### `exclude-granules`
+### `temporal`
 
-This allows clients to perform the inverse of a granule search. If the
-value of this parameter is all granules
-_except_ the ones passed. Granules may either be pass
+This provides clients with the ability to select a temporal subset of data to
+include in the granule data extracted by the OPeNDAP query, only providing data
+for the time of interest.
 
-If not provided, a regular granule search is performed.
+If not provided, the entire temproal extent of the granule will be used.
 
-Parameter examples:
+The following are examples of accepted `temporal` parameter usage:
 
-* `exclude-granules=true&granules=G1200187775-EDF_OPS`
+* `temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
+* `temporal=2002-09-01T00:00:00Z&temporal=2016-07-03T00:00:00Z`
+* `temporal[]=2002-09-01T00:00:00Z&temporal[]=2016-07-03T00:00:00Z`
 
-Note that the `granules` parameter here may take any of the accepted forms
-shown in the previous section.
+Note that both are needed in order to define a bounding box.
 
-> Use of `exclude-granules` in a query:
+> Use of `temporal` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?exclude-granules=true&granules=G1200187775-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
+     temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"
 ```
 
 
@@ -211,28 +282,8 @@ The following are examples of accepted `variables` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
-```
-
-
-### `bounding-box`
-
-This provides clients with the ability to select the spatial data to include
-in the granule data extracted by the OPeNDAP query to an area of interest.
-
-If not provided, the entire spatial extent of the granule will be used.
-
-Parameter example:
-
-* `bounding-box=-9.984375,56.109375,19.828125,67.640625`
-* `bounding_box=-9.984375,56.109375,19.828125,67.640625`
-
-
-> Use of `bounding-box` in a query:
-
-```shell
-curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&bounding-box=-9.984375,56.109375,19.828125,67.640625"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
 
@@ -246,34 +297,16 @@ decided to follow the model of
 As such, the following parameters are also available, as an alternative to the
 "classic" CMR/EDSC parameters:
 
-* `format`
 * `coverage`
+* `format`
 * `rangesubset`
 * `subset`
+* `timeposition`
 
 These are show in more detail in the sub-sections below.
 
 Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
 request; you must chose one or the other, not both.
-
-
-### `format`
-
-This allows the client to ask OPeNDAP to provide files in the given format.
-
-If not provided, the default of `nc` (NetCDF) is used. Supported formats
-depend upon the target OPeNDAP server.
-
-Parameter example:
-
-* `format=nc`
-
-> Use of `format` in a query:
-
-```shell
-curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
-```
 
 
 ### `coverage`
@@ -292,7 +325,27 @@ The following are examples of accepted `coverage` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+```
+
+
+### `format`
+
+This allows the client to ask OPeNDAP to provide files in the given format.
+
+If not provided, the default of `nc` (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.
+
+The following is an example of accepted `format` parameter usage:
+
+* `format=nc`
+
+> Use of `format` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
 
 
@@ -313,7 +366,8 @@ The following are examples of accepted `rangesubset` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
 
@@ -324,7 +378,7 @@ in the granule data extracted by the OPeNDAP query to an area of interest.
 
 If not provided, the entire spatial extent of the granule will be used.
 
-Parameter example:
+The following are examples of accepted `subset` parameter usage:
 
 * `subset=lat(56.109375,67.640625)`
 * `subset=lon(-9.984375,19.828125)`
@@ -335,7 +389,33 @@ Note that both are needed in order to define a bounding box.
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)"
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
+     subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)"
+```
+
+
+### `timeposition`
+
+This provides clients with the ability to select a temporal subset of data to
+include in the granule data extracted by the OPeNDAP query, only providing data
+for the time of interest.
+
+If not provided, the entire temproal extent of the granule will be used.
+
+The following is an example of accepted `timeposition` parameter usage:
+
+* `timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
+
+Note that both are needed in order to define a bounding box.
+
+> Use of `timeposition` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
+     timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"
 ```
 
 
