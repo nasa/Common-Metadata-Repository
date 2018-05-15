@@ -59,14 +59,14 @@
         :else [service]))
 
 (defn service->base-url
-  [^Keyword service]
+  [service]
   (format "%s://%s:%s"
           (or (:protocol service) "https")
           (:host service)
           (or (:port service) "443")))
 
 (defn service->url
-  [^Keyword service]
+  [service]
   (format "%s%s"
           (service->base-url service)
           (or (get-in service [:relative :root :url])
@@ -74,7 +74,7 @@
               "/")))
 
 (defn service->base-public-url
-  [^Keyword service]
+  [service]
   (let [protocol (or (get-in service [:public :protocol]) "https")
         host (get-in service [:public :host])]
     (if (= "https" protocol)
@@ -82,7 +82,7 @@
       (format "%s://%s:%s" protocol host (get-in service [:public :port])))))
 
 (defn service->public-url
-  [^Keyword service]
+  [service]
   (format "%s%s"
           (service->base-public-url service)
           (or (get-in service [:relative :root :url])
