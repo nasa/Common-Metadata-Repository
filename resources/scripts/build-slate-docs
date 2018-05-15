@@ -6,7 +6,7 @@ SLATE_BUILD=$SLATE_CLONE/build
 REST_API_DIR=resources/public/docs/opendap/docs/rest-api
 
 if [ ! -d "$SLATE_CLONE" ]; then
-	clone "$SLATE_REPL" "$SLATE_CLONE"
+	git clone "$SLATE_REPL" "$SLATE_CLONE"
 fi
 cp -v resources/docs/rest-api/index.md resources/docs/rest-api/slate/source/index.html.md
 cp -v resources/docs/rest-api/logo.png resources/docs/rest-api/slate/source/images/logo.png
