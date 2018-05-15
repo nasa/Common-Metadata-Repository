@@ -138,6 +138,10 @@
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
+    "version" ["do"
+      ["version"]
+      ["shell" "echo" "-n" "CMR-OPeNDAP: "]
+      ["project-version"]]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
@@ -154,7 +158,7 @@
       ]
     "ltest" ["with-profile" "+test,+system" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
-    ;; Documentation
+    ;; Documentation and static content
     "codox" ["with-profile" "+docs" "codox"]
     "marginalia" ["with-profile" "+docs"
       "marg" "--dir" "resources/public/docs/opendap/docs/marginalia"
@@ -171,20 +175,21 @@
     "generate-static" ["do"
       ["docs"]
       ["generate-html"]]
-    "version" ["do"
-      ["version"]
-      ["shell" "echo" "-n" "CMR-OPeNDAP: "]
-      ["project-version"]]
+    ;; Build tasks
     "build-lite" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]]
     "build" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]
+      ["ubercompile"]
+      ["uberjar"]]
+    "build-full" ["do"
+      ["ltest" ":unit"]
+      ["junit" ":unit"]
       ["generate-static"]
       ["ubercompile"]
       ["uberjar"]]
-
     ;; Application
     "start-cmr-opendap"
       ["trampoline" "run"]})
