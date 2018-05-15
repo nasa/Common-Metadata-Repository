@@ -128,7 +128,11 @@
                            :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
                            :type "text/javascript"}]]]}
         :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/opendap/docs/reference"}}}
+        :output-path "resources/public/docs/opendap/docs/reference"}}
+      :slate {
+        :plugins [[lein-shell "0.5.0"]]
+        ;;
+      }}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
@@ -156,11 +160,16 @@
       "marg" "--dir" "resources/public/docs/opendap/docs/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
+    "slate" ["with-profile" "+slate"
+      "shell" "resources/scripts/build-slate-docs"]
     "generate-html" ["with-profile" "+docs"
       "run" "-m" "cmr.opendap.site.static"]
-    "generate-static" ["do"
+    "docs" ["do"
       ["codox"]
       ["marginalia"]
+      ["slate"]]
+    "generate-static" ["do"
+      ["docs"]
       ["generate-html"]]
     "version" ["do"
       ["version"]
