@@ -106,7 +106,7 @@ as such, we recommend that this resource be preferred. The only requirement is
 that your HTTP client supports streaming.
 
 
-### Parameters
+## CMR-Style Parameters
 
 The example above will generate a URL for downloading all the granules and all
 the variables across the globe for the given collection. To limit these, there
@@ -125,7 +125,7 @@ Note that both hypens and underscores are supported in parameters that have
 them; you may use either, per your preference.
 
 
-#### `format`
+### `format`
 
 This allows the client to ask OPeNDAP to provide files in the given format.
 
@@ -144,7 +144,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `granules`
+### `granules`
 
 This allows the client to select the granules to include (or exclude) in their
 OPeNDAP queries.
@@ -169,7 +169,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `exclude-granules`
+### `exclude-granules`
 
 This allows clients to perform the inverse of a granule search. If the
 value of this parameter is all granules
@@ -192,7 +192,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `variables`
+### `variables`
 
 This proivdes clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.
@@ -215,7 +215,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `bounding-box`
+### `bounding-box`
 
 This provides clients with the ability to select the spatial data to include
 in the granule data extracted by the OPeNDAP query to an area of interest.
@@ -236,7 +236,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-### WCS-Style Parameters
+## WCS-Style Parameters
 
 The original implementation of the OPeNDAP URL translation service was not a
 part of the CMR, and thus did not take into consideration the internal
@@ -257,7 +257,7 @@ Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
 request; you must chose one or the other, not both.
 
 
-#### `format`
+### `format`
 
 This allows the client to ask OPeNDAP to provide files in the given format.
 
@@ -276,7 +276,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `coverage`
+### `coverage`
 
 This allows the client to select the granules to include (or exclude) in their
 OPeNDAP queries.
@@ -296,7 +296,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `rangesubset`
+### `rangesubset`
 
 This proivdes clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.
@@ -317,7 +317,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 ```
 
 
-#### `subset`
+### `subset`
 
 This provides clients with the ability to select the spatial data to include
 in the granule data extracted by the OPeNDAP query to an area of interest.

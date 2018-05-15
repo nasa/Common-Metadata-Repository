@@ -1,10 +1,10 @@
-(ns cmr.opendap.tests.unit.ous.collection.params
+(ns cmr.opendap.tests.unit.ous.query.params
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.collection.params.core :as params]
-    [cmr.opendap.ous.collection.params.v1 :as v1]
-    [cmr.opendap.ous.collection.params.v2 :as v2]))
+    [cmr.opendap.ous.query.params.core :as params]
+    [cmr.opendap.ous.query.params.v1 :as v1]
+    [cmr.opendap.ous.query.params.v2 :as v2]))
 
 (deftest params-keys
   (is (= #{:coverage :rangesubset}

@@ -1,7 +1,7 @@
-(ns cmr.opendap.ous.collection.params.v1
+(ns cmr.opendap.ous.query.params.v1
   (:require
    [clojure.set :as set]
-   [cmr.opendap.ous.collection.params.const :as const]
+   [cmr.opendap.ous.query.params.const :as const]
    [cmr.opendap.ous.util :as util]))
 
 (defrecord OusPrototypeParams

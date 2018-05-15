@@ -1,11 +1,11 @@
-(ns cmr.opendap.ous.collection.params.core
+(ns cmr.opendap.ous.query.params.core
   "This namespace defines records for the accepted URL query parameters or, if
   using HTTP POST, keys in a JSON payload. Additionall, functions for working
   with these parameters are defined here."
   (:require
    [clojure.string :as string]
-   [cmr.opendap.ous.collection.params.v1 :as v1]
-   [cmr.opendap.ous.collection.params.v2 :as v2]
+   [cmr.opendap.ous.query.params.v1 :as v1]
+   [cmr.opendap.ous.query.params.v2 :as v2]
    [cmr.opendap.ous.util :as util]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [parse]))

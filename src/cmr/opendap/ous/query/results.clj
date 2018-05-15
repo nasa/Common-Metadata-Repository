@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.collection.results)
+(ns cmr.opendap.ous.query.results)
 
 (defrecord CollectionResults
   [;; The number of results returned

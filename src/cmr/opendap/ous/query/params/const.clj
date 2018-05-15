@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.collection.params.const)
+(ns cmr.opendap.ous.query.params.const)
 
 (def default-format "nc")
 
