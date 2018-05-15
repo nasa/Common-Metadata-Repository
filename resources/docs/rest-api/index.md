@@ -25,31 +25,36 @@ allowing users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.
 
 
-# OPeNDAP URL Service
-
-This is the part of the REST API responsible for creating OPeNDAP-compatible
-query URLs (intended to be sent to a deployed OPeNDAP service).
-
-
-## Authorized Access
+# Authorized Access
 
 CMR OPeNDAP requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.
 
-A token needs to be included in each request, and this is done by sending
+> A token needs to be included in each request, and this is done by sending
 a special header:
 
 ```
 "Echo-Token: <YOUR_TOKEN>"
 ```
 
-For example, if you have stored your token in a file:
+> For example, if you have stored your token in a file:
 
 ```
 "Echo-Token: `cat ~/.cmr/tokens/sit`"
 ```
 
 Both ECHO as well as URS/Earthdata Login tokens are supported.
+
+Many of the examples in the documentation below show usage of the
+Echo token.
+
+
+# OUS Resources
+
+This is the part of the REST API responsible for creating OPeNDAP-compatible
+query URLs (intended to be sent to a deployed OPeNDAP service). The name
+"OUS" (OPeNDAP URL Service) was used in the prototype for this service, and
+that name has carried through here.
 
 
 ## Collection Resources
@@ -131,6 +136,8 @@ Parameter example:
 
 * `format=nc`
 
+> Use of `format` in a query:
+
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
@@ -154,6 +161,7 @@ The following are examples of accepted `granules` parameter usage:
 * `granules=G1200187775-EDF_OPS&granules=G1200245955-EDF_OPS`
 * `granules[]=G1200187775-EDF_OPS&granules[]=G1200245955-EDF_OPS`
 
+> Use of `granules` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
@@ -176,6 +184,7 @@ Parameter examples:
 Note that the `granules` parameter here may take any of the accepted forms
 shown in the previous section.
 
+> Use of `exclude-granules` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
@@ -198,6 +207,8 @@ The following are examples of accepted `variables` parameter usage:
 * `variables=V1200241812-EDF_OPS&variables=V1200241817-EDF_OPS`
 * `variables[]=V1200241812-EDF_OPS&variables[]=V1200241817-EDF_OPS`
 
+> Use of `variables` in a query:
+
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
@@ -214,7 +225,10 @@ If not provided, the entire spatial extent of the granule will be used.
 Parameter example:
 
 * `bounding-box=-9.984375,56.109375,19.828125,67.640625`
+* `bounding_box=-9.984375,56.109375,19.828125,67.640625`
 
+
+> Use of `bounding-box` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
@@ -254,6 +268,7 @@ Parameter example:
 
 * `format=nc`
 
+> Use of `format` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
@@ -272,6 +287,8 @@ The following are examples of accepted `coverage` parameter usage:
 
 * `coverage=G1200187775-EDF_OPS`
 * `coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS`
+
+> Use of `coverage` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
@@ -292,6 +309,8 @@ The following are examples of accepted `rangesubset` parameter usage:
 * `rangesubset=V1200241812-EDF_OPS`
 * `rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS`
 
+> Use of `rangesubset` in a query:
+
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
@@ -311,6 +330,8 @@ Parameter example:
 * `subset=lon(-9.984375,19.828125)`
 
 Note that both are needed in order to define a bounding box.
+
+> Use of `subset` in a query:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
