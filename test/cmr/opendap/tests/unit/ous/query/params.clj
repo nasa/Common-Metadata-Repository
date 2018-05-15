@@ -7,9 +7,9 @@
     [cmr.opendap.ous.query.params.v2 :as v2]))
 
 (deftest params-keys
-  (is (= #{:coverage :rangesubset}
+  (is (= #{:coverage :rangesubset :timeposition}
          v1/params-keys))
-  (is (= #{:exclude-granules :variables :granules :bounding-box}
+  (is (= #{:exclude-granules :variables :granules :bounding-box :temporal}
          v2/params-keys)))
 
 (deftest params?
@@ -60,7 +60,8 @@
            :variables ["V234" "V345" "V456"]
            :subset ["lat(22,34)" "lon(169,200)"]
            :exclude-granules false
-           :bounding-box [169.0 22.0 200.0 34.0]})
+           :bounding-box [169.0 22.0 200.0 34.0]
+           :temporal ["2002-09-01T00:00:00Z" "2016-07-03T00:00:00Z"]})
          (params/v1->v2
           (v1/map->OusPrototypeParams {
            :format "nc"
@@ -69,4 +70,5 @@
                       "G345"
                       "G456"]
            :rangesubset ["V234" "V345" "V456"]
-           :subset ["lat(22,34)" "lon(169,200)"]})))))
+           :subset ["lat(22,34)" "lon(169,200)"]
+           :timeposition ["2002-09-01T00:00:00Z" "2016-07-03T00:00:00Z"]})))))
