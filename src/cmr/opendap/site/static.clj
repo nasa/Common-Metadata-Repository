@@ -50,8 +50,7 @@
   in this namespace. This is the function that should be called in the parent
   static generator namespace."
   [docs-source docs-dir base-url]
-  (log/debug "Generating static site files ...")
-  (generate-rest-api-docs docs-source docs-dir base-url))
+  (log/debug "Generating static site files ..."))
 
 (defn -main
   [& args]
