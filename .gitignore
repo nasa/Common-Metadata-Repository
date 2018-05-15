@@ -13,3 +13,4 @@ pom.xml.asc
 /third-party
 /data/cache
 /junit-test-results
+/resources/docs/rest-api/slate
