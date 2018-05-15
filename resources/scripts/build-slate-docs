@@ -1,0 +1,19 @@
+#!/bin/bash
+
+SLATE_REPL=https://github.com/cmr-exchange/slate.git
+SLATE_CLONE=resources/docs/rest-api/slate
+SLATE_BUILD=$SLATE_CLONE/build
+REST_API_DIR=resources/public/docs/opendap/docs/rest-api
+
+if [ ! -d "$SLATE_CLONE" ]; then
+	clone "$SLATE_REPL" "$SLATE_CLONE"
+fi
+cp -v resources/docs/rest-api/index.md resources/docs/rest-api/slate/source/index.html.md
+cp -v resources/docs/rest-api/logo.png resources/docs/rest-api/slate/source/images/logo.png
+cp -v resources/config/slate/config.rb $SLATE_CLONE
+cp -v resources/config/slate/layout.erb $SLATE_CLONE/source/layouts/
+cp -v resources/config/slate/_icon-font.scss $SLATE_CLONE/source/stylesheets/
+
+cd resources/docs/rest-api/slate && ./build.sh
+cd -
+cp -vr ${SLATE_BUILD}/* $REST_API_DIR
