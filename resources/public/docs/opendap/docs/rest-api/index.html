@@ -1,99 +1,609 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<script src="https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
-      id="earthdata-tophat-script"
-      data-show-fbm="true"
-      data-show-status="true"
-      data-status-api-url="https://status.earthdata.nasa.gov/api/v1/notifications"
-      data-status-polling-interval="10">
-</script>
-
+<!doctype html>
+<html>
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="google-site-verification" content="5kcma5msOSY2RixJaI2JfwUp6Ev_Lh5IVQHCUDnMG3k" />
-    <title> - </title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>CMR OPeNDAP REST API Documentation</title>
 
-    
-    
-    
-	<!-- EUI -->
-	<link href="https://cdn.earthdata.nasa.gov/eui/1.1.3/stylesheets/application.css" rel="stylesheet" />
-	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,300" rel="stylesheet" type="text/css">
-	<link href="%%OPENDAP_BASE_URL%%assets/css/eui.css" rel="stylesheet" />
-	<link href="%%OPENDAP_BASE_URL%%assets/css/cmr.css" rel="stylesheet" />
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .gh {
+  color: #999999;
+}
+.highlight .sr {
+  color: #f6aa11;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .nb {
+  color: #f6aa11;
+}
+.highlight .cm {
+  color: #75715e;
+}
+.highlight .cp {
+  color: #75715e;
+}
+.highlight .c1 {
+  color: #75715e;
+}
+.highlight .cs {
+  color: #75715e;
+}
+.highlight .c, .highlight .cd {
+  color: #75715e;
+}
+.highlight .err {
+  color: #960050;
+}
+.highlight .gr {
+  color: #960050;
+}
+.highlight .gt {
+  color: #960050;
+}
+.highlight .gd {
+  color: #49483e;
+}
+.highlight .gi {
+  color: #49483e;
+}
+.highlight .ge {
+  color: #49483e;
+}
+.highlight .kc {
+  color: #66d9ef;
+}
+.highlight .kd {
+  color: #66d9ef;
+}
+.highlight .kr {
+  color: #66d9ef;
+}
+.highlight .no {
+  color: #66d9ef;
+}
+.highlight .kt {
+  color: #66d9ef;
+}
+.highlight .mf {
+  color: #ae81ff;
+}
+.highlight .mh {
+  color: #ae81ff;
+}
+.highlight .il {
+  color: #ae81ff;
+}
+.highlight .mi {
+  color: #ae81ff;
+}
+.highlight .mo {
+  color: #ae81ff;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #ae81ff;
+}
+.highlight .sc {
+  color: #ae81ff;
+}
+.highlight .se {
+  color: #ae81ff;
+}
+.highlight .ss {
+  color: #ae81ff;
+}
+.highlight .sd {
+  color: #e6db74;
+}
+.highlight .s2 {
+  color: #e6db74;
+}
+.highlight .sb {
+  color: #e6db74;
+}
+.highlight .sh {
+  color: #e6db74;
+}
+.highlight .si {
+  color: #e6db74;
+}
+.highlight .sx {
+  color: #e6db74;
+}
+.highlight .s1 {
+  color: #e6db74;
+}
+.highlight .s {
+  color: #e6db74;
+}
+.highlight .na {
+  color: #a6e22e;
+}
+.highlight .nc {
+  color: #a6e22e;
+}
+.highlight .nd {
+  color: #a6e22e;
+}
+.highlight .ne {
+  color: #a6e22e;
+}
+.highlight .nf {
+  color: #a6e22e;
+}
+.highlight .vc {
+  color: #ffffff;
+}
+.highlight .nn {
+  color: #ffffff;
+}
+.highlight .nl {
+  color: #ffffff;
+}
+.highlight .ni {
+  color: #ffffff;
+}
+.highlight .bp {
+  color: #ffffff;
+}
+.highlight .vg {
+  color: #ffffff;
+}
+.highlight .vi {
+  color: #ffffff;
+}
+.highlight .nv {
+  color: #ffffff;
+}
+.highlight .w {
+  color: #ffffff;
+}
+.highlight {
+  color: #ffffff;
+}
+.highlight .n, .highlight .py, .highlight .nx {
+  color: #ffffff;
+}
+.highlight .ow {
+  color: #f92672;
+}
+.highlight .nt {
+  color: #f92672;
+}
+.highlight .k, .highlight .kv {
+  color: #f92672;
+}
+.highlight .kn {
+  color: #f92672;
+}
+.highlight .kp {
+  color: #f92672;
+}
+.highlight .o {
+  color: #f92672;
+}
+    </style>
+    <link href="https://cdn.earthdata.nasa.gov/eui/1.1.3/stylesheets/application.css"
+          rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,300"
+          rel="stylesheet"
+          type="text/css">
+    <link href="https://cmr.sit.earthdata.nasa.gov/opendap/site/css/eui.css"
+          rel="stylesheet" />
+    <link href="https://cmr.sit.earthdata.nasa.gov/opendap/site/css/cmr.css"
+          rel="stylesheet" />
+    <link href="rest-api/stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="rest-api/stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="rest-api/javascripts/all.js"></script>
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    
-    
+    <script src="https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+            id="earthdata-tophat-script"
+            data-show-fbm="true"
+            data-show-status="true"
+            data-status-api-url="https://status.earthdata.nasa.gov/api/v1/notifications"
+            data-status-polling-interval="10">
+    </script>
   </head>
-  <body class="eui-layout docs">
+
+  <body class="index" data-languages="[&quot;shell&quot;,&quot;javascript&quot;,&quot;clojure&quot;]">
 
     <header class="doc-mast">
       <div class="container">
-        
-<div class="eui-masthead-logo eui-application-logo">
-  <h1><a href="%%OPENDAP_BASE_URL%%"></a></h1>
-</div>
-<nav class="main-nav" role="navigation">
-  <ul class="main-nav-list">
-    
-  <li><a href="%%OPENDAP_BASE_URL%%docs">Documentation</a></li>
+        <div class="eui-masthead-logo eui-application-logo">
+          <h1><a href="https://cmr.sit.earthdata.nasa.gov/opendap/">CMR OPeNDAP</a></h1>
+        </div>
+        <nav class="main-nav" role="navigation">
+          <ul class="main-nav-list">
 
-    
-    <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum">Forum</a></li>
-    <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home">Wiki</a></li>
-    <li><a href=""></a></li>
-    <li><a href="https://github.com/nasa/Common-Metadata-Repository">Github</a></li>
-    
-  </ul>
-</nav>
+          <li><a href="https://cmr.sit.earthdata.nasa.gov/opendap/docs">Documentation</a></li>
 
+
+            <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum">Forum</a></li>
+            <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home">Wiki</a></li>
+            <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide">Client Partner&#39;s Guide</a></li>
+            <li><a href="https://github.com/nasa/Common-Metadata-Repository">Github</a></li>
+          </ul>
+        </nav>
       </div>
     </header>
 
-    <main class="content-section">
-      
-      
-      <div class="container">
-        
-<h1>CMR OPeNDAP</h1><h2>REST API Documentation</h2><p>TBD</p>
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="rest-api/images/navbar.png" alt="Navbar" />
+      </span>
+    </a>
+    <div class="toc-wrapper">
+        <div class="lang-selector">
+              <a href="#" data-language-name="shell">shell</a>
+              <a href="#" data-language-name="javascript">javascript</a>
+              <a href="#" data-language-name="clojure">clojure</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <div id="toc" class="toc-list-h1">
+          <li>
+            <a href="#rest-api-overview" class="toc-h1 toc-link" data-title="rest-api-overview">REST API Overview</a>
+          </li>
+          <li>
+            <a href="#opendap-url-service" class="toc-h1 toc-link" data-title="opendap-url-service">OPeNDAP URL Service</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#authorized-access" class="toc-h2 toc-link" data-title="authorized-access">Authorized Access</a>
+                  </li>
+                  <li>
+                    <a href="#collection-resources" class="toc-h2 toc-link" data-title="collection-resources">Collection Resources</a>
+                  </li>
+                  <li>
+                    <a href="#forthcoming" class="toc-h2 toc-link" data-title="forthcoming">Forthcoming</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#admin-resources" class="toc-h1 toc-link" data-title="admin-resources">Admin Resources</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#cache" class="toc-h2 toc-link" data-title="cache">Cache</a>
+                  </li>
+                  <li>
+                    <a href="#health" class="toc-h2 toc-link" data-title="health">Health</a>
+                  </li>
+                  <li>
+                    <a href="#ping" class="toc-h2 toc-link" data-title="ping">Ping</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#testing-resources" class="toc-h1 toc-link" data-title="testing-resources">Testing Resources</a>
+          </li>
+          <li>
+            <a href="#errors" class="toc-h1 toc-link" data-title="errors">Errors</a>
+          </li>
+      </div>
+        <ul class="toc-footer">
+            <li><a href='https://github.com/lord/slate'>Documentation Powered by Slate</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='rest-api-overview'>REST API Overview</h1>
+<p>The REST API for CMR OPeNDAP aims to accomplish a few core goals:</p>
+
+<ul>
+<li>Provide a straight forward means of bridging the CMR and OPeNDAP deployments</li>
+<li>Provide operational insights into the CMR OPeNDAP REST service itself</li>
+<li>Do both of these as simply and in as scalable a manner as possible</li>
+</ul>
+
+<p>The REST API is currently focused on generating OPeNDAP data access URLs,
+allowing users to easily download subsetted files from OPeNDAP servers
+based on metadata stored in the CMR and presented to end users by EDSC.</p>
+<h1 id='opendap-url-service'>OPeNDAP URL Service</h1>
+<p>This is the part of the REST API responsible for creating OPeNDAP-compatible
+query URLs (intended to be sent to a deployed OPeNDAP service).</p>
+<h2 id='authorized-access'>Authorized Access</h2>
+<p>CMR OPeNDAP requires the use of tokens in order to provide access to
+potentially protected collections, services, variables, and/or granules.</p>
+
+<p>A token needs to be included in each request, and this is done by sending
+a special header:</p>
+<pre class="highlight plaintext"><code>"Echo-Token: &lt;YOUR_TOKEN&gt;"
+</code></pre>
+<p>For example, if you have stored your token in a file:</p>
+<pre class="highlight plaintext"><code>"Echo-Token: `cat ~/.cmr/tokens/sit`"
+</code></pre>
+<p>Both ECHO as well as URS/Earthdata Login tokens are supported.</p>
+<h2 id='collection-resources'>Collection Resources</h2>
+<p>The CMR OPeNDAP REST API supports two different means of creating a subsetted
+OPeNDAP URL for granules and/or variables in a collection: one returns a
+standard JSON document; the other, more effectial means returns a JSON
+document via HTTP streaming.</p>
+
+<p>The resources are as follows:</p>
+
+<ul>
+<li><code>GET /opendap/ous/collection/:concept-id</code></li>
+<li><code>GET /opendap/ous/streaming-collection/:concept-id</code></li>
+</ul>
+
+<blockquote>
+<p>Example API usage if your client supports streaming:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
+     -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/streaming-collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
+     jq .
+</code></pre>
+<blockquote>
+<p>Example API usage if your client doesn&#39;t support streaming:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
+     -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
+     jq .
+</code></pre>
+<blockquote>
+<p>Both of which return the same result:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="o">{</span>
+  <span class="s2">"hits"</span>: 2,
+  <span class="s2">"took"</span>: 0.621,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="s2">"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006..."</span>
+  <span class="o">]</span>
+<span class="o">}</span>
+</code></pre>
+<p>Both take the same parameters; the second one takes better, more efficient
+advantage of system resources (micro-threads and OS threads). In particular,
+the second one avoids making blocking calls in the request-processing thread;
+as such, we recommend that this resource be preferred. The only requirement is
+that your HTTP client supports streaming.</p>
+<h3 id='parameters'>Parameters</h3>
+<p>The example above will generate a URL for downloading all the granules and all
+the variables across the globe for the given collection. To limit these, there
+are various parameters supported:</p>
+
+<ul>
+<li><code>format</code></li>
+<li><code>granules</code></li>
+<li><code>exclude-granules</code></li>
+<li><code>variables</code></li>
+<li><code>bounding-box</code></li>
+</ul>
+
+<p>These may be used alone or in any combination. Details for usage are provided
+below in separate sections.</p>
+
+<p>Note that both hypens and underscores are supported in parameters that have
+them; you may use either, per your preference.</p>
+<h4 id='format'><code>format</code></h4>
+<p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
+
+<p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.</p>
+
+<p>Parameter example:</p>
+
+<ul>
+<li><code>format=nc</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+</code></pre><h4 id='granules'><code>granules</code></h4>
+<p>This allows the client to select the granules to include (or exclude) in their
+OPeNDAP queries.</p>
+
+<p>If not provided, all granules for the given collection will be used. If used
+in conjunction with the <code>exclude-granules</code> parameter, then all granules
+<em>except</em> the ones passed will be used in the OPeNDAP query.</p>
+
+<p>The following are examples of accepted <code>granules</code> parameter usage:</p>
+
+<ul>
+<li><code>granules=G1200187775-EDF_OPS</code></li>
+<li><code>granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS</code></li>
+<li><code>granules=G1200187775-EDF_OPS&amp;granules=G1200245955-EDF_OPS</code></li>
+<li><code>granules[]=G1200187775-EDF_OPS&amp;granules[]=G1200245955-EDF_OPS</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
+</code></pre><h4 id='exclude-granules'><code>exclude-granules</code></h4>
+<p>This allows clients to perform the inverse of a granule search. If the
+value of this parameter is all granules
+<em>except</em> the ones passed. Granules may either be pass</p>
+
+<p>If not provided, a regular granule search is performed.</p>
+
+<p>Parameter examples:</p>
+
+<ul>
+<li><code>exclude-granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
+</ul>
+
+<p>Note that the <code>granules</code> parameter here may take any of the accepted forms
+shown in the previous section.</p>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?exclude-granules=true&amp;granules=G1200187775-EDF_OPS"</span>
+</code></pre><h4 id='variables'><code>variables</code></h4>
+<p>This proivdes clients with the ability to limit the granule data extracted
+by the OPeNDAP query to just the variables in which you are interested.</p>
+
+<p>If not provided, all variables associated in the collection metadata will
+be used.</p>
+
+<p>The following are examples of accepted <code>variables</code> parameter usage:</p>
+
+<ul>
+<li><code>variables=V1200241812-EDF_OPS</code></li>
+<li><code>variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS</code></li>
+<li><code>variables=V1200241812-EDF_OPS&amp;variables=V1200241817-EDF_OPS</code></li>
+<li><code>variables[]=V1200241812-EDF_OPS&amp;variables[]=V1200241817-EDF_OPS</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
+</code></pre><h4 id='bounding-box'><code>bounding-box</code></h4>
+<p>This provides clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.</p>
+
+<p>If not provided, the entire spatial extent of the granule will be used.</p>
+
+<p>Parameter example:</p>
+
+<ul>
+<li><code>bounding-box=-9.984375,56.109375,19.828125,67.640625</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;bounding-box=-9.984375,56.109375,19.828125,67.640625"</span>
+</code></pre><h3 id='wcs-style-parameters'>WCS-Style Parameters</h3>
+<p>The original implementation of the OPeNDAP URL translation service was not a
+part of the CMR, and thus did not take into consideration the internal
+standards adopted by both the CMR and EDSC code bases. Instead, it was
+decided to follow the model of
+<a href="http://mapserver.org/ogc/wcs_server.html#wcs-2-0-kvp-request-parameters">WCS</a>.
+As such, the following parameters are also available, as an alternative to the
+&quot;classic&quot; CMR/EDSC parameters:</p>
+
+<ul>
+<li><code>format</code></li>
+<li><code>coverage</code></li>
+<li><code>rangesubset</code></li>
+<li><code>subset</code></li>
+</ul>
+
+<p>These are show in more detail in the sub-sections below.</p>
+
+<p>Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
+request; you must chose one or the other, not both.</p>
+<h4 id='format-2'><code>format</code></h4>
+<p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
+
+<p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.</p>
+
+<p>Parameter example:</p>
+
+<ul>
+<li><code>format=nc</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+</code></pre><h4 id='coverage'><code>coverage</code></h4>
+<p>This allows the client to select the granules to include (or exclude) in their
+OPeNDAP queries.</p>
+
+<p>If not provided, all granules for the given collection will be used.</p>
+
+<p>The following are examples of accepted <code>coverage</code> parameter usage:</p>
+
+<ul>
+<li><code>coverage=G1200187775-EDF_OPS</code></li>
+<li><code>coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
+</code></pre><h4 id='rangesubset'><code>rangesubset</code></h4>
+<p>This proivdes clients with the ability to limit the granule data extracted
+by the OPeNDAP query to just the variables in which you are interested.</p>
+
+<p>If not provided, all variables associated in the collection metadata will
+be used.</p>
+
+<p>The following are examples of accepted <code>rangesubset</code> parameter usage:</p>
+
+<ul>
+<li><code>rangesubset=V1200241812-EDF_OPS</code></li>
+<li><code>rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS</code></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
+</code></pre><h4 id='subset'><code>subset</code></h4>
+<p>This provides clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.</p>
+
+<p>If not provided, the entire spatial extent of the granule will be used.</p>
+
+<p>Parameter example:</p>
+
+<ul>
+<li><code>subset=lat(56.109375,67.640625)</code></li>
+<li><code>subset=lon(-9.984375,19.828125)</code></li>
+</ul>
+
+<p>Note that both are needed in order to define a bounding box.</p>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)"</span>
+</code></pre><h2 id='forthcoming'>Forthcoming</h2>
+<p>The following are coming soon:</p>
+
+<ul>
+<li><code>POST /opendap/ous/collection/:concept-id</code></li>
+<li><code>POST /opendap/ous/collections</code></li>
+</ul>
+<h1 id='admin-resources'>Admin Resources</h1><h2 id='cache'>Cache</h2>
+<p>Administrative users may use a token to access the following:</p>
+
+<ul>
+<li><code>GET    /opendap/cache</code></li>
+<li><code>DELETE /opendap/cache</code></li>
+<li><code>GET    /opendap/cache/:item-key</code></li>
+<li><code>DELETE /opendap/cache/:item-key</code></li>
+</ul>
+<h2 id='health'>Health</h2>
+<p>Even though the <code>health</code> resources are classified as &quot;admin&quot;, they are
+available for use by anyone.</p>
+
+<ul>
+<li><code>GET     /opendap/health</code></li>
+<li><code>OPTIONS /opendap/health</code></li>
+</ul>
+<h2 id='ping'>Ping</h2>
+<p>Administrative users may use a token to access the following:</p>
+
+<ul>
+<li><code>GET     /opendap/ping</code></li>
+<li><code>POST    /opendap/ping</code></li>
+<li><code>OPTIONS /opendap/ping</code></li>
+</ul>
+<h1 id='testing-resources'>Testing Resources</h1>
+<p>The following resources are provided for use in various tests:</p>
+
+<ul>
+<li><code>GET /testing/401</code></li>
+<li><code>GET /testing/403</code></li>
+<li><code>GET /testing/404</code></li>
+<li><code>GET /testing/405</code></li>
+<li><code>GET /testing/500</code></li>
+<li><code>GET /testing/503</code></li>
+</ul>
+<h1 id='errors'>Errors</h1>
+<p>TBD</p>
 
       </div>
-    </main>
-
-    <footer>
-      <div class="container">
-        
-<nav role="navigation">
-  <ul class="footer-links">
-      <li>NASA Official: Stephen Berrick</li>
-      <li><a href="http://www.nasa.gov/FOIA/index.html">FOIA</a></li>
-      <li><a href="http://www.nasa.gov/about/highlights/HP_Privacy.html">NASA Privacy Policy</a></li>
-      <li><a href="http://www.usa.gov/">USA.gov</a></li>
-      <li><a href="javascript:feedback.showForm();">Feedback</a></li>
-  </ul>
-</nav>
-
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="shell">shell</a>
+                <a href="#" data-language-name="javascript">javascript</a>
+                <a href="#" data-language-name="clojure">clojure</a>
+          </div>
       </div>
-    </footer>
-
-    <!-- Placed at the end of the document so the pages load faster -->
-    
-    <script src="https://fbm.earthdata.nasa.gov/for/CMR/feedback.js" type="text/javascript"></script>
-    <script type="text/javascript"> feedback.init({showIcon: false}); </script>
-    <!-- Reference JQuery before eui.js-->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <!-- Latest compiled JavaScript-->
-    <script src="https://cdn.earthdata.nasa.gov/eui/1.1.3/js/eui.js"></script>
-    
-    
-    
+    </div>
+  <script src="https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+          type="text/javascript"></script>
   </body>
 </html>

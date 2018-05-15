@@ -4914,8 +4914,7 @@ disable logging entirely for tests.</p>
   static generator namespace.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-all
   [docs-source docs-dir base-url]
-  (log/debug &quot;Generating static site files ...&quot;)
-  (generate-rest-api-docs docs-source docs-dir base-url))</pre></td></tr><tr><td class="docs">
+  (log/debug &quot;Generating static site files ...&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
   (let [system-init (components/init :basic)
@@ -5171,7 +5170,7 @@ disable logging entirely for tests.</p>
     :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
     :options core-handler/ok}]
-   [&quot;/opendap/ous/stream/collection/:concept-id&quot; {
+   [&quot;/opendap/ous/streaming-collection/:concept-id&quot; {
     :get (collection-handler/stream-urls httpd-component)}]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn admin-api
   [httpd-component]
@@ -5428,27 +5427,27 @@ disable logging entirely for tests.</p>
         [:echo :rest]
         :else [service]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn service-&gt;base-url
-  [^Keyword service]
+  [service]
   (format &quot;%s://%s:%s&quot;
           (or (:protocol service) &quot;https&quot;)
           (:host service)
           (or (:port service) &quot;443&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn service-&gt;url
-  [^Keyword service]
+  [service]
   (format &quot;%s%s&quot;
           (service-&gt;base-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
               &quot;/&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn service-&gt;base-public-url
-  [^Keyword service]
+  [service]
   (let [protocol (or (get-in service [:public :protocol]) &quot;https&quot;)
         host (get-in service [:public :host])]
     (if (= &quot;https&quot; protocol)
       (format &quot;%s://%s&quot; protocol host)
       (format &quot;%s://%s:%s&quot; protocol host (get-in service [:public :port])))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn service-&gt;public-url
-  [^Keyword service]
+  [service]
   (format &quot;%s%s&quot;
           (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
