@@ -239,8 +239,8 @@
   ;;     on collection's variables; Simon and I are looking into this
   ;;     for now, we're just gonna pretend ... by changing the order
   ;;     below :-(
-  [(:Size (first (filter #(= "YDim" (:Name %)) dim)))
-   (:Size (first (filter #(= "XDim" (:Name %)) dim)))])
+  [(or (:Size (first (filter #(= "YDim" (:Name %)) dim))) default-x-hi)
+   (or (:Size (first (filter #(= "XDim" (:Name %)) dim))) default-y-hi)])
 
 (defn extract-dimensions
   [entry]
