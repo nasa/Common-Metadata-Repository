@@ -8,6 +8,7 @@
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
+   [cmr.opendap.errors :as errors]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in]))
@@ -36,23 +37,24 @@
 
 (defn error-handler
   [status headers body]
-  (log/error "HTTP Error status code:" status)
-  (log/trace "Headers:" headers)
-  (log/trace "Body:" body)
-  (cond (string/starts-with? (:content-type headers)
-                             "application/xml")
-        (let [errs (xml-errors body)]
-          (log/error errs)
-          {:errors errs})
+  (let [default-msg (format errors/msg-status-code status)
+        ct (:content-type headers)]
+    (log/error default-msg)
+    (log/trace "Headers:" headers)
+    (log/debug "Content-Type:" ct)
+    (log/trace "Body:" body)
+    (cond (string/starts-with? ct "application/xml")
+          (let [errs (xml-errors body)]
+            (log/error errs)
+            {:errors errs})
 
-        (string/starts-with? (:content-type headers)
-                             "application/json")
-        (let [errs (json-errors body)]
-          (log/error errs)
-          {:errors errs})
+          (string/starts-with? ct "application/json")
+          (let [errs (json-errors body)]
+            (log/error errs)
+            {:errors errs})
 
-        :else
-        body))
+          :else
+          {:errors [default-msg]})))
 
 (defn client-handler
   ([response]

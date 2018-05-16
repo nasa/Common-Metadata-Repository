@@ -53,6 +53,12 @@
   ([req]
     (add-header req "Client-Id" const/client-id)))
 
+(defn add-payload
+  ([data]
+    (add-payload {} data))
+  ([req data]
+    (assoc req :body data)))
+
 (defn request
   [method url req & [callback]]
   (httpc/request (-> default-options

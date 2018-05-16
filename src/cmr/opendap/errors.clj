@@ -22,6 +22,9 @@
 (def msg-empty-query-string
   (str "No OPeNDAP query string was generated for the request."))
 
+(def msg-status-code
+  (str "HTTP Error status code: %s"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,4 +32,22 @@
 (defn check
   ""
   [& msgs]
-  (remove nil? (map (fn [[value msg]] (when-not value msg)) msgs)))
+  (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
+                    msgs)))
+
+;; XXX Add universal function for checking HTTP status code
+
+(defn erred?
+  ""
+  [data]
+  (seq (:errors data)))
+
+(defn any-erred?
+  [coll]
+  (some erred? coll))
+
+(defn collect
+  [& coll]
+  (let [errors (vec (remove nil? (mapcat :errors coll)))]
+    (when (seq errors)
+      {:errors errors})))

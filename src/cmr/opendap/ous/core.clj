@@ -65,9 +65,9 @@
          (map (partial data-file->opendap-url pattern-info))
          (map #(str % "." (:format params) query-string)))
     {:errors (errors/check
-              [pattern-info errors/msg-empty-svc-pattern]
-              [data-files errors/msg-empty-gnl-data-files]
-              [query-string errors/msg-empty-query-string])}))
+              [not pattern-info errors/msg-empty-svc-pattern]
+              [not data-files errors/msg-empty-gnl-data-files]
+              [not query-string errors/msg-empty-query-string])}))
 
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
@@ -159,11 +159,12 @@
         coll (collection/extract-metadata coll-promise)
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
-        vars (apply-bounding-conditions search-endpoint user-token coll params)]
+        vars (apply-bounding-conditions search-endpoint user-token coll params)
+        errs (errors/collect granules coll)]
     (log/trace "data-files:" (into [] data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [data-files service-ids vars]))
+    [data-files service-ids vars errs]))
 
 (defn stage3
   [search-endpoint user-token bounding-box service-ids vars]
@@ -171,21 +172,23 @@
   (let [services-promise (service/async-get-metadata
                           search-endpoint user-token service-ids)
         bounding-info (map #(variable/extract-bounding-info % bounding-box)
-                           vars)]
+                           vars)
+        errs (errors/collect bounding-info)]
     (log/debug "variable bounding-info:" (into [] bounding-info))
     (log/debug "Finishing stage 3 ...")
-    [services-promise bounding-info]))
+    [services-promise bounding-info errs]))
 
 (defn stage4
   [bounding-box services-promise bounding-info]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
         pattern-info (service/extract-pattern-info (first services))
-        query (bounding-info->opendap-query bounding-info bounding-box)]
+        query (bounding-info->opendap-query bounding-info bounding-box)
+        errs (errors/collect services pattern-info)]
     (log/trace "pattern-info:" pattern-info)
     (log/debug "Generated OPeNDAP query:" query)
     (log/debug "Finishing stage 4 ...")
-    [pattern-info query]))
+    [pattern-info query errs]))
 
 (defn get-opendap-urls
   [search-endpoint user-token raw-params]
@@ -195,19 +198,30 @@
                                                           user-token
                                                           raw-params)
         ;; Stage 2
-        [data-files service-ids vars] (stage2 search-endpoint
-                                              user-token
-                                              params
-                                              coll
-                                              granules)
+        [data-files service-ids vars s2-errs] (stage2
+                                               search-endpoint
+                                               user-token
+                                               params
+                                               coll
+                                               granules)
         ;; Stage 3
-        [services bounding-info] (stage3 search-endpoint
-                                         user-token
-                                         bounding-box
-                                         service-ids
-                                         vars)
+        [services bounding-info s3-errs] (stage3
+                                          search-endpoint
+                                          user-token
+                                          bounding-box
+                                          service-ids
+                                          vars)
         ;; Stage 4
-        [pattern-info query] (stage4 bounding-box services bounding-info)]
-    (results/create
-     (data-files->opendap-urls params pattern-info data-files query)
-     :elapsed (util/timed start))))
+        [pattern-info query s4-errs] (stage4 bounding-box
+                                             services
+                                             bounding-info)
+        ;; Error handling for all
+        errs (errors/collect start params bounding-box granules coll
+                             data-files service-ids vars s2-errs
+                             services bounding-info s3-errs
+                             pattern-info query s4-errs)]
+    (if errs
+      errs
+      (results/create
+       (data-files->opendap-urls params pattern-info data-files query)
+       :elapsed (util/timed start)))))

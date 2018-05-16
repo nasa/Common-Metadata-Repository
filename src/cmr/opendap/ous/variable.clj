@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.util :as util]
@@ -209,9 +210,14 @@
 
 (defn extract-metadata
   [promise]
+  (log/warn "Pre-deref'ed promise:" promise)
   (let [results @promise]
-    (log/trace "Got results from CMR variable search:" results)
-    (:items results)))
+    (log/warn "Got results from CMR variable search:" results)
+    ;; XXX Error handling is not fully centralized yet ... this
+    ;;     will change when it has been:
+    (if-not (:errors results)
+      (:items results)
+      results)))
 
 (defn get-metadata
   "Given a 'params' data structure with a ':variables' key (which may or may
