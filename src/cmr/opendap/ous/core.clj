@@ -63,11 +63,7 @@
   (if (and pattern-info data-files)
     (->> data-files
          (map (partial data-file->opendap-url pattern-info))
-         (map #(str % "." (:format params) query-string)))
-    {:errors (errors/check
-              [not pattern-info errors/msg-empty-svc-pattern]
-              [not data-files errors/msg-empty-gnl-data-files]
-              [not query-string errors/msg-empty-query-string])}))
+         (map #(str % "." (:format params) query-string)))))
 
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
@@ -161,6 +157,8 @@
         service-ids (collection/extract-service-ids coll)
         vars (apply-bounding-conditions search-endpoint user-token coll params)
         errs (errors/collect granules coll)]
+    (when errs
+      (log/error "Stage 2 errors:" errs))
     (log/trace "data-files:" (into [] data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
@@ -174,6 +172,8 @@
         bounding-info (map #(variable/extract-bounding-info % bounding-box)
                            vars)
         errs (errors/collect bounding-info)]
+    (when errs
+      (log/error "Stage 3 errors:" errs))
     (log/debug "variable bounding-info:" (into [] bounding-info))
     (log/debug "Finishing stage 3 ...")
     [services-promise bounding-info errs]))
@@ -185,7 +185,10 @@
         pattern-info (service/extract-pattern-info (first services))
         query (bounding-info->opendap-query bounding-info bounding-box)
         errs (errors/collect services pattern-info)]
-    (log/trace "pattern-info:" pattern-info)
+    (when errs
+      (log/error "Stage 4 errors:" errs))
+    (log/debug "services:" services)
+    (log/debug "pattern-info:" pattern-info)
     (log/debug "Generated OPeNDAP query:" query)
     (log/debug "Finishing stage 4 ...")
     [pattern-info query errs]))
@@ -216,10 +219,17 @@
                                              services
                                              bounding-info)
         ;; Error handling for all
-        errs (errors/collect start params bounding-box granules coll
-                             data-files service-ids vars s2-errs
-                             services bounding-info s3-errs
-                             pattern-info query s4-errs)]
+        errs (errors/collect
+              start params bounding-box granules coll
+              data-files service-ids vars s2-errs
+              services bounding-info s3-errs
+              pattern-info query s4-errs
+              {:errors (errors/check
+                        [not pattern-info errors/msg-empty-svc-pattern]
+                        [not data-files errors/msg-empty-gnl-data-files])})]
+    (log/debug "Got pattern-info:" pattern-info)
+    (log/debug "Got data-files:" data-files)
+    (log/debug "Got errors:" errs)
     (if errs
       errs
       (results/create
