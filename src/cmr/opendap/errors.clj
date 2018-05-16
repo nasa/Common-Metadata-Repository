@@ -37,10 +37,16 @@
 
 ;; XXX Add universal function for checking HTTP status code
 
+(defn get-errors
+  [data]
+  (or (:errors data)
+      (when-let [error (:error data)]
+        [error])))
+
 (defn erred?
   ""
   [data]
-  (seq (:errors data)))
+  (seq (get-errors data)))
 
 (defn any-erred?
   [coll]
@@ -48,6 +54,6 @@
 
 (defn collect
   [& coll]
-  (let [errors (vec (remove nil? (mapcat :errors coll)))]
+  (let [errors (vec (remove nil? (mapcat get-errors coll)))]
     (when (seq errors)
       {:errors errors})))

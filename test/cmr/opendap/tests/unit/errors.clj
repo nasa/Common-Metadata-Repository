@@ -5,6 +5,7 @@
     [cmr.opendap.errors :as errors]))
 
 (deftest erred?
+  (is (errors/erred? {:error ["an error message"]}))
   (is (errors/erred? {:errors ["an error message"]}))
   (is (not (errors/erred? {:data "stuff"}))))
 
@@ -15,7 +16,7 @@
   (is (errors/any-erred? [{:errors ["an error message"]}]))
   (is (errors/any-erred? [{:errors ["an error message"]}
                           {:data "stuff"}]))
-  (is (errors/any-erred? [{:errors ["an error message"]}
+  (is (errors/any-erred? [{:error "an error message"}
                           {:errors ["an error message"]}])))
 
 (deftest collect
@@ -29,5 +30,5 @@
          (errors/collect {:errors ["an error message"]}
                          {:data "stuff"})))
   (is (= {:errors ["error message 1" "error message 2"]}
-         (errors/collect {:errors ["error message 1"]}
+         (errors/collect {:error "error message 1"}
                          {:errors ["error message 2"]}))))
