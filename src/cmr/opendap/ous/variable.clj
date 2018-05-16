@@ -210,14 +210,13 @@
 
 (defn extract-metadata
   [promise]
-  (log/warn "Pre-deref'ed promise:" promise)
   (let [results @promise]
     (log/warn "Got results from CMR variable search:" results)
     ;; XXX Error handling is not fully centralized yet ... this
     ;;     will change when it has been:
-    (if-not (:errors results)
-      (:items results)
-      results)))
+    (if (errors/erred? results)
+      results
+      (:items results))))
 
 (defn get-metadata
   "Given a 'params' data structure with a ':variables' key (which may or may
@@ -229,11 +228,12 @@
     (let [url (str search-endpoint "/variables")
           payload (build-query variable-ids)
           _ (log/debug "Variables query to CMR:" payload)
-          promise (request/async-post url
+          promise (request/async-post
+                   url
                    (-> {}
                        (request/add-token-header user-token)
                        (request/add-accept "application/vnd.nasa.cmr.umm+json")
-                       (request/add-payload ))
+                       (request/add-payload payload))
                    response/json-handler)]
       (log/debug "Variable ids used:" variable-ids)
       (extract-metadata promise))
