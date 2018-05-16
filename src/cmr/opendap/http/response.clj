@@ -17,8 +17,8 @@
   [body]
   (let [str-data (if (string? body) body (slurp body))
         json-data (json/parse-string str-data true)]
-    (log/debug "str-data:" str-data)
-    (log/debug "json-data:" json-data)
+    (log/trace "str-data:" str-data)
+    (log/trace "json-data:" json-data)
     json-data))
 
 (defn json-errors
@@ -87,8 +87,6 @@
 
 (defn json
   [_request data]
-  (log/debug "Got request:" _request)
-  (log/debug "Got data:" data)
   (-> {:body (json/generate-string (dissoc data :status))}
       (status-or-ok data)
       (response/content-type "application/json")))
