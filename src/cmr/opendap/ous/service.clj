@@ -22,6 +22,7 @@
   "Given a service-id, get the metadata for the associate service."
   [search-endpoint user-token service-ids]
   (log/debug "Getting service metadata for:" service-ids)
+  ;; XXX Tried converting this to POST; got the wrong service ...
   (let [url (str search-endpoint
                  "/services?"
                  (build-query service-ids))]

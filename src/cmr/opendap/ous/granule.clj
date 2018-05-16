@@ -58,6 +58,7 @@
   Which granule metadata is returned depends upon the values of :granules and
   :exclude-granules"
   [search-endpoint user-token params]
+  ;; XXX Tried converting this to POST; got the wrong granules ...
   (let [url (str search-endpoint
                  "/granules?"
                  (build-query params))]
