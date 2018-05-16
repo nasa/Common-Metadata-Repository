@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [ring.util.codec :as codec]
@@ -36,7 +37,9 @@
   [promise]
   (let [results @promise]
     (log/trace "Got results from CMR service search:" results)
-    (:items results)))
+    (if (errors/erred? results)
+      results
+      (:items results))))
 
 (defn get-metadata
   [search-endpoint user-token service-ids]
@@ -51,7 +54,10 @@
   [service-entry]
   (log/debug "Got service entry:" service-entry)
   (when-let [umm (:umm service-entry)]
+    (log/debug "Got UMM data for service ...")
+    (log/debug "Service is of type:" (:Type umm))
     (when (match-opendap umm)
+      (log/debug "Found matching pattern ....")
       {:service-id (get-in service-entry [:meta :concept-id])
        ;; XXX WARNING!!! The regex's saved in the UMM data are broken!
        ;;                We're manually hacking the regex to fix this ...
