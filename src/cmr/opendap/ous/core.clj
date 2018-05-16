@@ -2,6 +2,7 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection.core :as collection]
    [cmr.opendap.ous.collection.params.core :as params]
    [cmr.opendap.ous.collection.results :as results]
@@ -59,9 +60,14 @@
 
 (defn data-files->opendap-urls
   [params pattern-info data-files query-string]
-  (->> data-files
-       (map (partial data-file->opendap-url pattern-info))
-       (map #(str % "." (:format params) query-string))))
+  (if (and pattern-info data-files query-string)
+    (->> data-files
+         (map (partial data-file->opendap-url pattern-info))
+         (map #(str % "." (:format params) query-string)))
+    {:errors (errors/check
+              [pattern-info errors/msg-empty-svc-pattern]
+              [data-files errors/msg-empty-gnl-data-files]
+              [query-string errors/msg-empty-query-string])}))
 
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
@@ -155,6 +161,7 @@
         service-ids (collection/extract-service-ids coll)
         vars (apply-bounding-conditions search-endpoint user-token coll params)]
     (log/trace "data-files:" (into [] data-files))
+    (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
     [data-files service-ids vars]))
 

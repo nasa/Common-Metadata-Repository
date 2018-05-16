@@ -344,6 +344,8 @@
   non-variable-specific bounding info passed to it in order to support
   spatial subsetting"
   [entry bounding-box]
+  (log/debug "Got variable entry:" entry)
+  (log/debug "Got bounding-box:" bounding-box)
   (let [dims (extract-dimensions entry)
         ; bounds (or bounding-box (extract-bounds entry))
         ]

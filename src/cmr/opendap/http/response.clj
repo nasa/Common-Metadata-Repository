@@ -79,23 +79,26 @@
   [_request & args]
   (response/ok args))
 
+(defn status-or-ok
+  [resp data]
+  (assoc resp :status (or (:status data) 200)))
+
 (defn json
   [_request data]
-  (-> data
-      json/generate-string
-      response/ok
+  (-> {:body (json/generate-string data)}
+      (status-or-ok data)
       (response/content-type "application/json")))
 
 (defn text
   [_request data]
-  (-> data
-      response/ok
+  (-> {:body data}
+      (status-or-ok data)
       (response/content-type "text/plain")))
 
 (defn html
   [_request data]
   (-> data
-      response/ok
+      (status-or-ok data)
       (response/content-type "text/html")))
 
 (defn not-found

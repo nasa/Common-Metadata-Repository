@@ -49,7 +49,8 @@
 
 (defn extract-pattern-info
   [service-entry]
-  (let [umm (:umm service-entry)]
+  (log/debug "Got service entry:" service-entry)
+  (when-let [umm (:umm service-entry)]
     (when (match-opendap umm)
       {:service-id (get-in service-entry [:meta :concept-id])
        ;; XXX WARNING!!! The regex's saved in the UMM data are broken!

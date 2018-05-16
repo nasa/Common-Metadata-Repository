@@ -1,4 +1,6 @@
-(ns cmr.opendap.ous.collection.results)
+(ns cmr.opendap.ous.collection.results
+  (:require
+    [taoensso.timbre :as log]))
 
 (defrecord CollectionResults
   [;; The number of results returned
@@ -10,9 +12,12 @@
 
 (defn create
   [results & {:keys [elapsed]}]
-  (map->CollectionResults
-    {;; Our 'hits' is simplistic for now; will change when we support
-     ;; paging, etc.
-     :hits (count results)
-     :took elapsed
-     :items results}))
+  (log/debug "Got results:" results)
+  (if (:errors results)
+    (assoc results :status 400)
+    (map->CollectionResults
+      {;; Our 'hits' is simplistic for now; will change when we support
+       ;; paging, etc.
+       :hits (count results)
+       :took elapsed
+       :items results})))
