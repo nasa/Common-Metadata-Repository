@@ -208,6 +208,25 @@
          variable-ids)
     (str "page_size=" (count variable-ids)))))
 
+(defn async-get-metadata
+  "Given a 'params' data structure with a ':variables' key (which may or may
+  not have values) and a list of all collection variable-ids, return the
+  metadata for the passed variables, if defined, and for all associated
+  variables, if params does not contain any."
+  [search-endpoint user-token {variable-ids :variables}]
+  (if (seq variable-ids)
+    (let [url (str search-endpoint "/variables")
+          payload (build-query variable-ids)]
+      (log/debug "Variables query to CMR:" payload)
+      (request/async-post
+       url
+       (-> {}
+           (request/add-token-header user-token)
+           (request/add-accept "application/vnd.nasa.cmr.umm+json")
+           (request/add-payload payload))
+       response/json-handler))
+    (deliver (promise) [])))
+
 (defn extract-metadata
   [promise]
   (let [results @promise]
@@ -219,25 +238,9 @@
       (:items results))))
 
 (defn get-metadata
-  "Given a 'params' data structure with a ':variables' key (which may or may
-  not have values) and a list of all collection variable-ids, return the
-  metadata for the passed variables, if defined, and for all associated
-  variables, if params does not contain any."
-  [search-endpoint user-token {variable-ids :variables}]
-  (if (seq variable-ids)
-    (let [url (str search-endpoint "/variables")
-          payload (build-query variable-ids)
-          _ (log/debug "Variables query to CMR:" payload)
-          promise (request/async-post
-                   url
-                   (-> {}
-                       (request/add-token-header user-token)
-                       (request/add-accept "application/vnd.nasa.cmr.umm+json")
-                       (request/add-payload payload))
-                   response/json-handler)]
-      (log/debug "Variable ids used:" variable-ids)
-      (extract-metadata promise))
-    []))
+  [search-endpoint user-token variables]
+  (let [promise (async-get-metadata search-endpoint user-token variables)]
+    (extract-metadata promise)))
 
 (defn parse-dimensions
   [dim]
