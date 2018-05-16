@@ -60,7 +60,7 @@
 
 (defn data-files->opendap-urls
   [params pattern-info data-files query-string]
-  (if (and pattern-info data-files query-string)
+  (if (and pattern-info data-files)
     (->> data-files
          (map (partial data-file->opendap-url pattern-info))
          (map #(str % "." (:format params) query-string)))
