@@ -85,19 +85,19 @@
 
 (defn json
   [_request data]
-  (-> {:body (json/generate-string data)}
+  (-> {:body (json/generate-string (dissoc data :status))}
       (status-or-ok data)
       (response/content-type "application/json")))
 
 (defn text
   [_request data]
-  (-> {:body data}
+  (-> {:body (dissoc data :status)}
       (status-or-ok data)
       (response/content-type "text/plain")))
 
 (defn html
   [_request data]
-  (-> data
+  (-> {:body (dissoc data :status)}
       (status-or-ok data)
       (response/content-type "text/html")))
 
