@@ -40,7 +40,8 @@
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
         exclude? (:exclude-granules params)
-        bounding-box (:bounding-box params)]
+        bounding-box (:bounding-box params)
+        temporal (:temporal params)]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
           (str "&"
@@ -49,7 +50,12 @@
                  (build-include gran-ids))))
          (when (seq bounding-box)
           (str "&bounding_box="
-               (ous-util/seq->str bounding-box))))))
+               (ous-util/seq->str bounding-box)))
+         (when-not (empty? temporal)
+          (str "&"
+               (codec/url-encode "temporal[]")
+               "="
+               (codec/url-encode temporal))))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules

@@ -45,5 +45,4 @@
     (assoc params :format (or (:format params)
                               const/default-format)
                   :coverage (util/->seq (:coverage params))
-                  :rangesubset (util/->seq (:rangesubset params))
-                  :timeposition (util/->seq (:timeposition params)))))
+                  :rangesubset (util/->seq (:rangesubset params)))))

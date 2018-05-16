@@ -66,7 +66,6 @@
   (let [bounding-box (ous-util/->seq (:bounding-box params))
         subset (:subset params)
         granules-array (ous-util/->seq (get params (keyword "granules[]")))
-        temporal-array (ous-util/->seq (get params (keyword "temporal[]")))
         variables-array (ous-util/->seq (get params (keyword "variables[]")))]
     (log/trace "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
@@ -88,10 +87,7 @@
         :bounding-box (if (seq bounding-box)
                        (mapv #(Float/parseFloat %) bounding-box)
                        (when (seq subset)
-                        (ous-util/subset->bounding-box subset)))
-        :temporal (if (not-array? temporal-array)
-                       (ous-util/->seq (:temporal params))
-                       temporal-array)))))
+                        (ous-util/subset->bounding-box subset)))))))
 
 (defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
