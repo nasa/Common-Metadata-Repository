@@ -8,6 +8,7 @@
    [cmr.transmit.metadata-db :as mdb]))
 
 (defn verify-empty-provider
+  "Throws error if provider still has collections."
   [context provider]
   (let [collections (mdb/find-collections context {:provider-id provider
                                                    :latest true})
