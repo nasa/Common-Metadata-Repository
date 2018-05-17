@@ -215,15 +215,20 @@
   variables, if params does not contain any."
   [search-endpoint user-token {variable-ids :variables}]
   (if (seq variable-ids)
-    (let [url (str search-endpoint "/variables")
-          payload (build-query variable-ids)]
-      (log/debug "Variables query to CMR:" payload)
-      (request/async-post
+    (let [url (str search-endpoint "/variables"
+              "?"
+              (build-query variable-ids))
+          ;payload (build-query variable-ids)
+          ]
+      ;(log/debug "Variables query to CMR:" payload)
+      (log/debug "Variables query to CMR:" url)
+      (request/async-get
        url
        (-> {}
            (request/add-token-header user-token)
            (request/add-accept "application/vnd.nasa.cmr.umm+json")
-           (request/add-payload payload))
+           ;(request/add-payload payload)
+           )
        response/json-handler))
     (deliver (promise) [])))
 
