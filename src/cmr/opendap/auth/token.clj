@@ -61,6 +61,7 @@
   [base-url token]
   (let [url (str base-url token-info-resource)
         data (str "id=" token)]
+    (log/trace "Making token-info query to CMR:" url)
     (request/async-post
       url
       (-> {:body data}

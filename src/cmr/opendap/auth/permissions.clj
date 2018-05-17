@@ -111,5 +111,10 @@
   required permissions for the route."
   [route-perms cache-lookup concept-id]
   (let [id (keyword concept-id)
-        required (cmr-acl->reitit-acl route-perms)]
-    (seq (set/intersection (id required) (id cache-lookup)))))
+        required (cmr-acl->reitit-acl route-perms)
+        required-set (id required)
+        has-set (id cache-lookup)]
+    (log/debug "cache-lookup:" cache-lookup)
+    (log/debug "Permissions required-set:" required-set)
+    (log/debug "Permissions has-set:" has-set)
+    (seq (set/intersection required-set has-set))))

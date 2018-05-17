@@ -54,6 +54,10 @@
                                    user-id
                                    echo-management-query)
         errors (:errors result)]
+    ;; NOTE: Unlike other parts of CMR OPeNDAP, we throw here instead of
+    ;;       passing around an error message due to the fact that the
+    ;;       Clojure caching code has this function burried inside, as a
+    ;;       callback.
     (if errors
       (throw (ex-info (first errors) result))
       (do
@@ -71,10 +75,12 @@
                             token
                             user-id))
     (catch Exception e
-      (ex-data e))))
+      {:errors (ex-data e)})))
 
 (defn admin?
   "Check to see if the roles of a given token+user match the required roles for
   the route."
   [route-roles cache-lookup]
+  (log/debug "Roles required-set:" route-roles)
+  (log/debug "Roles has-set:" cache-lookup)
   (seq (set/intersection cache-lookup route-roles)))
