@@ -31,7 +31,7 @@
          gran-ids)
     ;; We don't know how many granule ids will be involved in an exclude,
     ;; so we use the max page size of 2000.
-    "page_size=2000")))
+    (str "page_size=" const/cmr-max-pagesize))))
 
 (defn build-query
   "Build the query string for querying granles, bassed upon the options
