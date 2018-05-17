@@ -24,29 +24,29 @@
          (v2/map->CollectionParams {}))))
   (testing "For collection-params URL query strings ..."
     (is (v2/params?
-         {:granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]}))
+         {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
     (is (v2/params?
-         {:granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
+         {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
           :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}))
     (is (not
          (v1/params?
-          {:granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]})))
+          {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]})))
     (is (not
          (v1/params?
-          {:granules ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
+          {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
            :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}))))
   (testing "For ous-prototype-params URL query strings ..."
     (is (v1/params?
-         {:coverage ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]}))
+         {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
     (is (v1/params?
-         {:coverage "G1200187775-EDF_OPS,G1200245955-EDF_OPS"
+         {:coverage "G1200267320-HMR_TME,G1200267319-HMR_TME"
           :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}))
     (is (not
          (v2/params?
-          {:coverage ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]})))
+          {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]})))
     (is (not
          (v2/params?
-          {:coverage ["G1200187775-EDF_OPS" "G1200245955-EDF_OPS"]
+          {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
            :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]})))))
 
 (deftest v1->v2

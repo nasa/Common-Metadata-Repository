@@ -16,11 +16,11 @@
 (use-fixtures :once test-system/with-system)
 
 (deftest collection-GET-query-coverage
-  (let [collection-id "C1200187767-EDF_OPS"
+  (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/opendap/ous/collection/%s"
-                                "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id)
                            (test-system/http-port)
                            collection-id)
@@ -32,13 +32,13 @@
 
 
 (deftest collection-GET-query-coverage-rangesubset
-  (let [collection-id "C1200187767-EDF_OPS"
+  (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/opendap/ous/collection/%s"
-                                "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id
-                                "&rangesubset=V1200241812-EDF_OPS,V1200241813-EDF_OPS")
+                                "&rangesubset=V1200267322-HMR_TME,V1200267323-HMR_TME")
                            (test-system/http-port)
                            collection-id)
                    (request/add-token-header {} (util/get-sit-token)))]
@@ -48,11 +48,11 @@
            (util/parse-response response)))))
 
 (deftest collection-GET-query-coverage-subset
-  (let [collection-id "C1200187767-EDF_OPS"
+  (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/opendap/ous/collection/%s"
-                                "?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS,"
+                                "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id
                                 "&subset=lat(56.109375,67.640625)"
                                 "&subset=lon(-9.984375,19.828125)")

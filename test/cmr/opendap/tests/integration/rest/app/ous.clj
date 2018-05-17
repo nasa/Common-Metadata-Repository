@@ -24,7 +24,7 @@
   the network boundaries of CMR OPeNDAP, as such this is an integration test.
   With tokens, however, it does: those tests are system tests."
   (testing "Minimal get"
-    (let [collection-id "C1200187767-EDF_OPS"
+    (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
                      (format "http://localhost:%s/opendap/ous/collection/%s"
                              (test-system/http-port)
