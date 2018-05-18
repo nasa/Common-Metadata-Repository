@@ -134,10 +134,3 @@
   For more details, see the docstring above for `wrap-auth`."
   {:data
     {:middleware [#(wrap-auth % system)]}})
-
-
-(defn manager
-  ""
-  [handler system]
-  (fn [request]
-    ))
