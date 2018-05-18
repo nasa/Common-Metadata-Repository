@@ -81,26 +81,41 @@
   [_request & args]
   (response/ok args))
 
-(defn status-or-ok
-  [resp data]
-  (assoc resp :status (or (:status data) 200)))
+(defn process-ok-results
+  [data]
+  {:headers {"CMR-Took" (:took data)
+             "CMR-Hits" (:hits data)}
+   :status 200})
+
+(defn process-err-results
+  [data]
+  {:status errors/default-error-code})
+
+(defn process-results
+  [data]
+  (if (:errors data)
+    (process-err-results data)
+    (process-ok-results data)))
 
 (defn json
   [_request data]
-  (-> {:body (json/generate-string (dissoc data :status))}
-      (status-or-ok data)
+  (-> data
+      process-results
+      (assoc :body (json/generate-string data))
       (response/content-type "application/json")))
 
 (defn text
   [_request data]
-  (-> {:body (dissoc data :status)}
-      (status-or-ok data)
+  (-> data
+      process-results
+      (assoc :body data)
       (response/content-type "text/plain")))
 
 (defn html
   [_request data]
-  (-> {:body (dissoc data :status)}
-      (status-or-ok data)
+  (-> data
+      process-results
+      (assoc :body data)
       (response/content-type "text/html")))
 
 (defn not-found
