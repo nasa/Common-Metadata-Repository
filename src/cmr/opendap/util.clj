@@ -23,7 +23,7 @@
 
 (defn timed
   [start]
-  (- (now) start))
+  (float (- (now) start)))
 
 (defn most-frequent
   "This identifies the most frequently occuring data in a collection
