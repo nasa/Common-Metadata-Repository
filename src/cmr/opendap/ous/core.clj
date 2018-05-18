@@ -138,15 +138,14 @@
 (defn stage1
   [search-endpoint user-token raw-params]
   (log/debug "Starting stage 1 ...")
-  (let [start (util/now)
-        params (params/parse raw-params)
+  (let [params (params/parse raw-params)
         bounding-box (:bounding-box params)
         grans-promise (granule/async-get-metadata
                        search-endpoint user-token params)
         coll-promise (collection/async-get-metadata
                       search-endpoint user-token params)]
     (log/debug "Finishing stage 1 ...")
-    [start params bounding-box grans-promise coll-promise]))
+    [params bounding-box grans-promise coll-promise]))
 
 (defn stage2
   [search-endpoint user-token params coll-promise grans-promise]
@@ -196,10 +195,11 @@
 (defn get-opendap-urls
   [search-endpoint user-token raw-params]
   (log/trace "Got params:" raw-params)
-  (let [;; Stage 1
-        [start params bounding-box granules coll] (stage1 search-endpoint
-                                                          user-token
-                                                          raw-params)
+  (let [start (util/now)
+        ;; Stage 1
+        [params bounding-box granules coll] (stage1 search-endpoint
+                                                    user-token
+                                                    raw-params)
         ;; Stage 2
         [data-files service-ids vars s2-errs] (stage2
                                                search-endpoint
