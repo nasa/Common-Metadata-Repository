@@ -50,6 +50,7 @@
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
+      (ps/verify-empty-provider request-context provider-id)
       (result->response-map
         (ps/delete-provider request-context provider-id)))
 

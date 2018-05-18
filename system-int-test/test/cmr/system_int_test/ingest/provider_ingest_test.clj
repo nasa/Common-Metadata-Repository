@@ -192,6 +192,18 @@
                                  (:items
                                   (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"}))))))
 
+      ;; delete provider PROV1, fails because collections exist
+      (let [{:keys [status errors]} (ingest/delete-ingest-provider "PROV1")]
+        (is (= 401 status))
+        (is (= ["You cannot perform this action on a provider that has collections."]
+               errors)))
+
+      (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :json
+                                                                          :raw? true})
+      (ingest/delete-concept (d/umm-c-collection->concept coll2 :echo10) {:accept-format :json
+                                                                          :raw? true})
+      (index/wait-until-indexed)
+      
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
         (is (= 204 status))
