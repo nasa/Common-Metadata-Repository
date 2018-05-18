@@ -58,14 +58,17 @@
                                                      {:provider-id "PROV1"
                                                       :concept-type :granule
                                                       :native-id "iso-smap-granule"
-                                                      :format-key :iso-smap})]
+                                                      :format-key :iso-smap})
+        umm-granule-size (get-in granule [:data-granule :size])]
     (index/wait-until-indexed)
     (let [params {:concept-id (:concept-id granule)}
           format-key :echo10
           response (search/find-metadata :granule format-key params)
           metadata (:metadata (first (:items response)))]
-      ;; Verify that the retrieved echo10 granule contains the correct SizeMBDataGranule.
-      (is (= true (.contains metadata "<SizeMBDataGranule>22.2031965255737</SizeMBDataGranule>"))))))
+      ;; Umm granule size should be the same as the transferSize in the smap granule.
+      ;; The retrieved echo10 granule should contain the same SizeMBDataGranule as the umm granule size.
+      (is (= 22.2031965255737 umm-granule-size))
+      (is (= true (.contains metadata (str "<SizeMBDataGranule>" umm-granule-size "</SizeMBDataGranule>")))))))
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
