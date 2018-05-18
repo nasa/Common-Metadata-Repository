@@ -84,10 +84,13 @@
                      (let [tag-associations (meta-db/get-associations-for-collection
                                              context concept :tag-association)
                            variable-associations (meta-db/get-associations-for-collection
-                                                  context concept :variable-association)]
+                                                  context concept :variable-association)
+                           service-associations (meta-db/get-associations-for-collection
+                                                  context concept :service-association)]
                        (-> concept
                            (assoc :tag-associations tag-associations)
-                           (assoc :variable-associations variable-associations))))
+                           (assoc :variable-associations variable-associations)
+                           (assoc :service-associations service-associations))))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
 
