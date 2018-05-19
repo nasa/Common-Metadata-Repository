@@ -39,11 +39,15 @@
   [status headers body]
   (let [default-msg (format errors/msg-status-code status)
         ct (:content-type headers)]
-    (log/error default-msg)
     (log/trace "Headers:" headers)
     (log/trace "Content-Type:" ct)
     (log/trace "Body:" body)
-    (cond (string/starts-with? ct "application/xml")
+    (cond (nil? ct)
+          (do
+            (log/error body)
+            {:errors [body]})
+
+          (string/starts-with? ct "application/xml")
           (let [errs (xml-errors body)]
             (log/error errs)
             {:errors errs})
