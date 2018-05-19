@@ -215,27 +215,24 @@
   variables, if params does not contain any."
   [search-endpoint user-token {variable-ids :variables}]
   (if (seq variable-ids)
-    (let [url (str search-endpoint "/variables"
-              "?"
-              (build-query variable-ids))
-          ;payload (build-query variable-ids)
-          ]
-      ;(log/debug "Variables query to CMR:" payload)
-      (log/debug "Variables query to CMR:" url)
-      (request/async-get
+    (let [url (str search-endpoint "/variables")
+          payload (build-query variable-ids)]
+      (log/debug "Variables query CMR URL:" url)
+      (log/debug "Variables query CMR payload:" payload)
+      (request/async-post
        url
        (-> {}
            (request/add-token-header user-token)
            (request/add-accept "application/vnd.nasa.cmr.umm+json")
-           ;(request/add-payload payload)
-           )
+           (request/add-form-ct)
+           (request/add-payload payload))
        response/json-handler))
     (deliver (promise) [])))
 
 (defn extract-metadata
   [promise]
   (let [results @promise]
-    (log/warn "Got results from CMR variable search:" results)
+    (log/debug "Got results from CMR variable search:" results)
     ;; XXX Error handling is not fully centralized yet ... this
     ;;     will change when it has been:
     (if (errors/erred? results)
