@@ -25,10 +25,10 @@
   Access Control API."
   #(hash-map :concept_id %))
 
-(defn concept-key
+(defn permissions-key
   "Generate a key to be used for caching permissions data."
-  [token]
-  (str "concept:" token))
+  [token concept-id]
+  (format "permissions:%s:%s" token concept-id))
 
 (defn reitit-acl-data
   "Construct permissions "
@@ -98,7 +98,7 @@
   [system token user-id concept-id]
   (try
     (caching/lookup system
-                    (concept-key token)
+                    (permissions-key token concept-id)
                     #(concept (config/get-access-control-url system)
                               token
                               user-id

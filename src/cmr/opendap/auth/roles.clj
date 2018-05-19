@@ -29,10 +29,10 @@
   maps below to `admin`."
   {:system_object (name management-acl)})
 
-(defn admin-key
+(defn roles-key
   "Generate a key to be used for caching role data."
   [token]
-  (str "admin:" token))
+  (str "roles:" token))
 
 (defn cmr-acl->reitit-acl
   [cmr-acl]
@@ -70,7 +70,7 @@
   [system token user-id]
   (try
     (caching/lookup system
-                    (admin-key token)
+                    (roles-key token)
                     #(admin (config/get-access-control-url system)
                             token
                             user-id))
