@@ -41,11 +41,17 @@
   ([req]
     (add-header req "User-Agent" const/user-agent)))
 
+(defn add-content-type
+  ([ct]
+    (add-content-type {}))
+  ([req ct]
+    (add-header req "Content-Type" ct)))
+
 (defn add-form-ct
   ([]
     (add-form-ct {}))
   ([req]
-    (add-header req "Content-Type" "application/x-www-form-urlencoded")))
+    (add-content-type req "application/x-www-form-urlencoded")))
 
 (defn add-client-id
   ([]
@@ -65,7 +71,8 @@
                      (add-client-id)
                      (add-user-agent)
                      (merge req)
-                     (assoc :url url :method method))
+                     (assoc :url url :method method)
+                     ((fn [x] (log/trace "Options to httpc:" x) x)))
                   callback))
 
 (defn async-get
