@@ -58,16 +58,17 @@
   Which granule metadata is returned depends upon the values of :granules and
   :exclude-granules"
   [search-endpoint user-token params]
-  ;; XXX Tried converting this to POST; got the wrong granules ...
-  (let [url (str search-endpoint
-                 "/granules?"
-                 (build-query params))]
-    (log/debug "Granules query to CMR:" url)
-    (request/async-get
+  (let [url (str search-endpoint "/granules")
+        payload (build-query params)]
+    (log/debug "Granules query CMR URL:" url)
+    (log/debug "Granules query CMR payload:" payload)
+    (request/async-post
      url
      (-> {}
          (request/add-token-header user-token)
-         (request/add-accept "application/json"))
+         (request/add-accept "application/json")
+         (request/add-form-ct)
+         (request/add-payload payload))
      response/json-handler)))
 
 (defn extract-metadata
