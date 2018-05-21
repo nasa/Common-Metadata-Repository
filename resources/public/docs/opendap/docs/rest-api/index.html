@@ -261,6 +261,9 @@
             <a href="#rest-api-overview" class="toc-h1 toc-link" data-title="rest-api-overview">REST API Overview</a>
           </li>
           <li>
+            <a href="#about-the-docs" class="toc-h1 toc-link" data-title="about-the-docs">About the Docs</a>
+          </li>
+          <li>
             <a href="#authorized-access" class="toc-h1 toc-link" data-title="authorized-access">Authorized Access</a>
           </li>
           <li>
@@ -320,6 +323,21 @@
 <p>The REST API is currently focused on generating OPeNDAP data access URLs,
 allowing users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.</p>
+<h1 id='about-the-docs'>About the Docs</h1>
+<p>This API documentation provides prose in the central column, using
+the left collumn to highlight usage and code.</p>
+
+<p>Note that, due to some of the long URLs and query examples, the lines
+in the examples are broken up -- this is done for the sake of visiability
+on the page. When you use these to make a query you must remove newline
+breaks.</p>
+
+<aside class="warning">
+  In many cases, copying and pasting the examples as-is will not work!
+  Line separations have been added to the examples for visual clarity; to
+  actually use these, you need to make sure extraneous newlines have been
+  removed.
+</aside>
 <h1 id='authorized-access'>Authorized Access</h1>
 <p>CMR OPeNDAP requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.</p>
@@ -395,11 +413,12 @@ the variables across the globe for the given collection. To limit these, there
 are various parameters supported:</p>
 
 <ul>
+<li><code>bounding-box</code></li>
+<li><code>exclude-granules</code></li>
 <li><code>format</code></li>
 <li><code>granules</code></li>
-<li><code>exclude-granules</code></li>
+<li><code>temporal</code></li>
 <li><code>variables</code></li>
-<li><code>bounding-box</code></li>
 </ul>
 
 <p>These may be used alone or in any combination. Details for usage are provided
@@ -407,13 +426,56 @@ below in separate sections.</p>
 
 <p>Note that both hypens and underscores are supported in parameters that have
 them; you may use either, per your preference.</p>
-<h3 id='format'><code>format</code></h3>
+<h3 id='bounding-box'><code>bounding-box</code></h3>
+<p>This provides clients with the ability to select the spatial data to include
+in the granule data extracted by the OPeNDAP query to an area of interest.</p>
+
+<p>If not provided, the entire spatial extent of the granule will be used.</p>
+
+<p>The following are examples of accepted <code>bounding-box</code> parameter usage:</p>
+
+<ul>
+<li><code>bounding-box=-9.984375,56.109375,19.828125,67.640625</code></li>
+<li><code>bounding_box=-9.984375,56.109375,19.828125,67.640625</code></li>
+</ul>
+
+<blockquote>
+<p>Use of <code>bounding-box</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
+     bounding-box=-9.984375,56.109375,19.828125,67.640625"</span>
+</code></pre><h3 id='exclude-granules'><code>exclude-granules</code></h3>
+<p>This allows clients to perform the inverse of a granule search. If the
+value of this parameter is set to <code>&quot;true&quot;</code>, then all granules <em>except</em>
+the ones passed will be returned.</p>
+
+<p>If not provided, a regular granule search is performed.</p>
+
+<p>The following is an example of accepted <code>exclude-granules</code> parameter usage:</p>
+
+<ul>
+<li><code>exclude-granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
+</ul>
+
+<p>Note that the <code>granules</code> parameter here may take any of the accepted forms
+shown in the previous section.</p>
+
+<blockquote>
+<p>Use of <code>exclude-granules</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     exclude-granules=true&amp;
+     granules=G1200187775-EDF_OPS"</span>
+</code></pre><h3 id='format'><code>format</code></h3>
 <p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
 
 <p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats
 depend upon the target OPeNDAP server.</p>
 
-<p>Parameter example:</p>
+<p>The following is an example of accepted <code>format</code> parameter usage:</p>
 
 <ul>
 <li><code>format=nc</code></li>
@@ -445,28 +507,33 @@ in conjunction with the <code>exclude-granules</code> parameter, then all granul
 <p>Use of <code>granules</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
-</code></pre><h3 id='exclude-granules'><code>exclude-granules</code></h3>
-<p>This allows clients to perform the inverse of a granule search. If the
-value of this parameter is all granules
-<em>except</em> the ones passed. Granules may either be pass</p>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
+</code></pre><h3 id='temporal'><code>temporal</code></h3>
+<p>This provides clients with the ability to select a temporal subset of data to
+include in the granule data extracted by the OPeNDAP query, only providing data
+for the time of interest.</p>
 
-<p>If not provided, a regular granule search is performed.</p>
+<p>If not provided, the entire temproal extent of the granule will be used.</p>
 
-<p>Parameter examples:</p>
+<p>The following are examples of accepted <code>temporal</code> parameter usage:</p>
 
 <ul>
-<li><code>exclude-granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
+<li><code>temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
+<li><code>temporal[]=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
+<li><code>temporal=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;temporal=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
+<li><code>temporal[]=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;temporal[]=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
 </ul>
 
-<p>Note that the <code>granules</code> parameter here may take any of the accepted forms
-shown in the previous section.</p>
+<p>Note that both are needed in order to define a bounding box.</p>
 
 <blockquote>
-<p>Use of <code>exclude-granules</code> in a query:</p>
+<p>Use of <code>temporal</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?exclude-granules=true&amp;granules=G1200187775-EDF_OPS"</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
+     temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
 </code></pre><h3 id='variables'><code>variables</code></h3>
 <p>This proivdes clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.</p>
@@ -487,25 +554,8 @@ be used.</p>
 <p>Use of <code>variables</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
-</code></pre><h3 id='bounding-box'><code>bounding-box</code></h3>
-<p>This provides clients with the ability to select the spatial data to include
-in the granule data extracted by the OPeNDAP query to an area of interest.</p>
-
-<p>If not provided, the entire spatial extent of the granule will be used.</p>
-
-<p>Parameter example:</p>
-
-<ul>
-<li><code>bounding-box=-9.984375,56.109375,19.828125,67.640625</code></li>
-<li><code>bounding_box=-9.984375,56.109375,19.828125,67.640625</code></li>
-</ul>
-
-<blockquote>
-<p>Use of <code>bounding-box</code> in a query:</p>
-</blockquote>
-<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;bounding-box=-9.984375,56.109375,19.828125,67.640625"</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
 </code></pre><h2 id='wcs-style-parameters'>WCS-Style Parameters</h2>
 <p>The original implementation of the OPeNDAP URL translation service was not a
 part of the CMR, and thus did not take into consideration the internal
@@ -516,34 +566,18 @@ As such, the following parameters are also available, as an alternative to the
 &quot;classic&quot; CMR/EDSC parameters:</p>
 
 <ul>
-<li><code>format</code></li>
 <li><code>coverage</code></li>
+<li><code>format</code></li>
 <li><code>rangesubset</code></li>
 <li><code>subset</code></li>
+<li><code>timeposition</code></li>
 </ul>
 
 <p>These are show in more detail in the sub-sections below.</p>
 
 <p>Note that WCS-style and CMR/EDSC-style parameters may not be mixed in the same
 request; you must chose one or the other, not both.</p>
-<h3 id='format-2'><code>format</code></h3>
-<p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
-
-<p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats
-depend upon the target OPeNDAP server.</p>
-
-<p>Parameter example:</p>
-
-<ul>
-<li><code>format=nc</code></li>
-</ul>
-
-<blockquote>
-<p>Use of <code>format</code> in a query:</p>
-</blockquote>
-<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
-</code></pre><h3 id='coverage'><code>coverage</code></h3>
+<h3 id='coverage'><code>coverage</code></h3>
 <p>This allows the client to select the granules to include (or exclude) in their
 OPeNDAP queries.</p>
 
@@ -560,7 +594,25 @@ OPeNDAP queries.</p>
 <p>Use of <code>coverage</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
+</code></pre><h3 id='format-2'><code>format</code></h3>
+<p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
+
+<p>If not provided, the default of <code>nc</code> (NetCDF) is used. Supported formats
+depend upon the target OPeNDAP server.</p>
+
+<p>The following is an example of accepted <code>format</code> parameter usage:</p>
+
+<ul>
+<li><code>format=nc</code></li>
+</ul>
+
+<blockquote>
+<p>Use of <code>format</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
 </code></pre><h3 id='rangesubset'><code>rangesubset</code></h3>
 <p>This proivdes clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.</p>
@@ -579,14 +631,15 @@ be used.</p>
 <p>Use of <code>rangesubset</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
 </code></pre><h3 id='subset'><code>subset</code></h3>
 <p>This provides clients with the ability to select the spatial data to include
 in the granule data extracted by the OPeNDAP query to an area of interest.</p>
 
 <p>If not provided, the entire spatial extent of the granule will be used.</p>
 
-<p>Parameter example:</p>
+<p>The following are examples of accepted <code>subset</code> parameter usage:</p>
 
 <ul>
 <li><code>subset=lat(56.109375,67.640625)</code></li>
@@ -599,7 +652,32 @@ in the granule data extracted by the OPeNDAP query to an area of interest.</p>
 <p>Use of <code>subset</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)"</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
+     subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)"</span>
+</code></pre><h3 id='timeposition'><code>timeposition</code></h3>
+<p>This provides clients with the ability to select a temporal subset of data to
+include in the granule data extracted by the OPeNDAP query, only providing data
+for the time of interest.</p>
+
+<p>If not provided, the entire temproal extent of the granule will be used.</p>
+
+<p>The following is an example of accepted <code>timeposition</code> parameter usage:</p>
+
+<ul>
+<li><code>timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
+<li><code>timeposition=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;timeposition=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
+</ul>
+
+<p>Note that both are needed in order to define a bounding box.</p>
+
+<blockquote>
+<p>Use of <code>timeposition</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
+     timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
 </code></pre><h2 id='forthcoming'>Forthcoming</h2>
 <p>The following are coming soon:</p>
 
