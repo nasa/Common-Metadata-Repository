@@ -15,6 +15,7 @@
     [cmr.opendap.components.core]
     [com.stuartsierra.component :as component]
     [org.httpkit.client :as httpc]
+    [ring.util.codec :as codec]
     [trifl.java :refer [show-methods]]
     [xml-in.core :as xml-in])
   (:import
