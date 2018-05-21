@@ -248,8 +248,9 @@ If not provided, the entire temproal extent of the granule will be used.
 The following are examples of accepted `temporal` parameter usage:
 
 * `temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
-* `temporal=2002-09-01T00:00:00Z&temporal=2016-07-03T00:00:00Z`
-* `temporal[]=2002-09-01T00:00:00Z&temporal[]=2016-07-03T00:00:00Z`
+* `temporal[]=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
+* `temporal=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&temporal=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
+* `temporal[]=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&temporal[]=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
 
 Note that both are needed in order to define a bounding box.
 
@@ -406,6 +407,7 @@ If not provided, the entire temproal extent of the granule will be used.
 The following is an example of accepted `timeposition` parameter usage:
 
 * `timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
+* `timeposition=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&timeposition=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
 
 Note that both are needed in order to define a bounding box.
 

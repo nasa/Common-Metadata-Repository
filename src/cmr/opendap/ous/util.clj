@@ -22,6 +22,13 @@
   (cond (nil? data) []
         (empty? data) []
         (coll? data) data
+        (string? data) [data]))
+
+(defn split-comma->seq
+  [data]
+  (cond (nil? data) []
+        (empty? data) []
+        (coll? data) data
         (string? data) (string/split data #",")))
 
 (defn seq->str

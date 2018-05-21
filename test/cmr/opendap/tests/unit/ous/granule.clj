@@ -67,7 +67,7 @@
     (let [result (granule/build-query
                   {:collection-id "C123"
                    :granules ["G234" "G345"]
-                   :temporal "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"})]
+                   :temporal ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]})]
       (is (= (str "collection_concept_id=C123&page_size=2&"
                   "concept_id%5B%5D=G234&concept_id%5B%5D=G345&"
                   "temporal%5B%5D=2002-09-01T00%3A00%3A00Z%2C2016-07-03T00%3A00%3A00Z")
@@ -75,4 +75,20 @@
       (is (= (str "collection_concept_id=C123&page_size=2&"
                   "concept_id[]=G234&concept_id[]=G345&"
                   "temporal[]=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z")
+             (codec/url-decode result)))))
+  (testing "With multiple temporals ...."
+    (let [result (granule/build-query
+                  {:collection-id "C123"
+                   :granules ["G234" "G345"]
+                   :temporal ["2000-09-01T00:00:00Z,2003-07-03T00:00:00Z"
+                              "2010-09-01T00:00:00Z,2016-07-03T00:00:00Z"]})]
+      (is (= (str "collection_concept_id=C123&page_size=2&"
+                  "concept_id%5B%5D=G234&concept_id%5B%5D=G345&"
+                  "temporal%5B%5D=2000-09-01T00%3A00%3A00Z%2C2003-07-03T00%3A00%3A00Z&"
+                  "temporal%5B%5D=2010-09-01T00%3A00%3A00Z%2C2016-07-03T00%3A00%3A00Z")
+             result))
+      (is (= (str "collection_concept_id=C123&page_size=2&"
+                  "concept_id[]=G234&concept_id[]=G345&"
+                  "temporal[]=2000-09-01T00:00:00Z,2003-07-03T00:00:00Z&"
+                  "temporal[]=2010-09-01T00:00:00Z,2016-07-03T00:00:00Z")
              (codec/url-decode result))))))

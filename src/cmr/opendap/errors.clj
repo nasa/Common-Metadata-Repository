@@ -35,8 +35,14 @@
   (str "There was a oroblem creating URLs from granule file data: couldn't "
        "match default service pattern %s to service %s."))
 
+(def granule-metadata
+  "There was a problem extracting granule metadata.")
+
+(def service-metadata
+  "There was a problem extracting service metadata.")
+
 (def variable-metadata
-  "There was a problem roblem extracting variable metadata.")
+  "There was a problem extracting variable metadata.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

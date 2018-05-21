@@ -2,8 +2,10 @@
   (:require
    [clojure.string :as string]
    [cmr.opendap.const :as const]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.util :as ous-util]
    [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
@@ -37,6 +39,7 @@
   "Build the query string for querying granles, bassed upon the options
   passed in the parameters."
   [params]
+  (log/warn "params:" params)
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
         exclude? (:exclude-granules params)
@@ -51,11 +54,9 @@
          (when (seq bounding-box)
           (str "&bounding_box="
                (ous-util/seq->str bounding-box)))
-         (when-not (empty? temporal)
+         (when (seq temporal)
           (str "&"
-               (codec/url-encode "temporal[]")
-               "="
-               (codec/url-encode temporal))))))
+               (ous-util/temporal-seq->cmr-query temporal))))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
@@ -79,9 +80,16 @@
 
 (defn extract-metadata
   [promise]
-  (let [results @promise]
-    (log/trace "Got results from CMR granule search:" results)
-    (get-in results [:feed :entry])))
+  (let [rslts @promise]
+    (if (errors/erred? rslts)
+      (do
+        (log/error errors/granule-metadata)
+        rslts)
+      (do
+        (log/debug "Got results from CMR granule search:"
+                   (results/elided rslts))
+        (log/trace "Remaining results:" (results/remaining-items rslts))
+        (get-in rslts [:feed :entry])))))
 
 (defn get-metadata
   [search-endpoint user-token params]

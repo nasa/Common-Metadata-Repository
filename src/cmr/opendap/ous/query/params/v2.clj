@@ -63,10 +63,14 @@
 
 (defn create-params
   [params]
-  (let [bounding-box (ous-util/->seq (:bounding-box params))
+  (let [bounding-box (ous-util/split-comma->seq (:bounding-box params))
         subset (:subset params)
-        granules-array (ous-util/->seq (get params (keyword "granules[]")))
-        variables-array (ous-util/->seq (get params (keyword "variables[]")))]
+        granules-array (ous-util/split-comma->seq
+                        (get params (keyword "granules[]")))
+        variables-array (ous-util/split-comma->seq
+                         (get params (keyword "variables[]")))
+        temporal-array (ous-util/->seq
+                        (get params (keyword "temporal[]")))]
     (log/trace "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
     (log/trace "granules-array:" granules-array)
@@ -75,19 +79,22 @@
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (if (not-array? granules-array)
-                       (ous-util/->seq (:granules params))
-                       granules-array)
+                    (ous-util/split-comma->seq (:granules params))
+                    granules-array)
         :variables (if (not-array? variables-array)
-                       (ous-util/->seq (:variables params))
-                       variables-array)
+                     (ous-util/split-comma->seq (:variables params))
+                     variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
                  (ous-util/bounding-box->subset bounding-box)
                  (:subset params))
         :bounding-box (if (seq bounding-box)
-                       (mapv #(Float/parseFloat %) bounding-box)
-                       (when (seq subset)
-                        (ous-util/subset->bounding-box subset)))))))
+                        (mapv #(Float/parseFloat %) bounding-box)
+                        (when (seq subset)
+                          (ous-util/subset->bounding-box subset)))
+        :temporal (if (not-array? temporal-array)
+                    (ous-util/->seq (:temporal params))
+                    temporal-array)))))
 
 (defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support

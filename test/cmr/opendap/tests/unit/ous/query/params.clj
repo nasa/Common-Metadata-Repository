@@ -58,10 +58,10 @@
            :collection-id "C123"
            :granules ["G234" "G345" "G456"]
            :variables ["V234" "V345" "V456"]
-           :subset ["lat(22,34)" "lon(169,200)"]
            :exclude-granules false
            :bounding-box [169.0 22.0 200.0 34.0]
-           :temporal ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]})
+           :subset ["lat(22,34)" "lon(169,200)"]
+           :temporal "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"})
          (params/v1->v2
           (v1/map->OusPrototypeParams {
            :format "nc"
@@ -71,4 +71,31 @@
                       "G456"]
            :rangesubset ["V234" "V345" "V456"]
            :subset ["lat(22,34)" "lon(169,200)"]
-           :timeposition ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]})))))
+           :timeposition "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"}))))
+  (testing "Temporal variations ..."
+    (is (= (v2/map->CollectionParams
+            {:collection-id "C123"
+             :granules ["G234" "G345" "G456"]
+             :temporal ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]
+             :exclude-granules false})
+           (params/v1->v2
+            (v1/map->OusPrototypeParams {
+             :coverage ["C123"
+                        "G234"
+                        "G345"
+                        "G456"]
+             :timeposition ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]}))))
+    (is (= (v2/map->CollectionParams
+            {:collection-id "C123"
+             :granules ["G234" "G345" "G456"]
+             :temporal ["2000-01-01T00:00:00Z,2002-10-01T00:00:00Z"
+                        "2010-07-01T00:00:00Z,2016-07-03T00:00:00Z"]
+             :exclude-granules false})
+           (params/v1->v2
+            (v1/map->OusPrototypeParams {
+             :coverage ["C123"
+                        "G234"
+                        "G345"
+                        "G456"]
+             :timeposition ["2000-01-01T00:00:00Z,2002-10-01T00:00:00Z"
+                            "2010-07-01T00:00:00Z,2016-07-03T00:00:00Z"]}))))))
