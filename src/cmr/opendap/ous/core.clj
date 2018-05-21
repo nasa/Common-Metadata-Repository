@@ -56,14 +56,20 @@
         (if (re-matches fallback-pattern data-url)
           (string/replace data-url
                           fallback-pattern
-                          (str "$1" fallback-replacement "$3")))))))
+                          (str "$1" fallback-replacement "$3"))
+          {:errors [(format errors/no-matching-service-pattern
+                            fallback-pattern
+                            data-url)]})))))
 
 (defn data-files->opendap-urls
   [params pattern-info data-files query-string]
   (if (and pattern-info data-files)
-    (->> data-files
-         (map (partial data-file->opendap-url pattern-info))
-         (map #(str % "." (:format params) query-string)))))
+    (let [urls (map (partial data-file->opendap-url pattern-info) data-files)]
+      (if (errors/any-erred? urls)
+        (do
+          (log/error "Some problematic urls:" (into [] urls))
+          (apply errors/collect urls))
+        (map #(str % "." (:format params) query-string) urls)))))
 
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
@@ -173,7 +179,7 @@
         errs (errors/collect bounding-info)]
     (when errs
       (log/error "Stage 3 errors:" errs))
-    (log/debug "variable bounding-info:" (into [] bounding-info))
+    (log/trace "variable bounding-info:" (into [] bounding-info))
     (log/debug "Finishing stage 3 ...")
     [services-promise bounding-info errs]))
 
@@ -228,10 +234,15 @@
                         [not pattern-info errors/msg-empty-svc-pattern]
                         [not data-files errors/msg-empty-gnl-data-files])})]
     (log/debug "Got pattern-info:" pattern-info)
-    (log/debug "Got data-files:" data-files)
-    (log/debug "Got errors:" errs)
+    (log/debug "Got data-files:" (into [] data-files))
     (if errs
-      errs
-      (results/create
-       (data-files->opendap-urls params pattern-info data-files query)
-       :elapsed (util/timed start)))))
+      (do
+        (log/debug "Got errors:" errs)
+        errs)
+      (let [urls-or-errs (data-files->opendap-urls params
+                                                   pattern-info
+                                                   data-files
+                                                   query)]
+        (if (errors/erred? urls-or-errs)
+          urls-or-errs
+          (results/create urls-or-errs :elapsed (util/timed start)))))))

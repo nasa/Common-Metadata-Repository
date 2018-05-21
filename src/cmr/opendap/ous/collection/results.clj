@@ -16,3 +16,11 @@
      :hits (count results)
      :took elapsed
      :items results}))
+
+(defn elided
+  [results]
+  (assoc results :items [(first (:items results) )"..."]))
+
+(defn remaining-items
+  [results]
+  (rest (:items results)))

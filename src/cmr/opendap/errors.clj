@@ -23,16 +23,23 @@
        "values for the pattern fields?"))
 
 (def msg-empty-gnl-data-files
-  (str "Was not able to extract a service data file from the granule."))
+  "Was not able to extract a service data file from the granule.")
 
 (def msg-empty-query-string
-  (str "No OPeNDAP query string was generated for the request."))
+  "No OPeNDAP query string was generated for the request.")
 
 (def msg-status-code
-  (str "HTTP Error status code: %s"))
+  "HTTP Error status code: %s")
+
+(def no-matching-service-pattern
+  (str "There was a oroblem creating URLs from granule file data: couldn't "
+       "match default service pattern %s to service %s."))
+
+(def variable-metadata
+  "There was a problem roblem extracting variable metadata.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn check

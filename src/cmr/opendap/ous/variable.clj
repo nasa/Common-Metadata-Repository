@@ -5,6 +5,7 @@
    [cmr.opendap.errors :as errors]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.collection.results :as results]
    [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
@@ -231,13 +232,16 @@
 
 (defn extract-metadata
   [promise]
-  (let [results @promise]
-    (log/debug "Got results from CMR variable search:" results)
-    ;; XXX Error handling is not fully centralized yet ... this
-    ;;     will change when it has been:
-    (if (errors/erred? results)
-      results
-      (:items results))))
+  (let [rslts @promise]
+    (if (errors/erred? rslts)
+      (do
+        (log/error errors/variable-metadata)
+        rslts)
+      (do
+        (log/debug "Got results from CMR variable search:"
+                   (results/elided rslts))
+        (log/trace "Remaining results:" (results/remaining-items rslts))
+        (:items rslts)))))
 
 (defn get-metadata
   [search-endpoint user-token variables]

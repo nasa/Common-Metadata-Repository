@@ -7,7 +7,7 @@
 
 ;; Hide logging as much as possible before the system starts up, which should
 ;; disable logging entirely for tests.
-(logger/set-level! '[] :trace)
+(logger/set-level! '[] :fatal)
 
 (def ^:dynamic *mgr* (atom nil))
 
