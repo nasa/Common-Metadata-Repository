@@ -21,18 +21,21 @@
 (defn async-get-metadata
   "Given a service-id, get the metadata for the associate service."
   [search-endpoint user-token service-ids]
-  (log/debug "Getting service metadata for:" service-ids)
-  ;; XXX Tried converting this to POST; got the wrong service ...
-  (let [url (str search-endpoint
-                 "/services?"
-                 (build-query service-ids))]
-    (log/debug "Services query to CMR:" url)
-    (request/async-get
-     url
-     (-> {}
-         (request/add-token-header user-token)
-         (request/add-accept "application/vnd.nasa.cmr.umm+json"))
-     response/json-handler)))
+  (if (seq service-ids)
+    (let [url (str search-endpoint "/services")
+          payload (build-query service-ids)]
+      (log/debug "Getting service metadata for:" service-ids)
+      (log/debug "Services query CMR URL:" url)
+      (log/debug "Services query CMR payload:" payload)
+      (request/async-post
+       url
+       (-> {}
+           (request/add-token-header user-token)
+           (request/add-accept "application/vnd.nasa.cmr.umm+json")
+           (request/add-form-ct)
+           (request/add-payload payload))
+       response/json-handler))
+    (deliver (promise) [])))
 
 (defn extract-metadata
   [promise]
