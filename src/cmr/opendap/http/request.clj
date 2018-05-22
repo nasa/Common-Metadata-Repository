@@ -5,13 +5,9 @@
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [get]))
 
-(def default-options
-  {:user-agent const/user-agent
-   :insecure? true})
-
-(defn options
-  [req & opts]
-  (apply assoc (concat [req] opts)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-header
   [req field]
@@ -65,6 +61,18 @@
   ([req data]
     (assoc req :body data)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   HTTP Client Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def default-options
+  {:user-agent const/user-agent
+   :insecure? true})
+
+(defn options
+  [req & opts]
+  (apply assoc (concat [req] opts)))
+
 (defn request
   [method url req & [callback]]
   (httpc/request (-> default-options
@@ -98,3 +106,64 @@
 (defn post
   [& args]
   @(apply async-post args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Accept Header/Version Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def default-api-version "v2")
+(def default-dotted-version (str "." default-api-version))
+(def default-content-type "json")
+(def default-accept (format "application/vnd.%s.%s+%s"
+                            const/vendor
+                            default-api-version
+                            default-content-type))
+(def accept-pattern
+  "The regular expression for the `Accept` header that may include version
+  and parameter information splits into the following groups:
+  * type: everything before the first '/' (slash)
+  * subtype: everything after the first '/'
+
+  The subtype is then further broken down into the following groups:
+  * vendor
+  * version (with and without the '.'
+  * content-type (with and without the '+' as well as the case where no
+    vendor is supplied))
+
+  All other groups are unused."
+  (re-pattern "(.+)/((vnd\\.([^.+]+)(\\.(v[0-9]+))?(\\+(.+))?)|(.+))"))
+
+(def accept-pattern-keys
+  [:all
+   :type
+   :subtype
+   :vendor+version+content-type
+   :vendor
+   :.version
+   :version
+   :+content-type
+   :content-type
+   :no-vendor-content-type])
+
+(defn parse-accept
+  [req]
+  (->> (or (get-in req [:headers :accept])
+           (get-in req [:headers "Accept"]))
+       (re-find accept-pattern)
+       (zipmap accept-pattern-keys)))
+
+(defn accept-media-type
+  [req]
+  (let [parsed (parse-accept req)
+        vendor (or (:vendor parsed) const/vendor)
+        version (or (:.version parsed) default-dotted-version)]
+    (str vendor version)))
+
+(defn accept-format
+  [req]
+  (let [parsed (parse-accept req)]
+    (or (:content-type parsed)
+        (:no-vendor-content-type parsed)
+        default-content-type)))
+
+(def get-api-version #'accept-media-type)
