@@ -9,14 +9,16 @@
 
 (defn verify-empty-provider
   "Throws error if provider still has collections."
-  [context provider]
-  (let [collections (mdb/find-collections context {:provider-id provider
-                                                   :latest true})
-        non-deleted-colls (remove #(= true (:deleted %)) collections)]
-    (when-not (empty? non-deleted-colls)
-      (errors/throw-service-error
-       :unauthorized
-       "You cannot perform this action on a provider that has collections."))))
+  [context provider headers]
+  (when-not (= "true"
+               (get headers "force-full-provider-delete"))
+    (let [collections (mdb/find-collections context {:provider-id provider
+                                                     :latest true})
+          non-deleted-colls (remove #(= true (:deleted %)) collections)]
+      (when-not (empty? non-deleted-colls)
+        (errors/throw-service-error
+         :unauthorized
+         "You cannot perform this action on a provider that has collections.")))))
 
 (defn- successful?
   "Returns true if the mdb response was successful."
