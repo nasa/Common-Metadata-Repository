@@ -10,8 +10,10 @@
 (defn verify-empty-provider
   "Throws error if provider still has collections."
   [context provider headers]
-  (when-not (= "true"
-               (get headers "force-full-provider-delete"))
+  (when-not (and (= "true"
+                    (get headers "force-full-provider-delete"))
+                 (not= "prod"
+                       (System/getenv "ENVIRONMENT")))
     (let [collections (mdb/find-collections context {:provider-id provider
                                                      :latest true})
           non-deleted-colls (remove #(= true (:deleted %)) collections)]
