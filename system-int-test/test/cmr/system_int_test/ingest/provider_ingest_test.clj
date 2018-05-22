@@ -109,7 +109,7 @@
       (is (= 401 (:status response))))))
 
 (deftest force-full-provider-delete-test
-  (testing "delete provider"
+  (testing "force full provider delete"
     (let [token (e/login-guest (cmr.system-int-test.system/context))
           coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                               :ShortName "S1"
@@ -120,7 +120,7 @@
         (is (= 401 status))
         (is (= ["You cannot perform this action on a provider that has collections."]
                errors)))
-      
+
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider
                                              "PROV1"
                                              {"Force-Full-Provider-Delete" "true"})]
