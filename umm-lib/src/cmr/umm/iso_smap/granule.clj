@@ -48,7 +48,12 @@
 (defn- xml-elem->DataGranule
   "Returns a UMM data-granule element from a parsed Granule XML structure"
   [xml-struct]
-  (let [producer-gran-id (cx/string-at-path
+  (let [size (cx/double-at-path
+               xml-struct
+               [:composedOf :DS_DataSet :has :MI_Metadata :distributionInfo :MD_Distribution
+                :distributor :MD_Distributor :distributorTransferOptions :MD_DigitalTransferOptions
+                :transferSize :Real]) 
+        producer-gran-id (cx/string-at-path
                            xml-struct
                            [:composedOf :DS_DataSet :has :MI_Metadata :identificationInfo
                             :MD_DataIdentification :citation :CI_Citation :title :FileName])
@@ -58,7 +63,8 @@
                                 :DQ_DataQuality :lineage :LI_Lineage :processStep :LE_ProcessStep
                                 :dateTime :DateTime])]
     (when (or producer-gran-id production-date-time)
-      (g/map->DataGranule {:producer-gran-id producer-gran-id
+      (g/map->DataGranule {:size size 
+                           :producer-gran-id producer-gran-id
                            :production-date-time production-date-time}))))
 
 (defn- xml-elem->access-value
@@ -104,7 +110,7 @@
        :related-urls (ru/xml-elem->related-urls xml-struct)})))
 
 (defn parse-granule
-  "Parses ECHO10 XML into a UMM Granule record."
+  "Parses SMAP XML into a UMM Granule record."
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
 

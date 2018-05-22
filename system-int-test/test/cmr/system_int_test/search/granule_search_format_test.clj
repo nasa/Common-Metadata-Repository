@@ -47,6 +47,29 @@
           response (search/find-metadata :granule format-key params options)]
       (d/assert-metadata-results-match format-key [g1-echo] response))))
 
+(deftest search-smap-granule-with-size-in-echo10
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-4902/4902_smap_iso_collection.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "iso-smap-collection"
+                                                   :format-key :iso-smap})
+        ;; The iso smap granule contains transferSize being 22.2031965255737
+        granule (d/ingest-concept-with-metadata-file "CMR-4902/4902_smap_iso_granule.xml"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :native-id "iso-smap-granule"
+                                                      :format-key :iso-smap})
+        umm-granule-size (get-in granule [:data-granule :size])]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id granule)}
+          format-key :echo10
+          response (search/find-metadata :granule format-key params)
+          metadata (:metadata (first (:items response)))]
+      ;; Umm granule size should be the same as the transferSize in the smap granule.
+      ;; The retrieved echo10 granule should contain the same SizeMBDataGranule as the umm granule size.
+      (is (= 22.2031965255737 umm-granule-size))
+      (is (= true (.contains metadata (str "<SizeMBDataGranule>" umm-granule-size "</SizeMBDataGranule>")))))))
+
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
         c2-smap (d/ingest "PROV2" (dc/collection) {:format :iso-smap})
