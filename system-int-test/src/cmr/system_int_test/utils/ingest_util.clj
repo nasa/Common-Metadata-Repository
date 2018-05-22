@@ -91,19 +91,23 @@
 
 (defn delete-ingest-provider
   "Delete the provider with the matching provider-id through the CMR ingest app."
-  [provider-id]
-  (let [{:keys [status body] :as response}
-        (client/delete (url/ingest-provider-url provider-id)
-                       {:throw-exceptions false
-                        :connection-manager (s/conn-mgr)
-                        :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-        errors (:errors (json/decode body true))
-        content-type (get-in response [:headers :content-type])
-        content-length (get-in response [:headers :content-length])]
-    {:status status
-     :errors errors
-     :content-type content-type
-     :content-length content-length}))
+  ([provider-id]
+   (delete-ingest-provider provider-id nil))
+  ([provider-id headers]
+   (let [{:keys [status body] :as response}
+         (client/delete (url/ingest-provider-url provider-id)
+                        {:throw-exceptions false
+                         :connection-manager (s/conn-mgr)
+                         :headers (merge {transmit-config/token-header (transmit-config/echo-system-token)}
+                                         headers)})
+         _ (proto-repl.saved-values/save 2)
+         errors (:errors (json/decode body true))
+         content-type (get-in response [:headers :content-type])
+         content-length (get-in response [:headers :content-length])]
+     {:status status
+      :errors errors
+      :content-type content-type
+      :content-length content-length})))
 
 (defn update-ingest-provider
   "Updates the ingest provider with the given parameters, which is a map of key and value for
