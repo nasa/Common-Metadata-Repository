@@ -12,6 +12,9 @@
   [context provider headers]
   (when-not (and (= "true"
                     (get headers "force-full-provider-delete"))
+                 ;; The following does not use CMR cmr. common.config due to the fact that
+                 ;; this is a non-CMR env/config value; this is evident by the lack of the CMR-
+                 ;; prefix. 
                  (not= "prod"
                        (System/getenv "ENVIRONMENT")))
     (let [collections (mdb/find-collections context {:provider-id provider
