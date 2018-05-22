@@ -100,7 +100,6 @@
                          :connection-manager (s/conn-mgr)
                          :headers (merge {transmit-config/token-header (transmit-config/echo-system-token)}
                                          headers)})
-         _ (proto-repl.saved-values/save 2)
          errors (:errors (json/decode body true))
          content-type (get-in response [:headers :content-type])
          content-length (get-in response [:headers :content-length])]
