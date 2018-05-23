@@ -142,7 +142,7 @@
 (defn default-accept
   [system]
   (format "application/vnd.%s%s+%s"
-          const/vendor
+          (config/vendor system)
           (config/api-version-dotted system)
           (config/default-content-type system)))
 
@@ -156,7 +156,7 @@
 (defn accept-media-type
   [system req]
   (let [parsed (parse-accept req)
-        vendor (or (:vendor parsed) const/vendor)
+        vendor (or (:vendor parsed) (config/vendor system))
         version (or (:.version parsed) (config/api-version-dotted system))]
     (str vendor version)))
 
