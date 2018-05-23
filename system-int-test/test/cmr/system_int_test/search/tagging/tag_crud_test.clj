@@ -248,7 +248,6 @@
              (tags/delete-tag token "tag2"))))))
 
 ;; This test really only paritally tests the mock, don't have a good way to test the token
-;; that is patched with WRITE_ACCESS_SEPARATOR and sent to legacy services.
 (deftest create-tag-with-launchpad-token-test
   (testing "Successful creation with launchpad token"
     (let [tag-key "tag1"

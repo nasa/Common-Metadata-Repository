@@ -5,7 +5,6 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.api.request-write-access-augmenter :as augmenter]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer (debug info warn error)]
@@ -85,11 +84,11 @@
          (PUT "/"
            request
            (collections/ingest-collection
-            provider-id native-id (augmenter/add-write-access-to-request request)))
+            provider-id native-id request))
          (DELETE "/"
            request
            (collections/delete-collection
-            provider-id native-id (augmenter/add-write-access-to-request request))))
+            provider-id native-id request)))
        ;; Granules
        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
          (POST "/"
@@ -99,37 +98,37 @@
          (PUT "/"
            request
            (granules/ingest-granule
-            provider-id native-id (augmenter/add-write-access-to-request request)))
+            provider-id native-id request))
          (DELETE "/"
            request
            (granules/delete-granule
-            provider-id native-id (augmenter/add-write-access-to-request request))))
+            provider-id native-id request)))
        ;; Variables
        (context ["/variables/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
            (variables/ingest-variable
-            provider-id native-id (augmenter/add-write-access-to-request request)))
+            provider-id native-id request))
          (DELETE "/"
            request
            (variables/delete-variable
-            provider-id native-id (augmenter/add-write-access-to-request request))))
+            provider-id native-id request)))
        ;; Services
        (context ["/services/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
            (services/ingest-service
-            provider-id native-id (augmenter/add-write-access-to-request request)))
+            provider-id native-id request))
          (DELETE "/"
            request
            (services/delete-service
-            provider-id native-id (augmenter/add-write-access-to-request request))))
+            provider-id native-id request)))
        ;; Bulk updates
        (context "/bulk-update/collections" []
          (POST "/"
            request
            (bulk/bulk-update-collections
-            provider-id (augmenter/add-write-access-to-request request)))
+            provider-id request))
          (GET "/status" ; Gets all tasks for provider
            request
            (bulk/get-provider-tasks provider-id request))
