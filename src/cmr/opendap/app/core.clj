@@ -16,9 +16,9 @@
         assets-resource (config/http-assets httpd-component)]
     (-> httpd-component
         site-routes/all
-        (middleware/wrap-api-version-dispatch httpd-component)
-        (ring/router (middleware/reitit-auth httpd-component))
-        ring/ring-handler
+        (middleware/wrap-api-version-dispatch
+          httpd-component
+          (middleware/reitit-auth httpd-component))
         (ring-defaults/wrap-defaults ring-defaults/api-defaults)
         (middleware/wrap-resource httpd-component)
         middleware/wrap-trailing-slash

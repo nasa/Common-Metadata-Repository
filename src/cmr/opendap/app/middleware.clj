@@ -4,66 +4,67 @@
    [clojure.string :as string]
    [cmr.opendap.auth.core :as auth]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.site.pages :as pages]
    [cmr.opendap.app.routes.rest :as rest-routes]
+   [reitit.ring :as ring]
    [ring.middleware.content-type :as ring-ct]
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.file :as ring-file]
    [ring.middleware.not-modified :as ring-nm]
-   [ring.util.request :as request]
-   [ring.util.response :as rign-response]
+   [ring.util.response :as ring-response]
    [taoensso.timbre :as log]))
 
 (defn wrap-cors
   "Ring-based middleware for supporting CORS requests."
   [handler]
-  (fn [request]
-    (response/cors request (handler request))))
+  (fn [req]
+    (response/cors req (handler req))))
 
 (defn wrap-trailing-slash
   "Ring-based middleware forremoving a single trailing slash from the end of the
   URI, if present."
   [handler]
-  (fn [request]
-    (let [uri (:uri request)]
-      (handler (assoc request :uri (if (and (not (= "/" uri))
-                                            (.endsWith uri "/"))
-                                     (subs uri 0 (dec (count uri)))
-                                     uri))))))
+  (fn [req]
+    (let [uri (:uri req)]
+      (handler (assoc req :uri (if (and (not (= "/" uri))
+                                        (.endsWith uri "/"))
+                                 (subs uri 0 (dec (count uri)))
+                                 uri))))))
 
 (defn wrap-fallback-content-type
   [handler default-content-type]
-  (fn [request]
-    (condp = (:content-type request)
-      nil (assoc-in (handler request)
+  (fn [req]
+    (condp = (:content-type req)
+      nil (assoc-in (handler req)
                     [:headers "Content-Type"]
                     default-content-type)
-      "application/octet-stream" (assoc-in (handler request)
+      "application/octet-stream" (assoc-in (handler req)
                                            [:headers "Content-Type"]
                                            default-content-type)
-      :else (handler request))))
+      :else (handler req))))
 
 (defn wrap-directory-resource
   ([handler system]
     (wrap-directory-resource handler system "text/html"))
   ([handler system content-type]
-    (fn [request]
-      (let [response (handler request)]
+    (fn [req]
+      (let [response (handler req)]
         (cond
           (contains? (config/http-index-dirs system)
-                     (:uri request))
-          (rign-response/content-type response content-type)
+                     (:uri req))
+          (ring-response/content-type response content-type)
 
           :else
           response)))))
 
 (defn wrap-base-url-subs
   [handler system]
-  (fn [request]
-    (let [response (handler request)]
+  (fn [req]
+    (let [response (handler req)]
       (if (contains? (config/http-replace-base-url system)
-                     (:uri request))
+                     (:uri req))
         (assoc response
                :body
                (string/replace
@@ -85,16 +86,16 @@
                              (wrap-base-url-subs system)
                              (ring-ct/wrap-content-type)
                              (ring-nm/wrap-not-modified))]
-    (fn [request]
+    (fn [req]
       (if (contains? (config/http-skip-static system)
-                     (:uri request))
-        (handler request)
-        (compound-handler request)))))
+                     (:uri req))
+        (handler req)
+        (compound-handler req)))))
 
 (defn wrap-not-found
   [handler system]
-  (fn [request]
-    (let [response (handler request)
+  (fn [req]
+    (let [response (handler req)
           status (:status response)
           ct (get-in response [:headers "Content-Type"])]
       (cond (and ct (string/includes? ct "stream"))
@@ -107,7 +108,7 @@
               (when (nil? status)
                 (log/debug "Got nil status in not-found middleware ..."))
               (assoc (pages/not-found
-                      request
+                      req
                       {:base-url (config/opendap-url system)})
                      :status 404))
 
@@ -122,9 +123,9 @@
   as well as concept-specific permissions. This is done by annotating the routes
   per the means described in the reitit library's documentation."
   [handler system]
-  (fn [request]
+  (fn [req]
     (log/debug "Running perms middleware ...")
-    (auth/check-route-access system handler request)))
+    (auth/check-route-access system handler req)))
 
 (defn reitit-auth
   [system]
@@ -138,8 +139,12 @@
 
 (defn wrap-api-version-dispatch
   ""
-  [handler system]
-  (concat handler
-          (rest-routes/all system)))
-  ; (fn [request]
-  ;   (handler request)))
+  [site-routes system opts]
+  (fn [req]
+    (log/trace "Got site-routes:" (into [] site-routes))
+    (let [spi-version (request/accept-api-version system req)
+          routes (concat site-routes (rest-routes/all system))
+          handler (ring/ring-handler (ring/router routes opts))]
+      (log/debug "API version:" spi-version)
+      (log/trace "Made routes:" (into [] routes))
+      (handler req))))

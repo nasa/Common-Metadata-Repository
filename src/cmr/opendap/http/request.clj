@@ -147,28 +147,29 @@
           (config/default-content-type system)))
 
 (defn parse-accept
-  [req]
+  [system req]
   (->> (or (get-in req [:headers :accept])
-           (get-in req [:headers "Accept"]))
+           (get-in req [:headers "Accept"])
+           (default-accept system))
        (re-find accept-pattern)
        (zipmap accept-pattern-keys)))
 
 (defn accept-api-version
   [system req]
-  (let [parsed (parse-accept req)
+  (let [parsed (parse-accept system req)
         version (or (:version parsed) (config/api-version system))]
     version))
 
 (defn accept-media-type
   [system req]
-  (let [parsed (parse-accept req)
+  (let [parsed (parse-accept system req)
         vendor (or (:vendor parsed) (config/vendor system))
         version (or (:.version parsed) (config/api-version-dotted system))]
     (str vendor version)))
 
 (defn accept-format
   [system req]
-  (let [parsed (parse-accept req)]
+  (let [parsed (parse-accept system req)]
     (or (:content-type parsed)
         (:no-vendor-content-type parsed)
         (config/default-content-type system))))
