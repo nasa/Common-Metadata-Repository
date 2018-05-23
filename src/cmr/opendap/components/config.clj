@@ -20,6 +20,18 @@
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn api-version
+  [system]
+  (:api-version (get-cfg system)))
+
+(defn api-version-dotted
+  [system]
+  (str "." (api-version system)))
+
+(defn default-content-type
+  [system]
+  (:default-content-type (get-cfg system)))
+
 (defn cache-dumpfile
   [system]
   (get-in (get-cfg system) [:caching :dumpfile]))

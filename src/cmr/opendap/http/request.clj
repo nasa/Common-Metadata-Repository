@@ -1,5 +1,6 @@
 (ns cmr.opendap.http.request
   (:require
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [org.httpkit.client :as httpc]
    [taoensso.timbre :as log])
@@ -111,10 +112,6 @@
 ;;;   Accept Header/Version Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-accept (format "application/vnd.%s%s+%s"
-                            const/vendor
-                            const/default-dotted-version
-                            const/default-content-type))
 (def accept-pattern
   "The regular expression for the `Accept` header that may include version
   and parameter information splits into the following groups:
@@ -142,6 +139,13 @@
    :content-type
    :no-vendor-content-type])
 
+(defn default-accept
+  [system]
+  (format "application/vnd.%s%s+%s"
+          const/vendor
+          (config/api-version-dotted system)
+          (config/default-content-type system)))
+
 (defn parse-accept
   [req]
   (->> (or (get-in req [:headers :accept])
@@ -150,17 +154,17 @@
        (zipmap accept-pattern-keys)))
 
 (defn accept-media-type
-  [req]
+  [system req]
   (let [parsed (parse-accept req)
         vendor (or (:vendor parsed) const/vendor)
-        version (or (:.version parsed) const/default-dotted-version)]
+        version (or (:.version parsed) (config/api-version-dotted system))]
     (str vendor version)))
 
 (defn accept-format
-  [req]
+  [system req]
   (let [parsed (parse-accept req)]
     (or (:content-type parsed)
         (:no-vendor-content-type parsed)
-        const/default-content-type)))
+        (config/default-content-type system))))
 
 (def get-api-version #'accept-media-type)
