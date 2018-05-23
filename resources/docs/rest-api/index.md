@@ -67,6 +67,44 @@ Many of the examples in the documentation below show usage of the
 Echo token.
 
 
+# Versioned API
+
+The CMR OPeNDAP REST API is versioned. By default, the most recent version of
+the API is accessed when a request is submitted without specificing the
+desired version.
+
+To request a specific version of the REST API, you must send an additional
+header in your request to CMR OPeNDAP.
+
+> An `Accept` header is required to request a specific version of the API:
+
+```
+"Accept: application/vnd.cmr-opendap.v1+json"
+```
+
+> The following is also valid:
+
+```
+"Accept: application/vnd.cmr-opendap.v1"
+```
+
+All HTTP responses from the REST API also provide information on the version
+used when processing the request. This can be useful for clients debugging
+calls to the service.
+
+> Examine the headers with a call to the service:
+
+```shell
+curl -i ...
+```
+
+> The response headers will include the version used by the service:
+
+```shell
+Cmr-Media-Type: cmr-opendap.v2; format=json
+```
+
+
 # OUS Resources
 
 This is the part of the REST API responsible for creating OPeNDAP-compatible
