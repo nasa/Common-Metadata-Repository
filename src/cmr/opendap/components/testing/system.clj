@@ -1,4 +1,4 @@
-(ns cmr.opendap.components.testing
+(ns cmr.opendap.components.testing.system
   "A component system setup namespace for use in testing."
   (:require
     [cmr.opendap.components.core :as core]))

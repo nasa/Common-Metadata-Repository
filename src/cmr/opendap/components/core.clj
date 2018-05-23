@@ -42,6 +42,10 @@
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn initialize-config-only
+  []
+  (component/map->SystemMap cfg))
+
 (defn initialize-bare-bones
   []
   (component/map->SystemMap
@@ -65,6 +69,7 @@
 
 (def init-lookup
   {:basic #'initialize-bare-bones
+   :testing-config-only #'initialize-config-only
    :testing #'initialize-without-logging
    :web #'initialize-with-web})
 

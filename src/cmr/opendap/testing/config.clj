@@ -1,9 +1,9 @@
-(ns cmr.opendap.testing.system
+(ns cmr.opendap.testing.config
   (:require
     [clojusc.dev.system.core :as system-api]
     [clojusc.twig :as logger]
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.components.testing.system]))
+    [cmr.opendap.components.testing.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Setup and Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,7 +13,7 @@
 ;; disable logging entirely for tests.
 (logger/set-level! '[] :fatal)
 
-(def system-ns "cmr.opendap.components.testing.system")
+(def system-ns "cmr.opendap.components.testing.config")
 (def ^:dynamic *mgr* (atom nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,16 +41,13 @@
   []
   (system-api/get-system (:state @*mgr*)))
 
-(defn http-port
-  []
-  (config/http-port (system)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Test Fixtures   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn with-system
-  "Testing fixture for system and integration tests."
+  "Testing fixture for simple system tests that only require access to the
+  configuration component."
   [test-fn]
   (startup)
   (test-fn)
