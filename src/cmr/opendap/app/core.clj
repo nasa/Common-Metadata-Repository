@@ -10,18 +10,13 @@
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
-(defn routes
-  [httpd-component]
-  (concat
-    (rest-routes/all httpd-component)
-    (site-routes/all httpd-component)))
-
 (defn main
   [httpd-component]
   (let [docs-resource (config/http-docs httpd-component)
         assets-resource (config/http-assets httpd-component)]
     (-> httpd-component
-        routes
+        site-routes/all
+        (middleware/wrap-api-version-dispatch httpd-component)
         (ring/router (middleware/reitit-auth httpd-component))
         ring/ring-handler
         (ring-defaults/wrap-defaults ring-defaults/api-defaults)

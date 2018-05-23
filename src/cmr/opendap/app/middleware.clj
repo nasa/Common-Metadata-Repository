@@ -6,6 +6,7 @@
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.site.pages :as pages]
+   [cmr.opendap.app.routes.rest :as rest-routes]
    [ring.middleware.content-type :as ring-ct]
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.file :as ring-file]
@@ -134,3 +135,11 @@
   For more details, see the docstring above for `wrap-auth`."
   {:data
     {:middleware [#(wrap-auth % system)]}})
+
+(defn wrap-api-version-dispatch
+  ""
+  [handler system]
+  (concat handler
+          (rest-routes/all system)))
+  ; (fn [request]
+  ;   (handler request)))
