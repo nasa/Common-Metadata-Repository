@@ -23,6 +23,13 @@
     (java.nio.file Paths)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def system-ns "cmr.opendap.components.core")
+(def refresh-callback 'cmr.opendap.dev/startup)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,7 +65,7 @@
 (defn startup
   []
   (alter-var-root #'*mgr* (constantly (system-api/create-state-manager)))
-  (system-api/set-system-ns (:state *mgr*) "cmr.opendap.components.core")
+  (system-api/set-system-ns (:state *mgr*) system-ns)
   (system-api/startup *mgr*))
 
 (defn shutdown
@@ -79,6 +86,6 @@
 (defn reset
   []
   (shutdown)
-  (repl/refresh :after 'cmr.opendap.dev/startup))
+  (repl/refresh :after refresh-callback))
 
 (def refresh #'repl/refresh)
