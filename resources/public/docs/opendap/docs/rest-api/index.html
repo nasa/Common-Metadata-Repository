@@ -267,6 +267,9 @@
             <a href="#authorized-access" class="toc-h1 toc-link" data-title="authorized-access">Authorized Access</a>
           </li>
           <li>
+            <a href="#versioned-api" class="toc-h1 toc-link" data-title="versioned-api">Versioned API</a>
+          </li>
+          <li>
             <a href="#ous-resources" class="toc-h1 toc-link" data-title="ous-resources">OUS Resources</a>
               <ul class="toc-list-h2">
                   <li>
@@ -357,7 +360,38 @@ a special header:</p>
 
 <p>Many of the examples in the documentation below show usage of the
 Echo token.</p>
-<h1 id='ous-resources'>OUS Resources</h1>
+<h1 id='versioned-api'>Versioned API</h1>
+<p>The CMR OPeNDAP REST API is versioned. By default, the most recent version of
+the API is accessed when a request is submitted without specificing the
+desired version.</p>
+
+<p>To request a specific version of the REST API, you must send an additional
+header in your request to CMR OPeNDAP.</p>
+
+<blockquote>
+<p>An <code>Accept</code> header is required to request a specific version of the API:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v1+json"
+</code></pre>
+<blockquote>
+<p>The following is also valid:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v1"
+</code></pre>
+<p>All HTTP responses from the REST API also provide information on the version
+used when processing the request. This can be useful for clients debugging
+calls to the service.</p>
+
+<blockquote>
+<p>Examine the headers with a call to the service:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -i ...
+</code></pre>
+<blockquote>
+<p>The response headers will include the version used by the service:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>Cmr-Media-Type: cmr-opendap.v2; <span class="nv">format</span><span class="o">=</span>json
+</code></pre><h1 id='ous-resources'>OUS Resources</h1>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
