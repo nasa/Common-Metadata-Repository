@@ -153,6 +153,12 @@
        (re-find accept-pattern)
        (zipmap accept-pattern-keys)))
 
+(defn accept-api-version
+  [system req]
+  (let [parsed (parse-accept req)
+        version (or (:version parsed) (config/api-version system))]
+    version))
+
 (defn accept-media-type
   [system req]
   (let [parsed (parse-accept req)
@@ -166,5 +172,3 @@
     (or (:content-type parsed)
         (:no-vendor-content-type parsed)
         (config/default-content-type system))))
-
-(def get-api-version #'accept-media-type)

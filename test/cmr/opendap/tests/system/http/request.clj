@@ -11,6 +11,33 @@
   (is (= "application/vnd.cmr-opendap.v2+json"
          (request/default-accept (test-system/system)))))
 
+(deftest accept-api-version
+  (testing "just content type"
+    (is (= "v2"
+           (request/accept-api-version
+            (test-system/system)
+            (request/add-accept "text/plain")))))
+  (testing "just vendor"
+    (is (= "v2"
+           (request/accept-api-version
+            (test-system/system)
+            (request/add-accept "text/vnd.nasa")))))
+  (testing "vendor & content type"
+    (is (= "v2"
+           (request/accept-api-version
+            (test-system/system)
+            (request/add-accept "text/vnd.nasa+plain")))))
+  (testing "vendor & version"
+    (is (= "v4"
+           (request/accept-api-version
+            (test-system/system)
+            (request/add-accept "text/vnd.nasa.v4")))))
+  (testing "vendor, version, & content type"
+    (is (= "v4"
+           (request/accept-api-version
+            (test-system/system)
+            (request/add-accept "text/vnd.nasa.v4+plain"))))))
+
 (deftest accept-media-type
   (testing "just content type"
     (is (= "cmr-opendap.v2"
