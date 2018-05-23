@@ -144,7 +144,10 @@
     (log/trace "Got site-routes:" (into [] site-routes))
     (let [spi-version (request/accept-api-version system req)
           routes (concat site-routes (rest-routes/all system))
-          handler (ring/ring-handler (ring/router routes opts))]
+          handler (ring/ring-handler (ring/router routes opts))
+          header (format "%s; format=%s"
+                         (request/accept-media-type system req)
+                         (request/accept-format system req))]
       (log/debug "API version:" spi-version)
       (log/trace "Made routes:" (into [] routes))
-      (handler req))))
+      (response/version-media-type (handler req) header))))

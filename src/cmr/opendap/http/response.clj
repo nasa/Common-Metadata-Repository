@@ -139,6 +139,14 @@
                  (response/header "Access-Control-Max-Age" "2592000"))
     (response/header response "Access-Control-Allow-Origin" "*")))
 
+(defn add-header
+  [response field value]
+  (assoc-in response [:headers (if (string? field) field (name field))] value))
+
+(defn version-media-type
+  [response value]
+  (add-header response :cmr-media-type value))
+
 (defn errors
   [errors]
   {:errors errors})

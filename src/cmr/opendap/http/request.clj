@@ -149,6 +149,7 @@
 (defn parse-accept
   [system req]
   (->> (or (get-in req [:headers :accept])
+           (get-in req [:headers "accept"])
            (get-in req [:headers "Accept"])
            (default-accept system))
        (re-find accept-pattern)
