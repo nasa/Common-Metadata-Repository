@@ -111,13 +111,10 @@
 ;;;   Accept Header/Version Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-api-version "v2")
-(def default-dotted-version (str "." default-api-version))
-(def default-content-type "json")
-(def default-accept (format "application/vnd.%s.%s+%s"
+(def default-accept (format "application/vnd.%s%s+%s"
                             const/vendor
-                            default-api-version
-                            default-content-type))
+                            const/default-dotted-version
+                            const/default-content-type))
 (def accept-pattern
   "The regular expression for the `Accept` header that may include version
   and parameter information splits into the following groups:
@@ -156,7 +153,7 @@
   [req]
   (let [parsed (parse-accept req)
         vendor (or (:vendor parsed) const/vendor)
-        version (or (:.version parsed) default-dotted-version)]
+        version (or (:.version parsed) const/default-dotted-version)]
     (str vendor version)))
 
 (defn accept-format
@@ -164,6 +161,6 @@
   (let [parsed (parse-accept req)]
     (or (:content-type parsed)
         (:no-vendor-content-type parsed)
-        default-content-type)))
+        const/default-content-type)))
 
 (def get-api-version #'accept-media-type)
