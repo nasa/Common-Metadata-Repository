@@ -1,4 +1,4 @@
-(ns cmr.opendap.app.route
+(ns cmr.opendap.app.routes.rest
   "This namespace defines the REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
@@ -12,27 +12,6 @@
    [cmr.opendap.site.pages :as pages]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   CMR OPeNDAP Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn main
-  [httpd-component]
-  [["/opendap" {
-    :get (core-handler/dynamic-page
-          pages/home
-          {:base-url (config/opendap-url httpd-component)})
-    :head core-handler/ok}]])
-
-(defn docs
-  "Note that these routes only cover part of the docs; the rest are supplied
-  via static content from specific directories (done in middleware)."
-  [httpd-component]
-  [["/opendap/docs" {
-    :get (core-handler/dynamic-page
-          pages/opendap-docs
-          {:base-url (config/opendap-url httpd-component)})}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   REST API Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,24 +62,6 @@
     :options core-handler/ok}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Static & Redirect Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn redirects
-  [httpd-component]
-  [["/opendap/robots.txt" {
-    :get (core-handler/permanent-redirect
-          (str (config/get-search-url httpd-component)
-               "/robots.txt"))}]])
-
-(defn static
-  [httpd-component]
-  [;; Google verification files
-   ["/opendap/googled099d52314962514.html" {
-    :get (core-handler/text-file
-          "public/verifications/googled099d52314962514.html")}]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -111,3 +72,14 @@
    ["/testing/405" {:get (core-handler/status :method-not-allowed)}]
    ["/testing/500" {:get (core-handler/status :internal-server-error)}]
    ["/testing/503" {:get (core-handler/status :service-unavailable)}]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn all
+  [httpd-component]
+  (concat
+   (ous-api httpd-component)
+   (admin-api httpd-component)
+   testing))
