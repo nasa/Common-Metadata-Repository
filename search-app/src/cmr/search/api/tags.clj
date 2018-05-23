@@ -5,7 +5,7 @@
    [clojure.string :as str]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common-app.api.request-write-access-augmenter :as augmenter]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -39,6 +39,7 @@
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :create)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -54,6 +55,7 @@
 (defn update-tag
   "Processes a request to update a tag."
   [context headers body tag-key]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -62,6 +64,7 @@
 (defn delete-tag
   "Deletes the tag with the given tag-key."
   [context tag-key]
+  (lt-validation/validate-launchpad-token context)
   (common-enabled/validate-write-enabled context "search")
   (verify-tag-modification-permission context :delete)
   (tag-api-response (tagging-service/delete-tag context tag-key)))
@@ -69,6 +72,7 @@
 (defn associate-tag-to-collections
   "Associate the tag to a list of collections."
   [context headers body tag-key]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -79,6 +83,7 @@
 (defn dissociate-tag-to-collections
   "Dissociate the tag to a list of collections."
   [context headers body tag-key]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -89,6 +94,7 @@
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body tag-key]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -99,6 +105,7 @@
 (defn dissociate-tag-by-query
   "Processes a request to dissociate a tag."
   [context headers body tag-key]
+  (lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -115,7 +122,7 @@
 
     ;; Create a new tag
     (POST "/" request
-      (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+      (let [{:keys [request-context headers body]} request]
         (create-tag request-context headers (slurp body))))
 
     ;; Search for tags
@@ -130,37 +137,37 @@
 
       ;; Delete a tag
       (DELETE "/" request
-        (let [{:keys [request-context]} (augmenter/add-write-access-to-request request)]
+        (let [{:keys [request-context]} request]
           (delete-tag request-context (str/lower-case tag-key))))
 
       ;; Update a tag
       (PUT "/" request
-        (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+        (let [{:keys [request-context headers body]} request]
           (update-tag request-context headers (slurp body) (str/lower-case tag-key))))
 
       (context "/associations" []
 
         ;; Associate a tag with a list of collections
         (POST "/" request
-          (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+          (let [{:keys [request-context headers body]} request]
             (associate-tag-to-collections
              request-context headers (slurp body) (str/lower-case tag-key))))
 
         ;; Dissociate a tag with a list of collections
         (DELETE "/" request
-          (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+          (let [{:keys [request-context headers body]} request]
             (dissociate-tag-to-collections
              request-context headers (slurp body) (str/lower-case tag-key))))
 
         (context "/by_query" []
           ;; Associate a tag with collections
           (POST "/" request
-            (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+            (let [{:keys [request-context headers body]} request]
               (associate-tag-by-query
                request-context headers (slurp body) (str/lower-case tag-key))))
 
           ;; Dissociate a tag with collections
           (DELETE "/" request
-            (let [{:keys [request-context headers body]} (augmenter/add-write-access-to-request request)]
+            (let [{:keys [request-context headers body]} request]
               (dissociate-tag-by-query
                request-context headers (slurp body) (str/lower-case tag-key)))))))))

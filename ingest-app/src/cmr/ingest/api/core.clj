@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [debug info warn error]]
@@ -252,6 +253,7 @@
                              :concept-type concept-type}
                             (set-revision-id headers)
                             (set-user-id request-context headers))]
+    (lt-validation/validate-launchpad-token request-context)
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
