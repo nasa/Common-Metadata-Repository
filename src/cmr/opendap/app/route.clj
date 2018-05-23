@@ -1,14 +1,14 @@
-(ns cmr.opendap.rest.route
+(ns cmr.opendap.app.route
   "This namespace defines the REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.app.handler.cache :as cache-handler]
+   [cmr.opendap.app.handler.collection :as collection-handler]
+   [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.health :as health]
-   [cmr.opendap.rest.handler.cache :as cache-handler]
-   [cmr.opendap.rest.handler.collection :as collection-handler]
-   [cmr.opendap.rest.handler.core :as core-handler]
    [cmr.opendap.site.pages :as pages]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))

@@ -2,7 +2,7 @@
   (:require
     [com.stuartsierra.component :as component]
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.rest.app :as rest-api]
+    [cmr.opendap.app.core :as app]
     [org.httpkit.server :as server]
     [taoensso.timbre :as log]))
 
@@ -22,7 +22,7 @@
   [this]
   (log/info "Starting httpd component ...")
   (let [port (config/http-port this)
-        server (server/run-server (rest-api/app this) {:port port})]
+        server (server/run-server (app/main this) {:port port})]
     (log/debugf "HTTPD is listening on port %s" port)
     (log/debug "Started httpd component.")
     (assoc this :server server)))

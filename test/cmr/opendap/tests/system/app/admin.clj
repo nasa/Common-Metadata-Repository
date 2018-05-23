@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.rest.app.admin
+(ns ^:system cmr.opendap.tests.system.app.admin
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 

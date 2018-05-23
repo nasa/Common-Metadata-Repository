@@ -1,4 +1,4 @@
-(ns cmr.opendap.rest.middleware
+(ns cmr.opendap.app.middleware
   "Custom ring middleware for CMR OPeNDAP."
   (:require
    [clojure.string :as string]

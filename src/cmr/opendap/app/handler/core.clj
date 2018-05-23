@@ -1,4 +1,4 @@
-(ns cmr.opendap.rest.handler.core
+(ns cmr.opendap.app.handler.core
   "This namespace defines the handlers for general resources.
 
   Simple handlers will only need to make a call to a library and then have that

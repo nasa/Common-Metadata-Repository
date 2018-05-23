@@ -1,4 +1,4 @@
-(ns cmr.opendap.rest.handler.cache
+(ns cmr.opendap.app.handler.cache
   "This namespace defines the handlers for the cache REST API resources."
   (:require
    [clojure.java.io :as io]

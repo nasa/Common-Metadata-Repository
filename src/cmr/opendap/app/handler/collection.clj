@@ -1,4 +1,4 @@
-(ns cmr.opendap.rest.handler.collection
+(ns cmr.opendap.app.handler.collection
   "This namespace defines the REST API handlers for collection resources."
   (:require
    [cheshire.core :as json]

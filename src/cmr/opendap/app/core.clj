@@ -1,10 +1,10 @@
-(ns cmr.opendap.rest.app
+(ns cmr.opendap.app.core
   (:require
    [clojure.java.io :as io]
+   [cmr.opendap.app.handler.core :as handler]
+   [cmr.opendap.app.middleware :as middleware]
+   [cmr.opendap.app.route :as route]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.rest.handler.core :as handler]
-   [cmr.opendap.rest.middleware :as middleware]
-   [cmr.opendap.rest.route :as route]
    [ring.middleware.defaults :as ring-defaults]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
@@ -30,7 +30,7 @@
     (site-routes httpd-component)
     route/testing))
 
-(defn app
+(defn main
   [httpd-component]
   (let [docs-resource (config/http-docs httpd-component)
         assets-resource (config/http-assets httpd-component)]

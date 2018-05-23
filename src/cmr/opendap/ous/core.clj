@@ -227,7 +227,7 @@
         [pattern-info query s4-errs] (stage4 bounding-box
                                              services
                                              bounding-info)
-        ;; Error handling for all
+        ;; Error handling for all stages
         errs (errors/collect
               start params bounding-box granules coll
               data-files service-ids vars s2-errs
@@ -246,6 +246,7 @@
                                                    pattern-info
                                                    data-files
                                                    query)]
+        ;; Error handling for post-stages processing
         (if (errors/erred? urls-or-errs)
           urls-or-errs
           (results/create urls-or-errs :elapsed (util/timed start)))))))

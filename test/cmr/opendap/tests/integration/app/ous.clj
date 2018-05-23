@@ -1,4 +1,4 @@
-(ns ^:integration cmr.opendap.tests.integration.rest.app.ous
+(ns ^:integration cmr.opendap.tests.integration.app.ous
   "Note: this namespace is exclusively for integration tests; all tests defined
   here will use one or more integration test fixtures.
 
