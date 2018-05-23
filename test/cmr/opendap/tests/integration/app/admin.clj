@@ -14,8 +14,10 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.testing.system :as test-system]
+   [cmr.opendap.testing.util :as util]
    [org.httpkit.client :as httpc])
   (:import
    (clojure.lang ExceptionInfo)))
@@ -36,7 +38,25 @@
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
       (is (= {:errors ["An ECHO token is required to access this resource."]}
-             (response/parse-json-body (:body response)))))))
+             (response/parse-json-body (:body response))))))
+  (testing "v2 routes that don't exist in v1 ..."
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache"
+                                       (test-system/http-port))
+                                (-> {}
+                                    (request/add-token-header
+                                     (util/get-sit-token))
+                                    (request/add-accept
+                                     "application/vnd.cmr-opendap.v1+json")))]
+      (is (= 404 (:status response)))))
+  (testing "v2 routes ..."
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache"
+                                       (test-system/http-port))
+                                (-> {}
+                                    (request/add-token-header
+                                     (util/get-sit-token))
+                                    (request/add-accept
+                                     "application/vnd.cmr-opendap.v2+json")))]
+      (is (= 200 (:status response))))))
 
 (deftest testing-routes
   (is 401

@@ -1,11 +1,10 @@
-(ns cmr.opendap.app.routes.rest
-  "This namespace defines the REST routes provided by this service.
+(ns cmr.opendap.app.routes.rest.v1
+  "This namespace defines the Version 1 REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.app.handler.cache :as cache-handler]
    [cmr.opendap.app.handler.collection :as collection-handler]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.health :as health]
@@ -41,17 +40,7 @@
 
 (defn admin-api
   [httpd-component]
-  [["/opendap/cache" {
-    :get {:handler (cache-handler/lookup-all httpd-component)
-          :roles #{:admin}}
-    :delete {:handler (cache-handler/evict-all httpd-component)
-             :roles #{:admin}}}]
-   ["/opendap/cache/:item-key" {
-    :get {:handler (cache-handler/lookup httpd-component)
-          :roles #{:admin}}
-    :delete {:handler (cache-handler/evict httpd-component)
-             :roles #{:admin}}}]
-   ["/opendap/health" {
+  [["/opendap/health" {
     :get (core-handler/health httpd-component)
     :options core-handler/ok}]
    ["/opendap/ping" {

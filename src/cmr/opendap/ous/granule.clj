@@ -40,7 +40,6 @@
   "Build the query string for querying granles, bassed upon the options
   passed in the parameters."
   [component params]
-  (log/warn "params:" params)
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
         exclude? (:exclude-granules params)

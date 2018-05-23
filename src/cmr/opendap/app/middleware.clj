@@ -7,7 +7,7 @@
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.site.pages :as pages]
-   [cmr.opendap.app.routes.rest :as rest-routes]
+   [cmr.opendap.app.routes.rest.core :as rest-routes]
    [reitit.ring :as ring]
    [ring.middleware.content-type :as ring-ct]
    [ring.middleware.defaults :as ring-defaults]
@@ -96,9 +96,8 @@
   [handler system]
   (fn [req]
     (let [response (handler req)
-          status (:status response)
-          ct (get-in response [:headers "Content-Type"])]
-      (cond (and ct (string/includes? ct "stream"))
+          status (:status response)]
+      (cond (string/includes? (:uri req) "stream")
             (do
               (log/debug "Got streaming response; skipping 404 checks ...")
               response)
@@ -142,12 +141,12 @@
   [site-routes system opts]
   (fn [req]
     (log/trace "Got site-routes:" (into [] site-routes))
-    (let [spi-version (request/accept-api-version system req)
-          routes (concat site-routes (rest-routes/all system))
+    (let [api-version (request/accept-api-version system req)
+          routes (concat site-routes (rest-routes/all system api-version))
           handler (ring/ring-handler (ring/router routes opts))
           header (format "%s; format=%s"
                          (request/accept-media-type system req)
                          (request/accept-format system req))]
-      (log/debug "API version:" spi-version)
+      (log/debug "API version:" api-version)
       (log/trace "Made routes:" (into [] routes))
       (response/version-media-type (handler req) header))))
