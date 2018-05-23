@@ -55,6 +55,10 @@
   [system]
   (get-in (get-cfg system) [:caching :type]))
 
+(defn cmr-max-pagesize
+  [system]
+  (get-in (get-cfg system) [:cmr :max-pagesize]))
+
 (defn get-service
   [system service]
   (let [svc-cfg (get-in (get-cfg system)

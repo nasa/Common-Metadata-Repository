@@ -1,6 +1,7 @@
 (ns cmr.opendap.ous.granule
   (:require
    [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.http.request :as request]
@@ -23,7 +24,7 @@
     (str "page_size=" (count gran-ids)))))
 
 (defn build-exclude
-  [gran-ids]
+  [component gran-ids]
   (string/join
    "&"
    (conj
@@ -32,13 +33,13 @@
                %)
          gran-ids)
     ;; We don't know how many granule ids will be involved in an exclude,
-    ;; so we use the max page size of 2000.
-    (str "page_size=" const/cmr-max-pagesize))))
+    ;; so we use CMR's max page size.
+    (str "page_size=" (config/cmr-max-pagesize component)))))
 
 (defn build-query
   "Build the query string for querying granles, bassed upon the options
   passed in the parameters."
-  [params]
+  [component params]
   (log/warn "params:" params)
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
@@ -49,7 +50,7 @@
          (when (seq gran-ids)
           (str "&"
                (if exclude?
-                 (build-exclude gran-ids)
+                 (build-exclude component gran-ids)
                  (build-include gran-ids))))
          (when (seq bounding-box)
           (str "&bounding_box="
@@ -64,9 +65,9 @@
 
   Which granule metadata is returned depends upon the values of :granules and
   :exclude-granules"
-  [search-endpoint user-token params]
+  [component search-endpoint user-token params]
   (let [url (str search-endpoint "/granules")
-        payload (build-query params)]
+        payload (build-query component params)]
     (log/debug "Granules query CMR URL:" url)
     (log/debug "Granules query CMR payload:" payload)
     (request/async-post
@@ -92,8 +93,8 @@
         (get-in rslts [:feed :entry])))))
 
 (defn get-metadata
-  [search-endpoint user-token params]
-  (let [promise (async-get-metadata search-endpoint user-token params)]
+  [component search-endpoint user-token params]
+  (let [promise (async-get-metadata component search-endpoint user-token params)]
     (extract-metadata promise)))
 
 ;; XXX This logic was copied from the prototype; it is generally viewed by the

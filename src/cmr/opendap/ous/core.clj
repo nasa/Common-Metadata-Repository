@@ -2,6 +2,7 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.ous.granule :as granule]
@@ -142,12 +143,12 @@
 ;;; the code could be properly prepared for async execution.
 
 (defn stage1
-  [search-endpoint user-token raw-params]
+  [component search-endpoint user-token raw-params]
   (log/debug "Starting stage 1 ...")
   (let [params (params/parse raw-params)
         bounding-box (:bounding-box params)
         grans-promise (granule/async-get-metadata
-                       search-endpoint user-token params)
+                       component search-endpoint user-token params)
         coll-promise (collection/async-get-metadata
                       search-endpoint user-token params)]
     (log/debug "Finishing stage 1 ...")
@@ -199,11 +200,13 @@
     [pattern-info query errs]))
 
 (defn get-opendap-urls
-  [search-endpoint user-token raw-params]
+  [component user-token raw-params]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
+        search-endpoint (config/get-search-url component)
         ;; Stage 1
-        [params bounding-box granules coll] (stage1 search-endpoint
+        [params bounding-box granules coll] (stage1 component
+                                                    search-endpoint
                                                     user-token
                                                     raw-params)
         ;; Stage 2

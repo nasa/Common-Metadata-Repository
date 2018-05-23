@@ -25,6 +25,7 @@
       {:protocol "https"
        :host "cmr.sit.earthdata.nasa.gov"
        :context "/legacy-services/rest"}}
+   :max-pagesize 2000
    :opendap
     {:protocol "https"
      :host "cmr.sit.earthdata.nasa.gov"

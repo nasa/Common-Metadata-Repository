@@ -19,31 +19,31 @@
 (defn- generate
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET."
-  [request search-endpoint user-token concept-id data]
+  [component request user-token concept-id data]
   (log/debug "Generating URLs based on HTTP GET ...")
   (->> data
        (merge {:collection-id concept-id})
-       (ous/get-opendap-urls search-endpoint user-token)
+       (ous/get-opendap-urls component user-token)
        (response/json request)))
 
 (defn- generate-via-get
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET."
-  [request search-endpoint user-token concept-id]
+  [component request user-token concept-id]
   (log/debug "Generating URLs based on HTTP GET ...")
   (->> request
        :params
-       (generate request search-endpoint user-token concept-id)))
+       (generate component request user-token concept-id)))
 
 (defn- generate-via-post
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   POST."
-  [request search-endpoint user-token concept-id]
+  [component request user-token concept-id]
   (->> request
        :body
        (slurp)
        (#(json/parse-string % true))
-       (generate request search-endpoint user-token concept-id)))
+       (generate component request user-token concept-id)))
 
 (defn unsupported-method
   "XXX"
@@ -58,11 +58,10 @@
     (log/debug "Method-dispatching for URLs generation ...")
     (log/trace "request:" request)
     (let [user-token (token/extract request)
-          concept-id (get-in request [:path-params :concept-id])
-          search-endpoint (config/get-search-url component)]
+          concept-id (get-in request [:path-params :concept-id])]
       (case (:request-method request)
-        :get (generate-via-get request search-endpoint user-token concept-id)
-        :post (generate-via-post request search-endpoint user-token concept-id)
+        :get (generate-via-get component request user-token concept-id)
+        :post (generate-via-post component request user-token concept-id)
         (unsupported-method request)))))
 
 (defn batch-generate
