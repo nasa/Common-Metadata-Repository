@@ -46,6 +46,17 @@
 (def variable-metadata
   "There was a problem extracting variable metadata.")
 
+(def status-map
+  {400 #{empty-svc-pattern
+         empty-gnl-data-files
+         empty-query-string}
+   403 #{no-permissions
+         token-required}
+   500 #{no-matching-service-pattern
+         granule-metadata
+         service-metadata
+         variable-metadata}})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
