@@ -19,8 +19,12 @@
 
 (defn elided
   [results]
-  (assoc results :items [(first (:items results) )"..."]))
+  (if (seq results)
+    (assoc results :items [(first (:items results) )"..."])
+    nil))
 
 (defn remaining-items
   [results]
-  (rest (:items results)))
+  (if (seq results)
+    (rest (:items results))
+    nil))
