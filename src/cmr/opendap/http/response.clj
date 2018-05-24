@@ -11,7 +11,8 @@
    [cmr.opendap.errors :as errors]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
-   [xml-in.core :as xml-in]))
+   [xml-in.core :as xml-in])
+  (:refer-clojure :exclude [error-handler]))
 
 (defn parse-json-body
   [body]
