@@ -20,7 +20,7 @@
   [httpd-component]
   [["/opendap/ous/collections" {
     :post {:handler collection-handler/batch-generate
-          ;; XXX CMR-
+          ;; XXX CMR-4864, CMR-4863
           ;;     Protecting collections will be a little different than
           ;;     protecting a single collection, since the concept-id isn't in
           ;;     the path-params. Instead, we'll have to parse the body,

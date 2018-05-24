@@ -27,6 +27,12 @@
 
 ;; OUS
 
+(def not-implemented
+  "This capability is not currently implemented.")
+
+(def unsupported
+  "This capability is not currently supported.")
+
 (def empty-svc-pattern
   (str "The service pattern computed was empty. Is there a service associated "
        "with the given collection? Does the UMM-S record in question have "

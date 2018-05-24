@@ -112,6 +112,7 @@
 
 ;; XXX Can we use these instead? Why was the phase shifting written
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
+;; XXX This is being tracked in CMR-4959
 (defn new-lon-phase-shift
   [x-dim in]
     (int (Math/floor (+ (/ x-dim 2) in))))
@@ -149,12 +150,17 @@
 ;; y_array_begin = YDim -1 - Math.ceil((YDim-1)*(lats[1]-lat_begin)/(lat_end-lat_begin));
 ;;
 ;; Note the "hack" JS comment ...
-;;;
+;;
 ;; This is complicated by the fact that, immediately before those lines of
 ;; code are a conflicting set of lines overrwitten by the ones pasted above:
 ;;
 ;; y_array_begin = Math.floor((YDim-1)*(lats[0]-lat_begin)/(lat_end-lat_begin));
 ;; y_array_end = Math.ceil((YDim-1)*(lats[1]-lat_begin)/(lat_end-lat_begin));
+;;
+;; Even though this code was ported to Clojure, it was problematic ... very likely
+;; due to the fact that there were errors in the source data (XDim/YDim were
+;; swapped) and the original JS code didn't acknowledge that fact. There is every
+;; possibility that we can delete the following functions.
 ;;
 ;; These original JS functions are re-created in Clojure here:
 
@@ -254,6 +260,7 @@
   ;;     on collection's variables; Simon and I are looking into this
   ;;     for now, we're just gonna pretend ... by changing the order
   ;;     below :-(
+  ;; XXX This is being tracked in CMR-4958
   [(or (:Size (first (filter #(= "YDim" (:Name %)) dim))) default-x-hi)
    (or (:Size (first (filter #(= "XDim" (:Name %)) dim))) default-y-hi)])
 
@@ -362,6 +369,13 @@
   (log/debug "Got variable entry:" entry)
   (log/debug "Got bounding-box:" bounding-box)
   (let [dims (extract-dimensions entry)
+        ;; XXX Once we sort out how to definitely extract lat/lon and
+        ;;     whether there is ever a need to go to
+        ;;     :umm :Characteristics :Bounds when we can just go to
+        ;;     :umm :Dimensions instead, we can come back to this code
+        ;;     and remove the following line or integrate it into the
+        ;;     code.
+        ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
         ; bounds (or bounding-box (extract-bounds entry))
         ]
     {:concept-id (get-in entry [:meta :concept-id])

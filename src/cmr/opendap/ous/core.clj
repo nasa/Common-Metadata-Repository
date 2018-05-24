@@ -37,6 +37,7 @@
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
+;; XXX This is being tracked in CMR-4912 and CMR-4901
 
 (def fallback-pattern #"(.*)(/datapool/DEV01)(.*)")
 (def fallback-replacement "/opendap/DEV01/user")

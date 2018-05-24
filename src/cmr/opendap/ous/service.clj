@@ -72,5 +72,6 @@
        ;; XXX WARNING!!! The regex's saved in the UMM data are broken!
        ;;                We're manually hacking the regex to fix this ...
        ;;                this makes things EXTREMELY FRAGILE!
+       ;; XXX This will be fixed with CMR-4901
        :pattern-match (str "(" (:OnlineAccessURLPatternMatch umm) ")(.*)")
        :pattern-subs (:OnlineAccessURLPatternSubstitution umm)})))

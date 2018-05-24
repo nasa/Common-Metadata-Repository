@@ -6,6 +6,7 @@
    [clojure.java.io :as io]
    [cmr.opendap.auth.token :as token]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
    [org.httpkit.server :as server]
@@ -48,8 +49,7 @@
 (defn unsupported-method
   "XXX"
   [request]
-  ;; XXX add error message; utilize error reporting infra
-  {:error :not-implemented})
+  {:error errors/not-implemented})
 
 (defn generate-urls
   "XXX"
@@ -69,8 +69,9 @@
   [component]
   ;; XXX how much can we minimize round-tripping here?
   ;;     this may require creating divergent logic/impls ...
+  ;; XXX This is being tracked in CMR-4864
   (fn [request]
-    {:error :not-implemented}))
+    {:error errors/not-implemented}))
 
 (defn stream-urls
   ""

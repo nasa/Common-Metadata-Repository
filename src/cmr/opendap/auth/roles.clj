@@ -56,8 +56,7 @@
         errors (:errors result)]
     ;; NOTE: Unlike other parts of CMR OPeNDAP, we throw here instead of
     ;;       passing around an error message due to the fact that the
-    ;;       Clojure caching code has this function burried inside, as a
-    ;;       callback.
+    ;;       caching code has this function burried inside, as acallback.
     (if errors
       (throw (ex-info (first errors) result))
       (do

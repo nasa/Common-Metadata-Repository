@@ -25,10 +25,6 @@
    ;; to be a blacklist.
    exclude-granules
    ;;
-   ;; XXX Is this where we want to accept the paging size for granule
-   ;;     concepts?
-   ;; granule-count
-   ;;
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables

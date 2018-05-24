@@ -101,6 +101,7 @@
 ;;     that adding support for this approach to UMM-S was a short-term hack.
 ;;     Providers should not be adding arbitrary regex's to UMM-S that CMR is
 ;;     then supposed to execute.
+;; XXX This is being tracked in CMR-4912 and CMR-4901
 (defn match-datafile-link
   "The criteria defined in the prototype was to iterate through the links,
   only examining those links that were not 'inherited', and find the one
