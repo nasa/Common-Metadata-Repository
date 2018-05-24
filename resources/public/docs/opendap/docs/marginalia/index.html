@@ -3807,8 +3807,8 @@ the code could be properly prepared for async execution.</p>
               services bounding-info s3-errs
               pattern-info query s4-errs
               {:errors (errors/check
-                        [not pattern-info errors/msg-empty-svc-pattern]
-                        [not data-files errors/msg-empty-gnl-data-files])})]
+                        [not pattern-info errors/empty-svc-pattern]
+                        [not data-files errors/empty-gnl-data-files])})]
     (log/debug &quot;Got pattern-info:&quot; pattern-info)
     (log/debug &quot;Got data-files:&quot; (into [] data-files))
     (if errs
@@ -5318,34 +5318,61 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn create-component
   []
   (map-&gt;HTTPD {}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.errors" name="cmr.opendap.errors"><h1 class="project-name">cmr.opendap.errors</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.errors)</pre></td></tr><tr><td class="docs"><p>  Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.errors
+  (:require
+    [clojure.set :as set]))</pre></td></tr><tr><td class="docs"><p>  Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def default-error-code 400)</pre></td></tr><tr><td class="docs"><p>  Error Messages   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"><pre class="brush: clojure">(def default-error-code 400)
+(def auth-error-code 403)
+(def client-error-code 400)
+(def server-error-code 500)</pre></td></tr><tr><td class="docs"><p>  Error Messages   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Authorization</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def no-permissions &quot;You do not have permissions to access that resource.&quot;)
-(def token-required &quot;An ECHO token is required to access this resource.&quot;)</pre></td></tr><tr><td class="docs"><p>OUS</p>
+(def token-required &quot;An ECHO token is required to access this resource.&quot;)</pre></td></tr><tr><td class="docs"><p>Generic</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def msg-empty-svc-pattern
+</td><td class="codes"><pre class="brush: clojure">(def status-code
+  &quot;HTTP Error status code: %s&quot;)</pre></td></tr><tr><td class="docs"><p>OUS</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def empty-svc-pattern
   (str &quot;The service pattern computed was empty. Is there a service associated &quot;
        &quot;with the given collection? Does the UMM-S record in question have &quot;
        &quot;values for the pattern fields?&quot;))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def msg-empty-gnl-data-files
-  &quot;Was not able to extract a service data file from the granule.&quot;)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def msg-empty-query-string
+</td><td class="codes"><pre class="brush: clojure">(def empty-gnl-data-files
+  &quot;There was a problem extracting a service data file from the granule.&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def empty-query-string
   &quot;No OPeNDAP query string was generated for the request.&quot;)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def msg-status-code
-  &quot;HTTP Error status code: %s&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def no-matching-service-pattern
-  (str &quot;There was a oroblem creating URLs from granule file data: couldn't &quot;
+  (str &quot;There was a problem creating URLs from granule file data: couldn't &quot;
        &quot;match default service pattern %s to service %s.&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def granule-metadata
   &quot;There was a problem extracting granule metadata.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def service-metadata
   &quot;There was a problem extracting service metadata.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def variable-metadata
-  &quot;There was a problem extracting variable metadata.&quot;)</pre></td></tr><tr><td class="docs"><p>  Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+  &quot;There was a problem extracting variable metadata.&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def status-map
+  {client-error-code #{empty-svc-pattern}
+   auth-error-code #{no-permissions
+                     token-required}
+   server-error-code #{empty-gnl-data-files
+                       no-matching-service-pattern
+                       granule-metadata
+                       service-metadata
+                       variable-metadata}})</pre></td></tr><tr><td class="docs"><p>  Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn any-auth-errors?
+  [errors]
+  (seq (set/intersection (get status-map auth-error-code)
+                         (set (:errors errors)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn any-client-errors?
+  [errors]
+  (seq (set/intersection (get status-map client-error-code)
+                         (set (:errors errors)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn any-server-errors?
+  [errors]
+  (seq (set/intersection (get status-map server-error-code)
+                         (set (:errors errors)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn check
   [&amp; msgs]
   (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
@@ -5522,7 +5549,8 @@ disable logging entirely for tests.</p>
    [cmr.opendap.errors :as errors]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
-   [xml-in.core :as xml-in]))</pre></td></tr><tr><td class="docs">
+   [xml-in.core :as xml-in])
+  (:refer-clojure :exclude [error-handler]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn parse-json-body
   [body]
   (let [str-data (if (string? body) body (slurp body))
@@ -5543,7 +5571,7 @@ disable logging entirely for tests.</p>
                         [:errors :error])))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn error-handler
   [status headers body]
-  (let [default-msg (format errors/msg-status-code status)
+  (let [default-msg (format errors/status-code status)
         ct (:content-type headers)]
     (log/trace &quot;Headers:&quot; headers)
     (log/trace &quot;Content-Type:&quot; ct)
@@ -5589,7 +5617,14 @@ disable logging entirely for tests.</p>
    :status 200})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn process-err-results
   [data]
-  {:status errors/default-error-code})</pre></td></tr><tr><td class="docs">
+  (cond (errors/any-auth-errors? data)
+        {:status errors/auth-error-code}
+        (errors/any-server-errors? data)
+        {:status errors/server-error-code}
+        (errors/any-client-errors? data)
+        {:status errors/client-error-code}
+        :else
+        {:status errors/default-error-code}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn process-results
   [data]
   (if (:errors data)

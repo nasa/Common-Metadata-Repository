@@ -305,6 +305,17 @@
           </li>
           <li>
             <a href="#errors" class="toc-h1 toc-link" data-title="errors">Errors</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#format-3" class="toc-h2 toc-link" data-title="format">Format</a>
+                  </li>
+                  <li>
+                    <a href="#dependent-services" class="toc-h2 toc-link" data-title="dependent-services">Dependent Services</a>
+                  </li>
+                  <li>
+                    <a href="#cmr-opendap-errors" class="toc-h2 toc-link" data-title="cmr-opendap-errors">CMR OPeNDAP Errors</a>
+                  </li>
+              </ul>
           </li>
       </div>
         <ul class="toc-footer">
@@ -755,8 +766,86 @@ available for use by anyone.</p>
 <li><code>GET /testing/500</code></li>
 <li><code>GET /testing/503</code></li>
 </ul>
-<h1 id='errors'>Errors</h1>
-<p>TBD</p>
+<h1 id='errors'>Errors</h1><h2 id='format-3'>Format</h2>
+<p>When CMR OPeNDAP returns errors, it does so in a consistent format. In
+particular, the body of the HTTP response is a JSON string (or stream)
+representing an object with one key, <code>errors</code>, an associated value being
+an array of the errors encountered.</p>
+
+<blockquote>
+<p>CMR OPeNDAP error format</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "errors": [...]
+}
+</code></pre><h2 id='dependent-services'>Dependent Services</h2>
+<p>CMR OPeNDAP will not only report its own errors, but errors encountered when
+making calls to other services upon which it depends. Those errors are not
+listed below, but will be appended to the array of errors in the response body.</p>
+<h2 id='cmr-opendap-errors'>CMR OPeNDAP Errors</h2>
+<table><thead>
+<tr>
+<th>Type</th>
+<th>HTTP Status</th>
+<th>Internal ID</th>
+<th>Error Message</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Authorization</td>
+<td>403</td>
+<td>no-permissions</td>
+<td>You do not have permissions to access that resource.</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>403</td>
+<td>token-required</td>
+<td>An ECHO token is required to access this resource.</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>400</td>
+<td>empty-svc-pattern</td>
+<td>The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>500</td>
+<td>empty-gnl-data-files</td>
+<td>There was a problem extracting a service data file from the granule.</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>500</td>
+<td>no-matching-service-pattern</td>
+<td>There was a oroblem creating URLs from granule file data: couldn&#39;t match default service pattern %s to service ___.</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>500</td>
+<td>granule-metadata</td>
+<td>There was a problem extracting granule metadata.</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>500</td>
+<td>service-metadata</td>
+<td>There was a problem extracting service metadata.</td>
+</tr>
+<tr>
+<td>URL Generation</td>
+<td>500</td>
+<td>variable-metadata</td>
+<td>There was a problem extracting variable metadata.</td>
+</tr>
+<tr>
+<td>Generic</td>
+<td>400-599</td>
+<td>status-code</td>
+<td>HTTP Error status code: ___</td>
+</tr>
+</tbody></table>
 
       </div>
       <div class="dark-box">
