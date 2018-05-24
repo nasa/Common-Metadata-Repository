@@ -782,67 +782,63 @@ an array of the errors encountered.</p>
 <p>CMR OPeNDAP will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.</p>
-<h2 id='cmr-opendap-errors'>CMR OPeNDAP Errors</h2>
+<h2 id='cmr-opendap-errors'>CMR OPeNDAP Errors</h2><h3 id='authorization'>Authorization</h3>
 <table><thead>
 <tr>
-<th>Type</th>
 <th>HTTP Status</th>
-<th>Internal ID</th>
 <th>Error Message</th>
 </tr>
 </thead><tbody>
 <tr>
-<td>Authorization</td>
 <td>403</td>
-<td>no-permissions</td>
 <td>You do not have permissions to access that resource.</td>
 </tr>
 <tr>
-<td>Authorization</td>
 <td>403</td>
-<td>token-required</td>
 <td>An ECHO token is required to access this resource.</td>
 </tr>
+</tbody></table>
+<h3 id='url-generation'>URL Generation</h3>
+<table><thead>
 <tr>
-<td>URL Generation</td>
+<th>HTTP Status</th>
+<th>Error Message</th>
+</tr>
+</thead><tbody>
+<tr>
 <td>400</td>
-<td>empty-svc-pattern</td>
 <td>The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?</td>
 </tr>
 <tr>
-<td>URL Generation</td>
 <td>500</td>
-<td>empty-gnl-data-files</td>
 <td>There was a problem extracting a service data file from the granule.</td>
 </tr>
 <tr>
-<td>URL Generation</td>
 <td>500</td>
-<td>no-matching-service-pattern</td>
 <td>There was a oroblem creating URLs from granule file data: couldn&#39;t match default service pattern %s to service ___.</td>
 </tr>
 <tr>
-<td>URL Generation</td>
 <td>500</td>
-<td>granule-metadata</td>
 <td>There was a problem extracting granule metadata.</td>
 </tr>
 <tr>
-<td>URL Generation</td>
 <td>500</td>
-<td>service-metadata</td>
 <td>There was a problem extracting service metadata.</td>
 </tr>
 <tr>
-<td>URL Generation</td>
 <td>500</td>
-<td>variable-metadata</td>
 <td>There was a problem extracting variable metadata.</td>
 </tr>
+</tbody></table>
+<h3 id='generic'>Generic</h3>
+<table><thead>
 <tr>
-<td>Generic</td>
+<th>HTTP Status</th>
+<th>Error Message</th>
+</tr>
+</thead><tbody>
+<tr>
 <td>400-599</td>
-<td>status-code</td>
 <td>HTTP Error status code: ___</td>
 </tr>
 </tbody></table>
