@@ -2874,6 +2874,7 @@ net.brehaut.ClojureTools = (function (SH) {
    [clojure.java.io :as io]
    [cmr.opendap.auth.token :as token]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
    [org.httpkit.server :as server]
@@ -2905,8 +2906,7 @@ net.brehaut.ClojureTools = (function (SH) {
        (generate component request user-token concept-id)))</pre></td></tr><tr><td class="docs"><p>XXX</p>
 </td><td class="codes"><pre class="brush: clojure">(defn unsupported-method
   [request]
-  ;; XXX add error message; utilize error reporting infra
-  {:error :not-implemented})</pre></td></tr><tr><td class="docs"><p>XXX</p>
+  {:error errors/not-implemented})</pre></td></tr><tr><td class="docs"><p>XXX</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-urls
   [component]
   (fn [request]
@@ -2922,8 +2922,9 @@ net.brehaut.ClojureTools = (function (SH) {
   [component]
   ;; XXX how much can we minimize round-tripping here?
   ;;     this may require creating divergent logic/impls ...
+  ;; XXX This is being tracked in CMR-4864
   (fn [request]
-    {:error :not-implemented}))</pre></td></tr><tr><td class="docs">
+    {:error errors/not-implemented}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn stream-urls
   [component]
   (fn [request]
@@ -3270,7 +3271,7 @@ net.brehaut.ClojureTools = (function (SH) {
   [httpd-component]
   [[&quot;/opendap/ous/collections&quot; {
     :post {:handler collection-handler/batch-generate
-          ;; XXX CMR-
+          ;; XXX CMR-4864, CMR-4863
           ;;     Protecting collections will be a little different than
           ;;     protecting a single collection, since the concept-id isn't in
           ;;     the path-params. Instead, we'll have to parse the body,
@@ -3457,7 +3458,8 @@ net.brehaut.ClojureTools = (function (SH) {
     CMR Team &amp; the Metadata Tools Team that this approach is flawed, and
     that adding support for this approach to UMM-S was a short-term hack.
     Providers should not be adding arbitrary regex's to UMM-S that CMR is
-    then supposed to execute.</p>
+    then supposed to execute.
+XXX This is being tracked in CMR-4912 and CMR-4901</p>
 </td><td class="codes"><pre class="brush: clojure">(defn match-datafile-link
   [link-data]
   (let [rel (:rel link-data)]
@@ -3623,7 +3625,8 @@ net.brehaut.ClojureTools = (function (SH) {
       &quot;,&quot;
       (variable/format-opendap-lat-lon
        (variable/create-opendap-bounds bounding-box))))))</pre></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
-               prototype ... and IT IS AWFUL. This is only temporary ...</p>
+               prototype ... and IT IS AWFUL. This is only temporary ...
+XXX This is being tracked in CMR-4912 and CMR-4901</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/DEV01)(.*)&quot;)
 (def fallback-replacement &quot;/opendap/DEV01/user&quot;)</pre></td></tr><tr><td class="docs">
@@ -3913,7 +3916,8 @@ schemes an explicit operation on explicit data.</p>
   (-&gt;&gt; bounding-info
        (map :dimensions)
        util/most-frequent))</pre></td></tr><tr><td class="docs"><p>XXX Can we use these instead? Why was the phase shifting written
-    so obtrusely? There's got to be a reason, I just don't know it ...</p>
+    so obtrusely? There's got to be a reason, I just don't know it ...
+XXX This is being tracked in CMR-4959</p>
 </td><td class="codes"><pre class="brush: clojure">(defn new-lon-phase-shift
   [x-dim in]
     (int (Math/floor (+ (/ x-dim 2) in))))</pre></td></tr><tr><td class="docs">
@@ -3951,6 +3955,11 @@ code are a conflicting set of lines overrwitten by the ones pasted above:</p>
 
 <p>y<em>array</em>begin = Math.floor((YDim-1)*(lats[0]-lat<em>begin)/(lat</em>end-lat_begin));
 y<em>array</em>end = Math.ceil((YDim-1)*(lats[1]-lat<em>begin)/(lat</em>end-lat_begin));</p>
+
+<p>Even though this code was ported to Clojure, it was problematic ... very likely
+due to the fact that there were errors in the source data (XDim/YDim were
+swapped) and the original JS code didn't acknowledge that fact. There is every
+possibility that we can delete the following functions.</p>
 
 <p>These original JS functions are re-created in Clojure here:</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
@@ -4037,6 +4046,7 @@ used.</p>
   ;;     on collection's variables; Simon and I are looking into this
   ;;     for now, we're just gonna pretend ... by changing the order
   ;;     below :-(
+  ;; XXX This is being tracked in CMR-4958
   [(or (:Size (first (filter #(= &quot;YDim&quot; (:Name %)) dim))) default-x-hi)
    (or (:Size (first (filter #(= &quot;XDim&quot; (:Name %)) dim))) default-y-hi)])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-dimensions
@@ -4128,6 +4138,13 @@ used.</p>
   (log/debug &quot;Got variable entry:&quot; entry)
   (log/debug &quot;Got bounding-box:&quot; bounding-box)
   (let [dims (extract-dimensions entry)
+        ;; XXX Once we sort out how to definitely extract lat/lon and
+        ;;     whether there is ever a need to go to
+        ;;     :umm :Characteristics :Bounds when we can just go to
+        ;;     :umm :Dimensions instead, we can come back to this code
+        ;;     and remove the following line or integrate it into the
+        ;;     code.
+        ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
         ; bounds (or bounding-box (extract-bounds entry))
         ]
     {:concept-id (get-in entry [:meta :concept-id])
@@ -4203,6 +4220,7 @@ used.</p>
        ;; XXX WARNING!!! The regex's saved in the UMM data are broken!
        ;;                We're manually hacking the regex to fix this ...
        ;;                this makes things EXTREMELY FRAGILE!
+       ;; XXX This will be fixed with CMR-4901
        :pattern-match (str &quot;(&quot; (:OnlineAccessURLPatternMatch umm) &quot;)(.*)&quot;)
        :pattern-subs (:OnlineAccessURLPatternSubstitution umm)})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.query.params.v1" name="cmr.opendap.ous.query.params.v1"><h1 class="project-name">cmr.opendap.ous.query.params.v1</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.query.params.v1
@@ -4275,10 +4293,6 @@ used.</p>
    ;; `exclude-granules` is a boolean when set to true causes granules list
    ;; to be a blacklist.
    exclude-granules
-   ;;
-   ;; XXX Is this where we want to accept the paging size for granule
-   ;;     concepts?
-   ;; granule-count
    ;;
    ;; `variables` is a list of variables to be speficied when creating the
    ;; OPeNDAP URL. This is used for subsetting.
@@ -4425,10 +4439,14 @@ used.</p>
      :items results}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn elided
   [results]
-  (assoc results :items [(first (:items results) )&quot;...&quot;]))</pre></td></tr><tr><td class="docs">
+  (if (seq results)
+    (assoc results :items [(first (:items results) )&quot;...&quot;])
+    nil))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn remaining-items
   [results]
-  (rest (:items results)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace represents the authorization API for CMR OPeNDAP. This is
+  (if (seq results)
+    (rest (:items results))
+    nil))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace represents the authorization API for CMR OPeNDAP. This is
   where the rest of the application goes when it needs to perform checks on
   roles or permissions for a given user and/or concept.</p>
 
@@ -4569,8 +4587,7 @@ used.</p>
         errors (:errors result)]
     ;; NOTE: Unlike other parts of CMR OPeNDAP, we throw here instead of
     ;;       passing around an error message due to the fact that the
-    ;;       Clojure caching code has this function burried inside, as a
-    ;;       callback.
+    ;;       caching code has this function burried inside, as acallback.
     (if errors
       (throw (ex-info (first errors) result))
       (do
@@ -5094,9 +5111,7 @@ disable logging entirely for tests.</p>
     [clojusc.twig :as logger]
     [com.stuartsierra.component :as component]
     [cmr.opendap.components.config :as config]
-    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Logging Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>TBD</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord Logging [])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn start
@@ -5289,9 +5304,7 @@ disable logging entirely for tests.</p>
     [cmr.opendap.components.config :as config]
     [cmr.opendap.app.core :as app]
     [org.httpkit.server :as server]
-    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  HTTP Server Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>TBD</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord HTTPD [])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn start
@@ -5334,6 +5347,10 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(def status-code
   &quot;HTTP Error status code: %s&quot;)</pre></td></tr><tr><td class="docs"><p>OUS</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def not-implemented
+  &quot;This capability is not currently implemented.&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def unsupported
+  &quot;This capability is not currently supported.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def empty-svc-pattern
   (str &quot;The service pattern computed was empty. Is there a service associated &quot;
        &quot;with the given collection? Does the UMM-S record in question have &quot;
