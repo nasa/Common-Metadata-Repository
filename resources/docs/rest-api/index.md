@@ -507,6 +507,42 @@ The following resources are provided for use in various tests:
 * `GET /testing/500`
 * `GET /testing/503`
 
+
 # Errors
 
-TBD
+## Format
+
+When CMR OPeNDAP returns errors, it does so in a consistent format. In
+particular, the body of the HTTP response is a JSON string (or stream)
+representing an object with one key, `errors`, an associated value being
+an array of the errors encountered.
+
+> CMR OPeNDAP error format
+
+```
+{
+  "errors": [...]
+}
+```
+
+
+## Dependent Services
+
+CMR OPeNDAP will not only report its own errors, but errors encountered when
+making calls to other services upon which it depends. Those errors are not
+listed below, but will be appended to the array of errors in the response body.
+
+
+## CMR OPeNDAP Errors
+
+Type           | HTTP Status | Internal ID                 | Error Message
+-------------- | ----------- | --------------------------- |----------------------------------------------------
+Authorization  | 403         | no-permissions              | You do not have permissions to access that resource.
+Authorization  | 403         | token-required              | An ECHO token is required to access this resource.
+URL Generation | 400         | empty-svc-pattern           | The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?
+URL Generation | 500         | empty-gnl-data-files        | There was a problem extracting a service data file from the granule.
+URL Generation | 500         | no-matching-service-pattern | There was a oroblem creating URLs from granule file data: couldn't match default service pattern %s to service ___.
+URL Generation | 500         | granule-metadata            | There was a problem extracting granule metadata.
+URL Generation | 500         | service-metadata            | There was a problem extracting service metadata.
+URL Generation | 500         | variable-metadata           | There was a problem extracting variable metadata.
+Generic        | 400-599     | status-code                 | HTTP Error status code: ___

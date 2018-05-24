@@ -4,6 +4,26 @@
     [clojure.test :refer :all]
     [cmr.opendap.errors :as errors]))
 
+(deftest any-auth-errors?
+  (is (not (errors/any-auth-errors? {:errors []})))
+  (is (not (errors/any-auth-errors? {:errors ["Oops"]})))
+  (is (errors/any-auth-errors? {:errors ["Oops"
+                                         errors/no-permissions]}))
+  (is (errors/any-auth-errors? {:errors [errors/no-permissions]})))
+
+(deftest any-client-errors?
+  (is (not (errors/any-client-errors? {:errors []})))
+  (is (errors/any-client-errors? {:errors ["Oops"
+                                           errors/empty-svc-pattern]}))
+  (is (errors/any-client-errors? {:errors [errors/empty-svc-pattern]})))
+
+(deftest any-server-errors?
+  (is (not (errors/any-server-errors? {:errors []})))
+  (is (not (errors/any-server-errors? {:errors ["Oops"]})))
+  (is (errors/any-server-errors? {:errors ["Oops"
+                                           errors/no-matching-service-pattern]}))
+  (is (errors/any-server-errors? {:errors [errors/no-matching-service-pattern]})))
+
 (deftest erred?
   (is (errors/erred? {:error ["an error message"]}))
   (is (errors/erred? {:errors ["an error message"]}))

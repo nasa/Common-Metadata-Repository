@@ -94,7 +94,17 @@
 
 (defn process-err-results
   [data]
-  {:status errors/default-error-code})
+  (cond (errors/any-auth-errors? data)
+        {:status errors/auth-error-code}
+
+        (errors/any-server-errors? data)
+        {:status errors/server-error-code}
+
+        (errors/any-client-errors? data)
+        {:status errors/client-error-code}
+
+        :else
+        {:status errors/default-error-code}))
 
 (defn process-results
   [data]
