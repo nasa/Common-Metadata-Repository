@@ -234,8 +234,8 @@
               services bounding-info s3-errs
               pattern-info query s4-errs
               {:errors (errors/check
-                        [not pattern-info errors/msg-empty-svc-pattern]
-                        [not data-files errors/msg-empty-gnl-data-files])})]
+                        [not pattern-info errors/empty-svc-pattern]
+                        [not data-files errors/empty-gnl-data-files])})]
     (log/debug "Got pattern-info:" pattern-info)
     (log/debug "Got data-files:" (into [] data-files))
     (if errs

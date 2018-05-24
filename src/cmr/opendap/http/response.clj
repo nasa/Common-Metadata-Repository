@@ -38,7 +38,7 @@
 
 (defn error-handler
   [status headers body]
-  (let [default-msg (format errors/msg-status-code status)
+  (let [default-msg (format errors/status-code status)
         ct (:content-type headers)]
     (log/trace "Headers:" headers)
     (log/trace "Content-Type:" ct)

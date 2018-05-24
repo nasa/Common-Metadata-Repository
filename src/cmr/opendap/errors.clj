@@ -15,21 +15,23 @@
 (def no-permissions "You do not have permissions to access that resource.")
 (def token-required "An ECHO token is required to access this resource.")
 
+;; Generic
+
+(def status-code
+  "HTTP Error status code: %s")
+
 ;; OUS
 
-(def msg-empty-svc-pattern
+(def empty-svc-pattern
   (str "The service pattern computed was empty. Is there a service associated "
        "with the given collection? Does the UMM-S record in question have "
        "values for the pattern fields?"))
 
-(def msg-empty-gnl-data-files
+(def empty-gnl-data-files
   "Was not able to extract a service data file from the granule.")
 
-(def msg-empty-query-string
+(def empty-query-string
   "No OPeNDAP query string was generated for the request.")
-
-(def msg-status-code
-  "HTTP Error status code: %s")
 
 (def no-matching-service-pattern
   (str "There was a oroblem creating URLs from granule file data: couldn't "
