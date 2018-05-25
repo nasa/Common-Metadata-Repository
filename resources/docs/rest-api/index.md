@@ -42,6 +42,13 @@ breaks.
   removed.
 </aside>
 
+<aside class="warning">
+  The concept ids for collections, variables, granules, etc., used in the
+  examples below could very well have changed since this documentation
+  was first created, or you may be using the service in a different
+  environment (which would have different concept ids). Be sure to use
+  the concept id that you know exist in your target environment.
+</aside>
 
 # Authorized Access
 
@@ -103,6 +110,19 @@ curl -i ...
 ```shell
 Cmr-Media-Type: cmr-opendap.v2; format=json
 ```
+
+<aside class="warning">
+  The most recent release of the CMR OPeNDAP API is always the default;
+  if you experience unexpected issues and/or errors, this may be a result
+  of using a new version of the API by default.
+</aside>
+
+<aside class="info">
+  We recommend explicitly "pinning" your client requests to the latest
+  release of the API so that you are always using exactly what you expect
+  to be using. Then your use of new versions of the API will be an
+  intentional decision.
+</aside>
 
 
 # OUS Resources
@@ -213,9 +233,10 @@ the ones passed will be returned.
 
 If not provided, a regular granule search is performed.
 
-The following is an example of accepted `exclude-granules` parameter usage:
+The following are examples of accepted `exclude-granules` parameter usage:
 
 * `exclude-granules=true&granules=G1200187775-EDF_OPS`
+* `exclude_granules=true&granules=G1200187775-EDF_OPS`
 
 Note that the `granules` parameter here may take any of the accepted forms
 shown in the previous section.
@@ -289,8 +310,6 @@ The following are examples of accepted `temporal` parameter usage:
 * `temporal[]=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
 * `temporal=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&temporal=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
 * `temporal[]=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&temporal[]=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
-
-Note that both are needed in order to define a bounding box.
 
 > Use of `temporal` in a query:
 
@@ -447,8 +466,6 @@ The following is an example of accepted `timeposition` parameter usage:
 * `timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z`
 * `timeposition=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&timeposition=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z`
 
-Note that both are needed in order to define a bounding box.
-
 > Use of `timeposition` in a query:
 
 ```shell
@@ -548,7 +565,7 @@ HTTP Status | Error Message
 ----------- |----------------------------------------------------
 400         | The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?
 500         | There was a problem extracting a service data file from the granule.
-500         | There was a oroblem creating URLs from granule file data: couldn't match default service pattern %s to service ___.
+500         | There was a problem creating URLs from granule file data: couldn't match default service pattern %s to service ___.
 500         | There was a problem extracting granule metadata.
 500         | There was a problem extracting service metadata.
 500         | There was a problem extracting variable metadata.
