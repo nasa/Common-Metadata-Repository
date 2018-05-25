@@ -352,6 +352,14 @@ breaks.</p>
   actually use these, you need to make sure extraneous newlines have been
   removed.
 </aside>
+
+<aside class="warning">
+  The concept ids for collections, variables, granules, etc., used in the
+  examples below could very well have changed since this documentation
+  was first created, or you may be using the service in a different
+  environment (which would have different concept ids). Be sure to use
+  the concept id that you know exist in your target environment.
+</aside>
 <h1 id='authorized-access'>Authorized Access</h1>
 <p>CMR OPeNDAP requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.</p>
@@ -402,7 +410,20 @@ calls to the service.</p>
 <p>The response headers will include the version used by the service:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>Cmr-Media-Type: cmr-opendap.v2; <span class="nv">format</span><span class="o">=</span>json
-</code></pre><h1 id='ous-resources'>OUS Resources</h1>
+</code></pre>
+<aside class="warning">
+  The most recent release of the CMR OPeNDAP API is always the default;
+  if you experience unexpected issues and/or errors, this may be a result
+  of using a new version of the API by default.
+</aside>
+
+<aside class="info">
+  We recommend explicitly "pinning" your client requests to the latest
+  release of the API so that you are always using exactly what you expect
+  to be using. Then your use of new versions of the API will be an
+  intentional decision.
+</aside>
+<h1 id='ous-resources'>OUS Resources</h1>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
@@ -498,10 +519,11 @@ the ones passed will be returned.</p>
 
 <p>If not provided, a regular granule search is performed.</p>
 
-<p>The following is an example of accepted <code>exclude-granules</code> parameter usage:</p>
+<p>The following are examples of accepted <code>exclude-granules</code> parameter usage:</p>
 
 <ul>
 <li><code>exclude-granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
+<li><code>exclude_granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
 </ul>
 
 <p>Note that the <code>granules</code> parameter here may take any of the accepted forms
@@ -569,8 +591,6 @@ for the time of interest.</p>
 <li><code>temporal=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;temporal=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
 <li><code>temporal[]=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;temporal[]=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
 </ul>
-
-<p>Note that both are needed in order to define a bounding box.</p>
 
 <blockquote>
 <p>Use of <code>temporal</code> in a query:</p>
@@ -714,8 +734,6 @@ for the time of interest.</p>
 <li><code>timeposition=2000-01-01T00:00:00Z,2002-10-01T00:00:00Z&amp;timeposition=2010-07-01T00:00:00Z,2016-07-03T00:00:00Z</code></li>
 </ul>
 
-<p>Note that both are needed in order to define a bounding box.</p>
-
 <blockquote>
 <p>Use of <code>timeposition</code> in a query:</p>
 </blockquote>
@@ -815,7 +833,7 @@ listed below, but will be appended to the array of errors in the response body.<
 </tr>
 <tr>
 <td>500</td>
-<td>There was a oroblem creating URLs from granule file data: couldn&#39;t match default service pattern %s to service ___.</td>
+<td>There was a problem creating URLs from granule file data: couldn&#39;t match default service pattern %s to service ___.</td>
 </tr>
 <tr>
 <td>500</td>
