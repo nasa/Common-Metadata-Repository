@@ -238,15 +238,18 @@
   (let [promise (async-get-metadata search-endpoint user-token variables)]
     (extract-metadata promise)))
 
+(defn parse-lat-lon
+  [dim]
+  [(or (:Size (first (filter #(= "Longitude" (:Name %)) dim)))
+       (:Size (first (filter #(= "XDim" (:Name %)) dim)))
+       default-lon-abs-hi)
+   (or (:Size (first (filter #(= "Latitude" (:Name %)) dim)))
+       (:Size (first (filter #(= "YDim" (:Name %)) dim)))
+       default-lat-abs-hi)])
+
 (defn parse-dimensions
   [dim]
-  ;; XXX It seems that the X and Y have been swapped for at least
-  ;;     on collection's variables; Simon and I are looking into this
-  ;;     for now, we're just gonna pretend ... by changing the order
-  ;;     below :-(
-  ;; XXX This is being tracked in CMR-4958
-  [(or (:Size (first (filter #(= "YDim" (:Name %)) dim))) default-lon-abs-hi)
-   (or (:Size (first (filter #(= "XDim" (:Name %)) dim))) default-lat-abs-hi)])
+  (parse-lat-lon dim))
 
 (defn extract-dimensions
   [entry]
