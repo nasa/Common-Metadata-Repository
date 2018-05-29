@@ -92,8 +92,6 @@
   (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
                     msgs)))
 
-;; XXX Add universal function for checking HTTP status code
-
 (defn get-errors
   [data]
   (or (:errors data)
