@@ -55,10 +55,10 @@
 (def default-lat-lo -90.0)
 (def default-lat-hi 90.0)
 
-(def default-x-lo 0.0)
-(def default-x-hi 360.0)
-(def default-y-lo 0.0)
-(def default-y-hi 180.0)
+(def default-lon-abs-lo 0.0)
+(def default-lon-abs-hi 360.0)
+(def default-lat-abs-lo 0.0)
+(def default-lat-abs-hi 180.0)
 
 (def default-stride 1)
 
@@ -261,8 +261,8 @@
   ;;     for now, we're just gonna pretend ... by changing the order
   ;;     below :-(
   ;; XXX This is being tracked in CMR-4958
-  [(or (:Size (first (filter #(= "YDim" (:Name %)) dim))) default-x-hi)
-   (or (:Size (first (filter #(= "XDim" (:Name %)) dim))) default-y-hi)])
+  [(or (:Size (first (filter #(= "YDim" (:Name %)) dim))) default-lon-abs-hi)
+   (or (:Size (first (filter #(= "XDim" (:Name %)) dim))) default-lat-abs-hi)])
 
 (defn extract-dimensions
   [entry]
@@ -303,7 +303,7 @@
 
 (defn create-opendap-bounds
   ([bounding-box]
-   (create-opendap-bounds {:x default-x-hi :y default-y-hi} bounding-box))
+   (create-opendap-bounds {:x default-lon-abs-hi :y default-lat-abs-hi} bounding-box))
   ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (if bounding-box
      (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
