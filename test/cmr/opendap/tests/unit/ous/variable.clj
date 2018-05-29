@@ -57,34 +57,34 @@
     (is (= [360.0 180.0] (variable/parse-lat-lon no-spatial-dims)))))
 
 (deftest create-opendap-bounds
-  (let [dims (variable/map->Dimensions {:x 360 :y 180})
+  (let [dims (variable/map->Dimensions {:lon 360 :lat 180})
         bounds [-27.421875 53.296875 18.5625 69.75]
         lookup-array (variable/create-opendap-bounds dims bounds)]
-    (is (= 152 (get-in lookup-array [:low :x])))
-    (is (= 20 (get-in lookup-array [:low :y])))
-    (is (= 199 (get-in lookup-array [:high :x])))
-    (is (= 37 (get-in lookup-array [:high :y])))))
+    (is (= 152 (get-in lookup-array [:low :lon])))
+    (is (= 20 (get-in lookup-array [:low :lat])))
+    (is (= 199 (get-in lookup-array [:high :lon])))
+    (is (= 37 (get-in lookup-array [:high :lat])))))
 
 (deftest format-opendap-bounds
-  (let [dims (variable/map->Dimensions {:x 360 :y 180})
+  (let [dims (variable/map->Dimensions {:lon 360 :lat 180})
         bounds [-9.984375 56.109375 19.828125 67.640625]
         lookup-array (variable/create-opendap-bounds dims bounds)]
     (is (= "MyVar[*][22:1:34][169:1:200]"
            (variable/format-opendap-bounds "MyVar" lookup-array))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
-    (let [dims (variable/map->Dimensions {:x 360 :y 180})
+    (let [dims (variable/map->Dimensions {:lon 360 :lat 180})
           bounds [-27.421875 53.296875 18.5625 69.75]
           lookup-array (variable/create-opendap-bounds dims bounds)]
       (is (= "MyVar[*][20:1:37][152:1:199]"
              (variable/format-opendap-bounds "MyVar" lookup-array)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
-    (let [dims (variable/map->Dimensions {:x 360 :y 180})
+    (let [dims (variable/map->Dimensions {:lon 360 :lat 180})
           bounds [-23.0625 63.5625 57.09375 66.09375]
           lookup-array (variable/create-opendap-bounds dims bounds)]
       (is (= "MyVar[*][23:1:27][156:1:237]"
              (variable/format-opendap-bounds "MyVar" lookup-array)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
-    (let [dims (variable/map->Dimensions {:x 360 :y 180})
+    (let [dims (variable/map->Dimensions {:lon 360 :lat 180})
           bounds [-23.34375 25.59375 -16.03125 68.625]
           lookup-array (variable/create-opendap-bounds dims bounds)]
       (is (= "MyVar[*][21:1:65][156:1:164]"

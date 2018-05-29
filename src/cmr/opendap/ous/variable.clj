@@ -70,7 +70,7 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
-(defrecord Dimensions [x y])
+(defrecord Dimensions [lon lat])
 (defrecord ArrayLookup [low high])
 
 ;; XXX There is a note in Abdul's code along these lines:
@@ -88,10 +88,10 @@
 (defn create-opendap-lookup
   [lon-lo lat-lo lon-hi lat-hi]
   (map->ArrayLookup
-   {:low {:x lon-lo
-          :y lat-hi} ;; <-- swap hi for lo
-    :high {:x lon-hi
-           :y lat-lo}})) ;; <-- swap lo for hi
+   {:low {:lon lon-lo
+          :lat lat-hi} ;; <-- swap hi for lo; see note above
+    :high {:lon lon-hi
+           :lat lat-lo}})) ;; <-- swap lo for hi; see note above
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,29 +101,29 @@
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
 ;; XXX This is being tracked in CMR-4959
 (defn new-lon-phase-shift
-  [x-dim in]
-    (int (Math/floor (+ (/ x-dim 2) in))))
+  [lon-dim in]
+    (int (Math/floor (+ (/ lon-dim 2) in))))
 
 (defn new-lat-phase-shift
-  [y-dim in]
-  (- y-dim
-     (int (Math/floor (+ (/ y-dim 2) in)))))
+  [lat-dim in]
+  (- lat-dim
+     (int (Math/floor (+ (/ lat-dim 2) in)))))
 
 ;; The following longitudinal phase shift functions are translated from the
 ;; OUS Node.js prototype. It would be nice to use the more general functions
 ;; above, if those work out.
 
 (defn lon-lo-phase-shift
-  [x-dim lon-lo]
-  (-> (/ (* (- x-dim 1)
+  [lon-dim lon-lo]
+  (-> (/ (* (- lon-dim 1)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/floor
       int))
 
 (defn lon-hi-phase-shift
-  [x-dim lon-hi]
-  (-> (/ (* (- x-dim 1)
+  [lon-dim lon-hi]
+  (-> (/ (* (- lon-dim 1)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/ceil
@@ -152,16 +152,16 @@
 ;; These original JS functions are re-created in Clojure here:
 
 (defn orig-lat-lo-phase-shift
-  [y-dim lat-lo]
-  (-> (/ (* (- y-dim 1)
+  [lat-dim lat-lo]
+  (-> (/ (* (- lat-dim 1)
             (- lat-lo default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/floor
        int))
 
 (defn orig-lat-hi-phase-shift
-  [y-dim lat-hi]
-  (-> (/ (* (- y-dim 1)
+  [lat-dim lat-hi]
+  (-> (/ (* (- lat-dim 1)
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
@@ -171,20 +171,20 @@
 ;; used.
 
 (defn lat-lo-phase-shift
-  [y-dim lat-lo]
+  [lat-dim lat-lo]
   (int
-    (- y-dim
+    (- lat-dim
        1
-       (Math/floor (/ (* (- y-dim 1)
+       (Math/floor (/ (* (- lat-dim 1)
                          (- lat-lo default-lat-lo))
                       (- default-lat-hi default-lat-lo))))))
 
 (defn lat-hi-phase-shift
-  [y-dim lat-hi]
+  [lat-dim lat-hi]
   (int
-    (- y-dim
+    (- lat-dim
        1
-       (Math/ceil (/ (* (- y-dim 1)
+       (Math/ceil (/ (* (- lat-dim 1)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))
 
@@ -293,14 +293,14 @@
 
 (defn create-opendap-bounds
   ([bounding-box]
-   (create-opendap-bounds {:x default-lon-abs-hi :y default-lat-abs-hi} bounding-box))
-  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (create-opendap-bounds {:lon default-lon-abs-hi :lat default-lat-abs-hi} bounding-box))
+  ([{lon-dim :lon lat-dim :lat} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (if bounding-box
-     (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
-           x-hi (lon-hi-phase-shift x-dim lon-hi)
-           y-lo (lat-lo-phase-shift y-dim lat-lo)
-           y-hi (lat-hi-phase-shift y-dim lat-hi)]
-       (create-opendap-lookup x-lo y-lo x-hi y-hi))
+     (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
+           lon-hi (lon-hi-phase-shift lon-dim lon-hi)
+           lat-lo (lat-lo-phase-shift lat-dim lat-lo)
+           lat-hi (lat-hi-phase-shift lat-dim lat-hi)]
+       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))
      nil)))
 
 (defn format-opendap-lat
@@ -309,9 +309,9 @@
   ([opendap-bounds stride]
    (if opendap-bounds
      (format "[%s:%s:%s]"
-              (get-in opendap-bounds [:low :y])
+              (get-in opendap-bounds [:low :lat])
               stride
-              (get-in opendap-bounds [:high :y]))
+              (get-in opendap-bounds [:high :lat]))
      "")))
 
 (defn format-opendap-lon
@@ -320,9 +320,9 @@
   ([opendap-bounds stride]
    (if opendap-bounds
      (format "[%s:%s:%s]"
-              (get-in opendap-bounds [:low :x])
+              (get-in opendap-bounds [:low :lon])
               stride
-              (get-in opendap-bounds [:high :x]))
+              (get-in opendap-bounds [:high :lon]))
     "")))
 
 (defn format-opendap-var-lat-lon
