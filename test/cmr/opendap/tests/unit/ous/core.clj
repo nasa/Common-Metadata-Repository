@@ -18,7 +18,7 @@
            [{:name "MyVar1"} {:name "MyVar2"}]))))
   (testing "With bounds ..."
     (let [bounds [-27.421875 53.296875 18.5625 69.75]
-          dims (variable/map->Dimensions {:lon 360 :lat 180})
+          dims {:Longitude 360 :Latitude 180}
           bounding-info [{:name "MyVar"
                           :bounds bounds
                           :opendap (variable/create-opendap-bounds

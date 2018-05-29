@@ -70,7 +70,7 @@
 ;;; documented. Additionally, this will make converting between parameter
 ;;; schemes an explicit operation on explicit data.
 
-(defrecord Dimensions [lon lat])
+(defrecord Point [lon lat])
 (defrecord ArrayLookup [low high])
 
 ;; XXX There is a note in Abdul's code along these lines:
@@ -250,15 +250,11 @@
        (:Size (first (filter #(= "YDim" (:Name %)) dim)))
        default-lat-abs-hi)])
 
-(defn parse-dimensions
-  [dim]
-  (parse-lat-lon dim))
-
 (defn extract-dimensions
   [entry]
   (->> (get-in entry [:umm :Dimensions])
-       (parse-dimensions)
-       (apply ->Dimensions)))
+       (map #(vector (keyword (:Name %)) (:Size %)))
+       (into {})))
 
 (defn parse-annotated-bounds
   "Parse bounds that are annotated with Lat and Lon, returning values
@@ -293,8 +289,10 @@
 
 (defn create-opendap-bounds
   ([bounding-box]
-   (create-opendap-bounds {:lon default-lon-abs-hi :lat default-lat-abs-hi} bounding-box))
-  ([{lon-dim :lon lat-dim :lat} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (create-opendap-bounds {:Longitude default-lon-abs-hi
+                           :Latitude default-lat-abs-hi} bounding-box))
+  ([{lon-dim :Longitude lat-dim :Latitude}
+    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (if bounding-box
      (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
            lon-hi (lon-hi-phase-shift lon-dim lon-hi)
@@ -362,7 +360,7 @@
         ;; XXX Once we sort out how to definitely extract lat/lon and
         ;;     whether there is ever a need to go to
         ;;     :umm :Characteristics :Bounds when we can just go to
-        ;;     :umm :Dimensions instead, we can come back to this code
+        ;;     :umm :Point instead, we can come back to this code
         ;;     and remove the following line or integrate it into the
         ;;     code.
         ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
