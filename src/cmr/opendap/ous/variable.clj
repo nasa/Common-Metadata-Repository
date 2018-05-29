@@ -94,22 +94,6 @@
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn dominant-bounds
-  "This function is intended to be used if spatial subsetting is not
-  proivded in the query: in that case, all the bounds of all the variables
-  will be counted, and the one most-used is what will be returned."
-  [bounding-info]
-  (->> bounding-info
-       (map :bounds)
-       util/most-frequent))
-
-(defn dominant-dimensions
-  "Get the most common dimensions from the bounding-info."
-  [bounding-info]
-  (->> bounding-info
-       (map :dimensions)
-       util/most-frequent))
-
 ;; XXX Can we use these instead? Why was the phase shifting written
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
 ;; XXX This is being tracked in CMR-4959
