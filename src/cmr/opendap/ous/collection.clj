@@ -38,8 +38,8 @@
 
 (defn extract-variable-ids
   [entry]
-  (get-in entry [:associations :variables]))
+  (sort (get-in entry [:associations :variables])))
 
 (defn extract-service-ids
   [entry]
-  (get-in entry [:associations :services]))
+  (sort (get-in entry [:associations :services])))

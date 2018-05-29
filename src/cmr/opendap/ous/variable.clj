@@ -81,7 +81,10 @@
 ;;     reverse them here, where all OPeNDAP coords get created. This
 ;;     enables proper lookup in OPeNDAP arrays.
 ;;
-;;     This REALLY needs to be investigated, though.
+;;     This REALLY needs to be investigated, though, to make sure the
+;;     understanding is correct. And then it needs to be DOCUMENTED.
+;;
+;; XXX This is being tracked in CMR-4963
 (defn create-opendap-lookup
   [lon-lo lat-lo lon-hi lat-hi]
   (map->ArrayLookup

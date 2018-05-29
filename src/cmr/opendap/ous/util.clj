@@ -29,7 +29,7 @@
   (cond (nil? data) []
         (empty? data) []
         (coll? data) data
-        (string? data) (string/split data #",")))
+        (string? data) (sort (string/split data #","))))
 
 (defn seq->str
   [data]
