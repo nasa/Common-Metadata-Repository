@@ -270,7 +270,7 @@
   [entry]
   (->> (get-in entry [:umm :Dimensions])
        (map #(vector (keyword (:Name %)) (:Size %)))
-       (into {})))
+       (into (array-map))))
 
 (defn parse-annotated-bounds
   "Parse bounds that are annotated with Lat and Lon, returning values
@@ -321,16 +321,6 @@
   [min stride max]
   (format "[%s:%s:%s]" min stride max))
 
-(defn format-opendap-dims
-  ([bounding-info]
-    (format-opendap-dims bounding-info default-dim-stride))
-  ([bounding-info stride]
-    (->> bounding-info
-         :dimensions
-         (remove (fn [[k _v]] (or (= k :Longitude) (= k :Latitude))))
-         (map (fn [[_k v]] (format-opendap-dim 0 stride (dec v))))
-         (apply str))))
-
 (defn format-opendap-dim-lat
   ([bounding-info]
    (format-opendap-dim-lat bounding-info default-lat-lon-stride))
@@ -351,15 +341,27 @@
                          (get-in opendap-bounds [:high :lon]))
     "")))
 
+(defn replace-defaults-lat-lon
+  [bounding-info stride [k v]]
+  (cond (= k :Longitude) (format-opendap-dim-lon bounding-info stride)
+        (= k :Latitude) (format-opendap-dim-lat bounding-info stride)
+        :else (format-opendap-dim 0 stride (dec v))))
+
+(defn format-opendap-dims
+  ([bounding-info]
+    (format-opendap-dims bounding-info default-dim-stride))
+  ([bounding-info stride]
+    (->> bounding-info
+         :dimensions
+         (map (partial replace-defaults-lat-lon bounding-info stride))
+         (apply str))))
+
 (defn format-opendap-var-dims-lat-lon
   ([bounding-info]
    (format-opendap-var-dims-lat-lon bounding-info default-lat-lon-stride))
   ([bounding-info stride]
    (if (:opendap bounding-info)
-     (str
-       (format-opendap-dims bounding-info)
-       (format-opendap-dim-lat bounding-info stride)
-       (format-opendap-dim-lon bounding-info stride))
+     (format-opendap-dims bounding-info)
      "")))
 
 (defn format-opendap-lat-lon
