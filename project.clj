@@ -152,6 +152,7 @@
       ["check-vers"]]
     "kibit" ["with-profile" "+lint" "kibit"]
     "eastwood" ["with-profile" "+lint" "eastwood" "{:namespaces [:source-paths]}"]
+    "yagni" ["with-profile" "+lint" "yagni"]
     "lint" ["do"
       ["kibit"]
       ;["eastwood"]
