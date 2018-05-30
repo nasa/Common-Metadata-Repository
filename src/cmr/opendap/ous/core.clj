@@ -17,18 +17,28 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn bounding-info->opendap-query
-  ([bounding-info]
-    (bounding-info->opendap-query bounding-info nil))
-  ([bounding-info bounding-box]
-   (when (seq bounding-info)
+(defn bbox->bounding-info
+  [bounding-box]
+  (variable/map->BoundingInfo
+    {:bounds bounding-box
+     :opendap (variable/create-opendap-bounds bounding-box)}))
+
+(defn format-opendap-lat-lon
+  [bounding-box]
+  (variable/format-opendap-lat-lon (bbox->bounding-info bounding-box)))
+
+(defn bounding-infos->opendap-query
+  ([bounding-infos]
+    (bounding-infos->opendap-query bounding-infos nil))
+  ([bounding-infos bounding-box]
+   (when (seq bounding-infos)
      (str
-      (->> bounding-info
+      (->> bounding-infos
            (map variable/format-opendap-bounds)
            (string/join ",")
            (str "?"))
       ","
-      (variable/format-opendap-lat-lon bounding-info)))))
+      (format-opendap-lat-lon bounding-box)))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
@@ -174,21 +184,21 @@
   (log/debug "Starting stage 3 ...")
   (let [services-promise (service/async-get-metadata
                           search-endpoint user-token service-ids)
-        bounding-info (map #(variable/extract-bounding-info % bounding-box)
-                           vars)
-        errs (errors/collect bounding-info)]
+        bounding-infos (map #(variable/extract-bounding-info % bounding-box)
+                            vars)
+        errs (errors/collect bounding-infos)]
     (when errs
       (log/error "Stage 3 errors:" errs))
-    (log/trace "variable bounding-info:" (into [] bounding-info))
+    (log/trace "variables bounding-info:" (into [] bounding-infos))
     (log/debug "Finishing stage 3 ...")
-    [services-promise bounding-info errs]))
+    [services-promise bounding-infos errs]))
 
 (defn stage4
-  [bounding-box services-promise bounding-info]
+  [bounding-box services-promise bounding-infos]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
         pattern-info (service/extract-pattern-info (first services))
-        query (bounding-info->opendap-query bounding-info bounding-box)
+        query (bounding-infos->opendap-query bounding-infos bounding-box)
         errs (errors/collect services pattern-info)]
     (when errs
       (log/error "Stage 4 errors:" errs))

@@ -351,18 +351,12 @@
   ([bounding-info]
     (format-opendap-dims bounding-info default-dim-stride))
   ([bounding-info stride]
-    (->> bounding-info
-         :dimensions
-         (map (partial replace-defaults-lat-lon bounding-info stride))
-         (apply str))))
-
-(defn format-opendap-var-dims-lat-lon
-  ([bounding-info]
-   (format-opendap-var-dims-lat-lon bounding-info default-lat-lon-stride))
-  ([bounding-info stride]
-   (if (:opendap bounding-info)
-     (format-opendap-dims bounding-info)
-     "")))
+    (if (:opendap bounding-info)
+      (->> bounding-info
+           :dimensions
+           (map (partial replace-defaults-lat-lon bounding-info stride))
+           (apply str))
+      "")))
 
 (defn format-opendap-lat-lon
   ([bounding-info]
@@ -378,7 +372,7 @@
   ([{bound-name :name :as bounding-info} stride]
    (format "%s%s"
             bound-name
-            (format-opendap-var-dims-lat-lon bounding-info stride))))
+            (format-opendap-dims bounding-info stride))))
 
 (defn extract-bounding-info
   "This function is executed at the variable level, however it has general,

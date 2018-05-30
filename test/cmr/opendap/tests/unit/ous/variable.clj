@@ -95,163 +95,147 @@
 (deftest format-opendap-bounds-lat-lon-only
   (let [dims (array-map :Latitude 180 :Longitude 360)
         bounds [-9.984375 56.109375 19.828125 67.640625]
-        lookup-array (variable/create-opendap-bounds dims bounds)
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap lookup-array}]
+                       :opendap (variable/create-opendap-bounds dims bounds)}]
     (is (= "MyVar[22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
     (let [dims (array-map :Latitude 180 :Longitude 360)
           bounds [-27.421875 53.296875 18.5625 69.75]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
     (let [dims (array-map :Latitude 180 :Longitude 360)
           bounds [-23.0625 63.5625 57.09375 66.09375]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
     (let [dims (array-map :Latitude 180 :Longitude 360)
           bounds [-23.34375 25.59375 -16.03125 68.625]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info))))))
 
 (deftest format-opendap-bounds-three-dims
   (let [dims (array-map :Dim3 10 :Latitude 180 :Longitude 360)
         bounds [-9.984375 56.109375 19.828125 67.640625]
-        lookup-array (variable/create-opendap-bounds dims bounds)
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap lookup-array}]
+                       :opendap (variable/create-opendap-bounds dims bounds)}]
     (is (= "MyVar[0:1:9][22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
     (let [dims (array-map :Dim3 10 :Latitude 180 :Longitude 360)
           bounds [-27.421875 53.296875 18.5625 69.75]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
     (let [dims (array-map :Dim3 10 :Latitude 180 :Longitude 360)
           bounds [-23.0625 63.5625 57.09375 66.09375]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
     (let [dims (array-map :Dim3 10 :Latitude 180 :Longitude 360)
           bounds [-23.34375 25.59375 -16.03125 68.625]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info))))))
 
 (deftest format-opendap-bounds-four-dims
   (let [dims (array-map :Dim3 10 :Dim4 20 :Latitude 180 :Longitude 360)
         bounds [-9.984375 56.109375 19.828125 67.640625]
-        lookup-array (variable/create-opendap-bounds dims bounds)
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap lookup-array}]
+                       :opendap (variable/create-opendap-bounds dims bounds)}]
     (is (= "MyVar[0:1:9][0:1:19][22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
     (let [dims (array-map :Dim3 10 :Dim4 20 :Latitude 180 :Longitude 360)
           bounds [-27.421875 53.296875 18.5625 69.75]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][0:1:19][20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
     (let [dims (array-map :Dim3 10 :Dim4 20 :Latitude 180 :Longitude 360)
           bounds [-23.0625 63.5625 57.09375 66.09375]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][0:1:19][23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
     (let [dims (array-map :Dim3 10 :Dim4 20 :Latitude 180 :Longitude 360)
           bounds [-23.34375 25.59375 -16.03125 68.625]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][0:1:19][21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info))))))
 
 (deftest format-opendap-bounds-ordering-preserved
   (let [dims (array-map :Dim3 10 :Longitude 360 :Latitude 180 :Dim4 20)
         bounds [-9.984375 56.109375 19.828125 67.640625]
-        lookup-array (variable/create-opendap-bounds dims bounds)
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap lookup-array}]
+                       :opendap (variable/create-opendap-bounds dims bounds)}]
     (is (= "MyVar[0:1:9][169:1:200][22:1:34][0:1:19]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
     (let [dims (array-map :Dim3 10 :Dim4 20 :Longitude 360 :Latitude 180)
           bounds [-27.421875 53.296875 18.5625 69.75]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[0:1:9][0:1:19][152:1:199][20:1:37]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
     (let [dims (array-map :Longitude 360 :Dim3 10 :Dim4 20 :Latitude 180)
           bounds [-23.0625 63.5625 57.09375 66.09375]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[156:1:237][0:1:9][0:1:19][23:1:27]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
     (let [dims (array-map :Longitude 360 :Dim4 20 :Latitude 180 :Dim3 10)
           bounds [-23.34375 25.59375 -16.03125 68.625]
-          lookup-array (variable/create-opendap-bounds dims bounds)
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap lookup-array}]
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[156:1:164][0:1:19][21:1:65][0:1:9]"
              (variable/format-opendap-bounds bounding-info))))))
