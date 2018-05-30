@@ -35,7 +35,7 @@ in the examples are broken up -- this is done for the sake of visiability
 on the page. When you use these to make a query you must remove newline
 breaks.
 
-<aside class="warning">
+<aside class="error">
   In many cases, copying and pasting the examples as-is will not work!
   Line separations have been added to the examples for visual clarity; to
   actually use these, you need to make sure extraneous newlines have been
@@ -122,6 +122,51 @@ Cmr-Media-Type: cmr-opendap.v2; format=json
   release of the API so that you are always using exactly what you expect
   to be using. Then your use of new versions of the API will be an
   intentional decision.
+</aside>
+
+
+# Responses
+
+## Success
+
+CMR OPeNDAP responses have pareticular formats, inherited from CMR response
+data. A successful request will provide the results, the number of results
+and, the time taken to process the request.
+
+> Successful response body:
+
+```
+{
+  "hits": ...,
+  "took": ...,
+  "items": [...]
+}
+```
+
+## Errors
+
+When CMR OPeNDAP returns errors, it does so in a consistent format. In
+particular, the body of the HTTP response is a JSON string (or stream)
+representing an object with one key, `errors`, an associated value being
+an array of the errors encountered.
+
+> CMR OPeNDAP error format
+
+```
+{
+  "errors": [...]
+}
+```
+
+## Warnings
+
+In either a success or error state, CMR OPeNDAP may also return a `warning`
+key containing one or more messages. This is reserved for future use and
+will be the primary mechanism used to notify clients of coming changes in the
+API that will impact users of the default version.
+
+<aside class="info">
+  As a best practice, clients should check for and log any warning messages.
 </aside>
 
 
@@ -525,23 +570,7 @@ The following resources are provided for use in various tests:
 * `GET /testing/503`
 
 
-# Errors
-
-## Format
-
-When CMR OPeNDAP returns errors, it does so in a consistent format. In
-particular, the body of the HTTP response is a JSON string (or stream)
-representing an object with one key, `errors`, an associated value being
-an array of the errors encountered.
-
-> CMR OPeNDAP error format
-
-```
-{
-  "errors": [...]
-}
-```
-
+# Errors Responses
 
 ## Dependent Services
 
