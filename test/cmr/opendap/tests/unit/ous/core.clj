@@ -5,10 +5,6 @@
     [cmr.opendap.ous.core :as core]
     [cmr.opendap.ous.variable :as variable]))
 
-(deftest bounding-info->opendap-lat-lon
-  (is (= "MyVar"
-         (core/bounding-info->opendap-lat-lon {:name "MyVar"}))))
-
 (deftest bounding-info->opendap-query
   (testing "No bounds ..."
    (is (= "?MyVar,Latitude,Longitude"
@@ -23,5 +19,5 @@
                           :bounds bounds
                           :opendap (variable/create-opendap-bounds
                                     dims bounds)}]]
-     (is (= "?MyVar[*][20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
+     (is (= "?MyVar[20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
             (core/bounding-info->opendap-query bounding-info bounds))))))

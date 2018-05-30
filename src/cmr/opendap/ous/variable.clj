@@ -60,7 +60,8 @@
 (def default-lat-abs-lo 0.0)
 (def default-lat-abs-hi 180.0)
 
-(def default-stride 1)
+(def default-dim-stride 1)
+(def default-lat-lon-stride 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,7 +72,22 @@
 ;;; schemes an explicit operation on explicit data.
 
 (defrecord Point [lon lat])
+
 (defrecord ArrayLookup [low high])
+
+(defrecord BoundingInfo
+  [;; :meta :concept-id
+   concept-id
+   ;; :umm :Name
+   name
+   ;; :umm :Dimensions, converted to EDN
+   dimensions
+   ;; Bounding box data from query params
+   bounds
+   ;; OPeNDAP lookup array
+   opendap
+   ;; :umm :Characteristics :Size
+   size])
 
 ;; XXX There is a note in Abdul's code along these lines:
 ;;         "hack for descending orbits (array index 0 is at 90 degrees
@@ -291,7 +307,7 @@
   ([bounding-box]
    (create-opendap-bounds {:Longitude default-lon-abs-hi
                            :Latitude default-lat-abs-hi} bounding-box))
-  ([{lon-dim :Longitude lat-dim :Latitude}
+  ([{lon-dim :Longitude lat-dim :Latitude :as _dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (if bounding-box
      (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
@@ -301,53 +317,66 @@
        (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))
      nil)))
 
-(defn format-opendap-lat
-  ([opendap-bounds]
-   (format-opendap-lat opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format "[%s:%s:%s]"
-              (get-in opendap-bounds [:low :lat])
-              stride
-              (get-in opendap-bounds [:high :lat]))
+(defn format-opendap-dim
+  [min stride max]
+  (format "[%s:%s:%s]" min stride max))
+
+(defn format-opendap-dims
+  ([bounding-info]
+    (format-opendap-dims bounding-info default-dim-stride))
+  ([bounding-info stride]
+    (->> bounding-info
+         :dimensions
+         (remove (fn [[k _v]] (or (= k :Longitude) (= k :Latitude))))
+         (map (fn [[_k v]] (format-opendap-dim 0 stride (dec v))))
+         (apply str))))
+
+(defn format-opendap-dim-lat
+  ([bounding-info]
+   (format-opendap-dim-lat bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   (if-let [opendap-bounds (:opendap bounding-info)]
+     (format-opendap-dim (get-in opendap-bounds [:low :lat])
+                         stride
+                         (get-in opendap-bounds [:high :lat]))
      "")))
 
-(defn format-opendap-lon
-  ([opendap-bounds]
-   (format-opendap-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format "[%s:%s:%s]"
-              (get-in opendap-bounds [:low :lon])
-              stride
-              (get-in opendap-bounds [:high :lon]))
+(defn format-opendap-dim-lon
+  ([bounding-info]
+   (format-opendap-dim-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   (if-let [opendap-bounds (:opendap bounding-info)]
+     (format-opendap-dim (get-in opendap-bounds [:low :lon])
+                         stride
+                         (get-in opendap-bounds [:high :lon]))
     "")))
 
-(defn format-opendap-var-lat-lon
-  ([opendap-bounds]
-   (format-opendap-var-lat-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format "[*]%s%s"
-       (format-opendap-lat opendap-bounds stride)
-       (format-opendap-lon opendap-bounds stride))
+(defn format-opendap-var-dims-lat-lon
+  ([bounding-info]
+   (format-opendap-var-dims-lat-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   (if (:opendap bounding-info)
+     (str
+       (format-opendap-dims bounding-info)
+       (format-opendap-dim-lat bounding-info stride)
+       (format-opendap-dim-lon bounding-info stride))
      "")))
 
 (defn format-opendap-lat-lon
-  ([opendap-bounds]
-   (format-opendap-lat-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
+  ([bounding-info]
+   (format-opendap-lat-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
    (format "Latitude%s,Longitude%s"
-           (format-opendap-lat opendap-bounds stride)
-           (format-opendap-lon opendap-bounds stride))))
+           (format-opendap-dim-lat bounding-info stride)
+           (format-opendap-dim-lon bounding-info stride))))
 
 (defn format-opendap-bounds
-  ([bound-name opendap-bounds]
-   (format-opendap-bounds bound-name opendap-bounds default-stride))
-  ([bound-name opendap-bounds stride]
+  ([bounding-info]
+   (format-opendap-bounds bounding-info default-lat-lon-stride))
+  ([{bound-name :name :as bounding-info} stride]
    (format "%s%s"
             bound-name
-            (format-opendap-var-lat-lon opendap-bounds stride))))
+            (format-opendap-var-dims-lat-lon bounding-info stride))))
 
 (defn extract-bounding-info
   "This function is executed at the variable level, however it has general,
@@ -366,11 +395,12 @@
         ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
         ; bounds (or bounding-box (extract-bounds entry))
         ]
-    {:concept-id (get-in entry [:meta :concept-id])
-     :name (get-in entry [:umm :Name])
-     :dimensions dims
-     :bounds bounding-box
-     :opendap (create-opendap-bounds dims bounding-box)
-     :size (get-in entry [:umm :Characteristics :Size])}))
+    (map->BoundingInfo
+      {:concept-id (get-in entry [:meta :concept-id])
+       :name (get-in entry [:umm :Name])
+       :dimensions dims
+       :bounds bounding-box
+       :opendap (create-opendap-bounds dims bounding-box)
+       :size (get-in entry [:umm :Characteristics :Size])})))
 
 

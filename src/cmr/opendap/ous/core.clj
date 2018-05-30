@@ -17,10 +17,6 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn bounding-info->opendap-lat-lon
-  [{var-name :name opendap-bounds :opendap}]
-  (variable/format-opendap-bounds var-name opendap-bounds))
-
 (defn bounding-info->opendap-query
   ([bounding-info]
     (bounding-info->opendap-query bounding-info nil))
@@ -28,15 +24,17 @@
    (when (seq bounding-info)
      (str
       (->> bounding-info
-           (map bounding-info->opendap-lat-lon)
+           (map variable/format-opendap-bounds)
            (string/join ",")
            (str "?"))
       ","
-      (variable/format-opendap-lat-lon
-       (variable/create-opendap-bounds bounding-box))))))
+      (variable/format-opendap-lat-lon bounding-info)))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
+;;                Note that the required change for this is in the data and
+;;                recommended best practices for Providers; beyond our
+;;                immediate control.
 ;; XXX This is being tracked in CMR-4912 and CMR-4901
 
 (def fallback-pattern #"(.*)(/datapool/DEV01)(.*)")
