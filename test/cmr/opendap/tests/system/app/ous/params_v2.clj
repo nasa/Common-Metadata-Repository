@@ -40,8 +40,8 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "GET with variables ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -53,8 +53,8 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "GET with repeated variables ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -67,8 +67,8 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
              (util/parse-response response))))))
 
 (deftest collection-GET-variables-array
@@ -84,8 +84,8 @@
                           "=V1200267322-HMR_TME")
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "GET with variables in an array ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -101,8 +101,8 @@
                           "=V1200267323-HMR_TME")
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
              (util/parse-response response))))))
 
 (deftest collection-GET-granules
@@ -249,8 +249,8 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response)))))
   (testing "GET with bounding box ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -263,8 +263,8 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],CH4_VMR_A_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_A_err[0:1:23][22:1:70][169:1:236],CH4_VMR_A_max[0:1:23][22:1:70][169:1:236],CH4_VMR_A_min[0:1:23][22:1:70][169:1:236],CH4_VMR_A_sdev[0:1:23][22:1:70][169:1:236],CH4_VMR_D[0:1:23][22:1:70][169:1:236],CH4_VMR_D_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_D_err[0:1:23][22:1:70][169:1:236],CH4_VMR_D_max[0:1:23][22:1:70][169:1:236],CH4_VMR_D_min[0:1:23][22:1:70][169:1:236],CH4_VMR_D_sdev[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],CH4_VMR_A_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_A_err[0:1:23][22:1:70][169:1:236],CH4_VMR_A_max[0:1:23][22:1:70][169:1:236],CH4_VMR_A_min[0:1:23][22:1:70][169:1:236],CH4_VMR_A_sdev[0:1:23][22:1:70][169:1:236],CH4_VMR_D[0:1:23][22:1:70][169:1:236],CH4_VMR_D_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_D_err[0:1:23][22:1:70][169:1:236],CH4_VMR_D_max[0:1:23][22:1:70][169:1:236],CH4_VMR_D_min[0:1:23][22:1:70][169:1:236],CH4_VMR_D_sdev[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"]
              (util/parse-response response))))))
 
 (deftest collection-GET-query-temporal
@@ -406,7 +406,7 @@
                              collection-id)
                      (request/add-token-header {} (util/get-sit-token)))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"]
              (util/parse-response response))))))
 
 (deftest collection-POST
@@ -439,8 +439,8 @@
                        {:variables ["V1200267322-HMR_TME"]})
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
              (util/parse-response response)))))
   (testing "POST with variables ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -455,8 +455,8 @@
                                     "V1200267323-HMR_TME"]})
                        (request/add-token-header {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct,CH4_VMR_A_max,Latitude,Longitude"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
              (util/parse-response response))))))
 
 (deftest collection-POST-granules
@@ -541,8 +541,8 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response)))))
   (testing "POST with bounding box ..."
     (let [collection-id "C1200267318-HMR_TME"
@@ -557,6 +557,6 @@
                       (request/add-token-header
                        {} (util/get-sit-token))))]
       (is (= 200 (:status response)))
-      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct[*][22:1:34][169:1:200],CH4_VMR_A_max[*][22:1:34][169:1:200],CH4_VMR_A_sdev[*][22:1:34][169:1:200],CH4_VMR_D_ct[*][22:1:34][169:1:200],CH4_VMR_D_max[*][22:1:34][169:1:200],CH4_VMR_D_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_A_sdev[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_ct[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_max[*][22:1:34][169:1:200],CH4_VMR_TqJ_D_sdev[*][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],CH4_VMR_A_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_A_err[0:1:23][22:1:70][169:1:236],CH4_VMR_A_max[0:1:23][22:1:70][169:1:236],CH4_VMR_A_min[0:1:23][22:1:70][169:1:236],CH4_VMR_A_sdev[0:1:23][22:1:70][169:1:236],CH4_VMR_D[0:1:23][22:1:70][169:1:236],CH4_VMR_D_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_D_err[0:1:23][22:1:70][169:1:236],CH4_VMR_D_max[0:1:23][22:1:70][169:1:236],CH4_VMR_D_min[0:1:23][22:1:70][169:1:236],CH4_VMR_D_sdev[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],CH4_VMR_A_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_A_err[0:1:23][22:1:70][169:1:236],CH4_VMR_A_max[0:1:23][22:1:70][169:1:236],CH4_VMR_A_min[0:1:23][22:1:70][169:1:236],CH4_VMR_A_sdev[0:1:23][22:1:70][169:1:236],CH4_VMR_D[0:1:23][22:1:70][169:1:236],CH4_VMR_D_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_D_err[0:1:23][22:1:70][169:1:236],CH4_VMR_D_max[0:1:23][22:1:70][169:1:236],CH4_VMR_D_min[0:1:23][22:1:70][169:1:236],CH4_VMR_D_sdev[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"]
              (util/parse-response response))))))
