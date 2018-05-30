@@ -3073,7 +3073,7 @@ net.brehaut.ClojureTools = (function (SH) {
   [handler]
   (fn [req]
     (let [uri (:uri req)]
-      (handler (assoc req :uri (if (and (not (= &quot;/&quot; uri))
+      (handler (assoc req :uri (if (and (not= &quot;/&quot; uri)
                                         (.endsWith uri &quot;/&quot;))
                                  (subs uri 0 (dec (count uri)))
                                  uri))))))</pre></td></tr><tr><td class="docs">
@@ -3171,7 +3171,7 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defn wrap-api-version-dispatch
   [site-routes system opts]
   (fn [req]
-    (log/trace &quot;Got site-routes:&quot; (into [] site-routes))
+    (log/trace &quot;Got site-routes:&quot; (vec site-routes))
     (let [api-version (request/accept-api-version system req)
           routes (concat site-routes (rest-routes/all system api-version))
           handler (ring/ring-handler (ring/router routes opts))
@@ -3179,7 +3179,7 @@ net.brehaut.ClojureTools = (function (SH) {
                          (request/accept-media-type system req)
                          (request/accept-format system req))]
       (log/debug &quot;API version:&quot; api-version)
-      (log/trace &quot;Made routes:&quot; (into [] routes))
+      (log/trace &quot;Made routes:&quot; (vec routes))
       (response/version-media-type (handler req) header))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.core" name="cmr.opendap.app.core"><h1 class="project-name">cmr.opendap.app.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.app.core
   (:require
@@ -3507,10 +3507,10 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
     (extract-metadata promise)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-variable-ids
   [entry]
-  (get-in entry [:associations :variables]))</pre></td></tr><tr><td class="docs">
+  (sort (get-in entry [:associations :variables])))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-service-ids
   [entry]
-  (get-in entry [:associations :services]))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util" name="cmr.opendap.ous.util"><h1 class="project-name">cmr.opendap.ous.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  (sort (get-in entry [:associations :services])))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util" name="cmr.opendap.ous.util"><h1 class="project-name">cmr.opendap.ous.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.util
   (:require
    [clojure.string :as string]
@@ -3538,7 +3538,7 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
   (cond (nil? data) []
         (empty? data) []
         (coll? data) data
-        (string? data) (string/split data #&quot;,&quot;)))</pre></td></tr><tr><td class="docs">
+        (string? data) (sort (string/split data #&quot;,&quot;))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn seq-&gt;str
   [data]
   (string/join &quot;,&quot; data))</pre></td></tr><tr><td class="docs">
@@ -3585,14 +3585,12 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
 </td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;granules
   [coverage]
   (let [ids (filter #(string/starts-with? % &quot;G&quot;) coverage)]
-    (if (empty? ids)
-      nil
+    (when (seq ids)
       ids)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;collection
   [coverage]
   (let [id (filter #(string/starts-with? % &quot;C&quot;) coverage)]
-    (if (empty? id)
-      nil
+    (when (seq id)
       (first id))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.core" name="cmr.opendap.ous.core"><h1 class="project-name">cmr.opendap.ous.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.core
   (:require
@@ -3609,23 +3607,30 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn bounding-info-&gt;opendap-lat-lon
-  [{var-name :name opendap-bounds :opendap}]
-  (variable/format-opendap-bounds var-name opendap-bounds))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn bounding-info-&gt;opendap-query
-  ([bounding-info]
-    (bounding-info-&gt;opendap-query bounding-info nil))
-  ([bounding-info bounding-box]
-   (when (seq bounding-info)
+</td><td class="codes"><pre class="brush: clojure">(defn bbox-&gt;bounding-info
+  [bounding-box]
+  (variable/map-&gt;BoundingInfo
+    {:bounds bounding-box
+     :opendap (variable/create-opendap-bounds bounding-box)}))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat-lon
+  [bounding-box]
+  (variable/format-opendap-lat-lon (bbox-&gt;bounding-info bounding-box)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-infos-&gt;opendap-query
+  ([bounding-infos]
+    (bounding-infos-&gt;opendap-query bounding-infos nil))
+  ([bounding-infos bounding-box]
+   (when (seq bounding-infos)
      (str
-      (-&gt;&gt; bounding-info
-           (map bounding-info-&gt;opendap-lat-lon)
+      (-&gt;&gt; bounding-infos
+           (map variable/format-opendap-bounds)
            (string/join &quot;,&quot;)
            (str &quot;?&quot;))
       &quot;,&quot;
-      (variable/format-opendap-lat-lon
-       (variable/create-opendap-bounds bounding-box))))))</pre></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
+      (format-opendap-lat-lon bounding-box)))))</pre></td></tr><tr><td class="docs"><p>XXX WARNING!!! The pattern matching code has been taken from the Node.js
                prototype ... and IT IS AWFUL. This is only temporary ...
+               Note that the required change for this is in the data and
+               recommended best practices for Providers; beyond our
+               immediate control.
 XXX This is being tracked in CMR-4912 and CMR-4901</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def fallback-pattern #&quot;(.*)(/datapool/DEV01)(.*)&quot;)
@@ -3656,7 +3661,7 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
     (let [urls (map (partial data-file-&gt;opendap-url pattern-info) data-files)]
       (if (errors/any-erred? urls)
         (do
-          (log/error &quot;Some problematic urls:&quot; (into [] urls))
+          (log/error &quot;Some problematic urls:&quot; (vec urls))
           (apply errors/collect urls))
         (map #(str % &quot;.&quot; (:format params) query-string) urls)))))</pre></td></tr><tr><td class="docs"><p>There are several variable and bounding scenarios we need to consider:</p>
 
@@ -3695,10 +3700,10 @@ allowing for the desired result. Respective to the bullet points above:</p></li>
     (and (nil? bounding-box) (empty? variables))
     []
     ;; Condition 2 - variables but no spatial subsetting
-    (and (nil? bounding-box) (not (empty? variables)))
+    (and (nil? bounding-box) (seq variables))
     (variable/get-metadata search-endpoint user-token params)
     ;; Condition 3 - variables and spatial subsetting
-    (and bounding-box (not (empty? variables)))
+    (and bounding-box (seq variables))
     (variable/get-metadata search-endpoint user-token params)
     ;; Condition 4 - spatial subsetting but no variables
     (and bounding-box (empty? variables))
@@ -3744,7 +3749,7 @@ the code could be properly prepared for async execution.</p>
         errs (errors/collect granules coll)]
     (when errs
       (log/error &quot;Stage 2 errors:&quot; errs))
-    (log/trace &quot;data-files:&quot; (into [] data-files))
+    (log/trace &quot;data-files:&quot; (vec data-files))
     (log/trace &quot;service ids:&quot; service-ids)
     (log/debug &quot;Finishing stage 2 ...&quot;)
     [data-files service-ids vars errs]))</pre></td></tr><tr><td class="docs">
@@ -3753,20 +3758,20 @@ the code could be properly prepared for async execution.</p>
   (log/debug &quot;Starting stage 3 ...&quot;)
   (let [services-promise (service/async-get-metadata
                           search-endpoint user-token service-ids)
-        bounding-info (map #(variable/extract-bounding-info % bounding-box)
-                           vars)
-        errs (errors/collect bounding-info)]
+        bounding-infos (map #(variable/extract-bounding-info % bounding-box)
+                            vars)
+        errs (errors/collect bounding-infos)]
     (when errs
       (log/error &quot;Stage 3 errors:&quot; errs))
-    (log/trace &quot;variable bounding-info:&quot; (into [] bounding-info))
+    (log/trace &quot;variables bounding-info:&quot; (vec bounding-infos))
     (log/debug &quot;Finishing stage 3 ...&quot;)
-    [services-promise bounding-info errs]))</pre></td></tr><tr><td class="docs">
+    [services-promise bounding-infos errs]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn stage4
-  [bounding-box services-promise bounding-info]
+  [bounding-box services-promise bounding-infos]
   (log/debug &quot;Starting stage 4 ...&quot;)
   (let [services (service/extract-metadata services-promise)
         pattern-info (service/extract-pattern-info (first services))
-        query (bounding-info-&gt;opendap-query bounding-info bounding-box)
+        query (bounding-infos-&gt;opendap-query bounding-infos bounding-box)
         errs (errors/collect services pattern-info)]
     (when errs
       (log/error &quot;Stage 4 errors:&quot; errs))
@@ -3813,7 +3818,7 @@ the code could be properly prepared for async execution.</p>
                         [not pattern-info errors/empty-svc-pattern]
                         [not data-files errors/empty-gnl-data-files])})]
     (log/debug &quot;Got pattern-info:&quot; pattern-info)
-    (log/debug &quot;Got data-files:&quot; (into [] data-files))
+    (log/debug &quot;Got data-files:&quot; (vec data-files))
     (if errs
       (do
         (log/debug &quot;Got errors:&quot; errs)
@@ -3874,18 +3879,32 @@ long:
 (def default-lon-hi 180.0)
 (def default-lat-lo -90.0)
 (def default-lat-hi 90.0)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def default-x-lo 0.0)
-(def default-x-hi 360.0)
-(def default-y-lo 0.0)
-(def default-y-hi 180.0)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def default-stride 1)</pre></td></tr><tr><td class="docs"><p>  Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"><pre class="brush: clojure">(def default-lon-abs-lo 0.0)
+(def default-lon-abs-hi 360.0)
+(def default-lat-abs-lo 0.0)
+(def default-lat-abs-hi 180.0)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-dim-stride 1)
+(def default-lat-lon-stride 1)</pre></td></tr><tr><td class="docs"><p>  Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 
 <p>We're going to codify parameters with records to keep things well
 documented. Additionally, this will make converting between parameter
 schemes an explicit operation on explicit data.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord Dimensions [x y])
-(defrecord ArrayLookup [low high])</pre></td></tr><tr><td class="docs"><p>XXX There is a note in Abdul's code along these lines:
+</td><td class="codes"><pre class="brush: clojure">(defrecord Point [lon lat])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord ArrayLookup [low high])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord BoundingInfo
+  [;; :meta :concept-id
+   concept-id
+   ;; :umm :Name
+   name
+   ;; :umm :Dimensions, converted to EDN
+   dimensions
+   ;; Bounding box data from query params
+   bounds
+   ;; OPeNDAP lookup array
+   opendap
+   ;; :umm :Characteristics :Size
+   size])</pre></td></tr><tr><td class="docs"><p>XXX There is a note in Abdul's code along these lines:
         "hack for descending orbits (array index 0 is at 90 degrees
         north)"
     If I understand correctly, this would cause the indices for
@@ -3893,51 +3912,42 @@ schemes an explicit operation on explicit data.</p>
     reverse them here, where all OPeNDAP coords get created. This
     enables proper lookup in OPeNDAP arrays.</p>
 
-<pre><code>This REALLY needs to be investigated, though.
+<pre><code>This REALLY needs to be investigated, though, to make sure the
+understanding is correct. And then it needs to be DOCUMENTED.
 </code></pre>
+
+<p>XXX This is being tracked in CMR-4963</p>
 </td><td class="codes"><pre class="brush: clojure">(defn create-opendap-lookup
   [lon-lo lat-lo lon-hi lat-hi]
   (map-&gt;ArrayLookup
-   {:low {:x lon-lo
-          :y lat-hi} ;; &lt;-- swap hi for lo
-    :high {:x lon-hi
-           :y lat-lo}})) ;; &lt;-- swap lo for hi</pre></td></tr><tr><td class="docs"><p>&lt;-- swap lo for hi</p>
+   {:low {:lon lon-lo
+          :lat lat-hi} ;; &lt;-- swap hi for lo; see note above
+    :high {:lon lon-hi
+           :lat lat-lo}})) ;; &lt;-- swap lo for hi; see note above</pre></td></tr><tr><td class="docs"><p>&lt;-- swap lo for hi; see note above</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>  Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>This function is intended to be used if spatial subsetting is not
-  proivded in the query: in that case, all the bounds of all the variables
-  will be counted, and the one most-used is what will be returned.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn dominant-bounds
-  [bounding-info]
-  (-&gt;&gt; bounding-info
-       (map :bounds)
-       util/most-frequent))</pre></td></tr><tr><td class="docs"><p>Get the most common dimensions from the bounding-info.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn dominant-dimensions
-  [bounding-info]
-  (-&gt;&gt; bounding-info
-       (map :dimensions)
-       util/most-frequent))</pre></td></tr><tr><td class="docs"><p>XXX Can we use these instead? Why was the phase shifting written
+</td><td class="codes"></td></tr><tr><td class="docs"><p>XXX Can we use these instead? Why was the phase shifting written
     so obtrusely? There's got to be a reason, I just don't know it ...
 XXX This is being tracked in CMR-4959</p>
 </td><td class="codes"><pre class="brush: clojure">(defn new-lon-phase-shift
-  [x-dim in]
-    (int (Math/floor (+ (/ x-dim 2) in))))</pre></td></tr><tr><td class="docs">
+  [lon-dim in]
+    (int (Math/floor (+ (/ lon-dim 2) in))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn new-lat-phase-shift
-  [y-dim in]
-  (- y-dim
-     (int (Math/floor (+ (/ y-dim 2) in)))))</pre></td></tr><tr><td class="docs"><p>The following longitudinal phase shift functions are translated from the
+  [lat-dim in]
+  (- lat-dim
+     (int (Math/floor (+ (/ lat-dim 2) in)))))</pre></td></tr><tr><td class="docs"><p>The following longitudinal phase shift functions are translated from the
 OUS Node.js prototype. It would be nice to use the more general functions
 above, if those work out.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lon-lo-phase-shift
-  [x-dim lon-lo]
-  (-&gt; (/ (* (- x-dim 1)
+  [lon-dim lon-lo]
+  (-&gt; (/ (* (dec lon-dim)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/floor
       int))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lon-hi-phase-shift
-  [x-dim lon-hi]
-  (-&gt; (/ (* (- x-dim 1)
+  [lon-dim lon-hi]
+  (-&gt; (/ (* (dec lon-dim)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/ceil
@@ -3964,15 +3974,15 @@ possibility that we can delete the following functions.</p>
 <p>These original JS functions are re-created in Clojure here:</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn orig-lat-lo-phase-shift
-  [y-dim lat-lo]
-  (-&gt; (/ (* (- y-dim 1)
+  [lat-dim lat-lo]
+  (-&gt; (/ (* (dec lat-dim)
             (- lat-lo default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/floor
        int))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn orig-lat-hi-phase-shift
-  [y-dim lat-hi]
-  (-&gt; (/ (* (- y-dim 1)
+  [lat-dim lat-hi]
+  (-&gt; (/ (* (dec lat-dim)
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
@@ -3980,19 +3990,19 @@ possibility that we can delete the following functions.</p>
 used.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-lo-phase-shift
-  [y-dim lat-lo]
+  [lat-dim lat-lo]
   (int
-    (- y-dim
+    (- lat-dim
        1
-       (Math/floor (/ (* (- y-dim 1)
+       (Math/floor (/ (* (dec lat-dim)
                          (- lat-lo default-lat-lo))
                       (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-hi-phase-shift
-  [y-dim lat-hi]
+  [lat-dim lat-hi]
   (int
-    (- y-dim
+    (- lat-dim
        1
-       (Math/ceil (/ (* (- y-dim 1)
+       (Math/ceil (/ (* (dec lat-dim)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs"><p>  Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
@@ -4040,20 +4050,19 @@ used.</p>
   [search-endpoint user-token variables]
   (let [promise (async-get-metadata search-endpoint user-token variables)]
     (extract-metadata promise)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn parse-dimensions
+</td><td class="codes"><pre class="brush: clojure">(defn parse-lat-lon
   [dim]
-  ;; XXX It seems that the X and Y have been swapped for at least
-  ;;     on collection's variables; Simon and I are looking into this
-  ;;     for now, we're just gonna pretend ... by changing the order
-  ;;     below :-(
-  ;; XXX This is being tracked in CMR-4958
-  [(or (:Size (first (filter #(= &quot;YDim&quot; (:Name %)) dim))) default-x-hi)
-   (or (:Size (first (filter #(= &quot;XDim&quot; (:Name %)) dim))) default-y-hi)])</pre></td></tr><tr><td class="docs">
+  [(or (:Size (first (filter #(= &quot;Longitude&quot; (:Name %)) dim)))
+       (:Size (first (filter #(= &quot;XDim&quot; (:Name %)) dim)))
+       default-lon-abs-hi)
+   (or (:Size (first (filter #(= &quot;Latitude&quot; (:Name %)) dim)))
+       (:Size (first (filter #(= &quot;YDim&quot; (:Name %)) dim)))
+       default-lat-abs-hi)])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-dimensions
   [entry]
   (-&gt;&gt; (get-in entry [:umm :Dimensions])
-       (parse-dimensions)
-       (apply -&gt;Dimensions)))</pre></td></tr><tr><td class="docs"><p>Parse bounds that are annotated with Lat and Lon, returning values
+       (map #(vector (keyword (:Name %)) (:Size %)))
+       (into (array-map))))</pre></td></tr><tr><td class="docs"><p>Parse bounds that are annotated with Lat and Lon, returning values
   in the same order that CMR uses for spatial bounding boxes.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn parse-annotated-bounds
   [bounds]
@@ -4074,63 +4083,70 @@ used.</p>
     (parse-cmr-bounds bounds)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn extract-bounds
   [entry]
-  (if entry
+  (when entry
     (-&gt;&gt; entry
          (#(get-in % [:umm :Characteristics :Bounds]))
          parse-bounds
-         (map #(Float/parseFloat %)))
-    nil))</pre></td></tr><tr><td class="docs">
+         (map #(Float/parseFloat %)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn create-opendap-bounds
   ([bounding-box]
-   (create-opendap-bounds {:x default-x-hi :y default-y-hi} bounding-box))
-  ([{x-dim :x y-dim :y} [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
-   (if bounding-box
-     (let [x-lo (lon-lo-phase-shift x-dim lon-lo)
-           x-hi (lon-hi-phase-shift x-dim lon-hi)
-           y-lo (lat-lo-phase-shift y-dim lat-lo)
-           y-hi (lat-hi-phase-shift y-dim lat-hi)]
-       (create-opendap-lookup x-lo y-lo x-hi y-hi))
-     nil)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat
-  ([opendap-bounds]
-   (format-opendap-lat opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format &quot;[%s:%s:%s]&quot;
-              (get-in opendap-bounds [:low :y])
-              stride
-              (get-in opendap-bounds [:high :y])))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lon
-  ([opendap-bounds]
-   (format-opendap-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format &quot;[%s:%s:%s]&quot;
-              (get-in opendap-bounds [:low :x])
-              stride
-              (get-in opendap-bounds [:high :x])))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-var-lat-lon
-  ([opendap-bounds]
-   (format-opendap-var-lat-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
-   (if opendap-bounds
-     (format &quot;[*]%s%s&quot;
-       (format-opendap-lat opendap-bounds stride)
-       (format-opendap-lon opendap-bounds stride)))))</pre></td></tr><tr><td class="docs">
+   (create-opendap-bounds {:Longitude default-lon-abs-hi
+                           :Latitude default-lat-abs-hi} bounding-box))
+  ([{lon-dim :Longitude lat-dim :Latitude :as _dimensions}
+    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (when bounding-box
+     (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
+           lon-hi (lon-hi-phase-shift lon-dim lon-hi)
+           lat-lo (lat-lo-phase-shift lat-dim lat-lo)
+           lat-hi (lat-hi-phase-shift lat-dim lat-hi)]
+       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim
+  [min stride max]
+  (format &quot;[%s:%s:%s]&quot; min stride max))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lat
+  ([bounding-info]
+   (format-opendap-dim-lat bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   (if-let [opendap-bounds (:opendap bounding-info)]
+     (format-opendap-dim (get-in opendap-bounds [:low :lat])
+                         stride
+                         (get-in opendap-bounds [:high :lat])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lon
+  ([bounding-info]
+   (format-opendap-dim-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   (if-let [opendap-bounds (:opendap bounding-info)]
+     (format-opendap-dim (get-in opendap-bounds [:low :lon])
+                         stride
+                         (get-in opendap-bounds [:high :lon])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn replace-defaults-lat-lon
+  [bounding-info stride [k v]]
+  (cond (= k :Longitude) (format-opendap-dim-lon bounding-info stride)
+        (= k :Latitude) (format-opendap-dim-lat bounding-info stride)
+        :else (format-opendap-dim 0 stride (dec v))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dims
+  ([bounding-info]
+    (format-opendap-dims bounding-info default-dim-stride))
+  ([bounding-info stride]
+    (if (:opendap bounding-info)
+      (-&gt;&gt; bounding-info
+           :dimensions
+           (map (partial replace-defaults-lat-lon bounding-info stride))
+           (apply str)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat-lon
-  ([opendap-bounds]
-   (format-opendap-lat-lon opendap-bounds default-stride))
-  ([opendap-bounds stride]
+  ([bounding-info]
+   (format-opendap-lat-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
    (format &quot;Latitude%s,Longitude%s&quot;
-           (format-opendap-lat opendap-bounds stride)
-           (format-opendap-lon opendap-bounds stride))))</pre></td></tr><tr><td class="docs">
+           (format-opendap-dim-lat bounding-info stride)
+           (format-opendap-dim-lon bounding-info stride))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-bounds
-  ([bound-name opendap-bounds]
-   (format-opendap-bounds bound-name opendap-bounds default-stride))
-  ([bound-name opendap-bounds stride]
+  ([bounding-info]
+   (format-opendap-bounds bounding-info default-lat-lon-stride))
+  ([{bound-name :name :as bounding-info} stride]
    (format &quot;%s%s&quot;
             bound-name
-            (format-opendap-var-lat-lon opendap-bounds stride))))</pre></td></tr><tr><td class="docs"><p>This function is executed at the variable level, however it has general,
+            (format-opendap-dims bounding-info stride))))</pre></td></tr><tr><td class="docs"><p>This function is executed at the variable level, however it has general,
   non-variable-specific bounding info passed to it in order to support
   spatial subsetting</p>
 </td><td class="codes"><pre class="brush: clojure">(defn extract-bounding-info
@@ -4141,18 +4157,19 @@ used.</p>
         ;; XXX Once we sort out how to definitely extract lat/lon and
         ;;     whether there is ever a need to go to
         ;;     :umm :Characteristics :Bounds when we can just go to
-        ;;     :umm :Dimensions instead, we can come back to this code
+        ;;     :umm :Point instead, we can come back to this code
         ;;     and remove the following line or integrate it into the
         ;;     code.
         ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
         ; bounds (or bounding-box (extract-bounds entry))
         ]
-    {:concept-id (get-in entry [:meta :concept-id])
-     :name (get-in entry [:umm :Name])
-     :dimensions dims
-     :bounds bounding-box
-     :opendap (create-opendap-bounds dims bounding-box)
-     :size (get-in entry [:umm :Characteristics :Size])}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+    (map-&gt;BoundingInfo
+      {:concept-id (get-in entry [:meta :concept-id])
+       :name (get-in entry [:umm :Name])
+       :dimensions dims
+       :bounds bounding-box
+       :opendap (create-opendap-bounds dims bounding-box)
+       :size (get-in entry [:umm :Characteristics :Size])})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
   (:require
    [clojure.string :as string]
@@ -4439,14 +4456,12 @@ used.</p>
      :items results}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn elided
   [results]
-  (if (seq results)
-    (assoc results :items [(first (:items results) )&quot;...&quot;])
-    nil))</pre></td></tr><tr><td class="docs">
+  (when (seq results)
+    (assoc results :items [(first (:items results) )&quot;...&quot;])))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn remaining-items
   [results]
-  (if (seq results)
-    (rest (:items results))
-    nil))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace represents the authorization API for CMR OPeNDAP. This is
+  (when (seq results)
+    (rest (:items results))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.auth.core" name="cmr.opendap.auth.core"><h1 class="project-name">cmr.opendap.auth.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace represents the authorization API for CMR OPeNDAP. This is
   where the rest of the application goes when it needs to perform checks on
   roles or permissions for a given user and/or concept.</p>
 
@@ -5393,8 +5408,7 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn check
   [&amp; msgs]
   (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
-                    msgs)))</pre></td></tr><tr><td class="docs"><p>XXX Add universal function for checking HTTP status code</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
+                    msgs)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-errors
   [data]
   (or (:errors data)

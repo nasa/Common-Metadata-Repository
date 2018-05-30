@@ -270,6 +270,20 @@
             <a href="#versioned-api" class="toc-h1 toc-link" data-title="versioned-api">Versioned API</a>
           </li>
           <li>
+            <a href="#responses" class="toc-h1 toc-link" data-title="responses">Responses</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#success" class="toc-h2 toc-link" data-title="success">Success</a>
+                  </li>
+                  <li>
+                    <a href="#errors" class="toc-h2 toc-link" data-title="errors">Errors</a>
+                  </li>
+                  <li>
+                    <a href="#warnings" class="toc-h2 toc-link" data-title="warnings">Warnings</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
             <a href="#ous-resources" class="toc-h1 toc-link" data-title="ous-resources">OUS Resources</a>
               <ul class="toc-list-h2">
                   <li>
@@ -304,11 +318,8 @@
             <a href="#testing-resources" class="toc-h1 toc-link" data-title="testing-resources">Testing Resources</a>
           </li>
           <li>
-            <a href="#errors" class="toc-h1 toc-link" data-title="errors">Errors</a>
+            <a href="#errors-responses" class="toc-h1 toc-link" data-title="errors-responses">Errors Responses</a>
               <ul class="toc-list-h2">
-                  <li>
-                    <a href="#format-3" class="toc-h2 toc-link" data-title="format">Format</a>
-                  </li>
                   <li>
                     <a href="#dependent-services" class="toc-h2 toc-link" data-title="dependent-services">Dependent Services</a>
                   </li>
@@ -346,7 +357,7 @@ in the examples are broken up -- this is done for the sake of visiability
 on the page. When you use these to make a query you must remove newline
 breaks.</p>
 
-<aside class="warning">
+<aside class="error">
   In many cases, copying and pasting the examples as-is will not work!
   Line separations have been added to the examples for visual clarity; to
   actually use these, you need to make sure extraneous newlines have been
@@ -422,6 +433,40 @@ calls to the service.</p>
   release of the API so that you are always using exactly what you expect
   to be using. Then your use of new versions of the API will be an
   intentional decision.
+</aside>
+<h1 id='responses'>Responses</h1><h2 id='success'>Success</h2>
+<p>CMR OPeNDAP responses have pareticular formats, inherited from CMR response
+data. A successful request will provide the results, the number of results
+and, the time taken to process the request.</p>
+
+<blockquote>
+<p>Successful response body:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "hits": ...,
+  "took": ...,
+  "items": [...]
+}
+</code></pre><h2 id='errors'>Errors</h2>
+<p>When CMR OPeNDAP returns errors, it does so in a consistent format. In
+particular, the body of the HTTP response is a JSON string (or stream)
+representing an object with one key, <code>errors</code>, an associated value being
+an array of the errors encountered.</p>
+
+<blockquote>
+<p>CMR OPeNDAP error format</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "errors": [...]
+}
+</code></pre><h2 id='warnings'>Warnings</h2>
+<p>In either a success or error state, CMR OPeNDAP may also return a <code>warning</code>
+key containing one or more messages. This is reserved for future use and
+will be the primary mechanism used to notify clients of coming changes in the
+API that will impact users of the default version.</p>
+
+<aside class="info">
+  As a best practice, clients should check for and log any warning messages.
 </aside>
 <h1 id='ous-resources'>OUS Resources</h1>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible
@@ -784,19 +829,7 @@ available for use by anyone.</p>
 <li><code>GET /testing/500</code></li>
 <li><code>GET /testing/503</code></li>
 </ul>
-<h1 id='errors'>Errors</h1><h2 id='format-3'>Format</h2>
-<p>When CMR OPeNDAP returns errors, it does so in a consistent format. In
-particular, the body of the HTTP response is a JSON string (or stream)
-representing an object with one key, <code>errors</code>, an associated value being
-an array of the errors encountered.</p>
-
-<blockquote>
-<p>CMR OPeNDAP error format</p>
-</blockquote>
-<pre class="highlight plaintext"><code>{
-  "errors": [...]
-}
-</code></pre><h2 id='dependent-services'>Dependent Services</h2>
+<h1 id='errors-responses'>Errors Responses</h1><h2 id='dependent-services'>Dependent Services</h2>
 <p>CMR OPeNDAP will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.</p>
