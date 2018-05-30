@@ -77,7 +77,7 @@
     (let [urls (map (partial data-file->opendap-url pattern-info) data-files)]
       (if (errors/any-erred? urls)
         (do
-          (log/error "Some problematic urls:" (into [] urls))
+          (log/error "Some problematic urls:" (vec urls))
           (apply errors/collect urls))
         (map #(str % "." (:format params) query-string) urls)))))
 
@@ -118,11 +118,11 @@
     []
 
     ;; Condition 2 - variables but no spatial subsetting
-    (and (nil? bounding-box) (not (empty? variables)))
+    (and (nil? bounding-box) (seq variables))
     (variable/get-metadata search-endpoint user-token params)
 
     ;; Condition 3 - variables and spatial subsetting
-    (and bounding-box (not (empty? variables)))
+    (and bounding-box (seq variables))
     (variable/get-metadata search-endpoint user-token params)
 
     ;; Condition 4 - spatial subsetting but no variables
@@ -174,7 +174,7 @@
         errs (errors/collect granules coll)]
     (when errs
       (log/error "Stage 2 errors:" errs))
-    (log/trace "data-files:" (into [] data-files))
+    (log/trace "data-files:" (vec data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
     [data-files service-ids vars errs]))
@@ -189,7 +189,7 @@
         errs (errors/collect bounding-infos)]
     (when errs
       (log/error "Stage 3 errors:" errs))
-    (log/trace "variables bounding-info:" (into [] bounding-infos))
+    (log/trace "variables bounding-info:" (vec bounding-infos))
     (log/debug "Finishing stage 3 ...")
     [services-promise bounding-infos errs]))
 
@@ -246,7 +246,7 @@
                         [not pattern-info errors/empty-svc-pattern]
                         [not data-files errors/empty-gnl-data-files])})]
     (log/debug "Got pattern-info:" pattern-info)
-    (log/debug "Got data-files:" (into [] data-files))
+    (log/debug "Got data-files:" (vec data-files))
     (if errs
       (do
         (log/debug "Got errors:" errs)

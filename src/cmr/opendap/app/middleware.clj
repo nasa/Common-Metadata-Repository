@@ -28,7 +28,7 @@
   [handler]
   (fn [req]
     (let [uri (:uri req)]
-      (handler (assoc req :uri (if (and (not (= "/" uri))
+      (handler (assoc req :uri (if (and (not= "/" uri)
                                         (.endsWith uri "/"))
                                  (subs uri 0 (dec (count uri)))
                                  uri))))))
@@ -140,7 +140,7 @@
   ""
   [site-routes system opts]
   (fn [req]
-    (log/trace "Got site-routes:" (into [] site-routes))
+    (log/trace "Got site-routes:" (vec site-routes))
     (let [api-version (request/accept-api-version system req)
           routes (concat site-routes (rest-routes/all system api-version))
           handler (ring/ring-handler (ring/router routes opts))
@@ -148,5 +148,5 @@
                          (request/accept-media-type system req)
                          (request/accept-format system req))]
       (log/debug "API version:" api-version)
-      (log/trace "Made routes:" (into [] routes))
+      (log/trace "Made routes:" (vec routes))
       (response/version-media-type (handler req) header))))

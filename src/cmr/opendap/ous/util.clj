@@ -85,13 +85,11 @@
 (defn coverage->granules
   [coverage]
   (let [ids (filter #(string/starts-with? % "G") coverage)]
-    (if (empty? ids)
-      nil
+    (when (seq ids)
       ids)))
 
 (defn coverage->collection
   [coverage]
   (let [id (filter #(string/starts-with? % "C") coverage)]
-    (if (empty? id)
-      nil
+    (when (seq id)
       (first id))))

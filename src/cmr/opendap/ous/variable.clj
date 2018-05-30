@@ -131,7 +131,7 @@
 
 (defn lon-lo-phase-shift
   [lon-dim lon-lo]
-  (-> (/ (* (- lon-dim 1)
+  (-> (/ (* (dec lon-dim)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/floor
@@ -139,7 +139,7 @@
 
 (defn lon-hi-phase-shift
   [lon-dim lon-hi]
-  (-> (/ (* (- lon-dim 1)
+  (-> (/ (* (dec lon-dim)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/ceil
@@ -169,7 +169,7 @@
 
 (defn orig-lat-lo-phase-shift
   [lat-dim lat-lo]
-  (-> (/ (* (- lat-dim 1)
+  (-> (/ (* (dec lat-dim)
             (- lat-lo default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/floor
@@ -177,7 +177,7 @@
 
 (defn orig-lat-hi-phase-shift
   [lat-dim lat-hi]
-  (-> (/ (* (- lat-dim 1)
+  (-> (/ (* (dec lat-dim)
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
@@ -191,7 +191,7 @@
   (int
     (- lat-dim
        1
-       (Math/floor (/ (* (- lat-dim 1)
+       (Math/floor (/ (* (dec lat-dim)
                          (- lat-lo default-lat-lo))
                       (- default-lat-hi default-lat-lo))))))
 
@@ -200,7 +200,7 @@
   (int
     (- lat-dim
        1
-       (Math/ceil (/ (* (- lat-dim 1)
+       (Math/ceil (/ (* (dec lat-dim)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))
 
@@ -296,12 +296,11 @@
 
 (defn extract-bounds
   [entry]
-  (if entry
+  (when entry
     (->> entry
          (#(get-in % [:umm :Characteristics :Bounds]))
          parse-bounds
-         (map #(Float/parseFloat %)))
-    nil))
+         (map #(Float/parseFloat %)))))
 
 (defn create-opendap-bounds
   ([bounding-box]
@@ -309,13 +308,12 @@
                            :Latitude default-lat-abs-hi} bounding-box))
   ([{lon-dim :Longitude lat-dim :Latitude :as _dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
-   (if bounding-box
+   (when bounding-box
      (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
            lon-hi (lon-hi-phase-shift lon-dim lon-hi)
            lat-lo (lat-lo-phase-shift lat-dim lat-lo)
            lat-hi (lat-hi-phase-shift lat-dim lat-hi)]
-       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))
-     nil)))
+       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))
 
 (defn format-opendap-dim
   [min stride max]
