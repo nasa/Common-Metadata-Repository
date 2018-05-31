@@ -318,7 +318,7 @@
             <a href="#testing-resources" class="toc-h1 toc-link" data-title="testing-resources">Testing Resources</a>
           </li>
           <li>
-            <a href="#errors-responses" class="toc-h1 toc-link" data-title="errors-responses">Errors Responses</a>
+            <a href="#errors-messages" class="toc-h1 toc-link" data-title="errors-messages">Errors Messages</a>
               <ul class="toc-list-h2">
                   <li>
                     <a href="#dependent-services" class="toc-h2 toc-link" data-title="dependent-services">Dependent Services</a>
@@ -369,7 +369,7 @@ breaks.</p>
   examples below could very well have changed since this documentation
   was first created, or you may be using the service in a different
   environment (which would have different concept ids). Be sure to use
-  the concept id that you know exist in your target environment.
+  the concept ids that you know exist in your target environment.
 </aside>
 <h1 id='authorized-access'>Authorized Access</h1>
 <p>CMR OPeNDAP requires the use of tokens in order to provide access to
@@ -468,7 +468,25 @@ API that will impact users of the default version.</p>
 <aside class="info">
   As a best practice, clients should check for and log any warning messages.
 </aside>
-<h1 id='ous-resources'>OUS Resources</h1>
+
+<blockquote>
+<p>Warnings sent in a successful response body:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "hits": ...,
+  "took": ...,
+  "warnings": ...,
+  "items": [...]
+}
+</code></pre>
+<blockquote>
+<p>Warnings sent in an error response body:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "warnings": ...,
+  "errors": [...]
+}
+</code></pre><h1 id='ous-resources'>OUS Resources</h1>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
@@ -829,7 +847,7 @@ available for use by anyone.</p>
 <li><code>GET /testing/500</code></li>
 <li><code>GET /testing/503</code></li>
 </ul>
-<h1 id='errors-responses'>Errors Responses</h1><h2 id='dependent-services'>Dependent Services</h2>
+<h1 id='errors-messages'>Errors Messages</h1><h2 id='dependent-services'>Dependent Services</h2>
 <p>CMR OPeNDAP will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.</p>
