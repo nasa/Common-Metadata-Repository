@@ -47,7 +47,7 @@ breaks.
   examples below could very well have changed since this documentation
   was first created, or you may be using the service in a different
   environment (which would have different concept ids). Be sure to use
-  the concept id that you know exist in your target environment.
+  the concept ids that you know exist in your target environment.
 </aside>
 
 # Authorized Access
@@ -168,6 +168,27 @@ API that will impact users of the default version.
 <aside class="info">
   As a best practice, clients should check for and log any warning messages.
 </aside>
+
+
+> Warnings sent in a successful response body:
+
+```
+{
+  "hits": ...,
+  "took": ...,
+  "warnings": ...,
+  "items": [...]
+}
+```
+
+> Warnings sent in an error response body:
+
+```
+{
+  "warnings": ...,
+  "errors": [...]
+}
+```
 
 
 # OUS Resources
@@ -570,7 +591,7 @@ The following resources are provided for use in various tests:
 * `GET /testing/503`
 
 
-# Errors Responses
+# Errors Messages
 
 ## Dependent Services
 
