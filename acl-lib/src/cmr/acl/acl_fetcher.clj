@@ -15,8 +15,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.config :as config]
-   [cmr.transmit.echo.acls :as echo-acls]))
+   [cmr.transmit.config :as config]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
@@ -109,7 +108,7 @@
  (do
    (def context (cmr.access-control.test.util/conn-context))
    (process-search-for-acls (assoc context :token (config/echo-system-token)) [:system-object :provider-object])
-   (echo-acls/get-acls-by-types context [:system-object :provider-object])
+   (cmr.transmit.echo.acls/get-acls-by-types context [:system-object :provider-object])
    (get-acls context [:system-object :provider-object])))
 
 (defn get-acls
