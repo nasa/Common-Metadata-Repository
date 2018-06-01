@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>OPeNDAP/CMR Integration -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/cmr-exchange/cmr-opendap">OPeNDAP/CMR Integration</a></h1><h2 class="project-version">1.0.0-SNAPSHOT</h2><br /><p>OPeNDAP Integration in the CMR</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.7</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.cache">cmr.opendap.app.handler.cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.ous.util">cmr.opendap.ous.util</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</a></li><li><a href="#cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</a></li><li><a href="#cmr.opendap.auth.core">cmr.opendap.auth.core</a></li><li><a href="#cmr.opendap.auth.roles">cmr.opendap.auth.roles</a></li><li><a href="#cmr.opendap.auth.token">cmr.opendap.auth.token</a></li><li><a href="#cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</a></li><li><a href="#cmr.opendap.auth.acls">cmr.opendap.auth.acls</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.7</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.cache">cmr.opendap.app.handler.cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.ous.util">cmr.opendap.ous.util</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</a></li><li><a href="#cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</a></li><li><a href="#cmr.opendap.auth.core">cmr.opendap.auth.core</a></li><li><a href="#cmr.opendap.auth.roles">cmr.opendap.auth.roles</a></li><li><a href="#cmr.opendap.auth.token">cmr.opendap.auth.token</a></li><li><a href="#cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</a></li><li><a href="#cmr.opendap.auth.acls">cmr.opendap.auth.acls</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.validation">cmr.opendap.validation</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.app.handler.collection
   (:require
    [cheshire.core :as json]
@@ -3527,18 +3527,26 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
   (-&gt;&gt; params
        (map (fn [[k v]] [(normalize-param k) v]))
        (into {})))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn -&gt;seq
+</td><td class="codes"><pre class="brush: clojure">(defn -&gt;base-coll
   [data]
   (cond (nil? data) []
         (empty? data) []
-        (coll? data) data
-        (string? data) [data]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn split-comma-&gt;seq
+        :else data))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn -&gt;coll
   [data]
-  (cond (nil? data) []
-        (empty? data) []
-        (coll? data) data
-        (string? data) (sort (string/split data #&quot;,&quot;))))</pre></td></tr><tr><td class="docs">
+  (let [coll (-&gt;base-coll data)]
+    (if (string? coll)
+      [coll]
+      coll)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn split-comma-&gt;coll
+  [data]
+  (let [coll (-&gt;base-coll data)]
+    (if (string? coll)
+      (string/split data #&quot;,&quot;)
+      coll)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn split-comma-&gt;sorted-coll
+  [data]
+  (sort (split-comma-&gt;coll data)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn seq-&gt;str
   [data]
   (string/join &quot;,&quot; data))</pre></td></tr><tr><td class="docs">
@@ -3582,6 +3590,12 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
   (let [[lon-lo lon-hi] (subset-&gt;bounding-lon elems)
         [lat-lo lat-hi] (subset-&gt;bounding-lat elems)]
     (map #(Float/parseFloat %) [lon-lo lat-lo lon-hi lat-hi])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box-lat
+  [[_ lower-latitude _ upper-latitude]]
+  [lower-latitude upper-latitude])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box-lon
+  [[lower-longitude _ upper-longitude _]]
+  [lower-longitude upper-longitude])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn coverage-&gt;granules
   [coverage]
   (let [ids (filter #(string/starts-with? % &quot;G&quot;) coverage)]
@@ -3603,8 +3617,10 @@ XXX This is being tracked in CMR-4912 and CMR-4901</p>
    [cmr.opendap.ous.query.params.core :as params]
    [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.service :as service]
+   [cmr.opendap.ous.util :as ous-util]
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
+   [cmr.opendap.validation :as validation]
    [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn bbox-&gt;bounding-info
@@ -3732,12 +3748,21 @@ the code could be properly prepared for async execution.</p>
   (log/debug &quot;Starting stage 1 ...&quot;)
   (let [params (params/parse raw-params)
         bounding-box (:bounding-box params)
+        valid-lat (when bounding-box
+                    (validation/validate-latitude
+                     (ous-util/bounding-box-lat bounding-box)))
+        valid-lon (when bounding-box
+                    (validation/validate-longitude
+                     (ous-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component search-endpoint user-token params)
         coll-promise (collection/async-get-metadata
-                      search-endpoint user-token params)]
+                      search-endpoint user-token params)
+        errs (errors/collect params valid-lat valid-lon)]
+    (log/debug &quot;Params: &quot; params)
+    (log/debug &quot;Bounding box: &quot; bounding-box)
     (log/debug &quot;Finishing stage 1 ...&quot;)
-    [params bounding-box grans-promise coll-promise]))</pre></td></tr><tr><td class="docs">
+    [params bounding-box grans-promise coll-promise errs]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn stage2
   [search-endpoint user-token params coll-promise grans-promise]
   (log/debug &quot;Starting stage 2 ...&quot;)
@@ -3746,7 +3771,7 @@ the code could be properly prepared for async execution.</p>
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
         vars (apply-bounding-conditions search-endpoint user-token coll params)
-        errs (errors/collect granules coll)]
+        errs (errors/collect granules coll vars)]
     (when errs
       (log/error &quot;Stage 2 errors:&quot; errs))
     (log/trace &quot;data-files:&quot; (vec data-files))
@@ -3760,7 +3785,7 @@ the code could be properly prepared for async execution.</p>
                           search-endpoint user-token service-ids)
         bounding-infos (map #(variable/extract-bounding-info % bounding-box)
                             vars)
-        errs (errors/collect bounding-infos)]
+        errs (apply errors/collect bounding-infos)]
     (when errs
       (log/error &quot;Stage 3 errors:&quot; errs))
     (log/trace &quot;variables bounding-info:&quot; (vec bounding-infos))
@@ -3786,10 +3811,11 @@ the code could be properly prepared for async execution.</p>
   (let [start (util/now)
         search-endpoint (config/get-search-url component)
         ;; Stage 1
-        [params bounding-box granules coll] (stage1 component
-                                                    search-endpoint
-                                                    user-token
-                                                    raw-params)
+        [params bounding-box granules coll s1-errs] (stage1
+                                                     component
+                                                     search-endpoint
+                                                     user-token
+                                                     raw-params)
         ;; Stage 2
         [data-files service-ids vars s2-errs] (stage2
                                                search-endpoint
@@ -3810,7 +3836,7 @@ the code could be properly prepared for async execution.</p>
                                              bounding-info)
         ;; Error handling for all stages
         errs (errors/collect
-              start params bounding-box granules coll
+              start params bounding-box granules coll s1-errs
               data-files service-ids vars s2-errs
               services bounding-info s3-errs
               pattern-info query s4-errs
@@ -3929,25 +3955,25 @@ understanding is correct. And then it needs to be DOCUMENTED.
     so obtrusely? There's got to be a reason, I just don't know it ...
 XXX This is being tracked in CMR-4959</p>
 </td><td class="codes"><pre class="brush: clojure">(defn new-lon-phase-shift
-  [lon-dim in]
-    (int (Math/floor (+ (/ lon-dim 2) in))))</pre></td></tr><tr><td class="docs">
+  [lon-max in]
+  (int (Math/floor (+ (/ lon-max 2) in))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn new-lat-phase-shift
-  [lat-dim in]
-  (- lat-dim
-     (int (Math/floor (+ (/ lat-dim 2) in)))))</pre></td></tr><tr><td class="docs"><p>The following longitudinal phase shift functions are translated from the
+  [lat-max in]
+  (- lat-max
+     (int (Math/floor (+ (/ lat-max 2) in)))))</pre></td></tr><tr><td class="docs"><p>The following longitudinal phase shift functions are translated from the
 OUS Node.js prototype. It would be nice to use the more general functions
 above, if those work out.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lon-lo-phase-shift
-  [lon-dim lon-lo]
-  (-&gt; (/ (* (dec lon-dim)
+  [lon-max lon-lo]
+  (-&gt; (/ (* (dec lon-max)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/floor
       int))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lon-hi-phase-shift
-  [lon-dim lon-hi]
-  (-&gt; (/ (* (dec lon-dim)
+  [lon-max lon-hi]
+  (-&gt; (/ (* (dec lon-max)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/ceil
@@ -3974,15 +4000,15 @@ possibility that we can delete the following functions.</p>
 <p>These original JS functions are re-created in Clojure here:</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn orig-lat-lo-phase-shift
-  [lat-dim lat-lo]
-  (-&gt; (/ (* (dec lat-dim)
+  [lat-max lat-lo]
+  (-&gt; (/ (* (dec lat-max)
             (- lat-lo default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/floor
        int))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn orig-lat-hi-phase-shift
-  [lat-dim lat-hi]
-  (-&gt; (/ (* (dec lat-dim)
+  [lat-max lat-hi]
+  (-&gt; (/ (* (dec lat-max)
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
@@ -3990,19 +4016,19 @@ possibility that we can delete the following functions.</p>
 used.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-lo-phase-shift
-  [lat-dim lat-lo]
+  [lat-max lat-lo]
   (int
-    (- lat-dim
+    (- lat-max
        1
-       (Math/floor (/ (* (dec lat-dim)
+       (Math/floor (/ (* (dec lat-max)
                          (- lat-lo default-lat-lo))
                       (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-hi-phase-shift
-  [lat-dim lat-hi]
+  [lat-max lat-hi]
   (int
-    (- lat-dim
+    (- lat-max
        1
-       (Math/ceil (/ (* (dec lat-dim)
+       (Math/ceil (/ (* (dec lat-max)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))</pre></td></tr><tr><td class="docs"><p>  Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
@@ -4092,13 +4118,13 @@ used.</p>
   ([bounding-box]
    (create-opendap-bounds {:Longitude default-lon-abs-hi
                            :Latitude default-lat-abs-hi} bounding-box))
-  ([{lon-dim :Longitude lat-dim :Latitude :as _dimensions}
+  ([{lon-max :Longitude lat-max :Latitude :as _dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (when bounding-box
-     (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
-           lon-hi (lon-hi-phase-shift lon-dim lon-hi)
-           lat-lo (lat-lo-phase-shift lat-dim lat-lo)
-           lat-hi (lat-hi-phase-shift lat-dim lat-hi)]
+     (let [lon-lo (lon-lo-phase-shift lon-max lon-lo)
+           lon-hi (lon-hi-phase-shift lon-max lon-hi)
+           lat-lo (lat-lo-phase-shift lat-max lat-lo)
+           lat-hi (lat-hi-phase-shift lat-max lat-hi)]
        (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim
   [min stride max]
@@ -4153,23 +4179,25 @@ used.</p>
   [entry bounding-box]
   (log/debug &quot;Got variable entry:&quot; entry)
   (log/debug &quot;Got bounding-box:&quot; bounding-box)
-  (let [dims (extract-dimensions entry)
-        ;; XXX Once we sort out how to definitely extract lat/lon and
-        ;;     whether there is ever a need to go to
-        ;;     :umm :Characteristics :Bounds when we can just go to
-        ;;     :umm :Point instead, we can come back to this code
-        ;;     and remove the following line or integrate it into the
-        ;;     code.
-        ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
-        ; bounds (or bounding-box (extract-bounds entry))
-        ]
-    (map-&gt;BoundingInfo
-      {:concept-id (get-in entry [:meta :concept-id])
-       :name (get-in entry [:umm :Name])
-       :dimensions dims
-       :bounds bounding-box
-       :opendap (create-opendap-bounds dims bounding-box)
-       :size (get-in entry [:umm :Characteristics :Size])})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+  (if (:umm entry)
+    (let [dims (extract-dimensions entry)
+          ;; XXX Once we sort out how to definitely extract lat/lon and
+          ;;     whether there is ever a need to go to
+          ;;     :umm :Characteristics :Bounds when we can just go to
+          ;;     :umm :Point instead, we can come back to this code
+          ;;     and remove the following line or integrate it into the
+          ;;     code.
+          ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
+          ; bounds (or bounding-box (extract-bounds entry))
+          ]
+      (map-&gt;BoundingInfo
+        {:concept-id (get-in entry [:meta :concept-id])
+         :name (get-in entry [:umm :Name])
+         :dimensions dims
+         :bounds bounding-box
+         :opendap (create-opendap-bounds dims bounding-box)
+         :size (get-in entry [:umm :Characteristics :Size])}))
+    {:errors [errors/variable-metadata]}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
   (:require
    [clojure.string :as string]
@@ -4282,9 +4310,9 @@ used.</p>
   (map-&gt;OusPrototypeParams
     (assoc params :format (or (:format params)
                               const/default-format)
-                  :coverage (util/split-comma-&gt;seq (:coverage params))
-                  :rangesubset (util/split-comma-&gt;seq (:rangesubset params))
-                  :timeposition (util/-&gt;seq (:timeposition params)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.query.params.v2" name="cmr.opendap.ous.query.params.v2"><h1 class="project-name">cmr.opendap.ous.query.params.v2</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+                  :coverage (util/split-comma-&gt;sorted-coll (:coverage params))
+                  :rangesubset (util/split-comma-&gt;sorted-coll (:rangesubset params))
+                  :timeposition (util/-&gt;coll (:timeposition params)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.query.params.v2" name="cmr.opendap.ous.query.params.v2"><h1 class="project-name">cmr.opendap.ous.query.params.v2</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.query.params.v2
   (:require
    [clojure.set :as set]
@@ -4341,15 +4369,16 @@ used.</p>
       (empty? array)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn create-params
   [params]
-  (let [bounding-box (ous-util/split-comma-&gt;seq (:bounding-box params))
+  (let [bounding-box (ous-util/split-comma-&gt;coll (:bounding-box params))
         subset (:subset params)
-        granules-array (ous-util/split-comma-&gt;seq
+        granules-array (ous-util/split-comma-&gt;coll
                         (get params (keyword &quot;granules[]&quot;)))
-        variables-array (ous-util/split-comma-&gt;seq
+        variables-array (ous-util/split-comma-&gt;coll
                          (get params (keyword &quot;variables[]&quot;)))
-        temporal-array (ous-util/-&gt;seq
+        temporal-array (ous-util/-&gt;coll
                         (get params (keyword &quot;temporal[]&quot;)))]
-    (log/trace &quot;bounding-box:&quot; bounding-box)
+    (log/warn &quot;original bounding-box:&quot; (:bounding-box params))
+    (log/warn &quot;bounding-box:&quot; bounding-box)
     (log/trace &quot;subset:&quot; subset)
     (log/trace &quot;granules-array:&quot; granules-array)
     (log/trace &quot;variables-array:&quot; variables-array)
@@ -4357,10 +4386,10 @@ used.</p>
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (if (not-array? granules-array)
-                    (ous-util/split-comma-&gt;seq (:granules params))
+                    (ous-util/split-comma-&gt;sorted-coll (:granules params))
                     granules-array)
         :variables (if (not-array? variables-array)
-                     (ous-util/split-comma-&gt;seq (:variables params))
+                     (ous-util/split-comma-&gt;sorted-coll (:variables params))
                      variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
@@ -4371,7 +4400,7 @@ used.</p>
                         (when (seq subset)
                           (ous-util/subset-&gt;bounding-box subset)))
         :temporal (if (not-array? temporal-array)
-                    (ous-util/-&gt;seq (:temporal params))
+                    (ous-util/-&gt;coll (:temporal params))
                     temporal-array)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord CollectionsParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
@@ -4385,6 +4414,7 @@ used.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.query.params.core
   (:require
    [clojure.string :as string]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.query.params.v1 :as v1]
    [cmr.opendap.ous.query.params.v2 :as v2]
    [cmr.opendap.ous.util :as util]
@@ -4433,7 +4463,10 @@ used.</p>
           (do
             (log/trace &quot;Found collection id; assuming `collection` ...&quot;)
             (create-params :v2 params))
-          :else {:error :unsupported-parameters})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.query.params.const" name="cmr.opendap.ous.query.params.const"><h1 class="project-name">cmr.opendap.ous.query.params.const</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+          :else
+          {:errors [errors/invalid-parameter
+                    ; (str &quot;Raw parameters: &quot; raw-params)
+                    (str &quot;Parameters: &quot; params)]})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.query.params.const" name="cmr.opendap.ous.query.params.const"><h1 class="project-name">cmr.opendap.ous.query.params.const</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.query.params.const)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def default-format &quot;nc&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def shared-keys
@@ -4636,7 +4669,7 @@ used.</p>
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]
-   [xml-in.core :as xml-in]))</pre></td></tr><tr><td class="docs"><p>The path segment to the CMR Access Control API resource that is queried
+   [xml-in.core :as xml-in]))</pre></td></tr><tr><td class="docs"><p>The path segment to the ECHO REST API resource that is queried
   in order to get user/token mappings.</p>
 </td><td class="codes"><pre class="brush: clojure">(def token-info-resource
   &quot;/tokens/get_token_info&quot;)</pre></td></tr><tr><td class="docs"><p>Generate a key to be used for caching token data.</p>
@@ -4670,7 +4703,7 @@ used.</p>
   [base-url token]
   (let [url (str base-url token-info-resource)
         data (str &quot;id=&quot; token)]
-    (log/trace &quot;Making token-info query to CMR:&quot; url)
+    (log/trace &quot;Making token-info query to ECHO REST:&quot; url)
     (request/async-post
       url
       (-&gt; {:body data}
@@ -4849,7 +4882,31 @@ used.</p>
        ;; just get the highest
        first
        ;; the first element is the count, the second is the bounding data
-       second))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+       second))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.validation" name="cmr.opendap.validation"><h1 class="project-name">cmr.opendap.validation</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.validation
+  (:require
+   [cmr.opendap.errors :as errors]))</pre></td></tr><tr><td class="docs"><p>  Predicates   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn check-latitude
+  [[low high]]
+  (and (&gt;= low -90)
+       (&lt;= high 90)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn check-longitude
+  [[low high]]
+  (and (&gt;= low -180)
+       (&lt;= high 180)))</pre></td></tr><tr><td class="docs"><p>  Validators   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn validate
+  [data predicate error-msg]
+  (if (predicate data)
+    data
+    {:errors [error-msg]}))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn validate-latitude
+  [data]
+  (validate data check-latitude errors/invalid-lat-params))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn validate-longitude
+  [data]
+  (validate data check-longitude errors/invalid-lon-params))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.core" name="cmr.opendap.core"><h1 class="project-name">cmr.opendap.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.core
   (:require
    [clojusc.twig :as logger]
@@ -5348,7 +5405,7 @@ disable logging entirely for tests.</p>
   (map-&gt;HTTPD {}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.errors" name="cmr.opendap.errors"><h1 class="project-name">cmr.opendap.errors</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.errors
   (:require
-    [clojure.set :as set]))</pre></td></tr><tr><td class="docs"><p>  Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+   [clojure.set :as set]))</pre></td></tr><tr><td class="docs"><p>  Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def default-error-code 400)
 (def auth-error-code 403)
@@ -5360,20 +5417,28 @@ disable logging entirely for tests.</p>
 (def token-required &quot;An ECHO token is required to access this resource.&quot;)</pre></td></tr><tr><td class="docs"><p>Generic</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def status-code
-  &quot;HTTP Error status code: %s&quot;)</pre></td></tr><tr><td class="docs"><p>OUS</p>
+  &quot;HTTP Error status code: %s&quot;)</pre></td></tr><tr><td class="docs"><p>OUS - General</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def not-implemented
   &quot;This capability is not currently implemented.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def unsupported
-  &quot;This capability is not currently supported.&quot;)</pre></td></tr><tr><td class="docs">
+  &quot;This capability is not currently supported.&quot;)</pre></td></tr><tr><td class="docs"><p>OUS - Parameters</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def invalid-parameter
+  &quot;One or more of the parameters provided were invalid.&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def invalid-lat-params
+  (str &quot;The values provided for latitude are not within the valid range of &quot;
+       &quot;-90 degrees through 90 degress.&quot;))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def invalid-lon-params
+  (str &quot;The values provided for longitude are not within the valid range of &quot;
+       &quot;-180 degrees through 180 degress.&quot;))</pre></td></tr><tr><td class="docs"><p>OUS - CMR Metadata</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def empty-svc-pattern
   (str &quot;The service pattern computed was empty. Is there a service associated &quot;
        &quot;with the given collection? Does the UMM-S record in question have &quot;
        &quot;values for the pattern fields?&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def empty-gnl-data-files
   &quot;There was a problem extracting a service data file from the granule.&quot;)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def empty-query-string
-  &quot;No OPeNDAP query string was generated for the request.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def no-matching-service-pattern
   (str &quot;There was a problem creating URLs from granule file data: couldn't &quot;
        &quot;match default service pattern %s to service %s.&quot;))</pre></td></tr><tr><td class="docs">
@@ -5382,16 +5447,22 @@ disable logging entirely for tests.</p>
 </td><td class="codes"><pre class="brush: clojure">(def service-metadata
   &quot;There was a problem extracting service metadata.&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def variable-metadata
-  &quot;There was a problem extracting variable metadata.&quot;)</pre></td></tr><tr><td class="docs">
+  &quot;There was a problem extracting variable metadata.&quot;)</pre></td></tr><tr><td class="docs"><p>OUS - Results</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def empty-query-string
+  &quot;No OPeNDAP query string was generated for the request.&quot;)</pre></td></tr><tr><td class="docs"><p>This is a lookup data structure for how HTTP status/error codes map to CMR
+  OPeNDAP errors.</p>
 </td><td class="codes"><pre class="brush: clojure">(def status-map
-  {client-error-code #{empty-svc-pattern}
+  {client-error-code #{empty-svc-pattern
+                       invalid-lat-params
+                       invalid-lon-params}
    auth-error-code #{no-permissions
                      token-required}
    server-error-code #{empty-gnl-data-files
                        no-matching-service-pattern
                        granule-metadata
                        service-metadata
-                       variable-metadata}})</pre></td></tr><tr><td class="docs"><p>  Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+                       variable-metadata}})</pre></td></tr><tr><td class="docs"><p>  Error Handling API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn any-auth-errors?
   [errors]
@@ -5947,7 +6018,7 @@ disable logging entirely for tests.</p>
           (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
-              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.cache">cmr.opendap.app.handler.cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util">cmr.opendap.ous.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.core">cmr.opendap.auth.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.roles">cmr.opendap.auth.roles</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.token">cmr.opendap.auth.token</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.acls">cmr.opendap.auth.acls</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.cache">cmr.opendap.app.handler.cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util">cmr.opendap.ous.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.core">cmr.opendap.auth.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.roles">cmr.opendap.auth.roles</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.token">cmr.opendap.auth.token</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.permissions">cmr.opendap.auth.permissions</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.auth.acls">cmr.opendap.auth.acls</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.validation">cmr.opendap.validation</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
