@@ -117,29 +117,29 @@
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
 ;; XXX This is being tracked in CMR-4959
 (defn new-lon-phase-shift
-  [lon-dim in]
-  (int (Math/floor (+ (/ lon-dim 2) in))))
+  [lon-max in]
+  (int (Math/floor (+ (/ lon-max 2) in))))
 
 (defn new-lat-phase-shift
-  [lat-dim in]
-  (- lat-dim
-     (int (Math/floor (+ (/ lat-dim 2) in)))))
+  [lat-max in]
+  (- lat-max
+     (int (Math/floor (+ (/ lat-max 2) in)))))
 
 ;; The following longitudinal phase shift functions are translated from the
 ;; OUS Node.js prototype. It would be nice to use the more general functions
 ;; above, if those work out.
 
 (defn lon-lo-phase-shift
-  [lon-dim lon-lo]
-  (-> (/ (* (dec lon-dim)
+  [lon-max lon-lo]
+  (-> (/ (* (dec lon-max)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/floor
       int))
 
 (defn lon-hi-phase-shift
-  [lon-dim lon-hi]
-  (-> (/ (* (dec lon-dim)
+  [lon-max lon-hi]
+  (-> (/ (* (dec lon-max)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
       Math/ceil
@@ -168,16 +168,16 @@
 ;; These original JS functions are re-created in Clojure here:
 
 (defn orig-lat-lo-phase-shift
-  [lat-dim lat-lo]
-  (-> (/ (* (dec lat-dim)
+  [lat-max lat-lo]
+  (-> (/ (* (dec lat-max)
             (- lat-lo default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/floor
        int))
 
 (defn orig-lat-hi-phase-shift
-  [lat-dim lat-hi]
-  (-> (/ (* (dec lat-dim)
+  [lat-max lat-hi]
+  (-> (/ (* (dec lat-max)
             (- lat-hi default-lat-lo))
           (- default-lat-hi default-lat-lo))
        Math/ceil
@@ -187,20 +187,20 @@
 ;; used.
 
 (defn lat-lo-phase-shift
-  [lat-dim lat-lo]
+  [lat-max lat-lo]
   (int
-    (- lat-dim
+    (- lat-max
        1
-       (Math/floor (/ (* (dec lat-dim)
+       (Math/floor (/ (* (dec lat-max)
                          (- lat-lo default-lat-lo))
                       (- default-lat-hi default-lat-lo))))))
 
 (defn lat-hi-phase-shift
-  [lat-dim lat-hi]
+  [lat-max lat-hi]
   (int
-    (- lat-dim
+    (- lat-max
        1
-       (Math/ceil (/ (* (dec lat-dim)
+       (Math/ceil (/ (* (dec lat-max)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))
 
@@ -306,13 +306,13 @@
   ([bounding-box]
    (create-opendap-bounds {:Longitude default-lon-abs-hi
                            :Latitude default-lat-abs-hi} bounding-box))
-  ([{lon-dim :Longitude lat-dim :Latitude :as _dimensions}
+  ([{lon-max :Longitude lat-max :Latitude :as _dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
    (when bounding-box
-     (let [lon-lo (lon-lo-phase-shift lon-dim lon-lo)
-           lon-hi (lon-hi-phase-shift lon-dim lon-hi)
-           lat-lo (lat-lo-phase-shift lat-dim lat-lo)
-           lat-hi (lat-hi-phase-shift lat-dim lat-hi)]
+     (let [lon-lo (lon-lo-phase-shift lon-max lon-lo)
+           lon-hi (lon-hi-phase-shift lon-max lon-hi)
+           lat-lo (lat-lo-phase-shift lat-max lat-lo)
+           lat-hi (lat-hi-phase-shift lat-max lat-hi)]
        (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))
 
 (defn format-opendap-dim
@@ -379,22 +379,22 @@
   [entry bounding-box]
   (log/debug "Got variable entry:" entry)
   (log/debug "Got bounding-box:" bounding-box)
-  (let [dims (extract-dimensions entry)
-        ;; XXX Once we sort out how to definitely extract lat/lon and
-        ;;     whether there is ever a need to go to
-        ;;     :umm :Characteristics :Bounds when we can just go to
-        ;;     :umm :Point instead, we can come back to this code
-        ;;     and remove the following line or integrate it into the
-        ;;     code.
-        ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
-        ; bounds (or bounding-box (extract-bounds entry))
-        ]
-    (map->BoundingInfo
-      {:concept-id (get-in entry [:meta :concept-id])
-       :name (get-in entry [:umm :Name])
-       :dimensions dims
-       :bounds bounding-box
-       :opendap (create-opendap-bounds dims bounding-box)
-       :size (get-in entry [:umm :Characteristics :Size])})))
-
-
+  (if (:umm entry)
+    (let [dims (extract-dimensions entry)
+          ;; XXX Once we sort out how to definitely extract lat/lon and
+          ;;     whether there is ever a need to go to
+          ;;     :umm :Characteristics :Bounds when we can just go to
+          ;;     :umm :Point instead, we can come back to this code
+          ;;     and remove the following line or integrate it into the
+          ;;     code.
+          ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
+          ; bounds (or bounding-box (extract-bounds entry))
+          ]
+      (map->BoundingInfo
+        {:concept-id (get-in entry [:meta :concept-id])
+         :name (get-in entry [:umm :Name])
+         :dimensions dims
+         :bounds bounding-box
+         :opendap (create-opendap-bounds dims bounding-box)
+         :size (get-in entry [:umm :Characteristics :Size])}))
+    {:errors [errors/variable-metadata]}))

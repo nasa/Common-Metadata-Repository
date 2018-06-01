@@ -127,6 +127,15 @@
                          :dimensions dims
                          :opendap (variable/create-opendap-bounds dims bounds)}]
       (is (= "MyVar[21:1:65][156:1:164]"
+             (variable/format-opendap-bounds bounding-info)))))
+  (testing "Narrow band from Baffin Bay to ME ..."
+    (let [dims (array-map :Latitude 180 :Longitude 360)
+          bounds [-70.734375 41.765625 -65.8125 77.90625]
+          bounding-info {:name "MyVar"
+                         :bounds bounds
+                         :dimensions dims
+                         :opendap (variable/create-opendap-bounds dims bounds)}]
+      (is (= "MyVar[12:1:48][108:1:114]"
              (variable/format-opendap-bounds bounding-info))))))
 
 (deftest format-opendap-bounds-three-dims

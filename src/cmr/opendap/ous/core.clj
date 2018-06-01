@@ -158,15 +158,19 @@
   (log/debug "Starting stage 1 ...")
   (let [params (params/parse raw-params)
         bounding-box (:bounding-box params)
-        valid-lat (validation/validate-latitude
-                   (ous-util/bounding-box-lat bounding-box))
-        valid-lon (validation/validate-longitude
-                   (ous-util/bounding-box-lon bounding-box))
+        valid-lat (when bounding-box
+                    (validation/validate-latitude
+                     (ous-util/bounding-box-lat bounding-box)))
+        valid-lon (when bounding-box
+                    (validation/validate-longitude
+                     (ous-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component search-endpoint user-token params)
         coll-promise (collection/async-get-metadata
                       search-endpoint user-token params)
         errs (errors/collect params valid-lat valid-lon)]
+    (log/debug "Params: " params)
+    (log/debug "Bounding box: " bounding-box)
     (log/debug "Finishing stage 1 ...")
     [params bounding-box grans-promise coll-promise errs]))
 
@@ -178,7 +182,7 @@
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
         vars (apply-bounding-conditions search-endpoint user-token coll params)
-        errs (errors/collect granules coll)]
+        errs (errors/collect granules coll vars)]
     (when errs
       (log/error "Stage 2 errors:" errs))
     (log/trace "data-files:" (vec data-files))
@@ -193,7 +197,7 @@
                           search-endpoint user-token service-ids)
         bounding-infos (map #(variable/extract-bounding-info % bounding-box)
                             vars)
-        errs (errors/collect bounding-infos)]
+        errs (apply errors/collect bounding-infos)]
     (when errs
       (log/error "Stage 3 errors:" errs))
     (log/trace "variables bounding-info:" (vec bounding-infos))
