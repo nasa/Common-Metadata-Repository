@@ -614,6 +614,9 @@ HTTP Status | Error Message
 HTTP Status | Error Message
 ----------- |----------------------------------------------------
 400         | The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?
+400         | One or more of the parameters provided were invalid.
+400         | The values provided for latitude are not within the valid range of -90 degrees through 90 degress.
+400         | The values provided for longitude are not within the valid range of -180 degrees through 180 degress.
 500         | There was a problem extracting a service data file from the granule.
 500         | There was a problem creating URLs from granule file data: couldn't match default service pattern %s to service ___.
 500         | There was a problem extracting granule metadata.
