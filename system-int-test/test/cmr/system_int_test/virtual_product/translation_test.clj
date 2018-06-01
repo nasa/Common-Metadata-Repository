@@ -271,7 +271,7 @@
 ;; 10 (default search page size) granules on a single collection during the translation
 (deftest translate-granule-entries-more-than-default-page-size-test
   (let [coll (d/ingest "PROV"
-                        (dc/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
+                       (dc/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
         grans (make-grans coll 12)
         gran->entry (fn [g]
                       {:concept-id (:concept-id g)

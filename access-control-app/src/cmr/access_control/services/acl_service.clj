@@ -190,13 +190,13 @@
   "Returns true if the ECHO-style acl specifically identifies the given provider id."
   [provider-id acl]
   (or
-    (-> acl :provider-object-identity :provider-id (= provider-id))
+    (-> acl :provider-identity :provider-id (= provider-id))
     (-> acl :catalog-item-identity :provider-id (= provider-id))))
 
 (defn- ingest-management-acl?
   "Returns true if the ACL targets a provider INGEST_MANAGEMENT_ACL."
   [acl]
-  (-> acl :provider-object-identity :target (= schema/ingest-management-acl-target)))
+  (-> acl :provider-identity :target (= schema/ingest-management-acl-target)))
 
 (defn- concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
@@ -246,7 +246,7 @@
 (defn system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."
   [system-object-target sids acls]
-  (let [relevant-acls (filter #(-> % :system-object-identity :target (= system-object-target))
+  (let [relevant-acls (filter #(-> % :system-identity :target (= system-object-target))
                               acls)]
     (set
       (for [permission [:create :read :update :delete]
@@ -266,7 +266,7 @@
   "Returns all permissions granted to provider target for given sids and acls."
   [provider-id target sids acls]
   (collect-permissions (fn [acl permission]
-                         (and (= target (:target (:provider-object-identity acl)))
+                         (and (= target (:target (:provider-identity acl)))
                               (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
                        acls))
 

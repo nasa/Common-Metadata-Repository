@@ -193,9 +193,9 @@
 (defn search-for-acls
   "Search for ACLs."
   ([context params]
-    (search-for-acls context params nil))
+   (search-for-acls context params nil))
   ([context params options]
-    (search-for-acls* context params (merge options {:method :post}))))
+   (search-for-acls* context params (merge options {:method :post}))))
 
 (h/defdestroyer delete-acl :access-control acl-concept-id-url)
 (h/defgetter get-acl :access-control acl-concept-id-url)
