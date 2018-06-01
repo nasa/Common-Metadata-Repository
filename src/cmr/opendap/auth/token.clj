@@ -13,7 +13,7 @@
    [xml-in.core :as xml-in]))
 
 (def token-info-resource
-  "The path segment to the CMR Access Control API resource that is queried
+  "The path segment to the ECHO REST API resource that is queried
   in order to get user/token mappings."
   "/tokens/get_token_info")
 
@@ -61,7 +61,7 @@
   [base-url token]
   (let [url (str base-url token-info-resource)
         data (str "id=" token)]
-    (log/trace "Making token-info query to CMR:" url)
+    (log/trace "Making token-info query to ECHO REST:" url)
     (request/async-post
       url
       (-> {:body data}
