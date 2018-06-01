@@ -267,6 +267,23 @@
               "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user//FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:70][169:1:236],CH4_VMR_A_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_A_err[0:1:23][22:1:70][169:1:236],CH4_VMR_A_max[0:1:23][22:1:70][169:1:236],CH4_VMR_A_min[0:1:23][22:1:70][169:1:236],CH4_VMR_A_sdev[0:1:23][22:1:70][169:1:236],CH4_VMR_D[0:1:23][22:1:70][169:1:236],CH4_VMR_D_ct[0:1:23][22:1:70][169:1:236],CH4_VMR_D_err[0:1:23][22:1:70][169:1:236],CH4_VMR_D_max[0:1:23][22:1:70][169:1:236],CH4_VMR_D_min[0:1:23][22:1:70][169:1:236],CH4_VMR_D_sdev[0:1:23][22:1:70][169:1:236],Latitude[22:1:70],Longitude[169:1:236]"]
              (util/parse-response response))))))
 
+(deftest collection-GET-invalid-bounding-box
+  (let [collection-id "C1200267318-HMR_TME"
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                  "/opendap/ous/collection/%s"
+                                  "?bounding-box="
+                                  "-181,-91,19.828125,67.640625")
+                             (test-system/http-port)
+                             collection-id)
+                   (request/add-token-header {} (util/get-sit-token)))]
+    (is (= 400 (:status response)))
+    (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degress."
+                     "The values provided for longitude are not within the valid range of -180 degrees through 180 degress."
+                     "West must be within [-180.0] and [180.0] but was [-181.0]."
+                     "South must be within [-90.0] and [90.0] but was [-91.0]."]}
+           (util/parse-response response)))))
+
 (deftest collection-GET-query-temporal
   (testing "A timespan that should not include any granules ..."
     (let [collection-id "C1200267318-HMR_TME"

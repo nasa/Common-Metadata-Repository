@@ -82,6 +82,14 @@
         [lat-lo lat-hi] (subset->bounding-lat elems)]
     (map #(Float/parseFloat %) [lon-lo lat-lo lon-hi lat-hi])))
 
+(defn bounding-box-lat
+  [[_ lower-latitude _ upper-latitude]]
+  [lower-latitude upper-latitude])
+
+(defn bounding-box-lon
+  [[lower-longitude _ upper-longitude _]]
+  [lower-longitude upper-longitude])
+
 (defn coverage->granules
   [coverage]
   (let [ids (filter #(string/starts-with? % "G") coverage)]

@@ -9,8 +9,10 @@
    [cmr.opendap.ous.query.params.core :as params]
    [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.service :as service]
+   [cmr.opendap.ous.util :as ous-util]
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
+   [cmr.opendap.validation :as validation]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,12 +158,17 @@
   (log/debug "Starting stage 1 ...")
   (let [params (params/parse raw-params)
         bounding-box (:bounding-box params)
+        valid-lat (validation/validate-latitude
+                   (ous-util/bounding-box-lat bounding-box))
+        valid-lon (validation/validate-longitude
+                   (ous-util/bounding-box-lon bounding-box))
         grans-promise (granule/async-get-metadata
                        component search-endpoint user-token params)
         coll-promise (collection/async-get-metadata
-                      search-endpoint user-token params)]
+                      search-endpoint user-token params)
+        errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Finishing stage 1 ...")
-    [params bounding-box grans-promise coll-promise]))
+    [params bounding-box grans-promise coll-promise errs]))
 
 (defn stage2
   [search-endpoint user-token params coll-promise grans-promise]
@@ -214,10 +221,11 @@
   (let [start (util/now)
         search-endpoint (config/get-search-url component)
         ;; Stage 1
-        [params bounding-box granules coll] (stage1 component
-                                                    search-endpoint
-                                                    user-token
-                                                    raw-params)
+        [params bounding-box granules coll s1-errs] (stage1
+                                                     component
+                                                     search-endpoint
+                                                     user-token
+                                                     raw-params)
         ;; Stage 2
         [data-files service-ids vars s2-errs] (stage2
                                                search-endpoint
@@ -238,7 +246,7 @@
                                              bounding-info)
         ;; Error handling for all stages
         errs (errors/collect
-              start params bounding-box granules coll
+              start params bounding-box granules coll s1-errs
               data-files service-ids vars s2-errs
               services bounding-info s3-errs
               pattern-info query s4-errs
