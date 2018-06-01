@@ -1,6 +1,6 @@
 (ns cmr.opendap.errors
   (:require
-    [clojure.set :as set]))
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,13 +25,25 @@
 (def status-code
   "HTTP Error status code: %s")
 
-;; OUS
+;; OUS - General
 
 (def not-implemented
   "This capability is not currently implemented.")
 
 (def unsupported
   "This capability is not currently supported.")
+
+;; OUS - Parameters
+
+(def invalid-lat-params
+  (str "The values provided for latitude are not within the valid range of "
+       "-90 degrees through 90 degress."))
+
+(def invalid-lon-params
+  (str "The values provided for longitude are not within the valid range of "
+       "-180 degrees through 180 degress."))
+
+;; OUS - CMR Metadata
 
 (def empty-svc-pattern
   (str "The service pattern computed was empty. Is there a service associated "
@@ -40,9 +52,6 @@
 
 (def empty-gnl-data-files
   "There was a problem extracting a service data file from the granule.")
-
-(def empty-query-string
-  "No OPeNDAP query string was generated for the request.")
 
 (def no-matching-service-pattern
   (str "There was a problem creating URLs from granule file data: couldn't "
@@ -57,8 +66,17 @@
 (def variable-metadata
   "There was a problem extracting variable metadata.")
 
+;; OUS - Results
+
+(def empty-query-string
+  "No OPeNDAP query string was generated for the request.")
+
 (def status-map
-  {client-error-code #{empty-svc-pattern}
+  "This is a lookup data structure for how HTTP status/error codes map to CMR
+  OPeNDAP errors."
+  {client-error-code #{empty-svc-pattern
+                       invalid-lat-params
+                       invalid-lon-params}
    auth-error-code #{no-permissions
                      token-required}
    server-error-code #{empty-gnl-data-files
@@ -68,7 +86,7 @@
                        variable-metadata}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility and Error Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Error Handling API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn any-auth-errors?

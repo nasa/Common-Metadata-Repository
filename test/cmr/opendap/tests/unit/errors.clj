@@ -1,8 +1,8 @@
 (ns cmr.opendap.tests.unit.errors
   "Note: this namespace is exclusively for unit tests."
   (:require
-    [clojure.test :refer :all]
-    [cmr.opendap.errors :as errors]))
+   [clojure.test :refer :all]
+   [cmr.opendap.errors :as errors]))
 
 (deftest any-auth-errors?
   (is (not (errors/any-auth-errors? {:errors []})))

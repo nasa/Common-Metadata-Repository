@@ -118,7 +118,7 @@
 ;; XXX This is being tracked in CMR-4959
 (defn new-lon-phase-shift
   [lon-dim in]
-    (int (Math/floor (+ (/ lon-dim 2) in))))
+  (int (Math/floor (+ (/ lon-dim 2) in))))
 
 (defn new-lat-phase-shift
   [lat-dim in]
