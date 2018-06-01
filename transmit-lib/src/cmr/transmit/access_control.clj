@@ -140,6 +140,13 @@
 
 ;;; ACL Functions
 
+(def acl-type->acl-key
+  "A map of the acl object identity type to the field within the acl that stores the object."
+  {:catalog-item :catalog-item-identity
+   :system-object :system-identity
+   :provider-object :provider-identity
+   :single-instance-object :single-instance-identity})
+
 (defn acl-root-url
   "Returns the URL of the ACL API root."
   [ctx]
