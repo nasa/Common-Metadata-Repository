@@ -105,7 +105,6 @@
 (defn- ace-matches-sid?
   "Returns true if the ACE is applicable to the SID."
   [sid group-permission]
-  (proto-repl.saved-values/save 10)
   (or
     (= (keyword sid) (keyword (:user-type group-permission)))
     (= sid (:group-id group-permission))))
@@ -113,7 +112,6 @@
 (defn acl-matches-sids-and-permission?
   "Returns true if the acl is applicable to any of the sids."
   [sids permission acl]
-  (proto-repl.saved-values/save 11)
   (some (fn [sid]
           (some (fn [group-permission]
                   (and (ace-matches-sid? sid group-permission)
@@ -144,7 +142,6 @@
   [context object-identity-type target permission-type]
   (try
     (let [acl-oit-key (access-control/acl-type->acl-key object-identity-type)]
-      (proto-repl.saved-values/save 16)
       (->> (acl-fetcher/get-acls context [object-identity-type])
            ;; Find acls on INGEST_MANAGEMENT
            (filter #(= target (get-in % [acl-oit-key :target])))

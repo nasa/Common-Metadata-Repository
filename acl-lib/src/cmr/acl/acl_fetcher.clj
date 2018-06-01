@@ -15,6 +15,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as config]
    [cmr.transmit.echo.acls :as echo-acls]))
 
 (def acl-cache-key
@@ -78,9 +79,10 @@
   [context object-identity-types]
   (map (comp :acl util/map-keys->kebab-case)
        (get
-        (access-control/search-for-acls context {:identity-type (object-identity-types->identity-strings
-                                                                 object-identity-types)
-                                                 :include-full-acl true})
+        (access-control/search-for-acls (assoc context :token (config/echo-system-token))
+                                        {:identity-type (object-identity-types->identity-strings
+                                                         object-identity-types)
+                                         :include-full-acl true})
         :items)))
 
 (defn expire-consistent-cache-hashes
@@ -105,13 +107,13 @@
 (comment
  (do
    (def context (cmr.access-control.test.util/conn-context))
-   (process-search-for-acls context [:system-object :provider-object])))
-   ; (get-acls context [:system-object :provider-object])))
+   (process-search-for-acls (assoc context :token (config/echo-system-token)) [:system-object :provider-object])
+   (echo-acls/get-acls-by-types context [:system-object :provider-object])
+   (get-acls context [:system-object :provider-object])))
 
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
-  (proto-repl.saved-values/save 15)
   (if-let [cache (cache/context->cache context acl-cache-key)]
     ;; Check that we're caching the requested object identity types
     ;; Otherwise we'd just silently fail to find any acls.
