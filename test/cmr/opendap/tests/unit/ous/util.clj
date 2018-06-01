@@ -5,7 +5,28 @@
     [cmr.opendap.ous.util :as util]
     [ring.util.codec :as codec]))
 
-(deftest bounding-box->subset)
+(deftest ->coll
+  (is (= [] (util/->coll nil)))
+  (is (= [] (util/->coll "")))
+  (is (= [] (util/->coll [])))
+  (is (= [:c :b :a] (util/->coll [:c :b :a])))
+  (is (= ["Stuff"] (util/->coll "Stuff"))))
+
+(deftest split-comma->coll
+  (is (= [] (util/split-comma->coll nil)))
+  (is (= [] (util/split-comma->coll "")))
+  (is (= [] (util/split-comma->coll [])))
+  (is (= [:c :b :a] (util/split-comma->coll [:c :b :a])))
+  (is (= ["Stuff"] (util/split-comma->coll "Stuff")))
+  (is (= ["Stuff" "N" "Things"] (util/split-comma->coll "Stuff,N,Things"))))
+
+(deftest split-comma->sorted-coll
+  (is (= [] (util/split-comma->sorted-coll nil)))
+  (is (= [] (util/split-comma->sorted-coll "")))
+  (is (= [] (util/split-comma->sorted-coll [])))
+  (is (= [:a :b :c] (util/split-comma->sorted-coll [:c :b :a])))
+  (is (= ["Stuff"] (util/split-comma->sorted-coll "Stuff")))
+  (is (= ["N" "Stuff" "Things"] (util/split-comma->sorted-coll "Stuff,N,Things"))))
 
 (deftest coverage->granules
   (is (= nil

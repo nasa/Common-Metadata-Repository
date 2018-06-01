@@ -17,26 +17,29 @@
        (map (fn [[k v]] [(normalize-param k) v]))
        (into {})))
 
-(defn ->seq
+(defn ->base-coll
   [data]
   (cond (nil? data) []
         (empty? data) []
-        (coll? data) data
-        (string? data) [data]))
+        :else data))
 
-(defn split-comma->sorted-seq
+(defn ->coll
   [data]
-  (cond (nil? data) []
-        (empty? data) []
-        (coll? data) (sort data)
-        (string? data) (sort (string/split data #","))))
+  (let [coll (->base-coll data)]
+    (if (string? coll)
+      [coll]
+      coll)))
 
-(defn split-comma->seq
+(defn split-comma->coll
   [data]
-  (cond (nil? data) []
-        (empty? data) []
-        (coll? data) data
-        (string? data) (string/split data #",")))
+  (let [coll (->base-coll data)]
+    (if (string? coll)
+      (string/split data #",")
+      coll)))
+
+(defn split-comma->sorted-coll
+  [data]
+  (sort (split-comma->coll data)))
 
 (defn seq->str
   [data]

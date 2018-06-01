@@ -59,13 +59,13 @@
 
 (defn create-params
   [params]
-  (let [bounding-box (ous-util/split-comma->seq (:bounding-box params))
+  (let [bounding-box (ous-util/split-comma->coll (:bounding-box params))
         subset (:subset params)
-        granules-array (ous-util/split-comma->seq
+        granules-array (ous-util/split-comma->coll
                         (get params (keyword "granules[]")))
-        variables-array (ous-util/split-comma->seq
+        variables-array (ous-util/split-comma->coll
                          (get params (keyword "variables[]")))
-        temporal-array (ous-util/->seq
+        temporal-array (ous-util/->coll
                         (get params (keyword "temporal[]")))]
     (log/warn "original bounding-box:" (:bounding-box params))
     (log/warn "bounding-box:" bounding-box)
@@ -76,10 +76,10 @@
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (if (not-array? granules-array)
-                    (ous-util/split-comma->sorted-seq (:granules params))
+                    (ous-util/split-comma->sorted-coll (:granules params))
                     granules-array)
         :variables (if (not-array? variables-array)
-                     (ous-util/split-comma->sorted-seq (:variables params))
+                     (ous-util/split-comma->sorted-coll (:variables params))
                      variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
@@ -90,7 +90,7 @@
                         (when (seq subset)
                           (ous-util/subset->bounding-box subset)))
         :temporal (if (not-array? temporal-array)
-                    (ous-util/->seq (:temporal params))
+                    (ous-util/->coll (:temporal params))
                     temporal-array)))))
 
 (defrecord CollectionsParams

@@ -44,6 +44,6 @@
   (map->OusPrototypeParams
     (assoc params :format (or (:format params)
                               const/default-format)
-                  :coverage (util/split-comma->sorted-seq (:coverage params))
-                  :rangesubset (util/split-comma->sorted-seq (:rangesubset params))
-                  :timeposition (util/->seq (:timeposition params)))))
+                  :coverage (util/split-comma->sorted-coll (:coverage params))
+                  :rangesubset (util/split-comma->sorted-coll (:rangesubset params))
+                  :timeposition (util/->coll (:timeposition params)))))
