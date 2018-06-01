@@ -123,11 +123,11 @@
        ;; Find only acls that are applicable to this collection
        (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
-       (mapcat :aces)
+       (mapcat :group-permissions)
        ;; Find permissions that grant read
        (filter #(some (partial = :read) (:permissions %)))
        ;; Get the group guids or user type of those permissions
-       (map #(or (:group-guid %) (some-> % :user-type name)))
+       (map #(or (:group-id %) (some-> % :user-type name)))
        distinct))
 
 (defn- associations->gzip-base64-str

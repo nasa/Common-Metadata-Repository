@@ -104,19 +104,21 @@
 
 (defn- ace-matches-sid?
   "Returns true if the ACE is applicable to the SID."
-  [sid ace]
+  [sid group-permission]
+  (proto-repl.saved-values/save 10)
   (or
-    (= (keyword sid) (keyword (:user-type ace)))
-    (= sid (:group-guid ace))))
+    (= (keyword sid) (keyword (:user-type group-permission)))
+    (= sid (:group-id group-permission))))
 
 (defn acl-matches-sids-and-permission?
   "Returns true if the acl is applicable to any of the sids."
   [sids permission acl]
+  (proto-repl.saved-values/save 11)
   (some (fn [sid]
-          (some (fn [ace]
-                  (and (ace-matches-sid? sid ace)
-                       (some #(= % permission) (:permissions ace))))
-                (:aces acl)))
+          (some (fn [group-permission]
+                  (and (ace-matches-sid? sid group-permission)
+                       (some #(= % (name permission)) (:permissions group-permission))))
+                (:group-permissions acl)))
         sids))
 
 (def token-imp-cache-key
@@ -141,15 +143,16 @@
   * permission-type = :read"
   [context object-identity-type target permission-type]
   (try
-    (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+    (let [acl-oit-key (access-control/acl-type->acl-key object-identity-type)]
+      (proto-repl.saved-values/save 16)
       (->> (acl-fetcher/get-acls context [object-identity-type])
            ;; Find acls on INGEST_MANAGEMENT
            (filter #(= target (get-in % [acl-oit-key :target])))
            ;; Find acls for this user and permission type
            (filter (partial acl-matches-sids-and-permission?
                             (context->sids context)
-                            permission-type))
-           seq))
+                            permission-type))))
+           ; seq))
     (catch Exception e
       (info "Caught exception getting permitting ACLs: " (.getMessage e))
       (if (re-matches #".*status 401.*" (.getMessage e))
@@ -165,7 +168,7 @@
   [context permission-type object-identity-type provider-id]
   ;; Performance optimization here of returning true if it's the system user.
   (or (transmit-config/echo-system-token? context)
-      (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+      (let [acl-oit-key (access-control/acl-type->acl-key object-identity-type)]
         (->> (get-permitting-acls context
                                   object-identity-type
                                   "INGEST_MANAGEMENT_ACL"

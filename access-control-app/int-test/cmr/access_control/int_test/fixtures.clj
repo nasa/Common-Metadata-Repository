@@ -142,7 +142,7 @@
   (fn [f]
     (e/grant-system-group-permissions-to-admin-group (conn-context))
     (doseq [provider-guid provider-guids]
-      (e/grant-system-group-permissions-to-admin-group (conn-context) provider-guid))
+      (e/grant-provider-group-permissions-to-admin-group (conn-context) provider-guid))
     (f)))
 
 ;;These two vars will be rebinded dynamically when the fixtures are setup for each test and
