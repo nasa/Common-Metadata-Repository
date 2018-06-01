@@ -4,6 +4,7 @@
   with these parameters are defined here."
   (:require
    [clojure.string :as string]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.query.params.v1 :as v1]
    [cmr.opendap.ous.query.params.v2 :as v2]
    [cmr.opendap.ous.util :as util]
@@ -58,4 +59,8 @@
           (do
             (log/trace "Found collection id; assuming `collection` ...")
             (create-params :v2 params))
-          :else {:error :unsupported-parameters})))
+
+          :else
+          {:errors [errors/invalid-parameter
+                    ; (str "Raw parameters: " raw-params)
+                    (str "Parameters: " params)]})))

@@ -4,7 +4,8 @@
     [clojure.test :refer :all]
     [cmr.opendap.ous.query.params.core :as params]
     [cmr.opendap.ous.query.params.v1 :as v1]
-    [cmr.opendap.ous.query.params.v2 :as v2]))
+    [cmr.opendap.ous.query.params.v2 :as v2])
+  (:refer-clojure :exclude [parse]))
 
 (deftest params-keys
   (is (= #{:coverage :rangesubset :timeposition}
@@ -99,3 +100,17 @@
                         "G456"]
              :timeposition ["2000-01-01T00:00:00Z,2002-10-01T00:00:00Z"
                             "2010-07-01T00:00:00Z,2016-07-03T00:00:00Z"]}))))))
+
+(deftest parse
+  (is (= (v2/map->CollectionParams
+          {:collection-id nil
+           :format "nc"
+           :granules []
+           :exclude-granules false
+           :variables ["V234" "V345"]
+           :subset nil
+           :bounding-box nil
+           :temporal []})
+         (params/parse {:variables ["V234" "V345"]})))
+  (is (= {:errors ["One or more of the parameters provided were invalid." "Parameters: {:blurg \"some weird data\"}"]}
+         (params/parse {:blurg "some weird data"}))))
