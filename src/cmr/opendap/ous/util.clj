@@ -24,12 +24,19 @@
         (coll? data) data
         (string? data) [data]))
 
+(defn split-comma->sorted-seq
+  [data]
+  (cond (nil? data) []
+        (empty? data) []
+        (coll? data) (sort data)
+        (string? data) (sort (string/split data #","))))
+
 (defn split-comma->seq
   [data]
   (cond (nil? data) []
         (empty? data) []
         (coll? data) data
-        (string? data) (sort (string/split data #","))))
+        (string? data) (string/split data #",")))
 
 (defn seq->str
   [data]

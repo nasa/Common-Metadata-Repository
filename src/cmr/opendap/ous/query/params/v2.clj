@@ -67,7 +67,8 @@
                          (get params (keyword "variables[]")))
         temporal-array (ous-util/->seq
                         (get params (keyword "temporal[]")))]
-    (log/trace "bounding-box:" bounding-box)
+    (log/warn "original bounding-box:" (:bounding-box params))
+    (log/warn "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
     (log/trace "granules-array:" granules-array)
     (log/trace "variables-array:" variables-array)
@@ -75,10 +76,10 @@
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (if (not-array? granules-array)
-                    (ous-util/split-comma->seq (:granules params))
+                    (ous-util/split-comma->sorted-seq (:granules params))
                     granules-array)
         :variables (if (not-array? variables-array)
-                     (ous-util/split-comma->seq (:variables params))
+                     (ous-util/split-comma->sorted-seq (:variables params))
                      variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
