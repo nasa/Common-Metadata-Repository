@@ -62,7 +62,6 @@
 
 (def default-dim-stride 1)
 (def default-lat-lon-stride 1)
-(def default-lat-lon-resolution 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,6 +113,16 @@
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn adjusted-lon
+  [lon resolution]
+  (- (* lon resolution)
+     (* default-lon-lo resolution)))
+
+(defn adjusted-lat
+  [lat resolution]
+  (- (* lat resolution)
+     (* default-lat-lo resolution)))
+
 ;; XXX Can we use these instead? Why was the phase shifting written
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
 ;; XXX This is being tracked in CMR-4959
@@ -132,21 +141,25 @@
 
 (defn lon-lo-phase-shift
   [lon-max lon-lo]
-  (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (dec lon-max)
-            (- lon-lo default-lon-lo))
-         (- default-lon-hi default-lon-lo))
-      Math/floor
-      int))
+  (let [res (/ lon-max default-lon-abs-hi)]
+    (log/debug "Got lon-max:" lon-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (dec lon-max)
+              (adjusted-lon lon-lo res))
+           (adjusted-lon default-lon-hi res))
+        Math/floor
+        int)))
 
 (defn lon-hi-phase-shift
   [lon-max lon-hi]
-  (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (dec lon-max)
-            (- lon-hi default-lon-lo))
-         (- default-lon-hi default-lon-lo))
-      Math/ceil
-      int))
+  (let [res (/ lon-max default-lon-abs-hi)]
+    (log/debug "Got lon-max:" lon-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (dec lon-max)
+              (adjusted-lon lon-hi res))
+           (adjusted-lon default-lon-hi res))
+        Math/ceil
+        int)))
 
 ;; XXX Note that the following two functions were copied from this JS:
 ;;
@@ -191,23 +204,27 @@
 
 (defn lat-lo-phase-shift
   [lat-max lat-lo]
-  (log/debug "Got lat-max:" lat-max)
-  (int
-    (- lat-max
-       1
-       (Math/floor (/ (* (dec lat-max)
-                         (- lat-lo default-lat-lo))
-                      (- default-lat-hi default-lat-lo))))))
+  (let [res (/ lat-max default-lat-abs-hi)]
+    (log/debug "Got lat-max:" lat-max)
+    (log/debug "Got resolution:" res)
+    (int
+      (- lat-max
+         1
+         (Math/floor (/ (* (dec lat-max)
+                           (adjusted-lat lat-lo res))
+                        (adjusted-lat default-lat-hi res)))))))
 
 (defn lat-hi-phase-shift
   [lat-max lat-hi]
-  (log/debug "Got lat-max:" lat-max)
-  (int
-    (- lat-max
-       1
-       (Math/ceil (/ (* (dec lat-max)
-                        (- lat-hi default-lat-lo))
-                     (- default-lat-hi default-lat-lo))))))
+  (let [res (/ lat-max default-lat-abs-hi)]
+    (log/debug "Got lat-max:" lat-max)
+    (log/debug "Got resolution:" res)
+    (int
+      (- lat-max
+         1
+         (Math/ceil (/ (* (dec lat-max)
+                          (adjusted-lat lat-hi res))
+                       (adjusted-lat default-lat-hi res)))))))
 
 (defn normalize-lat-lon
   [dim]
