@@ -384,6 +384,7 @@
   ([bounding-info]
    (format-opendap-bounds bounding-info default-lat-lon-stride))
   ([{bound-name :name :as bounding-info} stride]
+   (log/debug "Bounding info:" bounding-info)
    (format "%s%s"
             bound-name
             (format-opendap-dims bounding-info stride))))

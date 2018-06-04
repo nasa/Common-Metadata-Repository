@@ -26,8 +26,11 @@
      :opendap (variable/create-opendap-bounds bounding-box)}))
 
 (defn format-opendap-lat-lon
-  [bounding-box]
-  (variable/format-opendap-lat-lon (bbox->bounding-info bounding-box)))
+  [bounding-infos bounding-box]
+  (if-let [bounding-info (first bounding-infos)]
+    (variable/format-opendap-lat-lon bounding-info)
+    (variable/format-opendap-lat-lon
+     (bbox->bounding-info bounding-box))))
 
 (defn bounding-infos->opendap-query
   ([bounding-infos]
@@ -40,7 +43,7 @@
            (string/join ",")
            (str "?"))
       ","
-      (format-opendap-lat-lon bounding-box)))))
+      (format-opendap-lat-lon bounding-infos bounding-box)))))
 
 ;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
 ;;                prototype ... and IT IS AWFUL. This is only temporary ...
