@@ -114,6 +114,12 @@
           (apply errors/collect urls))
         (map #(str % "." (:format params) query-string) urls)))))
 
+(defn apply-level-conditions
+  ""
+  [coll params]
+  (let [level (collection/extract-processing-level coll)]
+    params))
+
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
 
@@ -212,6 +218,7 @@
         coll (collection/extract-metadata coll-promise)
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
+        params (apply-level-conditions coll params)
         vars (apply-bounding-conditions search-endpoint user-token coll params)
         errs (errors/collect granules coll vars)]
     (when errs
@@ -224,7 +231,7 @@
     ;;     for their indices in OPeNDAP
     ;;
     ;; XXX This is being tracked in CMR-4982
-    [coll data-files service-ids vars errs]))
+    [coll params data-files service-ids vars errs]))
 
 (defn stage3
   [coll search-endpoint user-token bounding-box service-ids vars]
@@ -271,12 +278,12 @@
                                                      user-token
                                                      raw-params)
         ;; Stage 2
-        [coll data-files service-ids vars s2-errs] (stage2
-                                                    search-endpoint
-                                                    user-token
-                                                    params
-                                                    coll
-                                                    granules)
+        [coll params data-files service-ids vars s2-errs] (stage2
+                                                           search-endpoint
+                                                           user-token
+                                                           params
+                                                           coll
+                                                           granules)
         ;; Stage 3
         [services bounding-info s3-errs] (stage3
                                           coll
