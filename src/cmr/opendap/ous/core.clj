@@ -56,22 +56,25 @@
   [pattern-info data-file]
   (let [pattern (re-pattern (:pattern-match pattern-info))
         data-url (:link-href data-file)]
-    (if (re-matches pattern data-url)
-      (do
-        (log/debug "Granule URL matched provided pattern ...")
-        (string/replace data-url
-                        pattern
-                        (str (:pattern-subs pattern-info) "$2")))
-      (do
-        (log/debug
-         "Granule URL didn't match provided pattern; trying default ...")
-        (if (re-matches fallback-pattern data-url)
-          (string/replace data-url
-                          fallback-pattern
-                          (str "$1" fallback-replacement "$3"))
+    (cond (and pattern data-url (re-matches pattern data-url))
+          (do
+            (log/debug "Granule URL matched provided pattern ...")
+            (string/replace data-url
+                            pattern
+                            (str (:pattern-subs pattern-info) "$2")))
+
+          (re-matches fallback-pattern data-url)
+          (do
+            (log/debug
+              "Granule URL didn't match UMM-S pattern; using default.")
+            (string/replace data-url
+                            fallback-pattern
+                            (str "$1" fallback-replacement "$3")))
+
+          :else
           {:errors [(format errors/no-matching-service-pattern
                             fallback-pattern
-                            data-url)]})))))
+                            data-url)]})))
 
 (defn data-files->opendap-urls
   [params pattern-info data-files query-string]
