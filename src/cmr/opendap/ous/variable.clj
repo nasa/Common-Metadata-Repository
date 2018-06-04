@@ -284,8 +284,7 @@
   [entry]
   (->> (get-in entry [:umm :Dimensions])
        (map #(vector (keyword (:Name %)) (:Size %)))
-       (into (array-map))
-       normalize-lat-lon))
+       (into (array-map))))
 
 (defn parse-annotated-bounds
   "Parse bounds that are annotated with Lat and Lon, returning values
@@ -372,11 +371,25 @@
            (apply str))
       "")))
 
+(defn get-lat-lon-format-str
+  [bounding-info]
+  (log/debug "Original dimensions:" (:original-dimensions bounding-info))
+  (str (cond (get-in bounding-info [:original-dimensions :Latitude])
+             "Latitude"
+             (get-in bounding-info [:original-dimensions :lat])
+             "lat")
+       "%s,"
+       (cond (get-in bounding-info [:original-dimensions :Longitude])
+             "Longitude"
+             (get-in bounding-info [:original-dimensions :lon])
+             "lon")
+       "%s"))
+
 (defn format-opendap-lat-lon
   ([bounding-info]
    (format-opendap-lat-lon bounding-info default-lat-lon-stride))
   ([bounding-info stride]
-   (format "Latitude%s,Longitude%s"
+   (format (get-lat-lon-format-str bounding-info)
            (format-opendap-dim-lat bounding-info stride)
            (format-opendap-dim-lon bounding-info stride))))
 
@@ -397,7 +410,8 @@
   (log/debug "Got variable entry:" entry)
   (log/debug "Got bounding-box:" bounding-box)
   (if (:umm entry)
-    (let [dims (extract-dimensions entry)
+    (let [original-dims (extract-dimensions entry)
+          dims (normalize-lat-lon original-dims)
           ;; XXX Once we sort out how to definitely extract lat/lon and
           ;;     whether there is ever a need to go to
           ;;     :umm :Characteristics :Bounds when we can just go to
@@ -410,6 +424,7 @@
       (map->BoundingInfo
         {:concept-id (get-in entry [:meta :concept-id])
          :name (get-in entry [:umm :Name])
+         :original-dimensions original-dims
          :dimensions dims
          :bounds bounding-box
          :opendap (create-opendap-bounds dims bounding-box)
