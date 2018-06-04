@@ -148,8 +148,8 @@
            ;; Find acls for this user and permission type
            (filter (partial acl-matches-sids-and-permission?
                             (context->sids context)
-                            permission-type))))
-           ; seq))
+                            permission-type))
+           seq))
     (catch Exception e
       (info "Caught exception getting permitting ACLs: " (.getMessage e))
       (if (re-matches #".*status 401.*" (.getMessage e))
