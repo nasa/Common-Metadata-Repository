@@ -62,6 +62,7 @@
 
 (def default-dim-stride 1)
 (def default-lat-lon-stride 1)
+(def default-lat-lon-resolution 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,6 +132,7 @@
 
 (defn lon-lo-phase-shift
   [lon-max lon-lo]
+  (log/debug "Got lon-max:" lon-max)
   (-> (/ (* (dec lon-max)
             (- lon-lo default-lon-lo))
          (- default-lon-hi default-lon-lo))
@@ -139,6 +141,7 @@
 
 (defn lon-hi-phase-shift
   [lon-max lon-hi]
+  (log/debug "Got lon-max:" lon-max)
   (-> (/ (* (dec lon-max)
             (- lon-hi default-lon-lo))
          (- default-lon-hi default-lon-lo))
@@ -188,6 +191,7 @@
 
 (defn lat-lo-phase-shift
   [lat-max lat-lo]
+  (log/debug "Got lat-max:" lat-max)
   (int
     (- lat-max
        1
@@ -197,12 +201,22 @@
 
 (defn lat-hi-phase-shift
   [lat-max lat-hi]
+  (log/debug "Got lat-max:" lat-max)
   (int
     (- lat-max
        1
        (Math/ceil (/ (* (dec lat-max)
                         (- lat-hi default-lat-lo))
                      (- default-lat-hi default-lat-lo))))))
+
+(defn normalize-lat-lon
+  [dim]
+  (-> dim
+      (assoc :Latitude (or (:Latitude dim
+                           (:lat dim)))
+             :Longitude (or (:Longitude dim)
+                            (:lon dim)))
+      (dissoc :lat :lon)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,7 +284,8 @@
   [entry]
   (->> (get-in entry [:umm :Dimensions])
        (map #(vector (keyword (:Name %)) (:Size %)))
-       (into (array-map))))
+       (into (array-map))
+       normalize-lat-lon))
 
 (defn parse-annotated-bounds
   "Parse bounds that are annotated with Lat and Lon, returning values
@@ -306,8 +321,9 @@
   ([bounding-box]
    (create-opendap-bounds {:Longitude default-lon-abs-hi
                            :Latitude default-lat-abs-hi} bounding-box))
-  ([{lon-max :Longitude lat-max :Latitude :as _dimensions}
+  ([{lon-max :Longitude lat-max :Latitude :as dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+   (log/debug "Got dimensions:" dimensions)
    (when bounding-box
      (let [lon-lo (lon-lo-phase-shift lon-max lon-lo)
            lon-hi (lon-hi-phase-shift lon-max lon-hi)
