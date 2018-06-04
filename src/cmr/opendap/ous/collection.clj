@@ -43,3 +43,7 @@
 (defn extract-service-ids
   [entry]
   (sort (get-in entry [:associations :services])))
+
+(defn extract-processing-level
+  [entry]
+  (get-in entry [:umm :ProcessingLevel :Id]))
