@@ -22,10 +22,10 @@
 
 (defmethod matches-access-value-filter? :collection
   [concept-type umm access-value-filter]
-  (let [{:keys [min-value max-value include-undefined]} access-value-filter]
-    (when (and (not min-value) (not max-value) (not include-undefined))
+  (let [{:keys [min-value max-value include-undefined-value]} access-value-filter]
+    (when (and (not min-value) (not max-value) (not include-undefined-value))
       (errors/internal-error!
-        "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
+        "Encountered restriction flag filter where min and max were not set and include-undefined-value was false"))
     (if-let [^double access-value (:Value (u/get-real-or-lazy umm :AccessConstraints))]
       ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
@@ -33,8 +33,8 @@
                  (>= access-value ^double min-value))
              (or (nil? max-value)
                  (<= access-value ^double max-value))))
-      ;; umm items without a value will only be included if include-undefined is true
-      include-undefined)))
+      ;; umm items without a value will only be included if include-undefined-value is true
+      include-undefined-value)))
 
 (defmethod matches-access-value-filter? :granule
  [concept-type umm access-value-filter]
@@ -58,25 +58,25 @@
 (defn- parse-date
  [date]
  (if (string? date)
-  (f/parse (f/formatters :date-time) date)
+  (f/parse (f/formatters :date-time-parser) date)
   date))
 
 (defmethod matches-temporal-filter? :collection
- [concept-type umm-temporal temporal-filter]
- (when (seq umm-temporal)
-   (when-not (= :acquisition (:temporal-field temporal-filter))
-     (errors/internal-error!
-       (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
-
-   (let [{:keys [start-date end-date mask]} temporal-filter
-         coll-with-temporal {:TemporalExtents umm-temporal}
-         umm-start (parse-date (umm-time/collection-start-date coll-with-temporal))
-         umm-end (parse-date (or (umm-time/normalized-end-date coll-with-temporal) (tk/now)))]
-     (case mask
-       :intersect (t/overlaps? start-date end-date umm-start umm-end)
-       ;; Per ECHO10 API documentation disjoint is the negation of intersects
-       :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
-       :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
+  [concept-type umm-temporal temporal-filter]
+  (when (seq umm-temporal)
+    (let [{:keys [start-date stop-date mask]} temporal-filter
+          coll-with-temporal {:TemporalExtents umm-temporal}
+          start-date (parse-date start-date)
+          stop-date (parse-date stop-date)
+          umm-start (parse-date (umm-time/collection-start-date coll-with-temporal))
+          umm-end (parse-date (or (umm-time/normalized-end-date coll-with-temporal) (tk/now)))]
+      (case mask
+        "intersect" (t/overlaps? start-date stop-date umm-start umm-end)
+        ;; Per ECHO10 API documentation disjoint is the negation of intersects
+        "disjoint" (not (t/overlaps? start-date stop-date umm-start umm-end))
+        "contains" (time-range1-contains-range2? start-date
+                                                 stop-date
+                                                 umm-start umm-end)))))
 
 (defmethod matches-temporal-filter? :granule
  [concept-type umm-temporal temporal-filter]
@@ -86,16 +86,17 @@
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
   (let [coll-entry-title (:EntryTitle coll)
-        concept-id (:concept-id coll)
+        concept-id (or (:concept-id coll)
+                       (:id coll))
         {:keys [entry-titles access-value temporal concept-ids]} coll-id]
     (and (or (empty? entry-titles)
              (some (partial = coll-entry-title) entry-titles))
+         (or (empty? concept-ids)
+             (some (partial = concept-id) (map name concept-ids)))
          (or (nil? access-value)
              (matches-access-value-filter? :collection coll access-value))
          (or (nil? temporal)
-             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal))
-         (or (empty? concept-ids)
-             (some (partial = concept-id) (map name concept-ids))))))
+             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
