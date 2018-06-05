@@ -86,15 +86,15 @@
     (case mask
       ;; The granule just needs to intersect with the date range.
       "intersect" (q/map->TemporalCondition {:start-date start-date
-                                             :stop-date stop-date
+                                             :end-date stop-date
                                              :exclusive? false})
       ;; Disjoint is intersects negated.
-      "disjoint" (cqm/->NegatedCondition (temporal->query-condition)
-                                         (assoc temporal-filter :mask :intersect))
+      "disjoint" (cqm/->NegatedCondition (temporal->query-condition
+                                          (assoc temporal-filter :mask "intersect")))
       ;; The granules temporal must start and end within the temporal range
       "contains" (gc/and-conds [(cqm/date-range-condition :start-date start-date stop-date false)
-                                (cqm/->ExistCondition :stop-date)
-                                (cqm/date-range-condition :stop-date start-date stop-date false)]))))
+                                (cqm/->ExistCondition :end-date)
+                                (cqm/date-range-condition :end-date start-date stop-date false)]))))
 
 (defmulti provider->collection-condition
   "Converts a provider id from an ACL into a collection query condition that will find all collections
