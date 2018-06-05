@@ -45,44 +45,52 @@
       ","
       (format-opendap-lat-lon bounding-infos bounding-box)))))
 
-;; XXX WARNING!!! The pattern matching code has been taken from the Node.js
-;;                prototype ... and IT IS AWFUL. This is only temporary ...
-;;                Note that the required change for this is in the data and
-;;                recommended best practices for Providers; beyond our
-;;                immediate control.
-;; XXX This is being tracked in CMR-4912 and CMR-4901
+
+;; XXX The `fallback-*` vars are left-overs from previous work done in the
+;;     Node.js prorotype. For more context, see CMR-4901 abd CMR-4912.
+;;     Their continued use is a special case that needs to be addressed
+;;     before CMR OPeNDAP can be used in general, for all granules. As such.
+;;     the work in CMR-4912 will need to be finished before we can remove/
+;;     update the following:
 
 (def fallback-pattern #"(.*)(/datapool/DEV01)(.*)")
 (def fallback-replacement "/opendap/DEV01/user")
 
 (defn data-file->opendap-url
-  [pattern-info data-file]
-  (let [pattern (re-pattern (:pattern-match pattern-info))
-        data-url (:link-href data-file)]
-    (cond (and pattern data-url (re-matches pattern data-url))
+  [data-file]
+  (let [data-url (:link-href data-file)]
+    (log/debug "Data file:" data-file)
+    (cond (string/includes? data-url fallback-replacement)
           (do
-            (log/debug "Granule URL matched provided pattern ...")
-            (string/replace data-url
-                            pattern
-                            (str (:pattern-subs pattern-info) "$2")))
+            (log/debug (str "Data file already has the expected OPeNDAP URL; "
+                            "skipping replacement ..."))
+            data-url)
 
           (re-matches fallback-pattern data-url)
           (do
             (log/debug
-              "Granule URL didn't match UMM-S pattern; using default.")
+              "Attempting Granule URL match/replace ...")
             (string/replace data-url
                             fallback-pattern
                             (str "$1" fallback-replacement "$3")))
 
           :else
-          {:errors [(format errors/no-matching-service-pattern
+          (let [msg (format errors/no-matching-service-pattern
                             fallback-pattern
-                            data-url)]})))
+                            data-url)]
+            (log/error msg)
+            {:errors [msg]}))))
+
+(defn replace-double-slashes
+  [url]
+  (string/replace url #"(?<!(http:|https:))[//]+" "/"))
 
 (defn data-files->opendap-urls
-  [params pattern-info data-files query-string]
-  (if (and pattern-info data-files)
-    (let [urls (map (partial data-file->opendap-url pattern-info) data-files)]
+  [params data-files query-string]
+  (when data-files
+    (let [urls (map (comp replace-double-slashes
+                          data-file->opendap-url)
+                    data-files)]
       (if (errors/any-erred? urls)
         (do
           (log/error "Some problematic urls:" (vec urls))
@@ -214,16 +222,14 @@
   [bounding-box services-promise bounding-infos]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
-        pattern-info (service/extract-pattern-info (first services))
         query (bounding-infos->opendap-query bounding-infos bounding-box)
-        errs (errors/collect services pattern-info)]
+        errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))
     (log/debug "services:" services)
-    (log/debug "pattern-info:" pattern-info)
     (log/debug "Generated OPeNDAP query:" query)
     (log/debug "Finishing stage 4 ...")
-    [pattern-info query errs]))
+    [query errs]))
 
 (defn get-opendap-urls
   [component user-token raw-params]
@@ -251,26 +257,23 @@
                                           service-ids
                                           vars)
         ;; Stage 4
-        [pattern-info query s4-errs] (stage4 bounding-box
-                                             services
-                                             bounding-info)
+        [query s4-errs] (stage4 bounding-box
+                                services
+                                bounding-info)
         ;; Error handling for all stages
         errs (errors/collect
               start params bounding-box granules coll s1-errs
               data-files service-ids vars s2-errs
               services bounding-info s3-errs
-              pattern-info query s4-errs
+              query s4-errs
               {:errors (errors/check
-                        [not pattern-info errors/empty-svc-pattern]
                         [not data-files errors/empty-gnl-data-files])})]
-    (log/debug "Got pattern-info:" pattern-info)
     (log/debug "Got data-files:" (vec data-files))
     (if errs
       (do
         (log/debug "Got errors:" errs)
         errs)
       (let [urls-or-errs (data-files->opendap-urls params
-                                                   pattern-info
                                                    data-files
                                                    query)]
         ;; Error handling for post-stages processing

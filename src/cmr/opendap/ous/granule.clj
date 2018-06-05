@@ -96,12 +96,7 @@
   (let [promise (async-get-metadata component search-endpoint user-token params)]
     (extract-metadata promise)))
 
-;; XXX This logic was copied from the prototype; it is generally viewed by the
-;;     CMR Team & the Metadata Tools Team that this approach is flawed, and
-;;     that adding support for this approach to UMM-S was a short-term hack.
-;;     Providers should not be adding arbitrary regex's to UMM-S that CMR is
-;;     then supposed to execute.
-;; XXX This is being tracked in CMR-4912 and CMR-4901
+;; XXX The following may need to change once CMR-4912 is addressed ...
 (defn match-datafile-link
   "The criteria defined in the prototype was to iterate through the links,
   only examining those links that were not 'inherited', and find the one
