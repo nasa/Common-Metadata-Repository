@@ -140,3 +140,38 @@
       (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
               "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response))))))
+
+(deftest collection-GET-query-coverage-rangesubset-hires
+  (let [collection-id "C1200268967-HMR_TME"
+        granule-id "G1200268968-HMR_TME"
+        variable-ids "V1200268970-HMR_TME,V1200268971-HMR_TME"
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/opendap/ous/collection/%s"
+                                "?coverage=%s,"
+                                "&rangesubset=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-ids)
+                   (request/add-token-header {} (util/get-sit-token)))]
+    (is (= 200 (:status response)))
+    (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst,analysis_error,lat,lon"]
+           (util/parse-response response)))))
+
+(deftest collection-GET-query-coverage-subset-hires
+  (let [collection-id "C1200268967-HMR_TME"
+        granule-id "G1200268968-HMR_TME"
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/opendap/ous/collection/%s"
+                                "?coverage=%s"
+                                "&subset=lat(56.109375,67.640625)"
+                                "&subset=lon(-9.984375,19.828125)")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   (request/add-token-header {} (util/get-sit-token)))]
+    (is (= 200 (:status response)))
+    (is (= ["XXX"]
+           (util/parse-response response)))))
