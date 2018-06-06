@@ -83,7 +83,6 @@
    `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
      true))
   (let [token (e/login (s/context) "user1")
-        ;;_ (println "!!!!!!!!platforms are: " (fu/platforms fu/FROM_KMS 2 2 1))
         coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2)
                             (fu/projects "proj1" "PROJ2")
