@@ -140,14 +140,25 @@
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
+(defn- get-facets-with-count
+  "Extract out the facet part that contains title and count, amoung other things: 
+  [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
+  from the facets result."
+  [facets-result]
+  (-> facets-result
+      (get-in [:facets :children])
+      first
+      :children)) 
+
 (defn- get-facets-for-field-again?
   "Check to see if any facet count in facets-for-field is 0
-  and that facets-size-for-field is not set to return all facets."
+  and that facets-size-for-field is not set to return all facets.
+  If so, return true."
   [facets-size-for-field facets-for-field]
-  (let [facets (:children (first (get-in facets-for-field [:facets :children])))]
+  (let [facets-with-count (get-facets-with-count facets-for-field)]
     (and (or (nil? facets-size-for-field)
              (< (Integer. facets-size-for-field) fv2rf/UNLIMITED_TERMS_SIZE))
-         (some #(= 0 (:count %)) facets))))
+         (some #(= 0 (:count %)) facets-with-count))))
 
 (defn- update-facets-for-field
   "Update the counts in facets-for-field with the counts in all-facets-for-field.
@@ -160,11 +171,8 @@
   [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
   [facets-for-field all-facets-for-field]
   (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
-        orig-facets-with-count (:children orig-first-facets-children)
-        all-facets-with-count  (-> all-facets-for-field
-                                   (get-in [:facets :children])
-                                   first
-                                   :children)
+        orig-facets-with-count (get-facets-with-count facets-for-field)
+        all-facets-with-count  (get-facets-with-count all-facets-for-field)
         ;; replace the original facets with the facets in all-facets that have the same :title.
         updated-orig-facets-with-count
          (for [title-val (map :title orig-facets-with-count)]
