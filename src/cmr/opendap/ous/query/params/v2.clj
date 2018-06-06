@@ -29,13 +29,22 @@
    ;; OPeNDAP URL. This is used for subsetting.
    variables
    ;;
-   ;; `subset` is used the same way as `subset` for WCS: to indicate desired
-   ;; spatial subsetting in URL queries like so:
+   ;; `subset` is used the same way as `subset` for WCS where latitudes,
+   ;; lower then upper, are given together and then longitude (again, lower
+   ;; then upper) are given together. For instance, to indicate desired
+   ;; spatial subsetting in URL queries:
    ;;  `?subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
    subset
    ;;
    ;; `bounding-box` is provided for CMR/EDSC-compatibility as an alternative
-   ;; to using `subset` for spatial-subsetting.
+   ;; to using `subset` for spatial-subsetting. This parameter describes a
+   ;; rectangular area of interest using four comma-separated values:
+   ;;  1. lower left longitude
+   ;;  2. lower left latitude
+   ;;  3. upper right longitude
+   ;;  4. upper right latitude
+   ;; For example:
+   ;;  `bounding_box==-9.984375,56.109375,19.828125,67.640625`
    bounding-box
    ;; `temporal` is used to indicate temporal subsetting with starting
    ;; and ending values being ISO 8601 datetime stamps.
