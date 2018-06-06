@@ -83,6 +83,7 @@
    `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
      true))
   (let [token (e/login (s/context) "user1")
+        ;;_ (println "!!!!!!!!platforms are: " (fu/platforms fu/FROM_KMS 2 2 1))
         coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2)
                             (fu/projects "proj1" "PROJ2")
@@ -117,6 +118,12 @@
   (testing "Facets size applied for facets"
     (is (= fr/expected-v2-facets-apply-links-with-facets-size 
            (search-and-return-v2-facets {:facets-size {:platform 1}}))))
+  (testing "Facets size applied for facets, with selecting facet that exists, but outside of the facets size range."
+    (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
+           (search-and-return-v2-facets {:facets-size {:platform 1} :platform-h ["diadem-1D"]}))))
+  (testing "Facets size applied for facets, with selecting facet that doesn't exist."
+    (is (= fr/expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
+           (search-and-return-v2-facets {:facets-size {:platform 1} :platform-h ["Non-Exist"]}))))
   (testing "Empty facets size applied for facets"
     (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))

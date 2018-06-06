@@ -140,16 +140,61 @@
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
+(defn- get-facets-for-field-again?
+  "Check to see if any facet count in facets-for-field is 0
+  and that facets-size-for-field is not set to return all facets."
+  [facets-size-for-field facets-for-field]
+  (let [facets (:children (first (get-in facets-for-field [:facets :children])))]
+    (and (or (nil? facets-size-for-field)
+             (< (Integer. facets-size-for-field) fv2rf/UNLIMITED_TERMS_SIZE))
+         (some #(= 0 (:count %)) facets))))
+
+(defn- update-facets-for-field
+  "Update the counts in facets-for-field with the counts in all-facets-for-field.
+  orig-facets-with-count is like: 
+  [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
+  all-facets-with-count is like:
+  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1} 
+   {:title \"t4\" :count 2} {:title \"t5\" :count 1}]
+  updated-orig-facets-with-count is:
+  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
+  [facets-for-field all-facets-for-field]
+  (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
+        orig-facets-with-count (:children orig-first-facets-children)
+        all-facets-with-count  (-> all-facets-for-field
+                                   (get-in [:facets :children])
+                                   first
+                                   :children)
+        ;; replace the original facets with the facets in all-facets that have the same :title.
+        updated-orig-facets-with-count
+         (for [title-val (map :title orig-facets-with-count)]
+           (some #(when (= title-val (:title %)) %) all-facets-with-count))
+        updated-orig-first-facets-children
+         (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
+    ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
+    (assoc-in facets-for-field [:facets :children] [updated-orig-first-facets-children])))
+
 (defn- get-facets-for-field
   "Returns the facets search result on the given field by executing an elasticsearch query
-   with the given field removed from the filter to only retrieve the facet info on that field."
+  with the given field removed from the filter to only retrieve the facet info on that field."
   [context query field]
   (let [query (-> query
                   (facet-condition-resolver/adjust-facet-query field)
                   (assoc :result-features [:facets-v2])
                   (assoc :facet-fields [field])
-                  (assoc :page-size 0))]
-    (common-qe/execute-query context query)))
+                  (assoc :page-size 0))
+        facets-size-map (:facets-size query)
+        facets-size-for-field (field facets-size-map)
+        facets-for-field (common-qe/execute-query context query)
+        query-with-all-facets-size
+         (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))]
+    ;; Check if any facet contains 0 count, if so, and the
+    ;; facets-size-for-field is not showing all facets, then we will try to
+    ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
+    (if (get-facets-for-field-again? facets-size-for-field facets-for-field)
+      (let [all-facets-for-field (get-facets-for-field context query-with-all-facets-size field)]
+        (update-facets-for-field facets-for-field all-facets-for-field))
+      facets-for-field)))
 
 (defn- merge-facets
   "Returns the facets by merging the two lists of facets and sort the fields in the correct order.
