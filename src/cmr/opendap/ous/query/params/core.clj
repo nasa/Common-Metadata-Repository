@@ -62,5 +62,4 @@
 
           :else
           {:errors [errors/invalid-parameter
-                    ; (str "Raw parameters: " raw-params)
                     (str "Parameters: " params)]})))
