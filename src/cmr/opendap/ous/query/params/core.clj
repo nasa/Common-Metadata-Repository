@@ -7,7 +7,7 @@
    [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.query.params.v1 :as v1]
    [cmr.opendap.ous.query.params.v2 :as v2]
-   [cmr.opendap.ous.util :as util]
+   [cmr.opendap.ous.util.core :as util]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [parse]))
 

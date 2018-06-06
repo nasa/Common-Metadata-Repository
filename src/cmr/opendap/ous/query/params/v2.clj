@@ -2,7 +2,7 @@
   (:require
    [clojure.set :as set]
    [cmr.opendap.ous.query.params.const :as const]
-   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 

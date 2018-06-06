@@ -2,7 +2,7 @@
   (:require
    [clojure.set :as set]
    [cmr.opendap.ous.query.params.const :as const]
-   [cmr.opendap.ous.util :as util]))
+   [cmr.opendap.ous.util.core :as util]))
 
 (defrecord OusPrototypeParams
   [;; `format` is any of the formats supported by the target OPeNDAP server,

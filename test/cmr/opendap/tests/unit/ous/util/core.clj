@@ -1,8 +1,8 @@
-(ns cmr.opendap.tests.unit.ous.util
+(ns cmr.opendap.tests.unit.ous.util.core
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.util :as util]
+    [cmr.opendap.ous.util.core :as util]
     [ring.util.codec :as codec]))
 
 (deftest ->coll

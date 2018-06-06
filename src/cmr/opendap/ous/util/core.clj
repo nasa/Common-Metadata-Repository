@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.util
+(ns cmr.opendap.ous.util.core
   (:require
    [clojure.string :as string]
    [ring.util.codec :as codec]))

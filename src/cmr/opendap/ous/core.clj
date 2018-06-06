@@ -9,7 +9,7 @@
    [cmr.opendap.ous.query.params.core :as params]
    [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.service :as service]
-   [cmr.opendap.ous.util :as ous-util]
+   [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
