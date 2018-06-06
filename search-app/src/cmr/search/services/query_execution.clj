@@ -140,10 +140,18 @@
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
+(defn- update-facets
+  "Update the orig-facets-with-count using the info in the all-facets-with-count."
+  [orig-facets-with-count all-facets-with-count]
+  (for [title-val (map :title orig-facets-with-count)]
+    (some #(when (= title-val (:title %)) %) all-facets-with-count)))
+
 (defn- get-facets-with-count
   "Extract out the facet part that contains title and count, amoung other things: 
   [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
-  from the facets result."
+  from the facets result.  Note: facets-result is the result from a particular field, 
+  so there is only one child under :facets :children, which is why we use first to 
+  get to the child."
   [facets-result]
   (-> facets-result
       (get-in [:facets :children])
@@ -174,9 +182,7 @@
         orig-facets-with-count (get-facets-with-count facets-for-field)
         all-facets-with-count  (get-facets-with-count all-facets-for-field)
         ;; replace the original facets with the facets in all-facets that have the same :title.
-        updated-orig-facets-with-count
-         (for [title-val (map :title orig-facets-with-count)]
-           (some #(when (= title-val (:title %)) %) all-facets-with-count))
+        updated-orig-facets-with-count (update-facets orig-facets-with-count all-facets-with-count)
         updated-orig-first-facets-children
          (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
     ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
