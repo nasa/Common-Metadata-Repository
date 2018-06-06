@@ -20,3 +20,5 @@
 (def default-lon-abs-hi 360.0)
 (def default-lat-abs-lo 0.0)
 (def default-lat-abs-hi 180.0)
+
+(def default-lat-lon-resolution 1)

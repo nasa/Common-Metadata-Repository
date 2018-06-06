@@ -3,6 +3,34 @@
    [cmr.opendap.const :as const]
    [taoensso.timbre :as log]))
 
+(defn adjusted-lon
+  ([lon]
+   (adjusted-lon lon const/default-lat-lon-resolution))
+  ([lon resolution]
+   (- (* lon resolution)
+      (* const/default-lon-lo resolution))))
+
+(defn adjusted-lat
+  ([lat]
+   (adjusted-lat lat const/default-lat-lon-resolution))
+  ([lat resolution]
+   (- (* lat resolution)
+      (* const/default-lat-lo resolution))))
+
+(defn offset-index
+  "OPeNDAP indices are 0-based, thus gridded longitudinal data with 1x
+  resolution is stored at indices from 0 to 359 and similar latitudinal data is
+  stored at indices from 0 to 179. The max values for lat and lon are stored in
+  the UMM-Var records as part of the dimensions. Sometimes those values are
+  pre-decremented for use in OPeNDAP, sometimes not. This function attempts to
+  ensure a consistent use of decremented max values for indices."
+  ([max default-max]
+   (offset-index max default-max const/default-lat-lon-resolution))
+  ([max default-max resolution]
+   (if (< max (* default-max resolution))
+     max
+     (dec max))))
+
 ;; XXX Can we use these instead? Why was the phase shifting written
 ;;     so obtrusely? There's got to be a reason, I just don't know it ...
 ;; XXX This is being tracked in CMR-4959
@@ -15,25 +43,25 @@
   (- lat-max
      (int (Math/floor (+ (/ lat-max 2) in)))))
 
-;; The following longitudinal phase shift functions are translated from the
+;; The following longitudinal phase shift functions were translated from the
 ;; OUS Node.js prototype. It would be nice to use the more general functions
 ;; above, if those work out.
 
 (defn lon-lo-phase-shift
   [lon-max lon-lo]
   (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (dec lon-max)
-            (- lon-lo const/default-lon-lo))
-         (- const/default-lon-hi const/default-lon-lo))
+  (-> (/ (* (offset-index lon-max const/default-lon-abs-hi)
+            (adjusted-lon lon-lo))
+         (adjusted-lon const/default-lon-hi))
       Math/floor
       int))
 
 (defn lon-hi-phase-shift
   [lon-max lon-hi]
   (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (dec lon-max)
-            (- lon-hi const/default-lon-lo))
-         (- const/default-lon-hi const/default-lon-lo))
+  (-> (/ (* (offset-index lon-max const/default-lon-abs-hi)
+            (adjusted-lon lon-hi))
+         (adjusted-lon const/default-lon-hi))
       Math/ceil
       int))
 
@@ -61,17 +89,17 @@
 
 (defn orig-lat-lo-phase-shift
   [lat-max lat-lo]
-  (-> (/ (* (dec lat-max)
-            (- lat-lo const/default-lat-lo))
-          (- const/default-lat-hi const/default-lat-lo))
+  (-> (/ (* (offset-index lat-max const/default-lat-abs-hi)
+            (adjusted-lat lat-lo))
+          (adjusted-lat const/default-lat-hi))
        Math/floor
        int))
 
 (defn orig-lat-hi-phase-shift
   [lat-max lat-hi]
-  (-> (/ (* (dec lat-max)
-            (- lat-hi const/default-lat-lo))
-          (- const/default-lat-hi const/default-lat-lo))
+  (-> (/ (* (offset-index lat-max const/default-lat-abs-hi)
+            (adjusted-lat lat-hi))
+          (adjusted-lat const/default-lat-hi))
        Math/ceil
        int))
 
@@ -84,9 +112,9 @@
   (int
     (- lat-max
        1
-       (Math/floor (/ (* (dec lat-max)
-                         (- lat-lo const/default-lat-lo))
-                      (- const/default-lat-hi const/default-lat-lo))))))
+       (Math/floor (/ (* (offset-index lat-max const/default-lat-abs-hi)
+                         (adjusted-lat lat-lo))
+                      (adjusted-lat const/default-lat-hi))))))
 
 (defn lat-hi-phase-shift
   [lat-max lat-hi]
@@ -94,6 +122,6 @@
   (int
     (- lat-max
        1
-       (Math/ceil (/ (* (dec lat-max)
-                        (- lat-hi const/default-lat-lo))
-                     (- const/default-lat-hi const/default-lat-lo))))))
+       (Math/ceil (/ (* (offset-index lat-max const/default-lat-abs-hi)
+                        (adjusted-lat lat-hi))
+                     (adjusted-lat const/default-lat-hi))))))
