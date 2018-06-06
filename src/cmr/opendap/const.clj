@@ -10,3 +10,13 @@
 ;; XXX The following is used as a criteria for extracing data files from
 ;;     granule metadata. This may change once CMR-4912 is addressed.
 (def datafile-link-rel "http://esipfed.org/ns/fedsearch/1.1/data#")
+
+(def default-lon-lo -180.0)
+(def default-lon-hi 180.0)
+(def default-lat-lo -90.0)
+(def default-lat-hi 90.0)
+
+(def default-lon-abs-lo 0.0)
+(def default-lon-abs-hi 360.0)
+(def default-lat-abs-lo 0.0)
+(def default-lat-abs-hi 180.0)

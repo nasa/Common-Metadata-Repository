@@ -4,30 +4,6 @@
     [clojure.test :refer :all]
     [cmr.opendap.ous.variable :as variable]))
 
-(deftest lon-lo-phase-shift
-  (is (= 0 (variable/lon-lo-phase-shift 360 -180)))
-  (is (= 179 (variable/lon-lo-phase-shift 360 0)))
-  (is (= 359 (variable/lon-lo-phase-shift 360 180)))
-  (is (= 156 (variable/lon-lo-phase-shift 360 -23.0625))))
-
-(deftest lon-hi-phase-shift
-  (is (= 0 (variable/lon-hi-phase-shift 360 -180)))
-  (is (= 180 (variable/lon-hi-phase-shift 360 0)))
-  (is (= 359 (variable/lon-hi-phase-shift 360 180)))
-  (is (= 237 (variable/lon-hi-phase-shift 360 57.09375))))
-
-(deftest lat-lo-phase-shift
-  (is (= 179 (variable/lat-lo-phase-shift 180 -90)))
-  (is (= 90 (variable/lat-lo-phase-shift 180 0)))
-  (is (= 0 (variable/lat-lo-phase-shift 180 90)))
-  (is (= 27 (variable/lat-lo-phase-shift 180 63.5625))))
-
-(deftest lat-hi-phase-shift
-  (is (= 179 (variable/lat-hi-phase-shift 180 -90)))
-  (is (= 89 (variable/lat-hi-phase-shift 180 0)))
-  (is (= 0 (variable/lat-hi-phase-shift 180 90)))
-  (is (= 23 (variable/lat-hi-phase-shift 180 66.09375))))
-
 (def lat-lon-dims
   [{:Name "EmisFreqIR"
     :Size 4}
