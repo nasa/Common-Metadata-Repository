@@ -40,11 +40,11 @@
 
 (def invalid-lat-params
   (str "The values provided for latitude are not within the valid range of "
-       "-90 degrees through 90 degress."))
+       "-90 degrees through 90 degrees."))
 
 (def invalid-lon-params
   (str "The values provided for longitude are not within the valid range of "
-       "-180 degrees through 180 degress."))
+       "-180 degrees through 180 degrees."))
 
 ;; OUS - CMR Metadata
 

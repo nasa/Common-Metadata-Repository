@@ -27,11 +27,11 @@
          (validation/validate-latitude [-45 45])))
   (is (= [0 0]
          (validation/validate-latitude [0 0])))
-  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degress."]}
+  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."]}
          (validation/validate-latitude [-91 91])))
-  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degress."]}
+  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."]}
          (validation/validate-latitude [-45 91])))
-  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degress."]}
+  (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."]}
          (validation/validate-latitude [-91 45]))))
 
 (deftest validate-longitude
@@ -41,9 +41,9 @@
          (validation/validate-longitude [-90 90])))
   (is (= [0 0]
          (validation/validate-longitude [0 0])))
-  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degress."]}
+  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."]}
          (validation/validate-longitude [-181 181])))
-  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degress."]}
+  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."]}
          (validation/validate-longitude [-90 181])))
-  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degress."]}
+  (is (= {:errors ["The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."]}
          (validation/validate-longitude [-181 90]))))

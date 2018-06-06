@@ -278,8 +278,8 @@
                              collection-id)
                    (request/add-token-header {} (util/get-sit-token)))]
     (is (= 400 (:status response)))
-    (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degress."
-                     "The values provided for longitude are not within the valid range of -180 degrees through 180 degress."
+    (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."
+                     "The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."
                      "West must be within [-180.0] and [180.0] but was [-181.0]."
                      "South must be within [-90.0] and [90.0] but was [-91.0]."]}
            (util/parse-response response)))))
