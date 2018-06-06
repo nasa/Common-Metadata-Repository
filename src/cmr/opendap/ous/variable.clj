@@ -55,6 +55,13 @@
 (def default-dim-stride 1)
 (def default-lat-lon-stride 1)
 
+(def lat-reversed-datasets
+  #{})
+
+(defn lat-reversed?
+  [value]
+  (contains? lat-reversed-datasets value))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,25 +88,28 @@
    ;; :umm :Characteristics :Size
    size])
 
-;; XXX There is a note in Abdul's code along these lines:
-;;         "hack for descending orbits (array index 0 is at 90 degrees
-;;         north)"
-;;     If I understand correctly, this would cause the indices for
-;;     high and low values for latitude to be reversed ... so we
-;;     reverse them here, where all OPeNDAP coords get created. This
-;;     enables proper lookup in OPeNDAP arrays.
-;;
-;;     This REALLY needs to be investigated, though, to make sure the
-;;     understanding is correct. And then it needs to be DOCUMENTED.
-;;
-;; XXX This is being tracked in CMR-4963
 (defn create-opendap-lookup
+  "This lookup is needed for when latitude -90N is stored at the 0th index and
+  90N is stored at the highest index (whose actual number will varry, depending
+  upon the resolution of the data)."
   [lon-lo lat-lo lon-hi lat-hi]
   (map->ArrayLookup
    {:low {:lon lon-lo
-          :lat lat-hi} ;; <-- swap hi for lo; see note above
+          :lat lat-lo}
     :high {:lon lon-hi
-           :lat lat-lo}})) ;; <-- swap lo for hi; see note above
+           :lat lat-hi}}))
+
+(defn create-opendap-lookup-reversed
+  "This lookup is needed for when latitude 90N is stored at the 0th index and
+  -90N is stored at the highest index (whose actual number will varry, depending
+  upon the resolution of the data)."
+  [lon-lo lat-lo lon-hi lat-hi]
+  (let [lookup (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)
+        reversed-hi-lat (get-in lookup [:high :lat])
+        reversed-lo-lat (get-in lookup [:low :lat])]
+    (-> lookup
+        (assoc-in [:low :lat] reversed-hi-lat)
+        (assoc-in [:high :lat] reversed-lo-lat))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -224,7 +234,14 @@
            lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)
            lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
            lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]
-       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))
+       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))
+     ;; XXX check if reversed, if so, then do:
+     ; (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
+     ;       lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)
+     ;       lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
+     ;       lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
+     ;   (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
+     )))
 
 (defn format-opendap-dim
   [min stride max]
@@ -303,7 +320,7 @@
   non-variable-specific bounding info passed to it in order to support
   spatial subsetting"
   [entry bounding-box]
-  (log/debug "Got variable entry:" entry)
+  (log/warn "Got variable entry:" entry)
   (log/debug "Got bounding-box:" bounding-box)
   (if (:umm entry)
     (let [original-dims (extract-dimensions entry)

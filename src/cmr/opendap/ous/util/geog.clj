@@ -49,21 +49,25 @@
 
 (defn lon-lo-phase-shift
   [lon-max lon-lo]
-  (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (offset-index lon-max const/default-lon-abs-hi)
-            (adjusted-lon lon-lo))
-         (adjusted-lon const/default-lon-hi))
-      Math/floor
-      int))
+  (let [res (Math/ceil (/ lon-max const/default-lon-abs-hi))]
+    (log/debug "Got lon-max:" lon-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (offset-index lon-max const/default-lon-abs-hi res)
+              (adjusted-lon lon-lo res))
+           (adjusted-lon const/default-lon-hi res))
+        Math/floor
+        int)))
 
 (defn lon-hi-phase-shift
   [lon-max lon-hi]
-  (log/debug "Got lon-max:" lon-max)
-  (-> (/ (* (offset-index lon-max const/default-lon-abs-hi)
-            (adjusted-lon lon-hi))
-         (adjusted-lon const/default-lon-hi))
-      Math/ceil
-      int))
+  (let [res (Math/ceil (/ lon-max const/default-lon-abs-hi))]
+    (log/debug "Got lon-max:" lon-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (offset-index lon-max const/default-lon-abs-hi res)
+              (adjusted-lon lon-hi res))
+           (adjusted-lon const/default-lon-hi res))
+        Math/ceil
+        int)))
 
 ;; XXX Note that the following two functions were copied from this JS:
 ;;
@@ -107,21 +111,53 @@
 ;; used.
 
 (defn lat-lo-phase-shift
+  "This is used for reading values from OPeNDAP where -90N is stored at the
+  zero (first) index in the array."
   [lat-max lat-lo]
-  (log/debug "Got lat-max:" lat-max)
-  (int
-    (- lat-max
-       1
-       (Math/floor (/ (* (offset-index lat-max const/default-lat-abs-hi)
-                         (adjusted-lat lat-lo))
-                      (adjusted-lat const/default-lat-hi))))))
+  (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
+    (log/debug "Got lat-max:" lat-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (offset-index lat-max const/default-lat-abs-hi res)
+              (adjusted-lat lat-lo res))
+           (adjusted-lat const/default-lat-hi res))
+        Math/floor
+        int)))
 
 (defn lat-hi-phase-shift
+  "This is used for reading values from OPeNDAP where -90N is stored at the
+  zero (first) index in the array."
   [lat-max lat-hi]
-  (log/debug "Got lat-max:" lat-max)
-  (int
-    (- lat-max
-       1
-       (Math/ceil (/ (* (offset-index lat-max const/default-lat-abs-hi)
-                        (adjusted-lat lat-hi))
-                     (adjusted-lat const/default-lat-hi))))))
+  (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
+    (log/debug "Got lat-max:" lat-max)
+    (log/debug "Got resolution:" res)
+    (-> (/ (* (offset-index lat-max const/default-lat-abs-hi res)
+              (adjusted-lat lat-hi res))
+           (adjusted-lat const/default-lat-hi res))
+        Math/ceil
+        int)))
+
+(defn lat-lo-phase-shift-reversed
+  "This is used for reading values from OPeNDAP where 90N is stored at the
+  zero (first) index in the array.
+
+  Note that this must also be used in conjunction with the hi and lo values
+  for latitude in the OPeNDAP lookup array being swapped (see
+  `cmr.opendap.ous.variable/create-opendap-lookup-reversed`)."
+  [lat-max lat-lo]
+  (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
+    (int
+      (- (offset-index lat-max const/default-lat-abs-hi res)
+         (lat-lo-phase-shift lat-max lat-lo)))))
+
+(defn lat-hi-phase-shift-reversed
+  "This is used for reading values from OPeNDAP where 90N is stored at the
+  zero (first) index in the array.
+
+  Note that this must also be used in conjunction with the hi and lo values
+  for latitude in the OPeNDAP lookup array being swapped (see
+  `cmr.opendap.ous.variable/create-opendap-lookup-reversed`)."
+  [lat-max lat-lo]
+  (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
+    (int
+      (- (offset-index lat-max const/default-lat-abs-hi res)
+         (lat-hi-phase-shift lat-max lat-lo)))))
