@@ -1125,3 +1125,148 @@
                {:remove
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2"},
                :has_children false}]}]})
+
+(def expected-v2-facets-apply-links-with-selecting-facet-without-facets-size 
+  "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
+  is documented in https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response. This response
+  is generated for the search
+  http://localhost:3003/collections.json?page_size=0&platform_h[]=existingPlat&include_facets=v2
+  without any query parameters selected and with a couple of collections that have science keywords,
+  projects, platforms, instruments, organizations, and processing levels in their metadata. This
+  tests that the applied parameter is set to false correctly and that the generated links specify a
+  a link to add each search parameter to apply that value to a search."
+{:title "Browse Collections",
+           :type "group",
+           :has_children true,
+           :children
+           [{:title "Keywords",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "Popular",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Popular"},
+               :has_children true}
+              {:title "Topic1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children true}]}
+            {:title "Platforms",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "diadem-1D",
+               :type "filter",
+               :applied true,
+               :count 2,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?page_size=0&include_facets=v2"},
+               :has_children false}
+              {:title "DMSP 5B/F3",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&platform_h%5B%5D=DMSP+5B%2FF3"},
+               :has_children false}]}
+            {:title "Instruments",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "ATM",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&instrument_h%5B%5D=ATM"},
+               :has_children false}
+              {:title "lVIs",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&instrument_h%5B%5D=lVIs"},
+               :has_children false}]}
+            {:title "Organizations",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "DOI/USGS/CMG/WHSC",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&data_center_h%5B%5D=DOI%2FUSGS%2FCMG%2FWHSC"},
+               :has_children false}]}
+            {:title "Projects",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "proj1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&project_h%5B%5D=proj1"},
+               :has_children false}
+              {:title "PROJ2",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
+               :has_children false}]}
+            {:title "Processing levels",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "PL1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
+               :has_children false}]}
+            {:title "Measurements",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "Measurement1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1"},
+               :has_children true}
+              {:title "Measurement2",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
+               :has_children true}]}]})
