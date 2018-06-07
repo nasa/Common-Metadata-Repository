@@ -156,7 +156,7 @@
                            variable-ids)
                    (request/add-token-header {} (util/get-sit-token)))]
     (is (= 200 (:status response)))
-    (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst,analysis_error,lat,lon"]
+    (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst,lat,lon"]
            (util/parse-response response)))))
 
 (deftest collection-GET-query-coverage-subset-hires
@@ -173,7 +173,7 @@
                            granule-id)
                    (request/add-token-header {} (util/get-sit-token)))]
     (is (= 200 (:status response)))
-    (is (= ["XXX"]
+    (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst[0:1:0][13161:1:17071][10630:1:11419],analysis_error[0:1:0][13161:1:17071][10630:1:11419],mask[0:1:0][13161:1:17071][10630:1:11419],sea_ice_fraction[0:1:0][13161:1:17071][10630:1:11419],lat[13161:1:17071],lon[10630:1:11419]"]
            (util/parse-response response)))))
 
 (deftest collection-GET-query-coverage-subset-rangesubset-hires
@@ -193,5 +193,5 @@
                            variable-ids)
                    (request/add-token-header {} (util/get-sit-token)))]
     (is (= 200 (:status response)))
-    (is (= ["XXX"]
+    (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst[0:1:0][13161:1:17071][10630:1:11419],lat[13161:1:17071],lon[10630:1:11419]"]
            (util/parse-response response)))))
