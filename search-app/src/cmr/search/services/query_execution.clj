@@ -199,14 +199,14 @@
                   (assoc :page-size 0))
         facets-size-map (:facets-size query)
         facets-size-for-field (field facets-size-map)
-        facets-for-field (common-qe/execute-query context query)
-        query-with-all-facets-size
-         (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))]
+        facets-for-field (common-qe/execute-query context query)]
     ;; Check if any facet contains 0 count, if so, and the
     ;; facets-size-for-field is not showing all facets, then we will try to
     ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
     (if (get-facets-for-field-again? facets-size-for-field facets-for-field)
-      (let [all-facets-for-field (get-facets-for-field context query-with-all-facets-size field)]
+      (let [query-with-all-facets-size
+             (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))
+            all-facets-for-field (get-facets-for-field context query-with-all-facets-size field)]
         (update-facets-for-field facets-for-field all-facets-for-field))
       facets-for-field)))
 
