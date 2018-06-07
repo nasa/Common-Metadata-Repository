@@ -55,12 +55,27 @@
 (def default-dim-stride 1)
 (def default-lat-lon-stride 1)
 
+;; XXX The following two definitions are a hard-coded work-around for the
+;;     fact that we don't currently have a mechanism for identifying the
+;;     "direction of storage" or "endianness" of latitude data in different
+;;     data sets: some store data from -90 to 90N starting at index 0, some
+;;     from 90 to -90.
+;;
+;; XXX This is being tracked in CMR-4982
 (def lat-reversed-datasets
-  #{})
+  #{"Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"})
 
 (defn lat-reversed?
-  [value]
-  (contains? lat-reversed-datasets value))
+  [coll]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;;     Ideally, we'll have something in a UMM-Var's metadata that
+  ;;     will allow us to make the reversed? assessment.
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  (contains? lat-reversed-datasets (:dataset_id coll)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -224,24 +239,26 @@
 
 (defn create-opendap-bounds
   ([bounding-box]
+   (create-opendap-bounds bounding-box {:reversed? true}))
+  ([bounding-box opts]
    (create-opendap-bounds {:Longitude const/default-lon-abs-hi
-                           :Latitude const/default-lat-abs-hi} bounding-box))
+                           :Latitude const/default-lat-abs-hi}
+                          bounding-box
+                          opts))
   ([{lon-max :Longitude lat-max :Latitude :as dimensions}
-    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]]
+    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
+    opts]
    (log/debug "Got dimensions:" dimensions)
    (when bounding-box
      (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
-           lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)
-           lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
-           lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]
-       (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))
-     ;; XXX check if reversed, if so, then do:
-     ; (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
-     ;       lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)
-     ;       lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
-     ;       lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
-     ;   (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
-     )))
+           lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)]
+       (if (:reversed? opts)
+         (let [lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
+               lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
+           (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
+         (let [lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
+               lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]
+           (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))))
 
 (defn format-opendap-dim
   [min stride max]
@@ -319,7 +336,13 @@
   "This function is executed at the variable level, however it has general,
   non-variable-specific bounding info passed to it in order to support
   spatial subsetting"
-  [entry bounding-box]
+  [coll entry bounding-box]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  (log/warn "Got collection:" coll)
   (log/warn "Got variable entry:" entry)
   (log/debug "Got bounding-box:" bounding-box)
   (if (:umm entry)
@@ -340,6 +363,7 @@
          :original-dimensions original-dims
          :dimensions dims
          :bounds bounding-box
-         :opendap (create-opendap-bounds dims bounding-box)
+         :opendap (create-opendap-bounds
+                   dims bounding-box {:reversed? (lat-reversed? coll)})
          :size (get-in entry [:umm :Characteristics :Size])}))
     {:errors [errors/variable-metadata]}))

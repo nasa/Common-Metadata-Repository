@@ -20,22 +20,39 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn bbox->bounding-info
-  [bounding-box]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  [coll bounding-box]
   (variable/map->BoundingInfo
     {:bounds bounding-box
-     :opendap (variable/create-opendap-bounds bounding-box)}))
+     :opendap (variable/create-opendap-bounds
+               bounding-box
+               {:reversed? (variable/lat-reversed? coll)})}))
 
 (defn format-opendap-lat-lon
-  [bounding-infos bounding-box]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  [coll bounding-infos bounding-box]
   (if-let [bounding-info (first bounding-infos)]
     (variable/format-opendap-lat-lon bounding-info)
     (variable/format-opendap-lat-lon
-     (bbox->bounding-info bounding-box))))
+     (bbox->bounding-info coll bounding-box))))
 
 (defn bounding-infos->opendap-query
-  ([bounding-infos]
-    (bounding-infos->opendap-query bounding-infos nil))
-  ([bounding-infos bounding-box]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  ([coll bounding-infos]
+    (bounding-infos->opendap-query coll bounding-infos nil))
+  ([coll bounding-infos bounding-box]
    (when (seq bounding-infos)
      (str
       (->> bounding-infos
@@ -43,7 +60,7 @@
            (string/join ",")
            (str "?"))
       ","
-      (format-opendap-lat-lon bounding-infos bounding-box)))))
+      (format-opendap-lat-lon coll bounding-infos bounding-box)))))
 
 
 ;; XXX The `fallback-*` vars are left-overs from previous work done in the
@@ -202,14 +219,25 @@
     (log/trace "data-files:" (vec data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [data-files service-ids vars errs]))
+    ;; XXX coll is returned here because it's needed in a workaround
+    ;;     for different data sets using different starting points
+    ;;     for their indices in OPeNDAP
+    ;;
+    ;; XXX This is being tracked in CMR-4982
+    [coll data-files service-ids vars errs]))
 
 (defn stage3
-  [search-endpoint user-token bounding-box service-ids vars]
+  [coll search-endpoint user-token bounding-box service-ids vars]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
   (log/debug "Starting stage 3 ...")
   (let [services-promise (service/async-get-metadata
                           search-endpoint user-token service-ids)
-        bounding-infos (map #(variable/extract-bounding-info % bounding-box)
+        bounding-infos (map #(variable/extract-bounding-info
+                              coll % bounding-box)
                             vars)
         errs (apply errors/collect bounding-infos)]
     (when errs
@@ -219,10 +247,10 @@
     [services-promise bounding-infos errs]))
 
 (defn stage4
-  [bounding-box services-promise bounding-infos]
+  [coll bounding-box services-promise bounding-infos]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
-        query (bounding-infos->opendap-query bounding-infos bounding-box)
+        query (bounding-infos->opendap-query coll bounding-infos bounding-box)
         errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))
@@ -243,21 +271,23 @@
                                                      user-token
                                                      raw-params)
         ;; Stage 2
-        [data-files service-ids vars s2-errs] (stage2
-                                               search-endpoint
-                                               user-token
-                                               params
-                                               coll
-                                               granules)
+        [coll data-files service-ids vars s2-errs] (stage2
+                                                    search-endpoint
+                                                    user-token
+                                                    params
+                                                    coll
+                                                    granules)
         ;; Stage 3
         [services bounding-info s3-errs] (stage3
+                                          coll
                                           search-endpoint
                                           user-token
                                           bounding-box
                                           service-ids
                                           vars)
         ;; Stage 4
-        [query s4-errs] (stage4 bounding-box
+        [query s4-errs] (stage4 coll
+                                bounding-box
                                 services
                                 bounding-info)
         ;; Error handling for all stages
