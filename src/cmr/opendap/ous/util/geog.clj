@@ -31,22 +31,6 @@
      max
      (dec max))))
 
-;; XXX Can we use these instead? Why was the phase shifting written
-;;     so obtrusely? There's got to be a reason, I just don't know it ...
-;; XXX This is being tracked in CMR-4959
-(defn new-lon-phase-shift
-  [lon-max in]
-  (int (Math/floor (+ (/ lon-max 2) in))))
-
-(defn new-lat-phase-shift
-  [lat-max in]
-  (- lat-max
-     (int (Math/floor (+ (/ lat-max 2) in)))))
-
-;; The following longitudinal phase shift functions were translated from the
-;; OUS Node.js prototype. It would be nice to use the more general functions
-;; above, if those work out.
-
 (defn lon-lo-phase-shift
   [lon-max lon-lo]
   (let [res (Math/ceil (/ lon-max const/default-lon-abs-hi))]
