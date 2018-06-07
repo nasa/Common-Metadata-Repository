@@ -58,7 +58,8 @@
 (deftest create-opendap-bounds
   (let [dims (array-map :Longitude 360 :Latitude 180)
         bounds [-27.421875 53.296875 18.5625 69.75]
-        lookup-array (variable/create-opendap-bounds dims bounds)]
+        lookup-array (variable/create-opendap-bounds
+                      dims bounds {:reversed? true})]
     (is (= 152 (get-in lookup-array [:low :lon])))
     (is (= 20 (get-in lookup-array [:low :lat])))
     (is (= 199 (get-in lookup-array [:high :lon])))
@@ -74,7 +75,8 @@
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap (variable/create-opendap-bounds dims bounds)}]
+                       :opendap (variable/create-opendap-bounds
+                                 dims bounds {:reversed? true})}]
     (is (= "MyVar[22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
@@ -83,7 +85,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
@@ -92,7 +95,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
@@ -101,7 +105,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band from Baffin Bay to ME ..."
@@ -110,7 +115,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[12:1:48][108:1:114]"
              (variable/format-opendap-bounds bounding-info))))))
 
@@ -120,7 +126,8 @@
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap (variable/create-opendap-bounds dims bounds)}]
+                       :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
     (is (= "MyVar[0:1:9][22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
@@ -129,7 +136,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
@@ -138,7 +146,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
@@ -147,7 +156,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info))))))
 
@@ -157,7 +167,8 @@
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap (variable/create-opendap-bounds dims bounds)}]
+                       :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
     (is (= "MyVar[0:1:9][0:1:19][22:1:34][169:1:200]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
@@ -166,7 +177,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][0:1:19][20:1:37][152:1:199]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
@@ -175,7 +187,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][0:1:19][23:1:27][156:1:237]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
@@ -184,7 +197,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][0:1:19][21:1:65][156:1:164]"
              (variable/format-opendap-bounds bounding-info))))))
 
@@ -194,7 +208,8 @@
         bounding-info {:name "MyVar"
                        :bounds bounds
                        :dimensions dims
-                       :opendap (variable/create-opendap-bounds dims bounds)}]
+                       :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
     (is (= "MyVar[0:1:9][169:1:200][22:1:34][0:1:19]"
            (variable/format-opendap-bounds bounding-info))))
   (testing "Bound around Iceland, GB, and Scandanavia ..."
@@ -203,7 +218,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[0:1:9][0:1:19][152:1:199][20:1:37]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching to Scandanavia ..."
@@ -212,7 +228,8 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[156:1:237][0:1:9][0:1:19][23:1:27]"
              (variable/format-opendap-bounds bounding-info)))))
   (testing "Narrow band around Icelend stretching down to Africa ..."
@@ -221,6 +238,7 @@
           bounding-info {:name "MyVar"
                          :bounds bounds
                          :dimensions dims
-                         :opendap (variable/create-opendap-bounds dims bounds)}]
+                         :opendap (variable/create-opendap-bounds
+                                   dims bounds {:reversed? true})}]
       (is (= "MyVar[156:1:164][0:1:19][21:1:65][0:1:9]"
              (variable/format-opendap-bounds bounding-info))))))

@@ -33,13 +33,25 @@
   (is (= 237 (geog/lon-hi-phase-shift 360 57.09375))))
 
 (deftest lat-lo-phase-shift
-  (is (= 179 (geog/lat-lo-phase-shift 180 -90)))
-  (is (= 90 (geog/lat-lo-phase-shift 180 0)))
-  (is (= 0 (geog/lat-lo-phase-shift 180 90)))
-  (is (= 27 (geog/lat-lo-phase-shift 180 63.5625))))
+  (is (= 0 (geog/lat-lo-phase-shift 180 -90)))
+  (is (= 89 (geog/lat-lo-phase-shift 180 0)))
+  (is (= 179 (geog/lat-lo-phase-shift 180 90)))
+  (is (= 152 (geog/lat-lo-phase-shift 180 63.5625))))
 
 (deftest lat-hi-phase-shift
-  (is (= 179 (geog/lat-hi-phase-shift 180 -90)))
-  (is (= 89 (geog/lat-hi-phase-shift 180 0)))
-  (is (= 0 (geog/lat-hi-phase-shift 180 90)))
-  (is (= 23 (geog/lat-hi-phase-shift 180 66.09375))))
+  (is (= 0 (geog/lat-hi-phase-shift 180 -90)))
+  (is (= 90 (geog/lat-hi-phase-shift 180 0)))
+  (is (= 179 (geog/lat-hi-phase-shift 180 90)))
+  (is (= 156 (geog/lat-hi-phase-shift 180 66.09375))))
+
+(deftest lat-lo-phase-shift-reversed
+  (is (= 179 (geog/lat-lo-phase-shift-reversed 180 -90)))
+  (is (= 90 (geog/lat-lo-phase-shift-reversed 180 0)))
+  (is (= 0 (geog/lat-lo-phase-shift-reversed 180 90)))
+  (is (= 27 (geog/lat-lo-phase-shift-reversed 180 63.5625))))
+
+(deftest lat-hi-phase-shift-reversed
+  (is (= 179 (geog/lat-hi-phase-shift-reversed 180 -90)))
+  (is (= 89 (geog/lat-hi-phase-shift-reversed 180 0)))
+  (is (= 0 (geog/lat-hi-phase-shift-reversed 180 90)))
+  (is (= 23 (geog/lat-hi-phase-shift-reversed 180 66.09375))))
