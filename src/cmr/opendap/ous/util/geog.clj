@@ -69,47 +69,6 @@
         Math/ceil
         int)))
 
-;; XXX Note that the following two functions were copied from this JS:
-;;
-;; var lats = value.replace("lat(","").replace(")","").split(",");
-;; //hack for descending orbits (array index 0 is at 90 degrees north)
-;; y_array_end = YDim - 1 - Math.floor((YDim-1)*(lats[0]-lat_begin)/(lat_end-lat_begin));
-;; y_array_begin = YDim -1 - Math.ceil((YDim-1)*(lats[1]-lat_begin)/(lat_end-lat_begin));
-;;
-;; Note the "hack" JS comment ...
-;;
-;; This is complicated by the fact that, immediately before those lines of
-;; code are a conflicting set of lines overrwitten by the ones pasted above:
-;;
-;; y_array_begin = Math.floor((YDim-1)*(lats[0]-lat_begin)/(lat_end-lat_begin));
-;; y_array_end = Math.ceil((YDim-1)*(lats[1]-lat_begin)/(lat_end-lat_begin));
-;;
-;; Even though this code was ported to Clojure, it was problematic ... very likely
-;; due to the fact that there were errors in the source data (XDim/YDim were
-;; swapped) and the original JS code didn't acknowledge that fact. There is every
-;; possibility that we can delete the following functions.
-;;
-;; These original JS functions are re-created in Clojure here:
-
-(defn orig-lat-lo-phase-shift
-  [lat-max lat-lo]
-  (-> (/ (* (offset-index lat-max const/default-lat-abs-hi)
-            (adjusted-lat lat-lo))
-          (adjusted-lat const/default-lat-hi))
-       Math/floor
-       int))
-
-(defn orig-lat-hi-phase-shift
-  [lat-max lat-hi]
-  (-> (/ (* (offset-index lat-max const/default-lat-abs-hi)
-            (adjusted-lat lat-hi))
-          (adjusted-lat const/default-lat-hi))
-       Math/ceil
-       int))
-
-;; The following latitudinal phase shift functions are what is currently being
-;; used.
-
 (defn lat-lo-phase-shift
   "This is used for reading values from OPeNDAP where -90N is stored at the
   zero (first) index in the array."
