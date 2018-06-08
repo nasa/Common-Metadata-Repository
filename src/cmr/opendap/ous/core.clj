@@ -221,7 +221,7 @@
         service-ids (collection/extract-service-ids coll)
         params (apply-level-conditions coll params)
         vars (apply-bounding-conditions search-endpoint user-token coll params)
-        errs (errors/collect granules coll vars)]
+        errs (apply errors/collect (concat [granules coll vars] data-files))]
     (when errs
       (log/error "Stage 2 errors:" errs))
     (log/trace "data-files:" (vec data-files))

@@ -104,6 +104,7 @@
 
   It is currently unclear what the best criteria for this decision is."
   [link-data]
+  (log/error "Link data:" link-data)
   (let [rel (:rel link-data)]
     (and (not (:inherited link-data))
               (= const/datafile-link-rel rel))))
@@ -112,7 +113,11 @@
   [granule-entry]
   (let [link (->> (:links granule-entry)
                   (filter match-datafile-link)
-                  first)]
-    {:granule-id (:id granule-entry)
-     :link-rel (:rel link)
-     :link-href (:href link)}))
+                  first)
+        gran-id (:id granule-entry)]
+    (if link
+      {:granule-id gran-id
+       :link-rel (:rel link)
+       :link-href (:href link)}
+      {:errors [errors/empty-gnl-data-file-url
+                (format errors/problem-granules gran-id)]})))

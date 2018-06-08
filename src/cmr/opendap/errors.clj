@@ -48,10 +48,17 @@
 
 ;; OUS - CMR Metadata
 
+(def problem-granules
+  "Problematic granules: [%s]")
+
 (def empty-svc-pattern
   (str "The service pattern computed was empty. Is there a service associated "
        "with the given collection? Does the UMM-S record in question have "
        "values for the pattern fields?"))
+
+(def empty-gnl-data-file-url
+  (str "There was a problem extracting a data URL from the granule's service "
+       "data file."))
 
 (def empty-gnl-data-files
   "There was a problem extracting a service data file from the granule.")
