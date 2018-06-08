@@ -118,6 +118,7 @@
   ""
   [coll params]
   (let [level (collection/extract-processing-level coll)]
+    (log/warn "Got level:" level)
     params))
 
 (defn apply-bounding-conditions

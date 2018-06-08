@@ -34,7 +34,7 @@
                                variable-id)
                        (request/add-token-header {} (util/get-sit-token)))]
         (is (= 200 (:status response)))
-        (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
@@ -48,7 +48,7 @@
                                variable-id)
                        (request/add-token-header {} (util/get-sit-token)))]
         (is (= 200 (:status response)))
-        (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
                (util/parse-response response)))))))
 
 (deftest processing-level-3+-with-spatial
@@ -69,7 +69,7 @@
                                variable-id)
                        (request/add-token-header {} (util/get-sit-token)))]
         (is (= 200 (:status response)))
-        (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
@@ -85,7 +85,7 @@
                                variable-id)
                        (request/add-token-header {} (util/get-sit-token)))]
         (is (= 200 (:status response)))
-        (is (= ["https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))))
 
 (deftest processing-level-not-provided-no-spatial)
