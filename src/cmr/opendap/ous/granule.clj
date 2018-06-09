@@ -121,4 +121,5 @@
        :link-rel (:rel link)
        :link-href (:href link)}
       {:errors [errors/empty-gnl-data-file-url
-                (format errors/problem-granules gran-id)]})))
+                (when gran-id
+                  (format errors/problem-granules gran-id))]})))

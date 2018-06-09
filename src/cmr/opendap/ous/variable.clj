@@ -74,7 +74,7 @@
   ;;     Ideally, we'll have something in a UMM-Var's metadata that
   ;;     will allow us to make the reversed? assessment.
   ;;
-  ;; XXX This is being tracked in CMR-4982
+  ;; XXX This is being tracked in CMR-4982 and CMR-4896
   (contains? lat-reversed-datasets (:dataset_id coll)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,11 +133,15 @@
 (defn normalize-lat-lon
   [dim]
   (-> dim
-      (assoc :Latitude (or (:Latitude dim
-                           (:lat dim)))
+      (assoc :Latitude (or (:Latitude dim)
+                           (:lat dim)
+                           ;; XXX See CMR-4985
+                           (:YDim dim))
              :Longitude (or (:Longitude dim)
-                            (:lon dim)))
-      (dissoc :lat :lon)))
+                            (:lon dim)
+                            ;; XXX See CMR-4985
+                            (:XDim dim)))
+      (dissoc :lat :lon :XDim :YDim)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -248,7 +252,7 @@
   ([{lon-max :Longitude lat-max :Latitude :as dimensions}
     [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
     opts]
-   (log/debug "Got dimensions:" dimensions)
+   (log/trace "Got dimensions:" dimensions)
    (when bounding-box
      (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
            lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)]
@@ -307,12 +311,18 @@
   (str (cond (get-in bounding-info [:original-dimensions :Latitude])
              "Latitude"
              (get-in bounding-info [:original-dimensions :lat])
-             "lat")
+             "lat"
+             ;; XXX See CMR-4985
+             (get-in bounding-info [:original-dimensions :YDim])
+             "Latitude")
        "%s,"
        (cond (get-in bounding-info [:original-dimensions :Longitude])
              "Longitude"
              (get-in bounding-info [:original-dimensions :lon])
-             "lon")
+             "lon"
+             ;; XXX See CMR-4985
+             (get-in bounding-info [:original-dimensions :XDim])
+             "Longitude")
        "%s"))
 
 (defn format-opendap-lat-lon
@@ -327,7 +337,7 @@
   ([bounding-info]
    (format-opendap-bounds bounding-info default-lat-lon-stride))
   ([{bound-name :name :as bounding-info} stride]
-   (log/debug "Bounding info:" bounding-info)
+   (log/trace "Bounding info:" bounding-info)
    (format "%s%s"
             bound-name
             (format-opendap-dims bounding-info stride))))
@@ -342,9 +352,9 @@
   ;;     points for their indices in OPeNDAP
   ;;
   ;; XXX This is being tracked in CMR-4982
-  (log/warn "Got collection:" coll)
-  (log/warn "Got variable entry:" entry)
-  (log/debug "Got bounding-box:" bounding-box)
+  (log/trace "Got collection:" coll)
+  (log/trace "Got variable entry:" entry)
+  (log/trace "Got bounding-box:" bounding-box)
   (if (:umm entry)
     (let [original-dims (extract-dimensions entry)
           dims (normalize-lat-lon original-dims)
