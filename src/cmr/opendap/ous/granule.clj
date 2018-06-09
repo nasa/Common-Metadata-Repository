@@ -104,13 +104,14 @@
 
   It is currently unclear what the best criteria for this decision is."
   [link-data]
-  (log/error "Link data:" link-data)
+  (log/trace "Link data:" link-data)
   (let [rel (:rel link-data)]
     (and (not (:inherited link-data))
               (= const/datafile-link-rel rel))))
 
 (defn extract-datafile-link
   [granule-entry]
+  (log/trace "Granule entry: " granule-entry)
   (let [link (->> (:links granule-entry)
                   (filter match-datafile-link)
                   first)

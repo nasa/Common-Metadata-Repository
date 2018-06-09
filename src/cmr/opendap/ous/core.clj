@@ -118,8 +118,14 @@
   ""
   [coll params]
   (let [level (collection/extract-processing-level coll)]
-    (log/warn "Got level:" level)
-    params))
+    ; errors/
+    (log/info "Got level:" level)
+    (if (contains? collection/supported-processing-levels level)
+      params
+      {:errors [errors/unsupported-processing-level
+                (format errors/problem-processing-level
+                        level
+                        (:id coll))]})))
 
 (defn apply-bounding-conditions
   "There are several variable and bounding scenarios we need to consider:
@@ -309,7 +315,7 @@
     (log/debug "Got data-files:" (vec data-files))
     (if errs
       (do
-        (log/debug "Got errors:" errs)
+        (log/error errs)
         errs)
       (let [urls-or-errs (data-files->opendap-urls params
                                                    data-files

@@ -46,4 +46,9 @@
 
 (defn extract-processing-level
   [entry]
-  (get-in entry [:umm :ProcessingLevel :Id]))
+  (log/trace "Collection entry:" entry)
+  (or (:processing_level_id entry)
+      (get-in entry [:umm :ProcessingLevel :Id])))
+
+(def supported-processing-levels
+  #{"3" "4"})

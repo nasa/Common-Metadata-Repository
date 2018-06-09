@@ -76,8 +76,8 @@
                          (get params (keyword "variables[]")))
         temporal-array (ous-util/->coll
                         (get params (keyword "temporal[]")))]
-    (log/warn "original bounding-box:" (:bounding-box params))
-    (log/warn "bounding-box:" bounding-box)
+    (log/trace "original bounding-box:" (:bounding-box params))
+    (log/trace "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
     (log/trace "granules-array:" granules-array)
     (log/trace "variables-array:" variables-array)

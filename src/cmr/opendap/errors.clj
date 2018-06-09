@@ -33,6 +33,12 @@
 (def unsupported
   "This capability is not currently supported.")
 
+(def unsupported-processing-level
+  "The requst includes a dataset whose processing level is not supported.")
+
+(def problem-processing-level
+  "Problematic processing level %s for collection %s")
+
 ;; OUS - Parameters
 
 (def invalid-parameter
