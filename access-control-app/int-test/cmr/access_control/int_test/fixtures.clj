@@ -107,7 +107,7 @@
      (mock-echo-client/reset (conn-context))
      (mdb/reset (conn-context))
      (ac/reset (conn-context) {:bootstrap-data? true})
-     (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read )
+     (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read)
      (doseq [[provider-guid provider-id] provider-map]
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
                             {:provider-id provider-id})
@@ -142,7 +142,7 @@
   (fn [f]
     (e/grant-system-group-permissions-to-admin-group (conn-context))
     (doseq [provider-guid provider-guids]
-      (e/grant-system-group-permissions-to-admin-group (conn-context) provider-guid))
+      (e/grant-provider-group-permissions-to-admin-group (conn-context) provider-guid))
     (f)))
 
 ;;These two vars will be rebinded dynamically when the fixtures are setup for each test and

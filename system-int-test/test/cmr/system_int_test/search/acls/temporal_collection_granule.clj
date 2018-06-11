@@ -79,10 +79,10 @@
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
-    (grant-temporal :collection group1-concept-id :intersect 0 5)
-    (grant-temporal :collection group2-concept-id :intersect 5 9)
-    (grant-temporal :collection group3-concept-id :disjoint 3 5)
-    (grant-temporal :collection group4-concept-id :contains 3 7)
+    (grant-temporal :collection group1-concept-id "intersect" 0 5)
+    (grant-temporal :collection group2-concept-id "intersect" 5 9)
+    (grant-temporal :collection group3-concept-id "disjoint" 3 5)
+    (grant-temporal :collection group4-concept-id "contains" 3 7)
 
     ;; Create collections
     (let [coll1 (single-date-coll 1 :echo10)
@@ -234,10 +234,10 @@
 
     ;; Users have access to the collection
     (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-    (grant-temporal :granule group1-concept-id :intersect 0 5)
-    (grant-temporal :granule group2-concept-id :intersect 5 9)
-    (grant-temporal :granule group3-concept-id :disjoint 3 5)
-    (grant-temporal :granule group4-concept-id :contains 3 7)
+    (grant-temporal :granule group1-concept-id "intersect" 0 5)
+    (grant-temporal :granule group2-concept-id "intersect" 5 9)
+    (grant-temporal :granule group3-concept-id "disjoint" 3 5)
+    (grant-temporal :granule group4-concept-id "contains" 3 7)
 
     ;; Create granules
     (let [gran1 (single-date-gran 1 :echo10)

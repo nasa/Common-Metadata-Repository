@@ -13,7 +13,9 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
-   [cmr.transmit.echo.acls :as echo-acls]))
+   [cmr.common.util :as util]
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as config]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
@@ -54,10 +56,34 @@
                         :keys-to-track acl-keys-to-track}))
                      object-identity-types))
 
+(def identity-string-map
+  {:system-object "system"
+   :provider-object "provider"
+   :single-instance-object "single_instance"
+   :catalog-item "catalog_item"})
+
+(defn- object-identity-types->identity-strings
+  "Converts object identity types to the identity strings expected from access control"
+  [object-identity-types]
+  (map identity-string-map object-identity-types))
+
 (defn- context->cached-object-identity-types
   "Gets the object identity types configured in the acl cache in the context."
   [context]
   (:object-identity-types (cache/context->cache context acl-cache-key)))
+
+(defn- process-search-for-acls
+  "Calls acl search endpoint using converting object-identity-types
+   and processes response and formats it for get-acls"
+  [context object-identity-types]
+  (map (comp :acl util/map-keys->kebab-case)
+       (get
+        (access-control/search-for-acls (assoc context :token (config/echo-system-token))
+                                        {:identity-type (object-identity-types->identity-strings
+                                                         object-identity-types)
+                                         :include-full-acl true
+                                         :page-size 2000})
+        :items)))
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
@@ -72,11 +98,18 @@
   caller is responsible for catching and logging the exception."
   [context]
   (let [cache (cache/context->cache context acl-cache-key)
-        updated-acls (echo-acls/get-acls-by-types
+        updated-acls (process-search-for-acls
                        ;; All of the object identity types needed by the application are fetched. We want
                        ;; the cache to contain all of the acls needed.
                        context (context->cached-object-identity-types context))]
     (cache/set-value cache acl-cache-key updated-acls)))
+
+(comment
+ (do
+   (def context (cmr.access-control.test.util/conn-context))
+   (process-search-for-acls (assoc context :token (config/echo-system-token)) [:system-object :provider-object])
+   (cmr.transmit.echo.acls/get-acls-by-types context [:system-object :provider-object])
+   (get-acls context [:system-object :provider-object])))
 
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
@@ -91,25 +124,25 @@
       (do
         (info (str "The application is not configured to cache acls of the "
                    "following object-identity-types so we will fetch them "
-                   "from ECHO each time they are needed. "
+                   "from access-control each time they are needed. "
                    (pr-str not-cached-oits)))
-        (echo-acls/get-acls-by-types context object-identity-types))
+        (process-search-for-acls context object-identity-types))
       ;; Fetch ACLs using a cache
       (filter
         (fn [acl]
-          (some #(get acl (echo-acls/acl-type->acl-key %))
+          (some #(get acl (access-control/acl-type->acl-key %))
                 object-identity-types))
         (cache/get-value
           cache
           acl-cache-key
-          #(echo-acls/get-acls-by-types
-             context
-             ;; All of the object identity types needed by the application are
-             ;; fetched. We want the cache to contain all of the acls needed.
-             (context->cached-object-identity-types context)))))
+          #(process-search-for-acls
+            context
+            ;; All of the object identity types needed by the application are
+            ;; fetched. We want the cache to contain all of the acls needed.
+            (context->cached-object-identity-types context)))))
 
     ;; No cache is configured. Directly fetch the acls.
-    (echo-acls/get-acls-by-types context object-identity-types)))
+    (process-search-for-acls context object-identity-types)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing ACLs in the cache.
