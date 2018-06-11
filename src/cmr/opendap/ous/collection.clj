@@ -6,6 +6,38 @@
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def defualt-processing-level "3")
+
+(def supported-processing-levels
+  #{"3" "4"})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; XXX - The need for this function is absurd: "Not Provided" and "NA" are
+;;       considered valid values for collection proccessing level. CMR
+;;       OPeNDAP currently only supports level 3 and 4, and one of the
+;;       supported collections is level 3, but has a proccessing level value
+;;       set to "Not Provided". Thus, this hack.
+;;
+;; XXX - This is being tracked in CMR-4989.
+(defn sanitize-processing-level
+  [level]
+  (if (or (= "NA" level)
+          (= "Not Provided" level))
+    defualt-processing-level
+    level))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Collection API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn build-query
   [params]
   (str "concept_id=" (:collection-id params)))
@@ -47,8 +79,7 @@
 (defn extract-processing-level
   [entry]
   (log/trace "Collection entry:" entry)
-  (or (:processing_level_id entry)
-      (get-in entry [:umm :ProcessingLevel :Id])))
-
-(def supported-processing-levels
-  #{"3" "4"})
+  (sanitize-processing-level
+    (or (:processing_level_id entry)
+        (get-in entry [:umm :ProcessingLevel :Id])
+        defualt-processing-level)))
