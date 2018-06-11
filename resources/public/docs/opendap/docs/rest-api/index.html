@@ -867,13 +867,21 @@ listed below, but will be appended to the array of errors in the response body.<
 <td>An ECHO token is required to access this resource.</td>
 </tr>
 </tbody></table>
-<h3 id='url-generation'>URL Generation</h3>
+<h3 id='url-generation'>URL Generation</h3><h4 id='client-side'>Client-Side</h4>
 <table><thead>
 <tr>
 <th>HTTP Status</th>
 <th>Error Message</th>
 </tr>
 </thead><tbody>
+<tr>
+<td>400</td>
+<td>The requst includes a dataset whose processing level is not supported.</td>
+</tr>
+<tr>
+<td>400</td>
+<td>Problematic processing level ___ for collection ___.</td>
+</tr>
 <tr>
 <td>400</td>
 <td>The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?</td>
@@ -890,6 +898,14 @@ listed below, but will be appended to the array of errors in the response body.<
 <td>400</td>
 <td>The values provided for longitude are not within the valid range of -180 degrees through 180 degress.</td>
 </tr>
+</tbody></table>
+<h4 id='server-side'>Server-Side</h4>
+<table><thead>
+<tr>
+<th>HTTP Status</th>
+<th>Error Message</th>
+</tr>
+</thead><tbody>
 <tr>
 <td>500</td>
 <td>There was a problem extracting a service data file from the granule.</td>
@@ -897,6 +913,14 @@ listed below, but will be appended to the array of errors in the response body.<
 <tr>
 <td>500</td>
 <td>There was a problem creating URLs from granule file data: couldn&#39;t match default service pattern %s to service ___.</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Problematic granules: [...].</td>
+</tr>
+<tr>
+<td>500</td>
+<td>There was a problem extracting a data URL from the granule&#39;s service data file.</td>
 </tr>
 <tr>
 <td>500</td>
@@ -911,7 +935,7 @@ listed below, but will be appended to the array of errors in the response body.<
 <td>There was a problem extracting variable metadata.</td>
 </tr>
 </tbody></table>
-<h3 id='generic'>Generic</h3>
+<h3 id='general'>General</h3>
 <table><thead>
 <tr>
 <th>HTTP Status</th>
@@ -920,7 +944,15 @@ listed below, but will be appended to the array of errors in the response body.<
 </thead><tbody>
 <tr>
 <td>400-599</td>
-<td>HTTP Error status code: ___</td>
+<td>HTTP Error status code: ___.</td>
+</tr>
+<tr>
+<td>400</td>
+<td>This capability is not currently implemented.</td>
+</tr>
+<tr>
+<td>400</td>
+<td>This capability is not currently supported.</td>
 </tr>
 </tbody></table>
 
