@@ -611,20 +611,33 @@ HTTP Status | Error Message
 
 ### URL Generation
 
+#### Client-Side
+
 HTTP Status | Error Message
 ----------- |----------------------------------------------------
+400         | The requst includes a dataset whose processing level is not supported.
+400         | Problematic processing level ___ for collection ___.
 400         | The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?
 400         | One or more of the parameters provided were invalid.
 400         | The values provided for latitude are not within the valid range of -90 degrees through 90 degress.
 400         | The values provided for longitude are not within the valid range of -180 degrees through 180 degress.
+
+#### Server-Side
+
+HTTP Status | Error Message
+----------- |----------------------------------------------------
 500         | There was a problem extracting a service data file from the granule.
 500         | There was a problem creating URLs from granule file data: couldn't match default service pattern %s to service ___.
+500         | Problematic granules: [...].
+500         | There was a problem extracting a data URL from the granule's service data file.
 500         | There was a problem extracting granule metadata.
 500         | There was a problem extracting service metadata.
 500         | There was a problem extracting variable metadata.
 
-### Generic
+### General
 
 HTTP Status | Error Message
 ----------- |----------------------------------------------------
-400-599     | HTTP Error status code: ___
+400-599     | HTTP Error status code: ___.
+400         | This capability is not currently implemented.
+400         | This capability is not currently supported.

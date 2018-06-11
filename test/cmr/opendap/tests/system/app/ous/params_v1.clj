@@ -80,7 +80,8 @@
     (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."
                      "The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."
                      "West must be within [-180.0] and [180.0] but was [-181.0]."
-                     "South must be within [-90.0] and [90.0] but was [-91.0]."]}
+                     "South must be within [-90.0] and [90.0] but was [-91.0]."
+                     "There was a problem extracting a data URL from the granule's service data file."]}
            (util/parse-response response)))))
 
 (deftest collection-GET-query-timeposition

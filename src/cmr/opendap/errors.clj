@@ -23,7 +23,7 @@
 ;; Generic
 
 (def status-code
-  "HTTP Error status code: %s")
+  "HTTP Error status code: %s.")
 
 ;; OUS - General
 
@@ -37,7 +37,7 @@
   "The requst includes a dataset whose processing level is not supported.")
 
 (def problem-processing-level
-  "Problematic processing level %s for collection %s")
+  "Problematic processing level %s for collection %s.")
 
 ;; OUS - Parameters
 
@@ -55,7 +55,7 @@
 ;; OUS - CMR Metadata
 
 (def problem-granules
-  "Problematic granules: [%s]")
+  "Problematic granules: [%s].")
 
 (def empty-svc-pattern
   (str "The service pattern computed was empty. Is there a service associated "
@@ -92,10 +92,16 @@
   OPeNDAP errors."
   {client-error-code #{empty-svc-pattern
                        invalid-lat-params
-                       invalid-lon-params}
+                       invalid-lon-params
+                       not-implemented
+                       unsupported
+                       unsupported-processing-level
+                       problem-processing-level}
    auth-error-code #{no-permissions
                      token-required}
    server-error-code #{empty-gnl-data-files
+                       ;;empty-gnl-data-file-url
+                       problem-granules
                        no-matching-service-pattern
                        granule-metadata
                        service-metadata
