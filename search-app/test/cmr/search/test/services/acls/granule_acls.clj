@@ -10,7 +10,7 @@
   ([min-v max-v]
    (access-value min-v max-v nil))
   ([min-v max-v include-undefined?]
-   {:include-undefined-value include-undefined?
+   {:include-undefined include-undefined?
     :min-value min-v
     :max-value max-v}))
 
@@ -21,6 +21,7 @@
   ([entry-titles access-value-filter]
    {:entry-titles entry-titles
     :access-value access-value-filter}))
+
 
 (defn gran-id
   "Creates an ACL granule identifier"

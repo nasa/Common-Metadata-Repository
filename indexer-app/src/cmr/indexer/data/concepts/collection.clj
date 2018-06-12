@@ -123,11 +123,11 @@
        ;; Find only acls that are applicable to this collection
        (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
-       (mapcat :group-permissions)
+       (mapcat :aces)
        ;; Find permissions that grant read
-       (filter #(some (partial = "read") (:permissions %)))
+       (filter #(some (partial = :read) (:permissions %)))
        ;; Get the group guids or user type of those permissions
-       (map #(or (:group-id %) (some-> % :user-type name)))
+       (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
 (defn- associations->gzip-base64-str
@@ -148,7 +148,6 @@
                 created-at revision-date deleted format extra-fields
                 tag-associations variable-associations service-associations]} concept
         collection (remove-index-irrelevant-defaults collection)
-        collection (merge {:concept-id concept-id} collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
@@ -390,7 +389,6 @@
                 native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
-        tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
         tombstone-permitted-group-ids (get-coll-permitted-group-ids context
                                                                     provider-id tombstone-umm)]
     {:concept-id concept-id

@@ -145,25 +145,21 @@
                                                  :access-value 12.0}))
         ;; PROV4
         ;; group3 has permission to read this collection revision
-        coll11-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
-                                                   :native-id "coll11"
-                                                   :access-value 32.0}))
+        coll11-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll11-entry-title"
+                                                   :native-id "coll11"}))
         ;; tombstone
-        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token "mock-echo-system-token"})
-                        :entry-title "coll11"
+        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1))
+                        :entry-title "coll11-entry-title"
                         :deleted true
                         :revision-id 2)
         ;; no permissions to read this revision since entry-title has changed
         coll11-3 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
-                                                   :native-id "coll11"
-                                                   :access-value 34.0}))
+                                                   :native-id "coll11"}))
         ;; group 3 has permission to read this collection revision
-        coll12-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll12"
-                                                   :access-value 32.0
+        coll12-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll12-entry-title"
                                                    :native-id "coll12"}))
         ;; no permissions to read this collection since entry-title has changed
         coll12-2 (d/ingest "PROV4" (dc/collection {:entry-title "coll12"
-                                                   :access-value 34.0
                                                    :native-id "coll12"}))
         ;; no permision to see this tombstone since it has same entry-title as coll12-2
         coll12-3 (assoc (ingest/delete-concept (d/item->concept coll12-2))
@@ -201,7 +197,8 @@
     (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id
                                                   "PROV2" (e/coll-id ["coll6" "coll8"])))
     (e/grant-group (s/context) group3-concept-id (e/coll-catalog-item-id
-                                                  "PROV4" (e/coll-id nil {:min-value 30 :max-value 33})))
+                                                  "PROV4" (e/coll-id ["coll11-entry-title"
+                                                                      "coll12-entry-title"])))
 
     (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
@@ -262,6 +259,7 @@
                          (format "collections.atom?token=%s&page_size=100" guest-token))]
           (is (= coll-atom (:results (search/find-concepts-atom :collection {:token guest-token
                                                                              :page-size 100}))))))
+
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
               coll-atom (da/collections->expected-atom
@@ -273,7 +271,6 @@
                                       :collection {:token guest-token
                                                    :page-size 100
                                                    :concept-id concept-ids})))))))
-
     (testing "JSON ACL enforcement"
       (testing "all items"
         (let [coll-json (da/collections->expected-atom
@@ -318,7 +315,7 @@
 
         ;; only permissioned revisions are returned - including tombstones
         "provider-id all-revisions=true"
-        [coll11-1 coll12-1]
+        [coll11-1 coll11-2 coll12-1]
         {:provider-id "PROV4" :all-revisions true :token user4-token}
 
         ;; none of the revisions are readable by guest users

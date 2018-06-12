@@ -19,7 +19,7 @@
 (defn group-ace
   [group-guid & permissions]
   {:permissions permissions
-   :group-id group-guid})
+   :group-guid group-guid})
 
 (defn user-type-ace
   [user-type & permissions]
@@ -32,17 +32,17 @@
 
 (deftest test-get-coll-permitted-group-ids
   (testing "group access"
-    (let [acl1 {:group-permissions [(group-ace "read-order" "read" "order")
-                                    (group-ace "order" "order")
-                                    (group-ace "just-read" "read")
-                                    (group-ace "order-read" "order" "read")
-                                    (group-ace "no-permit")]
+    (let [acl1 {:aces [(group-ace "read-order" :read :order)
+                       (group-ace "order" :order)
+                       (group-ace "just-read" :read)
+                       (group-ace "order-read" :order :read)
+                       (group-ace "no-permit")]
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
-          acl2 {:group-permissions [(group-ace "group2" "read")]
+          acl2 {:aces [(group-ace "group2" :read)]
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
-          acl3 {:group-permissions [(group-ace "group3" "read")]
+          acl3 {:aces [(group-ace "group3" :read)]
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2 acl3)]
@@ -50,11 +50,11 @@
              (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "guest access"
-    (let [acl1 {:group-permissions [(group-ace "group1" "read")
-                                    (user-type-ace :guest "order" "read")]
+    (let [acl1 {:aces [(group-ace "group1" :read)
+                       (user-type-ace :guest :order :read)]
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
-          acl2 {:group-permissions [(user-type-ace :registered "order")]
+          acl2 {:aces [(user-type-ace :registered :order)]
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]
@@ -62,11 +62,11 @@
              (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "registered user access"
-    (let [acl1 {:group-permissions [(group-ace "group1" "read")
-                                    (user-type-ace :registered "order" "read")]
+    (let [acl1 {:aces [(group-ace "group1" :read)
+                       (user-type-ace :registered :order :read)]
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
-          acl2 {:group-permissions [(user-type-ace :guest "order")]
+          acl2 {:aces [(user-type-ace :guest :order)]
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]
@@ -74,11 +74,11 @@
              (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "registered user access"
-    (let [acl1 {:group-permissions [(group-ace "group1" "read")
-                                    (user-type-ace :registered "order" "read")]
+    (let [acl1 {:aces [(group-ace "group1" :read)
+                       (user-type-ace :registered :order :read)]
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
-          acl2 {:group-permissions [(user-type-ace :guest "read")]
+          acl2 {:aces [(user-type-ace :guest :read)]
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]

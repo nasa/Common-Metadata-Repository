@@ -271,9 +271,10 @@
   "Gets the system administrator group"
   [context]
   (->> (ac/search-for-groups context {:legacy_guid (config/administrators-group-legacy-guid) :token (config/echo-system-token)})
-       :items
-       (map #(assoc (:acl %) :revision_id (:revision_id %) :concept_id (:concept_id %)))
-       (first)))
+      :items
+      (map #(assoc (:acl %) :revision_id (:revision_id %) :concept_id (:concept_id %)))
+      (first)))
+
 
 (def guest-read-ace
   "A CMR style access control entry granting guests read access."
