@@ -61,7 +61,7 @@
   (when-let [provider-id (:provider-id group)]
     (when-not (= "CMR" provider-id)
       (seq
-        (filter #(= provider-id (-> % :provider-identity :provider-id))
+        (filter #(= provider-id (-> % :provider-object-identity :provider-id))
                 (get-provider-level-group-acls context permission))))))
 
 (defn- get-instance-acls
@@ -79,8 +79,8 @@
    (when (or legacy-guid concept-id)
      (let [acls (mapcat #(acl/get-permitting-acls context :single-instance-object "GROUP_MANAGEMENT" %) permissions)]
        (seq (filter
-             #(or (= concept-id (get-in % [:single-instance-identity :target-id]))
-                  (= legacy-guid (get-in % [:single-instance-identity :target-id])))
+             #(or (= concept-id (get-in % [:single-instance-object-identity :target-guid]))
+                  (= legacy-guid (get-in % [:single-instance-object-identity :target-guid])))
              acls))))))
 
 (defn- describe-group
@@ -148,7 +148,7 @@
             (seq (get-system-level-group-acls context :read)))
       query
       ;; Otherwise, we need to filter the results to only the providers visible to the current user.
-      (let [provider-ids (map #(-> % :provider-identity :provider-id)
+      (let [provider-ids (map #(-> % :provider-object-identity :provider-id)
                               (get-provider-level-group-acls context :read))]
         (if (seq provider-ids)
           (update-in query [:condition] (fn [condition]

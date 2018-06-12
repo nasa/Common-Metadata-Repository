@@ -155,17 +155,16 @@
     (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" (e/coll-id ["collnonexist"])))
     ;; coll 2 has no granule permissions
     ;; Permits granules with access values.
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" nil
-                                                       (e/gran-id {:min-value 10
-                                                                   :max-value 20
-                                                                   :include_undefined_value true})))
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" nil (e/gran-id {:min-value 10
+                                                                                   :max-value 20
+                                                                                   :include_undefined_value true})))
 
     ;; -- PROV2 --
     ;; Combined collection identifier and granule identifier
     (e/grant-guest
       (s/context)
       (e/gran-catalog-item-id "PROV2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
-                                                                        :max-value 40})))
+                                                                            :max-value 40})))
     (e/grant-registered-users
       (s/context)
       (e/gran-catalog-item-id "PROV2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))

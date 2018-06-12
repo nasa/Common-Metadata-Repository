@@ -25,7 +25,7 @@
                                       (qm/string-condition :target schema/provider-object-acl-target)))
         condition (gc/or system-condition prov-condition)
         acls (acl-util/get-acls-by-condition context condition)]
-    (filterv #(acl/acl-matches-sids-and-permission? sids "read" %) acls)))
+    (filterv #(acl/acl-matches-sids-and-permission? sids "read" (acl/echo-style-acl %)) acls)))
 
 (defn- provider-read-acl->condition
   "Returns an elastic query condition that matches ACLs which the user has permission to read."
@@ -64,7 +64,8 @@
   [context action target]
   (let [condition (qm/string-condition :identity-type index/system-identity-type-name true false)
         system-acls (acl-util/get-acls-by-condition context condition)
-        any-acl-system-acl (first (filter #(= target (:target (:system-identity %))) system-acls))
+        any-acl-system-acl (acl/echo-style-acl
+                             (first (filter #(= target (:target (:system-identity %))) system-acls)))
         sids (auth-util/get-sids context)]
     (acl/acl-matches-sids-and-permission? sids (name action) any-acl-system-acl)))
 
@@ -75,7 +76,8 @@
         provider-id-condition (qm/string-condition :provider provider-id)
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
         provider-acls (acl-util/get-acls-by-condition context conditions)
-        prov-acl (first (filter #(= target (:target (:provider-identity %))) provider-acls))
+        prov-acl (acl/echo-style-acl
+                   (first (filter #(= target (:target (:provider-identity %))) provider-acls)))
         sids (auth-util/get-sids context)]
     (acl/acl-matches-sids-and-permission? sids (name action) prov-acl)))
 
@@ -84,13 +86,14 @@
   [context action concept-id]
   (let [condition (qm/string-condition :concept-id concept-id true false)
         returned-acl (first (acl-util/get-acls-by-condition context condition))
+        echo-acl (acl/echo-style-acl returned-acl)
         sids (auth-util/get-sids context)]
     ;; read is special, if the user has any permission for the acl
     ;; then the user has permission to read
     (if (= action :read)
-      (some #(acl/acl-matches-sids-and-permission? sids % returned-acl)
+      (some #(acl/acl-matches-sids-and-permission? sids % echo-acl)
             ["create" "read" "update" "delete"])
-      (acl/acl-matches-sids-and-permission? sids (name action) returned-acl))))
+      (acl/acl-matches-sids-and-permission? sids (name action) echo-acl))))
 
 (defn- permission-denied-message
   "Returns permission denied message for given user and action."

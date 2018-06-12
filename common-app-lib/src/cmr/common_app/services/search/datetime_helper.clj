@@ -20,13 +20,12 @@
 (defn utc-time->elastic-time
   "Convert utc clj time to elasticsearch time string."
   [tm]
-  (if (string? tm)
-    (s/replace tm #"Z" "-0000")
-    (-> (f/formatters :date-time)
-        (f/unparse tm)
-        (s/replace #"Z" "-0000"))))
+  (-> (f/formatters :date-time)
+      (f/unparse tm)
+      (s/replace #"Z" "-0000")))
 
 (defn datetime->string
   "Convert a Joda datetime to a datetime string formatted as :date-time-no-ms"
   [dt]
   (f/unparse (f/formatters :date-time-no-ms) dt))
+
