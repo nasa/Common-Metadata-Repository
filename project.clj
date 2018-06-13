@@ -178,8 +178,7 @@
       ["generate-html"]]
     ;; Build tasks
     "build-lite" ["do"
-      ["ltest" ":unit"]
-      ["junit" ":unit"]]
+      ["ltest" ":unit"]]
     "build" ["do"
       ["ltest" ":unit"]
       ["junit" ":unit"]
@@ -187,7 +186,6 @@
       ["uberjar"]]
     "build-full" ["do"
       ["ltest" ":unit"]
-      ["junit" ":unit"]
       ["generate-static"]
       ["ubercompile"]
       ["uberjar"]]
