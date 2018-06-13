@@ -314,7 +314,7 @@
              "lat"
              ;; XXX See CMR-4985
              (get-in bounding-info [:original-dimensions :YDim])
-             "Latitude")
+             "YDim")
        "%s,"
        (cond (get-in bounding-info [:original-dimensions :Longitude])
              "Longitude"
@@ -322,7 +322,7 @@
              "lon"
              ;; XXX See CMR-4985
              (get-in bounding-info [:original-dimensions :XDim])
-             "Longitude")
+             "XDim")
        "%s"))
 
 (defn format-opendap-lat-lon
