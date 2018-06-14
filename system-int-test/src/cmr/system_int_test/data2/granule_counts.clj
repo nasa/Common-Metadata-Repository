@@ -77,6 +77,11 @@
   (into {} (for [{:keys [concept-id has-granules]} (:items results)]
              [concept-id has-granules])))
 
+(defmethod results->actual-has-granules :iso19115
+  [result-format results]
+  (into {} (for [{:keys [concept-id has-granules]} (:items results)]
+             [concept-id has-granules])))
+
 (defmethod results->actual-has-granules :atom
   [result-format results]
   (into {} (for [{:keys [id has-granules]} (get-in results [:results :entries])]

@@ -349,6 +349,7 @@
                  (= expected-has-granules actual-has-granules))
                :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
                :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
+               :iso19115 (search/find-metadata :collection :iso19115 {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))))))
 
