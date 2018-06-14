@@ -63,19 +63,23 @@
 ;;
 ;; XXX This is being tracked in CMR-4982
 (def lat-reversed-datasets
-  #{"Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"})
+  #{"Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"
+    "MODIS/Terra Aerosol Cloud Water Vapor Ozone Daily L3 Global 1Deg CMG V006"})
 
 (defn lat-reversed?
   [coll]
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;;     Ideally, we'll have something in a UMM-Var's metadata that
-  ;;     will allow us to make the reversed? assessment.
-  ;;
-  ;; XXX This is being tracked in CMR-4982 and CMR-4896
-  (contains? lat-reversed-datasets (:dataset_id coll)))
+  (log/debug "Checking collection for reversed latitudinal values ...")
+  (let [dataset-id (:dataset_id coll)]
+    (log/debug "Data set id:" dataset-id)
+    ;; XXX coll is required as an arg here because it's needed in a
+    ;;     workaround for different data sets using different starting
+    ;;     points for their indices in OPeNDAP
+    ;;
+    ;;     Ideally, we'll have something in a UMM-Var's metadata that
+    ;;     will allow us to make the reversed? assessment.
+    ;;
+    ;; XXX This is being tracked in CMR-4982 and CMR-4896
+    (contains? lat-reversed-datasets dataset-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -186,7 +190,7 @@
         (log/error errors/variable-metadata)
         rslts)
       (do
-        (log/debug "Got results from CMR variable search:"
+        (log/trace "Got results from CMR variable search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
         (:items rslts)))))
@@ -259,6 +263,7 @@
        (if (:reversed? opts)
          (let [lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
                lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
+           (log/debug "Variable latitudinal values are reversed ...")
            (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
          (let [lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
                lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]

@@ -86,7 +86,7 @@
         (log/error errors/granule-metadata)
         rslts)
       (do
-        (log/debug "Got results from CMR granule search:"
+        (log/trace "Got results from CMR granule search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
         (get-in rslts [:feed :entry])))))

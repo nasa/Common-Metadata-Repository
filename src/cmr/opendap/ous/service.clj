@@ -46,7 +46,7 @@
         (log/error errors/service-metadata)
         rslts)
       (do
-        (log/debug "Got results from CMR service search:"
+        (log/trace "Got results from CMR service search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
         (:items rslts)))))

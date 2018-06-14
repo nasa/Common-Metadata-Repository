@@ -76,7 +76,7 @@
 (defn data-file->opendap-url
   [data-file]
   (let [data-url (:link-href data-file)]
-    (log/debug "Data file:" data-file)
+    (log/trace "Data file:" data-file)
     (cond (string/includes? data-url fallback-replacement)
           (do
             (log/debug (str "Data file already has the expected OPeNDAP URL; "
@@ -85,7 +85,7 @@
 
           (re-matches fallback-pattern data-url)
           (do
-            (log/debug
+            (log/trace
               "Attempting Granule URL match/replace ...")
             (string/replace data-url
                             fallback-pattern
@@ -268,7 +268,7 @@
         errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))
-    (log/debug "services:" services)
+    (log/trace "services:" services)
     (log/debug "Generated OPeNDAP query:" query)
     (log/debug "Finishing stage 4 ...")
     [query errs]))
@@ -312,7 +312,7 @@
               query s4-errs
               {:errors (errors/check
                         [not data-files errors/empty-gnl-data-files])})]
-    (log/debug "Got data-files:" (vec data-files))
+    (log/trace "Got data-files:" (vec data-files))
     (if errs
       (do
         (log/error errs)
@@ -322,5 +322,9 @@
                                                    query)]
         ;; Error handling for post-stages processing
         (if (errors/erred? urls-or-errs)
-          urls-or-errs
-          (results/create urls-or-errs :elapsed (util/timed start)))))))
+          (do
+            (log/error urls-or-errs)
+            urls-or-errs)
+          (do
+            (log/debug "Generated URLs:" (vec urls-or-errs))
+          (results/create urls-or-errs :elapsed (util/timed start))))))))
