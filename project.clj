@@ -9,7 +9,7 @@
   (println (slurp "dev-resources/text/banner.txt"))
   (println (slurp "dev-resources/text/loading.txt")))
 
-(defproject gov.nasa.earthdata/cmr-process-manager "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-process-manager "0.1.1-SNAPSHOT"
   :description "Process management functionality for CMR services"
   :url "https://github.com/cmr-exchange/dev-env-manager"
   :license {
