@@ -5,8 +5,9 @@
     [cmr.dev.env.manager.components.messaging :as messaging]
     [cmr.dev.env.manager.components.subscribers :as subscribers]
     [cmr.dev.env.manager.components.timer :as timer]
-    [cmr.dev.env.manager.config :refer [build elastic-search-opts timer-delay]
-                                :rename {build build-config}]
+    [cmr.dev.env.manager.components.watcher :as watcher]
+    [cmr.dev.env.manager.config :refer [memoized-build]
+                                :rename {memoized-build build-config}]
     [cmr.process.manager.components.docker :as docker]
     [cmr.process.manager.components.process :as process]
     [com.stuartsierra.component :as component]
@@ -16,28 +17,29 @@
 ;;;   Utility Constants, Data Structures, & Functions   ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn log-subscriber
-  [logging-type]
-  (case logging-type
-    :fatal (fn [msg] (log/fatal msg))
-    :error (fn [msg] (log/error msg))
-    :warn (fn [msg] (log/warn msg))
-    :info (fn [msg] (log/info msg))
-    :debug (fn [msg] (log/debug msg))
-    :trace (fn [msg] (log/trace msg))
-    :timer (fn [msg] (log/debugf "The %s interval has passed."
-                                 (:interval msg)))))
+(def log-subscriber
+  {:fatal (fn [msg] (log/fatal msg))
+   :error (fn [msg] (log/error msg))
+   :warn (fn [msg] (log/warn msg))
+   :info (fn [msg] (log/info msg))
+   :debug (fn [msg] (log/debug msg))
+   :trace (fn [msg] (log/trace msg))
+   :timer (fn [msg] (log/tracef "The %s interval has passed." (:interval msg)))
+   :file-event (fn [msg] (log/debug "File system got watcher event:" msg))})
 
 (def default-subscribers
-  [{:topic :fatal :fn (log-subscriber :fatal)}
-   {:topic :error :fn (log-subscriber :error)}
-   {:topic :warn :fn (log-subscriber :warn)}
-   {:topic :info :fn (log-subscriber :info)}
-   {:topic :debug :fn (log-subscriber :debug)}
-   {:topic :trace :fn (log-subscriber :trace)}])
+  [{:topic :fatal :fn (:fatal log-subscriber)}
+   {:topic :error :fn (:error log-subscriber)}
+   {:topic :warn :fn (:warn log-subscriber)}
+   {:topic :info :fn (:info log-subscriber)}
+   {:topic :debug :fn (:debug log-subscriber)}
+   {:topic :trace :fn (:trace log-subscriber)}])
 
 (def default-timer-subscribers
-  [{:interval :all :fn (log-subscriber :timer)}])
+  [{:interval :all :fn (:timer log-subscriber)}])
+
+(def default-watcher-subscribers
+  [{:topic :file-event :fn (:file-event log-subscriber)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   D.E.M Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,12 +65,20 @@
                   default-subscribers)
                  [:config :logging :messaging])})
 
+(defn watch
+  [builder]
+  {:watcher (component/using
+             (watcher/create-component
+              builder
+              default-watcher-subscribers)
+             [:config :logging :messaging :subscribers])})
+
 (defn tmr
   [builder]
   {:timer (component/using
            (timer/create-component
             builder
-            timer-delay
+            config/timer-delay
             default-timer-subscribers)
            [:config :logging :messaging :subscribers])})
 
@@ -82,21 +92,34 @@
                     (docker/create-component
                       builder
                       :elastic-search
-                      elastic-search-opts)
+                      config/elastic-search-opts)
                     [:config :logging :messaging :subscribers])})
+
+(defn elastic-search-head
+  [builder]
+  {:elastic-search-head (component/using
+                         (docker/create-component
+                           builder
+                           :elastic-search-head
+                           config/elastic-search-head-opts)
+                         [:config :logging :messaging :subscribers
+                          :elastic-search])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   CMR Service Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def cubby
-  {:cubby :tbd})
 
 (defn mock-echo
   [builder]
   {:mock-echo (component/using
                (process/create-component builder :mock-echo)
                [:config :logging :messaging :subscribers])})
+
+(defn cubby
+  [builder]
+  {:cubby (component/using
+           (process/create-component builder :cubby)
+           [:config :logging :messaging :subscribers :mock-echo])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Intilizations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,9 +134,12 @@
              log
              msg
              sub
+             (watch config-builder)
              (tmr config-builder)
              (elastic-search config-builder)
-             (mock-echo config-builder)))))
+             (elastic-search-head config-builder)
+             (mock-echo config-builder)
+             (cubby config-builder)))))
 
 (defn initialize-bare-bones
   ([]

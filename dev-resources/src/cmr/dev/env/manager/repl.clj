@@ -1,22 +1,26 @@
 (ns cmr.dev.env.manager.repl
   (:require
+   [clj-http.client :as httpc]
    [clojure.core.async :as async]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.twig :as logger]
+   [cmr.dev.env.manager.components.checks.health :as health-check]
+   [cmr.dev.env.manager.components.config :as config]
    [cmr.dev.env.manager.components.messaging :as messaging]
    [cmr.dev.env.manager.components.system :as components]
-   [cmr.dev.env.manager.config :as config]
+   [cmr.dev.env.manager.health :as health]
    [cmr.dev.env.manager.repl.transitions :as transitions]
    [cmr.process.manager.components.common.docker :as docker]
    [cmr.process.manager.components.common.process :as process]
+   [cmr.transmit.config :as transmit]
    [com.stuartsierra.component :as component]
    [me.raynes.conch.low-level :as shell]
    [taoensso.timbre :as log]
    [trifl.fs :as fs]
-   [trifl.java :refer [show-methods]]))
+   [trifl.java :refer [add-shutdown-handler show-methods]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State & Transition Vars   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,13 +55,21 @@
   [service-key]
   (process/get-process system service-key))
 
-(defn get-process-id
+(defn get-process-cpu
   [service-key]
-  (process/get-process-id system service-key))
+  (process/get-process-cpu system service-key))
 
 (defn get-process-descendants
   [service-key]
   (process/get-process-descendants system service-key))
+
+(defn get-process-id
+  [service-key]
+  (process/get-process-id system service-key))
+
+(defn get-process-mem
+  [service-key]
+  (process/get-process-mem system service-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Messaging Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,6 +104,30 @@
 (defn get-docker-container-state
   [service-key]
   (docker/get-container-state system service-key))
+
+(defn get-docker-container-pid
+  [service-key]
+  (docker/get-container-pid system service-key))
+
+(defn get-docker-container-cpu
+  [service-key]
+  (docker/get-container-cpu system service-key))
+
+(defn get-docker-container-mem
+  [service-key]
+  (docker/get-container-mem system service-key))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Health checks   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn check-health
+  [service-key]
+  (health-check/get-summary (service-key system)))
+
+(defn check-health-details
+  [service-key]
+  (health-check/get-status (service-key system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State data getters/setters   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,6 +288,8 @@
   []
   (shutdown)
   (refresh :after 'cmr.dev.env.manager.repl/run))
+
+(add-shutdown-handler #'cmr.dev.env.manager.repl/shutdown)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
