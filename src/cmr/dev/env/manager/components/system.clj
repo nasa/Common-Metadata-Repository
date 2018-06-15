@@ -1,14 +1,14 @@
 (ns cmr.dev.env.manager.components.system
   (:require
-    [cmr.dev.env.manager.components.common.docker :as docker]
-    [cmr.dev.env.manager.components.common.process :as process]
-    [cmr.dev.env.manager.components.dem.config :as config]
-    [cmr.dev.env.manager.components.dem.logging :as logging]
-    [cmr.dev.env.manager.components.dem.messaging :as messaging]
-    [cmr.dev.env.manager.components.dem.subscribers :as subscribers]
-    [cmr.dev.env.manager.components.dem.timer :as timer]
+    [cmr.dev.env.manager.components.config :as config]
+    [cmr.dev.env.manager.components.logging :as logging]
+    [cmr.dev.env.manager.components.messaging :as messaging]
+    [cmr.dev.env.manager.components.subscribers :as subscribers]
+    [cmr.dev.env.manager.components.timer :as timer]
     [cmr.dev.env.manager.config :refer [build elastic-search-opts timer-delay]
                                 :rename {build build-config}]
+    [cmr.process.manager.components.docker :as docker]
+    [cmr.process.manager.components.process :as process]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 

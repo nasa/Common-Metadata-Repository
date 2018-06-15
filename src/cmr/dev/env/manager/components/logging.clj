@@ -1,4 +1,4 @@
-(ns cmr.dev.env.manager.components.dem.logging
+(ns cmr.dev.env.manager.components.logging
   (:require
     [clojusc.twig :as logger]
     [cmr.dev.env.manager.config :as config]

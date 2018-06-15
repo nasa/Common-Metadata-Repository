@@ -1,8 +1,8 @@
-(ns cmr.dev.env.manager.components.dem.subscribers
+(ns cmr.dev.env.manager.components.subscribers
   "System component for setting up default inter-component messaging
   subscriptions."
   (:require
-    [cmr.dev.env.manager.components.dem.messaging :as messaging-component]
+    [cmr.dev.env.manager.components.messaging :as messaging-component]
     [cmr.dev.env.manager.messaging.core :as messaging]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))

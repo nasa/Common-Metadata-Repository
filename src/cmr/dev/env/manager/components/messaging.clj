@@ -1,4 +1,4 @@
-(ns cmr.dev.env.manager.components.dem.messaging
+(ns cmr.dev.env.manager.components.messaging
   "System component for inter-component communications."
   (:require
     [cmr.dev.env.manager.config :as config]

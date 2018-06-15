@@ -1,4 +1,4 @@
-(ns cmr.dev.env.manager.components.dem.config
+(ns cmr.dev.env.manager.components.config
   (:require
     [cmr.dev.env.manager.config :as config]
     [com.stuartsierra.component :as component]
