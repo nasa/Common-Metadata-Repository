@@ -17,3 +17,8 @@
   [urls]
   (format "match (c:Collection)-[:LINKS_TO]->(u:Url) where u.name in [%s] return c.conceptId;"
           (string/join "," (map #(format "'%s'" %) urls))))
+
+(defn get-urls-via-provider
+  [provider]
+  (format "match (p:Provider)<-[:OWNED_BY]-(c:Collection)-[:LINKS_TO]->(u:Url) where p.name='%s' return u.name;"
+          provider))

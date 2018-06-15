@@ -49,3 +49,7 @@
 (defn get-concept-ids-by-urls
   [conn urls]
   (cypher/tquery conn (query/get-concept-ids-by-urls urls)))
+
+(defn get-urls-via-provider
+  [conn provider]
+  (cypher/tquery conn (query/get-urls-via-provider provider)))

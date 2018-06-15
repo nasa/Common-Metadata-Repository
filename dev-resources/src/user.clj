@@ -15,13 +15,13 @@
    [clojurewerkz.neocons.rest.nodes :as nn]
    [clojurewerkz.neocons.rest.paths :as np]
    [clojurewerkz.neocons.rest.relationships :as nrl]
+   [clojusc.dev.system.core :as system-api]
    [cmr.graph.components.core :as components]
    [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.config :as config]
    [cmr.graph.demo.movie :as movie-demo]
    [cmr.graph.dev :as dev]
-   [cmr.graph.health :as health]
-   [cmr.graph.system.core :as system-api]))
+   [cmr.graph.health :as health]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

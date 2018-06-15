@@ -25,6 +25,7 @@
     [cheshire "5.8.0"]
     [clojurewerkz/elastisch "3.0.0"]
     [clojurewerkz/neocons "3.2.0"]
+    [clojusc/dev-system "0.1.0"]
     [clojusc/trifl "0.3.0-SNAPSHOT"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
