@@ -6,8 +6,8 @@
   {:port 3012
    :docroot "public"}
  :logging
-  {:level :debug
-   :nss [cmr.graph]}
+  {:level :trace
+   :nss [cmr]}
  :neo4j
   {:host "127.0.0.1"
    :port 7474

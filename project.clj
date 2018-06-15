@@ -25,10 +25,11 @@
     [cheshire "5.8.0"]
     [clojurewerkz/elastisch "3.0.0"]
     [clojurewerkz/neocons "3.2.0"]
-    [clojusc/trifl "0.2.0"]
+    [clojusc/trifl "0.3.0-SNAPSHOT"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
     [digest "1.4.6"]
+    [gov.nasa.earthdata/cmr-process-manager "0.1.1-SNAPSHOT"]
     [http-kit "2.2.0"]
     [metosin/reitit-core "0.1.1-SNAPSHOT"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]
@@ -67,9 +68,13 @@
       :dependencies [
         [clojusc/ltest "0.3.0"]]
       :plugins [
-        [lein-ltest "0.3.0"]]
+        [lein-ltest "0.3.0"]
+        [test2junit "1.4.0"]]
       :test-selectors {
-        :select :select}}
+        :unit #(not (or (:integration %) (:system %)))
+        :integration :integration
+        :system :system
+        :default (complement :system)}}
     :docs {
       :dependencies [
         [clojang/codox-theme "0.2.0-SNAPSHOT"]]
@@ -89,6 +94,9 @@
         :output-path "docs/current"}}}
   :aliases {
     ;; Dev & Testing Aliases
+    "repl" ["do"
+      ["clean"]
+      ["repl"]]
     "ubercompile" ["with-profile" "+ubercompile" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
@@ -114,6 +122,12 @@
     "docs" ["do"
       ["codox"]
       ["marginalia"]]
+    ;; Build tasks
+    "build" ["do"
+      ["ltest" ":unit"]
+      ["junit" ":unit"]
+      ["ubercompile"]
+      ["uberjar"]]
     ;; Application
     "start-cmr-graph"
       ["trampoline" "run"]
