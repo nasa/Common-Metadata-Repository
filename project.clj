@@ -9,8 +9,8 @@
   (println (slurp "dev-resources/text/banner.txt"))
   (println (slurp "dev-resources/text/loading.txt")))
 
-(defproject gov.nasa.earthdata/cmr-dev-env-manager "0.0.3-SNAPSHOT"
-  :description "An Alternate Development Environment Manager for the CMR"
+(defproject gov.nasa.earthdata/cmr-process-manager "0.1.0-SNAPSHOT"
+  :description "Process management functionality for CMR services"
   :url "https://github.com/cmr-exchange/dev-env-manager"
   :license {
     :name "Apache License 2.0"
@@ -19,32 +19,8 @@
   :dependencies [
     [cheshire "5.8.0"]
     [com.stuartsierra/component "0.3.2"]
-    [leiningen-core "2.7.1" :exclusions [
-      commons-io
-      org.apache.httpcomponents/httpcore
-      org.slf4j/slf4j-nop]]
-    [org.clojure/clojure "1.8.0"]
-    [org.clojure/core.async "0.3.443" :exclusions [
-      org.clojure/tools.reader]]]
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;;   CMR D.E.M. specific configuration   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  :dem {
-    :logging {
-      :level :debug}
-    :elastic-search {
-      ;:image-id "docker.elastic.co/elasticsearch/elasticsearch:6.0.1"
-      :image-id "elasticsearch:1.6.2"
-      :ports ["9200:9200" "9300:9300"]
-      :env ["discovery.type=single-node"]
-      :container-id-file "/tmp/cmr-dem-elastic-container-id"}
-    :enabled-services #{
-      ;; Support services
-      :elastic-search
-      ;; CMR services
-      :mock-echo}
-    :timer {
-      :delay 1000}}
+    [org.clojure/clojure "1.9.0"]
+    [org.clojure/core.async "0.4.474"]]
   :profiles {
     ;; Tasks
     :ubercompile {:aot :all}
@@ -56,153 +32,57 @@
         }}
     :dev {
       :dependencies [
-        [clojusc/ltest "0.3.0-SNAPSHOT"]
+        [clojusc/dev-system "0.1.0"]
+        [clojusc/ltest "0.3.0"]
         [clojusc/trifl "0.3.0-SNAPSHOT"]
         [clojusc/twig "0.3.2"]
         [me.raynes/conch "0.8.0"]
-        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [
-          com.dadrox/quiet-slf4j
-          com.google.code.findbugs/jsr305
-          gorilla-repl
-          org.slf4j/slf4j-nop]]
-        [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT" :exclusions [
-          commons-io]]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths [
-        "dev-resources/src"
-        "libs/common-lib/src"
-        "libs/transmit-lib/src"]
+        "dev-resources/src"]
       :repl-options {
-        :init-ns cmr.dev.env.manager.repl}}
+        :init-ns cmr.process.manager.repl}}
     :test {
       :plugins [
-        [lein-ancient "0.6.14"]
-        [jonase/eastwood "0.2.5"]
-        [lein-bikeshed "0.5.0"]
+        [jonase/eastwood "0.2.6"]
+        [lein-ancient "0.6.15"]
+        [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
     :lint {
       :source-paths ^:replace ["src"]}
     :docs {
-      :dependencies [[clojang/codox-theme "0.2.0-SNAPSHOT"]]
+      :dependencies [
+        [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
       :plugins [
-        [lein-codox "0.10.3"]
+        [lein-codox "0.10.4"]
         [lein-simpleton "1.3.0"]]
       :codox {
-        :project {:name "CMR D.E.M."}
-        :themes [:clojang]
+        :project {:name "CMR Process Management"}
+        :themes [:eosdis]
+        :html {
+          :transforms [[:head]
+                       [:append
+                         [:script {
+                           :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+                           :id "earthdata-tophat-script"
+                           :data-show-fbm "true"
+                           :data-show-status "true"
+                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+                           :data-status-polling-interval "10"}]]
+                       [:body]
+                       [:prepend
+                         [:div {:id "earthdata-tophat2"
+                                :style "height: 32px;"}]]
+                       [:body]
+                       [:append
+                         [:script {
+                           :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+                           :type "text/javascript"}]]]}
+        :doc-paths ["resources/docs/markdown"]
         :output-path "docs/current"
-        :doc-paths ["resources/docs"]
-        :namespaces [#"^cmr\.dev\.env\.manager\.(?!test)"]
-        :metadata {:doc/format :markdown}}}
-    :instrumented {
-      :jvm-opts [
-        "-Dcom.sun.management.jmxremote"
-        "-Dcom.sun.management.jmxremote.ssl=false"
-        "-Dcom.sun.management.jmxremote.authenticate=false"
-        "-Dcom.sun.management.jmxremote.port=43210"]}
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;   Profiles for Managed Aapplications/Services   ;;;;;;;;;;;;;;;;;;;;;
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    :access-control {
-      :main cmr.access-control.runner
-      :source-paths [
-        "apps/access-control-app/src"
-        "apps/metadata-db-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/common-lib/src"
-        "libs/elastic-utils-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/transmit-lib/src"
-        "libs/umm-spec-lib/src"]}
-    :bootstrap {
-      :main cmr.bootstrap.runner
-      :source-paths [
-        "apps/access-control-app/src"
-        "apps/bootstrap-app/src"
-        "apps/indexer-app/src"
-        "apps/metadata-db-app/src"
-        "apps/virtual-product-app/src"
-        "libs/common-app-lib/src"
-        "libs/oracle-lib/src"
-        "libs/transmit-lib/src"]}
-    :cubby {
-      :main cmr.cubby.runner
-      :source-paths [
-        "apps/cubby-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/common-lib/src"
-        "libs/elastic-utils-lib/src"
-        "libs/transmit-lib/src"]}
-    :index-set {
-      :main cmr.index-set.runner
-      :source-paths [
-        "apps/index-set-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/elastic-utils-lib/src"]}
-    :indexer {
-      :main cmr.indexer.runner
-      :source-paths [
-        "apps/indexer-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/elastic-utils-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/transmit-lib/src"
-        "libs/umm-lib/src"
-        "libs/umm-spec-lib/src"]}
-    :ingest {
-      :main cmr.ingest.runner
-      :source-paths [
-        "apps/ingest-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/oracle-lib/src"
-        "libs/transmit-lib/src"
-        "libs/umm-lib/src"
-        "libs/umm-spec-lib/src"]}
-    :metadata-db {
-      :main cmr.metadata-db.runner
-      :source-paths [
-        "apps/metadata-db-app/src"
-        "libs/acl-lib/src"
-        "libs/common-app-lib/src"
-        "libs/common-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/oracle-lib/src"]}
-    :mock-echo {
-      :autoreload true
-      :main cmr.mock-echo.runner
-      :source-paths [
-        "apps/mock-echo-app/src"
-        "libs/common-app-lib/src"
-        "libs/common-lib/src"
-        "libs/transmit-lib/src"]}
-    :search {
-      :main cmr.search.runner
-      :source-paths [
-        "apps/search-app/src"
-        "libs/collection-renderer-lib/src"
-        "libs/common-app-lib/src"
-        "libs/elastic-utils-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/orbits-lib/src"
-        "libs/spatial-lib/src"
-        "libs/umm-lib/src"
-        "libs/umm-spec-lib/src"]}
-    :virtual-product {
-      :main cmr.virtual-product.runner
-      :source-paths [
-        "apps/virtual-product-app/src"
-        "libs/common-app-lib/src"
-        "libs/common-lib/src"
-        "libs/message-queue-lib/src"
-        "libs/transmit-lib/src"
-        "libs/umm-lib/src"]}}
+        :namespaces [#"^cmr\.process\.manager\.(?!test)"]
+        :metadata {:doc/format :markdown}}}}
   :aliases {
     ;; General aliases
     "repl" ["with-profile" "+custom-repl" "do"
@@ -224,10 +104,4 @@
       ["clean"]
       ["uberjar"]
       ["clean"]
-      ["test"]]
-    ;; Profiling
-    "instrumented-repl" ["with-profile" "+instrumented" "repl"]
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;   Application Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "mock-echo" ["with-profile" "+dev,+mock-echo" "run"]})
+      ["test"]]})
