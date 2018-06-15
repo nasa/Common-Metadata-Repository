@@ -7,6 +7,10 @@
     [me.raynes.conch.low-level :as shell]
     [taoensso.timbre :as log]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Process Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn get-process
   [system service-key]
   (get-in system [service-key :process-data]))
@@ -43,38 +47,57 @@
     (shell/destroy process-data)
     @exit))
 
-(defrecord ProcessRunner [
-  builder
-  process-keyword
-  process-data
-  opts]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrecord ProcessRunner
+  [builder
+   process-keyword
+   process-data])
+
+(defn start
+  [this]
+  (let [cfg ((:builder this) (:process-keyword this))
+        this (assoc this :config cfg)
+        process-key (:process-keyword this)
+        process-name (name process-key)]
+    (log/infof "Starting %s component ..." process-name)
+    (log/trace "Component keys:" (keys this))
+    (log/trace "Built configuration:" cfg)
+    (log/trace "Config:" (:config this))
+    (let [process-data (spawn! this "lein" process-name)]
+      (log/debugf "Started %s component." process-name)
+      (assoc this :process-data process-data
+                  :enabled true))))
+
+(defn stop
+  [this]
+  (let [process-key (:process-keyword this)
+        process-name (name process-key)]
+    (log/debug "Process name:" process-name)
+    (log/infof "Stopping %s component ..." process-name)
+    (let [process-data (:process-data this)]
+      (log/trace "process-data:" process-data)
+      (log/trace "process:" (:process process-data))
+      (terminate! this (:process-data this))
+      (log/debugf "Stopped %s component." process-name)
+      (assoc this :process-data nil))))
+
+(def lifecycle-behaviour
+  {:start start
+   :stop stop})
+
+(extend ProcessRunner
   component/Lifecycle
+  lifecycle-behaviour)
 
-  (start [component]
-    (let [cfg (builder (:process-keyword component))
-          component (assoc component :config cfg)
-          process-key (:process-keyword component)
-          process-name (name process-key)]
-      (log/infof "Starting %s component ..." process-name)
-      (log/debug "Component keys:" (keys component))
-      (log/trace "Built configuration:" cfg)
-      (log/debug "Config:" (:config component))
-      (let [process-data (spawn! component "lein" process-name)]
-        (log/debugf "Started %s component." process-name)
-        (assoc component :process-data process-data
-                         :enabled true))))
-
-  (stop [component]
-    (let [process-key (:process-keyword component)
-          process-name (name process-key)]
-      (log/debug "Process name:" process-name)
-      (log/infof "Stopping %s component ..." process-name)
-      (let [process-data (:process-data component)]
-        (log/trace "process-data:" process-data)
-        (log/trace "process:" (:process process-data))
-        (terminate! component (:process-data component))
-        (log/debugf "Stopped %s component." process-name)
-        (assoc component :process-data nil)))))
+(defn create-component
+  ""
+  [config-builder-fn process-keyword]
+  (map->ProcessRunner
+    {:builder config-builder-fn
+     :process-keyword process-keyword}))
 
 (defn create-component
   ""

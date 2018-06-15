@@ -18,7 +18,10 @@
   :exclusions [org.clojure/clojure]
   :dependencies [
     [cheshire "5.8.0"]
+    [clojusc/trifl "0.3.0-SNAPSHOT"]
+    [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
+    [me.raynes/conch "0.8.0"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]]
   :profiles {
@@ -34,9 +37,6 @@
       :dependencies [
         [clojusc/dev-system "0.1.0"]
         [clojusc/ltest "0.3.0"]
-        [clojusc/trifl "0.3.0-SNAPSHOT"]
-        [clojusc/twig "0.3.2"]
-        [me.raynes/conch "0.8.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths [
         "dev-resources/src"]

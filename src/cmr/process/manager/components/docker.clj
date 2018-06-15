@@ -4,6 +4,10 @@
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Docker Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn get-opts
   [system service-key]
   (get-in system [service-key :opts]))
@@ -20,40 +24,60 @@
   [system service-key]
   (docker/state (get-opts system service-key)))
 
-(defrecord DockerRunner [
-  builder
-  process-keyword
-  opts-fn
-  opts]
+(defn get-container-pid
+  [system service-key]
+  (docker/pid (get-opts system service-key)))
+
+(defn get-container-cpu
+  [system service-key]
+  (docker/get-cpu (get-opts system service-key)))
+
+(defn get-container-mem
+  [system service-key]
+  (docker/get-mem (get-opts system service-key)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrecord DockerRunner
+  [process-keyword
+   opts])
+
+(defn start
+  [this]
+  (let [opts (:opts this)
+        process-key (:process-keyword this)
+        process-name (name process-key)]
+    (log/infof "Starting %s docker component ..." process-name)
+    (log/trace "Component keys:" (keys this))
+    (log/trace "Config:" (:config this))
+    (log/debug "Docker options:" opts)
+    (docker/pull opts)
+    (docker/run opts)
+    (assoc this :enabled true :opts opts)))
+
+(defn stop
+  [this]
+  (let [process-key (:process-keyword this)
+        process-name (name process-key)]
+    (log/debug "Process name:" process-name)
+    (log/infof "Stopping %s docker component ..." process-name)
+    (docker/stop (:opts this))
+    (assoc this :enabled nil :opts nil)))
+
+
+(def lifecycle-behaviour
+  {:start start
+   :stop stop})
+
+(extend DockerRunner
   component/Lifecycle
-
-  (start [component]
-    (let [cfg (builder (:process-keyword component))
-          component (assoc component :config cfg)
-          opts ((:opts-fn component) component)
-          process-key (:process-keyword component)
-          process-name (name process-key)]
-      (log/infof "Starting %s docker component ..." process-name)
-      (log/debug "Component keys:" (keys component))
-      (log/trace "Built configuration:" cfg)
-      (log/debug "Config:" (:config component))
-      (log/debug "Docker options:" opts)
-      (docker/pull opts)
-      (docker/run opts)
-      (assoc component :enabled true :opts opts)))
-
-  (stop [component]
-    (let [process-key (:process-keyword component)
-          process-name (name process-key)]
-      (log/debug "Process name:" process-name)
-      (log/infof "Stopping %s docker component ..." process-name)
-      (docker/stop (:opts component))
-      component)))
+  lifecycle-behaviour)
 
 (defn create-component
   ""
-  [config-builder-fn process-keyword docker-opts-fn]
+  [process-keyword opts]
   (map->DockerRunner
-    {:builder config-builder-fn
-     :process-keyword process-keyword
-     :opts-fn docker-opts-fn}))
+    {:process-keyword process-keyword
+     :opts opts}))

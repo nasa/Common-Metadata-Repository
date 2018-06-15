@@ -26,14 +26,28 @@
   [process-data]
   (process/get-descendants (get-pid process-data)))
 
+(defn get-cpu-mem
+  [process-data]
+  (process/get-ps-info "%cpu,%mem" (get-pid process-data)))
+
+(defn get-cpu
+  [process-data]
+  (:%cpu (get-cpu-mem process-data)))
+
+(defn get-mem
+  [process-data]
+  (:%mem (get-cpu-mem process-data)))
+
 (defn exec
   "Executes the command and args in a sub-process, returning the result. Will
   log an error in the event the process writes to `stderr`; will log the result
-  to `stdout` if the D.E.M. log-level is set to `:trace`."
+  to `stdout` if the log-level is set to `:trace`."
   [& cmd-and-args]
+  (log/tracef "Making sh call with %s ..." cmd-and-args)
   (let [result (apply shell/sh cmd-and-args)
         out (:out result)
         err (:err result)]
+    (log/trace "Got result ...")
     (when (seq out)
       (log/trace out))
     (when (seq err)
