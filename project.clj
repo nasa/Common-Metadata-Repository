@@ -71,6 +71,7 @@
       :plugins [
         [lein-ltest "0.3.0"]
         [test2junit "1.4.0"]]
+      :test2junit-output-dir "junit-test-results"
       :test-selectors {
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
@@ -113,6 +114,7 @@
       ;["eastwood"]
       ]
     "ltest" ["with-profile" "+test" "ltest"]
+    "junit" ["with-profile" "+test" "test2junit"]
     ;; Documentation
     "codox" ["with-profile" "+docs"
       "codox"]
