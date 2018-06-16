@@ -15,9 +15,9 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-opendap "1.0.0-SNAPSHOT"
-  :description "OPeNDAP Integration in the CMR"
-  :url "https://github.com/cmr-exchange/cmr-opendap"
+(defproject gov.nasa.earthdata/authz "0.1.0-SNAPSHOT"
+  :description "An authorization utility library for CMR services"
+  :url "https://github.com/cmr-exchange/authz"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
@@ -25,22 +25,12 @@
     [cheshire "5.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
-    [com.stuartsierra/component "0.3.2"]
-    [environ "1.1.0"]
-    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
-    [markdown-clj "1.0.2"]
-    [metosin/reitit-core "0.1.1-SNAPSHOT"]
-    [metosin/reitit-ring "0.1.1-SNAPSHOT"]
-    [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
-    [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-core "1.6.3"]
-    [ring/ring-codec "1.1.0"]
-    [ring/ring-defaults "0.3.1"]
-    [selmer "1.11.7"]
     [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"

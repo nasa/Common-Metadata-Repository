@@ -1,13 +1,11 @@
-(ns cmr.opendap.auth.acls
+(ns cmr.authz.acls
   "This namespace is provided for common code needed by the roles and
   permissions namespaces."
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [cmr.opendap.components.caching :as caching]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [org.httpkit.client :as httpc]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
    [taoensso.timbre :as log]))
 
 (def permissions-resource

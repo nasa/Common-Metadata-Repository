@@ -1,4 +1,4 @@
-(ns cmr.opendap.auth.permissions
+(ns cmr.authz.permissions
   "Permissions for CMR OPeNDAP are utilized in the application routes when it is
   necessary to limit access to resources based on the specific capabilities
   granted to a user.
@@ -14,9 +14,7 @@
    ...]"
   (:require
    [clojure.set :as set]
-   [cmr.opendap.auth.acls :as acls]
-   [cmr.opendap.components.caching :as caching]
-   [cmr.opendap.components.config :as config]
+   [cmr.authz.acls :as acls]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -91,30 +89,3 @@
       (do
         (log/debug "Got permissions:" result)
         (cmr-acl->reitit-acl result)))))
-
-(defn cached-concept
-  "Look up the permissions for a concept in the cache; if there is a miss,
-  make the actual call for the lookup."
-  [system token user-id concept-id]
-  (try
-    (caching/lookup system
-                    (permissions-key token concept-id)
-                    #(concept (config/get-access-control-url system)
-                              token
-                              user-id
-                              concept-id))
-    (catch Exception e
-      (ex-data e))))
-
-(defn concept?
-  "Check to see if the concept permissions of a given token+user match the
-  required permissions for the route."
-  [route-perms cache-lookup concept-id]
-  (let [id (keyword concept-id)
-        required (cmr-acl->reitit-acl route-perms)
-        required-set (id required)
-        has-set (id cache-lookup)]
-    (log/debug "cache-lookup:" cache-lookup)
-    (log/debug "Permissions required-set:" required-set)
-    (log/debug "Permissions has-set:" has-set)
-    (seq (set/intersection required-set has-set))))

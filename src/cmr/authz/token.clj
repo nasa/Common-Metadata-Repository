@@ -1,14 +1,11 @@
-(ns cmr.opendap.auth.token
+(ns cmr.authz.token
   "The functions in this API are responsible for such things as making queries
   to CMR Access Control to get token-to-user mappings, extracting tokens from
   request headers, and defining caching keys and related tasks."
   (:require
    [clojure.data.xml :as xml]
-   [cmr.opendap.components.caching :as caching]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.const :as const]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in]))
 
@@ -77,15 +74,3 @@
     (if errors
       (throw (ex-info (first errors) result))
       result)))
-
-(defn ->cached-user
-  "Look up the user for a token in the cache; if there is a miss, make the
-  actual call for the lookup."
-  [system token]
-  (try
-    (caching/lookup
-     system
-     (user-id-key token)
-     #(->user (config/get-echo-rest-url system) token))
-    (catch Exception e
-      (ex-data e))))
