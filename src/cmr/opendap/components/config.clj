@@ -1,5 +1,6 @@
 (ns cmr.opendap.components.config
   (:require
+   [cmr.authz.components.config :as authz-config]
    [cmr.opendap.config :as config]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
@@ -32,28 +33,11 @@
   [system]
   (:default-content-type (get-cfg system)))
 
-(defn cache-dumpfile
-  [system]
-  (get-in (get-cfg system) [:caching :dumpfile]))
-
-(defn cache-init
-  [system]
-  (get-in (get-cfg system) [:caching :init]))
-
-(defn cache-lru-threshold
-  [system]
-  (get-in (get-cfg system) [:caching :lru :threshold]))
-
-(defn cache-ttl-ms
-  [system]
-  (* (get-in (get-cfg system) [:caching :ttl :minutes]) ; minutes
-     60 ; seconds
-     1000 ; milliseconds
-     ))
-
-(defn cache-type
-  [system]
-  (get-in (get-cfg system) [:caching :type]))
+(def cache-dumpfile #'authz-config/cache-dumpfile)
+(def cache-init #'authz-config/cache-init)
+(def cache-lru-threshold #'authz-config/cache-lru-threshold)
+(def cache-ttl-ms #'authz-config/cache-ttl-ms)
+(def cache-type #'authz-config/cache-type)
 
 (defn cmr-max-pagesize
   [system]
@@ -85,8 +69,8 @@
   (config/service->url (get-service system service)))
 
 ;; The URLs returned by these functions have no trailing slash:
-(def get-access-control-url #(get-service-url % :access-control))
-(def get-echo-rest-url #(get-service-url % :echo-rest))
+(def get-access-control-url #'authz-config/get-access-control-url)
+(def get-echo-rest-url #'authz-config/get-echo-rest-url)
 (def get-ingest-url #(get-service-url % :ingest))
 (def get-opendap-url #(get-service-url % :opendap))
 (def get-search-url #(get-service-url % :search))

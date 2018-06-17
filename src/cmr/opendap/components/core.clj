@@ -1,7 +1,7 @@
 (ns cmr.opendap.components.core
   (:require
+    [cmr.authz.components.caching :as auth-caching]
     [cmr.opendap.components.auth :as auth]
-    [cmr.opendap.components.caching :as caching]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.httpd :as httpd]
     [cmr.opendap.components.logging :as logging]
@@ -19,30 +19,30 @@
              (logging/create-component)
              [:config])})
 
-(def cache
-  {:caching (component/using
-             (caching/create-component)
-             [:config :logging])})
+(def auth-cache
+  {:auth-caching (component/using
+                  (auth-caching/create-component)
+                  [:config :logging])})
 
 (def authz
   {:auth (component/using
           (auth/create-component)
-          [:caching])})
+          [:auth-caching])})
 
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :caching :auth])})
+           [:config :logging :auth-caching :auth])})
 
-(def cache-without-logging
-  {:caching (component/using
-             (caching/create-component)
-             [:config])})
+(def auth-cache-without-logging
+  {:auth-caching (component/using
+                  (auth-caching/create-component)
+                  [:config])})
 
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config :caching :auth])})
+           [:config :auth-caching :auth])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,7 +63,7 @@
   (component/map->SystemMap
     (merge cfg
            log
-           cache
+           auth-cache
            authz
            httpd)))
 
@@ -71,7 +71,7 @@
   []
   (component/map->SystemMap
     (merge cfg
-           cache-without-logging
+           auth-cache-without-logging
            authz
            httpd-without-logging)))
 

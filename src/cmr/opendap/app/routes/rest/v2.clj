@@ -5,7 +5,7 @@
   handed off to the relevant request handler function."
   (:require
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.app.handler.cache :as cache-handler]
+   [cmr.opendap.app.handler.auth-cache :as auth-cache-handler]
    [cmr.opendap.app.handler.collection :as collection-handler]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.app.routes.rest.v1 :as routes-v1]
@@ -22,14 +22,14 @@
   [httpd-component]
   (concat
     [["/opendap/cache" {
-      :get {:handler (cache-handler/lookup-all httpd-component)
+      :get {:handler (auth-cache-handler/lookup-all httpd-component)
             :roles #{:admin}}
-      :delete {:handler (cache-handler/evict-all httpd-component)
+      :delete {:handler (auth-cache-handler/evict-all httpd-component)
                :roles #{:admin}}}]
      ["/opendap/cache/:item-key" {
-      :get {:handler (cache-handler/lookup httpd-component)
+      :get {:handler (auth-cache-handler/lookup httpd-component)
             :roles #{:admin}}
-      :delete {:handler (cache-handler/evict httpd-component)
+      :delete {:handler (auth-cache-handler/evict httpd-component)
                :roles #{:admin}}}]]
    (routes-v1/admin-api httpd-component)))
 

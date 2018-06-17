@@ -4,13 +4,6 @@
    [clojure.test :refer :all]
    [cmr.opendap.errors :as errors]))
 
-(deftest any-auth-errors?
-  (is (not (errors/any-auth-errors? {:errors []})))
-  (is (not (errors/any-auth-errors? {:errors ["Oops"]})))
-  (is (errors/any-auth-errors? {:errors ["Oops"
-                                         errors/no-permissions]}))
-  (is (errors/any-auth-errors? {:errors [errors/no-permissions]})))
-
 (deftest any-client-errors?
   (is (not (errors/any-client-errors? {:errors []})))
   (is (errors/any-client-errors? {:errors ["Oops"

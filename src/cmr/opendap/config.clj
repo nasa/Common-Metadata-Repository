@@ -46,17 +46,11 @@
 
 (defn service-keys
   "We need to special-case two-word services, as split by the environment and
-  system property parser above."
+  system property parser above.
+
+  Note: this function originally had more in it, but was moved into cmr.authz."
   [^Keyword service]
-  (cond (or (= service :access)
-            (= service :access-control))
-        [:access :control]
-
-        (or (= service :echo)
-            (= service :echo-rest))
-        [:echo :rest]
-
-        :else [service]))
+  [service])
 
 (defn service->base-url
   [service]

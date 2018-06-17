@@ -5,8 +5,6 @@
   handed off to the relevant request handler function."
   (:require
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.app.handler.cache :as cache-handler]
-   [cmr.opendap.app.handler.collection :as collection-handler]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.health :as health]
    [cmr.opendap.site.pages :as pages]

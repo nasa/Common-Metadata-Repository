@@ -8,6 +8,7 @@
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
+   [cmr.authz.errors :as authz-errors]
    [cmr.http.kit.response :as response]
    [cmr.opendap.errors :as errors]
    [ring.util.http-response :as ring-response]
@@ -56,8 +57,8 @@
 
 (defn process-err-results
   [data]
-  (cond (errors/any-auth-errors? data)
-        {:status errors/auth-error-code}
+  (cond (authz-errors/any-errors? data)
+        {:status authz-errors/error-code}
 
         (errors/any-server-errors? data)
         {:status errors/server-error-code}

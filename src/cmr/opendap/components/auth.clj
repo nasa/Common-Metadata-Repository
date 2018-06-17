@@ -7,13 +7,13 @@
   resources for authorization."
   (:require
    [clojure.set :as set]
+   [cmr.authz.components.caching :as caching]
+   [cmr.authz.components.config :as config]
+   [cmr.authz.errors :as errors]
    [cmr.authz.permissions :as permissions]
    [cmr.authz.roles :as roles]
    [cmr.authz.token :as token]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.components.caching :as caching]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.errors :as errors]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 

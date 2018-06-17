@@ -7,7 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def default-error-code 400)
-(def auth-error-code 403)
 (def client-error-code 400)
 (def server-error-code 500)
 
@@ -97,8 +96,6 @@
                        unsupported
                        unsupported-processing-level
                        problem-processing-level}
-   auth-error-code #{no-permissions
-                     token-required}
    server-error-code #{empty-gnl-data-files
                        ;;empty-gnl-data-file-url
                        problem-granules
@@ -110,11 +107,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Error Handling API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn any-auth-errors?
-  [errors]
-  (seq (set/intersection (get status-map auth-error-code)
-                         (set (:errors errors)))))
 
 (defn any-client-errors?
   [errors]

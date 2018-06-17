@@ -1,9 +1,9 @@
-(ns cmr.opendap.app.handler.cache
+(ns cmr.opendap.app.handler.auth-cache
   "This namespace defines the handlers for the cache REST API resources."
   (:require
    [clojure.java.io :as io]
    [clojusc.twig :as twig]
-   [cmr.opendap.components.caching :as caching]
+   [cmr.authz.components.caching :as caching]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
 
