@@ -2,7 +2,7 @@
   "Custom ring middleware for CMR OPeNDAP."
   (:require
    [clojure.string :as string]
-   [cmr.opendap.auth :as auth]
+   [cmr.opendap.components.auth :as auth]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]

@@ -1,10 +1,10 @@
 (ns cmr.opendap.components.caching
   (:require
-    [clojure.core.cache :as cache]
-    [clojure.java.io :as io]
-    [com.stuartsierra.component :as component]
-    [cmr.opendap.components.config :as config]
-    [taoensso.timbre :as log]))
+   [clojure.core.cache :as cache]
+   [clojure.java.io :as io]
+   [cmr.opendap.components.config :as config]
+   [com.stuartsierra.component :as component]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/utility Data & Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

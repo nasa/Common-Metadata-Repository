@@ -1,4 +1,4 @@
-(ns cmr.opendap.auth
+(ns cmr.opendap.components.auth
   "This namespace represents the authorization API for CMR OPeNDAP. This is
   where the rest of the application goes when it needs to perform checks on
   roles or permissions for a given user and/or concept.
@@ -14,7 +14,37 @@
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
+   [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Support/utility Data & Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn admin-role?
+  "Check to see if the roles of a given token+user match the required roles for
+  the route."
+  [route-roles cache-lookup]
+  (log/debug "Roles required-set:" route-roles)
+  (log/debug "Roles has-set:" cache-lookup)
+  (seq (set/intersection cache-lookup route-roles)))
+
+(defn concept-permission?
+  "Check to see if the concept permissions of a given token+user match the
+  required permissions for the route."
+  [route-perms cache-lookup concept-id]
+  (let [id (keyword concept-id)
+        required (permissions/cmr-acl->reitit-acl route-perms)
+        required-set (id required)
+        has-set (id cache-lookup)]
+    (log/debug "cache-lookup:" cache-lookup)
+    (log/debug "Permissions required-set:" required-set)
+    (log/debug "Permissions has-set:" has-set)
+    (seq (set/intersection required-set has-set))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cached-user
   "Look up the user for a token in the cache; if there is a miss, make the
@@ -41,14 +71,6 @@
     (catch Exception e
       {:errors (ex-data e)})))
 
-(defn admin-role?
-  "Check to see if the roles of a given token+user match the required roles for
-  the route."
-  [route-roles cache-lookup]
-  (log/debug "Roles required-set:" route-roles)
-  (log/debug "Roles has-set:" cache-lookup)
-  (seq (set/intersection cache-lookup route-roles)))
-
 (defn cached-concept-permission
   "Look up the permissions for a concept in the cache; if there is a miss,
   make the actual call for the lookup."
@@ -63,19 +85,6 @@
                       concept-id))
     (catch Exception e
       (ex-data e))))
-
-(defn concept-permission?
-  "Check to see if the concept permissions of a given token+user match the
-  required permissions for the route."
-  [route-perms cache-lookup concept-id]
-  (let [id (keyword concept-id)
-        required (permissions/cmr-acl->reitit-acl route-perms)
-        required-set (id required)
-        has-set (id cache-lookup)]
-    (log/debug "cache-lookup:" cache-lookup)
-    (log/debug "Permissions required-set:" required-set)
-    (log/debug "Permissions has-set:" has-set)
-    (seq (set/intersection required-set has-set))))
 
 (defn check-roles
   "A supporting function for `check-roles-permissions` that handles the roles
@@ -164,3 +173,38 @@
         (log/debug (str "Neither roles nor permissions were annotated in "
                         "the routes; skipping ACL check ..."))
         (handler request)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrecord Authz [])
+
+(defn start
+  [this]
+  (log/info "Starting authorization component ...")
+  (log/debug "Started authorization component.")
+  this)
+
+(defn stop
+  [this]
+  (log/info "Stopping authorization component ...")
+  (log/debug "Stopped authorization component.")
+  this)
+
+(def lifecycle-behaviour
+  {:start start
+   :stop stop})
+
+(extend Authz
+  component/Lifecycle
+  lifecycle-behaviour)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Component Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn create-component
+  ""
+  []
+  (map->Authz {}))

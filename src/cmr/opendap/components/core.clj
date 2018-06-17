@@ -1,5 +1,6 @@
 (ns cmr.opendap.components.core
   (:require
+    [cmr.opendap.components.auth :as auth]
     [cmr.opendap.components.caching :as caching]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.httpd :as httpd]
@@ -23,10 +24,15 @@
              (caching/create-component)
              [:config :logging])})
 
+(def authz
+  {:auth (component/using
+          (auth/create-component)
+          [:caching])})
+
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :caching])})
+           [:config :logging :caching :auth])})
 
 (def cache-without-logging
   {:caching (component/using
@@ -36,7 +42,7 @@
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config :caching])})
+           [:config :caching :auth])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,6 +64,7 @@
     (merge cfg
            log
            cache
+           authz
            httpd)))
 
 (defn initialize-without-logging
@@ -65,6 +72,7 @@
   (component/map->SystemMap
     (merge cfg
            cache-without-logging
+           authz
            httpd-without-logging)))
 
 (def init-lookup
