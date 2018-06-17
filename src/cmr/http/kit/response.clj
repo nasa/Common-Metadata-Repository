@@ -83,7 +83,11 @@
 
 (defn error-handler
   ([status headers body]
-    (error-handler status headers body "Unexpected cmr-authz error."))
+    (error-handler
+      status
+      headers
+      body
+      (format "Unexpected cmr-authz error (%s)." status)))
   ([status headers body default-msg]
     (let [ct (:content-type headers)]
       (log/trace "Headers:" headers)
