@@ -1,6 +1,6 @@
 {:api-version "v2"
  :default-content-type "json"
- :caching
+ :auth-caching
   {:init {}
    :ttl
     {:minutes 60}
