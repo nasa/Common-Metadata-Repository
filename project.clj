@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/authz "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-authz "0.1.0-SNAPSHOT"
   :description "An authorization utility library for CMR services"
   :url "https://github.com/cmr-exchange/authz"
   :license {

@@ -62,9 +62,10 @@
     (request/async-post
       url
       (-> {:body data}
+          (http/add-options)
           (request/add-token-header token)
           (request/add-form-ct))
-      #(response/client-handler % parse-username))))
+      #(response/client-handler % response/error-handler parse-username))))
 
 (defn ->user
   "Given a token, return the associated user name."
