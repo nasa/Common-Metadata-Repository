@@ -8,6 +8,7 @@
     [cheshire "5.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
+    [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [metosin/reitit-ring "0.1.1-SNAPSHOT"]

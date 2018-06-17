@@ -1,9 +1,7 @@
 (ns cmr.authz.config
   (:require
    [clojure.edn :as edn]
-   [clojure.java.io :as io])
-  (:import
-    (clojure.lang Keyword)))
+   [clojure.java.io :as io]))
 
 (def config-file "config/cmr-authz/config.edn")
 
@@ -13,6 +11,18 @@
   ([filename]
     (with-open [rdr (io/reader (io/resource filename))]
       (edn/read (new java.io.PushbackReader rdr)))))
+
+(defn service-keys
+  "We need to special-case two-word services, as split by the environment
+  setup done in other cmr projects."
+  [service]
+  (cond (or (= service :access)
+            (= service :access-control))
+        [:access :control]
+
+        (or (= service :echo)
+            (= service :echo-rest))
+        [:echo :rest]))
 
 (defn service->base-url
   [service]
