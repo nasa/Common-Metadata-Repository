@@ -8,83 +8,45 @@
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
+   [cmr.http.kit.response :as response]
    [cmr.opendap.errors :as errors]
-   [ring.util.http-response :as response]
+   [ring.util.http-response :as ring-response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in])
   (:refer-clojure :exclude [error-handler]))
 
-(defn parse-json-body
-  [body]
-  (let [str-data (if (string? body) body (slurp body))
-        json-data (json/parse-string str-data true)]
-    (log/trace "str-data:" str-data)
-    (log/trace "json-data:" json-data)
-    json-data))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Backwards-compatible Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn json-errors
-  [body]
-  (:errors (parse-json-body body)))
+(def parse-json-body response/parse-json-body)
+(def json-errors response/json-errors)
+(def parse-xml-body response/parse-xml-body)
+(def xml-errors response/xml-errors)
+(def ok response/ok)
+(def not-found response/not-found)
+(def cors response/cors)
+(def add-header response/add-header)
+(def version-media-type response/version-media-type)
+(def errors response/errors)
+(def error response/error)
+(def not-allowed response/not-allowed)
 
-(defn parse-xml-body
-  [body]
-  (let [str-data (if (string? body) body (slurp body))]
-    (xml/parse-str str-data)))
-
-(defn xml-errors
-  [body]
-  (vec (xml-in/find-all (parse-xml-body body)
-                        [:errors :error])))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Custom Response Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn error-handler
   [status headers body]
-  (let [default-msg (format errors/status-code status)
-        ct (:content-type headers)]
-    (log/trace "Headers:" headers)
-    (log/trace "Content-Type:" ct)
-    (log/trace "Body:" body)
-    (cond (nil? ct)
-          (do
-            (log/error body)
-            {:errors [body]})
-
-          (string/starts-with? ct "application/xml")
-          (let [errs (xml-errors body)]
-            (log/error errs)
-            {:errors errs})
-
-          (string/starts-with? ct "application/json")
-          (let [errs (json-errors body)]
-            (log/error errs)
-            {:errors errs})
-
-          :else
-          {:errors [default-msg]})))
+  (response/error-handler status headers body (format errors/status-code status)))
 
 (defn client-handler
   ([response]
     (client-handler response identity))
-  ([{:keys [status headers body error]} parse-fn]
-    (log/debug "Handling client response ...")
-    (cond error
-          (do
-            (log/error error)
-            {:errors [error]})
+  ([response parse-fn]
+    (response/client-handler response error-handler parse-fn)))
 
-          (>= status 400)
-          (error-handler status headers body)
-
-          :else
-          (do
-            (log/trace "headers:" headers)
-            (log/trace "body:" body)
-            (parse-fn body)))))
-
-(def json-handler #(client-handler % parse-json-body))
-
-(defn ok
-  [_request & args]
-  (response/ok args))
+(def json-handler #(client-handler % response/parse-json-body))
 
 (defn process-ok-results
   [data]
@@ -117,61 +79,18 @@
   (-> data
       process-results
       (assoc :body (json/generate-string data))
-      (response/content-type "application/json")))
+      (ring-response/content-type "application/json")))
 
 (defn text
   [_request data]
   (-> data
       process-results
       (assoc :body data)
-      (response/content-type "text/plain")))
+      (ring-response/content-type "text/plain")))
 
 (defn html
   [_request data]
   (-> data
       process-results
       (assoc :body data)
-      (response/content-type "text/html")))
-
-(defn not-found
-  [_request]
-  (response/content-type
-   (response/not-found "Not Found")
-   "text/plain"))
-
-(defn cors
-  [request response]
-  (case (:request-method request)
-    :options (-> response
-                 (response/content-type "text/plain; charset=utf-8")
-                 (response/header "Access-Control-Allow-Origin" "*")
-                 (response/header "Access-Control-Allow-Methods" "POST, PUT, GET, DELETE, OPTIONS")
-                 (response/header "Access-Control-Allow-Headers" "Content-Type")
-                 (response/header "Access-Control-Max-Age" "2592000"))
-    (response/header response "Access-Control-Allow-Origin" "*")))
-
-(defn add-header
-  [response field value]
-  (assoc-in response [:headers (if (string? field) field (name field))] value))
-
-(defn version-media-type
-  [response value]
-  (add-header response :cmr-media-type value))
-
-(defn errors
-  [errors]
-  {:errors errors})
-
-(defn error
-  [error]
-  (errors [error]))
-
-(defn not-allowed
-  ([message]
-   (not-allowed message []))
-  ([message other-errors]
-   (-> (conj other-errors message)
-       errors
-       json/generate-string
-       response/forbidden
-       (response/content-type "application/json"))))
+      (ring-response/content-type "text/html")))

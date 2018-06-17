@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clojure.core.async :as async]
    [clojure.java.io :as io]
-   [cmr.opendap.auth.token :as token]
+   [cmr.authz.token :as token]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.core :as ous]

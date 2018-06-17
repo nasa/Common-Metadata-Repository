@@ -6,6 +6,9 @@
   Currently, this namespace is only used by the REST middleware that checks
   resources for authorization."
   (:require
+   [cmr.authz.permissions :as authz-permissions]
+   [cmr.authz.roles :as authz-roles]
+   [cmr.authz.token :as authz-token]
    [cmr.opendap.auth.permissions :as permissions]
    [cmr.opendap.auth.roles :as roles]
    [cmr.opendap.auth.token :as token]
@@ -32,7 +35,7 @@
   "A supporting function for `check-roles-permissions` that handles the
   permissions side of things."
   [system handler request route-permissions user-token user-id]
-  (let [concept-id (permissions/route-concept-id request)
+  (let [concept-id (authz-permissions/route-concept-id request)
         lookup (permissions/cached-concept
                 system user-token user-id concept-id)
         errors (:errors lookup)]
@@ -49,7 +52,7 @@
   "A supporting function for `check-route-access` that handles the actual
   checking."
   [system handler request route-roles route-permissions]
-  (if-let [user-token (token/extract request)]
+  (if-let [user-token (authz-token/extract request)]
     (let [user-lookup (token/->cached-user system user-token)
           errors (:errors user-lookup)]
       (log/debug "ECHO token provided; proceeding ...")
@@ -88,8 +91,8 @@
   ;; Before performing any GETs/POSTs against CMR Access Control or ECHO,
   ;; let's make sure that's actually necessary, only doing it in the cases
   ;; where the route is annotated for roles/permissions.
-  (let [route-roles (roles/route-annotation request)
-        route-permissions (permissions/route-annotation request)]
+  (let [route-roles (authz-roles/route-annotation request)
+        route-permissions (authz-permissions/route-annotation request)]
     (if (or route-roles route-permissions)
       (do
         (log/debug (str "Either roles or permissions were annotated in "
