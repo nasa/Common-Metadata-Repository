@@ -1,8 +1,8 @@
-(ns cmr.opendap.tests.unit.auth.token
+(ns cmr.authz.tests.unit.token
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.auth.token :as token]))
+    [cmr.authz.token :as token]))
 
 (def xml-test-body
   (str "<token_info>\n"

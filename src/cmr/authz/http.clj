@@ -1,5 +1,6 @@
 (ns cmr.authz.http
   (:require
+    [cmr.authz.const :as const]
     [cmr.http.kit.request :as request]
     [taoensso.timbre :as log]))
 

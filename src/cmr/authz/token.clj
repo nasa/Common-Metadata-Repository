@@ -4,6 +4,7 @@
   request headers, and defining caching keys and related tasks."
   (:require
    [clojure.data.xml :as xml]
+   [cmr.authz.http :as http]
    [cmr.http.kit.request :as request]
    [cmr.http.kit.response :as response]
    [taoensso.timbre :as log]
