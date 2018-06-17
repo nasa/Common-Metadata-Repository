@@ -1,4 +1,4 @@
-{:caching
+{:auth-caching
   {:init {}
    :ttl
     {:minutes 60}
