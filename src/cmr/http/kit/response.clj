@@ -10,7 +10,8 @@
    [clojure.string :as string]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
-   [xml-in.core :as xml-in]))
+   [xml-in.core :as xml-in])
+  (:refer-clojure :exclude [error-handler]))
 
 (defn parse-json-body
   [body]
@@ -79,3 +80,52 @@
        json/generate-string
        response/forbidden
        (response/content-type "application/json"))))
+
+(defn error-handler
+  ([status headers body]
+    (error-handler status headers body "Unexpected cmr-authz error."))
+  ([status headers body default-msg]
+    (let [ct (:content-type headers)]
+      (log/trace "Headers:" headers)
+      (log/trace "Content-Type:" ct)
+      (log/trace "Body:" body)
+      (cond (nil? ct)
+            (do
+              (log/error body)
+              {:errors [body]})
+
+            (string/starts-with? ct "application/xml")
+            (let [errs (xml-errors body)]
+              (log/error errs)
+              {:errors errs})
+
+            (string/starts-with? ct "application/json")
+            (let [errs (json-errors body)]
+              (log/error errs)
+              {:errors errs})
+
+            :else
+            {:errors [default-msg]}))))
+
+(defn client-handler
+  ([response]
+    (client-handler response error-handler))
+  ([response err-handler]
+    (client-handler response err-handler identity))
+  ([{:keys [status headers body error]} err-handler parse-fn]
+    (log/debug "Handling client response ...")
+    (cond error
+          (do
+            (log/error error)
+            {:errors [error]})
+
+          (>= status 400)
+          (err-handler status headers body)
+
+          :else
+          (do
+            (log/trace "headers:" headers)
+            (log/trace "body:" body)
+            (parse-fn body)))))
+
+(def json-handler #(client-handler % parse-json-body))
