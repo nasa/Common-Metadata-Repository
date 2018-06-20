@@ -20,6 +20,10 @@
       "additionalProperties": false,
       "description": "CMR level metadata about the item found. This represents data not found in the actual metadata.",
       "properties": {
+        "granule_count": {
+          "description": "A number >= 0 that indicates the number of granules for the collection.",
+          "type": "number"
+        },
         "provider-id": {
           "description": "The identity of the provider in the CMR",
           "type": "string",

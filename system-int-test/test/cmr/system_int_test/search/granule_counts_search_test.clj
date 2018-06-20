@@ -2,7 +2,7 @@
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.config :as common-config]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
@@ -351,7 +351,30 @@
                :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
                :iso19115 (search/find-metadata :collection :iso19115 {:include-has-granules true :include-granule-counts true})
                :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
-               :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))))))
+               :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))
+
+      (testing "granule_count"
+        (are3 [result-format results]
+          (let [expected-granule-count (util/map-keys :concept-id {coll1 2 coll2 2})
+                actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
+            (= expected-granule-count actual-granule-count))
+          "granule count in xml format"
+          :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
+
+          "granule count in echo10 format"
+          :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
+
+          "granule count in iso format"
+          :iso19115 (search/find-metadata :collection :iso19115 {:include-has-granules true :include-granule-counts true})
+
+          "granule count in umm_json format"
+          :umm_json (search/find-concepts-umm-json :collection {:include-has-granules true :include-granule-counts true})
+
+          "granule count in atom format"
+          :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
+
+          "granule count in json format"
+          :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))))
 
 (deftest search-collections-has-granules-or-cwic-test
   (let [coll1 (make-coll 1 m/whole-world nil)
