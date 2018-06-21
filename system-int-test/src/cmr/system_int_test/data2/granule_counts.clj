@@ -77,7 +77,43 @@
   (into {} (for [{:keys [concept-id has-granules]} (:items results)]
              [concept-id has-granules])))
 
+(defmethod results->actual-has-granules :iso19115
+  [result-format results]
+  (into {} (for [{:keys [concept-id has-granules]} (:items results)]
+             [concept-id has-granules])))
+
 (defmethod results->actual-has-granules :atom
   [result-format results]
   (into {} (for [{:keys [id has-granules]} (get-in results [:results :entries])]
              [id has-granules])))
+
+(defmulti results->actual-granule-count
+  "Converts the results into a map of collection ids to the granule-count value"
+  (fn [result-format results]
+    result-format))
+
+(defmethod results->actual-granule-count :xml
+  [result-format results]
+  (into {} (for [{:keys [id granule-count]} (:refs results)]
+             [id granule-count])))
+
+(defmethod results->actual-granule-count :echo10
+  [result-format results]
+  (into {} (for [{:keys [concept-id granule-count]} (:items results)]
+             [concept-id granule-count])))
+
+(defmethod results->actual-granule-count :iso19115
+  [result-format results]
+  (into {} (for [{:keys [concept-id granule-count]} (:items results)]
+             [concept-id granule-count])))
+
+(defmethod results->actual-granule-count :umm_json
+  [result-format results]
+  (into {} (for [item (get-in results [:results :items])
+                 :let [{:keys [concept-id granule_count]} (:meta item)]]
+             [concept-id granule_count])))
+
+(defmethod results->actual-granule-count :atom
+  [result-format results]
+  (into {} (for [{:keys [id granule-count]} (get-in results [:results :entries])]
+             [id granule-count])))
