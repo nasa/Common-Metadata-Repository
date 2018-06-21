@@ -374,7 +374,21 @@
           :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
 
           "granule count in json format"
-          :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))))
+          :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))
+
+      (testing "granule_count failure cases"
+        (are3 [result-format results]
+          (let [expected-results (str "{:errors (Collections search in "
+                                      (name result-format)
+                                      " format is not supported with include_granule_counts "
+                                      "option), :status 400}")]
+            (= expected-results results))
+          
+          "granule count in kml format"
+          :kml (search/find-concepts-kml :collection {:include-has-granules true :include-granule-counts true})
+         
+          "granule count in opendata format"
+          :opendata (search/find-concepts-opendata :collection {:include-has-granules true :include-granule-counts true}))))))
 
 (deftest search-collections-has-granules-or-cwic-test
   (let [coll1 (make-coll 1 m/whole-world nil)

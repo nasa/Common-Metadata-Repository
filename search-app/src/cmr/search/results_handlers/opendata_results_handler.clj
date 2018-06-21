@@ -11,9 +11,11 @@
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
    [cmr.umm-spec.util :as umm-spec-util]
@@ -56,6 +58,12 @@
 
 (def DEFAULT_CONTACT_NAME
   "undefined")
+
+(defmethod gcrf/query-results->concept-ids :opendata
+  [results]
+  (svc-errors/throw-service-error
+    :bad-request
+    "Collections search in opendata format is not supported with include_granule_counts option"))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]

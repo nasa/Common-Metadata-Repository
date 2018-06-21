@@ -17,7 +17,7 @@
 ;; Collection UMM JSON
 
 (defn- get-granule-count-for-item
-  "Get the granule count from granule-counts-map using teh concept-id in the item."
+  "Get the granule count from granule-counts-map using the concept-id in the item."
   [item granule-counts-map]
   (get granule-counts-map (get-in item [:meta :concept-id]) 0))
 
