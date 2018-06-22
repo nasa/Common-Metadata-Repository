@@ -80,7 +80,7 @@
   [meta]
   (util/remove-nil-keys
    (-> meta
-       (dissoc :granule_count)
+       (dissoc :granule-count)
        (dissoc :revision-date)
        (update :associations (fn [assocs]
                                (when (seq assocs)

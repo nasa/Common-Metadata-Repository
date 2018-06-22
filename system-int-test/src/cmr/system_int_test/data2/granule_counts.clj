@@ -110,8 +110,8 @@
 (defmethod results->actual-granule-count :umm_json
   [result-format results]
   (into {} (for [item (get-in results [:results :items])
-                 :let [{:keys [concept-id granule_count]} (:meta item)]]
-             [concept-id granule_count])))
+                 :let [{:keys [concept-id granule-count]} (:meta item)]]
+             [concept-id granule-count])))
 
 (defmethod results->actual-granule-count :atom
   [result-format results]
