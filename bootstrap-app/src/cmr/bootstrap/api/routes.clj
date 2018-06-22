@@ -33,24 +33,34 @@
           (bulk-migration/migrate-collection request-context body params)))
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-provider request-context body params))
         (POST "/collections" {:keys [request-context body params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-collection request-context body params))
         (POST "/after_date_time" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/data-later-than-date-time request-context params))
         (POST "/system_concepts" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-system-concepts request-context params))
         (POST "/variables" {:keys [request-context]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-variables request-context))
         (POST "/variables/:provider-id" [provider-id :as {:keys [request-context]}]
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-variables request-context provider-id))
         (POST "/services" {:keys [request-context]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-services request-context))
         (POST "/services/:provider-id" [provider-id :as {:keys [request-context]}]
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-services request-context provider-id))
         (POST "/concepts" {:keys [request-context body params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-concepts-by-id request-context body params))
         (DELETE "/concepts" {:keys [request-context body params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/delete-concepts-by-id request-context body params)))
       (context "/rebalancing_collections/:concept-id" [concept-id]
         ;; Start rebalancing
