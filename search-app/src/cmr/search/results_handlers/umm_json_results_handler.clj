@@ -22,9 +22,9 @@
   (get granule-counts-map (get-in item [:meta :concept-id]) 0))
 
 (defn- add-granule-count-to-items
-  "Add the granule_count to the :meta part in each item in items using the granule-counts-map."
+  "Add the granule-count to the :meta part in each item in items using the granule-counts-map."
   [items granule-counts-map]
-  (map #(assoc-in % [:meta :granule_count] (get-granule-count-for-item % granule-counts-map))
+  (map #(assoc-in % [:meta :granule-count] (get-granule-count-for-item % granule-counts-map))
        items))
 
 (defmethod gcrf/query-results->concept-ids :umm-json-results
