@@ -54,7 +54,11 @@
                                               :target-provider-id "PROV1"}}
                               "GROUP")
           group1 (core/save-group 1)
-          group2 (core/save-group 2 {})]
+          group2 (core/save-group 2 {})
+          {:keys [status errors]} (bootstrap/bulk-delete-concepts-without-token "PROV1" :collection (map :concept-id [coll1]))]
+
+      (is (= [401 ["You do not have permission to perform that action."]]
+             [status errors]))
 
       ;; Force coll2 granules into their own index to make sure
       ;; granules outside of 1_small_collections get deleted properly.

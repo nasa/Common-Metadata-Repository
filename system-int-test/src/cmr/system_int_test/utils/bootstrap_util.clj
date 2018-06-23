@@ -16,10 +16,10 @@
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.transmit.config :as transmit-config]))
 
-(defn bulk-index-after-date-time
+(defn bulk-index-after-date-time-without-token
   "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
   [date-time]
-  (let [response (client/request
+  (let [response (client/request 
                    {:method :post
                     :query-params {:synchronous true}
                     :url (url/bulk-index-after-date-time-url date-time)
@@ -30,11 +30,59 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn bulk-index-after-date-time
+  "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
+  [date-time]
+  (let [response (client/request
+                   {:method :post
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-after-date-time-url date-time)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn bulk-index-concepts-without-token
+  "Call the bootstrap app to bulk index concepts by id."
+  [provider-id concept-type concept-ids]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-concepts-url)
+                    :body (json/generate-string {:provider_id provider-id
+                                                 :concept_type concept-type
+                                                 :concept_ids concept-ids})
+                    :content-type :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-index-concepts
   "Call the bootstrap app to bulk index concepts by id."
   [provider-id concept-type concept-ids]
   (let [response (client/request
                    {:method :post
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-concepts-url)
+                    :body (json/generate-string {:provider_id provider-id
+                                                 :concept_type concept-type
+                                                 :concept_ids concept-ids})
+                    :content-type :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn bulk-delete-concepts-without-token
+  "Call the bootstrap app to bulk delete concepts by id."
+  [provider-id concept-type concept-ids]
+  (let [response (client/request
+                   {:method :delete
                     :query-params {:synchronous true}
                     :url (url/bulk-index-concepts-url)
                     :body (json/generate-string {:provider_id provider-id
@@ -51,6 +99,7 @@
   [provider-id concept-type concept-ids]
   (let [response (client/request
                    {:method :delete
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                     :query-params {:synchronous true}
                     :url (url/bulk-index-concepts-url)
                     :body (json/generate-string {:provider_id provider-id
@@ -62,7 +111,7 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
-(defn- bulk-index-by-url
+(defn- bulk-index-by-url-without-token
   "Calls bootstrap app on the given bulk index url"
   [bulk-index-url]
   (let [response (client/request
@@ -75,6 +124,28 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn- bulk-index-by-url
+  "Calls bootstrap app on the given bulk index url"
+  [bulk-index-url]
+  (let [response (client/request
+                  {:method :post
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :url bulk-index-url
+                   :content-type :json
+                   :accept :json
+                   :throw-exceptions false
+                   :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn bulk-index-variables-without-token
+  "Call the bootstrap app to bulk index variables (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (bulk-index-by-url-without-token (url/bulk-index-variables-url)))
+  ([provider-id]
+   (bulk-index-by-url-without-token (url/bulk-index-variables-url provider-id))))
+
 (defn bulk-index-variables
   "Call the bootstrap app to bulk index variables (either all of them, or just the
   ones for the given provider)."
@@ -82,6 +153,14 @@
    (bulk-index-by-url (url/bulk-index-variables-url)))
   ([provider-id]
    (bulk-index-by-url (url/bulk-index-variables-url provider-id))))
+
+(defn bulk-index-services-without-token
+  "Call the bootstrap app to bulk index services (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (bulk-index-by-url-without-token (url/bulk-index-services-url)))
+  ([provider-id]
+   (bulk-index-by-url-without-token (url/bulk-index-services-url provider-id))))
 
 (defn bulk-index-services
   "Call the bootstrap app to bulk index services (either all of them, or just the
@@ -91,7 +170,7 @@
   ([provider-id]
    (bulk-index-by-url (url/bulk-index-services-url provider-id))))
 
-(defn bulk-index-provider
+(defn bulk-index-provider-without-token
   "Call the bootstrap app to bulk index a provider."
   [provider-id]
   (let [response (client/request
@@ -106,11 +185,43 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn bulk-index-provider
+  "Call the bootstrap app to bulk index a provider."
+  [provider-id]
+  (let [response (client/request
+                   {:method :post
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-provider-url)
+                    :body (json/generate-string {:provider_id provider-id})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn bulk-index-collection-without-token
+  "Call the bootstrap app to bulk index a collection."
+  [provider-id collection-id]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-collection-url)
+                    :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-index-collection
   "Call the bootstrap app to bulk index a collection."
   [provider-id collection-id]
   (let [response (client/request
                    {:method :post
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                     :query-params {:synchronous true}
                     :url (url/bulk-index-collection-url)
                     :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
@@ -182,6 +293,13 @@
     (is (= 202
            (:status (bulk-migrate-provider provider-id))))))
 
+(defn bulk-index-providers-without-token
+  "Bulk indexes all the providers. Assumes they should all be successful"
+  [& provider-ids]
+  (doseq [provider-id provider-ids]
+    (is (= 202
+           (:status (bulk-index-provider-without-token provider-id))))))
+
 (defn bulk-index-providers
   "Bulk indexes all the providers. Assumes they should all be successful"
   [& provider-ids]
@@ -189,11 +307,25 @@
     (is (= 202
            (:status (bulk-index-provider provider-id))))))
 
+(defn bulk-index-system-concepts-without-token
+  "Bulk index all the acls, access-groups, and tags."
+  []
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-system-concepts-url)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-index-system-concepts
   "Bulk index all the acls, access-groups, and tags."
   []
   (let [response (client/request
                    {:method :post
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                     :query-params {:synchronous true}
                     :url (url/bulk-index-system-concepts-url)
                     :accept :json

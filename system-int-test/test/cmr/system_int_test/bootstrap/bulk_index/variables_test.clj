@@ -28,7 +28,11 @@
       (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
             ;; create a variable on a different provider PROV2
             ;; and this variable won't be indexed as a result of indexing variables of PROV1
-            var2 (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 1)]
+            var2 (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 1)
+            {:keys [status errors]} (bootstrap/bulk-index-variables-without-token "PROV1")]
+
+        (is (= [401 ["You do not have permission to perform that action."]]
+               [status errors]))
         (is (= 0 (:hits (variable/search {}))))
         (bootstrap/bulk-index-variables "PROV1")
         (index/wait-until-indexed)
