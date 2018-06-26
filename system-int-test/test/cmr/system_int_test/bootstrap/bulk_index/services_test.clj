@@ -34,7 +34,7 @@
            ;; create a service on a different provider PROV2
            ;; and this service won't be indexed as a result of indexing services of PROV1
            svc2 (service/ingest-service-with-attrs {:provider-id "PROV2"} {} 1)
-           {:keys [status errors]} (bootstrap/bulk-index-services-without-token "PROV1")]
+           {:keys [status errors]} (bootstrap/bulk-index-services "PROV1" nil)]
 
        (is (= [401 ["You do not have permission to perform that action."]]
               [status errors]))

@@ -28,7 +28,7 @@
 (deftest invalid-provider-bulk-index-validation-test-without-token
   (s/only-with-real-database
     (testing "Validation of a provider supplied in a bulk-index request."
-      (let [{:keys [status errors]} (bootstrap/bulk-index-provider-without-token "NCD4580")]
+      (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" nil)]
         (is (= [401 ["You do not have permission to perform that action."]]
                [status errors]))))))
 
@@ -65,8 +65,8 @@
           no-permission-msg "You do not have permission to perform that action."
           {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
                                                   valid-prov-id valid-coll-id)
-          {:keys [status errors] :as no-permission-stat} (bootstrap/bulk-index-collection-without-token
-                                                           valid-prov-id valid-coll-id)
+          {:keys [status errors] :as no-permission-stat} (bootstrap/bulk-index-collection
+                                                           valid-prov-id valid-coll-id nil)
           ;; invalid provider and collection
           {:keys [status errors] :as fail-stat1} (bootstrap/bulk-index-collection
                                                    invalid-prov-id invalid-coll-id)

@@ -55,7 +55,7 @@
                               "GROUP")
           group1 (core/save-group 1)
           group2 (core/save-group 2 {})
-          {:keys [status errors]} (bootstrap/bulk-delete-concepts-without-token "PROV1" :collection (map :concept-id [coll1]))]
+          {:keys [status errors]} (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]) nil)]
 
       (is (= [401 ["You do not have permission to perform that action."]]
              [status errors]))

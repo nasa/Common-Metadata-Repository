@@ -37,6 +37,30 @@
         exp-items (set (map #(dissoc % :status) expected))]
     (is (= exp-items search-items))))
 
+(defn- create-read-update-token
+  "Create a token with read/pdate permission."
+  []
+  (let [admin-read-update-group-concept-id (e/get-or-create-group (s/context) "admin-read-update-group")]
+    (e/grant-group-admin (s/context) admin-read-update-group-concept-id :read :update)
+    ;; Create and return token
+    (e/login (s/context) "admin-read-update" [admin-read-update-group-concept-id])))
+
+(deftest index-system-concepts-test-invalid
+  (s/only-with-real-database
+   ;; Disable message publishing so items are not indexed as part of the initial save.
+   (core/disable-automatic-indexing)
+
+   ;; Remove fixture ACLs
+   (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+         items (:items response)]
+     (doseq [acl items]
+       (e/ungrant (s/context) (:concept_id acl))))
+
+   (let [{:keys [status errors]} 
+          (bootstrap/bulk-index-system-concepts {tc/token-header create-read-update-token})]
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors])))))
+
 (deftest index-system-concepts-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
@@ -69,12 +93,8 @@
          _ (core/delete-concept tag1)
          ;; this tag has no originator-id to test a bug fix for a bug in tag processing related to missing originator-ids
          tag2 (core/save-tag 2 {:metadata "{:tag-key \"tag2\" :description \"A good tag\"}"})
-         tag3 (core/save-tag 3 {})
-         {:keys [status errors]} (bootstrap/bulk-index-system-concepts-without-token)]
+         tag3 (core/save-tag 3 {})]
 
-     (is (= [401 ["You do not have permission to perform that action."]]
-            [status errors]))
- 
      (bootstrap/bulk-index-system-concepts)
      ;; Force elastic data to be flushed, not actually waiting for index requests to finish
      (index/wait-until-indexed)
@@ -125,7 +145,7 @@
                               "GROUP")
           group1 (core/save-group 1)
           group2 (core/save-group 2 {})
-          {:keys [status errors]} (bootstrap/bulk-index-concepts-without-token "PROV1" :collection colls)]
+          {:keys [status errors]} (bootstrap/bulk-index-concepts "PROV1" :collection colls nil)]
 
       (is (= [401 ["You do not have permission to perform that action."]]
              [status errors]))
@@ -205,7 +225,7 @@
                               "GROUP")
           group1 (core/save-group 1)
           group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})
-          {:keys [status errors]} (bootstrap/bulk-index-after-date-time-without-token "2015-01-01T12:00:00Z")]
+          {:keys [status errors]} (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z" nil)]
       
       (is (= [401 ["You do not have permission to perform that action."]]
              [status errors]))
