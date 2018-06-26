@@ -1,4 +1,4 @@
-(ns cmr.opendap.tests.system.ous.granule
+(ns ^:system cmr.opendap.tests.system.ous.granule
   "Note: this namespace is exclusively for system tests."
   (:require
     [clojure.test :refer :all]

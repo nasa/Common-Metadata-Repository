@@ -1,4 +1,4 @@
-(ns cmr.opendap.tests.system.http.request
+(ns ^:system cmr.opendap.tests.system.http.request
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
