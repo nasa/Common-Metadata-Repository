@@ -107,11 +107,20 @@
   (into {} (for [{:keys [concept-id granule-count]} (:items results)]
              [concept-id granule-count])))
 
-(defmethod results->actual-granule-count :umm_json
-  [result-format results]
+(defn- results->actual-granule-count-umm-json
+  "Returns the granule-count for each concept-id in the results."
+  [results]
   (into {} (for [item (get-in results [:results :items])
                  :let [{:keys [concept-id granule-count]} (:meta item)]]
              [concept-id granule-count])))
+
+(defmethod results->actual-granule-count :umm_json
+  [result-format results]
+  (results->actual-granule-count-umm-json results))
+
+(defmethod results->actual-granule-count :legacy-umm-json
+  [result-format results]
+  (results->actual-granule-count-umm-json results))
 
 (defmethod results->actual-granule-count :atom
   [result-format results]
