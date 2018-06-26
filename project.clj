@@ -27,6 +27,7 @@
     [clojusc/twig "0.3.2"]
     [com.esri.geometry/esri-geometry-api "2.1.0"]
     [com.stuartsierra/component "0.3.2"]
+    [com.vividsolutions/jts "1.13"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"]
