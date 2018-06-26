@@ -65,12 +65,15 @@
       (context "/rebalancing_collections/:concept-id" [concept-id]
         ;; Start rebalancing
         (POST "/start" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
           (rebalancing/start-collection request-context concept-id params))
         ;; Get counts of rebalancing data
         (GET "/status" {:keys [request-context]}
+          (acl/verify-ingest-management-permission request-context :update)
           (rebalancing/get-status request-context concept-id))
         ;; Complete reindexing
         (POST "/finalize" {:keys [request-context]}
+          (acl/verify-ingest-management-permission request-context :update)
           (rebalancing/finalize-collection request-context concept-id)))
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
