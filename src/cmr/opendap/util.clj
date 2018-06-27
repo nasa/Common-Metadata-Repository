@@ -39,3 +39,7 @@
        first
        ;; the first element is the count, the second is the bounding data
        second))
+
+(defn promise?
+  [p]
+  (isa? (class p) clojure.lang.IPending))

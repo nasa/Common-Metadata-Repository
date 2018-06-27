@@ -39,16 +39,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-query
-  [params]
-  (str "concept_id=" (:collection-id params)))
+  [concept-id]
+  (str "concept_id=" concept-id))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, get the metadata for the
   associated collection."
   [search-endpoint user-token params]
-  (let [url (str search-endpoint
+  (let [concept-id (:collection-id params)
+        url (str search-endpoint
                  "/collections?"
-                 (build-query params))]
+                 (build-query concept-id))]
     (log/debug "Collection query to CMR:" url)
     (request/async-get
      url

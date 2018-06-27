@@ -2,6 +2,7 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.components.concept :as concept]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
@@ -210,8 +211,8 @@
                      (ous-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component search-endpoint user-token params)
-        coll-promise (collection/async-get-metadata
-                      search-endpoint user-token params)
+        coll-promise (concept/get :collection
+                      component search-endpoint user-token params)
         errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Params: " params)
     (log/debug "Bounding box: " bounding-box)
@@ -219,7 +220,7 @@
     [params bounding-box grans-promise coll-promise errs]))
 
 (defn stage2
-  [search-endpoint user-token params coll-promise grans-promise]
+  [component search-endpoint user-token params coll-promise grans-promise]
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
         coll (collection/extract-metadata coll-promise)
@@ -241,7 +242,7 @@
     [coll params data-files service-ids vars errs]))
 
 (defn stage3
-  [coll search-endpoint user-token bounding-box service-ids vars]
+  [component coll search-endpoint user-token bounding-box service-ids vars]
   ;; XXX coll is required as an arg here because it's needed in a
   ;;     workaround for different data sets using different starting
   ;;     points for their indices in OPeNDAP
@@ -286,6 +287,7 @@
                                                      raw-params)
         ;; Stage 2
         [coll params data-files service-ids vars s2-errs] (stage2
+                                                           component
                                                            search-endpoint
                                                            user-token
                                                            params
@@ -293,6 +295,7 @@
                                                            granules)
         ;; Stage 3
         [services bounding-info s3-errs] (stage3
+                                          component
                                           coll
                                           search-endpoint
                                           user-token

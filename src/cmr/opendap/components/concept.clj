@@ -4,22 +4,63 @@
   CMR to get concept data. This is done in order to cache concepts and use
   these instead of making repeated queries to the CMR."
   (:require
+   [clojure.string :as string]
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log])
+  (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/utility Data & Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TBD
+(defn concept-key
+  [id-or-ids]
+  (if (coll? id-or-ids)
+    (str "concepts:" (string/join "," id-or-ids))
+    (str "concept:" id-or-ids)))
+
+(defn- -get-cached
+  "This does the actual work for the cache lookup and fallback function call."
+  [system concept-id lookup-fn lookup-args]
+  (try
+    (caching/lookup
+     system
+     (concept-key concept-id)
+     #(apply lookup-fn lookup-args))
+    (catch Exception e
+      (ex-data e))))
+
+(defn get-cached
+  "Look up the concept for a concept-id in the cache; if there is a miss,
+  make the actual call for the lookup.
+
+  Due to the fact that the results may or may not be a promise, this function
+  will check to see if the value needs to be wrapped in a promise and will do
+  so if need be."
+  [system concept-id lookup-fn lookup-args]
+  (let [maybe-promise (-get-cached system concept-id lookup-fn lookup-args)]
+    (if (util/promise? maybe-promise)
+      maybe-promise
+      (let [wrapped-data (promise)]
+        (deliver wrapped-data maybe-promise)
+        wrapped-data))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TBD
+(defmulti get identity)
+
+(defmethod get :collection
+  [system search-endpoint user-token params]
+  (get-cached system
+              (:concept params)
+              collection/async-get-metadata
+              [search-endpoint user-token params]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
