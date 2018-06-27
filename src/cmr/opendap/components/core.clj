@@ -3,6 +3,7 @@
     [cmr.authz.components.caching :as auth-caching]
     [cmr.opendap.components.auth :as auth]
     [cmr.opendap.components.caching :as concept-caching]
+    [cmr.opendap.components.concept :as concept]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.httpd :as httpd]
     [cmr.opendap.components.logging :as logging]
@@ -35,10 +36,15 @@
                      (concept-caching/create-component)
                      [:config :logging])})
 
+(def concepts
+  {:concepts (component/using
+              (concept/create-component)
+              [:concept-caching])})
+
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :auth-caching :auth])})
+           [:config :logging :auth-caching :auth :concept-caching :concepts])})
 
 (def auth-cache-without-logging
   {:auth-caching (component/using
@@ -53,7 +59,7 @@
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config :auth-caching :auth :concept-caching])})
+           [:config :auth-caching :auth :concept-caching :concepts])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -77,6 +83,7 @@
            auth-cache
            authz
            concept-cache
+           concepts
            httpd)))
 
 (defn initialize-without-logging
@@ -86,6 +93,7 @@
            auth-cache-without-logging
            authz
            concept-cache-without-logging
+           concepts
            httpd-without-logging)))
 
 (def init-lookup
