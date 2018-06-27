@@ -10,7 +10,7 @@
     [clojure.tools.namespace.repl :as repl]
     [clojusc.dev.system.core :as system-api]
     [clojusc.twig :as logger]
-    [cmr.opendap.components.caching :as caching]
+    [cmr.authz.components.caching :as auth-caching]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.core]
     [cmr.opendap.errors :as errors]
