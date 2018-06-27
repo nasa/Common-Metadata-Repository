@@ -1,48 +1,35 @@
 {:api-version "v2"
  :default-content-type "json"
- :auth-caching
-  {:init {}
-   :ttl
-    {:minutes 60}
-   :lru
-    {:threshold 1000}
-   :dumpfile "data/cache/authz-dump.edn"}
+ :auth-caching {:init {}
+                :ttl {:minutes 60}
+                :lru {:threshold 1000}
+                :dumpfile "data/cache/authz-dump.edn"}
+ :concept-caching {:init {}
+                   :ttl {:hours 24}
+                   :dumpfile "data/cache/concept-dump.edn"}
  ;; XXX Change this to use the same parts that the rest of the CMR uses,
  ;;     namely scheme, host, port. path ... we use the below base-url for
  ;;     hitting access-control and search, so we'll want to split this out
  ;;     into searate configs for each of those; at that point, we'll be able
  ;;     to update the config loading in the config component.
- :cmr
-  {:access
-  	{:control
-  	  {:protocol "https"
-  	   :host "cmr.sit.earthdata.nasa.gov"
-  	   :relative
-  	     {:root
-  	       {:url "/access-control"}}}}
-   :echo
-    {:rest
-      {:protocol "https"
-       :host "cmr.sit.earthdata.nasa.gov"
-       :context "/legacy-services/rest"}}
+ :cmr {
+   :access {:control {:protocol "https"
+                  	  :host "cmr.sit.earthdata.nasa.gov"
+                  	  :relative {:root {:url "/access-control"}}}}
+   :echo {:rest {:protocol "https"
+                 :host "cmr.sit.earthdata.nasa.gov"
+                 :context "/legacy-services/rest"}}
    :max-pagesize 2000
-   :opendap
-    {:protocol "https"
-     :host "cmr.sit.earthdata.nasa.gov"
-     :public
-      {:protocol "https"
-       :host "cmr.sit.earthdata.nasa.gov"}
-     :relative
-  	     {:root
-  	       {:url "/opendap"}}}
-   :search
-    {:protocol "https"
-     :host "cmr.sit.earthdata.nasa.gov"
-     :relative
-  	   {:root
-  	     {:url "/search"}}}}
- :httpd
-  {:port 3013
+   :opendap {:protocol "https"
+             :host "cmr.sit.earthdata.nasa.gov"
+             :public {:protocol "https"
+                      :host "cmr.sit.earthdata.nasa.gov"}
+             :relative {:root {:url "/opendap"}}}
+   :search {:protocol "https"
+            :host "cmr.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
+ :httpd {
+   :port 3013
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
@@ -55,12 +42,12 @@
    :index-dirs #{"/opendap/docs/marginalia"
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
- :logging
-  {:level :debug
+ :logging {
+   :level :debug
    :nss [cmr.opendap cmr.authz cmr.http.kit org.httpkit]
    :color false}
- :streaming
-  {:timeout 20000 ; milliseconds 20 seconds * 1000
+ :streaming {
+   :timeout 20000 ; milliseconds 20 seconds * 1000
    :heartbeat 200 ; milliseconds
    }
  :vendor "cmr-opendap"}

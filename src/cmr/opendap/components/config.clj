@@ -33,11 +33,31 @@
   [system]
   (:default-content-type (get-cfg system)))
 
-(def cache-dumpfile #'authz-config/cache-dumpfile)
-(def cache-init #'authz-config/cache-init)
-(def cache-lru-threshold #'authz-config/cache-lru-threshold)
-(def cache-ttl-ms #'authz-config/cache-ttl-ms)
-(def cache-type #'authz-config/cache-type)
+(def authz-cache-dumpfile #'authz-config/cache-dumpfile)
+(def authz-cache-init #'authz-config/cache-init)
+(def authz-cache-lru-threshold #'authz-config/cache-lru-threshold)
+(def authz-cache-ttl-ms #'authz-config/cache-ttl-ms)
+(def authz-cache-type #'authz-config/cache-type)
+
+(defn concept-cache-dumpfile
+  [system]
+  (get-in (get-cfg system) [:concept-caching :dumpfile]))
+
+(defn concept-cache-init
+  [system]
+  (get-in (get-cfg system) [:concept-caching :init]))
+
+(defn concept-cache-ttl-ms
+  [system]
+  (* (get-in (get-cfg system) [:concept-caching :ttl :hours])
+     60 ; minutes
+     60 ; seconds
+     1000 ; milliseconds
+     ))
+
+(defn cache-type
+  [system]
+  (get-in (get-cfg system) [:auth-caching :type]))
 
 (defn cmr-max-pagesize
   [system]
@@ -148,7 +168,7 @@
   (log/info "Starting config component ...")
   (log/debug "Started config component.")
   (let [cfg (config/data)]
-    (log/debug "Built configuration:" cfg)
+    (log/trace "Built configuration:" cfg)
     (assoc this :data cfg)))
 
 (defn stop
