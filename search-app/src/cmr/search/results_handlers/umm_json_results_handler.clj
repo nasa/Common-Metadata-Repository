@@ -69,6 +69,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection Legacy UMM JSON
 
+(defmethod gcrf/query-results->concept-ids :legacy-umm-json
+  [results]
+  (->> results
+       :items
+       (map :meta)
+       (map :concept-id)))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
   (concat
@@ -92,4 +99,7 @@
 
 (defmethod qs/search-results->response [:collection :legacy-umm-json]
   [context query results]
-  (json/generate-string (select-keys results [:hits :took :items])))
+  (let [granule-counts-map (:granule-counts-map results)
+        items (:items results)
+        results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
+    (json/generate-string (select-keys results [:hits :took :items]))))

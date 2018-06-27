@@ -370,6 +370,9 @@
           "granule count in umm_json format"
           :umm_json (search/find-concepts-umm-json :collection {:include-has-granules true :include-granule-counts true})
 
+          "granule count in legacy-umm-json format"
+          :legacy-umm-json (search/find-concepts-legacy-umm-json :collection {:include-has-granules true :include-granule-counts true})
+
           "granule count in atom format"
           :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
 
