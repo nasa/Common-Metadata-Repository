@@ -25,6 +25,13 @@
         (is (= [400 ["Provider: [NCD4580] does not exist in the system"]]
                [status errors]))))))
 
+(deftest invalid-provider-bulk-index-validation-test-without-token
+  (s/only-with-real-database
+    (testing "Validation of a provider supplied in a bulk-index request."
+      (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" nil)]
+        (is (= [401 ["You do not have permission to perform that action."]]
+               [status errors]))))))
+
 (deftest collection-bulk-index-validation-test
   (s/only-with-real-database
     (let [umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
@@ -55,8 +62,11 @@
           invalid-coll-id "C12-PROV1"
           err-msg1 (format "Provider: [%s] does not exist in the system" invalid-prov-id)
           err-msg2 (format "Collection [%s] does not exist." invalid-coll-id)
+          no-permission-msg "You do not have permission to perform that action."
           {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
                                                   valid-prov-id valid-coll-id)
+          {:keys [status errors] :as no-permission-stat} (bootstrap/bulk-index-collection
+                                                           valid-prov-id valid-coll-id nil)
           ;; invalid provider and collection
           {:keys [status errors] :as fail-stat1} (bootstrap/bulk-index-collection
                                                    invalid-prov-id invalid-coll-id)
@@ -70,6 +80,7 @@
       (testing "Validation of a collection supplied in a bulk-index request."
         (are [expected actual] (= expected actual)
              [202 nil] [(:status succ-stat) (:errors succ-stat)]
+             [401 [no-permission-msg]] [(:status no-permission-stat) (:errors no-permission-stat)]
              [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]
              [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
              [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))

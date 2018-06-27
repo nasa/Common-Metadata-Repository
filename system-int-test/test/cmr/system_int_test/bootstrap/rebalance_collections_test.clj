@@ -28,6 +28,21 @@
          gran (d/ingest "PROV1" (dg/granule coll {:granule-ur "gran"}))]
      (index/wait-until-indexed)
 
+     (testing "no permission for start-rebalance-collection"
+       (is (= {:status 401
+               :errors ["You do not have permission to perform that action."]}
+              (bootstrap/start-rebalance-collection "C1-NON_EXIST" false nil))))
+ 
+     (testing "no permission for get-rebalance-status"
+       (is (= {:status 401
+               :errors ["You do not have permission to perform that action."]}
+              (bootstrap/finalize-rebalance-collection (:concept-id coll) nil))))
+
+     (testing "no permission for finalize-rebalance-collection"
+       (is (= {:status 401
+               :errors ["You do not have permission to perform that action."]}
+              (bootstrap/get-rebalance-status (:concept-id coll) nil))))
+
      (testing "Non existent provider"
        (is (= {:status 400
                :errors ["Provider: [NON_EXIST] does not exist in the system"]}
@@ -93,6 +108,7 @@
   [expected-counts collection]
   (is (= (assoc expected-counts :status 200)
          (bootstrap/get-rebalance-status (:concept-id collection)))))
+
 
 (defn ingest-granule-for-coll
   [coll n]

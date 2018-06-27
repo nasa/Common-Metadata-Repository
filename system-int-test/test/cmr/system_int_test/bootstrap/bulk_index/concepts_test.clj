@@ -69,7 +69,12 @@
          _ (core/delete-concept tag1)
          ;; this tag has no originator-id to test a bug fix for a bug in tag processing related to missing originator-ids
          tag2 (core/save-tag 2 {:metadata "{:tag-key \"tag2\" :description \"A good tag\"}"})
-         tag3 (core/save-tag 3 {})]
+         tag3 (core/save-tag 3 {})
+         {:keys [status errors]} (bootstrap/bulk-index-system-concepts nil)]
+
+      (is (= [401 ["You do not have permission to perform that action."]]
+             [status errors]))
+
      (bootstrap/bulk-index-system-concepts)
      ;; Force elastic data to be flushed, not actually waiting for index requests to finish
      (index/wait-until-indexed)
@@ -119,7 +124,11 @@
                                               :target-provider-id "PROV1"}}
                               "GROUP")
           group1 (core/save-group 1)
-          group2 (core/save-group 2 {})]
+          group2 (core/save-group 2 {})
+          {:keys [status errors]} (bootstrap/bulk-index-concepts "PROV1" :collection colls nil)]
+
+      (is (= [401 ["You do not have permission to perform that action."]]
+             [status errors]))
 
       (bootstrap/bulk-index-concepts "PROV1" :collection colls)
       (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
@@ -195,7 +204,11 @@
                                               :target-provider-id "PROV1"}}
                               "GROUP")
           group1 (core/save-group 1)
-          group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})]
+          group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})
+          {:keys [status errors]} (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z" nil)]
+      
+      (is (= [401 ["You do not have permission to perform that action."]]
+             [status errors]))
 
       (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
       (index/wait-until-indexed)
