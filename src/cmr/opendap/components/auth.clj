@@ -56,6 +56,7 @@
      (token/user-id-key token)
      #(token/->user (config/get-echo-rest-url system) token))
     (catch Exception e
+      (log/error e)
       (ex-data e))))
 
 (defn cached-admin-role
@@ -69,6 +70,7 @@
                             token
                             user-id))
     (catch Exception e
+      (log/error e)
       {:errors (ex-data e)})))
 
 (defn cached-concept-permission
@@ -84,6 +86,7 @@
                       user-id
                       concept-id))
     (catch Exception e
+      (log/error e)
       (ex-data e))))
 
 (defn check-roles
