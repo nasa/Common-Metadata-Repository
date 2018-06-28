@@ -229,7 +229,8 @@
     :score
     :has-granules
     :has-granules-or-cwic
-    :usage-score})
+    :usage-score
+    :near-current})
 
 (defmethod cpv/valid-sort-keys :granule
   [_]
@@ -554,29 +555,29 @@
 
 (defn- not-all-positive-integer-values?
   "Returns the first value in string-values that can not be converted to positive integer."
-  [string-values] 
-  (some #(when-not (and (integer? %) (< 0 %)) %) 
+  [string-values]
+  (some #(when-not (and (integer? %) (< 0 %)) %)
         (map #(if (and (not (sequential? %))
-                       (not (clojure.string/blank? %)))   
+                       (not (clojure.string/blank? %)))
                 (read-string %)
-                ;; not returning % here because of the case when the only non-integer value is nil. 
+                ;; not returning % here because of the case when the only non-integer value is nil.
                 "some-string")
-             string-values))) 
+             string-values)))
 
 (defn- collection-facets-size-validation
   "Validates that the facets-size parameter has a value positive integer value."
   [concept-type params]
   (when-let [facets-size (:facets-size params)]
     (when (or (not (map? facets-size))
-              (not-all-positive-integer-values? (vals facets-size))) 
+              (not-all-positive-integer-values? (vals facets-size)))
       [(str "Collection parameter facets_size needs to be passed in like "
-            "facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being " 
+            "facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being "
             "a positive integer, which will be translated into a map with positive integer string values "
             "like {:platform \"1\" :instrument \"2\"} but was ["
             facets-size "].")])))
 
 (defn- no-facets-size-without-include-facets-v2
-  "Validates that the include-facets parameter is set to v2 if facets-size is set." 
+  "Validates that the include-facets parameter is set to v2 if facets-size is set."
   [concept-type params]
   (when (and (:facets-size params)
              (not= "v2" (:include-facets params)))

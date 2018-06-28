@@ -89,3 +89,8 @@
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
+
+(defconfig near-current-days
+  "Number of days where collection end-date counts as near-current"
+  {:default 30
+   :type Long})

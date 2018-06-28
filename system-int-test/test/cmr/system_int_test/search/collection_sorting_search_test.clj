@@ -1,17 +1,22 @@
 (ns cmr.system-int-test.search.collection-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require
-    [clojure.string :as str]
-    [clojure.test :refer :all]
-    [cmr.common-app.services.search.messages :as msg]
-    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
-    [cmr.system-int-test.data2.collection :as dc]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm.collection.entry-id :as eid]))
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common-app.services.search.messages :as msg]
+   [cmr.indexer.config :as indexer-config]
+   [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm.collection.entry-id :as eid]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -379,3 +384,55 @@
          "sensor" [c1 c2 c3 c4 c5]
          ;; Descending sorts by the max value of a multi value fields
          "-sensor" [c2 c5 c1 c4 c3])))
+
+(deftest collection-fuzzy-end-date-test
+  (let [today (f/unparse (f/formatters :date-time) (t/now))
+        outside-near-current (f/unparse (f/formatters :date-time)
+                                        (t/minus (t/now) (t/days (+ 1 (indexer-config/near-current-days)))))
+        inside-near-current (f/unparse (f/formatters :date-time)
+                                       (t/minus (t/now) (t/days (- 1 (indexer-config/near-current-days)))))
+        year-in-future (f/unparse (f/formatters :date-time)
+                                  (t/plus (t/now) (t/years 1)))
+        year-in-past (f/unparse (f/formatters :date-time)
+                                (t/minus (t/now) (t/years 1)))
+        coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 1 {:EntryTitle "Dataset1"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time year-in-past})]}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 2 {:EntryTitle "Dataset2"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time year-in-future})]}))
+        coll3 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 3 {:EntryTitle "Dataset3"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time outside-near-current})]}))
+        coll4 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 4 {:EntryTitle "Dataset4"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time inside-near-current})]}))
+        coll5 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 5 {:EntryTitle "Dataset5"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time today})]}))
+        coll6 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 6 {:EntryTitle "Dataset6"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"})]}))]
+    (index/wait-until-indexed)
+    (are [sort-key items]
+         (sort-order-correct? items sort-key)
+
+         ["-near-current" "entry-title"] [coll2 coll4 coll5 coll6 coll1 coll3]
+         ["near-current" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6])))
