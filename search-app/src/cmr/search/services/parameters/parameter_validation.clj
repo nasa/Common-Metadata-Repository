@@ -35,7 +35,8 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
-                     :include-facets :hierarchical-facets :include-highlights :include-tags}
+                     :include-facets :hierarchical-facets :include-highlights :include-tags
+                     :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
