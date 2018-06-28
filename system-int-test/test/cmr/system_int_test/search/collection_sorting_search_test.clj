@@ -388,9 +388,9 @@
 (deftest collection-fuzzy-end-date-test
   (let [today (f/unparse (f/formatters :date-time) (t/now))
         outside-ongoing (f/unparse (f/formatters :date-time)
-                                        (t/minus (t/now) (t/days (+ 1 (indexer-config/ongoing-days)))))
+                                   (t/minus (t/now) (t/days (+ 1 (indexer-config/ongoing-days)))))
         inside-ongoing (f/unparse (f/formatters :date-time)
-                                       (t/minus (t/now) (t/days (- 1 (indexer-config/ongoing-days)))))
+                                  (t/minus (t/now) (t/days (- 1 (indexer-config/ongoing-days)))))
         year-in-future (f/unparse (f/formatters :date-time)
                                   (t/plus (t/now) (t/years 1)))
         year-in-past (f/unparse (f/formatters :date-time)
@@ -433,6 +433,6 @@
     (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
-
-         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll1 coll3]
+      
+         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll3 coll1]
          ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6])))

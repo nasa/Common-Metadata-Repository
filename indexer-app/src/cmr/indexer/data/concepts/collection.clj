@@ -59,6 +59,17 @@
   [m f]
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
 
+(defn- determine-ongoing-date
+  "Determines ongoing date using collection's end-date."
+  [end-date]
+  (if end-date
+    (if (t/after?
+         end-date
+         (t/minus (tk/now) (t/days (indexer-config/ongoing-days))))
+      (index-util/date->elastic (t/date-time 3000 1 1 0 0 0 0))
+      (index-util/date->elastic end-date))
+    (index-util/date->elastic (t/date-time 3000 1 1 0 0 0 0))))
+
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
   [context concept-id collection]
@@ -73,15 +84,10 @@
                            nil
                            granule-end-date)
         coll-start (index-util/date->elastic start-date)
-        coll-end (index-util/date->elastic end-date)
-        ongoing (if end-date
-                       (t/after?
-                        end-date
-                        (t/minus (tk/now) (t/days (indexer-config/ongoing-days))))
-                       true)]
+        coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
             :end-date coll-end
-            :ongoing ongoing}
+            :ongoing (determine-ongoing-date end-date)}
            (or (when granule-start-date
                  {:granule-start-date (index-util/date->elastic granule-start-date)
                   :granule-end-date (index-util/date->elastic granule-end-date)})
