@@ -75,10 +75,9 @@
         coll-start (index-util/date->elastic start-date)
         coll-end (index-util/date->elastic end-date)
         near-current (if end-date
-                       (t/within?
-                        (t/interval (t/minus (tk/now) (t/days (indexer-config/near-current-days)))
-                                    (t/date-time 3000))
-                        end-date)
+                       (t/after?
+                        end-date
+                        (t/minus (tk/now) (t/days (indexer-config/near-current-days))))
                        true)]
     (merge {:start-date coll-start
             :end-date coll-end
