@@ -74,14 +74,14 @@
                            granule-end-date)
         coll-start (index-util/date->elastic start-date)
         coll-end (index-util/date->elastic end-date)
-        near-current (if end-date
+        ongoing (if end-date
                        (t/after?
                         end-date
-                        (t/minus (tk/now) (t/days (indexer-config/near-current-days))))
+                        (t/minus (tk/now) (t/days (indexer-config/ongoing-days))))
                        true)]
     (merge {:start-date coll-start
             :end-date coll-end
-            :near-current near-current}
+            :ongoing ongoing}
            (or (when granule-start-date
                  {:granule-start-date (index-util/date->elastic granule-start-date)
                   :granule-end-date (index-util/date->elastic granule-end-date)})

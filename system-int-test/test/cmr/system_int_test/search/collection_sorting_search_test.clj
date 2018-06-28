@@ -387,10 +387,10 @@
 
 (deftest collection-fuzzy-end-date-test
   (let [today (f/unparse (f/formatters :date-time) (t/now))
-        outside-near-current (f/unparse (f/formatters :date-time)
-                                        (t/minus (t/now) (t/days (+ 1 (indexer-config/near-current-days)))))
-        inside-near-current (f/unparse (f/formatters :date-time)
-                                       (t/minus (t/now) (t/days (- 1 (indexer-config/near-current-days)))))
+        outside-ongoing (f/unparse (f/formatters :date-time)
+                                        (t/minus (t/now) (t/days (+ 1 (indexer-config/ongoing-days)))))
+        inside-ongoing (f/unparse (f/formatters :date-time)
+                                       (t/minus (t/now) (t/days (- 1 (indexer-config/ongoing-days)))))
         year-in-future (f/unparse (f/formatters :date-time)
                                   (t/plus (t/now) (t/years 1)))
         year-in-past (f/unparse (f/formatters :date-time)
@@ -412,13 +412,13 @@
                (data-umm-c/collection 3 {:EntryTitle "Dataset3"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time outside-near-current})]}))
+                                                             :ending-date-time outside-ongoing})]}))
         coll4 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 4 {:EntryTitle "Dataset4"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time inside-near-current})]}))
+                                                             :ending-date-time inside-ongoing})]}))
         coll5 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 5 {:EntryTitle "Dataset5"
@@ -434,5 +434,5 @@
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
-         ["-near-current" "entry-title"] [coll2 coll4 coll5 coll6 coll1 coll3]
-         ["near-current" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6])))
+         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll1 coll3]
+         ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6])))

@@ -312,7 +312,7 @@
           ;; Temporal date range
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
-          :near-current                   (m/stored m/bool-field-mapping)
+          :ongoing                   (m/stored m/bool-field-mapping)
 
           :temporal-ranges                m/date-field-mapping
 

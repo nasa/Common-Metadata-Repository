@@ -90,7 +90,7 @@
   {:default nil
    :parser cfg/maybe-long})
 
-(defconfig near-current-days
-  "Number of days where collection end-date counts as near-current"
+(defconfig ongoing-days
+  "Number of days where collection end-date counts as ongoing"
   {:default 30
    :type Long})
