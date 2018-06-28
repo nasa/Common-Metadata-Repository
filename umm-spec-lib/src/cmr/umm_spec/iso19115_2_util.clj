@@ -22,6 +22,11 @@
   [element parent-xpath]
   (value-of element (str parent-xpath "/gco:CharacterString")))
 
+(defn gmx-anchor-value
+  "Utitlity function to return the gmx:Anchor element value of the given parent xpath."
+  [element parent-xpath]
+  (value-of element (str parent-xpath "/gmx:Anchor")))
+
 (def code-lists
   "The uri base of the code-lists used in the generation of ISO xml"
   {:earthdata "http://earthdata.nasa.gov/metadata/resources/Codelists.xml"

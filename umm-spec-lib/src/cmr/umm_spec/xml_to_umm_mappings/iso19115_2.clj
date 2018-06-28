@@ -10,7 +10,7 @@
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.iso-keywords :as kws]
-   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
+   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
@@ -239,7 +239,8 @@
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
     (merge
      (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
-     {:ShortName (char-string-value id-el "gmd:code")
+     {:ShortName (or (char-string-value id-el "gmd:code")
+                     (gmx-anchor-value id-el "gmd:code"))
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (doi/parse-doi doc citation-base-xpath)
       :Version (char-string-value citation-el "gmd:edition")
