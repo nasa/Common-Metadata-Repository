@@ -10,6 +10,7 @@
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm.echo10.echo10-core :as echo10]))
 
 (use-fixtures :each (join-fixtures
@@ -17,6 +18,21 @@
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
+
+(defn- create-read-only-token
+  "Create a token with read only permission."
+  []
+  (let [admin-read-only-group-concept-id (e/get-or-create-group (s/context) "admin-read-only-group")]
+    (e/grant-group-admin (s/context) admin-read-only-group-concept-id :read)
+    ;; Create and return token
+    (e/login (s/context) "admin-read-only" [admin-read-only-group-concept-id])))
+
+(deftest invalid-provider-bulk-index-validation-test-with-read-only-token
+  (s/only-with-real-database
+   (let [read-only-token (create-read-only-token)
+         {:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" {transmit-config/token-header read-only-token})]
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors])))))
 
 (deftest invalid-provider-bulk-index-validation-test
   (s/only-with-real-database
