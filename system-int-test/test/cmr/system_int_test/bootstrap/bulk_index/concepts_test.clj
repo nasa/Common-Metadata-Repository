@@ -45,7 +45,7 @@
     ;; Create and return token
     (e/login (s/context) "admin-read-update" [admin-read-update-group-concept-id])))
 
-(deftest index-system-concepts-test-valid
+(deftest index-system-concepts-test-with-update-token
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
    (core/disable-automatic-indexing)
