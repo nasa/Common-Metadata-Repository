@@ -1654,6 +1654,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
   * `has_granules_or_cwic` - Sorts collections by whether they have granules or they are tagged as a CWIC collection. Collections with granules or are CWIC tagged are sorted before collections without granules or a CWIC tag.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
+  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing.  Any end-date before that is not ongoing.  
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 

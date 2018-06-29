@@ -312,7 +312,7 @@
           ;; Temporal date range
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
-
+          :ongoing                        m/date-field-mapping
           :temporal-ranges                m/date-field-mapping
 
           ;; Temporal range of min and max granule values or the same as collection start and end date
