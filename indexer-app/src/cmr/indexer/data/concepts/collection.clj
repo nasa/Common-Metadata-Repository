@@ -60,7 +60,10 @@
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
 
 (defn- determine-ongoing-date
-  "Determines ongoing date using collection's end-date."
+  "Determines ongoing date using collection's end-date. Ongoing is a date-time field in elastic,
+   and if a collection is determined as ongoing, it uses January 1 3000 for sorting purposes.
+   If its not an ongoing collection, end-date is used.  This is to keep the end-date
+   sorting for collections that are not ongoing."
   [end-date]
   (if end-date
     (if (t/after?
@@ -87,10 +90,6 @@
         coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
             :end-date coll-end
-            ;; ongoing is a date-time field in elastic, and if a collection is
-            ;; determined as ongoing, it uses January 1 3000 for sorting purposes.
-            ;; If its not an ongoing collection, end-date is used.  This is to keep the end-date
-            ;; sorting for collections that are not ongoing.
             :ongoing (determine-ongoing-date end-date)}
            (or (when granule-start-date
                  {:granule-start-date (index-util/date->elastic granule-start-date)

@@ -395,6 +395,8 @@
                                   (t/plus (t/now) (t/years 1)))
         year-in-past (f/unparse (f/formatters :date-time)
                                 (t/minus (t/now) (t/years 1)))
+        far-future (f/unparse (f/formatters :date-time)
+                              (t/plus (t/now) (t/years 3000)))
         coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 1 {:EntryTitle "Dataset1"
@@ -429,10 +431,16 @@
                "PROV1"
                (data-umm-c/collection 6 {:EntryTitle "Dataset6"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                            {:beginning-date-time "2010-01-01T12:00:00Z"})]}))]
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"})]}))
+        coll7 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 7 {:EntryTitle "Dataset7"
+                                         :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"
+                                                             :ending-date-time today})]}))]
     (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
-      
-         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll3 coll1]
-         ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6])))
+
+         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll7 coll3 coll1]
+         ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
