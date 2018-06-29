@@ -1,4 +1,7 @@
 (ns cmr.opendap.geom.impl.esri
+  "See the following links:
+  * http://esri.github.io/geometry-api-java/javadoc/
+  * https://github.com/Esri/geometry-api-java/wiki"
   (:require
    [cmr.opendap.geom.util :as util])
   (:import

@@ -1,4 +1,7 @@
 (ns cmr.opendap.geom.impl.geographiclib
+  "See the following:
+  * https://geographiclib.sourceforge.io/html/java/
+  * https://sourceforge.net/p/geographiclib/code/ci/release/tree/java/planimeter/src/main/java/Planimeter.java#l6"
   (:import
    (net.sf.geographiclib Geodesic PolygonArea)))
 

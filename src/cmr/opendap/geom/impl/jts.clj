@@ -1,4 +1,6 @@
 (ns cmr.opendap.geom.impl.jts
+  "See the following:
+  * http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/geom/Geometry.html"
   (:require
    [cmr.opendap.geom.util :as util])
   (:import
