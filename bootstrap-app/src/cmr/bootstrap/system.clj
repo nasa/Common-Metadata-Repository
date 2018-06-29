@@ -61,14 +61,10 @@
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
-        access-control (-> (ac-system/create-system)
-                           (dissoc :log :web :queue-broker)
-                           (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
-                                :indexer indexer
-                                :access-control access-control}
+                                :indexer indexer}
              :db-batch-size (db-batch-size)
              :core-async-dispatcher (dispatch/create-backend :async)
              :synchronous-dispatcher (dispatch/create-backend :sync)
@@ -84,7 +80,7 @@
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
-                                                  :indexer])))
+                                                  :indexer :access-control])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -95,8 +91,6 @@
         ;; bulk index requests
         started-system (update-in this [:embedded-systems :indexer] idx-system/start)
         started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
-        started-system (update-in started-system [:embedded-systems :access-control]
-                                  ac-system/start)
         started-system (common-sys/start started-system component-order)]
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
@@ -113,8 +107,6 @@
   (info "Bootstrap system shutting down")
   (let [stopped-system (common-sys/stop this component-order)
         stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)
-        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)
-        stopped-system (update-in stopped-system [:embedded-systems :access-control]
-                                  ac-system/stop)]
+        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)]
     (info "Bootstrap system stopped")
     stopped-system))
