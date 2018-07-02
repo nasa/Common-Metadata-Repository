@@ -4,7 +4,7 @@
     {:minutes 60}
    :lru
     {:threshold 1000}
-   :dumpfile "data/cache/dump.edn"}
+   :dumpfile "data/cache/authz-dump.edn"}
  :cmr
   {:access
   	{:control
