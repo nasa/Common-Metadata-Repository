@@ -152,7 +152,7 @@
    (start-rebalance-collection collection-id {}))
   ([collection-id options]
    (let [synchronous (get options :synchronous true)
-         target (get options :target :separate-index)
+         target (get options :target "separate-index")
          headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
          response (client/request
                    {:method :post

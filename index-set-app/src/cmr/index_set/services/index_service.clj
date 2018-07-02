@@ -1,6 +1,7 @@
 (ns cmr.index-set.services.index-service
   "Provide functions to store, retrieve, delete index-sets"
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common.log :as log :refer (debug info warn error)]
@@ -246,18 +247,21 @@
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
-  [context index-set-id concept-id]
-  (let [index-set (get-index-set context index-set-id)
-        ;; Add the collection to the list of rebalancing collections. Also
-        ;; does validation.
-        index-set (update-in
-                    index-set
-                    [:index-set :granule :rebalancing-collections]
-                    add-rebalancing-collection concept-id)
-        index-set (add-new-granule-index index-set concept-id)]
-
-    ;; Update the index set. This will create the new collection indexes as
-    ;; needed.
+  [context index-set-id concept-id target]
+  (let [target (csk/->kebab-case-keyword target)
+        index-set (as-> (get-index-set context index-set-id) index-set
+                        (update-in
+                          index-set
+                          [:index-set :granule :rebalancing-collections]
+                          add-rebalancing-collection concept-id)
+                        (update-in
+                          index-set
+                          [:index-set :granule :rebalancing-targets]
+                          assoc concept-id target)
+                        (if (= :small-collections target)
+                          index-set
+                          (add-new-granule-index index-set concept-id)))]
+    ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
 
 (defn finalize-collection-rebalancing

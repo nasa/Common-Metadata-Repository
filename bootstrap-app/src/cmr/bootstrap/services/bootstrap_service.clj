@@ -1,6 +1,7 @@
 (ns cmr.bootstrap.services.bootstrap-service
   "Provides methods to insert migration requets on the approriate channels."
   (:require
+    [camel-snake-kebab.core :as csk]
     [cmr.bootstrap.data.bulk-index :as bulk]
     [cmr.bootstrap.data.rebalance-util :as rebalance-util]
     [cmr.bootstrap.embedded-system-helper :as helper]
@@ -125,31 +126,44 @@
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
     (Thread/sleep (* 1000 sleep-secs))))
 
+(defn- validate-target
+  "Validates the target index is set to a valid value."
+  [target]
+  (when-not (some #{target} [:separate-index :small-collections nil])
+    (errors/throw-service-errors
+     :bad-request
+     [(format "Invalid target index [%s]. Only separate-index or small-collections are allowed."
+              target)])))
+
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set."
-  [context dispatcher concept-id]
-  (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
-  ;; This will throw an exception if the collection is already rebalancing
-  (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id)
+  [context dispatcher concept-id target]
+  (let [target (when target (csk/->kebab-case-keyword target))]
+    (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
+    (validate-target target)
+    ;; This will throw an exception if the collection is already rebalancing
+    (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id target)
 
-  ;; Clear the cache so that the newest index set data will be used.
-  ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-  (cache/reset-caches context)
+    ;; Clear the cache so that the newest index set data will be used.
+    ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    (cache/reset-caches context)
 
-  ;; We must wait here so that any new granules coming in will start to pick up the new index set
-  ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
-  ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
-  ;; came in and was indexed only to the old collection but after we started reindexing the collection.
-  (wait-until-index-set-hash-cache-times-out)
+    ;; We must wait here so that any new granules coming in will start to pick up the new index set
+    ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
+    ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
+    ;; came in and was indexed only to the old collection but after we started reindexing the collection.
+    (wait-until-index-set-hash-cache-times-out)
 
-  (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
-    ;; queue the collection for reindexing into the new index
-    (index-collection
-     context dispatcher provider-id concept-id
-     {:target-index-key (keyword concept-id)
-      :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes."
-                                  concept-id)})))
+    (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
+      ;; queue the collection for reindexing into the new index
+      (index-collection
+       context dispatcher provider-id concept-id
+       {:target-index-key (if (= :small-collections target)
+                            :small_collections
+                            (keyword concept-id))
+        :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes."
+                                    concept-id)}))))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
