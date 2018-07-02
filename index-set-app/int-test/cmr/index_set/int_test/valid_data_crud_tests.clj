@@ -187,7 +187,3 @@
   (testing "reset index-set app"
     (let [{:keys [status]} (util/reset)]
       (is (= 204 status)))))
-
-
-
-

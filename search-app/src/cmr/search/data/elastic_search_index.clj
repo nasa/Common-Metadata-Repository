@@ -36,10 +36,18 @@
   (let [fetched-index-set (index-set/get-index-set context index-set-id)
         rebalancing-collections (get-in fetched-index-set
                                         [:index-set :granule :rebalancing-collections])
+        ;; We want to make sure anything in the rebalancing collections index that has a
+        ;; target of a separate granule index continues to use the small collections index for now.
+        rebalancing-targets-map (get-in fetched-index-set [:index-set :granule :rebalancing-targets])
+        moving-to-separate-index (keep (fn [[k v]]
+                                         (when (= :separate-index v)
+                                           k))
+                                       rebalancing-targets-map)
+        search-using-small-collections (remove #(some (set [%]) moving-to-separate-index)
+                                               rebalancing-collections)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
-    ;; Remove any rebalancing collections from the set of granule index names we'll search through.
     {:index-names index-names-map
-     :rebalancing-collections rebalancing-collections}))
+     :rebalancing-collections search-using-small-collections}))
 
 (def index-cache-name
   "The name of the cache for caching index names. It will contain a map of concept type to a map of

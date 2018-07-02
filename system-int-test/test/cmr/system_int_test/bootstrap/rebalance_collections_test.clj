@@ -79,7 +79,7 @@
                              "] is already in the small collections index.")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
-                                    :target :small-collections}))))
+                                    :target "small-collections"}))))
      (testing "Starting target of small collections when already rebalancing to separate index"
        (bootstrap/start-rebalance-collection (:concept-id coll2))
        (is (= {:status 400
@@ -87,17 +87,17 @@
                              (:concept-id coll2)"]")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
-                                    :target :small-collections}))))
+                                    :target "small-collections"}))))
      (testing "Starting target of separate index when already rebalancing to small collections"
        (bootstrap/finalize-rebalance-collection (:concept-id coll2))
        (index/wait-until-indexed)
-       (bootstrap/start-rebalance-collection (:concept-id coll2) {:target :small-collections})
+       (bootstrap/start-rebalance-collection (:concept-id coll2) {:target "small-collections"})
        (is (= {:status 400
                :errors [(str "The index set already contains rebalancing collection ["
                              (:concept-id coll2)"]")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
-                                    :target :separate-index})))))))
+                                    :target "separate-index"})))))))
 
 (defn count-by-params
   "Returns the number of granules found by the given params"
