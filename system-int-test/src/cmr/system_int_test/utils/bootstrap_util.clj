@@ -20,10 +20,10 @@
   "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
   ([date-time]
    (bulk-index-after-date-time date-time {transmit-config/token-header (transmit-config/echo-system-token)}))
-  ([date-time headers] 
+  ([date-time headers]
    (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-after-date-time-url date-time)
                      :content-type :json
@@ -40,7 +40,7 @@
   ([provider-id concept-type concept-ids headers]
    (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-concepts-url)
                      :body (json/generate-string {:provider_id provider-id
@@ -55,12 +55,12 @@
 (defn bulk-delete-concepts
   "Call the bootstrap app to bulk delete concepts by id."
   ([provider-id concept-type concept-ids]
-   (bulk-delete-concepts 
+   (bulk-delete-concepts
      provider-id concept-type concept-ids {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id concept-type concept-ids headers]
    (let [response (client/request
                     {:method :delete
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-concepts-url)
                      :body (json/generate-string {:provider_id provider-id
@@ -77,7 +77,7 @@
   ([bulk-index-url headers]
     (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :url bulk-index-url
                      :content-type :json
                      :accept :json
@@ -92,7 +92,7 @@
   ([]
    (bulk-index-variables {transmit-config/token-header (transmit-config/echo-system-token)} nil nil))
   ([headers _ _]
-   (bulk-index-by-url (url/bulk-index-variables-url) headers)) 
+   (bulk-index-by-url (url/bulk-index-variables-url) headers))
   ([provider-id]
    (bulk-index-variables provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id headers]
@@ -117,7 +117,7 @@
   ([provider-id headers]
    (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-provider-url)
                      :body (json/generate-string {:provider_id provider-id})
@@ -135,7 +135,7 @@
   ([provider-id collection-id headers]
    (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-collection-url)
                      :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
@@ -149,15 +149,16 @@
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]
-   (start-rebalance-collection collection-id true))
-  ([collection-id synchronous]
-   (start-rebalance-collection 
-     collection-id synchronous {transmit-config/token-header (transmit-config/echo-system-token)}))
-  ([collection-id synchronous headers]
-   (let [response (client/request
+   (start-rebalance-collection collection-id {}))
+  ([collection-id options]
+   (let [synchronous (get options :synchronous true)
+         target (get options :target :separate-index)
+         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+         response (client/request
                    {:method :post
+                    :query-params {:synchronous synchronous
+                                   :target target}
                     :headers headers
-                    :query-params {:synchronous synchronous}
                     :url (url/start-rebalance-collection-url collection-id)
                     :accept :json
                     :throw-exceptions false
@@ -168,7 +169,7 @@
 (defn finalize-rebalance-collection
   "Call the bootstrap app to finalize rebalancing a collection."
   ([collection-id]
-   (finalize-rebalance-collection 
+   (finalize-rebalance-collection
      collection-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([collection-id headers]
    (let [response (client/request
@@ -232,7 +233,7 @@
   ([headers]
    (let [response (client/request
                     {:method :post
-                     :headers headers 
+                     :headers headers
                      :query-params {:synchronous true}
                      :url (url/bulk-index-system-concepts-url)
                      :accept :json

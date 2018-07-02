@@ -127,13 +127,11 @@
 (defn validate-requested-index-set
   "Verify input index-set is valid."
   [context index-set allow-update?]
-
   (when-not allow-update?
     (when-let [error (index-set-existence-check context index-set)]
       (errors/throw-service-error :conflict error))
     (when-let [error (id-name-existence-check index-set)]
       (errors/throw-service-error :invalid-data error)))
-
   (when-let [error (index-set-id-validation index-set)]
     (errors/throw-service-error :invalid-data error))
   (when-let [error (index-cfg-validation index-set)]
