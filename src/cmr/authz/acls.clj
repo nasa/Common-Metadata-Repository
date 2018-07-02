@@ -23,4 +23,5 @@
     (request/async-get
      url
      (request/add-token-header req token)
+     {}
      response/json-handler)))
