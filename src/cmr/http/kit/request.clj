@@ -58,8 +58,8 @@
 
 (defn request
   [method url req options callback]
-  (httpc/request (-> options
-                     (merge req)
+  (httpc/request (-> req
+                     (merge options)
                      (assoc :url url :method method)
                      ((fn [x] (log/trace "Options to httpc:" x) x)))
                   callback))
