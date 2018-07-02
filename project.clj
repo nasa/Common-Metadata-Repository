@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-http-kit "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"
   :description "Utilities and wrappers for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
   :license {
