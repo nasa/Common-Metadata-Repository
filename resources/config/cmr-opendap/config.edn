@@ -42,7 +42,7 @@
   	   {:root
   	     {:url "/search"}}}}
  :httpd
-  {:port 3012
+  {:port 3013
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
