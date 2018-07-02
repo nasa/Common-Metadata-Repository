@@ -33,8 +33,11 @@
 
 (defn parse-xml-body
   [body]
-  (let [str-data (if (string? body) body (slurp body))]
-    (xml/parse-str str-data)))
+  (let [str-data (if (string? body) body (slurp body))
+        zml-data (xml/parse-str str-data)]
+    (log/trace "str-data:" str-data)
+    (log/trace "xml-data:" xml-data)
+    xml-data))
 
 (defn xml-errors
   [body]
@@ -140,3 +143,4 @@
               parse-fn))))
 
 (def json-handler #(client-handler % error-handler parse-json-body))
+(def xml-handler #(client-handler % error-handler parse-xml-body))
