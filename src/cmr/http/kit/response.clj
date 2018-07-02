@@ -34,7 +34,7 @@
 (defn parse-xml-body
   [body]
   (let [str-data (if (string? body) body (slurp body))
-        zml-data (xml/parse-str str-data)]
+        xml-data (xml/parse-str str-data)]
     (log/trace "str-data:" str-data)
     (log/trace "xml-data:" xml-data)
     xml-data))
