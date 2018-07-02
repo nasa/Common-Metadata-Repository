@@ -6,7 +6,7 @@
     {:minutes 60}
    :lru
     {:threshold 1000}
-   :dumpfile "data/cache/dump.edn"}
+   :dumpfile "data/cache/authz-dump.edn"}
  ;; XXX Change this to use the same parts that the rest of the CMR uses,
  ;;     namely scheme, host, port. path ... we use the below base-url for
  ;;     hitting access-control and search, so we'll want to split this out
@@ -56,7 +56,7 @@
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
  :logging
-  {:level :debug
+  {:level :trace
    :nss [cmr.opendap cmr.authz cmr.http.kit org.httpkit]
    :color false}
  :streaming
