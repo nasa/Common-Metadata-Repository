@@ -58,8 +58,10 @@
 
 (defn request
   [method url req options callback]
-  (httpc/request (-> req
-                     (merge options)
+  ;; WARNING: Don't switch the order ot options/req below, otherwise
+  ;;          CMR OPeNDAP will break!
+  (httpc/request (-> options
+                     (merge req)
                      (assoc :url url :method method)
                      ((fn [x] (log/trace "Options to httpc:" x) x)))
                   callback))
