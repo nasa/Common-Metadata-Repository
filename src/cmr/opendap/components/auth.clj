@@ -14,7 +14,7 @@
    [cmr.authz.roles :as roles]
    [cmr.authz.token :as token]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.errors :as opendap-errors]
+   [cmr.opendap.errors :as cmro-errors]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
@@ -58,7 +58,7 @@
      #(token/->user (config/get-echo-rest-url system) token))
     (catch Exception e
       (log/error e)
-      {:errors (opendap-errors/exception-data e)})))
+      {:errors (cmro-errors/exception-data e)})))
 
 (defn cached-admin-role
   "Look up the roles for token+user in the cache; if there is a miss, make the
@@ -68,11 +68,11 @@
     (caching/lookup system
                     (roles/roles-key token)
                     #(roles/admin (config/get-access-control-url system)
-                            token
-                            user-id))
+                                  token
+                                  user-id))
     (catch Exception e
       (log/error e)
-      {:errors (opendap-errors/exception-data e)})))
+      {:errors (cmro-errors/exception-data e)})))
 
 (defn cached-concept-permission
   "Look up the permissions for a concept in the cache; if there is a miss,
@@ -88,7 +88,7 @@
                       concept-id))
     (catch Exception e
       (log/error e)
-      {:errors (opendap-errors/exception-data e)})))
+      {:errors (cmro-errors/exception-data e)})))
 
 (defn check-roles
   "A supporting function for `check-roles-permissions` that handles the roles
@@ -98,7 +98,9 @@
   (let [lookup (cached-admin-role system user-token user-id)
         errors (:errors lookup)]
     (if errors
-      (response/not-allowed errors/no-permissions errors)
+      (do
+        (log/error errors/no-permissions)
+        (response/not-allowed errors/no-permissions errors))
       (if (admin-role? route-roles lookup)
         (handler request)
         (response/not-allowed errors/no-permissions)))))
@@ -113,7 +115,9 @@
         errors (:errors lookup)]
     (log/debug "Checking permissions annotated in routes ...")
     (if errors
-      (response/not-allowed errors/no-permissions errors)
+      (do
+        (log/error errors/no-permissions)
+        (response/not-allowed errors/no-permissions errors))
       (if (concept-permission? route-permissions
                                lookup
                                concept-id)
@@ -130,7 +134,9 @@
       (log/debug "ECHO token provided; proceeding ...")
       (log/trace "user-lookup:" user-lookup)
       (if errors
-        (response/not-allowed errors/token-required errors)
+        (do
+          (log/error errors/token-required)
+          (response/not-allowed errors/token-required errors))
         (do
           (log/trace "user-token: [REDACTED]")
           (log/trace "user-id:" user-lookup)

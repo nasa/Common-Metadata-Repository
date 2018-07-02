@@ -59,7 +59,7 @@
 
 (defn async-post
   ([url]
-    (async-post url {:body nil}))
+    (async-post url {}))
   ([url req]
     (async-post url req nil))
   ([url req callback]

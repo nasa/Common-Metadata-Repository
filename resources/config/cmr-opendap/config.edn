@@ -56,7 +56,7 @@
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
  :logging
-  {:level :trace
+  {:level :debug
    :nss [cmr.opendap cmr.authz cmr.http.kit org.httpkit]
    :color false}
  :streaming

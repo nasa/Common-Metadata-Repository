@@ -75,7 +75,8 @@
          (request/add-token-header user-token)
          (request/add-accept "application/json")
          (request/add-form-ct)
-         (request/add-payload payload))
+         (request/add-payload payload)
+         ((fn [x] (log/debug "Client request options:" x) x)))
      response/json-handler)))
 
 (defn extract-metadata
