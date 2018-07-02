@@ -13,9 +13,15 @@
    [xml-in.core :as xml-in])
   (:refer-clojure :exclude [error-handler]))
 
+(defn stream->str
+  [body]
+  (if (string? body)
+    body
+    (slurp body)))
+
 (defn parse-json-body
   [body]
-  (let [str-data (if (string? body) body (slurp body))
+  (let [str-data (stream->str body)
         json-data (json/parse-string str-data true)]
     (log/trace "str-data:" str-data)
     (log/trace "json-data:" json-data)
@@ -127,9 +133,10 @@
           (err-handler status headers body)
 
           :else
-          (do
-            (log/trace "headers:" headers)
-            (log/trace "body:" body)
-            (parse-fn body)))))
+          (-> body
+              stream->str
+              ((fn [x] (log/trace "headers:" headers)
+                       (log/trace "body:" x) x))
+              parse-fn))))
 
-(def json-handler #(client-handler % parse-json-body))
+(def json-handler #(client-handler % error-handler parse-json-body))
