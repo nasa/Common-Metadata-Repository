@@ -20,7 +20,7 @@ Then bring up the system:
 ```
 
 Hack away to your heart's content (or use `curl` to hit the REST API at
-http://localhost:3012; see `cmr.opendap.rest.route` for the available resources).
+http://localhost:3013; see `cmr.opendap.rest.route` for the available resources).
 
 When done:
 
