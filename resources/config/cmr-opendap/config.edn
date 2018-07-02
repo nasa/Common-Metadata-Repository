@@ -57,7 +57,7 @@
                  "/opendap/docs/rest-api"}}
  :logging
   {:level :debug
-   :nss [cmr.opendap org.httpkit]
+   :nss [cmr.opendap cmr.authz cmr.http.kit org.httpkit]
    :color false}
  :streaming
   {:timeout 20000 ; milliseconds 20 seconds * 1000

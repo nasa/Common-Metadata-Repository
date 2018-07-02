@@ -124,6 +124,11 @@
   (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
                     msgs)))
 
+(defn exception-data
+  [exception]
+  [(or (.getMessage exception)
+       (ex-data exception))])
+
 (defn get-errors
   [data]
   (or (:errors data)
