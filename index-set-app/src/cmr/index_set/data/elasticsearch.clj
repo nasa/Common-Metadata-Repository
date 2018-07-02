@@ -84,7 +84,6 @@
     (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-id")]
       (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
 
-
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]

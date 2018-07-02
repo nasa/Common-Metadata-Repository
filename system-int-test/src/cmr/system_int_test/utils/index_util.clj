@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.indexer.config :as config]
@@ -112,3 +113,30 @@
         (s/only-with-real-message-queue
           (qb-side-api/set-message-queue-retry-behavior 0)
           (qb-side-api/set-message-queue-publish-timeout 10000))))))
+
+(defn delete-elasticsearch-index
+  "Helper to delete an elasticsearch index associated with a collection."
+  [coll]
+  (let [index-name (string/replace (format "1_%s" (string/lower-case (:concept-id coll)))
+                                   #"-" "_")]
+    (warn "Deleting index " index-name)
+    (client/delete (format "%s/%s" (url/elastic-root) index-name)
+                   {:connection-manager (s/conn-mgr)})))
+
+(defn- query-for-granules-by-collection
+  "Elasticsearch query to return all of the granules in a given collection."
+  [coll]
+  (json/generate-string
+   {:query
+    {:filtered
+     {:query
+      {:match_all {}
+       :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}}))
+
+(defn delete-granules-from-small-collections
+  "Helper to delete granules from the small collections index for the given collection."
+  [coll]
+  (client/delete (format "%s/1_small_collections/granule/_query" (url/elastic-root))
+                 {:connection-manager (s/conn-mgr)
+                  :body (query-for-granules-by-collection coll)
+                  :content-type "application/json"}))
