@@ -51,7 +51,9 @@
   "Parse the XML that is returned when querying the CMR Access Control API for
   the username associated with the token."
   [xml-str]
-  (find-xml xml-str [:token_info :user_name]))
+  (-> xml-str
+      (find-xml [:token_info :user_name])
+      first))
 
 (defn get-token-info
   "Query the CMR Access Control API for information assocated with the given
