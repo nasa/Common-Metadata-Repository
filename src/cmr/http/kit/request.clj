@@ -82,7 +82,7 @@
   ([url req options]
     (async-post url req options nil))
   ([url req options callback]
-    (request :post url req callback)))
+    (request :post url req options callback)))
 
 (defn get
   [& args]
