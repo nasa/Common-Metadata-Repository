@@ -165,29 +165,28 @@
         :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes."
                                     concept-id)}))))
 
-(def index-set-id
-  "This code relies on the assumption that the index set ID continues to be hardcoded to 1."
-  1)
-
 (defn- validate-finalize-target
   "Validates the target is one of the two allowed values."
-  [target]
-  (when-not (or (= "small-collections" target)
-                (= "separate-index" target))
+  [target concept-id]
+  (if (nil? target)
     (errors/throw-service-errors
      :bad-request
-     [(str "Invalid target index [" target "]. Only separate-index or small-collections are "
-           "allowed. The collection may not be marked for rebalancing.")])))
+     [(format "The index set does not contain the rebalancing collection [%s]"
+              concept-id)])
+    (when-not (or (= "small-collections" target)
+                  (= "separate-index" target))
+      (errors/throw-service-errors
+       :bad-request
+       [(str "Invalid target index [" target "]. Only separate-index or small-collections are "
+             "allowed. The collection [" concept-id "] may not be marked for rebalancing.")]))))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
   [context concept-id]
   (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
-  (let [fetched-index-set (index-set/get-index-set context index-set-id)
+  (let [fetched-index-set (index-set/get-index-set context indexer-index-set/index-set-id)
         target (get-in fetched-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])]
-    (println "The target is: " target)
-    (println "The index set rebalancing-targets are:" (pr-str (get-in fetched-index-set [:index-set :granule :rebalancing-targets])))
-    (validate-finalize-target target)
+    (validate-finalize-target target concept-id)
     ;; This will throw an exception if the collection is not rebalancing
     (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.
@@ -204,7 +203,6 @@
     ;; This doesn't remove the race condition. We still have steps in the overall process to detect it
     ;; and resolve it. (manual fixes if necessary)
     (wait-until-index-set-hash-cache-times-out)
-    (println "CDD: The target is:" target)
     (when (= "separate-index" target)
       (rebalance-util/delete-collection-granules-from-small-collections context concept-id))))
 

@@ -71,11 +71,11 @@
      (testing "Starting already rebalanced collection"
        (is (= {:status 400
                :errors [(str "The collection [" (:concept-id coll1)
-                             "] already has a separate granule index")]}
+                             "] already has a separate granule index.")]}
               (bootstrap/start-rebalance-collection (:concept-id coll1) {:synchronous false}))))
      (testing "Starting with a target of small collections when already in small collections"
        (is (= {:status 400
-               :errors [(str "The collection [" (:concept-id coll1)
+               :errors [(str "The collection [" (:concept-id coll2)
                              "] is already in the small collections index.")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
@@ -146,22 +146,6 @@
     (if (= (:concept-id coll-holding) (:concept-id coll))
       (update coll-holding :granule-count + num)
       coll-holding)))
-
-; (defn dec-provider-holdings-for-coll
-;   "Decrements the number of granules expected for a collection in the expected provider holdings"
-;   [expected-provider-holdings coll num]
-;   (for [coll-holding expected-provider-holdings]
-;     (if (= (:concept-id coll-holding) (:concept-id coll))
-;       (update coll-holding :granule-count - num)
-;       coll-holding)))
-;
-; (defn set-provider-holdings-for-coll
-;   "Overwrites the number of granules expected for a collection in the expected provider holdings"
-;   [expected-provider-holdings coll num]
-;   (for [coll-holding expected-provider-holdings]
-;     (if (= (:concept-id coll-holding) (:concept-id coll))
-;       (assoc coll-holding :granule-count num)
-;       coll-holding)))
 
 ;; Rebalances a single collection with a single granule
 (deftest simple-rebalance-collection-test
