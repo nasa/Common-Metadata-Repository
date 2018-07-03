@@ -162,7 +162,11 @@
 (defn- valid-token?
   "test"
   [context]
-  (= 200 (first (echo-tokens/get-token-info context (:token context)))))
+  (if-let [token (:token context)]
+    (try
+      (= 200 (first (echo-tokens/get-token-info context token)))
+      (catch Exception e false))
+    true))
 
 (defn has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
