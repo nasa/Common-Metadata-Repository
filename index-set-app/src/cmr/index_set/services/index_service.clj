@@ -245,11 +245,26 @@
                {:name collection-concept-id
                 :settings individual-index-settings})))
 
+(defn- remove-granule-index-from-index-set
+  "Removes the separate granule index for the given collection from the index set. Validates the
+  collection index is listed in the index-set."
+  [index-set collection-concept-id]
+  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)]
+    (when-not (contains? existing-index-names collection-concept-id)
+      (errors/throw-service-error
+       :bad-request
+       (format
+         "The collection does not have a separate granule index"
+         collection-concept-id)))
+    (update-in index-set [:index-set :granule :indexes]
+               (fn [indexes]
+                 (remove #(= collection-concept-id (:name %))
+                         indexes)))))
+
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id target]
-  (let [target (csk/->kebab-case-keyword target)
-        index-set (as-> (get-index-set context index-set-id) index-set
+  (let [index-set (as-> (get-index-set context index-set-id) index-set
                         (update-in
                           index-set
                           [:index-set :granule :rebalancing-collections]
@@ -258,24 +273,55 @@
                           index-set
                           [:index-set :granule :rebalancing-targets]
                           assoc concept-id target)
-                        (if (= :small-collections target)
+                        (if (= "small-collections" target)
                           index-set
                           (add-new-granule-index index-set concept-id)))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
 
+(defn- validate-target
+  "Validates the target is one of the two allowed values."
+  [target]
+  (when-not (or (= "small-collections" target)
+                (= "separate-index" target))
+    (errors/throw-service-errors
+     :bad-request
+     [(str "Invalid target index [" target "]. Only separate-index or small-collections are "
+           "allowed. The collection may not be marked for rebalancing.")])))
+
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
-        ;; Remove the collection from the list of rebalancing collections.
-        ;; Also does validation.
-        index-set (update-in
-                    index-set
-                    [:index-set :granule :rebalancing-collections]
-                    remove-rebalancing-collection
-                    concept-id)]
+        target (get-in index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
+        _ (validate-target target)
+        index-set (as-> index-set index-set
+                        (update-in
+                          index-set
+                          [:index-set :granule :rebalancing-collections]
+                          remove-rebalancing-collection concept-id)
+                        (update-in
+                          index-set
+                          [:index-set :granule :rebalancing-targets]
+                          dissoc (keyword concept-id))
+                        (if (= "small-collections" target)
+                          (remove-granule-index-from-index-set index-set concept-id)
+                          index-set))]
+    ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
+
+; (defn finalize-collection-rebalancing
+;   "Removes the collection from the list of rebalancing collections"
+;   [context index-set-id concept-id]
+;   (let [index-set (get-index-set context index-set-id)
+;         ;; Remove the collection from the list of rebalancing collections.
+;         ;; Also does validation.
+;         index-set (update-in
+;                     index-set
+;                     [:index-set :granule :rebalancing-collections]
+;                     remove-rebalancing-collection
+;                     concept-id)]
+;     (update-index-set context index-set)))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-
