@@ -40,16 +40,15 @@ curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST
 
 ### Mark a collection as rebalancing
 
-There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. Marking a collection as rebalancing adds the collection to a list of collections are are being moved out of small collections. It also creates the new granule index.
+There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. When calling the endpoint the `target` query parameter is required, and it has two valid values, `separate-index` and `small-collections`. In either case the collection is added to the list of collections being rebalanced. If `target=separate-index` a new granule index is created in addition to updating the index-set.
 
-    curl -XPOST http://localhost:3005/index-sets/3/rebalancing-collections/C5-PROV1/start
+    curl -XPOST http://localhost:3005/index-sets/3/rebalancing-collections/C5-PROV1/start?target=separate-index
 
 ### Finalize a rebalancing collection
 
-Finalizing a rebalancing collection removes the collection from the list of collections are are being moved out of small collections.
+Finalizing a rebalancing collection removes the collection from the list of collections are are being rebalanced and updates the index-set appropriately based on what the target destination was set to on the call to start.
 
     curl -XPOST http://localhost:3005/index-sets/3/rebalancing-collections/C5-PROV1/finalize
-
 
 ### Reset for dev purposes
 

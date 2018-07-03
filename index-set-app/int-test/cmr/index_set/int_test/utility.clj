@@ -184,6 +184,7 @@
   (let [response (client/request
                   {:method :post
                    :url (start-rebalance-collection-url id concept-id)
+                   :query-params {:target "separate-index"}
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
                    :throw-exceptions false})

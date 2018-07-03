@@ -46,7 +46,6 @@
         search-using-small-collections (filter #(some (set [%]) moving-to-separate-index)
                                                rebalancing-collections)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
-    (println "CDD: lots of stuff rebalancing-targets-map" rebalancing-targets-map "moving-to-separate-index:" moving-to-separate-index "search-using-small-collections" search-using-small-collections)
     {:index-names index-names-map
      :rebalancing-collections search-using-small-collections}))
 

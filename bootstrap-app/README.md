@@ -52,10 +52,10 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp t
 
 ### Start Rebalancing a Collection
 
-Starts moving all the granules in a specified collection from the small collections index into their own separate index. The work is performed asynchronously in the background. The job should be monitored through the bootstrap application's logs and using the status endpoint detailed below. This also supports a `synchronous=true` query parameter to cause the collection reindexing to happen synchronously with the request. This is mostly for testing purposes.
+Starts moving all the granules in a specified collection from its current index to the target index. If no target is provided the default is to move the granules from the small collections index into their own separate index. The work is performed asynchronously in the background. The job should be monitored through the bootstrap application's logs and using the status endpoint detailed below. The two valid values for the `target` query parameter are `separate-index` and `small-collections`. This also supports a `synchronous=true` query parameter to cause the collection reindexing to happen synchronously with the request. This is mostly for testing purposes.
 
 ```
-curl -i -XPOST http://localhost:3006/rebalancing_collections/C5-PROV1/start
+curl -i -XPOST http://localhost:3006/rebalancing_collections/C5-PROV1/start?target=separate-index
 
 HTTP/1.1 200 OK
 {"message":"Rebalancing started for collection C5-PROV1"}
@@ -75,7 +75,7 @@ HTTP/1.1 200 OK
 
 ### Finalize a Rebalancing Collection
 
-Finalizes a rebalancing collection. Removes the collection from the list of rebalancing collections in the index set and deletes all granules from the small collections index for the specified collection.
+Finalizes a rebalancing collection. Removes the collection from the list of rebalancing collections in the index set. If the target was a separate index this call deletes all granules from the small collections index for the specified collection. If the target was small collections the collection specific index will be removed from the index-set, but the index will not be deleted since this could cause errors until search caches have all been refreshed. The caller is expected to manually delete the index after a period of time.
 
 ```
 curl -i -XPOST  http://localhost:3006/rebalancing_collections/C5-PROV1/finalize
