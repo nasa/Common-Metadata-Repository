@@ -30,24 +30,29 @@
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
 
+(defn- get-collections-moving-to-separate-index
+  "Returns a list of collections that are currently in the process of moving to a separate index.
+  Takes a map with the keyword of the collection as the key and the target index as the value.
+  For example: `{:C1-PROV1 \"separate-index\" :C2-PROV2 \"small-collections\"}` would return
+               `[\"C1-PROV1\"]`"
+  [rebalancing-targets-map]
+  (keep (fn [[k v]]
+          (when (= "separate-index" v)
+            (name k)))
+        rebalancing-targets-map))
+
+
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]
   (let [fetched-index-set (index-set/get-index-set context index-set-id)
-        rebalancing-collections (get-in fetched-index-set
-                                        [:index-set :granule :rebalancing-collections])
-        ;; We want to make sure anything in the rebalancing collections index that has a
-        ;; target of a separate granule index continues to use the small collections index for now.
+        ;; We want to make sure collections in the process of being moved to a separate granule
+        ;; index continue to use the small collections index for search.
         rebalancing-targets-map (get-in fetched-index-set [:index-set :granule :rebalancing-targets])
-        moving-to-separate-index (keep (fn [[k v]]
-                                         (when (= "separate-index" v)
-                                           (name k)))
-                                       rebalancing-targets-map)
-        search-using-small-collections (filter #(some (set [%]) moving-to-separate-index)
-                                               rebalancing-collections)
+        moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
     {:index-names index-names-map
-     :rebalancing-collections search-using-small-collections}))
+     :rebalancing-collections moving-to-separate-index}))
 
 (def index-cache-name
   "The name of the cache for caching index names. It will contain a map of concept type to a map of

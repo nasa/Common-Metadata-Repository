@@ -1,23 +1,24 @@
 (ns cmr.index-set.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [cheshire.core :as json]
-            [ring.util.response :as r]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.cache :as cache]
-            [clojure.walk :as walk]
-            [cheshire.core :as json]
-            [cmr.index-set.services.index-service :as index-svc]
-            [cmr.common.api.context :as context]
-            [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as common-routes]
-            [cmr.common-app.api.health :as common-health]))
+  (:require
+   [cheshire.core :as json]
+   [cheshire.core :as json]
+   [clojure.walk :as walk]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.index-set.services.index-service :as index-svc]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]
+   [ring.util.response :as r]))
 
 (defn- build-routes [system]
   (routes
