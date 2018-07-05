@@ -53,10 +53,12 @@
 ;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmulti get identity)
+(defmulti get (fn [concept-type & _]
+  (log/trace "Dispatching on concept type:" concept-type)
+  concept-type))
 
 (defmethod get :collection
-  [system search-endpoint user-token params]
+  [_type system search-endpoint user-token params]
   (get-cached system
               (:concept params)
               collection/async-get-metadata

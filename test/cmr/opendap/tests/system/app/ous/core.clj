@@ -20,8 +20,8 @@
 
 (deftest processing-level-3+-no-spatial
   (let [collection-id "C1200267318-HMR_TME"
-          granule-id "G1200267320-HMR_TME"
-          variable-id "V1200267322-HMR_TME"]
+        granule-id "G1200267320-HMR_TME"
+        variable-id "V1200267322-HMR_TME"]
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
@@ -53,8 +53,8 @@
 
 (deftest processing-level-3+-with-spatial
   (let [collection-id "C1200267318-HMR_TME"
-          granule-id "G1200267320-HMR_TME"
-          variable-id "V1200267322-HMR_TME"]
+        granule-id "G1200267320-HMR_TME"
+        variable-id "V1200267322-HMR_TME"]
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"

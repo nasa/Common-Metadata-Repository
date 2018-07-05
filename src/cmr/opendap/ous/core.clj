@@ -119,7 +119,6 @@
   ""
   [coll params]
   (let [level (collection/extract-processing-level coll)]
-    ; errors/
     (log/info "Got level:" level)
     (if (contains? collection/supported-processing-levels level)
       params
