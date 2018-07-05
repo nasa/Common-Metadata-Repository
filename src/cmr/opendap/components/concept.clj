@@ -27,16 +27,18 @@
 (defn- -get-cached
   "This does the actual work for the cache lookup and fallback function call."
   [system concept-id lookup-fn lookup-args]
-  (log/trace "lookup-fn:" lookup-fn)
-  (log/trace "lookup-args:" lookup-args)
-  (try
-    (caching/lookup
-     system
-     (concept-key concept-id)
-     #(apply lookup-fn lookup-args))
-    (catch Exception e
-      (log/error e)
-      {:errors (errors/exception-data e)})))
+  (let [cache-key (concept-key concept-id)]
+    (log/trace "lookup-fn:" lookup-fn)
+    (log/trace "lookup-args:" lookup-args)
+    (log/trace "Cache key:" cache-key)
+    (try
+      (caching/lookup
+       system
+       cache-key
+       #(apply lookup-fn lookup-args))
+      (catch Exception e
+        (log/error e)
+        {:errors (errors/exception-data e)}))))
 
 (defn get-cached
   "Look up the concept for a concept-id in the cache; if there is a miss,
@@ -67,7 +69,7 @@
 (defmethod get :collection
   [_type system search-endpoint user-token params]
   (get-cached system
-              (:concept params)
+              (:collection-id params)
               collection/async-get-metadata
               [search-endpoint user-token params]))
 
