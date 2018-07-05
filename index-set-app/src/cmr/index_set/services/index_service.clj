@@ -5,6 +5,7 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
@@ -281,6 +282,7 @@
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id target]
+  (rebalancing-collections/validate-target target concept-id)
   (let [index-set (as-> (get-index-set context index-set-id) index-set
                         (update-in
                           index-set
@@ -298,27 +300,12 @@
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
 
-(defn- validate-target
-  "Validates the target is one of the two allowed values."
-  [target concept-id]
-  (if (nil? target)
-    (errors/throw-service-errors
-     :bad-request
-     [(format "The index set does not contain the rebalancing collection [%s]"
-              concept-id)])
-    (when-not (or (= "small-collections" target)
-                  (= "separate-index" target))
-      (errors/throw-service-errors
-       :bad-request
-       [(str "Invalid target index [" target "]. Only separate-index or small-collections are "
-             "allowed. The collection [" concept-id "] may not be marked for rebalancing.")]))))
-
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
         target (get-in index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
-        _ (validate-target target concept-id)
+        _ (rebalancing-collections/validate-target target concept-id)
         index-set (as-> index-set index-set
                         (update-in
                           index-set

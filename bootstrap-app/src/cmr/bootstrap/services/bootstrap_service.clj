@@ -1,18 +1,19 @@
 (ns cmr.bootstrap.services.bootstrap-service
   "Provides methods to insert migration requets on the approriate channels."
   (:require
-    [camel-snake-kebab.core :as csk]
-    [cmr.bootstrap.data.bulk-index :as bulk]
-    [cmr.bootstrap.data.rebalance-util :as rebalance-util]
-    [cmr.bootstrap.embedded-system-helper :as helper]
-    [cmr.bootstrap.services.dispatch.core :as dispatch]
-    [cmr.common.cache :as cache]
-    [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.common.services.errors :as errors]
-    [cmr.indexer.data.index-set :as indexer-index-set]
-    [cmr.indexer.system :as indexer-system]
-    [cmr.transmit.index-set :as index-set]))
+   [camel-snake-kebab.core :as csk]
+   [cmr.bootstrap.data.bulk-index :as bulk]
+   [cmr.bootstrap.data.rebalance-util :as rebalance-util]
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.bootstrap.services.dispatch.core :as dispatch]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.rebalancing-collections :as rebalancing-collections]
+   [cmr.common.services.errors :as errors]
+   [cmr.indexer.data.index-set :as indexer-index-set]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.transmit.index-set :as index-set]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -126,24 +127,17 @@
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
     (Thread/sleep (* 1000 sleep-secs))))
 
-(defn- validate-target
-  "Validates the target index is set to a valid value."
-  [target]
-  (when-not (some #{target} [:separate-index :small-collections nil])
-    (errors/throw-service-errors
-     :bad-request
-     [(format "Invalid target index [%s]. Only separate-index or small-collections are allowed."
-              target)])))
-
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
-  from failures to change the index set."
+  from failures to change the index set. If no target is specified default to moving to a separate
+  index."
   [context dispatcher concept-id target]
-  (let [target (when target (csk/->kebab-case-keyword target))]
+  (let [target (or target "separate-index")]
+    (rebalancing-collections/validate-target target concept-id)
     (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
-    (validate-target target)
     ;; This will throw an exception if the collection is already rebalancing
-    (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id target)
+    (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
+                                          (csk/->kebab-case-keyword target))
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
@@ -159,26 +153,11 @@
       ;; queue the collection for reindexing into the new index
       (index-collection
        context dispatcher provider-id concept-id
-       {:target-index-key (if (= :small-collections target)
+       {:target-index-key (if (= "small-collections" target)
                             :small_collections
                             (keyword concept-id))
         :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes."
                                     concept-id)}))))
-
-(defn- validate-finalize-target
-  "Validates the target is one of the two allowed values."
-  [target concept-id]
-  (if (nil? target)
-    (errors/throw-service-errors
-     :bad-request
-     [(format "The index set does not contain the rebalancing collection [%s]"
-              concept-id)])
-    (when-not (or (= "small-collections" target)
-                  (= "separate-index" target))
-      (errors/throw-service-errors
-       :bad-request
-       [(str "Invalid target index [" target "]. Only separate-index or small-collections are "
-             "allowed. The collection [" concept-id "] may not be marked for rebalancing.")]))))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
@@ -186,7 +165,7 @@
   (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   (let [fetched-index-set (index-set/get-index-set context indexer-index-set/index-set-id)
         target (get-in fetched-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])]
-    (validate-finalize-target target concept-id)
+    (rebalancing-collections/validate-target target concept-id)
     ;; This will throw an exception if the collection is not rebalancing
     (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.

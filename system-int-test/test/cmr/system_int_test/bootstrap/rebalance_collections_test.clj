@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.bootstrap.rebalance-collections-test
   "Tests rebalancing granule indexes by moving collections's granules from the small collections
    index to separate collection indexes"
-  (require
+  (:require
    [clojure.test :refer :all]
    [clj-http.client :as client]
    [cmr.system-int-test.data2.collection :as dc]
@@ -51,6 +51,12 @@
        (is (= {:status 400
                :errors ["Collection [C1-PROV1] does not exist."]}
               (bootstrap/start-rebalance-collection "C1-PROV1" {:synchronous false}))))
+     (testing "Invalid target"
+       (is (= {:status 400
+               :errors [(str "Invalid target index [small-fry]. Only separate-index or "
+                             "small-collections are allowed.")]}
+              (bootstrap/start-rebalance-collection (:concept-id coll1) {:synchronous false
+                                                                         :target "small-fry"}))))
      (testing "Finalizing not started collection"
        (is (= {:status 400
                :errors [(str "The index set does not contain the rebalancing collection ["
