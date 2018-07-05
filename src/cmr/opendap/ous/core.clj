@@ -279,36 +279,37 @@
   (let [start (util/now)
         search-endpoint (config/get-search-url component)
         ;; Stage 1
-        [params bounding-box granules coll s1-errs] (stage1
-                                                     component
-                                                     search-endpoint
-                                                     user-token
-                                                     raw-params)
+        [params bounding-box grans-promise coll-promise s1-errs]
+        (stage1 component
+                search-endpoint
+                user-token
+                raw-params)
         ;; Stage 2
-        [coll params data-files service-ids vars s2-errs] (stage2
-                                                           component
-                                                           search-endpoint
-                                                           user-token
-                                                           params
-                                                           coll
-                                                           granules)
+        [coll params data-files service-ids vars s2-errs]
+        (stage2 component
+                search-endpoint
+                user-token
+                params
+                coll-promise
+                grans-promise)
         ;; Stage 3
-        [services bounding-info s3-errs] (stage3
-                                          component
-                                          coll
-                                          search-endpoint
-                                          user-token
-                                          bounding-box
-                                          service-ids
-                                          vars)
+        [services bounding-info s3-errs]
+        (stage3 component
+                coll
+                search-endpoint
+                user-token
+                bounding-box
+                service-ids
+                vars)
         ;; Stage 4
-        [query s4-errs] (stage4 coll
-                                bounding-box
-                                services
-                                bounding-info)
+        [query s4-errs]
+        (stage4 coll
+                bounding-box
+                services
+                bounding-info)
         ;; Error handling for all stages
         errs (errors/collect
-              start params bounding-box granules coll s1-errs
+              start params bounding-box grans-promise coll-promise s1-errs
               data-files service-ids vars s2-errs
               services bounding-info s3-errs
               query s4-errs
