@@ -168,7 +168,7 @@
         (if (= 200 status)
           true
           (do
-            (info "Invalid token wtih error: " (:errors body))
+            (info "Invalid token with error: " (:errors body))
             false))
         (catch Exception e
           (info "Caught exception validating token: " (.getMessage e))
