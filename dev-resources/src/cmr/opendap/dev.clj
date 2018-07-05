@@ -16,6 +16,7 @@
     [cmr.opendap.errors :as errors]
     [cmr.opendap.ous.variable :as variable]
     [com.stuartsierra.component :as component]
+    [debugger.core :as debug]
     [org.httpkit.client :as httpc]
     [ring.util.codec :as codec]
     [trifl.java :refer [show-methods]]
