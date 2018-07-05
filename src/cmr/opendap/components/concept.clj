@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
@@ -26,13 +27,16 @@
 (defn- -get-cached
   "This does the actual work for the cache lookup and fallback function call."
   [system concept-id lookup-fn lookup-args]
+  (log/trace "lookup-fn:" lookup-fn)
+  (log/trace "lookup-args:" lookup-args)
   (try
     (caching/lookup
      system
      (concept-key concept-id)
      #(apply lookup-fn lookup-args))
     (catch Exception e
-      (ex-data e))))
+      (log/error e)
+      {:errors (errors/exception-data e)})))
 
 (defn get-cached
   "Look up the concept for a concept-id in the cache; if there is a miss,
@@ -44,8 +48,11 @@
   [system concept-id lookup-fn lookup-args]
   (let [maybe-promise (-get-cached system concept-id lookup-fn lookup-args)]
     (if (util/promise? maybe-promise)
-      maybe-promise
+      (do
+        (log/trace "Result identifed as promise ...")
+        maybe-promise)
       (let [wrapped-data (promise)]
+        (log/trace "Result is not a promise ...")
         (deliver wrapped-data maybe-promise)
         wrapped-data))))
 

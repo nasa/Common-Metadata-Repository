@@ -55,7 +55,7 @@
 (def default-dim-stride 1)
 (def default-lat-lon-stride 1)
 
-;; XXX The following two definitions are a hard-coded work-around for the
+;; XXX The following set and function are a hard-coded work-around for the
 ;;     fact that we don't currently have a mechanism for identifying the
 ;;     "direction of storage" or "endianness" of latitude data in different
 ;;     data sets: some store data from -90 to 90N starting at index 0, some
@@ -69,8 +69,13 @@
 (defn lat-reversed?
   [coll]
   (log/debug "Checking collection for reversed latitudinal values ...")
-  (let [dataset-id (:dataset_id coll)]
+  (log/trace "Collection data:" coll)
+  (let [dataset-id (:dataset_id coll)
+        reversed? (contains? lat-reversed-datasets dataset-id)]
     (log/debug "Data set id:" dataset-id)
+    (if reversed?
+      (log/debug "Identfied data set as having reversed latitude order ...")
+      (log/debug "Identfied data set as having normal latitude order ..."))
     ;; XXX coll is required as an arg here because it's needed in a
     ;;     workaround for different data sets using different starting
     ;;     points for their indices in OPeNDAP
@@ -79,7 +84,7 @@
     ;;     will allow us to make the reversed? assessment.
     ;;
     ;; XXX This is being tracked in CMR-4982 and CMR-4896
-    (contains? lat-reversed-datasets dataset-id)))
+    reversed?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
