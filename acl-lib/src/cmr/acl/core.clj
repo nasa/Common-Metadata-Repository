@@ -160,12 +160,19 @@
         nil))))
 
 (defn- valid-token?
-  "test"
+  "Checks if token is expired or otherwise invalid."
   [context]
   (if-let [token (:token context)]
-    (try
-      (= 200 (first (echo-tokens/get-token-info context token)))
-      (catch Exception e false))
+    (let [[status body] (echo-tokens/get-token-info context token)]
+      (try
+        (if (= 200 status)
+          true
+          (do
+            (info "Invalid token wtih error: " (:errors body))
+            false))
+        (catch Exception e
+          (info "Caught exception validating token: " (.getMessage e))
+          false)))
     true))
 
 (defn has-ingest-management-permission?
