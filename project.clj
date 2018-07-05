@@ -66,6 +66,8 @@
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]}
     :dev {
+      :dependencies [
+        [debugger "0.2.1"]]
       :jvm-opts [
         "-Dcmr.testing.config.data=testing-value"
         "-Dcmr.opendap.logging.color=true"]
