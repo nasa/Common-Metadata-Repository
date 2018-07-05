@@ -4,7 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -249,7 +249,7 @@
       (errors/throw-service-error
        :bad-request
        (format
-         "The collection [%s] is already in the small collections index."
+         "The collection [%s] does not have a separate granule index."
          collection-concept-id)))))
 
 (defn- add-new-granule-index
@@ -267,21 +267,17 @@
   "Removes the separate granule index for the given collection from the index set. Validates the
   collection index is listed in the index-set."
   [index-set collection-concept-id]
-  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)]
-    (when-not (contains? existing-index-names collection-concept-id)
-      (errors/throw-service-error
-       :bad-request
-       (format
-         "The collection does not have a separate granule index"
-         collection-concept-id)))
-    (update-in index-set [:index-set :granule :indexes]
-               (fn [indexes]
-                 (remove #(= collection-concept-id (:name %))
-                         indexes)))))
+  (validate-granule-index-exists index-set collection-concept-id)
+  (update-in index-set [:index-set :granule :indexes]
+             (fn [indexes]
+               (remove #(= collection-concept-id (:name %))
+                       indexes))))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id target]
+  (info (format "Starting to rebalance granules for collection [%s] to target [%s]."
+                concept-id target))
   (rebalancing-collections/validate-target target concept-id)
   (let [index-set (as-> (get-index-set context index-set-id) index-set
                         (update-in
@@ -305,6 +301,8 @@
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
         target (get-in index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
+        _ (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."
+                        concept-id target))
         _ (rebalancing-collections/validate-target target concept-id)
         index-set (as-> index-set index-set
                         (update-in
