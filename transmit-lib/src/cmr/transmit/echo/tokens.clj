@@ -38,7 +38,7 @@
 (defn get-token-info
   "Get the user-id from ECHO for the given token"
   [context token]
-  ;; Avoid getting token info when system token is passed. 
+  ;; Avoid getting token info when system token is passed.
   (if (transmit-config/echo-system-token? token)
     [200]
     (let [response (r/rest-post context "/tokens/get_token_info"
@@ -68,4 +68,4 @@
              (format "Token %s does not exist" token))
         ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
         400 (errors/throw-service-errors :unauthorized  (:errors (json/decode body true)))
-        (r/unexpected-status-error! status body)))))passa
+        (r/unexpected-status-error! status body)))))
