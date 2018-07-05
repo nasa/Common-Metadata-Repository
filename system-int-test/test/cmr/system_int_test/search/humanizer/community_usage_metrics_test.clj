@@ -61,7 +61,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token [ABC] does not exist"]}
+            :errors ["You do not have permission to perform that action."]}
            (hu/update-community-usage-metrics "ABC" sample-usage-csv))))
 
   (testing "Create without permission"
