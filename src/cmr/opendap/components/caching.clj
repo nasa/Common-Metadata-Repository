@@ -27,6 +27,12 @@
       dumpfile
       (prn-str cache-data))))
 
+(defn item-has-value?
+  [item]
+  (cond (nil? item) false
+        (and (seq? item) (empty? item)) false
+        :else true))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,7 +75,7 @@
           (cache/hit ch item-key))
         (when-let [value (value-fn)]
           (log/debug "Concept cache miss; calling value function ...")
-          (when-not (or (nil? value) (empty? value))
+          (when (item-has-value? value)
             (swap! (get-cache system) #(cache/miss % item-key value))))))
     (lookup system item-key)))
 
