@@ -82,7 +82,7 @@
      (testing "Starting with a target of small collections when already in small collections"
        (is (= {:status 400
                :errors [(str "The collection [" (:concept-id coll2)
-                             "] is already in the small collections index.")]}
+                             "] does not have a separate granule index.")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
                                     :target "small-collections"}))))

@@ -8,7 +8,7 @@
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.indexer.data.index-set :as indexer-index-set]
@@ -133,6 +133,8 @@
   index."
   [context dispatcher concept-id target]
   (let [target (or target "separate-index")]
+    (info (format "Starting to rebalance granules for collection [%s] to target [%s]."
+                  concept-id target))
     (rebalancing-collections/validate-target target concept-id)
     (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
     ;; This will throw an exception if the collection is already rebalancing
@@ -165,6 +167,8 @@
   (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   (let [fetched-index-set (index-set/get-index-set context indexer-index-set/index-set-id)
         target (get-in fetched-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])]
+    (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."
+                  concept-id target))
     (rebalancing-collections/validate-target target concept-id)
     ;; This will throw an exception if the collection is not rebalancing
     (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
