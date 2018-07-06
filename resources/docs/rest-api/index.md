@@ -64,8 +64,12 @@ a special header:
 
 > For example, if you have stored your token in a file:
 
+```shell
+"Echo-Token: `cat /path/to/tokens/sit`"
 ```
-"Echo-Token: `cat ~/.cmr/tokens/sit`"
+
+```clj
+
 ```
 
 Both ECHO as well as URS/Earthdata Login tokens are supported.
@@ -105,10 +109,20 @@ calls to the service.
 curl -i ...
 ```
 
+```clj
+(request/get ...)
+```
+
 > The response headers will include the version used by the service:
 
 ```shell
 Cmr-Media-Type: cmr-opendap.v2; format=json
+```
+
+```clj
+{...
+ :cmr-media-type "cmr-opendap.v2; format=json"
+ ...}
 ```
 
 <aside class="warning">
@@ -248,6 +262,26 @@ as such, we recommend that this resource be preferred. The only requirement is
 that your HTTP client supports streaming.
 
 
+## Interaction of Parameters
+
+In the sections below, the various parameters one can pass to the ous resource
+are described. Each parameter is discussed in isolation, simply addressing it
+in its own context. However, common usage will involve more than on parameter
+acting at the same time. As such, here are some points to note:
+
+* Currently CMR OPeNDAP supports only queries with one collection; as such,
+  the collection query to CMR Search explicitly limits the results to one
+  with the `page_size=1` parameter.
+* When multiple variable concept ids are passed, these are sent to CMR Search
+  in a single query for efficiency (as opposed to sending one variable request
+  at a time).
+* Similarly, multiple granules are queried at once with a single query to CMR
+  Search.
+* In the granule query to CMR Search, and spatial and temporal parameters that
+  were passed to CMR OPeNDAP will be used to limit the granule results from
+  CMR Search to just those in which the user is interested.
+
+
 ## CMR-Style Parameters
 
 The example above will generate a URL for downloading all the granules and all
@@ -275,7 +309,8 @@ in the granule data extracted by the OPeNDAP query to an area of interest.
 
 If not provided, the entire spatial extent of the granule will be used.
 
-The following are examples of accepted `bounding-box` parameter usage:
+The following are examples of accepted `bounding-box` parameter usage,
+note the acceptance of either dash or underscore in the parameter name:
 
 * `bounding-box=-9.984375,56.109375,19.828125,67.640625`
 * `bounding_box=-9.984375,56.109375,19.828125,67.640625`
@@ -299,13 +334,14 @@ the ones passed will be returned.
 
 If not provided, a regular granule search is performed.
 
-The following are examples of accepted `exclude-granules` parameter usage:
+The following are examples of accepted `exclude-granules` parameter usage,
+note the acceptance of either dash or underscore in the parameter name:
 
 * `exclude-granules=true&granules=G1200187775-EDF_OPS`
 * `exclude_granules=true&granules=G1200187775-EDF_OPS`
 
 Note that the `granules` parameter here may take any of the accepted forms
-shown in the previous section.
+shown in the `granules` section below.
 
 > Use of `exclude-granules` in a query:
 
