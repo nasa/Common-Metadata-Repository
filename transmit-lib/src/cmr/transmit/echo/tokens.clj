@@ -35,6 +35,18 @@
   [context]
   (login context "guest" "guest-password"))
 
+(defn get-token-info
+  "Get the user-id from ECHO for the given token"
+  [context token]
+  ;; Avoid getting token info when system token is passed.
+  (if (transmit-config/echo-system-token? token)
+    [200]
+    (let [response (r/rest-post context "/tokens/get_token_info"
+                                {:headers {"Accept" mt/json
+                                           "Echo-Token" (transmit-config/echo-system-token)}
+                                 :form-params {:id token}})]
+      response)))
+
 (defn get-user-id
   "Get the user-id from ECHO for the given token"
   [context token]
