@@ -1,16 +1,16 @@
-(ns hxgm30.event.pubsub.core
+(ns cmr.mission-control.pubsub.core
   (:require
     [clojure.core.async :as async]
-    [hxgm30.event.message :as message]
-    [hxgm30.event.pubsub.impl.core-async :as core-async]
-    [hxgm30.event.topic :as topic]
+    [cmr.mission-control.message :as message]
+    [cmr.mission-control.pubsub.impl.core-async :as core-async]
+    [cmr.mission-control.topic :as topic]
     [taoensso.timbre :as log])
   (:import
     [clojure.lang Keyword]
-    [hxgm30.event.pubsub.impl.core_async PubSub]))
+    [cmr.mission_control.pubsub.impl.core_async PubSub]))
 
 (defprotocol PubSubAPI
-  "The API for Dragon pubsub messenging."
+  "The API for in-process CMR component pubsub messenging."
   (get-topic [this]
     "Get the topic with which the messenger was instantiated.")
   (get-chan [this]
@@ -28,15 +28,19 @@
 
 (defn create-pubsub
   [^Keyword type topic]
+  (log/trace "Got pubsub type:" type)
+  (log/trace "Got pubsub topic:" topic)
   (case type
     :core-async (core-async/create-pubsub topic)))
 
 (defn create-dataflow-pubsub
   [^Keyword type]
+  (log/trace "Got pubsub type:" type)
   (case type
     :core-async (core-async/create-dataflow-pubsub)))
 
-(defn create-world-pubsub
+(defn create-notifications-pubsub
   [^Keyword type]
+  (log/trace "Got pubsub type:" type)
   (case type
-    :core-async (core-async/create-world-pubsub)))
+    :core-async (core-async/create-notifications-pubsub)))

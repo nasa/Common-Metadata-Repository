@@ -1,33 +1,19 @@
-(defn get-banner
-  []
-  (try
-    (str
-      (slurp "resources/text/banner.txt")
-      ;(slurp "resources/text/loading.txt")
-      )
-    ;; If another project can't find the banner, just skip it;
-    ;; this function is really only meant to be used by Dragon itself.
-    (catch Exception _ "")))
-
 (defn get-prompt
   [ns]
   (str "\u001B[35m[\u001B[34m"
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject hexagram30/event "0.1.0-SNAPSHOT"
-  :description "An event system for use by hexagram30 projects"
-  :url "https://github.com/hexagram30/event"
+(defproject gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"
+  :description "An in-process messaging system for communication, coordination, and control between CMR components"
+  :url "https://github.com/cmr-exchange/cmr-mission-control"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [clojusc/twig "0.3.2"]
-    [hexagram30/common "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]
-    [org.clojure/core.async "0.4.474"]
-    ;[spootnik/kinsky "0.1.22"]
-    ]
+    [org.clojure/clojure "1.9.0"]
+    [org.clojure/core.async "0.4.474"]]
   :profiles {
     :ubercompile {
       :aot :all}
@@ -41,24 +27,20 @@
         [venantius/ultra "0.5.2"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
-        :init-ns hxgm30.event.dev
-        :prompt ~get-prompt
-        :init ~(println (get-banner))}}
+        :init-ns cmr.mission-control.dev
+        :prompt ~get-prompt}}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.5"]
+        [jonase/eastwood "0.2.7"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
         [venantius/yagni "0.1.4"]]}
     :test {
       :plugins [
-        [lein-ltest "0.3.0"]]}
-      :server {
-        :jvm-opts ["-XX:MaxDirectMemorySize=512g"]
-        :main hxgm30.event.server}}
+        [lein-ltest "0.3.0"]]}}
   :aliases {
     ;; Dev Aliases
     "repl" ["do"
@@ -80,8 +62,5 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test" "ltest"]
-    ;; Docker kafka server
-    "kafka"
-      ["shell" "resources/scripts/start-kafka.sh"]})
+    "ltest" ["with-profile" "+test" "ltest"]})
 

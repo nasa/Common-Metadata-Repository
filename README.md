@@ -1,6 +1,6 @@
-# hexagram30/event
+# cmr-mission-control
 
-*An event system for use by hexagram30 projects*
+*An in-process messaging system for communication, coordination, and control between CMR components*
 
 [![][logo]][logo-large]
 
@@ -12,13 +12,12 @@ TBD
 
 ## License
 
-Copyright © 2018, Hexagram30
+Copyright © 2018, NASA
 
 Apache License, Version 2.0
 
 
 <!-- Named page links below: /-->
 
-[logo]: https://raw.githubusercontent.com/hexagram30/resources/master/branding/logo/h30-logo-2-long-with-text-x695.png
-[logo-large]: https://raw.githubusercontent.com/hexagram30/resources/master/branding/logo/h30-logo-2-long-with-text-x3440.png
-[comp-event]: https://github.com/hexagram30/hexagramMUSH/blob/master/src/hexagram30/mush/components/event.clj
+[logo]: https://avatars2.githubusercontent.com/u/32934967?s=200&v=4
+[logo-large]: https://avatars2.githubusercontent.com/u/32934967?v=4

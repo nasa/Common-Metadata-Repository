@@ -1,8 +1,8 @@
-(ns hxgm30.event.components.logging
+(ns cmr.mission-control.components.logging
   (:require
     [clojusc.twig :as logger]
+    [cmr.mission-control.components.config :as config]
     [com.stuartsierra.component :as component]
-    [hxgm30.event.components.config :as config]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

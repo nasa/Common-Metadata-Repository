@@ -1,9 +1,9 @@
-(ns hxgm30.event.components.core
+(ns cmr.mission-control.components.core
   (:require
+    [cmr.mission-control.components.config :as config]
+    [cmr.mission-control.components.logging :as logging]
+    [cmr.mission-control.components.pubsub :as pubsub]
     [com.stuartsierra.component :as component]
-    [hxgm30.event.components.config :as config]
-    [hxgm30.event.components.logging :as logging]
-    [hxgm30.event.components.pubsub :as pubsub]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,7 +29,7 @@
   (merge (cfg cfg-data)
          log))
 
-(defn event-system
+(defn mission-control
   [cfg-data]
   (merge (basic cfg-data)
          pubsub))
@@ -47,15 +47,15 @@
 (defn initialize
   []
   (-> (config/build-config)
-      event-system
+      mission-control
       component/map->SystemMap))
 
 (def init-lookup
   {:basic #'initialize-bare-bones
-   :event-system #'initialize})
+   :mission-control #'initialize})
 
 (defn init
   ([]
-    (init :event-system))
+    (init :mission-control))
   ([mode]
     ((mode init-lookup))))

@@ -1,6 +1,6 @@
-(ns hxgm30.event.message
+(ns cmr.mission-control.message
   (:require
-    [hxgm30.event.topic :as topic]))
+    [cmr.mission-control.topic :as topic]))
 
 (defn new-event
   [topic tag data]
@@ -11,9 +11,9 @@
   [tag data]
   (new-event topic/dataflow-events tag data))
 
-(defn new-world-event
+(defn new-notifications-event
   [tag data]
-  (new-event topic/world-events tag data))
+  (new-event topic/notifications-events tag data))
 
 (defn get-payload
   [msg]

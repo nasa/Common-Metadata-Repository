@@ -1,7 +1,7 @@
-(ns hxgm30.event.components.config
+(ns cmr.mission-control.components.config
   (:require
+   [cmr.mission-control.config :as config]
    [com.stuartsierra.component :as component]
-   [hxgm30.event.config :as config]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,9 +20,9 @@
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn event-system-type
+(defn messaging-type
   [system]
-  (get-in (get-cfg system) [:event-system :type]))
+  (get-in (get-cfg system) [:mission-control :messaging-type]))
 
 (defn log-level
   [system]

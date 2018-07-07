@@ -1,13 +1,13 @@
-(ns hxgm30.event.components.pubsub
+(ns cmr.mission-control.components.pubsub
   (:require
     [clojure.core.async :as async]
+    [cmr.mission-control.components.config :as config]
+    [cmr.mission-control.components.util :as util]
+    [cmr.mission-control.message :as message]
+    [cmr.mission-control.pubsub.core :as pubsub]
+    [cmr.mission-control.tag :as tag]
+    [cmr.mission-control.topic :as topic]
     [com.stuartsierra.component :as component]
-    [hxgm30.event.components.config :as config]
-    [hxgm30.event.components.util :as util]
-    [hxgm30.event.message :as message]
-    [hxgm30.event.pubsub.core :as pubsub]
-    [hxgm30.event.tag :as tag]
-    [hxgm30.event.topic :as topic]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,10 +44,10 @@
   [system]
   (get-pubsub system :dataflow))
 
-(defn get-world-pubsub
+(defn get-notifications-pubsub
   ""
   [system]
-  (get-pubsub system :world))
+  (get-pubsub system :notifications))
 
 (defn publish
   ""
@@ -143,19 +143,19 @@
   ;; in the system that relate to the manner in which data flows through the
   ;; system.
   dataflow
-  ;; The 'world' pubsub is intended for use by anything that needs to handle
-  ;; events that take place in the game world.
-  world])
+  ;; The 'notifications' pubsub is intended for use by anything that needs to
+  ;; handle events that take place in wider context of the running system.
+  notifications])
 
 (defn start
   [this]
   (log/info "Starting pub-sub component ...")
   (let [dataflow (pubsub/create-dataflow-pubsub
-                  (config/event-system-type this))
-        world (pubsub/create-world-pubsub
-               (config/event-system-type this))
+                  (config/messaging-type this))
+        notifications (pubsub/create-notifications-pubsub
+                       (config/messaging-type this))
         component (assoc this :dataflow dataflow
-                              :world world)]
+                              :notifications notifications)]
     (log/info "Adding subscribers ...")
     (subscribe-all component (:subscribers this))
     (log/debug "Started pub-sub component.")
@@ -166,10 +166,10 @@
   (log/info "Stopping pub-sub component ...")
   (when-let [pubsub-dataflow (:dataflow this)]
     (pubsub/delete pubsub-dataflow))
-  (when-let [pubsub-world (:world this)]
-    (pubsub/delete pubsub-world))
+  (when-let [pubsub-notifications (:notifications this)]
+    (pubsub/delete pubsub-notifications))
   (let [component (assoc this :dataflow nil
-                              :world nil)]
+                              :notifications nil)]
     (log/debug "Stopped pub-sub component.")
     component))
 

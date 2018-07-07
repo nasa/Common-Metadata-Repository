@@ -1,7 +1,7 @@
-(ns hxgm30.event.pubsub.impl.core-async
+(ns cmr.mission-control.pubsub.impl.core-async
   (:require
     [clojure.core.async :as async]
-    [hxgm30.event.topic :as topic]
+    [cmr.mission-control.topic :as topic]
     [taoensso.timbre :as log]))
 
 (defrecord PubSub
@@ -58,6 +58,6 @@
   []
   (create-pubsub topic/dataflow-events))
 
-(defn create-world-pubsub
+(defn create-notifications-pubsub
   []
-  (create-pubsub topic/world-events))
+  (create-pubsub topic/notifications-events))

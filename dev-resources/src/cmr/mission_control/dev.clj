@@ -1,4 +1,4 @@
-(ns hxgm30.event.dev
+(ns cmr.mission-control.dev
   (:require
     [clojure.java.io :as io]
     [clojure.pprint :refer [pprint]]
@@ -6,11 +6,11 @@
     [clojure.tools.namespace.repl :as repl]
     [clojusc.dev.system.core :as system-api]
     [clojusc.twig :as logger]
+    [cmr.mission-control.components.config :as config]
+    [cmr.mission-control.components.core]
+    [cmr.mission-control.components.pubsub :as pubsub]
+    [cmr.mission-control.tag :as tag]
     [com.stuartsierra.component :as component]
-    [hxgm30.event.components.config :as config]
-    [hxgm30.event.components.core]
-    [hxgm30.event.components.pubsub :as pubsub]
-    [hxgm30.event.tag :as tag]
     [trifl.java :refer [show-methods]])
   (:import
     (java.net URI)
@@ -20,11 +20,11 @@
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(logger/set-level! '[hxgm30] :debug)
+(logger/set-level! '[cmr.mission-control] :debug)
 
 (def ^:dynamic *mgr* nil)
-(def init-component "hxgm30.event.components.core")
-(def after-refresh 'hxgm30.event.dev/startup)
+(def init-component "cmr.mission-control.components.core")
+(def after-refresh 'cmr.mission-control.dev/startup)
 
 (defn banner
   []

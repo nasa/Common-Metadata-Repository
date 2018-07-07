@@ -1,4 +1,4 @@
-(ns hxgm30.event.tag)
+(ns cmr.mission-control.tag)
 
 (def generic ::generic)
 

@@ -1,4 +1,4 @@
-(ns hxgm30.event.components.util
+(ns cmr.mission-control.components.util
   (:require
     [taoensso.timbre :as log]))
 
