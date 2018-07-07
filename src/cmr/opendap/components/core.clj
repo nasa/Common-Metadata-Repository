@@ -27,11 +27,6 @@
             (pubsub/create-component)
             [:config :logging])})
 
-(def pubsub-without-logging
-  {:pubsub (component/using
-            (pubsub/create-component)
-            [:config])})
-
 (def auth-cache
   {:auth-caching (component/using
                   (auth-caching/create-component)
@@ -58,6 +53,14 @@
            [:config :logging :pubsub
             :auth-caching :auth
             :concept-caching :concepts])})
+
+;;; Additional components for systems that want to supress logging (e.g.,
+;;; systems created for testing).
+
+(def pubsub-without-logging
+  {:pubsub (component/using
+            (pubsub/create-component)
+            [:config])})
 
 (def auth-cache-without-logging
   {:auth-caching (component/using
