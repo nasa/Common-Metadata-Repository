@@ -14,8 +14,8 @@
  ;;     to update the config loading in the config component.
  :cmr {
    :access {:control {:protocol "https"
-                  	  :host "cmr.sit.earthdata.nasa.gov"
-                  	  :relative {:root {:url "/access-control"}}}}
+                          :host "cmr.sit.earthdata.nasa.gov"
+                          :relative {:root {:url "/access-control"}}}}
    :echo {:rest {:protocol "https"
                  :host "cmr.sit.earthdata.nasa.gov"
                  :context "/legacy-services/rest"}}
@@ -44,8 +44,10 @@
                  "/opendap/docs/rest-api"}}
  :logging {
    :level :debug
-   :nss [cmr.opendap cmr.authz cmr.http.kit org.httpkit]
+   :nss [cmr.opendap cmr.authz cmr.http.kit cmr.mission-control org.httpkit]
    :color false}
+:mission-control {
+   :messaging-type :core-async}
  :streaming {
    :timeout 20000 ; milliseconds 20 seconds * 1000
    :heartbeat 200 ; milliseconds

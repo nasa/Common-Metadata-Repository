@@ -1,6 +1,7 @@
 (ns cmr.opendap.components.core
   (:require
     [cmr.authz.components.caching :as auth-caching]
+    [cmr.mission-control.components.pubsub :as pubsub]
     [cmr.opendap.components.auth :as auth]
     [cmr.opendap.components.caching :as concept-caching]
     [cmr.opendap.components.concept :as concept]
@@ -21,6 +22,16 @@
              (logging/create-component)
              [:config])})
 
+(def pubsub
+  {:pubsub (component/using
+            (pubsub/create-component)
+            [:config :logging])})
+
+(def pubsub-without-logging
+  {:pubsub (component/using
+            (pubsub/create-component)
+            [:config])})
+
 (def auth-cache
   {:auth-caching (component/using
                   (auth-caching/create-component)
@@ -29,7 +40,7 @@
 (def authz
   {:auth (component/using
           (auth/create-component)
-          [:auth-caching])})
+          [:auth-caching :pubsub])})
 
 (def concept-cache
   {:concept-caching (component/using
@@ -39,12 +50,14 @@
 (def concepts
   {:concepts (component/using
               (concept/create-component)
-              [:concept-caching])})
+              [:concept-caching :pubsub])})
 
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :auth-caching :auth :concept-caching :concepts])})
+           [:config :logging :pubsub
+            :auth-caching :auth
+            :concept-caching :concepts])})
 
 (def auth-cache-without-logging
   {:auth-caching (component/using
@@ -59,7 +72,7 @@
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config :auth-caching :auth :concept-caching :concepts])})
+           [:config :pubsub :auth-caching :auth :concept-caching :concepts])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,6 +93,7 @@
   (component/map->SystemMap
     (merge cfg
            log
+           pubsub
            auth-cache
            authz
            concept-cache
@@ -90,6 +104,7 @@
   []
   (component/map->SystemMap
     (merge cfg
+           pubsub-without-logging
            auth-cache-without-logging
            authz
            concept-cache-without-logging
