@@ -42,9 +42,15 @@
 
 (defn soft-reference->json!
   "Given a soft reference object and a Cheshire JSON generator, write the
-  data stored in the soft reference to the generator as a JSON string."
-  [soft-ref json-generator]
-  (let [data @(.get soft-ref)
+  data stored in the soft reference to the generator as a JSON string.
+
+  Note, however, that sometimes the value is not a soft reference, but rather
+  a raw value from the response. In that case, we need to skip the object
+  conversion, and just do the realization."
+  [obj json-generator]
+  (let [data @(if (isa? obj SoftReference)
+                (.get obj)
+                obj)
         data-str (json/generate-string data)]
     (log/trace "Encoder got data: " data)
     (.writeString json-generator data-str)))

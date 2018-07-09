@@ -78,7 +78,7 @@
 
 (defn lookup
   ([system item-key]
-    (.get (cache/lookup @(get-cache system) item-key)))
+    (cache/lookup @(get-cache system) item-key))
   ([system item-key value-fn]
     (let [ch @(get-cache system)]
       (if (cache/has? ch item-key)
