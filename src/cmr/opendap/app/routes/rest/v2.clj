@@ -7,6 +7,7 @@
    [cmr.opendap.components.config :as config]
    [cmr.opendap.app.handler.auth-cache :as auth-cache-handler]
    [cmr.opendap.app.handler.collection :as collection-handler]
+   [cmr.opendap.app.handler.concept-cache :as concept-cache-handler]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.app.routes.rest.v1 :as routes-v1]
    [cmr.opendap.health :as health]
@@ -21,15 +22,27 @@
 (defn admin-api
   [httpd-component]
   (concat
-    [["/opendap/cache" {
+    [;; Authz cache
+     ["/opendap/cache/auth" {
       :get {:handler (auth-cache-handler/lookup-all httpd-component)
             :roles #{:admin}}
       :delete {:handler (auth-cache-handler/evict-all httpd-component)
                :roles #{:admin}}}]
-     ["/opendap/cache/:item-key" {
+     ["/opendap/cache/auth/:item-key" {
       :get {:handler (auth-cache-handler/lookup httpd-component)
             :roles #{:admin}}
       :delete {:handler (auth-cache-handler/evict httpd-component)
+               :roles #{:admin}}}]
+     ;; Concept cache
+     ["/opendap/cache/concept" {
+      :get {:handler (concept-cache-handler/lookup-all httpd-component)
+            :roles #{:admin}}
+      :delete {:handler (concept-cache-handler/evict-all httpd-component)
+               :roles #{:admin}}}]
+     ["/opendap/cache/concept/:item-key" {
+      :get {:handler (concept-cache-handler/lookup httpd-component)
+            :roles #{:admin}}
+      :delete {:handler (concept-cache-handler/evict httpd-component)
                :roles #{:admin}}}]]
    (routes-v1/admin-api httpd-component)))
 
