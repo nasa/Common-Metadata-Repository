@@ -49,7 +49,15 @@
                                      "application/vnd.cmr-opendap.v1+json")))]
       (is (= 404 (:status response)))))
   (testing "v2 routes ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache"
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache/auth"
+                                       (test-system/http-port))
+                                (-> {}
+                                    (request/add-token-header
+                                     (util/get-sit-token))
+                                    (request/add-accept
+                                     "application/vnd.cmr-opendap.v2+json")))]
+      (is (= 200 (:status response))))
+    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache/concept"
                                        (test-system/http-port))
                                 (-> {}
                                     (request/add-token-header
