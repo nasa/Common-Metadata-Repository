@@ -210,6 +210,8 @@
                      (ous-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component search-endpoint user-token params)
+        ; grans-promise (concept/get :granules
+        ;                component search-endpoint user-token params)
         coll-promise (concept/get :collection
                       component search-endpoint user-token params)
         errs (errors/collect params valid-lat valid-lon)]

@@ -95,6 +95,19 @@
                 collection/async-get-metadata
                 [search-endpoint user-token params])))
 
+(defmethod get :granules
+  [_type system search-endpoint user-token params]
+  (let [collection (:collection-id params)
+        granules (:granules params)
+        expllicit-cache-keys (map #(concept-key (str collection ":" %))
+                                  granules)
+        implicit-cache-keys [(concept-key (str collection ":granules"))]]
+    (get-cached system
+                (if (seq granules) expllicit-cache-keys implicit-cache-keys)
+                granule/async-get-metadata
+                [search-endpoint user-token params]
+                {:multi-key? true})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
