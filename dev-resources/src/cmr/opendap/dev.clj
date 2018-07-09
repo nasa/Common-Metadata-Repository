@@ -14,6 +14,8 @@
     [cmr.opendap.components.config :as config]
     [cmr.opendap.components.core]
     [cmr.opendap.errors :as errors]
+    [cmr.opendap.http.request :as request]
+    [cmr.opendap.http.response :as response]
     [cmr.opendap.ous.variable :as variable]
     [com.stuartsierra.component :as component]
     [debugger.core :as debug]
