@@ -290,6 +290,9 @@
                     <a href="#collection-resources" class="toc-h2 toc-link" data-title="collection-resources">Collection Resources</a>
                   </li>
                   <li>
+                    <a href="#interaction-of-parameters" class="toc-h2 toc-link" data-title="interaction-of-parameters">Interaction of Parameters</a>
+                  </li>
+                  <li>
                     <a href="#cmr-style-parameters" class="toc-h2 toc-link" data-title="cmr-style-parameters">CMR-Style Parameters</a>
                   </li>
                   <li>
@@ -384,8 +387,9 @@ a special header:</p>
 <blockquote>
 <p>For example, if you have stored your token in a file:</p>
 </blockquote>
-<pre class="highlight plaintext"><code>"Echo-Token: `cat ~/.cmr/tokens/sit`"
-</code></pre>
+<pre class="highlight shell tab-shell"><code><span class="s2">"Echo-Token: </span><span class="sb">`</span>cat /path/to/tokens/sit<span class="sb">`</span><span class="s2">"</span>
+</code></pre><pre class="highlight clojure"><code><span class="w">
+</span></code></pre>
 <p>Both ECHO as well as URS/Earthdata Login tokens are supported.</p>
 
 <p>Many of the examples in the documentation below show usage of the
@@ -416,12 +420,16 @@ calls to the service.</p>
 <p>Examine the headers with a call to the service:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -i ...
-</code></pre>
+</code></pre><pre class="highlight clojure"><code><span class="p">(</span><span class="nf">request/get</span><span class="w"> </span><span class="n">...</span><span class="p">)</span><span class="w">
+</span></code></pre>
 <blockquote>
 <p>The response headers will include the version used by the service:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>Cmr-Media-Type: cmr-opendap.v2; <span class="nv">format</span><span class="o">=</span>json
-</code></pre>
+</code></pre><pre class="highlight clojure"><code><span class="p">{</span><span class="n">...</span><span class="w">
+ </span><span class="no">:cmr-media-type</span><span class="w"> </span><span class="s">"cmr-opendap.v2; format=json"</span><span class="w">
+ </span><span class="n">...</span><span class="p">}</span><span class="w">
+</span></code></pre>
 <aside class="warning">
   The most recent release of the CMR OPeNDAP API is always the default;
   if you experience unexpected issues and/or errors, this may be a result
@@ -536,6 +544,25 @@ advantage of system resources (micro-threads and OS threads). In particular,
 the second one avoids making blocking calls in the request-processing thread;
 as such, we recommend that this resource be preferred. The only requirement is
 that your HTTP client supports streaming.</p>
+<h2 id='interaction-of-parameters'>Interaction of Parameters</h2>
+<p>In the sections below, the various parameters one can pass to the ous resource
+are described. Each parameter is discussed in isolation, simply addressing it
+in its own context. However, common usage will involve more than on parameter
+acting at the same time. As such, here are some points to note:</p>
+
+<ul>
+<li>Currently CMR OPeNDAP supports only queries with one collection; as such,
+the collection query to CMR Search explicitly limits the results to one
+with the <code>page_size=1</code> parameter.</li>
+<li>When multiple variable concept ids are passed, these are sent to CMR Search
+in a single query for efficiency (as opposed to sending one variable request
+at a time).</li>
+<li>Similarly, multiple granules are queried at once with a single query to CMR
+Search.</li>
+<li>In the granule query to CMR Search, and spatial and temporal parameters that
+were passed to CMR OPeNDAP will be used to limit the granule results from
+CMR Search to just those in which the user is interested.</li>
+</ul>
 <h2 id='cmr-style-parameters'>CMR-Style Parameters</h2>
 <p>The example above will generate a URL for downloading all the granules and all
 the variables across the globe for the given collection. To limit these, there
@@ -561,7 +588,8 @@ in the granule data extracted by the OPeNDAP query to an area of interest.</p>
 
 <p>If not provided, the entire spatial extent of the granule will be used.</p>
 
-<p>The following are examples of accepted <code>bounding-box</code> parameter usage:</p>
+<p>The following are examples of accepted <code>bounding-box</code> parameter usage,
+note the acceptance of either dash or underscore in the parameter name:</p>
 
 <ul>
 <li><code>bounding-box=-9.984375,56.109375,19.828125,67.640625</code></li>
@@ -582,7 +610,8 @@ the ones passed will be returned.</p>
 
 <p>If not provided, a regular granule search is performed.</p>
 
-<p>The following are examples of accepted <code>exclude-granules</code> parameter usage:</p>
+<p>The following are examples of accepted <code>exclude-granules</code> parameter usage,
+note the acceptance of either dash or underscore in the parameter name:</p>
 
 <ul>
 <li><code>exclude-granules=true&amp;granules=G1200187775-EDF_OPS</code></li>
@@ -590,7 +619,7 @@ the ones passed will be returned.</p>
 </ul>
 
 <p>Note that the <code>granules</code> parameter here may take any of the accepted forms
-shown in the previous section.</p>
+shown in the <code>granules</code> section below.</p>
 
 <blockquote>
 <p>Use of <code>exclude-granules</code> in a query:</p>
@@ -812,13 +841,22 @@ for the time of interest.</p>
 <li><code>POST /opendap/ous/collections</code></li>
 </ul>
 <h1 id='admin-resources'>Admin Resources</h1><h2 id='cache'>Cache</h2>
-<p>Administrative users may use a token to access the following:</p>
+<p>Administrative users may use a token to manage the authorization cache:</p>
 
 <ul>
-<li><code>GET    /opendap/cache</code></li>
-<li><code>DELETE /opendap/cache</code></li>
-<li><code>GET    /opendap/cache/:item-key</code></li>
-<li><code>DELETE /opendap/cache/:item-key</code></li>
+<li><code>GET    /opendap/cache/auth</code></li>
+<li><code>DELETE /opendap/cache/auth</code></li>
+<li><code>GET    /opendap/cache/auth/:item-key</code></li>
+<li><code>DELETE /opendap/cache/auth/:item-key</code></li>
+</ul>
+
+<p>Likewise, administrators have the ability to manage the concept cache:</p>
+
+<ul>
+<li><code>GET    /opendap/cache/concept</code></li>
+<li><code>DELETE /opendap/cache/concept</code></li>
+<li><code>GET    /opendap/cache/concept/:item-key</code></li>
+<li><code>DELETE /opendap/cache/concept/:item-key</code></li>
 </ul>
 <h2 id='health'>Health</h2>
 <p>Even though the <code>health</code> resources are classified as &quot;admin&quot;, they are
