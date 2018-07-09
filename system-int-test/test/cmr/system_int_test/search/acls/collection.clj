@@ -149,7 +149,7 @@
                                                    :native-id "coll11"
                                                    :access-value 32.0}))
         ;; tombstone
-        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token "mock-echo-system-token"})
+        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token (tc/echo-system-token)})
                         :entry-title "coll11"
                         :deleted true
                         :revision-id 2)
@@ -316,7 +316,7 @@
         []
         {:provider-id "PROV4" :all-revisions false :token user4-token}
 
-        ;; only permissioned revisions are returned - including tombstones
+        ;; only permissioned revisions are returned
         "provider-id all-revisions=true"
         [coll11-1 coll12-1]
         {:provider-id "PROV4" :all-revisions true :token user4-token}

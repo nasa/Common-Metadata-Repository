@@ -57,6 +57,7 @@
                      object-identity-types))
 
 (def identity-string-map
+  "Maps old ECHO identity to cmr identity type string."
   {:system-object "system"
    :provider-object "provider"
    :single-instance-object "single_instance"
@@ -104,13 +105,6 @@
                        context (context->cached-object-identity-types context))]
     (cache/set-value cache acl-cache-key updated-acls)))
 
-(comment
- (do
-   (def context (cmr.access-control.test.util/conn-context))
-   (process-search-for-acls (assoc context :token (config/echo-system-token)) [:system-object :provider-object])
-   (cmr.transmit.echo.acls/get-acls-by-types context [:system-object :provider-object])
-   (get-acls context [:system-object :provider-object])))
-
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
@@ -156,3 +150,10 @@
   {:job-type RefreshAclCacheJob
    :job-key job-key
    :interval 3600})
+
+(comment
+ (do
+   (def context (cmr.access-control.test.util/conn-context))
+   (process-search-for-acls (assoc context :token (config/echo-system-token)) [:catalog-item])
+   (cmr.transmit.echo.acls/get-acls-by-types context [:catalog-item])
+   (get-acls context [:catalog-item])))
