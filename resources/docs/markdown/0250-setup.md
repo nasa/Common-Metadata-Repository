@@ -37,6 +37,9 @@ If you are in the REPL:
 [cmr.opendap.dev] λ=> (shutdown)
 ```
 
+
+### Reloading
+
 If you have made code changes, and would like to load these and restart the system,
 
 ```

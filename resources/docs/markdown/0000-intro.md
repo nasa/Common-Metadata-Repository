@@ -20,4 +20,5 @@ To facilitate easy integration of the capability in other applications, CMR
 OPeNDAP provides a REST API for generating such queries.
 
 CMR OPeNDAP is deployed here:
+
 * [https://cmr.sit.earthdata.nasa.gov/opendap/](https://cmr.sit.earthdata.nasa.gov/opendap/)
