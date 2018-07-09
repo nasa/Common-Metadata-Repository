@@ -63,9 +63,22 @@
   (reset! (get-cache system)
           (create-cache system (config/concept-cache-init system))))
 
+(defn has?
+  [system item-key]
+  (cache/has? @(get-cache system) item-key))
+
+(defn- -has-all?
+  [ch item-keys]
+  (every? #(cache/has? ch %) item-keys))
+
+(defn has-all?
+  [system item-keys]
+  (let [ch @(get-cache system)]
+    (-has-all? ch item-keys)))
+
 (defn lookup
   ([system item-key]
-    (cache/lookup @(get-cache system) item-key))
+    (.get (cache/lookup @(get-cache system) item-key)))
   ([system item-key value-fn]
     (let [ch @(get-cache system)]
       (if (cache/has? ch item-key)
@@ -78,6 +91,26 @@
           (when (item-has-value? value)
             (swap! (get-cache system) #(cache/miss % item-key value))))))
     (lookup system item-key)))
+
+(defn lookup-many
+  ([system item-keys]
+    (let [ch @(get-cache system)]
+      (map #(cache/lookup ch %) item-keys)))
+  ([system item-keys value-fn]
+    (let [ch @(get-cache system)]
+      (if (-has-all? ch item-keys)
+        (do
+          (log/debug "Concept cache has all keys; skipping value function ...")
+          (log/trace "Keys:" item-keys)
+          (mapv #(cache/hit ch %) item-keys))
+        (when-let [key-values-map (value-fn)]
+          (log/debug (str "Concept cache miss for at least one key; "
+                          "calling value function ..."))
+          (dorun
+            (for [[k v] key-values-map]
+              (when (item-has-value? v)
+                (swap! (get-cache system) #(cache/miss % k v))))))))
+    (lookup-many system item-keys)))
 
 (defn lookup-all
   [system]

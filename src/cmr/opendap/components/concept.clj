@@ -9,6 +9,7 @@
    [cmr.opendap.components.config :as config]
    [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
+   [cmr.opendap.ous.granule :as granule]
    [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
@@ -19,26 +20,43 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn concept-key
-  [id-or-ids]
-  (if (coll? id-or-ids)
-    (str "concepts:" (string/join "," id-or-ids))
-    (str "concept:" id-or-ids)))
+  [id]
+  (str "concept:" id))
+
+(defn- -get-single-cached
+  [system cache-key lookup-fn lookup-args]
+  (try
+    (caching/lookup
+     system
+     cache-key
+     #(apply lookup-fn lookup-args))
+    (catch Exception e
+      (log/error e)
+      {:errors (errors/exception-data e)})))
+
+(defn- -get-multiple-cached
+  [system cache-keys lookup-fn lookup-args]
+  (try
+    (caching/lookup-many
+      system
+      cache-keys
+      #(apply lookup-fn lookup-args))
+    (catch Exception e
+      (log/error e)
+      {:errors (errors/exception-data e)})))
 
 (defn- -get-cached
   "This does the actual work for the cache lookup and fallback function call."
-  [system concept-id lookup-fn lookup-args]
-  (let [cache-key (concept-key concept-id)]
-    (log/trace "lookup-fn:" lookup-fn)
-    (log/trace "lookup-args:" lookup-args)
-    (log/trace "Cache key:" cache-key)
-    (try
-      (caching/lookup
-       system
-       cache-key
-       #(apply lookup-fn lookup-args))
-      (catch Exception e
-        (log/error e)
-        {:errors (errors/exception-data e)}))))
+  ([system cache-key lookup-fn lookup-args]
+   (-get-cached system cache-key lookup-fn lookup-args {}))
+  ([system cache-key lookup-fn lookup-args opts]
+   (let [multi-key? (:multi-key? opts)]
+     (log/trace "lookup-fn:" lookup-fn)
+     (log/trace "lookup-args:" lookup-args)
+     (log/trace "Cache key(s):" cache-key)
+     (if multi-key?
+       (-get-multiple-cached system cache-key lookup-fn lookup-args)
+       (-get-single-cached system cache-key lookup-fn lookup-args)))))
 
 (defn get-cached
   "Look up the concept for a concept-id in the cache; if there is a miss,
@@ -47,19 +65,22 @@
   Due to the fact that the results may or may not be a promise, this function
   will check to see if the value needs to be wrapped in a promise and will do
   so if need be."
-  [system concept-id lookup-fn lookup-args]
-  (let [maybe-promise (-get-cached system concept-id lookup-fn lookup-args)]
-    (if (util/promise? maybe-promise)
-      (do
-        (log/trace "Result identifed as promise ...")
-        maybe-promise)
-      (let [wrapped-data (promise)]
-        (log/trace "Result is not a promise ...")
-        (deliver wrapped-data maybe-promise)
-        wrapped-data))))
+  ([system cache-key lookup-fn lookup-args]
+   (get-cached system cache-key lookup-fn lookup-args {}))
+  ([system cache-key lookup-fn lookup-args opts]
+   (let [maybe-promise (-get-cached system
+                        cache-key lookup-fn lookup-args opts)]
+     (if (util/promise? maybe-promise)
+       (do
+         (log/trace "Result identifed as promise ...")
+         maybe-promise)
+       (let [wrapped-data (promise)]
+         (log/trace "Result is not a promise ...")
+         (deliver wrapped-data maybe-promise)
+         wrapped-data)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Caching Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Concept Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmulti get (fn [concept-type & _]
@@ -68,10 +89,11 @@
 
 (defmethod get :collection
   [_type system search-endpoint user-token params]
-  (get-cached system
-              (:collection-id params)
-              collection/async-get-metadata
-              [search-endpoint user-token params]))
+  (let [cache-key (concept-key (:collection-id params))]
+    (get-cached system
+                cache-key
+                collection/async-get-metadata
+                [search-endpoint user-token params])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
