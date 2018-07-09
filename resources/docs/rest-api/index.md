@@ -590,12 +590,19 @@ The following are coming soon:
 
 ## Cache
 
-Administrative users may use a token to access the following:
+Administrative users may use a token to manage the authorization cache:
 
-* `GET    /opendap/cache`
-* `DELETE /opendap/cache`
-* `GET    /opendap/cache/:item-key`
-* `DELETE /opendap/cache/:item-key`
+* `GET    /opendap/cache/auth`
+* `DELETE /opendap/cache/auth`
+* `GET    /opendap/cache/auth/:item-key`
+* `DELETE /opendap/cache/auth/:item-key`
+
+Likewise, administrators have the ability to manage the concept cache:
+
+* `GET    /opendap/cache/concept`
+* `DELETE /opendap/cache/concept`
+* `GET    /opendap/cache/concept/:item-key`
+* `DELETE /opendap/cache/concept/:item-key`
 
 
 ## Health
@@ -614,6 +621,7 @@ Administrative users may use a token to access the following:
 * `GET     /opendap/ping`
 * `POST    /opendap/ping`
 * `OPTIONS /opendap/ping`
+
 
 # Testing Resources
 
