@@ -54,10 +54,11 @@
   (let [token-id (if lt-validation/is-launchpad-token?
                    (string/replace token-id echo-util/LAUNCHPAD_TOKEN_PADDING "")
                    token-id)
-        {:keys [username client_id id]} (get-token-or-error context token-id)]
+        {:keys [username client_id expires id]} (get-token-or-error context token-id)]
     {:token_info {:user_name username
                   :client_id client_id
                   :guest (= username "guest")
+                  :expires expires
                   :token id
                   :user_guid "unsupported-in-mock-echo"}}))
 

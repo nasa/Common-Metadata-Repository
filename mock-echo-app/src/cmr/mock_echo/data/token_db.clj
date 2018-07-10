@@ -1,5 +1,8 @@
 (ns cmr.mock-echo.data.token-db
   (:require
+   [clj-time.core :as t]
+   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
+   [cmr.common.time-keeper :as tk]
    [cmr.transmit.config :as transmit-config]))
 
 (defn initial-db-state
@@ -35,7 +38,11 @@
   :id of the token that was created"
   [context token-info]
   (let [token-db (context->token-db context)
-        token (assoc token-info :id (new-token-id token-db))]
+        token (assoc token-info :id (new-token-id token-db))
+        token (if (:expires token)
+                token
+                ;; token expires in 30 days
+                (assoc token :expires (datetime-helper/datetime->string (t/plus (tk/now) (t/days 30)))))]
     (save-token token-db token)
     token))
 
@@ -62,5 +69,3 @@
   (fetch {:system user/system} "ABC-1")
 
   (delete {:system user/system} "ABC-1"))
-
-
