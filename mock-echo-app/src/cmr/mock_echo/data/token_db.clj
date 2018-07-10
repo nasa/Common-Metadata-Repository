@@ -5,6 +5,10 @@
    [cmr.common.time-keeper :as tk]
    [cmr.transmit.config :as transmit-config]))
 
+(def token-expiration-days
+  "Defines the number of days that a token expires after it is created."
+  30)
+
 (defn initial-db-state
   []
   {:last-id 0
@@ -41,8 +45,8 @@
         token (assoc token-info :id (new-token-id token-db))
         token (if (:expires token)
                 token
-                ;; token expires in 30 days
-                (assoc token :expires (datetime-helper/datetime->string (t/plus (tk/now) (t/days 30)))))]
+                (assoc token :expires (datetime-helper/datetime->string
+                                       (t/plus (tk/now) (t/days token-expiration-days)))))]
     (save-token token-db token)
     token))
 
