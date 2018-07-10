@@ -3,21 +3,22 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]
    [cmr.system-int-test.utils.variable-util :as variable-util]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false
-                                           :grant-all-ingest? false}))
+                                           :grant-all-ingest? false})
+                                    (dev-system/freeze-resume-time-fixture)]))
 
 (defn- ingest-succeeded?
   "Returns true if the provided token has permission to perform the given function."
@@ -223,24 +224,23 @@
            provider-admin-read-token))
 
     (testing "token expiration"
-      (time-keeper/with-frozen-time
-       ;; 29 days after token creation is OK since the token expires in 30 days
-       (time-keeper/advance-time! (* 29 24 3600))
-       (is (ingest-succeeded?
-            (d/ingest-umm-spec-collection
-             "PROV1"
-             (data-umm-c/collection {})
-             {:token provider-admin-update-token
-              :allow-failure? true})))
-       ;; after 30 days, the token is expired
-       (time-keeper/advance-time! (* 2 24 3600))
-       (let [{:keys [status errors]} (d/ingest-umm-spec-collection
-                                      "PROV1"
-                                      (data-umm-c/collection {})
-                                      {:token provider-admin-update-token
-                                       :allow-failure? true})]
-         (is (= 401 status))
-         (is (= [(format "Token [%s] has expired" provider-admin-update-token)] errors)))))))
+      ;; 29 days after token creation is OK since the token expires in 30 days
+      (dev-system/advance-time! (* 29 24 3600))
+      (is (ingest-succeeded?
+           (d/ingest-umm-spec-collection
+            "PROV1"
+            (data-umm-c/collection {})
+            {:token provider-admin-update-token
+             :allow-failure? true})))
+      ;; after 30 days, the token is expired
+      (dev-system/advance-time! (* 2 24 3600))
+      (let [{:keys [status errors]} (d/ingest-umm-spec-collection
+                                     "PROV1"
+                                     (data-umm-c/collection {})
+                                     {:token provider-admin-update-token
+                                      :allow-failure? true})]
+        (is (= 401 status))
+        (is (= [(format "Token [%s] has expired" provider-admin-update-token)] errors))))))
 
 (deftest variable-ingest-permissions-test
   (testing "Variable ingest permissions:"
