@@ -12,12 +12,14 @@
    ;; example of a dimension size is '1200'. Variables are rarely one dimensional.
    Dimensions
 
-   ;; The factor by which the cell value has been multiplied. The cell value is the value given to a
-   ;; specific location within an array of data values. An example of a scale factor is '0.002'
+   ;; The scale is the numerical factor by which all values in the stored data field are multiplied
+   ;; in order to obtain the original values. May be used together with Offset. An example of a
+   ;; scale factor is '0.002'
    Scale
 
-   ;; The factor to which the cell value has been added. The cell value is the value given to a
-   ;; specific location within an array of data values. An example of an offset is '0.49'.
+   ;; The offset is the value which is either added to or subtracted from all values in the stored
+   ;; data field in order to obtain the original values. May be used together with Scale. An example
+   ;; of an offset is '0.49'.
    Offset
 
    ;; The set information of a variable. The variable is grouped within a set. The set is defined by
@@ -28,6 +30,9 @@
    ;; The units associated with a variable.
    Units
 
+   ;; The sampling information of a variable.
+   SamplingIdentifiers
+
    ;; The fill value of the variable in the data file. It is generally a value which falls outside
    ;; the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The
    ;; fill value type is data provider-defined. For example, 'Out of Valid Range'.
@@ -35,9 +40,6 @@
 
    ;; The definition of the variable.
    Definition
-
-   ;; The measurement information of a variable.
-   Measurements
 
    ;; The characteristics of a variable. The elements of this section apply to a Variable.
    Characteristics
@@ -49,8 +51,16 @@
    ;; The name of a variable.
    Name
 
-   ;; Specify basic type of a variable. These types can be either: Science, Ancillary, Quality etc.
+   ;; Specify basic type of a variable. These types can be either: SCIENCE_VARIABLE,
+   ;; QUALITY_VARIABLE, ANCILLARY_VARIABLE, OTHER.
    VariableType
+
+   ;; Specifies the sub type of a variable. These types can be either: SCIENCE_SCALAR,
+   ;; SCIENCE_VECTOR, SCIENCE_ARRAY, SCIENCE_EVENTFLAG, OTHER.
+   VariableSubType
+
+   ;; The measurement information of a variable.
+   MeasurementIdentifiers
 
    ;; The expanded or long name related to the variable Name.
    LongName
@@ -59,66 +69,6 @@
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Var)
-
-;; The elements of this section apply to a variable.
-(defrecord CharacteristicsType
-  [
-   ;; Describes the spatial bounds of a variable. Western Longitude, Northern Latitude and Eastern
-   ;; Longitude, Southern Latitude - often specified in decimal degrees. For example,
-   ;; 'UpperLeftPointMtrs = -180.0, 89.5; LowerRightMtrs = 177.5, -89.5.'
-   Bounds
-
-   ;; The computed byte size for the variable, per the data field. Typically, this is the X
-   ;; dimension times the Y dimension times the number of bytes in the data type (8, 16, 32, etc.).
-   ;; For example, 1200 x 1200 x 16 = 23,040,000.
-   Size
-
-   ;; The full path to the variable within the Granule. For example,
-   ;; '/<filename>/MODIS_Grid_Daily_1km_LST/Data_Fields/', where filename =
-   ;; 'MOD11A1.A2009172.h16v05.006.2016014073638.hdf'.
-   Structure
-
-   ;; The measurement conditions of the variable. For example, 'Sampled Particle Size Range: 90 -
-   ;; 600 nm'.
-   MeasurementConditions
-
-   ;; A text description of the variable’s coordinate range as given by the data provider. For
-   ;; example, '90N, 90S, 180E, 180W'.
-   Coordinates
-
-   ;; Describes the chunk size of a variable. For example, '100'.
-   ChunkSize
-
-   ;; A text description of the variable's mapping projection standard for the variable. For
-   ;; example: 'WGS84 Web Mercator'.
-   GridMapping
-
-   ;; The reporting conditions of the variable. The conditions over which the measurement of the
-   ;; variable are valid. For example, 'STP: 1013 mb and 273 K'.
-   ReportingConditions
-
-   ;; The computed byte size units for the variable, per the data field. For example B, KB, MB, GB.
-   SizeUnits
-
-   ;; The CF-compliant 'Standard Name' for the variable.
-   StandardName
-
-   ;; Provides a link to variable's reference documentation.
-   Reference
-  ])
-(record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
-
-;; The elements of this section apply to a measurement.
-(defrecord MeasurementsType
-  [
-   ;; This element allows authors to provide community sourced words or phrases to further describe
-   ;; the variable data.
-   MeasurementName
-
-   ;; This element allows authors to identify the source of the measurements.
-   MeasurementSource
-  ])
-(record-pretty-printer/enable-record-pretty-printing MeasurementsType)
 
 ;; The elements of this section apply to the fill value of a variable.
 (defrecord FillValueType
@@ -133,6 +83,112 @@
    Description
   ])
 (record-pretty-printer/enable-record-pretty-printing FillValueType)
+
+;; The elements of this section apply to a measurement.
+(defrecord SamplingIdentifierType
+  [
+   ;; The name of the sampling method used for the measurement. For example, 'radiometric detection
+   ;; within the visible and infra-red ranges of the electromagnetic spectrum.
+   SamplingMethod
+
+   ;; The measurement conditions of the variable. For example, 'Sampled Particle Size Range: 90 -
+   ;; 600 nm'.
+   MeasurementConditions
+
+   ;; The reporting conditions of the variable. The conditions over which the measurements of the
+   ;; variable are valid. For example, 'STP: 1013 mb and 273 K'.
+   ReportingConditions
+  ])
+(record-pretty-printer/enable-record-pretty-printing SamplingIdentifierType)
+
+;; The bounds consist of a LowerLeft and an UpperRight pair of coordinates.
+(defrecord BoundsType
+  [
+   ;; The lower left coordinates of the bounds.
+   LowerLeft
+
+   ;; The upper right coordinates of the bounds.
+   UpperRight
+  ])
+(record-pretty-printer/enable-record-pretty-printing BoundsType)
+
+;; The elements of this section apply to a measurement name. The measurement name is structured
+;; according to the form defined by Scott Peckham. This is: <object>_<quantity>.
+(defrecord MeasurementNameType
+  [
+   ;; This element allows authors to identify the object part of the measurement. For example:
+   ;; land_subsurface_water-sat, land_surface, land_surface_air, land_surface_air_flow,
+   ;; land_surface_air_heat, specific_humidity, radiative_flux, q.
+   MeasurementObject
+
+   ;; This element allows authors to identify the quantity part of the measurement. For example:
+   ;; zone-top, incoming-latent, incoming-sensible, standard_error, detection_minimum,
+   ;; at_top_of_atmosphere_model, at_sea_level, error_limit, detection_limit
+   MeasurementQuantity
+  ])
+(record-pretty-printer/enable-record-pretty-printing MeasurementNameType)
+
+;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
+(defrecord ValidRangeType
+  [
+   ;; Minimum data value of a variable. For example, '-100'.
+   Min
+
+   ;; Maximum data value of a variable. For example, '5000'.
+   Max
+
+   ;; This element can be used to specify a code system identifier meaning. For example, 'Open
+   ;; Shrubland' corresponds to '7'.
+   CodeSystemIdentifierMeaning
+
+   ;; The code system identifier value is the textual or numerical value assigned to each meaning.
+   CodeSystemIdentifierValue
+  ])
+(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+
+;; The elements of this section apply to a measurement.
+(defrecord MeasurementIdentifierType
+  [
+   ;; This element allows authors to provide community sourced words or phrases to further describe
+   ;; the variable data.
+   MeasurementName
+
+   ;; This element allows authors to identify the source of the measurements.
+   MeasurementSource
+  ])
+(record-pretty-printer/enable-record-pretty-printing MeasurementIdentifierType)
+
+;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
+;; example of a dimension size is '1200'. Variables are rarely one dimensional.
+(defrecord DimensionType
+  [
+   ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
+   Name
+
+   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
+   Size
+
+   ;; The type of the dimension of the variable represented in the data field. For example, if the
+   ;; dimension has a special meaning, i.e., a latitude, longitude, pressure, height (or depth) or
+   ;; time, then the type should be set to either 'LATITUDE_DIMENSION', 'LONGITUDE_DIMENSION',
+   ;; 'PRESSURE_DIMENSION', 'HEIGHT_DIMENSION', 'DEPTH_DIMENSION' or 'TIME_DIMENSION', otherwise it
+   ;; should be set to 'OTHER'.
+   Type
+  ])
+(record-pretty-printer/enable-record-pretty-printing DimensionType)
+
+;; The elements of this section apply to a variable.
+(defrecord CharacteristicsType
+  [
+   ;; Describes the spatial bounds of a variable, which consist of a LowerLeft and an UpperRight
+   ;; pair of coordinates.
+   Bounds
+
+   ;; The full path to the variable within the Granule structure. For example,
+   ;; '/MODIS_Grid_Daily_1km_LST/Data_Fields'.
+   GroupPath
+  ])
+(record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
 
 ;; The elements of this section apply to variable sets.
 (defrecord SetType
@@ -155,25 +211,13 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SetType)
 
-;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
-(defrecord ValidRangeType
+;; The coordinates consist of a latitude and longitude.
+(defrecord CoordinatesType
   [
-   ;; Minimum data value of a variable. For example, '-100'.
-   Min
+   ;; The latitude of the point.
+   Lat
 
-   ;; Maximum data value of a variable. For example, '5000'.
-   Max
+   ;; The longitude of the point.
+   Lon
   ])
-(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
-
-;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
-;; example of a dimension size is '1200'. Variables are rarely one dimensional.
-(defrecord DimensionType
-  [
-   ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
-   Name
-
-   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
-   Size
-  ])
-(record-pretty-printer/enable-record-pretty-printing DimensionType)
+(record-pretty-printer/enable-record-pretty-printing CoordinatesType)
