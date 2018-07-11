@@ -25,7 +25,7 @@
     [cheshire "5.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
-    [com.esri.geometry/esri-geometry-api "2.1.0"]
+    [com.esri.geometry/esri-geometry-api "2.2.0"]
     [com.stuartsierra/component "0.3.2"]
     [com.vividsolutions/jts "1.13"]
     [environ "1.1.0"]
@@ -35,19 +35,23 @@
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [markdown-clj "1.0.2"]
-    [metosin/reitit-core "0.1.1-SNAPSHOT"]
-    [metosin/reitit-ring "0.1.1-SNAPSHOT"]
+    [metosin/reitit-core "0.1.3"]
+    [metosin/reitit-ring "0.1.3"]
     [metosin/ring-http-response "0.9.0"]
     [net.sf.geographiclib/GeographicLib-Java "1.49"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
+    [org.geotools/gt-geometry "19.1"]
+    [org.geotools/gt-referencing "19.1"]
     [ring/ring-core "1.6.3"]
-    [ring/ring-codec "1.1.0"]
-    [ring/ring-defaults "0.3.1"]
-    [selmer "1.11.7"]
+    [ring/ring-codec "1.1.1"]
+    [ring/ring-defaults "0.3.2"]
+    [selmer "1.11.8"]
     [tolitius/xml-in "0.1.0"]]
+  :repositories [
+    ["osgeo" "https://download.osgeo.org/webdav/geotools"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
@@ -83,7 +87,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.5"]
+        [jonase/eastwood "0.2.8"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
@@ -93,7 +97,7 @@
         [clojusc/ltest "0.3.0"]]
       :plugins [
         [lein-ltest "0.3.0"]
-        [test2junit "1.4.0"]]
+        [test2junit "1.4.2"]]
       :test2junit-output-dir "junit-test-results"
       :test-selectors {
         :unit #(not (or (:integration %) (:system %)))
@@ -104,7 +108,7 @@
       :dependencies [
         [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
       :plugins [
-        [lein-codox "0.10.3"]
+        [lein-codox "0.10.4"]
         [lein-marginalia "0.9.1"]]
       :source-paths ["resources/docs/src"]
       :codox {
