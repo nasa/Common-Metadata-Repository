@@ -7,7 +7,11 @@
   (:import
    (com.esri.core.geometry Polygon)))
 
-(defn add-points!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- -add-points!
   [self points]
   (->> points
        (partition 2)
@@ -15,7 +19,20 @@
                (let [[x y] (util/latlon->WGS84 lat lon)]
                  (.lineTo self x y))))))
 
-(defn polygon-area
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn area
+  "Returns area in m^2 units."
+  [this]
+  (.calculateArea2D this))
+
+(defn intersection
+  [this other]
+  )
+
+(defn create
   "Polygon points are provided in counter-clockwise order. The last point
   should match the first point to close the polygon. The values are listed
   comma separated in longitude latitude order, i.e.:
@@ -27,5 +44,5 @@
   (let [polygon (new Polygon)
         [start-x start-y] (util/latlon->WGS84 first-lat first-lon)]
     (.startPath polygon start-x start-y)
-    (add-points! polygon points)
-    (.calculateArea2D polygon)))
+    (-add-points! polygon points)
+    polygon))

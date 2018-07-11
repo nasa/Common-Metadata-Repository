@@ -4,27 +4,99 @@
   (:require
    [cmr.opendap.geom.util :as util])
   (:import
-   (com.vividsolutions.jts.geom Coordinate GeometryFactory)))
+   (org.geotools.geometry.jts JTS)
+   (org.geotools.referencing CRS)
+   (org.geotools.referencing.crs DefaultGeocentricCRS DefaultGeographicCRS)
+   (com.vividsolutions.jts.geom Coordinate GeometryFactory PrecisionModel)))
 
-(defn create-coords
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def cartesian-srid 0)
+(def wgs84-srid 1)
+(def srids {cartesian-srid :cartesian
+            wgs84-srid :wgs84})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- -create-coords
   [points]
   (->> points
        (partition 2)
        (mapv (fn [[lat lon]]
-        (let [[x y] (util/latlon->WGS84 lat lon)]
-          (new Coordinate x y))))
+         (let [[x y] (util/ll->cartesian lat lon)]
+          (new Coordinate x y 0))))
        (into-array)))
 
-(defn polygon-area
+(def wgs84->cartesian-xform (CRS/findMathTransform
+                             DefaultGeographicCRS/WGS84_3D
+                             DefaultGeocentricCRS/CARTESIAN
+                             true))
+
+(def cartesian->wgs84-xform (CRS/findMathTransform
+                             DefaultGeocentricCRS/CARTESIAN
+                             DefaultGeographicCRS/WGS84_3D
+                             true))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn area
+  "Returns area in m^2 units."
+  [this]
+  (.getArea this))
+
+(defn bounding-box
+  [this]
+  (.getEnvelope this))
+
+(defn empty?
+  [this]
+  (.isEmpty this))
+
+(defn intersection
+  [this other]
+  (.intersection this other))
+
+(defn intersects?
+  [this other]
+  (.intersects this other))
+
+(defn points
+  [this]
+  (mapv #(vector (.-x %) (.-y %) (.-z %)) (.getCoordinates this)))
+
+(defn point-count
+  [this]
+  (.getNumPoints this))
+
+(defn reverse
+  [this]
+  (.reverse this))
+
+(defn valid?
+  [this]
+  (.isValid this))
+
+(defn cartesian->wgs84
+  [this]
+  (JTS/transform this cartesian->wgs84-xform))
+
+(defn wgs84->cartesian
+  [this]
+  (JTS/transform this wgs84->cartesian-xform))
+
+(defn create
   "Polygon points are provided in counter-clockwise order. The last point
   should match the first point to close the polygon. The values are listed
   comma separated in longitude latitude order, i.e.:
 
-    [lon1 lat1 lon2 lat2 lon3 lat3 ...]
-
-  Returns area in m^2 units."
+    [lon1 lat1 lon2 lat2 lon3 lat3 ...]"
   [points]
-  (let [factory (new GeometryFactory)
-        ring (.createLinearRing factory (create-coords points))
-        polygon (.createPolygon factory ring)]
-    (.getArea polygon)))
+  (let [factory (new GeometryFactory (new PrecisionModel PrecisionModel/FLOATING)
+                                     wgs84-srid)]
+    (.createPolygon factory (-create-coords points))))
