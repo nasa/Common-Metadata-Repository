@@ -8,8 +8,8 @@
 
 (def earth-semi-major-axis 6378137.0)
 (def earth-semi-minor-axis 6356752.3142)
-(def earth-semi-major-axis**2 (Math/pow earth-semi-major-axis 2)
-(def earth-semi-minor-axis**2 (Math/pow earth-semi-minor-axis 2)
+(def earth-semi-major-axis**2 (Math/pow earth-semi-major-axis 2))
+(def earth-semi-minor-axis**2 (Math/pow earth-semi-minor-axis 2))
 (def earth-radius earth-semi-major-axis)
 (def earth-radius**2 earth-semi-major-axis**2)
 (def earth-area (* 4 Math/PI earth-radius**2))
@@ -62,26 +62,23 @@
 
    Inputs are in meters; outputs are degrees and meters."
   [x y z]
-  (let [b (Math/sqrt (* earth-semi-major-axis**2
-                        (- 1 earth-eccentricity**2)))
-        ep (Math/sqrt (/ (- earth-semi-major-axis**2
+  (let [ep (Math/sqrt (/ (- earth-semi-major-axis**2
                             earth-semi-minor-axis**2)
                          earth-semi-minor-axis**2))
         p (Math/sqrt (+ (Math/pow x 2) (Math/pow y 2)))
-        th (Math/atan2 (* earth-semi-major-axis z)
-                       (* b p))
+        theta (Math/atan2 (* earth-semi-major-axis z)
+                       (* earth-semi-minor-axis p))
         lon (Math/atan2 y x)
-        lat (Math/atan2 (+ z (* earth-eccentricity
-                                (Math/pow p 2)
-                                b
+        lat (Math/atan2 (+ z (* (Math/pow ep 2)
+                                earth-semi-minor-axis
                                 (Math/pow
-                                 (Math/sin th) 3)))
+                                 (Math/sin theta) 3)))
                         (- p (* earth-eccentricity**2
                                 earth-semi-major-axis
                                 (Math/pow
-                                 (Math/cos th) 3))))
+                                 (Math/cos theta) 3))))
         n (prime-vertical-curvature-radius lat)
-        alt (- (/ p (Math/cos lat)) -n)]
+        alt (- (/ p (Math/cos lat)) n)]
     [(Math/toDegrees lat)
      (Math/toDegrees (mod lon (* 2 Math/PI)))
      alt]))
