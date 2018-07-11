@@ -83,7 +83,7 @@
      (Math/toDegrees (mod lon (* 2 Math/PI)))
      alt]))
 
-(defn latlon->WGS84
+(defn ll->cartesian
   "Inputs are in degrees; outputs are in meters."
   [lat lon]
   [(/ (* Math/PI earth-radius lon) 180)
