@@ -3,7 +3,8 @@
   * https://geographiclib.sourceforge.io/html/java/
   * https://sourceforge.net/p/geographiclib/code/ci/release/tree/java/planimeter/src/main/java/Planimeter.java#l6"
   (:import
-   (net.sf.geographiclib Geodesic PolygonArea)))
+   (net.sf.geographiclib Geodesic PolygonArea))
+  (:refer-clojure :exclude [intersection]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,16 +25,22 @@
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defrecord GeographiclibPolygon [native])
+
 (defn area
   "Returns area in m^2 units."
   [this]
   (-> this
+      :native
       (.Compute)
       (.area)))
 
 (defn intersection
   [this other]
   )
+
+(def behaviour {:area area
+                :intersection intersection})
 
 (defn create
   "Polygon points are provided in counter-clockwise order. The last point
@@ -50,4 +57,4 @@
   ([points geodesic polyline?]
    (let [polygon (new PolygonArea geodesic polyline?)]
      (-add-points! polygon points)
-     polygon)))
+     (map->GeographiclibPolygon {:native polygon}))))

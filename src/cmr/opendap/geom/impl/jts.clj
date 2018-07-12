@@ -7,7 +7,8 @@
    (org.geotools.geometry.jts JTS)
    (org.geotools.referencing CRS)
    (org.geotools.referencing.crs DefaultGeocentricCRS DefaultGeographicCRS)
-   (com.vividsolutions.jts.geom Coordinate GeometryFactory PrecisionModel)))
+   (com.vividsolutions.jts.geom Coordinate GeometryFactory PrecisionModel))
+  (:refer-clojure :exclude [empty? intersection reverse]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,6 +90,19 @@
 (defn wgs84->cartesian
   [this]
   (JTS/transform this wgs84->cartesian-xform))
+
+(def behaviour {:area area
+                :bounding-box bounding-box
+                :empty? empty?
+                :intersection intersection
+                :intersects? intersects?
+                :points points
+                :point-count point-count
+                :reverse reverse
+                :valid? valid?
+                ;; Experimental
+                :cartesian->wgs84 cartesian->wgs84
+                :wgs84->cartesian wgs84->cartesian})
 
 (defn create
   "Polygon points are provided in counter-clockwise order. The last point

@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.opendap.geom.impl.esri :as esri]))
 
-(deftest polygon-area
+(deftest polygon
   ;; Polygon points taken from G1344353303-NSIDC_ECS
   (is (= 1.4313700783597213E13
          (esri/area

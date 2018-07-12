@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.opendap.geom.impl.geographiclib :as geographiclib]))
 
-(deftest polygon-area
+(deftest polygon
   ;; Polygon points taken from G1344353303-NSIDC_ECS
   (is (= 1972221565152.8076
          (geographiclib/area
