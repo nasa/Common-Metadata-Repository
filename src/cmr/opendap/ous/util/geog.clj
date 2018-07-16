@@ -249,7 +249,7 @@
                                   reversed?
                                   index-names
                                   default-lat-lon-stride))
-  ([bounding-box index-names reversed? stride]
+  ([bounding-box reversed? index-names stride]
     (bounding-box->lookup-indices const/default-lon-abs-hi
                                   const/default-lat-abs-hi
                                   bounding-box
