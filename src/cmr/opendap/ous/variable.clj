@@ -214,7 +214,8 @@
     opts]
    (log/trace "Got dimensions:" dimensions)
    (when bounding-box
-     (geog/bounding-box lon-max lat-max bounding-box (:reversed? opts)))))
+     (geog/bounding-box->lookup-record
+      lon-max lat-max bounding-box (:reversed? opts)))))
 
 (defn format-opendap-dim
   [min stride max]

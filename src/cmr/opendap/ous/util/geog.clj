@@ -152,35 +152,42 @@
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-opendap-lookup
-  "This lookup is needed for when latitude -90N is stored at the 0th index and
-  90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data)."
-  [lon-lo lat-lo lon-hi lat-hi]
-  (map->ArrayLookup
-   {:low {:lon lon-lo
-          :lat lat-lo}
-    :high {:lon lon-hi
-           :lat lat-hi}}))
+(defn create-array-lookup
+  "This is the convenience constructor for the ArrayLookup record, taking
+  latitude and longitude values and outputing a data structure that can be
+  used for creating the lookup indices for OPeNDAP dimensional arrays. It has
+  can create output for both normal and reversed latitudinal arrays:
 
-(defn create-opendap-lookup-reversed
-  "This lookup is needed for when latitude 90N is stored at the 0th index and
-  -90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data)."
-  [lon-lo lat-lo lon-hi lat-hi]
-  (let [lookup (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)
-        reversed-hi-lat (get-in lookup [:high :lat])
-        reversed-lo-lat (get-in lookup [:low :lat])]
-    (-> lookup
-        (assoc-in [:low :lat] reversed-hi-lat)
-        (assoc-in [:high :lat] reversed-lo-lat))))
+  * Pass the `reversed?` parameter with a value of `false` when latitude -90N
+    is stored at the 0th index and 90N is stored at the highest index (whose
+    actual number will varry, depending upon the resolution of the data). This
+    is the default, when no value is passed for the `reversed?` parameter.
 
-(defn bounding-box
+  * Pass the `reversed?` parameter with a value of `true` when latitude 90N is
+    stored at the 0th index and -90N is stored at the highest index (whose
+    actual number will varry, depending upon the resolution of the data)."
+  ([lon-lo lat-lo lon-hi lat-hi]
+    (create-array-lookup lon-lo lat-lo lon-hi lat-hi false))
+  ([lon-lo lat-lo lon-hi lat-hi reversed?]
+    (let [lookup (map->ArrayLookup
+                  {:low {:lon lon-lo
+                         :lat lat-lo}
+                   :high {:lon lon-hi
+                          :lat lat-hi}})
+          reversed-hi-lat (get-in lookup [:high :lat])
+          reversed-lo-lat (get-in lookup [:low :lat])]
+      (if reversed?
+        (-> lookup
+            (assoc-in [:low :lat] reversed-hi-lat)
+            (assoc-in [:high :lat] reversed-lo-lat))
+        lookup))))
+
+(defn bounding-box->lookup-record
   ([bounding-box reversed?]
-    (bounding-box const/default-lon-abs-hi
-                  const/default-lat-abs-hi
-                  bounding-box
-                  reversed?))
+    (bounding-box->lookup-record const/default-lon-abs-hi
+                                 const/default-lat-abs-hi
+                                 bounding-box
+                                 reversed?))
   ([lon-max lat-max
    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
    reversed?]
@@ -190,7 +197,7 @@
        (let [lat-lo (lat-lo-phase-shift-reversed lat-max lat-lo)
              lat-hi (lat-hi-phase-shift-reversed lat-max lat-hi)]
          (log/debug "Variable latitudinal values are reversed ...")
-         (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
+         (create-array-lookup lon-lo lat-lo lon-hi lat-hi reversed?))
        (let [lat-lo (lat-lo-phase-shift lat-max lat-lo)
              lat-hi (lat-hi-phase-shift lat-max lat-hi)]
-         (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi))))))
+         (create-array-lookup lon-lo lat-lo lon-hi lat-hi))))))
