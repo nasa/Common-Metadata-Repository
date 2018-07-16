@@ -210,26 +210,12 @@
      (geog/bounding-box->lookup-record
       lon-max lat-max bounding-box (:reversed? opts)))))
 
-(defn format-opendap-dim-lat
-  ([bounding-info]
-   (format-opendap-dim-lat bounding-info geog/default-lat-lon-stride))
-  ([bounding-info stride]
-   (if-let [opendap-bounds (:opendap bounding-info)]
-     (geog/format-opendap-dim-lat opendap-bounds stride)
-     "")))
-
-(defn format-opendap-dim-lon
-  ([bounding-info]
-   (format-opendap-dim-lon bounding-info geog/default-lat-lon-stride))
-  ([bounding-info stride]
-   (if-let [opendap-bounds (:opendap bounding-info)]
-     (geog/format-opendap-dim-lon opendap-bounds stride)
-    "")))
-
 (defn replace-defaults-lat-lon
   [bounding-info stride [k v]]
-  (cond (= k :Longitude) (format-opendap-dim-lon bounding-info stride)
-        (= k :Latitude) (format-opendap-dim-lat bounding-info stride)
+  (cond (= k :Longitude) (geog/format-opendap-dim-lon
+                          (:opendap bounding-info) stride)
+        (= k :Latitude) (geog/format-opendap-dim-lat
+                         (:opendap bounding-info) stride)
         :else (geog/format-opendap-dim 0 stride (dec v))))
 
 (defn format-opendap-dims
