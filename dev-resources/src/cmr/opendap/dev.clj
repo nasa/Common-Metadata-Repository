@@ -18,6 +18,7 @@
     [cmr.opendap.http.request :as request]
     [cmr.opendap.http.response :as response]
     [cmr.opendap.ous.variable :as variable]
+    [cmr.opendap.ous.util.geog :as geog]
     [com.stuartsierra.component :as component]
     [debugger.core :as debug]
     [org.httpkit.client :as httpc]
