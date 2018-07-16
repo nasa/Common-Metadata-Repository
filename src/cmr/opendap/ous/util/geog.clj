@@ -4,6 +4,13 @@
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def default-dim-stride 1)
+(def default-lat-lon-stride 1)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -148,6 +155,36 @@
       (- (offset-index lat-max const/default-lat-abs-hi res)
          (lat-hi-phase-shift lat-max lat-lo)))))
 
+(defn format-opendap-dim
+  [min stride max]
+  (if (or (nil? min) (nil? max))
+    ""
+    (format "[%s:%s:%s]" min stride max)))
+
+(defn format-opendap-dim-lat
+  ([lookup-record]
+   (format-opendap-dim-lat lookup-record default-lat-lon-stride))
+  ([lookup-record stride]
+   (format-opendap-dim (get-in lookup-record [:low :lat])
+                       stride
+                       (get-in lookup-record [:high :lat]))))
+
+(defn format-opendap-dim-lon
+  ([lookup-record]
+   (format-opendap-dim-lon lookup-record default-lat-lon-stride))
+  ([lookup-record stride]
+   (format-opendap-dim (get-in lookup-record [:low :lon])
+                       stride
+                       (get-in lookup-record [:high :lon]))))
+
+(defn format-opendap-lat-lon
+  ([lookup-record [lon-name lat-name] stride]
+    (format "%s%s,%s%s"
+            lat-name
+            (format-opendap-dim-lat lookup-record stride)
+            lon-name
+            (format-opendap-dim-lon lookup-record stride))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -201,3 +238,27 @@
        (let [lat-lo (lat-lo-phase-shift lat-max lat-lo)
              lat-hi (lat-hi-phase-shift lat-max lat-hi)]
          (create-array-lookup lon-lo lat-lo lon-hi lat-hi))))))
+
+(defn bounding-box->lookup-indices
+  ([bounding-box]
+    (bounding-box->lookup-indices bounding-box ["Longitude" "Latitude"]))
+  ([bounding-box index-names]
+    (bounding-box->lookup-indices bounding-box false index-names))
+  ([bounding-box reversed? index-names]
+    (bounding-box->lookup-indices bounding-box
+                                  reversed?
+                                  index-names
+                                  default-lat-lon-stride))
+  ([bounding-box index-names reversed? stride]
+    (bounding-box->lookup-indices const/default-lon-abs-hi
+                                  const/default-lat-abs-hi
+                                  bounding-box
+                                  reversed?
+                                  index-names
+                                  stride))
+  ([lon-max lat-max bounding-box reversed? index-names stride]
+    (format-opendap-lat-lon
+      (bounding-box->lookup-record bounding-box reversed?)
+      index-names
+      stride)))
+

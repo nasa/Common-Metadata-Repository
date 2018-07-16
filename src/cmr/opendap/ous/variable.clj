@@ -48,13 +48,6 @@
 ;;  `southWest = LatLng(56.109375,-9.984375);`
 ;;  `northEast = LatLng(67.640625,19.828125);`
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def default-dim-stride 1)
-(def default-lat-lon-stride 1)
-
 ;; XXX The following set and function are a hard-coded work-around for the
 ;;     fact that we don't currently have a mechanism for identifying the
 ;;     "direction of storage" or "endianness" of latitude data in different
@@ -217,39 +210,31 @@
      (geog/bounding-box->lookup-record
       lon-max lat-max bounding-box (:reversed? opts)))))
 
-(defn format-opendap-dim
-  [min stride max]
-  (format "[%s:%s:%s]" min stride max))
-
 (defn format-opendap-dim-lat
   ([bounding-info]
-   (format-opendap-dim-lat bounding-info default-lat-lon-stride))
+   (format-opendap-dim-lat bounding-info geog/default-lat-lon-stride))
   ([bounding-info stride]
    (if-let [opendap-bounds (:opendap bounding-info)]
-     (format-opendap-dim (get-in opendap-bounds [:low :lat])
-                         stride
-                         (get-in opendap-bounds [:high :lat]))
+     (geog/format-opendap-dim-lat opendap-bounds stride)
      "")))
 
 (defn format-opendap-dim-lon
   ([bounding-info]
-   (format-opendap-dim-lon bounding-info default-lat-lon-stride))
+   (format-opendap-dim-lon bounding-info geog/default-lat-lon-stride))
   ([bounding-info stride]
    (if-let [opendap-bounds (:opendap bounding-info)]
-     (format-opendap-dim (get-in opendap-bounds [:low :lon])
-                         stride
-                         (get-in opendap-bounds [:high :lon]))
+     (geog/format-opendap-dim-lon opendap-bounds stride)
     "")))
 
 (defn replace-defaults-lat-lon
   [bounding-info stride [k v]]
   (cond (= k :Longitude) (format-opendap-dim-lon bounding-info stride)
         (= k :Latitude) (format-opendap-dim-lat bounding-info stride)
-        :else (format-opendap-dim 0 stride (dec v))))
+        :else (geog/format-opendap-dim 0 stride (dec v))))
 
 (defn format-opendap-dims
   ([bounding-info]
-    (format-opendap-dims bounding-info default-dim-stride))
+    (format-opendap-dims bounding-info geog/default-dim-stride))
   ([bounding-info stride]
     (if (:opendap bounding-info)
       (->> bounding-info
@@ -258,37 +243,35 @@
            (apply str))
       "")))
 
-(defn get-lat-lon-format-str
+(defn get-lat-lon-names
   [bounding-info]
   (log/debug "Original dimensions:" (:original-dimensions bounding-info))
-  (str (cond (get-in bounding-info [:original-dimensions :Latitude])
-             "Latitude"
-             (get-in bounding-info [:original-dimensions :lat])
-             "lat"
-             ;; XXX See CMR-4985
-             (get-in bounding-info [:original-dimensions :YDim])
-             "YDim")
-       "%s,"
-       (cond (get-in bounding-info [:original-dimensions :Longitude])
-             "Longitude"
-             (get-in bounding-info [:original-dimensions :lon])
-             "lon"
-             ;; XXX See CMR-4985
-             (get-in bounding-info [:original-dimensions :XDim])
-             "XDim")
-       "%s"))
+  [(cond (get-in bounding-info [:original-dimensions :Longitude])
+         "Longitude"
+         (get-in bounding-info [:original-dimensions :lon])
+         "lon"
+         ;; XXX See CMR-4985
+         (get-in bounding-info [:original-dimensions :XDim])
+         "XDim")
+   (cond (get-in bounding-info [:original-dimensions :Latitude])
+         "Latitude"
+         (get-in bounding-info [:original-dimensions :lat])
+         "lat"
+         ;; XXX See CMR-4985
+         (get-in bounding-info [:original-dimensions :YDim])
+         "YDim")])
 
 (defn format-opendap-lat-lon
   ([bounding-info]
-   (format-opendap-lat-lon bounding-info default-lat-lon-stride))
+   (format-opendap-lat-lon bounding-info geog/default-lat-lon-stride))
   ([bounding-info stride]
-   (format (get-lat-lon-format-str bounding-info)
-           (format-opendap-dim-lat bounding-info stride)
-           (format-opendap-dim-lon bounding-info stride))))
+   (geog/format-opendap-lat-lon (:opendap bounding-info)
+                                (get-lat-lon-names bounding-info)
+                                stride)))
 
 (defn format-opendap-bounds
   ([bounding-info]
-   (format-opendap-bounds bounding-info default-lat-lon-stride))
+   (format-opendap-bounds bounding-info geog/default-lat-lon-stride))
   ([{bound-name :name :as bounding-info} stride]
    (log/trace "Bounding info:" bounding-info)
    (format "%s%s"
