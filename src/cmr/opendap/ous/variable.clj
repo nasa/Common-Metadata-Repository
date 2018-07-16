@@ -87,55 +87,6 @@
     reversed?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; We're going to codify parameters with records to keep things well
-;;; documented. Additionally, this will make converting between parameter
-;;; schemes an explicit operation on explicit data.
-
-(defrecord Point [lon lat])
-
-(defrecord ArrayLookup [low high])
-
-(defrecord BoundingInfo
-  [;; :meta :concept-id
-   concept-id
-   ;; :umm :Name
-   name
-   ;; :umm :Dimensions, converted to EDN
-   dimensions
-   ;; Bounding box data from query params
-   bounds
-   ;; OPeNDAP lookup array
-   opendap
-   ;; :umm :Characteristics :Size
-   size])
-
-(defn create-opendap-lookup
-  "This lookup is needed for when latitude -90N is stored at the 0th index and
-  90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data)."
-  [lon-lo lat-lo lon-hi lat-hi]
-  (map->ArrayLookup
-   {:low {:lon lon-lo
-          :lat lat-lo}
-    :high {:lon lon-hi
-           :lat lat-hi}}))
-
-(defn create-opendap-lookup-reversed
-  "This lookup is needed for when latitude 90N is stored at the 0th index and
-  -90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data)."
-  [lon-lo lat-lo lon-hi lat-hi]
-  (let [lookup (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)
-        reversed-hi-lat (get-in lookup [:high :lat])
-        reversed-lo-lat (get-in lookup [:low :lat])]
-    (-> lookup
-        (assoc-in [:low :lat] reversed-hi-lat)
-        (assoc-in [:high :lat] reversed-lo-lat))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -259,20 +210,11 @@
                           bounding-box
                           opts))
   ([{lon-max :Longitude lat-max :Latitude :as dimensions}
-    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
+    bounding-box
     opts]
    (log/trace "Got dimensions:" dimensions)
    (when bounding-box
-     (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
-           lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)]
-       (if (:reversed? opts)
-         (let [lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
-               lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
-           (log/debug "Variable latitudinal values are reversed ...")
-           (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
-         (let [lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
-               lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]
-           (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))))
+     (geog/bounding-box lon-max lat-max bounding-box (:reversed? opts)))))
 
 (defn format-opendap-dim
   [min stride max]
@@ -377,7 +319,7 @@
           ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
           ; bounds (or bounding-box (extract-bounds entry))
           ]
-      (map->BoundingInfo
+      (geog/map->BoundingInfo
         {:concept-id (get-in entry [:meta :concept-id])
          :name (get-in entry [:umm :Name])
          :original-dimensions original-dims

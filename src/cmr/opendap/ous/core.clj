@@ -11,6 +11,7 @@
    [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.service :as service]
    [cmr.opendap.ous.util.core :as ous-util]
+   [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
@@ -27,7 +28,7 @@
   ;;
   ;; XXX This is being tracked in CMR-4982
   [coll bounding-box]
-  (variable/map->BoundingInfo
+  (geog/map->BoundingInfo
     {:bounds bounding-box
      :opendap (variable/create-opendap-bounds
                bounding-box
