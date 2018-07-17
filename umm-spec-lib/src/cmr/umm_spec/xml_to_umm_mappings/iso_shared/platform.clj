@@ -18,9 +18,6 @@
   [doc base-xpath instruments-mapping platform-elem]
   (let [platform-id (get-in platform-elem [:attrs :id])
         instrument-ids (keep #(get-in % [:attrs :xlink/href]) (select platform-elem "gmi:instrument"))
-        instrument-sub-elems (map
-                              #(inst/xml-elem->instrument doc base-xpath %)
-                              (select platform-elem "gmi:instrument/eos:EOS_Instrument"))
         instruments (->> (concat
                           (map (partial get instruments-mapping) instrument-ids)
                           (filter #(= platform-id (:mounted-on-id %)) (vals instruments-mapping)))
