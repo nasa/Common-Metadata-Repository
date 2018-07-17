@@ -28,7 +28,7 @@
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "admins"
+   :group_permissions [{:group_id "AG001-CMR"
                         :permissions ["read" "update"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
@@ -321,8 +321,8 @@
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
-          ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
-          ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
+          ; Acceptance criteria: I receive an error if creating an ACL missing required fields.
+          ; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
           "Nil field value"
           #"object has missing required properties"
           (dissoc system-acl :group_permissions)
@@ -355,6 +355,10 @@
           "Group id doesn't exist for single-instance-identity"
           #"Group with concept-id \[AG123-CMR\] does not exist"
           (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR")
+
+          "Group id is valid CMR concept-id in group-permissions"
+          #"\[INVALID-ID\] is not a valid group concept-id."
+          (update system-acl :group_permissions conj {:group_id "INVALID-ID" :permissions ["read"]})
 
           "Single instance identity target grantable permission check"
           #"\[single-instance-identity\] ACL cannot have \[create, read] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
