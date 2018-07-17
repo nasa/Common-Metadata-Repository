@@ -321,8 +321,8 @@
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
-          ; Acceptance criteria: I receive an error if creating an ACL missing required fields.
-          ; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
+          ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
+          ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
           "Nil field value"
           #"object has missing required properties"
           (dissoc system-acl :group_permissions)
