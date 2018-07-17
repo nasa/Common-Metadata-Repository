@@ -98,6 +98,9 @@
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))
 
+(def multiple-extents-granule-xml
+  (slurp (io/file (io/resource "data/iso_smap/granule_with_multiple_extents.xml"))))
+
 (def expected-temporal
   (umm-g/map->GranuleTemporal
     {:range-date-time
@@ -143,6 +146,8 @@
     (is (= expected-granule (g/parse-granule sample-granule-xml))))
   (testing "parse temporal"
     (is (= expected-temporal (g/parse-temporal sample-granule-xml))))
+  (testing "parse multiple extents, temporal"
+    (is (= expected-temporal (g/parse-temporal multiple-extents-granule-xml))))
   (testing "parse access value"
     (is (= 32.0 (g/parse-access-value sample-granule-xml)))))
 
@@ -160,4 +165,3 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (g/validate-xml (s/replace sample-granule-xml "fileIdentifier" "XXXX"))))))
-

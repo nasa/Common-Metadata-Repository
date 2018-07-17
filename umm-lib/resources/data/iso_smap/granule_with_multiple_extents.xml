@@ -318,6 +318,10 @@
                       </gmd:polygon>
                     </gmd:EX_BoundingPolygon>
                   </gmd:geographicElement>
+                </gmd:EX_Extent>
+              </gmd:extent>
+              <gmd:extent>
+                <gmd:EX_Extent>
                   <gmd:temporalElement>
                     <gmd:EX_TemporalExtent>
                       <gmd:extent>
