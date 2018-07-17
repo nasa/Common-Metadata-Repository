@@ -20,18 +20,19 @@
 (defn xml-elem->Temporal
   "Returns a UMM GranuleTemporal from a parsed XML structure"
   [xml-struct]
-  (let [temporal-elem (cx/element-at-path
+  (let [temporal-elems (cx/elements-at-path
                         xml-struct
                         [:composedOf :DS_DataSet :has :MI_Metadata :identificationInfo
-                         :MD_DataIdentification :extent :EX_Extent])
-        single-date-time (cx/datetime-at-path
-                           temporal-elem
-                           [:temporalElement :EX_TemporalExtent :extent :TimeInstant :timePosition])
-        range-date-time (xml-elem->RangeDateTime temporal-elem)]
-    (when (or single-date-time range-date-time)
-      (g/map->GranuleTemporal {:range-date-time range-date-time
-                               :single-date-time single-date-time}))))
-
+                         :MD_DataIdentification :extent :EX_Extent])]
+    (first
+     (for [elem temporal-elems
+           :let [single-date-time (cx/datetime-at-path
+                                   elem
+                                   [:temporalElement :EX_TemporalExtent :extent :TimeInstant :timePosition])
+                 range-date-time (xml-elem->RangeDateTime elem)]
+           :when (or single-date-time range-date-time)]
+       (g/map->GranuleTemporal {:range-date-time range-date-time
+                                :single-date-time single-date-time})))))
 
 (defn generate-temporal
   "Generates the temporal element from a UMM granule temporal record."
@@ -59,4 +60,3 @@
             (x/element :gmd:extent {}
                        (x/element :gml:TimeInstant {:gml:id "swathTemporalExtent"}
                                   (x/element :gml:timePosition {} (str single-date-time))))))))))
-
