@@ -15,14 +15,16 @@
           :Dimensions
           :FillValues
           :LongName
-          :Measurements
+          :MeasurementIdentifiers
           :Name
           :Offset
+          :SamplingIdentifiers
           :Scale
           :ScienceKeywords
           :Sets
           :Units
           :ValidRanges
+          :VariableSubType
           :VariableType]
          (-> {}
              (vm/map->UMM-Var)
