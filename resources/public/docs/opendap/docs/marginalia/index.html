@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>OPeNDAP/CMR Integration -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/cmr-exchange/cmr-opendap">OPeNDAP/CMR Integration</a></h1><h2 class="project-version">1.0.0-SNAPSHOT</h2><br /><p>OPeNDAP Integration in the CMR</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-authz</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-http-kit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-mission-control</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.1</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.7</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</a></li><li><a href="#cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</a></li><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</a></li><li><a href="#cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.validation">cmr.opendap.validation</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.components.concept">cmr.opendap.components.concept</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.auth">cmr.opendap.components.auth</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.esri.geometry/esri-geometry-api</td><td class="dotted"><hr /></td><td class="dep-version">2.2.0</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.vividsolutions/jts</td><td class="dotted"><hr /></td><td class="dep-version">1.13</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-authz</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-http-kit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-mission-control</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">net.sf.geographiclib/GeographicLib-Java</td><td class="dotted"><hr /></td><td class="dep-version">1.49</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">org.geotools/gt-geometry</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">org.geotools/gt-referencing</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.1</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.8</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</a></li><li><a href="#cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</a></li><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</a></li><li><a href="#cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.validation">cmr.opendap.validation</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.components.concept">cmr.opendap.components.concept</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.auth">cmr.opendap.components.auth</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.errors">cmr.opendap.errors</a></li><li><a href="#cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</a></li><li><a href="#cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</a></li><li><a href="#cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</a></li><li><a href="#cmr.opendap.geom.util">cmr.opendap.geom.util</a></li><li><a href="#cmr.opendap.geom.core">cmr.opendap.geom.core</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</a></li><li><a href="#cmr.opendap.data.size.util">cmr.opendap.data.size.util</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.app.handler.collection
   (:require
    [cheshire.core :as json]
@@ -3526,7 +3526,31 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.util.geog
   (:require
    [cmr.opendap.const :as const]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-dim-stride 1)
+(def default-lat-lon-stride 1)</pre></td></tr><tr><td class="docs"><p>  Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+
+<p>We're going to codify parameters with records to keep things well
+documented. Additionally, this will make converting between parameter
+schemes an explicit operation on explicit data.</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord Point [lon lat])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord ArrayLookup [low high])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord BoundingInfo
+  [;; :meta :concept-id
+   concept-id
+   ;; :umm :Name
+   name
+   ;; :umm :Dimensions, converted to EDN
+   dimensions
+   ;; Bounding box data from query params
+   bounds
+   ;; OPeNDAP lookup array
+   opendap
+   ;; :umm :Characteristics :Size
+   size])</pre></td></tr><tr><td class="docs"><p>  Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn adjusted-lon
   ([lon]
    (adjusted-lon lon const/default-lat-lon-resolution))
@@ -3625,7 +3649,103 @@ net.brehaut.ClojureTools = (function (SH) {
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
     (int
       (- (offset-index lat-max const/default-lat-abs-hi res)
-         (lat-hi-phase-shift lat-max lat-lo)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util.core" name="cmr.opendap.ous.util.core"><h1 class="project-name">cmr.opendap.ous.util.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+         (lat-hi-phase-shift lat-max lat-lo)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim
+  [min stride max]
+  (if (or (nil? min) (nil? max))
+    (format &quot;[%s:%s:%s]&quot; min stride max)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lat
+  ([lookup-record]
+   (format-opendap-dim-lat lookup-record default-lat-lon-stride))
+  ([lookup-record stride]
+   (format-opendap-dim (get-in lookup-record [:low :lat])
+                       stride
+                       (get-in lookup-record [:high :lat]))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lon
+  ([lookup-record]
+   (format-opendap-dim-lon lookup-record default-lat-lon-stride))
+  ([lookup-record stride]
+   (format-opendap-dim (get-in lookup-record [:low :lon])
+                       stride
+                       (get-in lookup-record [:high :lon]))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat-lon
+  ([lookup-record [lon-name lat-name] stride]
+    (format &quot;%s%s,%s%s&quot;
+            lat-name
+            (format-opendap-dim-lat lookup-record stride)
+            lon-name
+            (format-opendap-dim-lon lookup-record stride))))</pre></td></tr><tr><td class="docs"><p>  Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>This is the convenience constructor for the ArrayLookup record, taking
+  latitude and longitude values and outputing a data structure that can be
+  used for creating the lookup indices for OPeNDAP dimensional arrays. It has
+  can create output for both normal and reversed latitudinal arrays:</p>
+
+<ul>
+<li><p>Pass the <code>reversed?</code> parameter with a value of <code>false</code> when latitude -90N
+is stored at the 0th index and 90N is stored at the highest index (whose
+actual number will varry, depending upon the resolution of the data). This
+is the default, when no value is passed for the <code>reversed?</code> parameter.</p></li>
+<li><p>Pass the <code>reversed?</code> parameter with a value of <code>true</code> when latitude 90N is
+stored at the 0th index and -90N is stored at the highest index (whose
+actual number will varry, depending upon the resolution of the data).</p></li>
+</ul>
+</td><td class="codes"><pre class="brush: clojure">(defn create-array-lookup
+  ([lon-lo lat-lo lon-hi lat-hi]
+    (create-array-lookup lon-lo lat-lo lon-hi lat-hi false))
+  ([lon-lo lat-lo lon-hi lat-hi reversed?]
+    (let [lookup (map-&gt;ArrayLookup
+                  {:low {:lon lon-lo
+                         :lat lat-lo}
+                   :high {:lon lon-hi
+                          :lat lat-hi}})
+          reversed-hi-lat (get-in lookup [:high :lat])
+          reversed-lo-lat (get-in lookup [:low :lat])]
+      (if reversed?
+        (-&gt; lookup
+            (assoc-in [:low :lat] reversed-hi-lat)
+            (assoc-in [:high :lat] reversed-lo-lat))
+        lookup))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box-&gt;lookup-record
+  ([bounding-box reversed?]
+    (bounding-box-&gt;lookup-record const/default-lon-abs-hi
+                                 const/default-lat-abs-hi
+                                 bounding-box
+                                 reversed?))
+  ([lon-max lat-max
+   [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
+   reversed?]
+   (let [lon-lo (lon-lo-phase-shift lon-max lon-lo)
+         lon-hi (lon-hi-phase-shift lon-max lon-hi)]
+     (if reversed?
+       (let [lat-lo (lat-lo-phase-shift-reversed lat-max lat-lo)
+             lat-hi (lat-hi-phase-shift-reversed lat-max lat-hi)]
+         (log/debug &quot;Variable latitudinal values are reversed ...&quot;)
+         (create-array-lookup lon-lo lat-lo lon-hi lat-hi reversed?))
+       (let [lat-lo (lat-lo-phase-shift lat-max lat-lo)
+             lat-hi (lat-hi-phase-shift lat-max lat-hi)]
+         (create-array-lookup lon-lo lat-lo lon-hi lat-hi))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box-&gt;lookup-indices
+  ([bounding-box]
+    (bounding-box-&gt;lookup-indices bounding-box [&quot;Longitude&quot; &quot;Latitude&quot;]))
+  ([bounding-box index-names]
+    (bounding-box-&gt;lookup-indices bounding-box false index-names))
+  ([bounding-box reversed? index-names]
+    (bounding-box-&gt;lookup-indices bounding-box
+                                  reversed?
+                                  index-names
+                                  default-lat-lon-stride))
+  ([bounding-box reversed? index-names stride]
+    (bounding-box-&gt;lookup-indices const/default-lon-abs-hi
+                                  const/default-lat-abs-hi
+                                  bounding-box
+                                  reversed?
+                                  index-names
+                                  stride))
+  ([lon-max lat-max bounding-box reversed? index-names stride]
+    (format-opendap-lat-lon
+      (bounding-box-&gt;lookup-record bounding-box reversed?)
+      index-names
+      stride)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util.core" name="cmr.opendap.ous.util.core"><h1 class="project-name">cmr.opendap.ous.util.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.util.core
   (:require
    [clojure.string :as string]
@@ -3798,6 +3918,7 @@ net.brehaut.ClojureTools = (function (SH) {
    [cmr.opendap.ous.query.results :as results]
    [cmr.opendap.ous.service :as service]
    [cmr.opendap.ous.util.core :as ous-util]
+   [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
@@ -3810,7 +3931,7 @@ net.brehaut.ClojureTools = (function (SH) {
   ;;
   ;; XXX This is being tracked in CMR-4982
   [coll bounding-box]
-  (variable/map-&gt;BoundingInfo
+  (geog/map-&gt;BoundingInfo
     {:bounds bounding-box
      :opendap (variable/create-opendap-bounds
                bounding-box
@@ -4136,10 +4257,7 @@ For example:
 long:
  <code>southWest = LatLng(56.109375,-9.984375);</code>
  <code>northEast = LatLng(67.640625,19.828125);</code></p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def default-dim-stride 1)
-(def default-lat-lon-stride 1)</pre></td></tr><tr><td class="docs"><p>XXX The following set and function are a hard-coded work-around for the
+</td><td class="codes"></td></tr><tr><td class="docs"><p>XXX The following set and function are a hard-coded work-around for the
     fact that we don't currently have a mechanism for identifying the
     "direction of storage" or "endianness" of latitude data in different
     data sets: some store data from -90 to 90N starting at index 0, some
@@ -4167,46 +4285,7 @@ long:
     ;;     will allow us to make the reversed? assessment.
     ;;
     ;; XXX This is being tracked in CMR-4982 and CMR-4896
-    reversed?))</pre></td></tr><tr><td class="docs"><p>  Records   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-
-<p>We're going to codify parameters with records to keep things well
-documented. Additionally, this will make converting between parameter
-schemes an explicit operation on explicit data.</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord Point [lon lat])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord ArrayLookup [low high])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defrecord BoundingInfo
-  [;; :meta :concept-id
-   concept-id
-   ;; :umm :Name
-   name
-   ;; :umm :Dimensions, converted to EDN
-   dimensions
-   ;; Bounding box data from query params
-   bounds
-   ;; OPeNDAP lookup array
-   opendap
-   ;; :umm :Characteristics :Size
-   size])</pre></td></tr><tr><td class="docs"><p>This lookup is needed for when latitude -90N is stored at the 0th index and
-  90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data).</p>
-</td><td class="codes"><pre class="brush: clojure">(defn create-opendap-lookup
-  [lon-lo lat-lo lon-hi lat-hi]
-  (map-&gt;ArrayLookup
-   {:low {:lon lon-lo
-          :lat lat-lo}
-    :high {:lon lon-hi
-           :lat lat-hi}}))</pre></td></tr><tr><td class="docs"><p>This lookup is needed for when latitude 90N is stored at the 0th index and
-  -90N is stored at the highest index (whose actual number will varry, depending
-  upon the resolution of the data).</p>
-</td><td class="codes"><pre class="brush: clojure">(defn create-opendap-lookup-reversed
-  [lon-lo lat-lo lon-hi lat-hi]
-  (let [lookup (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)
-        reversed-hi-lat (get-in lookup [:high :lat])
-        reversed-lo-lat (get-in lookup [:low :lat])]
-    (-&gt; lookup
-        (assoc-in [:low :lat] reversed-hi-lat)
-        (assoc-in [:high :lat] reversed-lo-lat))))</pre></td></tr><tr><td class="docs"><p>  Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+    reversed?))</pre></td></tr><tr><td class="docs"><p>  Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn normalize-lat-lon
   [dim]
@@ -4312,82 +4391,55 @@ schemes an explicit operation on explicit data.</p>
                           bounding-box
                           opts))
   ([{lon-max :Longitude lat-max :Latitude :as dimensions}
-    [lon-lo lat-lo lon-hi lat-hi :as bounding-box]
+    bounding-box
     opts]
    (log/trace &quot;Got dimensions:&quot; dimensions)
    (when bounding-box
-     (let [lon-lo (geog/lon-lo-phase-shift lon-max lon-lo)
-           lon-hi (geog/lon-hi-phase-shift lon-max lon-hi)]
-       (if (:reversed? opts)
-         (let [lat-lo (geog/lat-lo-phase-shift-reversed lat-max lat-lo)
-               lat-hi (geog/lat-hi-phase-shift-reversed lat-max lat-hi)]
-           (log/debug &quot;Variable latitudinal values are reversed ...&quot;)
-           (create-opendap-lookup-reversed lon-lo lat-lo lon-hi lat-hi))
-         (let [lat-lo (geog/lat-lo-phase-shift lat-max lat-lo)
-               lat-hi (geog/lat-hi-phase-shift lat-max lat-hi)]
-           (create-opendap-lookup lon-lo lat-lo lon-hi lat-hi)))))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim
-  [min stride max]
-  (format &quot;[%s:%s:%s]&quot; min stride max))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lat
-  ([bounding-info]
-   (format-opendap-dim-lat bounding-info default-lat-lon-stride))
-  ([bounding-info stride]
-   (if-let [opendap-bounds (:opendap bounding-info)]
-     (format-opendap-dim (get-in opendap-bounds [:low :lat])
-                         stride
-                         (get-in opendap-bounds [:high :lat])))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dim-lon
-  ([bounding-info]
-   (format-opendap-dim-lon bounding-info default-lat-lon-stride))
-  ([bounding-info stride]
-   (if-let [opendap-bounds (:opendap bounding-info)]
-     (format-opendap-dim (get-in opendap-bounds [:low :lon])
-                         stride
-                         (get-in opendap-bounds [:high :lon])))))</pre></td></tr><tr><td class="docs">
+     (geog/bounding-box-&gt;lookup-record
+      lon-max lat-max bounding-box (:reversed? opts)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn replace-defaults-lat-lon
   [bounding-info stride [k v]]
-  (cond (= k :Longitude) (format-opendap-dim-lon bounding-info stride)
-        (= k :Latitude) (format-opendap-dim-lat bounding-info stride)
-        :else (format-opendap-dim 0 stride (dec v))))</pre></td></tr><tr><td class="docs">
+  (cond (= k :Longitude) (geog/format-opendap-dim-lon
+                          (:opendap bounding-info) stride)
+        (= k :Latitude) (geog/format-opendap-dim-lat
+                         (:opendap bounding-info) stride)
+        :else (geog/format-opendap-dim 0 stride (dec v))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-dims
   ([bounding-info]
-    (format-opendap-dims bounding-info default-dim-stride))
+    (format-opendap-dims bounding-info geog/default-dim-stride))
   ([bounding-info stride]
     (if (:opendap bounding-info)
       (-&gt;&gt; bounding-info
            :dimensions
            (map (partial replace-defaults-lat-lon bounding-info stride))
            (apply str)))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-lat-lon-format-str
+</td><td class="codes"><pre class="brush: clojure">(defn get-lat-lon-names
   [bounding-info]
   (log/debug &quot;Original dimensions:&quot; (:original-dimensions bounding-info))
-  (str (cond (get-in bounding-info [:original-dimensions :Latitude])
-             &quot;Latitude&quot;
-             (get-in bounding-info [:original-dimensions :lat])
-             &quot;lat&quot;
-             ;; XXX See CMR-4985
-             (get-in bounding-info [:original-dimensions :YDim])
-             &quot;YDim&quot;)
-       &quot;%s,&quot;
-       (cond (get-in bounding-info [:original-dimensions :Longitude])
-             &quot;Longitude&quot;
-             (get-in bounding-info [:original-dimensions :lon])
-             &quot;lon&quot;
-             ;; XXX See CMR-4985
-             (get-in bounding-info [:original-dimensions :XDim])
-             &quot;XDim&quot;)
-       &quot;%s&quot;))</pre></td></tr><tr><td class="docs">
+  [(cond (get-in bounding-info [:original-dimensions :Longitude])
+         &quot;Longitude&quot;
+         (get-in bounding-info [:original-dimensions :lon])
+         &quot;lon&quot;
+         ;; XXX See CMR-4985
+         (get-in bounding-info [:original-dimensions :XDim])
+         &quot;XDim&quot;)
+   (cond (get-in bounding-info [:original-dimensions :Latitude])
+         &quot;Latitude&quot;
+         (get-in bounding-info [:original-dimensions :lat])
+         &quot;lat&quot;
+         ;; XXX See CMR-4985
+         (get-in bounding-info [:original-dimensions :YDim])
+         &quot;YDim&quot;)])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-lat-lon
   ([bounding-info]
-   (format-opendap-lat-lon bounding-info default-lat-lon-stride))
+   (format-opendap-lat-lon bounding-info geog/default-lat-lon-stride))
   ([bounding-info stride]
-   (format (get-lat-lon-format-str bounding-info)
-           (format-opendap-dim-lat bounding-info stride)
-           (format-opendap-dim-lon bounding-info stride))))</pre></td></tr><tr><td class="docs">
+   (geog/format-opendap-lat-lon (:opendap bounding-info)
+                                (get-lat-lon-names bounding-info)
+                                stride)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn format-opendap-bounds
   ([bounding-info]
-   (format-opendap-bounds bounding-info default-lat-lon-stride))
+   (format-opendap-bounds bounding-info geog/default-lat-lon-stride))
   ([{bound-name :name :as bounding-info} stride]
    (log/trace &quot;Bounding info:&quot; bounding-info)
    (format &quot;%s%s&quot;
@@ -4417,7 +4469,7 @@ schemes an explicit operation on explicit data.</p>
           ;; XXX This is being tracked as part of CMR-4922 and CMR-4958
           ; bounds (or bounding-box (extract-bounds entry))
           ]
-      (map-&gt;BoundingInfo
+      (geog/map-&gt;BoundingInfo
         {:concept-id (get-in entry [:meta :concept-id])
          :name (get-in entry [:umm :Name])
          :original-dimensions original-dims
@@ -5748,7 +5800,286 @@ systems created for testing).</p>
   [&amp; coll]
   (let [errors (vec (remove nil? (mapcat get-errors coll)))]
     (when (seq errors)
-      {:errors errors})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.http.request" name="cmr.opendap.http.request"><h1 class="project-name">cmr.opendap.http.request</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+      {:errors errors})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.geom.impl.jts" name="cmr.opendap.geom.impl.jts"><h1 class="project-name">cmr.opendap.geom.impl.jts</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>See the following:
+  * http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/geom/Geometry.html</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.geom.impl.jts
+  (:require
+   [cmr.opendap.geom.util :as util])
+  (:import
+   (org.geotools.geometry.jts JTS)
+   (org.geotools.referencing CRS)
+   (org.geotools.referencing.crs DefaultGeocentricCRS DefaultGeographicCRS)
+   (com.vividsolutions.jts.geom Coordinate GeometryFactory PrecisionModel))
+  (:refer-clojure :exclude [empty? intersection reverse]))</pre></td></tr><tr><td class="docs"><p>  Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def cartesian-srid 0)
+(def wgs84-srid 1)
+(def srids {cartesian-srid :cartesian
+            wgs84-srid :wgs84})</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- -create-coords
+  [points]
+  (-&gt;&gt; points
+       (partition 2)
+       (mapv (fn [[lat lon]]
+         (let [[x y] (util/ll-&gt;cartesian lat lon)]
+          (new Coordinate x y 0))))
+       (into-array)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def wgs84-&gt;cartesian-xform (CRS/findMathTransform
+                             DefaultGeographicCRS/WGS84_3D
+                             DefaultGeocentricCRS/CARTESIAN
+                             true))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def cartesian-&gt;wgs84-xform (CRS/findMathTransform
+                             DefaultGeocentricCRS/CARTESIAN
+                             DefaultGeographicCRS/WGS84_3D
+                             true))</pre></td></tr><tr><td class="docs"><p>  API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Returns area in m^2 units.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn area
+  [this]
+  (.getArea this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bounding-box
+  [this]
+  (.getEnvelope this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn empty?
+  [this]
+  (.isEmpty this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn intersection
+  [this other]
+  (.intersection this other))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn intersects?
+  [this other]
+  (.intersects this other))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn points
+  [this]
+  (mapv #(vector (.-x %) (.-y %) (.-z %)) (.getCoordinates this)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn point-count
+  [this]
+  (.getNumPoints this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn reverse
+  [this]
+  (.reverse this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn valid?
+  [this]
+  (.isValid this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn cartesian-&gt;wgs84
+  [this]
+  (JTS/transform this cartesian-&gt;wgs84-xform))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn wgs84-&gt;cartesian
+  [this]
+  (JTS/transform this wgs84-&gt;cartesian-xform))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def behaviour {:area area
+                :bounding-box bounding-box
+                :empty? empty?
+                :intersection intersection
+                :intersects? intersects?
+                :points points
+                :point-count point-count
+                :reverse reverse
+                :valid? valid?
+                ;; Experimental
+                :cartesian-&gt;wgs84 cartesian-&gt;wgs84
+                :wgs84-&gt;cartesian wgs84-&gt;cartesian})</pre></td></tr><tr><td class="docs"><p>Polygon points are provided in counter-clockwise order. The last point
+  should match the first point to close the polygon. The values are listed
+  comma separated in longitude latitude order, i.e.:</p>
+
+<pre><code>[lon1 lat1 lon2 lat2 lon3 lat3 ...]
+</code></pre>
+</td><td class="codes"><pre class="brush: clojure">(defn create
+  [points]
+  (let [factory (new GeometryFactory (new PrecisionModel PrecisionModel/FLOATING)
+                                     wgs84-srid)]
+    (.createPolygon factory (-create-coords points))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.geom.impl.esri" name="cmr.opendap.geom.impl.esri"><h1 class="project-name">cmr.opendap.geom.impl.esri</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>See the following links:
+  * http://esri.github.io/geometry-api-java/javadoc/
+  * https://github.com/Esri/geometry-api-java/wiki</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.geom.impl.esri
+  (:require
+   [cmr.opendap.geom.util :as util])
+  (:import
+   (com.esri.core.geometry Polygon))
+  (:refer-clojure :exclude [intersection]))</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- -add-points!
+  [self points]
+  (-&gt;&gt; points
+       (partition 2)
+       (mapv (fn [[lat lon]]
+               (let [[x y] (util/ll-&gt;cartesian lat lon)]
+                 (.lineTo self x y))))))</pre></td></tr><tr><td class="docs"><p>  API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Returns area in m^2 units.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn area
+  [this]
+  (.calculateArea2D this))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn intersection
+  [this other])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def behaviour {:area area
+                :intersection intersection})</pre></td></tr><tr><td class="docs"><p>Polygon points are provided in counter-clockwise order. The last point
+  should match the first point to close the polygon. The values are listed
+  comma separated in longitude latitude order, i.e.:</p>
+
+<pre><code>[lon1 lat1 lon2 lat2 lon3 lat3 ...]
+</code></pre>
+
+<p>  Returns area in m^2 units.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn create
+  [[first-lat first-lon &amp; points]]
+  (let [polygon (new Polygon)
+        [start-x start-y] (util/ll-&gt;cartesian first-lat first-lon)]
+    (.startPath polygon start-x start-y)
+    (-add-points! polygon points)
+    polygon))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.geom.impl.geographiclib" name="cmr.opendap.geom.impl.geographiclib"><h1 class="project-name">cmr.opendap.geom.impl.geographiclib</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>See the following:
+  * https://geographiclib.sourceforge.io/html/java/
+  * https://sourceforge.net/p/geographiclib/code/ci/release/tree/java/planimeter/src/main/java/Planimeter.java#l6</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.geom.impl.geographiclib
+  (:import
+   (net.sf.geographiclib Geodesic PolygonArea))
+  (:refer-clojure :exclude [intersection]))</pre></td></tr><tr><td class="docs"><p>  Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-geodesic Geodesic/WGS84)
+(def default-polyline? false) ; if a closed polygon, polyline needs to be false</pre></td></tr><tr><td class="docs"><p>  Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- -add-points!
+  [self points]
+  (mapv (fn [[lat lon]] (.AddPoint self lat lon)) (partition 2 points)))</pre></td></tr><tr><td class="docs"><p>  API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defrecord GeographiclibPolygon [native])</pre></td></tr><tr><td class="docs"><p>Returns area in m^2 units.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn area
+  [this]
+  (-&gt; this
+      :native
+      (.Compute)
+      (.area)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn intersection
+  [this other])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def behaviour {:area area
+                :intersection intersection})</pre></td></tr><tr><td class="docs"><p>Polygon points are provided in counter-clockwise order. The last point
+  should match the first point to close the polygon. The values are listed
+  comma separated in longitude latitude order, i.e.:</p>
+
+<pre><code>[lon1 lat1 lon2 lat2 lon3 lat3 ...]
+</code></pre>
+
+<p>  Returns area in m^2 units.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn create
+  ([points]
+   (create points default-geodesic))
+  ([points geodesic]
+   (create points geodesic default-polyline?))
+  ([points geodesic polyline?]
+   (let [polygon (new PolygonArea geodesic polyline?)]
+     (-add-points! polygon points)
+     (map-&gt;GeographiclibPolygon {:native polygon}))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.geom.util" name="cmr.opendap.geom.util"><h1 class="project-name">cmr.opendap.geom.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Equations taken from the following:
+  * http://earth-info.nga.mil/GandG/publications/tr8350.2/wgs84fin.pdf</p>
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.geom.util)</pre></td></tr><tr><td class="docs"><p>  Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def earth-semi-major-axis 6378137.0)
+(def earth-semi-minor-axis 6356752.3142)
+(def earth-semi-major-axis**2 (Math/pow earth-semi-major-axis 2))
+(def earth-semi-minor-axis**2 (Math/pow earth-semi-minor-axis 2))
+(def earth-radius earth-semi-major-axis)
+(def earth-radius**2 earth-semi-major-axis**2)
+(def earth-area (* 4 Math/PI earth-radius**2))
+(def earth-eccentricity 0.081819190842622)
+(def earth-eccentricity**2 (Math/pow earth-eccentricity 2))
+(def earth-linear-eccentricity 521854.00842339)</pre></td></tr><tr><td class="docs"><p>  Supporting Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn prime-vertical-curvature-radius
+  [lat-radians]
+  (/ earth-semi-major-axis
+     (Math/sqrt (- 1
+                   (* earth-eccentricity**2
+                      (Math/pow (Math/sin lat-radians) 2))))))</pre></td></tr><tr><td class="docs"><p>  Conversion Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Taken from:
+   * https://www.mathworks.com/matlabcentral/fileexchange/7942-covert-lat--lon--alt-to-ecef-cartesian</p>
+
+<p>   Inputs are in degrees and meters; outputs are in meters.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn lla-&gt;ecef
+  [lat lon alt]
+  (let [lat-radians (Math/toRadians lat)
+        lon-radians (Math/toRadians lon)
+        n (prime-vertical-curvature-radius lat-radians)
+        n-alt (+ n alt)
+        x (* n-alt
+            (Math/cos lat-radians)
+            (Math/cos lon-radians))
+        y (* n-alt
+             (Math/cos lat-radians)
+             (Math/sin lon-radians))
+        z (* (+ (* n
+                   (- 1 earth-eccentricity**2))
+                alt)
+             (Math/sin lat-radians))]
+    [x y z]))</pre></td></tr><tr><td class="docs"><p>Taken from:
+   * https://www.mathworks.com/matlabcentral/fileexchange/7941-convert-cartesian--ecef--coordinates-to-lat--lon--alt</p>
+
+<p>   Currently no correction for instability in altitude near exact poles.</p>
+
+<p>   Inputs are in meters; outputs are degrees and meters.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn ecef-&gt;lla
+  [x y z]
+  (let [ep (Math/sqrt (/ (- earth-semi-major-axis**2
+                            earth-semi-minor-axis**2)
+                         earth-semi-minor-axis**2))
+        p (Math/sqrt (+ (Math/pow x 2) (Math/pow y 2)))
+        theta (Math/atan2 (* earth-semi-major-axis z)
+                       (* earth-semi-minor-axis p))
+        lon (Math/atan2 y x)
+        lat (Math/atan2 (+ z (* (Math/pow ep 2)
+                                earth-semi-minor-axis
+                                (Math/pow
+                                 (Math/sin theta) 3)))
+                        (- p (* earth-eccentricity**2
+                                earth-semi-major-axis
+                                (Math/pow
+                                 (Math/cos theta) 3))))
+        n (prime-vertical-curvature-radius lat)
+        alt (- (/ p (Math/cos lat)) n)]
+    [(Math/toDegrees lat)
+     (Math/toDegrees (mod lon (* 2 Math/PI)))
+     alt]))</pre></td></tr><tr><td class="docs"><p>Inputs are in degrees; outputs are in meters.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn ll-&gt;cartesian
+  [lat lon]
+  [(/ (* Math/PI earth-radius lon) 180)
+   (* earth-radius (Math/sin (Math/toRadians lat)))])</pre></td></tr><tr><td class="docs"><p>Assumes CCW ordering of points.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn bbox-&gt;polypoints
+  [bbox])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.geom.core" name="cmr.opendap.geom.core"><h1 class="project-name">cmr.opendap.geom.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.geom.core
+  (:require
+    [cmr.opendap.geom.impl.esri :as esri]
+    [cmr.opendap.geom.impl.geographiclib :as geographiclib]
+    [cmr.opendap.geom.impl.jts :as jts])
+  (:import
+    (com.esri.core.geometry.Polygon)
+    (com.vividsolutions.jts.geom.Polygon)
+    (cmr.opendap.geom.impl.geographiclib GeographiclibPolygon))
+  (:refer-clojure :exclude [empty? intersection reverse]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defprotocol PolygonAPI
+  (area [this])
+  (bounding-box [this])
+  (empty? [this])
+  (intersection [this other])
+  (intersects? [this other])
+  (points [this])
+  (point-count [this])
+  (reverse [this])
+  (valid? [this])
+  ;; Experimental
+  (cartesian-&gt;wgs84 [this])
+  (wgs84-&gt;cartesian [this]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(extend com.vividsolutions.jts.geom.Polygon
+        PolygonAPI
+        jts/behaviour)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(extend com.esri.core.geometry.Polygon
+        PolygonAPI
+        esri/behaviour)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(extend GeographiclibPolygon
+        PolygonAPI
+        geographiclib/behaviour)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn create-polygon
+  [type points]
+  (case type
+    :jts (jts/create points)
+    :esri (esri/create points)
+    :geographiclib (geographiclib/create points)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.http.request" name="cmr.opendap.http.request"><h1 class="project-name">cmr.opendap.http.request</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.http.request
   (:require
    [cmr.http.kit.request :as request]
@@ -6100,7 +6431,40 @@ systems created for testing).</p>
   [component]
   {:config {:ok? (config-ok? component)}
    :httpd {:ok? true}
-   :logging {:ok? (logging-ok? component)}})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.config" name="cmr.opendap.config"><h1 class="project-name">cmr.opendap.config</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+   :logging {:ok? (logging-ok? component)}})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.data.size.granule" name="cmr.opendap.data.size.granule"><h1 class="project-name">cmr.opendap.data.size.granule</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.data.size.granule
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.opendap.data.size.util :as util]
+   [xml-in.core :as xml-in]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-size-data
+  [parsed-xml]
+  (-&gt; parsed-xml
+      (xml-in/find-first [:Granule :DataGranule :SizeMBDataGranule])
+      first
+      read-string
+      util/mb-&gt;bytes))</pre></td></tr><tr><td class="docs"><p>Returns granule file size in bytes.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn file-size
+  [xml-metadata]
+  (-&gt; xml-metadata
+      xml/parse-str
+      extract-size-data))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.data.size.util" name="cmr.opendap.data.size.util"><h1 class="project-name">cmr.opendap.data.size.util</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.data.size.util)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def kb (Math/pow 2 10))
+(def mb (Math/pow 2 20))
+(def gb (Math/pow 2 30))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn kb-&gt;bytes
+  [value]
+  (* kb value))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn mb-&gt;bytes
+  [value]
+  (* mb value))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bytes-&gt;mb
+  [value]
+  (/ value mb))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn bytes-&gt;gb
+  [value]
+  (/ value gb))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.config" name="cmr.opendap.config"><h1 class="project-name">cmr.opendap.config</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.config
   (:require
    [clojure.edn :as edn]
@@ -6172,7 +6536,7 @@ systems created for testing).</p>
           (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
-              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.validation">cmr.opendap.validation</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.concept">cmr.opendap.components.concept</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.auth">cmr.opendap.components.auth</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v1">cmr.opendap.ous.query.params.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.v2">cmr.opendap.ous.query.params.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.results">cmr.opendap.ous.query.results</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.validation">cmr.opendap.validation</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.concept">cmr.opendap.components.concept</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.auth">cmr.opendap.components.auth</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.errors">cmr.opendap.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.util">cmr.opendap.geom.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.core">cmr.opendap.geom.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.util">cmr.opendap.data.size.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
