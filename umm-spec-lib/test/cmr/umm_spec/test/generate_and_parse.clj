@@ -77,7 +77,7 @@
 (defn example-files
   "Returns a set of example metadata files in the given format."
   [metadata-format]
-  (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
+  (seq (.listFiles (io/file (io/resource (str "example-data/" (name metadata-format)))))))
 
 (defn- remove-vertical-spatial-domains
   "Remove the VerticalSpatialDomains from the SpatialExtent of the record."

@@ -18,12 +18,12 @@
 (defn noaa-example-file
   "Returns an example ISO19115 metadata file with NOAA instrument xpath."
   []
-  (io/file (io/resource "example_data/iso19115/ISOExample-NOAA-Instrument-XPath.xml")))
+  (io/file (io/resource "example-data/iso19115/ISOExample-NOAA-Instrument-XPath.xml")))
 
 (defn mixed-example-file
   "Returns an example ISO19115 metadata file with both regular instrument xpath and NOAA instrument xpath."
   []
-  (io/file (io/resource "example_data/iso19115/ISOExample-Mixed-Instrument-XPath.xml")))
+  (io/file (io/resource "example-data/iso19115/ISOExample-Mixed-Instrument-XPath.xml")))
 
 (deftest test-noaa-example-file 
   "Verify the returned platforms is equal to expected-noaa-platforms."

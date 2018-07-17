@@ -57,7 +57,7 @@
                                                         :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
         ;; found in KMS with a category of "Earth Observation Satellites"
-        coll9 (d/ingest-concept-with-metadata-file "example_data/iso-smap/SMAPExample.xml"
+        coll9 (d/ingest-concept-with-metadata-file "example-data/iso-smap/SMAPExample.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :iso-smap
@@ -231,7 +231,7 @@
                                                         :ShortName "S9"
                                                         :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
-        coll10 (d/ingest-concept-with-metadata-file "example_data/iso-smap/SMAPExample.xml"
+        coll10 (d/ingest-concept-with-metadata-file "example-data/iso-smap/SMAPExample.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :iso-smap
