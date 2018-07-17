@@ -1,4 +1,4 @@
-ed:   ../../../../src/cmr/umm_spec/xml_to_umm_mappings/iso_shared/platform.clj(ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.instrument
+(ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.instrument
   "Functions for parsing UMM instrument records out of ISO SMAP XML documents."
   (:require
     [clojure.string :as string]
