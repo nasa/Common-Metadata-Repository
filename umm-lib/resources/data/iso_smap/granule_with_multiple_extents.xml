@@ -1,0 +1,1370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gmd:DS_Series xmlns="http://www.isotc211.org/2005/gmi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:eos="http://earthdata.nasa.gov/schema/eos" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.isotc211.org/2005/gmd file:/home/jon/esdt/smap/NASASchemaFolder/schema.xsd">
+  <gmd:composedOf>
+    <gmd:DS_DataSet>
+      <gmd:has>
+        <gmi:MI_Metadata>
+          <gmd:fileIdentifier>
+            <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5</gmx:FileName>
+          </gmd:fileIdentifier>
+          <gmd:language>
+            <gco:CharacterString>eng</gco:CharacterString>
+          </gmd:language>
+          <gmd:characterSet>
+            <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+          </gmd:characterSet>
+          <gmd:hierarchyLevel>
+            <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+          </gmd:hierarchyLevel>
+          <gmd:contact xlink:href="#alaskaSARContact"/>
+          <gmd:dateStamp>
+            <gco:DateTime>2014-12-25T10:36:10.000Z</gco:DateTime>
+          </gmd:dateStamp>
+          <gmd:metadataStandardName>
+            <gco:CharacterString>ISO 19115-2 Geographic information — Metadata — Part 2: Extensions for imagery and gridded data</gco:CharacterString>
+          </gmd:metadataStandardName>
+          <gmd:metadataStandardVersion>
+            <gco:CharacterString>ISO 19115-2:2009-02-15</gco:CharacterString>
+          </gmd:metadataStandardVersion>
+          <gmd:spatialRepresentationInfo>
+            <gmi:MI_Georeferenceable>
+              <gmd:numberOfDimensions>
+                <gco:Integer>2</gco:Integer>
+              </gmd:numberOfDimensions>
+              <gmd:axisDimensionProperties>
+                <gmd:MD_Dimension>
+                  <gmd:dimensionName>
+                    <gmd:MD_DimensionNameTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="crossTrack">crossTrack</gmd:MD_DimensionNameTypeCode>
+                  </gmd:dimensionName>
+                  <gmd:dimensionSize>
+                    <gco:Integer>1000</gco:Integer>
+                  </gmd:dimensionSize>
+                  <gmd:resolution>
+                    <gco:Length uom="km">1</gco:Length>
+                  </gmd:resolution>
+                </gmd:MD_Dimension>
+              </gmd:axisDimensionProperties>
+              <gmd:axisDimensionProperties>
+                <gmd:MD_Dimension>
+                  <gmd:dimensionName>
+                    <gmd:MD_DimensionNameTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="track">track</gmd:MD_DimensionNameTypeCode>
+                  </gmd:dimensionName>
+                  <gmd:dimensionSize>
+                    <gco:Integer>1177</gco:Integer>
+                  </gmd:dimensionSize>
+                  <gmd:resolution>
+                    <gco:Length uom="km">1</gco:Length>
+                  </gmd:resolution>
+                </gmd:MD_Dimension>
+              </gmd:axisDimensionProperties>
+              <gmd:cellGeometry>
+                <gmd:MD_CellGeometryCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CellGeometryCode" codeListValue="area">area</gmd:MD_CellGeometryCode>
+              </gmd:cellGeometry>
+              <gmd:transformationParameterAvailability gco:nilReason="missing"/>
+              <gmd:controlPointAvailability>
+                <gco:Boolean>false</gco:Boolean>
+              </gmd:controlPointAvailability>
+              <gmd:orientationParameterAvailability>
+                <gco:Boolean>false</gco:Boolean>
+              </gmd:orientationParameterAvailability>
+              <gmd:georeferencedParameters gco:nilReason="unknown"/>
+              <gmi:geolocationInformation>
+                <gmi:MI_GCPCollection>
+                  <gmi:collectionIdentification gco:nilReason="unknown"/>
+                  <gmi:collectionName gco:nilReason="unknown"/>
+                  <gmi:coordinateReferenceSystem>
+                    <gmd:MD_ReferenceSystem>
+                      <gmd:referenceSystemIdentifier>
+                        <gmd:RS_Identifier>
+                          <gmd:code gco:nilReason="unknown"/>
+                        </gmd:RS_Identifier>
+                      </gmd:referenceSystemIdentifier>
+                    </gmd:MD_ReferenceSystem>
+                  </gmi:coordinateReferenceSystem>
+                  <gmi:gcp>
+                    <gmi:MI_GCP>
+                      <gmi:geographicCoordinates gco:nilReason="unknown"/>
+                    </gmi:MI_GCP>
+                  </gmi:gcp>
+                </gmi:MI_GCPCollection>
+              </gmi:geolocationInformation>
+            </gmi:MI_Georeferenceable>
+          </gmd:spatialRepresentationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>SC:SPL1AA.001:12345</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5</gmx:FileName>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2014-12-25T10:36:10.000Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                  <gmd:edition>
+                    <gco:CharacterString>R03001</gco:CharacterString>
+                  </gmd:edition>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>SPL1AA</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>
+                        <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>The ECS Short Name</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>  <!-- This field provides the ECS Version ID.  This field identifies each major series in SMAP science data system operations.  -->
+                        <gco:CharacterString>002</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>  <!-- This field is intended to provide a namespace identifier for SMAP mission. Team should devise an identifier. -->
+                        <gco:CharacterString>smap.jpl.nasa.gov</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>The ECS Version ID</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>Not determined for Release 3.</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>
+                        <gco:CharacterString>urn:uuid</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>A Universally Unique Identifier (UUID)</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:citedResponsibleParty>
+                    <gmd:CI_ResponsibleParty>
+                      <gmd:organisationName>
+                        <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                      </gmd:organisationName>
+                      <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                          <gmd:address>
+                            <gmd:CI_Address>
+                              <gmd:deliveryPoint>
+                                <gco:CharacterString>4800 Oak Grove Drive</gco:CharacterString>
+                              </gmd:deliveryPoint>
+                              <gmd:city>
+                                <gco:CharacterString>Pasadena</gco:CharacterString>
+                              </gmd:city>
+                              <gmd:administrativeArea>
+                                <gco:CharacterString>California</gco:CharacterString>
+                              </gmd:administrativeArea>
+                              <gmd:postalCode>
+                                <gco:CharacterString>91109</gco:CharacterString>
+                              </gmd:postalCode>
+                              <gmd:country>
+                                <gco:CharacterString>United States</gco:CharacterString>
+                              </gmd:country>
+                            </gmd:CI_Address>
+                          </gmd:address>
+                        </gmd:CI_Contact>
+                      </gmd:contactInfo>
+                      <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                      </gmd:role>
+                    </gmd:CI_ResponsibleParty>
+                  </gmd:citedResponsibleParty>
+                  <gmd:presentationForm>
+                    <gmd:CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                  </gmd:presentationForm>
+                  <gmd:series>
+                    <gmd:CI_Series>
+                      <gmd:name>
+                        <gco:CharacterString>L1C_S0_HiRes</gco:CharacterString>
+                      </gmd:name>
+                    </gmd:CI_Series>
+                  </gmd:series>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>The SMAP Level 1C_S0_HiRes product provides multilooked Synthetic Aperture Radar normalized cross sections in an instrument swath based array with 1 km resolution.</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users.</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:credit>
+                <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
+              </gmd:credit>
+              <gmd:status>
+                <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="on-going">on-going</gmd:MD_ProgressCode>
+              </gmd:status>
+              <gmd:aggregationInfo xlink:type="simple">
+                <gmd:MD_AggregateInformation>
+                  <gmd:aggregateDataSetName xlink:type="simple">
+                    <gmd:CI_Citation>
+                      <gmd:title>
+                        <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.qa</gmx:FileName>
+                      </gmd:title>
+                      <gmd:date xlink:type="simple">
+                        <gmd:CI_Date>
+                          <gmd:date>
+                            <gco:Date>2015-05-31</gco:Date>
+                          </gmd:date>
+                          <gmd:dateType>
+                            <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                          </gmd:dateType>
+                        </gmd:CI_Date>
+                      </gmd:date>
+                      <gmd:edition>
+                        <gco:CharacterString>QA Product Version</gco:CharacterString>
+                      </gmd:edition>
+                      <gmd:otherCitationDetails>
+                        <gco:CharacterString>An ASCII product that contains statistical information on data product results.  These statistics enable data producers and users to assess the quality of the data in the data product granule.</gco:CharacterString>
+                      </gmd:otherCitationDetails>
+                    </gmd:CI_Citation>
+                  </gmd:aggregateDataSetName>
+                  <gmd:associationType>
+                    <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
+                  </gmd:associationType>
+                </gmd:MD_AggregateInformation>
+              </gmd:aggregationInfo>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+              <gmd:characterSet>
+                <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+              </gmd:characterSet>
+              <gmd:topicCategory>
+                <gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>
+              </gmd:topicCategory>
+              <gmd:environmentDescription>
+                <gco:CharacterString>Data product generated by the SMAP mission in HDF5 format with ISO 19115 conformant metadata.</gco:CharacterString>
+              </gmd:environmentDescription>
+              <gmd:extent>
+                <gmd:EX_Extent>
+                  <gmd:description>
+                    <gco:CharacterString>The SMAP spacecraft downlinks SAR data that were acquired under the following data conditions: 1) While acquiring forward looking and aft looking data over all land surfaces except Antarctica when the satellite is viewing the Earth at approximately 6 AM local time, 2) While acquiring forward looking data over all land surfaces North of 45 degrees North latitude when the satellite is viewing the Earth at approximately 6 PM local time, and 3) While acquiring forward looking data over coastal ocean regions when the satellite is viewing the Earth at approximately 6 AM local time. Coastal ocean regions are defined as ocean areas within 1000 km of land.</gco:CharacterString>
+                  </gmd:description>
+                  <gmd:geographicElement>
+                    <gmd:EX_GeographicBoundingBox id="swathBoundingBox">
+                      <gmd:extentTypeCode>
+                        <gco:Boolean>1</gco:Boolean>
+                      </gmd:extentTypeCode>
+                      <gmd:westBoundLongitude>
+                        <gco:Decimal>0.4701165</gco:Decimal>
+                      </gmd:westBoundLongitude>
+                      <gmd:eastBoundLongitude>
+                        <gco:Decimal>0.4704968</gco:Decimal>
+                      </gmd:eastBoundLongitude>
+                      <gmd:southBoundLatitude>
+                        <gco:Decimal>0.3221629</gco:Decimal>
+                      </gmd:southBoundLatitude>
+                      <gmd:northBoundLatitude>
+                        <gco:Decimal>0.322525</gco:Decimal>
+                      </gmd:northBoundLatitude>
+                    </gmd:EX_GeographicBoundingBox>
+                  </gmd:geographicElement>
+                  <gmd:geographicElement>
+                    <gmd:EX_BoundingPolygon>
+                      <gmd:extentTypeCode>
+                        <gco:Boolean>1</gco:Boolean>
+                      </gmd:extentTypeCode>
+                      <gmd:polygon>
+                        <gml:Polygon gml:id="swathPolygon">
+                          <gml:exterior>
+                            <gml:LinearRing>
+                              <gml:posList srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">0.0 0.0 2.0 5.0 6.0 5.0 4.0 0.0 0.0 0.0</gml:posList>
+                            </gml:LinearRing>
+                          </gml:exterior>
+                        </gml:Polygon>
+                      </gmd:polygon>
+                    </gmd:EX_BoundingPolygon>
+                  </gmd:geographicElement>
+                </gmd:EX_Extent>
+              </gmd:extent>
+              <gmd:extent>
+                <gmd:EX_Extent>
+                  <gmd:temporalElement>
+                    <gmd:EX_TemporalExtent>
+                      <gmd:extent>
+                        <gml:TimePeriod gml:id="swathTemporalExtent">
+                          <gml:beginPosition>2015-05-30T16:01:00.000Z</gml:beginPosition>
+                          <gml:endPosition>2015-05-30T16:01:06.003Z</gml:endPosition>
+                        </gml:TimePeriod>
+                      </gmd:extent>
+                    </gmd:EX_TemporalExtent>
+                  </gmd:temporalElement>
+                </gmd:EX_Extent>
+              </gmd:extent>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>DataSetId</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>DataSetId</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:aggregationInfo>
+                <gmd:MD_AggregateInformation>
+                  <gmd:aggregateDataSetIdentifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>SMAP Collection Dataset ID</gco:CharacterString>
+                      </gmd:code>
+                    </gmd:MD_Identifier>
+                  </gmd:aggregateDataSetIdentifier>
+                  <gmd:associationType/>
+                </gmd:MD_AggregateInformation>
+              </gmd:aggregationInfo>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>InsertTime</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-04T15:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>InsertTime</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>InsertTime</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>UpdateTime</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>UpdateTime</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>UpdateTime</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>RestrictionFlag</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>RestrictionFlag</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>RestrictionFlag</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:resourceConstraints>
+                <gmd:MD_LegalConstraints>
+                  <gmd:otherConstraints>
+                    <gco:CharacterString>32</gco:CharacterString>
+                  </gmd:otherConstraints>
+                </gmd:MD_LegalConstraints>
+              </gmd:resourceConstraints>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:distributionInfo>
+            <gmd:MD_Distribution>
+              <gmd:distributor>
+                <gmd:MD_Distributor>
+                  <gmd:distributorContact/>
+                  <gmd:distributorTransferOptions>
+                    <gmd:MD_DigitalTransferOptions>
+                      <gmd:onLine>
+                        <gmd:CI_OnlineResource>
+                          <gmd:linkage>
+                            <gmd:URL>http://example.com/test1.hdf</gmd:URL>
+                          </gmd:linkage>
+                          <gmd:applicationProfile>
+                            <gco:CharacterString>application/x-hdf</gco:CharacterString>
+                          </gmd:applicationProfile>
+                        </gmd:CI_OnlineResource>
+                      </gmd:onLine>
+                    </gmd:MD_DigitalTransferOptions>
+                  </gmd:distributorTransferOptions>
+                  <gmd:distributorTransferOptions>
+                    <gmd:MD_DigitalTransferOptions>
+                      <gmd:onLine>
+                        <gmd:CI_OnlineResource>
+                          <gmd:linkage>
+                            <gmd:URL>http://example.com/test2.xml</gmd:URL>
+                          </gmd:linkage>
+                          <gmd:applicationProfile>
+                            <gco:CharacterString>/text/xml</gco:CharacterString>
+                          </gmd:applicationProfile>
+                          <gmd:name>
+                            <gco:CharacterString>METADATA</gco:CharacterString>
+                          </gmd:name>
+                        </gmd:CI_OnlineResource>
+                      </gmd:onLine>
+                    </gmd:MD_DigitalTransferOptions>
+                  </gmd:distributorTransferOptions>
+                  <gmd:distributorTransferOptions>
+                    <gmd:MD_DigitalTransferOptions>
+                      <gmd:onLine>
+                        <gmd:CI_OnlineResource>
+                          <gmd:linkage>
+                            <gmd:URL>http://example.com/test3.jpg</gmd:URL>
+                          </gmd:linkage>
+                          <gmd:applicationProfile>
+                            <gco:CharacterString>image/jpeg</gco:CharacterString>
+                          </gmd:applicationProfile>
+                          <gmd:name>
+                            <gco:CharacterString>BROWSE</gco:CharacterString>
+                          </gmd:name>
+                        </gmd:CI_OnlineResource>
+                      </gmd:onLine>
+                    </gmd:MD_DigitalTransferOptions>
+                  </gmd:distributorTransferOptions>
+                </gmd:MD_Distributor>
+              </gmd:distributor>
+            </gmd:MD_Distribution>
+          </gmd:distributionInfo>
+          <gmd:dataQualityInfo>
+            <gmd:DQ_DataQuality>
+              <gmd:scope>
+                <gmd:DQ_Scope>
+                  <gmd:level>
+                    <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="attribute">attribute</gmd:MD_ScopeCode>
+                  </gmd:level>
+                  <gmd:levelDescription>
+                    <gmd:MD_ScopeDescription>
+                      <gmd:dataset>
+                        <gco:CharacterString>cell_sigma0_hh_fore, cell_sigma0_hh_aft, cell_sigma0_hv_fore ,cell_sigma0_hv_aft, cell_sigma0_vv_fore, cell_sigma0_vv_aft</gco:CharacterString>
+                      </gmd:dataset>
+                    </gmd:MD_ScopeDescription>
+                  </gmd:levelDescription>
+                </gmd:DQ_Scope>
+              </gmd:scope>
+              <gmd:report>
+                <gmd:DQ_CompletenessOmission>
+                  <gmd:nameOfMeasure>
+                    <gco:CharacterString>Percent of Missing Data</gco:CharacterString>
+                  </gmd:nameOfMeasure>
+                  <gmd:measureDescription>
+                    <gco:CharacterString>Percent of the grid cells that lack radar data relative to those that fall within the mission data acquisition mask.</gco:CharacterString>
+                  </gmd:measureDescription>
+                  <gmd:evaluationMethodType>
+                    <gmd:DQ_EvaluationMethodTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                  </gmd:evaluationMethodType>
+                  <gmd:result>
+                    <gmd:DQ_QuantitativeResult>
+                      <gmd:valueUnit>
+                        <gmx:ML_DerivedUnit xmlns:ns1="http://www.opengis.net/gml/3.2" ns1:id="percentage">
+                          <gml:identifier xmlns="http://www.opengis.net/gml/3.2" codeSpace=""/>
+                          <gml:derivationUnitTerm xmlns:ns1="http://www.opengis.net/gml/3.2'" uom="percent"/>
+                          <gmx:alternativeExpression/>
+                        </gmx:ML_DerivedUnit>
+                      </gmd:valueUnit>
+                      <gmd:value>
+                        <gco:Record>
+                          <gco:Real>2.5</gco:Real>
+                          <gco:RecordType>percent</gco:RecordType>
+                        </gco:Record>
+                      </gmd:value>
+                    </gmd:DQ_QuantitativeResult>
+                  </gmd:result>
+                </gmd:DQ_CompletenessOmission>
+              </gmd:report>
+              <gmd:report>
+                <gmd:DQ_DomainConsistency>
+                  <gmd:nameOfMeasure>
+                    <gco:CharacterString>Percent of Sigma0s that are within Acceptable Range.</gco:CharacterString>
+                  </gmd:nameOfMeasure>
+                  <gmd:measureDescription gco:nilReason="missing"/>
+                  <gmd:evaluationMethodType>
+                    <gmd:DQ_EvaluationMethodTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                  </gmd:evaluationMethodType>
+                  <gmd:result>
+                    <gmd:DQ_QuantitativeResult>
+                      <gmd:valueUnit>
+                        <gmx:ML_DerivedUnit gml:id="percent">
+                          <gml:identifier codeSpace="nasa">%</gml:identifier>
+                          <gml:derivationUnitTerm uom="percent"/>
+                          <gmx:alternativeExpression/>
+                        </gmx:ML_DerivedUnit>
+                      </gmd:valueUnit>
+                      <gmd:value>
+                        <gco:Record>
+                          <gco:Real>95.5</gco:Real>
+                          <gco:RecordType>percent</gco:RecordType>
+                        </gco:Record>
+                      </gmd:value>
+                    </gmd:DQ_QuantitativeResult>
+                  </gmd:result>
+                </gmd:DQ_DomainConsistency>
+              </gmd:report>
+              <gmd:lineage>
+                <gmd:LI_Lineage>
+                  <gmd:processStep>
+                    <gmi:LE_ProcessStep>
+                      <gmd:description>
+                        <gco:CharacterString>Converts instrument telemetry into a data set that contains horizonally polarized, vertically polarized and cross polarized normalized radar cross sections, each of which are multilooked onto a 1 km swath oriented grid. </gco:CharacterString>
+                      </gmd:description>
+                      <gmd:dateTime>
+                        <gco:DateTime>2012-12-25T10:36:10.000Z</gco:DateTime>
+                      </gmd:dateTime>
+                      <gmd:processor>
+                        <gmd:CI_ResponsibleParty>
+                          <gmd:organisationName>
+                            <gco:CharacterString>Soil Moisture Active Passive Mission (SMAP) Science Data System (SDS) Operations Facility</gco:CharacterString>
+                          </gmd:organisationName>
+                          <gmd:role>
+                            <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                          </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                      </gmd:processor>
+                      <gmi:processingInformation>
+                        <gmi:LE_Processing>
+                          <gmi:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>L1C_S0_HIRES_SPS</gco:CharacterString>
+                              </gmd:code>
+                            </gmd:MD_Identifier>
+                          </gmi:identifier>
+                          <gmi:softwareReference>
+                            <gmd:CI_Citation>
+                              <gmd:title>
+                                <gco:CharacterString>L1C S0 HiRes SPS</gco:CharacterString>
+                              </gmd:title>
+                              <gmd:date>
+                                <gmd:CI_Date>
+                                  <gmd:date>
+                                    <gco:Date>2012-11-07</gco:Date>
+                                  </gmd:date>
+                                  <gmd:dateType>
+                                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                  </gmd:dateType>
+                                </gmd:CI_Date>
+                              </gmd:date>
+                              <gmd:edition>
+                                <gco:CharacterString>001</gco:CharacterString>
+                              </gmd:edition>
+                            </gmd:CI_Citation>
+                          </gmi:softwareReference>
+                          <gmi:procedureDescription gco:nilReason="unknown"/>
+                          <gmi:documentation>
+                            <gmd:CI_Citation>
+                              <gmd:title>
+                                <gco:CharacterString>References software description document if it exists</gco:CharacterString>
+                              </gmd:title>
+                              <gmd:date>
+                                <gmd:CI_Date>
+                                  <gmd:date gco:nilReason="missing"/>
+                                  <gmd:dateType>
+                                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                  </gmd:dateType>
+                                </gmd:CI_Date>
+                              </gmd:date>
+                              <gmd:edition gco:nilReason="missing"/>
+                            </gmd:CI_Citation>
+                          </gmi:documentation>
+                          <gmi:runTimeParameters>
+                            <gco:CharacterString>TBD </gco:CharacterString>
+                          </gmi:runTimeParameters>
+                          <!--
+                                       <gmi:additionalAttributes>
+                                          <gmi:LI_AdditionalAttributes>
+                                             <gmi:RFIThreshold>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:RFIThreshold>
+                                             <gmi:FaradayRotationThreshold>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:FaradayRotationThreshold>
+                                             <gmi:longTermCalibrationFactor_hh>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:longTermCalibrationFactor_hh>
+                                             <gmi:longTermCalibrationFactor_vv>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:longTermCalibrationFactor_vv>
+                                             <gmi:longTermCalibrationFactor_hv>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:longTermCalibrationFactor_hv>
+                                             <gmi:longTermCalibrationFactor_vh>
+                                                <gco:Real>5</gco:Real>
+                                             </gmi:longTermCalibrationFactor_vh>
+                                             <gmi:TimeVariableEpoch>
+                                                <gco:CharacterString>J2000</gco:CharacterString>
+                                             </gmi:TimeVariableEpoch>
+                                             <gmi:epochJulianDate>
+                                                <gco:Real>2451545</gco:Real>
+                                             </gmi:epochJulianDate>
+                                             <gmi:epochUTCDateTime>
+                                                <gco:DateTime>2000-01-01T11:58:55.816Z</gco:DateTime>
+                                             </gmi:epochUTCDateTime>
+                                             <gmi:ParameterVersionID>
+                                                <gco:Real>001</gco:Real>
+                                             </gmi:ParameterVersionID>
+                                          </gmi:LI_AdditionalAttributes>
+                                       </gmi:additionalAttributes>
+-->
+                          <gmi:algorithm>
+                            <gmi:LE_Algorithm>
+                              <gmi:citation>
+                                <gmd:CI_Citation>
+                                  <gmd:title>
+                                    <gco:CharacterString>Soil Moisture Active Passive (SMAP) L1B_S0_LoRes L1C_S0_HiRes Algorithm Theoretical Basis Document</gco:CharacterString>
+                                  </gmd:title>
+                                  <gmd:date>
+                                    <gmd:CI_Date>
+                                      <gmd:date>
+                                        <gco:Date>2012-05-31</gco:Date>
+                                      </gmd:date>
+                                      <gmd:dateType>
+                                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                      </gmd:dateType>
+                                    </gmd:CI_Date>
+                                  </gmd:date>
+                                  <gmd:edition>
+                                    <gco:CharacterString>0.3</gco:CharacterString>
+                                  </gmd:edition>
+                                </gmd:CI_Citation>
+                              </gmi:citation>
+                              <gmi:description>
+                                <gco:CharacterString>The algorithm calculates the projection of the swath grid based on SPICE kernel files generated by the Geometry Simulator. It defines the swath as the rectangular region that encompasses the entire area that the instrument sees over the period of time that the product represents. It uses a simple Earth spherical model to geolocate the swath grid. It also produces those metadata elements that the SPDM requires in order to register and store the output.</gco:CharacterString>
+                              </gmi:description>
+                              <!--
+                                             <gmi:version>
+                                                <gco:CharacterString>001</gco:CharacterString>
+                                             </gmi:version>
+-->
+                            </gmi:LE_Algorithm>
+                          </gmi:algorithm>
+                        </gmi:LE_Processing>
+                      </gmi:processingInformation>
+                    </gmi:LE_ProcessStep>
+                  </gmd:processStep>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the antenna pointing product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>smap_ar_1505301619_1505301620_v03.bc</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-07-03</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Antenna pointing</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the attitude product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>smap_at_1505291459_1805291259_v03.bc</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-05-09</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Attitude</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString>The file that provides the means to encode and/or decode high resolution radar telemetry using the Bit Floating Point Quantization method.</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>bfpq_mant_decode_array_m_4_v1</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-03-27</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>BFPQ decode table</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the digital elevation map product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>Digital elevation map product name</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date gco:nilReason="missing"/>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>digital elevation map</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString>description of the ephemeris product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>smap_tr_1505291400_1512291400_v01.bsp</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2011-12-13</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Ephemeris</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the radar level 1C SPS input configuration file product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>SMAP_L1C_S0_HIRES_SPS_InputConfig_L1A_Radar.xml</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-08-17</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Radar level 1C SPS input configuration file</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString>Parsed and reformatted SMAP radar telemetry. The Level 1A Product contains both synthetic aperture radar data and real aperture radar data. The product also includes loopback data as well as health and status data.</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>SMAP_L1A_Radar_00016_A_20150530T160100_R03001_001.h5</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-08-01</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>L1A_Radar</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                              <gmd:description>
+                                <gco:CharacterString>A short name used by the Soil Moisture Active Passive (SMAP) mission to identify the Level 1A Radar product.</gco:CharacterString>
+                              </gmd:description>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gmx:Anchor xlink:actuate="onRequest" xlink:href="http://dx.doi.org/10.5067/smap/radar/data100">doi:10.5067/smap/radar/data100</gmx:Anchor>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+                              </gmd:codeSpace>
+                              <gmd:description>
+                                <gco:CharacterString>A Digital Object Identifier (DOI) that provides a persistent interoperable means to locate the SMAP Level 1A Radar data product.</gco:CharacterString>
+                              </gmd:description>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                      <gmi:processedLevel>
+                        <gmd:MD_Identifier>
+                          <gmd:code>
+                            <gco:CharacterString>SMAP Radar Level 1A SPS</gco:CharacterString>
+                          </gmd:code>
+                        </gmd:MD_Identifier>
+                      </gmi:processedLevel>
+                      <gmi:resolution>
+                        <gmi:LE_NominalResolution>
+                          <gmi:groundResolution>
+                            <gco:Distance uom="m">250</gco:Distance>
+                          </gmi:groundResolution>
+                        </gmi:LE_NominalResolution>
+                      </gmi:resolution>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the radar level 1C SPS metadata configuration file product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>SMAP_L1C_S0_HIRES_SPS_MetConfig_L1C_S0_HiRes.iso.xml</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-12-07</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Radar level 1C SPS metadata configuration file</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the radar level 1C SPS output configuration file product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>SMAP_L1C_S0_HIRES_SPS_OutputConfig_L1C_S0_HiRes.iso.xml</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-11-21</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Radar level 1C SPS output configuration file</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the radar level 1C SPS run configuration file product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>SMAP_L1C_S0_HIRES_SPS_RunConfig_20141226T103610.iso.xml</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-11-21</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Radar level 1C SPS run configuration file</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                  <gmd:source>
+                    <gmi:LE_Source>
+                      <gmd:description>
+                        <gco:CharacterString> description of the Spacecraft clock to UTC correlation product</gco:CharacterString>
+                      </gmd:description>
+                      <gmd:sourceCitation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gmx:FileName>smap_cl_v00003.tsc</gmx:FileName>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2012-05-09</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                          <gmd:identifier>
+                            <gmd:MD_Identifier>
+                              <gmd:code>
+                                <gco:CharacterString>Spacecraft Clock UTC Correlation</gco:CharacterString>
+                              </gmd:code>
+                              <gmd:codeSpace>
+                                <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                              </gmd:codeSpace>
+                            </gmd:MD_Identifier>
+                          </gmd:identifier>
+                        </gmd:CI_Citation>
+                      </gmd:sourceCitation>
+                    </gmi:LE_Source>
+                  </gmd:source>
+                </gmd:LI_Lineage>
+              </gmd:lineage>
+            </gmd:DQ_DataQuality>
+          </gmd:dataQualityInfo>
+          <gmi:acquisitionInformation>
+            <gmi:MI_AcquisitionInformation>
+              <gmi:platform>
+                <eos:EOS_Platform>
+                  <gmi:citation>
+                    <gmd:CI_Citation>
+                      <gmd:title>
+                        <gco:CharacterString>document title</gco:CharacterString>
+                      </gmd:title>
+                      <gmd:date>
+                        <gmd:CI_Date>
+                          <gmd:date>
+                            <gco:Date>2014-10-31</gco:Date>
+                          </gmd:date>
+                          <gmd:dateType>
+                            <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                          </gmd:dateType>
+                        </gmd:CI_Date>
+                      </gmd:date>
+                      <gmd:edition>
+                        <gco:CharacterString>R03001</gco:CharacterString>
+                      </gmd:edition>
+                    </gmd:CI_Citation>
+                  </gmi:citation>
+                  <gmi:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>SMAP</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>
+                        <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                      </gmd:codeSpace>
+                    </gmd:MD_Identifier>
+                  </gmi:identifier>
+                  <gmi:description>
+                    <gco:CharacterString>The SMAP observatory houses an L-band radiometer that operates at 1.40 GHz and an L-band radar that operates at 1.26 GHz. The instruments share a rotating reflector antenna with a 6 meter aperture that scans over a 1000 km swath. The bus is a 3 axis stabilized spacecraft that provides momentum compensation for the rotating antenna. </gco:CharacterString>
+                  </gmi:description>
+                  <gmi:instrument>
+                    <gmi:MI_Instrument>
+                      <gmi:citation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gco:CharacterString>document title</gco:CharacterString>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2014-10-31</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                        </gmd:CI_Citation>
+                      </gmi:citation>
+                      <gmi:identifier>
+                        <gmd:MD_Identifier>
+                          <gmd:code>
+                            <gco:CharacterString>SMAP SAR</gco:CharacterString>
+                          </gmd:code>
+                        </gmd:MD_Identifier>
+                      </gmi:identifier>
+                      <gmi:type>
+                        <gco:CharacterString>L-Band Synthetic Aperture Radar</gco:CharacterString>
+                      </gmi:type>
+                      <gmi:description>
+                        <gco:CharacterString>The SMAP radar instrument employs an L-band conically scanned system and SAR processing techniques to achieve moderate resolution (1 km) backscatter measurements over a very wide 1000 km swath. </gco:CharacterString>
+                      </gmi:description>
+                    </gmi:MI_Instrument>
+                  </gmi:instrument>
+                  <gmi:instrument>
+                    <gmi:MI_Instrument>
+                      <gmi:citation>
+                        <gmd:CI_Citation>
+                          <gmd:title>
+                            <gco:CharacterString>document title</gco:CharacterString>
+                          </gmd:title>
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date>
+                                <gco:Date>2014-10-31</gco:Date>
+                              </gmd:date>
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                          <gmd:edition>
+                            <gco:CharacterString>R03001</gco:CharacterString>
+                          </gmd:edition>
+                        </gmd:CI_Citation>
+                      </gmi:citation>
+                      <gmi:identifier>
+                        <gmd:MD_Identifier>
+                          <gmd:code>
+                            <gco:CharacterString>SMAP RAD</gco:CharacterString>
+                          </gmd:code>
+                        </gmd:MD_Identifier>
+                      </gmi:identifier>
+                      <gmi:type>
+                        <gco:CharacterString>L-Band Radiometer</gco:CharacterString>
+                      </gmi:type>
+                      <gmi:description>
+                        <gco:CharacterString>The SMAP L-band Radiometer records V-pol, H-pol, 3rd and 4th Stokes brightness temperatures at 40 km resolution at 4.3 Megatbits per second with accuracies of 1.3 Kelvin or better. </gco:CharacterString>
+                      </gmi:description>
+                    </gmi:MI_Instrument>
+                  </gmi:instrument>
+                  <!--
+                           <gmi:position>
+                              <gmi:SD_OrbitMeasuredLocation>
+                                 <gmi:argumentOfPerigee>
+                                    <gco:Decimal>89.98084</gco:Decimal>
+                                 </gmi:argumentOfPerigee>
+                                 <gmi:eccentricity>
+                                    <gco:Real>0.00119236</gco:Real>
+                                 </gmi:eccentricity>
+                                 <gmi:epoch>
+                                    <gco:DateTime>2014-03-29T14:01:06.337Z</gco:DateTime>
+                                 </gmi:epoch>
+                                 <gmi:inclination>
+                                    <gco:Decimal>98.12734</gco:Decimal>
+                                 </gmi:inclination>
+                                 <gmi:meanMotion>
+                                    <gco:Real>5</gco:Real>
+                                 </gmi:meanMotion>
+                                 <gmi:period>
+                                    <gco:TM_Duration>5907.6924 s</gco:TM_Duration>
+                                 </gmi:period>
+                                 <gmi:reference_CRS>
+                                    <gml:SC_CRS>
+                                       <gmi:name>
+                                          <gco:CharacterString>J2000?</gco:CharacterString>
+                                       </gmi:name>
+                                    </gml:SC_CRS>
+                                 </gmi:reference_CRS>
+                                 <gmi:revNumber>
+                                    <gco:Integer>16</gco:Integer>
+                                 </gmi:revNumber>
+                                 <gmi:cycleNumber>
+                                    <gco:Integer>16</gco:Integer>
+                                 </gmi:cycleNumber>
+                                 <gmi:pathNumber>
+                                    <gco:Integer>16</gco:Integer>
+                                 </gmi:pathNumber>
+                                 <gmi:rightAscensionAscendingNode>
+                                    <gco:Decimal>26.13</gco:Decimal>
+                                 </gmi:rightAscensionAscendingNode>
+                                 <gmi:semiMajorAxis>
+                                    <gco:Length uom="km">7057.502</gco:Length>
+                                 </gmi:semiMajorAxis>
+                                 <gmi:orbitDirection>
+                                    <gco:CharacterString>Ascending</gco:CharacterString>
+                                 </gmi:orbitDirection>
+                                 <gmi:equatorCrossingDateTime>
+                                    <gco:DateTime>2015-05-30T16:15:24.000Z</gco:DateTime>
+                                 </gmi:equatorCrossingDateTime>
+                                 <gmi:equatorCrossingLongitude>
+                                    <gco:Decimal>26.13</gco:Decimal>
+                                 </gmi:equatorCrossingLongitude>
+                                 <gmi:halfOrbitStartDateTime>
+                                    <gco:DateTime>2015-05-30T15:50:45.000Z</gco:DateTime>
+                                 </gmi:halfOrbitStartDateTime>
+                                 <gmi:halfOrbitEndDateTime>
+                                    <gco:DateTime>2015-05-30T16:39:59.000Z</gco:DateTime>
+                                 </gmi:halfOrbitEndDateTime>
+                              </gmi:SD_OrbitMeasuredLocation>
+                           </gmi:position>
+                           <gmi:antennaRotationRate>
+                              <gco:Real>13</gco:Real>
+                           </gmi:antennaRotationRate>
+-->
+                </eos:EOS_Platform>
+              </gmi:platform>
+            </gmi:MI_AcquisitionInformation>
+          </gmi:acquisitionInformation>
+        </gmi:MI_Metadata>
+      </gmd:has>
+    </gmd:DS_DataSet>
+  </gmd:composedOf>
+  <gmd:seriesMetadata gco:nilReason="inapplicable"/>
+</gmd:DS_Series>
