@@ -86,6 +86,18 @@
     (:system-identity acl)          :system-identity
     (:catalog-item-identity acl)    :catalog-item-identity))
 
+(defn- group-id-validation
+  "Validates if group-ids are valid CMR concept-ids"
+  [key-path group-id]
+  (let [regex #"AG\d+-\S+"]
+    (when-not (re-matches regex group-id)
+      {key-path [(format "[%s] is not a valid group concept-id" group-id)]})))
+
+(defn- make-group-permissions-validation
+  "Returns validation for the group_permissions portion of the ACL."
+  [context acl]
+  {:group-id (v/when-present group-id-validation)})
+
 (defn- make-collection-entry-titles-validation
   "Returns a validation for the entry_titles part of a collection identifier, closed over the context and ACL to be validated."
   [context acl]
@@ -96,12 +108,10 @@
 
 (defn- make-collection-concept-ids-validations
   "Returns a validation for the concept_ids part of a collection identifier, closed over the context and ACL to be validated."
-  [context acl]
-  (let [provider-id (-> acl :catalog-item-identity :provider-id)]
-    [(v/every (fn [key-path concept-id]
-                (let [regex #"C\d+-\S+"]
-                  (when-not (re-matches regex concept-id)
-                    {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]}))))]))
+  [key-path concept-id]
+  (let [regex #"C\d+-\S+"]
+    (when-not (re-matches regex concept-id)
+      {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]})))
 
 (defn- access-value-validation
   "Validates the access_value part of a collection or granule identifier."
@@ -131,7 +141,7 @@
   "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
   [context acl]
   {:entry-titles (v/when-present (make-collection-entry-titles-validation context acl))
-   :concept-ids (v/when-present (make-collection-concept-ids-validations context acl))
+   :concept-ids (v/when-present (v/every make-collection-concept-ids-validations))
    :access-value (v/when-present [access-value-validation access-value-min-max-value-validation])
    :temporal (v/when-present temporal-identifier-validation)})
 
@@ -204,7 +214,8 @@
   [context acl action]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
-    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
+    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))
+    :group-permissions (v/every (make-group-permissions-validation context acl))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!
