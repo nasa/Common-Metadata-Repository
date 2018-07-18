@@ -140,6 +140,13 @@
 
 ;;; ACL Functions
 
+(def acl-type->acl-key
+  "A map of the acl object identity type to the field within the acl that stores the object."
+  {:catalog-item :catalog-item-identity
+   :system-object :system-identity
+   :provider-object :provider-identity
+   :single-instance-object :single-instance-identity})
+
 (defn acl-root-url
   "Returns the URL of the ACL API root."
   [ctx]
@@ -186,9 +193,9 @@
 (defn search-for-acls
   "Search for ACLs."
   ([context params]
-    (search-for-acls context params nil))
+   (search-for-acls context params nil))
   ([context params options]
-    (search-for-acls* context params (merge options {:method :post}))))
+   (search-for-acls* context params (merge options {:method :post}))))
 
 (h/defdestroyer delete-acl :access-control acl-concept-id-url)
 (h/defgetter get-acl :access-control acl-concept-id-url)
