@@ -18,9 +18,6 @@
   [doc base-xpath instruments-mapping platform-elem]
   (let [platform-id (get-in platform-elem [:attrs :id])
         instrument-ids (keep #(get-in % [:attrs :xlink/href]) (select platform-elem "gmi:instrument"))
-        instrument-sub-elems (map
-                              #(inst/xml-elem->instrument doc base-xpath %)
-                              (select platform-elem "gmi:instrument/eos:EOS_Instrument"))
         instruments (->> (concat
                           (map (partial get instruments-mapping) instrument-ids)
                           (filter #(= platform-id (:mounted-on-id %)) (vals instruments-mapping)))
@@ -38,6 +35,9 @@
   "Returns the platforms parsed from the given xml document."
   [doc base-xpath sanitize?]
   (let [instruments-mapping (inst/xml-elem->instruments-mapping doc base-xpath)
-        platforms (seq (map #(xml-elem->platform doc base-xpath instruments-mapping %)
-                            (select doc (str base-xpath platforms-xpath))))]
+        platforms (if (or (map? instruments-mapping) (nil? (seq instruments-mapping)))
+                    (seq (map #(xml-elem->platform doc base-xpath instruments-mapping %)
+                              (select doc (str base-xpath platforms-xpath))))
+                    ;; NOAA case when instruments are not associated with any platforms.
+                    (seq (map #(assoc % :Instruments instruments-mapping) su/not-provided-platforms)))]
     (or (seq platforms) (when sanitize? su/not-provided-platforms))))

@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.instrument
   "Functions for parsing UMM instrument records out of ISO SMAP XML documents."
   (:require
+    [clojure.string :as string]
     [cmr.common.util :as util]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select text]]
@@ -10,7 +11,12 @@
 
 (def instrument-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
-    "/eos:EOS_Instrument"))
+       "/eos:EOS_Instrument"))
+
+(def instrument-alternative-xpath
+  "NOAA instrument xpath"
+  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
+       "/gmi:MI_Instrument"))
 
 (def composed-of-xpath
   (str instrument-xpath "/eos:sensor/eos:EOS_Sensor"))
@@ -80,44 +86,58 @@
                        (when (.contains k (str "-" id))
                          v)))))))
 
-(defn xml-elem->instrument
+(defn- xml-elem->instrument
   "Returns instrument record from the instrument element."
-  [doc base-xpath instrument-elem]
-  (let [child-instruments (get-child-instruments doc base-xpath instrument-elem)]
-    (util/remove-nil-keys
-     (if (> (count child-instruments) 0)
-       {:ShortName (value-of instrument-elem iso/short-name-xpath)
-        :LongName (value-of instrument-elem iso/long-name-xpath)
-        :Characteristics (char-and-opsmode/parse-characteristics instrument-elem)
-        :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
-        :NumberOfInstruments (count child-instruments)
-        :ComposedOf child-instruments
-        :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}
-       {:ShortName (value-of instrument-elem iso/short-name-xpath)
-        :LongName (value-of instrument-elem iso/long-name-xpath)
-        :Characteristics (char-and-opsmode/parse-characteristics instrument-elem)
-        :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
-        :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}))))
+  ([doc base-xpath instrument-elem]
+   (let [child-instruments (get-child-instruments doc base-xpath instrument-elem)]
+     (util/remove-nil-keys
+       (if (> (count child-instruments) 0)
+         {:ShortName (value-of instrument-elem iso/short-name-xpath)
+          :LongName (value-of instrument-elem iso/long-name-xpath)
+          :Characteristics (char-and-opsmode/parse-characteristics instrument-elem)
+          :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
+          :NumberOfInstruments (count child-instruments)
+          :ComposedOf child-instruments
+          :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}
+         {:ShortName (value-of instrument-elem iso/short-name-xpath)
+          :LongName (value-of instrument-elem iso/long-name-xpath)
+          :Characteristics (char-and-opsmode/parse-characteristics instrument-elem)
+          :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
+          :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}))))
+  ([doc base-xpath instrument-elem options]
+   ;; This is the NOAA case where instruments are from alternative xpath.
+   ;; See CMR-4885 for more details. 
+   (when-let [short-long-name (value-of instrument-elem iso/short-name-xpath)]
+     (let [short-long-name-list (string/split short-long-name #">")]
+       (util/remove-nil-keys
+         {:ShortName (string/trim (first short-long-name-list))
+          :LongName (when-let [long-name (second short-long-name-list)]
+                      (string/trim long-name))})))))
 
 (defn- xml-elem->instrument-mapping
-  "Returns the instrument id and the instrument mapping {id instrument} for the instrument element.
-   It excludes the child instruments"
-  [doc base-xpath instrument-elem]
-  (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
-        id (get-in instrument-elem [:attrs :id])
-        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
-    ;; exclude child instruments - when mounted-on-id = one of the instrument ids.
-    (cond
-      mounted-on-id
-      (when-not (some #(= (.replaceAll mounted-on-id "#" "") %) all-possible-instrument-ids)
+  "Returns the instrument id and the instrument mapping {id instrument} for the instrument element,
+   or returns the list of instruments in NOAA's case. It excludes the child instruments"
+  ([doc base-xpath instrument-elem]
+   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
+         id (get-in instrument-elem [:attrs :id])
+         mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
+      ;; exclude child instruments - when mounted-on-id = one of the instrument ids.
+      (cond
+        mounted-on-id
+        (when-not (some #(= (.replaceAll mounted-on-id "#" "") %) all-possible-instrument-ids)
+          (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
+            [(str "#" id) (assoc instrument :mounted-on-id mounted-on-id)]))
+        :default
         (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
-          [(str "#" id) (assoc instrument :mounted-on-id mounted-on-id)]))
-      :default
-      (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
-        [(str "#" id) instrument]))))
+          [(str "#" id) instrument]))))
+  ([doc base-xpath instrument-elem options]
+   (xml-elem->instrument doc base-xpath instrument-elem options)))
 
 (defn xml-elem->instruments-mapping
-  "Returns the instrument id to Instrument mapping by parsing the given xml element"
+  "Returns the instrument id to Instrument mapping by parsing the given xml element.
+   Alternatively, in NOAA case, it will return the list of instruments when they are not associated with platforms"
   [doc base-xpath]
-  (into {}
-        (map (partial xml-elem->instrument-mapping doc base-xpath) (select doc (str base-xpath instrument-xpath)))))
+  (if-let [instruments (select doc (str base-xpath instrument-xpath))] 
+    (into {} (map (partial xml-elem->instrument-mapping doc base-xpath) instruments))
+    (let [instruments (select doc (str base-xpath instrument-alternative-xpath))]
+      (map #((partial xml-elem->instrument-mapping doc base-xpath) % {:alt-xpath? true}) instruments))))
