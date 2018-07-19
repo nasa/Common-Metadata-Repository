@@ -20,11 +20,11 @@
    :Definition "Defines the variable"
    :Units "m"
    :DataType "float32"
-   :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3})]
+   :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3 :Type "OTHER"})]
    :Sets [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
    :Scale 1.0
    :Offset 0.0
-   :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "Science"})]
+   :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
    :VariableType "SCIENCE_VARIABLE"
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "sk-A"
