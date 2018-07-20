@@ -156,23 +156,29 @@
                        (util/remove-nil-keys update-value))
         ;; For each entry in update-field, if we find it using the find params,
         ;; completely replace with update value
-        updated-umm (update-in umm update-field #(flatten 
-                                                   (map (fn [x]
-                                                          (if (value-matches? find-value x)
-                                                            update-value
-                                                            x))
-                                                         %)))]
-     (remove-duplicates updated-umm update-field)))
+        updated-umm (if (get-in umm update-field)
+                      (update-in umm update-field #(flatten 
+                                                     (map (fn [x]
+                                                            (if (value-matches? find-value x)
+                                                              update-value
+                                                              x))
+                                                           %)))
+                      umm)]
+     (if (= updated-umm umm)
+       umm
+       (remove-duplicates updated-umm update-field))))
 
 (defmethod apply-umm-list-update :find-and-update
   [update-type umm update-field update-value find-value]
   ;; For each entry in update-field, if we find it using the find params,
   ;; update only the fields supplied in update-value with nils removed
-  (update-in umm update-field #(distinct (map (fn [x]
-                                                (if (value-matches? find-value x)
-                                                  (merge x update-value)
-                                                  x))
-                                              %))))
+  (if (get-in umm update-field) 
+    (update-in umm update-field #(distinct (map (fn [x]
+                                                  (if (value-matches? find-value x)
+                                                    (merge x update-value)
+                                                    x))
+                                                %)))
+    umm))
 
 (defmethod apply-umm-list-update :find-and-update-home-page-url
   ;; This is a special case that applies to DataCenter ContactInformation update only.
