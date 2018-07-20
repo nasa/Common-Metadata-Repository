@@ -8,8 +8,8 @@
     "DataType":"int16",
 	"ValidRanges":
 	  [{
-	    "Min":0,
-	    "Max":32767
+	     "Min":0,
+	     "Max":32767
 	  }],
 	"Dimensions":
 	  [{
@@ -23,12 +23,12 @@
 	     "Type":"LATITUDE_DIMENSION"
 	   },
 	   {
-	   	  "Name":"Longitude",
-	   	  "Size":360,
-	   	  "Type":"LONGITUDE_DIMENSION"
+	   	 "Name":"Longitude",
+	   	 "Size":360,
+	   	 "Type":"LONGITUDE_DIMENSION"
 	   }],
 	"Scale":1,
-	"Offset":0,	
+	"Offset":0,
 	"FillValues":
 	  [{
 	     "Value":-1,
@@ -38,7 +38,7 @@
 	  {
 	     "Bounds":
 	     	  {
-	    		"LowerLeft":	     	  
+	    		"LowerLeft":
 	    		  {
 	    		  	"Lat":-90,
 	    		    "Lon":-180
@@ -53,11 +53,11 @@
 	   },
 	"ScienceKeywords":
 	  [{
-	    "Category":"EARTH SCIENCE",
-	    "Topic":"ATMOSPHERE",
-	    "Term":"ATMOSPHERIC CHEMISTRY",
-	    "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
-	    "VariableLevel2":"METHANE"
+	     "Category":"EARTH SCIENCE",
+	     "Topic":"ATMOSPHERE",
+	     "Term":"ATMOSPHERIC CHEMISTRY",
+	     "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
+	     "VariableLevel2":"METHANE"
 	  }],
     "Sets":
 	  [{

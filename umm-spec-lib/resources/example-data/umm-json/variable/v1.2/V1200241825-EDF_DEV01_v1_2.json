@@ -13,7 +13,7 @@
 	  	"Min":0.0,
 	  	"Max":1.0
 	  }],
-	  "FillValues":
+    "FillValues":
 	  [{
 	  	"Value":-9999.0,
 	    "Type":"SCIENCE_FILLVALUE"
@@ -31,26 +31,26 @@
 	   }],
 	"Characteristics":
 	   {
-	     "Bounds":
-	     	  {
-	    		"LowerLeft":	     	  
-	    		  {
-	    		  	"Lat":-90,
-	    		    "Lon":-180
-	    		  },
-	    		"UpperRight":
-	    		  {
-	    		   "Lat":90,
-	    		   "Lon":180
-	    		  }
-	   		  },
-	     "GroupPath":"/Data_Fields"
+	    "Bounds":
+	    	  {
+	    	"LowerLeft":
+	    	  {
+	    	  	"Lat":-90,
+	    	    "Lon":-180
+	    	  },
+	    	"UpperRight":
+	    	  {
+	    	   "Lat":90,
+	    	   "Lon":180
+	    	  }
+	   	  },
+	    "GroupPath":"/Data_Fields"
 	   },
 	"MeasurementIdentifiers":
 	  [{
-	    "MeasurementName":   
+	    "MeasurementName":
 	     	  [{
-	    		"MeasurementObject":"methane",	     	  
+	    		"MeasurementObject":"methane",
 	    		"MeasurementQuantity":"total_column"
 	   		  }],
 	    "MeasurementSource":"CF"
