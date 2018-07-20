@@ -501,8 +501,7 @@
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "a340-600-1"
                     :LongName "airbus a340-600-1"
-                    :Type "Aircraft"
-                    :Instruments []}
+                    :Type "Aircraft"}
                    {:ShortName "a340-600-2"
                     :LongName "airbus a340-600"
                     :Type "Aircraft"
@@ -510,6 +509,45 @@
                                    :Technique "testing"
                                    :NumberOfInstruments 0
                                    :OperationalModes ["mode1" "mode2"]}]}
+                   {:ShortName "a340-600-3"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"}]}]
+                  platforms)))))))
+
+(deftest instrument-bulk-update-find-and-replace
+    (let [concept-ids (ingest-collection-in-umm-json-format platforms-instruments-umm)
+          _ (index/wait-until-indexed)]
+      (testing "instrument find and replace"
+        (let [bulk-update-body {:concept-ids concept-ids
+                                :update-type "FIND_AND_REPLACE"
+                                :update-field "INSTRUMENTS"
+                                :find-value {:ShortName "atm"}
+                                :update-value [{:ShortName "LVIS"}]}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+          (index/wait-until-indexed)
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+            (is (= "COMPLETE" (:task-status collection-response))))
+
+          ;; Check that each concept was updated
+          (doseq [concept-id concept-ids
+                  :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                   {:concept-id concept-id})
+                                    :results
+                                    :items
+                                    first)
+                        platforms (get-in concept [:umm :Platforms])]]
+           (is (= 2
+                  (:revision-id (:meta concept))))
+           ;; Make sure find and replace won't add an empty Instruments to the first platform which
+           ;; doesn't contain any instruments.
+           (is (= [{:ShortName "a340-600-1"
+                    :LongName "airbus a340-600-1"
+                    :Type "Aircraft"}
+                   {:ShortName "a340-600-2"
+                    :LongName "airbus a340-600"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "LVIS"}]}
                    {:ShortName "a340-600-3"
                     :LongName "airbus a340-600"
                     :Type "Aircraft"
