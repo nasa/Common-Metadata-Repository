@@ -13,6 +13,14 @@
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; XXX We can pull this from configuration once async-get-metadata function
+;;     signatures get updated to accept the system data structure as an arg.
+(def pinned-variable-schema-version "1.1")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -125,9 +133,13 @@
        url
        (-> {}
            (request/add-token-header user-token)
-           (request/add-accept "application/vnd.nasa.cmr.umm+json")
+           (request/add-accept (format "%s; version=%s; %s"
+                                       "application/vnd.nasa.cmr.umm_results+json"
+                                       pinned-variable-schema-version
+                                       "charset=utf-8"))
            (request/add-form-ct)
-           (request/add-payload payload))
+           (request/add-payload payload)
+           ((fn [x] (log/trace "Full request:" x) x)))
        response/json-handler))
     (deliver (promise) [])))
 
@@ -137,6 +149,7 @@
     (if (errors/erred? rslts)
       (do
         (log/error errors/variable-metadata)
+        (log/error rslts)
         rslts)
       (do
         (log/trace "Got results from CMR variable search:"

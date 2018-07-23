@@ -16,6 +16,8 @@
    :access {:control {:protocol "https"
                           :host "cmr.sit.earthdata.nasa.gov"
                           :relative {:root {:url "/access-control"}}}}
+   :concept {
+     :variable {:version "1.1"}}
    :echo {:rest {:protocol "https"
                  :host "cmr.sit.earthdata.nasa.gov"
                  :context "/legacy-services/rest"}}
@@ -43,7 +45,7 @@
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
  :logging {
-   :level :debug
+   :level :trace
    :nss [cmr.opendap cmr.authz cmr.http.kit cmr.mission-control org.httpkit]
    :color false}
 :mission-control {

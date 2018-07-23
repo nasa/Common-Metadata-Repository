@@ -63,6 +63,10 @@
   [system]
   (get-in (get-cfg system) [:cmr :max-pagesize]))
 
+(defn concept-variable-version
+  [system]
+  (get-in (get-cfg system) [:cmr :concept :variable :version]))
+
 (defn get-service
   [system service]
   (let [svc-cfg (get-in (get-cfg system)
