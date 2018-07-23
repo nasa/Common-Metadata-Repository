@@ -18,7 +18,7 @@
 
 ;; XXX We can pull this from configuration once async-get-metadata function
 ;;     signatures get updated to accept the system data structure as an arg.
-(def pinned-variable-schema-version "1.1")
+(def pinned-variable-schema-version "1.2")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
