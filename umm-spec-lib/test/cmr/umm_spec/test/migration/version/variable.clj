@@ -34,7 +34,6 @@
    :Offset 0
    :Characteristics [{:StandardName "VAR_1"
                       :Reference "http://docs/ref"
-                      :GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
                       :Bounds "Text describing coord bounds"
                       :Coordinates "Text describing coord range"
                       :GridMapping "Text describing mapping projection"
@@ -108,7 +107,6 @@
           :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
           :Scale 1.0
           :Offset 0
-          :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}]
           :SamplingIdentifiers [{:MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm",
                                  :ReportingConditions "STP: 1013 mb and 273 K"}]
           :MeasurementIdentifiers [{:MeasurementSource "BODC"
@@ -128,7 +126,6 @@
           :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
           :Scale 1.0
           :Offset 0
-          :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}]
           :Measurements [{:MeasurementName "radiative_flux"
                           :MeasurementSource "BODC"}]
           :Services [{:ServiceTypes ["OPeNDAP"]
