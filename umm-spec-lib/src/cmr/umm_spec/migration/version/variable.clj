@@ -39,24 +39,21 @@
   ;; Migrate up to 1.2
   [context v & _]
   (-> v
-      (assoc :Characteristics (mapv #(select-keys % [:GroupPath])
-                                    (:Characteristics v))
-             :MeasurementIdentifiers (mapv measurement-1-1->1-2 (:Measurements v))
+      (assoc :MeasurementIdentifiers (mapv measurement-1-1->1-2 (:Measurements v))
              :SamplingIdentifiers (mapv sample-1-1->1-2 (:Characteristics v)))
-      (dissoc :Measurements)))
+      (dissoc :Measurements :Characteristics)))
 
 (defmethod interface/migrate-umm-version [:variable "1.2" "1.1"]
   ;; Migrate down to 1.1
   [context v & _]
   (-> v
-      (assoc :Characteristics (mapv #(select-keys % [:GroupPath])
-                                    (:Characteristics v))
-             ;; Note that there is no characteristics/*conditions x-form
-             ;; because there's no way to definitely correlate indices of separate
-             ;; arrays when trying to construct a 1.1 Characteristics array by
-             ;; combining 1.2 Characteristics and 1.2 SamplingIdentifier arrays.
-             :Measurements (mapv measurement-1-2->1-1 (:MeasurementIdentifiers v)))
+      (assoc :Measurements (mapv measurement-1-2->1-1 (:MeasurementIdentifiers v)))
       (update :Dimensions dimensions-1-2->1-1)
       (dissoc :MeasurementIdentifiers
+              ;; Note that there is no characteristics/*conditions x-form
+              ;; because there's no way to definitely correlate indices of separate
+              ;; arrays when trying to construct a 1.1 Characteristics array by
+              ;; combining 1.2 Characteristics and 1.2 SamplingIdentifier arrays.
+              :Characteristics
               :SamplingIdentifiers
               :VariableSubType)))
