@@ -15,32 +15,37 @@
         ;; Stage 1
         [params bounding-box grans-promise coll-promise s1-errs]
         (common/stage1 component
-                       search-endpoint
-                       user-token
-                       raw-params)
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params raw-params})
         ;; Stage 2
         [coll params data-files service-ids vars s2-errs]
         (common/stage2 component
-                       search-endpoint
-                       user-token
-                       params
                        coll-promise
-                       grans-promise)
+                       grans-promise
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params params})
         ;; Stage 3
         [services bounding-info s3-errs]
         (common/stage3 component
                        coll
-                       search-endpoint
-                       user-token
-                       bounding-box
                        service-ids
-                       vars)
+                       vars
+                       bounding-box
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params raw-params})
         ;; Stage 4
         [query s4-errs]
-        (common/stage4 coll
-                       bounding-box
+        (common/stage4 component
+                       coll
                        services
-                       bounding-info)
+                       bounding-box
+                       bounding-info
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params params})
         ;; Error handling for all stages
         errs (errors/collect
               start params bounding-box grans-promise coll-promise s1-errs

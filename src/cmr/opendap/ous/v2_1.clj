@@ -36,7 +36,7 @@
     [vars params bounding-box warnings]))
 
 (defn stage3
-  [component coll search-endpoint user-token params bounding-box service-ids vars]
+  [component coll service-ids vars bounding-box {:keys [endpoint token params]}]
   ;; XXX coll is required as an arg here because it's needed in a
   ;;     workaround for different data sets using different starting
   ;;     points for their indices in OPeNDAP
@@ -44,11 +44,8 @@
   ;; XXX This is being tracked in CMR-4982
   (log/debug "Starting stage 3 ...")
   (let [[vars params bounding-box gridded-warns]
-        (apply-gridded-conditions vars
-                                  params
-                                  bounding-box)
-        services-promise (service/async-get-metadata
-                          search-endpoint user-token service-ids)
+        (apply-gridded-conditions vars params bounding-box)
+        services-promise (service/async-get-metadata endpoint token service-ids)
         bounding-infos (map #(variable/extract-bounding-info
                               coll % bounding-box)
                             vars)
@@ -68,33 +65,37 @@
         ;; Stage 1
         [params bounding-box grans-promise coll-promise s1-errs]
         (common/stage1 component
-                       search-endpoint
-                       user-token
-                       raw-params)
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params raw-params})
         ;; Stage 2
         [coll params data-files service-ids vars s2-errs]
         (common/stage2 component
-                       search-endpoint
-                       user-token
-                       params
                        coll-promise
-                       grans-promise)
+                       grans-promise
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params params})
         ;; Stage 3
         [services vars params bounding-info s3-errs s3-warns]
         (stage3 component
                 coll
-                search-endpoint
-                user-token
-                params
-                bounding-box
                 service-ids
-                vars)
+                vars
+                bounding-box
+                {:endpoint search-endpoint
+                 :token user-token
+                 :params raw-params})
         ;; Stage 4
         [query s4-errs]
-        (common/stage4 coll
-                       bounding-box
+        (common/stage4 component
+                       coll
                        services
-                       bounding-info)
+                       bounding-box
+                       bounding-info
+                       {:endpoint search-endpoint
+                        :token user-token
+                        :params params})
         ;; Warnings for all stages
         warns (warnings/collect s3-warns)
         ;; Error handling for all stages

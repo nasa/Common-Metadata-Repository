@@ -205,9 +205,9 @@
 ;;; the code could be properly prepared for async execution.
 
 (defn stage1
-  [component search-endpoint user-token raw-params]
+  [component {:keys [endpoint token params]}]
   (log/debug "Starting stage 1 ...")
-  (let [params (params/parse raw-params)
+  (let [params (params/parse params)
         bounding-box (:bounding-box params)
         valid-lat (when bounding-box
                     (validation/validate-latitude
@@ -216,11 +216,11 @@
                     (validation/validate-longitude
                      (ous-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
-                       component search-endpoint user-token params)
+                       component endpoint token params)
         ; grans-promise (concept/get :granules
         ;                component search-endpoint user-token params)
         coll-promise (concept/get :collection
-                      component search-endpoint user-token params)
+                      component endpoint token params)
         errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Params: " params)
     (log/debug "Bounding box: " bounding-box)
@@ -228,15 +228,14 @@
     [params bounding-box grans-promise coll-promise errs]))
 
 (defn stage2
-  [component search-endpoint user-token params coll-promise grans-promise]
+  [component coll-promise grans-promise {:keys [endpoint token params]}]
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
         coll (collection/extract-metadata coll-promise)
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
         params (apply-level-conditions coll params)
-        vars (apply-bounding-conditions
-              search-endpoint user-token coll params)
+        vars (apply-bounding-conditions endpoint token coll params)
         errs (apply errors/collect (concat [granules coll vars] data-files))]
     (when errs
       (log/error "Stage 2 errors:" errs))
@@ -251,15 +250,14 @@
     [coll params data-files service-ids vars errs]))
 
 (defn stage3
-  [component coll search-endpoint user-token bounding-box service-ids vars]
+  [component coll service-ids vars bounding-box {:keys [endpoint token]}]
   ;; XXX coll is required as an arg here because it's needed in a
   ;;     workaround for different data sets using different starting
   ;;     points for their indices in OPeNDAP
   ;;
   ;; XXX This is being tracked in CMR-4982
   (log/debug "Starting stage 3 ...")
-  (let [services-promise (service/async-get-metadata
-                          search-endpoint user-token service-ids)
+  (let [services-promise (service/async-get-metadata endpoint token service-ids)
         bounding-infos (map #(variable/extract-bounding-info
                               coll % bounding-box)
                             vars)
@@ -271,7 +269,7 @@
     [services-promise bounding-infos errs]))
 
 (defn stage4
-  [coll bounding-box services-promise bounding-infos]
+  [_component coll services-promise bounding-box bounding-infos _options]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
         query (bounding-infos->opendap-query coll bounding-infos bounding-box)
