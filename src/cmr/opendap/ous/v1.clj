@@ -54,18 +54,6 @@
               query s4-errs
               {:errors (errors/check
                         [not data-files errors/empty-gnl-data-files])})]
-    (log/trace "Got data-files:" (vec data-files))
-    (if errs
-      (do
-        (log/error errs)
-        errs)
-      (let [urls-or-errs (common/data-files->opendap-urls
-                          params data-files query)]
-        ;; Error handling for post-stages processing
-        (if (errors/erred? urls-or-errs)
-          (do
-            (log/error urls-or-errs)
-            urls-or-errs)
-          (do
-            (log/debug "Generated URLs:" (vec urls-or-errs))
-          (results/create urls-or-errs :elapsed (util/timed start))))))))
+    (common/process-results {:params params
+                             :data-files data-files
+                             :query query} start errs)))

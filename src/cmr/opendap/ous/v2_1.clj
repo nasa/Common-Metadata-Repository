@@ -1,4 +1,13 @@
 (ns cmr.opendap.ous.v2-1
+  "Version 2.1 was introduced in order to provide better support to EDSC users
+  who would see their spatial query parameters removed if the variables in their
+  results did not contain metadata for lat/lon dimensions (support for this was
+  added in UMM-Var 1.2).
+
+  By putting this change into a versioned portion of the API, EDSC (and anyone
+  else) now has the ability to set the API version to 'v2' and thus still
+  have the results previously expected when making calls against metadata that
+  has not been updated to use UMM-Var 1.2."
   (:require
     [cmr.opendap.components.config :as config]
     [cmr.opendap.ous.common :as common]
@@ -10,31 +19,6 @@
     [cmr.opendap.util :as util]
     [taoensso.timbre :as log]))
 
-(defn apply-gridded-conditions
-  "This function is responsible for identifying whether data is girdded or not.
-  Originally, the plan was to use processing level to make this determination,
-  but due to issues with bad values in the metadata (for processing level),
-  that wasn't practical. Instead, we decided to use the presence or absence of
-  dimensional metadata that includes latitude and longitude references (new as
-  of UMM-Var 1.2).
-
-  This function is thus responsible for:
-
-  * examining each variable for the presence or absence of lat/lon dimensional
-    metadata
-  * flagging the granule as gridded when all vars have this metadata
-  * implicitly flagging the granule as non-gridded when some vars don't have
-    this metadata
-  * removing bounding information from params when the granule is non-gridded
-  * adding a warning to API consumers that the spatial subsetting parameters
-    have been stripped due to non-applicability."
-  [vars params bounding-box]
-  (let [warnings []]
-    (log/error "vars:" vars)
-    (log/error "params:" params)
-    (log/error "bounding-box:" bounding-box)
-    [vars params bounding-box warnings]))
-
 (defn stage3
   [component coll service-ids vars bounding-box {:keys [endpoint token params]}]
   ;; XXX coll is required as an arg here because it's needed in a
@@ -44,7 +28,7 @@
   ;; XXX This is being tracked in CMR-4982
   (log/debug "Starting stage 3 ...")
   (let [[vars params bounding-box gridded-warns]
-        (apply-gridded-conditions vars params bounding-box)
+        (common/apply-gridded-conditions vars params bounding-box)
         services-promise (service/async-get-metadata endpoint token service-ids)
         bounding-infos (map #(variable/extract-bounding-info
                               coll % bounding-box)
@@ -106,18 +90,6 @@
               query s4-errs
               {:errors (errors/check
                         [not data-files errors/empty-gnl-data-files])})]
-    (log/trace "Got data-files:" (vec data-files))
-    (if errs
-      (do
-        (log/error errs)
-        errs)
-      (let [urls-or-errs (common/data-files->opendap-urls
-                          params data-files query)]
-        ;; Error handling for post-stages processing
-        (if (errors/erred? urls-or-errs)
-          (do
-            (log/error urls-or-errs)
-            urls-or-errs)
-          (do
-            (log/debug "Generated URLs:" (vec urls-or-errs))
-          (results/create urls-or-errs :elapsed (util/timed start))))))))
+    (common/process-results {:params params
+                             :data-files data-files
+                             :query query} start errs warns)))

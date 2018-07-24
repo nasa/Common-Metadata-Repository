@@ -128,6 +128,26 @@
                         level
                         (:id coll))]})))
 
+(defn process-results
+  ([results start errs]
+    (process-results results start errs []))
+  ([{:keys [params data-files query]} start errs warns]
+    (log/trace "Got data-files:" (vec data-files))
+    (if errs
+      (do
+        (log/error errs)
+        errs)
+      (let [urls-or-errs (data-files->opendap-urls params data-files query)]
+        ;; Error handling for post-stages processing
+        (if (errors/erred? urls-or-errs)
+          (do
+            (log/error urls-or-errs)
+            urls-or-errs)
+          (do
+            (log/debug "Generated URLs:" (vec urls-or-errs))
+            (results/create urls-or-errs :elapsed (util/timed start)
+                                         :warnings warns)))))))
+
 (defn apply-bounding-conditions
   "This function is where variable queries to the CMR are made. There are
   several conditions that apply when extracting variables, all related to
@@ -183,6 +203,31 @@
     (variable/get-metadata search-endpoint
      user-token
      (assoc params :variables (collection/extract-variable-ids coll)))))
+
+(defn apply-gridded-conditions
+  "This function is responsible for identifying whether data is girdded or not.
+  Originally, the plan was to use processing level to make this determination,
+  but due to issues with bad values in the metadata (for processing level),
+  that wasn't practical. Instead, we decided to use the presence or absence of
+  dimensional metadata that includes latitude and longitude references (new as
+  of UMM-Var 1.2).
+
+  This function is thus responsible for:
+
+  * examining each variable for the presence or absence of lat/lon dimensional
+    metadata
+  * flagging the granule as gridded when all vars have this metadata
+  * implicitly flagging the granule as non-gridded when some vars don't have
+    this metadata
+  * removing bounding information from params when the granule is non-gridded
+  * adding a warning to API consumers that the spatial subsetting parameters
+    have been stripped due to non-applicability."
+  [vars params bounding-box]
+  (let [warnings []]
+    (log/error "vars:" vars)
+    (log/error "params:" params)
+    (log/error "bounding-box:" bounding-box)
+    [vars params bounding-box warnings]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Stages for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
