@@ -129,23 +129,29 @@
                         (:id coll))]})))
 
 (defn apply-bounding-conditions
-  "There are several variable and bounding scenarios we need to consider:
+  "This function is where variable queries to the CMR are made. There are
+  several conditions that apply when extracting variables, all related to
+  spatial subsetting (bounding box), and these determine which variables
+  are returned.
+
+  The conditions are as follows:
 
   * no spatial subsetting and no variables - return no query string in OPeNDAP
-    URL; this will give users all variables for the entire extent defined in
-    the variables' metadata.
+    URL; this will give users (by default) all variables for the entire extent
+    defined in the granule metadata.
   * variables but no spatial subsetting - return a query string with just the
-    variables requested; a `Latitude,Longitude` will also be appended to the
-    OPeNDAP URL; this will give users just these variables, but for the entire
-    extent defined in each variable's metadata.
+    variables requested; a spatial subsetting for the granule's extent (e.g.,
+    `Latitude,Longitude`) will also be appended to the OPeNDAP URL; this will
+    give users just these variables, but for the entire extent defined in
+    the granule metadata.
   * variables and spatial subsetting - return a query string with the variables
     requested as well as the subsetting requested; this will give users just
     these variables, with data limited to the specified spatial range.
   * spatial subsetting but no variables - this is a special case that needs to
-    do a little more work: special subsetting without variables will link to
+    do a little more work: spatial subsetting without variables will link to
     an essentially empty OPeNDAP file; as such, we need to iterate through all
     the variables in the metadata and create an OPeNDAP URL query string that
-    provides the sensible default of all variables.
+    includes all of the variables.
 
   For each of those conditions, a different value of `vars` will be returned,
   allowing for the desired result. Respective to the bullet points above:
