@@ -75,17 +75,17 @@ services:
   #     - cmr-graph-net
 
   ###########################################################################
-  setup_kibana:
-    image: centos:7
-    container_name: cmr-graph-setup-kibana
-    depends_on:
-      - elasticsearch
-    volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
-    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
-    environment:
-      - ELASTIC_PASSWORD=kibana'
-    networks:
-      - cmr-graph-net
+  # setup_kibana:
+  #   image: centos:7
+  #   container_name: cmr-graph-setup-kibana
+  #   depends_on:
+  #     - elasticsearch
+  #   volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
+  #   command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
+  #   environment:
+  #     - ELASTIC_PASSWORD=kibana'
+  #   networks:
+  #     - cmr-graph-net
 
   ###########################################################################
   # setup_apm_server:
