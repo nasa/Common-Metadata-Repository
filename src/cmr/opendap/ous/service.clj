@@ -4,7 +4,7 @@
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [cmr.opendap.ous.query.results :as results]
+   [cmr.opendap.results.core :as results]
    [cmr.opendap.results.errors :as errors]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
