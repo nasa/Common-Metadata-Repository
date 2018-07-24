@@ -1,4 +1,4 @@
-{:api-version "v2"
+{:api-version "v2.1"
  :default-content-type "json"
  :auth-caching {:init {}
                 :ttl {:minutes 60}
@@ -45,7 +45,7 @@
                  "/opendap/docs/reference"
                  "/opendap/docs/rest-api"}}
  :logging {
-   :level :trace
+   :level :debug
    :nss [cmr.opendap cmr.authz cmr.http.kit cmr.mission-control org.httpkit]
    :color false}
 :mission-control {
