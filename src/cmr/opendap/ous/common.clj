@@ -116,18 +116,6 @@
           (apply errors/collect urls))
         (map #(str % "." (:format params) query-string) urls)))))
 
-(defn apply-level-conditions
-  ""
-  [coll params]
-  (let [level (collection/extract-processing-level coll)]
-    (log/info "Got level:" level)
-    (if (contains? collection/supported-processing-levels level)
-      params
-      {:errors [errors/unsupported-processing-level
-                (format errors/problem-processing-level
-                        level
-                        (:id coll))]})))
-
 (defn process-results
   ([results start errs]
     (process-results results start errs []))
@@ -273,26 +261,10 @@
     [params bounding-box grans-promise coll-promise errs]))
 
 (defn stage2
+  "Note that this function is different for versions before v2.1 and versions
+  after that. As such, no common implementation is provided."
   [component coll-promise grans-promise {:keys [endpoint token params]}]
-  (log/debug "Starting stage 2 ...")
-  (let [granules (granule/extract-metadata grans-promise)
-        coll (collection/extract-metadata coll-promise)
-        data-files (map granule/extract-datafile-link granules)
-        service-ids (collection/extract-service-ids coll)
-        params (apply-level-conditions coll params)
-        vars (apply-bounding-conditions endpoint token coll params)
-        errs (apply errors/collect (concat [granules coll vars] data-files))]
-    (when errs
-      (log/error "Stage 2 errors:" errs))
-    (log/trace "data-files:" (vec data-files))
-    (log/trace "service ids:" service-ids)
-    (log/debug "Finishing stage 2 ...")
-    ;; XXX coll is returned here because it's needed in a workaround
-    ;;     for different data sets using different starting points
-    ;;     for their indices in OPeNDAP
-    ;;
-    ;; XXX This is being tracked in CMR-4982
-    [coll params data-files service-ids vars errs]))
+  :not-implemented)
 
 (defn stage3
   [component coll service-ids vars bounding-box {:keys [endpoint token]}]

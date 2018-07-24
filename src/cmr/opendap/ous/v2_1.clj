@@ -10,7 +10,9 @@
   has not been updated to use UMM-Var 1.2."
   (:require
     [cmr.opendap.components.config :as config]
+    [cmr.opendap.ous.collection :as collection]
     [cmr.opendap.ous.common :as common]
+    [cmr.opendap.ous.granule :as granule]
     [cmr.opendap.ous.service :as service]
     [cmr.opendap.ous.variable :as variable]
     [cmr.opendap.results.core :as results]
@@ -18,6 +20,31 @@
     [cmr.opendap.results.warnings :as warnings]
     [cmr.opendap.util :as util]
     [taoensso.timbre :as log]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Stages Overrides for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn stage2
+  [component coll-promise grans-promise {:keys [endpoint token params]}]
+  (log/debug "Starting stage 2 ...")
+  (let [granules (granule/extract-metadata grans-promise)
+        coll (collection/extract-metadata coll-promise)
+        data-files (map granule/extract-datafile-link granules)
+        service-ids (collection/extract-service-ids coll)
+        vars (common/apply-bounding-conditions endpoint token coll params)
+        errs (apply errors/collect (concat [granules coll vars] data-files))]
+    (when errs
+      (log/error "Stage 2 errors:" errs))
+    (log/trace "data-files:" (vec data-files))
+    (log/trace "service ids:" service-ids)
+    (log/debug "Finishing stage 2 ...")
+    ;; XXX coll is returned here because it's needed in a workaround
+    ;;     for different data sets using different starting points
+    ;;     for their indices in OPeNDAP
+    ;;
+    ;; XXX This is being tracked in CMR-4982
+    [coll params data-files service-ids vars errs]))
 
 (defn stage3
   [component coll service-ids vars bounding-box {:keys [endpoint token params]}]
@@ -41,6 +68,10 @@
     (log/debug "Finishing stage 3 ...")
     [services-promise vars params bounding-infos errs warns]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn get-opendap-urls
   [component user-token raw-params]
   (log/trace "Got params:" raw-params)
@@ -54,12 +85,12 @@
                         :params raw-params})
         ;; Stage 2
         [coll params data-files service-ids vars s2-errs]
-        (common/stage2 component
-                       coll-promise
-                       grans-promise
-                       {:endpoint search-endpoint
-                        :token user-token
-                        :params params})
+        (stage2 component
+                coll-promise
+                grans-promise
+                {:endpoint search-endpoint
+                 :token user-token
+                 :params params})
         ;; Stage 3
         [services vars params bounding-info s3-errs s3-warns]
         (stage3 component
