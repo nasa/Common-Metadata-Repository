@@ -4,15 +4,11 @@
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
-   [cmr.opendap.components.config :as config]
    [cmr.opendap.app.handler.auth-cache :as auth-cache-handler]
    [cmr.opendap.app.handler.collection :as collection-handler]
    [cmr.opendap.app.handler.concept-cache :as concept-cache-handler]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.app.routes.rest.v1 :as routes-v1]
-   [cmr.opendap.health :as health]
-   [cmr.opendap.site.pages :as pages]
-   [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

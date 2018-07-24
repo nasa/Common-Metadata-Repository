@@ -8,7 +8,7 @@
 (use-fixtures :once test-system/with-system)
 
 (deftest default-accept
-  (is (= "application/vnd.cmr-opendap.v2+json"
+  (is (= "application/vnd.cmr-opendap.v2.1+json"
          (request/default-accept (test-system/system)))))
 
 (deftest parse-accept
@@ -52,17 +52,17 @@
 
 (deftest accept-api-version
   (testing "just content type"
-    (is (= "v2"
+    (is (= "v2.1"
            (request/accept-api-version
             (test-system/system)
             (request/add-accept "text/plain")))))
   (testing "just vendor"
-    (is (= "v2"
+    (is (= "v2.1"
            (request/accept-api-version
             (test-system/system)
             (request/add-accept "text/vnd.nasa")))))
   (testing "vendor & content type"
-    (is (= "v2"
+    (is (= "v2.1"
            (request/accept-api-version
             (test-system/system)
             (request/add-accept "text/vnd.nasa+plain")))))
@@ -79,17 +79,17 @@
 
 (deftest accept-media-type
   (testing "just content type"
-    (is (= "cmr-opendap.v2"
+    (is (= "cmr-opendap.v2.1"
            (request/accept-media-type
             (test-system/system)
             (request/add-accept "text/plain")))))
   (testing "just vendor"
-    (is (= "nasa.v2"
+    (is (= "nasa.v2.1"
            (request/accept-media-type
             (test-system/system)
             (request/add-accept "text/vnd.nasa")))))
   (testing "vendor & content type"
-    (is (= "nasa.v2"
+    (is (= "nasa.v2.1"
            (request/accept-media-type
             (test-system/system)
             (request/add-accept "text/vnd.nasa+plain")))))
