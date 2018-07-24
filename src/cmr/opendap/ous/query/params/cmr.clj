@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.query.params.v2
+(ns cmr.opendap.ous.query.params.cmr
   (:require
    [clojure.set :as set]
    [cmr.opendap.ous.query.params.const :as const]
@@ -6,7 +6,7 @@
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
-(defrecord CollectionParams
+(defrecord CollectionCmrStyleParams
   [;; `collection-id` is the concept id for the collection in question. Note
    ;; that the collection concept id is not provided in query params,
    ;; but in the path as part of the REST URL. Regardless, we offer it here as
@@ -52,7 +52,7 @@
 
 (def params-keys
   (set/difference
-   (set (keys (map->CollectionParams {})))
+   (set (keys (map->CollectionCmrStyleParams {})))
    const/shared-keys))
 
 (defn params?
@@ -81,7 +81,7 @@
     (log/trace "subset:" subset)
     (log/trace "granules-array:" granules-array)
     (log/trace "variables-array:" variables-array)
-    (map->CollectionParams
+    (map->CollectionCmrStyleParams
       (assoc params
         :format (or (:format params) const/default-format)
         :granules (if (not-array? granules-array)
@@ -102,10 +102,10 @@
                     (ous-util/->coll (:temporal params))
                     temporal-array)))))
 
-(defrecord CollectionsParams
+(defrecord CollectionsCmrStyleParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
    ;; submitting multiple collections at a time. As such, there is no
    ;; prototype-oriented record for this.
    ;;
-   ;; `collections` is a list of `CollectionParams` records.
+   ;; `collections` is a list of `CollectionCmrStyleParams` records.
    collections])

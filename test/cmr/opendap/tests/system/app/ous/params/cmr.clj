@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.app.ous.params-v2
+(ns ^:system cmr.opendap.tests.system.app.ous.params.cmr
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 

@@ -1,10 +1,10 @@
-(ns cmr.opendap.ous.query.params.v1
+(ns cmr.opendap.ous.query.params.wcs
   (:require
    [clojure.set :as set]
    [cmr.opendap.ous.query.params.const :as const]
    [cmr.opendap.ous.util.core :as util]))
 
-(defrecord OusPrototypeParams
+(defrecord CollectionWcsStyleParams
   [;; `format` is any of the formats supported by the target OPeNDAP server,
    ;; such as `json`, `ascii`, `nc`, `nc4`, `dods`, etc.
    format
@@ -30,7 +30,7 @@
 
 (def params-keys
   (set/difference
-   (set (keys (map->OusPrototypeParams {})))
+   (set (keys (map->CollectionWcsStyleParams {})))
    const/shared-keys))
 
 (defn params?
@@ -41,7 +41,7 @@
 
 (defn create-params
   [params]
-  (map->OusPrototypeParams
+  (map->CollectionWcsStyleParams
     (assoc params :format (or (:format params)
                               const/default-format)
                   :coverage (util/split-comma->sorted-coll (:coverage params))

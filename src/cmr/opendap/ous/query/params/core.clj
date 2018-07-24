@@ -4,8 +4,8 @@
   with these parameters are defined here."
   (:require
    [clojure.string :as string]
-   [cmr.opendap.ous.query.params.v1 :as v1]
-   [cmr.opendap.ous.query.params.v2 :as v2]
+   [cmr.opendap.ous.query.params.wcs :as wcs]
+   [cmr.opendap.ous.query.params.cmr :as cmr]
    [cmr.opendap.ous.util.core :as util]
    [cmr.opendap.results.errors :as errors]
    [taoensso.timbre :as log])
@@ -14,16 +14,16 @@
 (defn params?
   [type params]
   (case type
-    :v1 (v1/params? params)
-    :v2 (v2/params? params)))
+    :wcs (wcs/params? params)
+    :cmr (cmr/params? params)))
 
 (defn create-params
   [type params]
   (case type
-    :v1 (v1/create-params params)
-    :v2 (v2/create-params params)))
+    :wcs (wcs/create-params params)
+    :cmr (cmr/create-params params)))
 
-(defn v1->v2
+(defn wcs->cmr
   [params]
   (let [subset (:subset params)]
     (-> params
@@ -31,34 +31,34 @@
                                   (util/coverage->collection (:coverage params)))
                :granules (util/coverage->granules (:coverage params))
                :variables (:rangesubset params)
-               ;; There was never an analog in v1 for exclude-granules, so set
+               ;; There was never an analog in wcs for exclude-granules, so set
                ;; to false.
                :exclude-granules false
                :bounding-box (when (seq subset)
                               (util/subset->bounding-box subset))
                :temporal (:timeposition params))
         (dissoc :coverage :rangesubset :timeposition)
-        (v2/map->CollectionParams))))
+        (cmr/map->CollectionCmrStyleParams))))
 
 (defn parse
   [raw-params]
   (log/trace "Got params:" raw-params)
   (let [params (util/normalize-params raw-params)]
-    (cond (params? :v2 params)
+    (cond (params? :cmr params)
           (do
             (log/trace "Parameters are of type `collection` ...")
-            (create-params :v2 params))
+            (create-params :cmr params))
 
-          (params? :v1 params)
+          (params? :wcs params)
           (do
             (log/trace "Parameters are of type `ous-prototype` ...")
-            (v1->v2
-             (create-params :v1 params)))
+            (wcs->cmr
+             (create-params :wcs params)))
 
           (:collection-id params)
           (do
             (log/trace "Found collection id; assuming `collection` ...")
-            (create-params :v2 params))
+            (create-params :cmr params))
 
           :else
           {:errors [errors/invalid-parameter
