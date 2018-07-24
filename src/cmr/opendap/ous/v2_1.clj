@@ -1,7 +1,14 @@
 (ns cmr.opendap.ous.v2-1
   (:require
-   [cmr.opendap.ous.common :as common]
-   [taoensso.timbre :as log]))
+    [cmr.opendap.components.config :as config]
+    [cmr.opendap.ous.common :as common]
+    [cmr.opendap.ous.service :as service]
+    [cmr.opendap.ous.variable :as variable]
+    [cmr.opendap.results.core :as results]
+    [cmr.opendap.results.errors :as errors]
+    [cmr.opendap.results.warnings :as warnings]
+    [cmr.opendap.util :as util]
+    [taoensso.timbre :as log]))
 
 (defn apply-gridded-conditions
   "This function is responsible for identifying whether data is girdded or not.
@@ -28,89 +35,88 @@
     (log/error "bounding-box:" bounding-box)
     [vars params bounding-box warnings]))
 
-; (defn stage3
-;   [component coll search-endpoint user-token params bounding-box service-ids vars]
-;   ;; XXX coll is required as an arg here because it's needed in a
-;   ;;     workaround for different data sets using different starting
-;   ;;     points for their indices in OPeNDAP
-;   ;;
-;   ;; XXX This is being tracked in CMR-4982
-;   (log/debug "Starting stage 3 ...")
-;   (let [[vars params bounding-box gridded-warns]
-;         (apply-gridded-conditions vars
-;                                   params
-;                                   bounding-box)
-;         services-promise (service/async-get-metadata
-;                           search-endpoint user-token service-ids)
-;         bounding-infos (map #(variable/extract-bounding-info
-;                               coll % bounding-box)
-;                             vars)
-;         errs (apply errors/collect bounding-infos)
-;         warns (errors/collect-warnings gridded-warns)]
-;     (when errs
-;       (log/error "Stage 3 errors:" errs))
-;     (log/trace "variables bounding-info:" (vec bounding-infos))
-;     (log/debug "Finishing stage 3 ...")
-;     [services-promise vars params bounding-infos errs warns]))
+(defn stage3
+  [component coll search-endpoint user-token params bounding-box service-ids vars]
+  ;; XXX coll is required as an arg here because it's needed in a
+  ;;     workaround for different data sets using different starting
+  ;;     points for their indices in OPeNDAP
+  ;;
+  ;; XXX This is being tracked in CMR-4982
+  (log/debug "Starting stage 3 ...")
+  (let [[vars params bounding-box gridded-warns]
+        (apply-gridded-conditions vars
+                                  params
+                                  bounding-box)
+        services-promise (service/async-get-metadata
+                          search-endpoint user-token service-ids)
+        bounding-infos (map #(variable/extract-bounding-info
+                              coll % bounding-box)
+                            vars)
+        errs (apply errors/collect bounding-infos)
+        warns (warnings/collect gridded-warns)]
+    (when errs
+      (log/error "Stage 3 errors:" errs))
+    (log/trace "variables bounding-info:" (vec bounding-infos))
+    (log/debug "Finishing stage 3 ...")
+    [services-promise vars params bounding-infos errs warns]))
 
-; (defn get-opendap-urls
-;   [component user-token raw-params]
-;   (log/trace "Got params:" raw-params)
-;   (let [start (util/now)
-;         search-endpoint (config/get-search-url component)
-;         ;; Stage 1
-;         [params bounding-box grans-promise coll-promise s1-errs]
-;         (stage1 component
-;                 search-endpoint
-;                 user-token
-;                 raw-params)
-;         ;; Stage 2
-;         [coll params data-files service-ids vars s2-errs]
-;         (stage2 component
-;                 search-endpoint
-;                 user-token
-;                 params
-;                 coll-promise
-;                 grans-promise)
-;         ;; Stage 3
-;         [services vars params bounding-info s3-errs s3-warns]
-;         (stage3 component
-;                 coll
-;                 search-endpoint
-;                 user-token
-;                 params
-;                 bounding-box
-;                 service-ids
-;                 vars)
-;         ;; Stage 4
-;         [query s4-errs]
-;         (stage4 coll
-;                 bounding-box
-;                 services
-;                 bounding-info)
-;         ;; Warnings for all stages
-;         warns (errors/collect-warnings s3-warns)
-;         ;; Error handling for all stages
-;         errs (errors/collect
-;               start params bounding-box grans-promise coll-promise s1-errs
-;               data-files service-ids vars s2-errs
-;               services bounding-info s3-errs
-;               query s4-errs
-;               {:errors (errors/check
-;                         [not data-files errors/empty-gnl-data-files])})]
-;     (log/trace "Got data-files:" (vec data-files))
-;     (if errs
-;       (do
-;         (log/error errs)
-;         errs)
-;       (let [urls-or-errs (data-files->opendap-urls params
-;                                                    data-files
-;                                                    query)]
-;         ;; Error handling for post-stages processing
-;         (if (errors/erred? urls-or-errs)
-;           (do
-;             (log/error urls-or-errs)
-;             urls-or-errs)
-;           (do
-;             (log/debug "Generated URLs:" (vec urls-or-errs))
-;           (results/create urls-or-errs :elapsed (util/timed start))))))))
+(defn get-opendap-urls
+  [component user-token raw-params]
+  (log/trace "Got params:" raw-params)
+  (let [start (util/now)
+        search-endpoint (config/get-search-url component)
+        ;; Stage 1
+        [params bounding-box grans-promise coll-promise s1-errs]
+        (common/stage1 component
+                       search-endpoint
+                       user-token
+                       raw-params)
+        ;; Stage 2
+        [coll params data-files service-ids vars s2-errs]
+        (common/stage2 component
+                       search-endpoint
+                       user-token
+                       params
+                       coll-promise
+                       grans-promise)
+        ;; Stage 3
+        [services vars params bounding-info s3-errs s3-warns]
+        (stage3 component
+                coll
+                search-endpoint
+                user-token
+                params
+                bounding-box
+                service-ids
+                vars)
+        ;; Stage 4
+        [query s4-errs]
+        (common/stage4 coll
+                       bounding-box
+                       services
+                       bounding-info)
+        ;; Warnings for all stages
+        warns (warnings/collect s3-warns)
+        ;; Error handling for all stages
+        errs (errors/collect
+              start params bounding-box grans-promise coll-promise s1-errs
+              data-files service-ids vars s2-errs
+              services bounding-info s3-errs
+              query s4-errs
+              {:errors (errors/check
+                        [not data-files errors/empty-gnl-data-files])})]
+    (log/trace "Got data-files:" (vec data-files))
+    (if errs
+      (do
+        (log/error errs)
+        errs)
+      (let [urls-or-errs (common/data-files->opendap-urls
+                          params data-files query)]
+        ;; Error handling for post-stages processing
+        (if (errors/erred? urls-or-errs)
+          (do
+            (log/error urls-or-errs)
+            urls-or-errs)
+          (do
+            (log/debug "Generated URLs:" (vec urls-or-errs))
+          (results/create urls-or-errs :elapsed (util/timed start))))))))
