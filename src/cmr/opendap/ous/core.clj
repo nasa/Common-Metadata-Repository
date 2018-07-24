@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [cmr.opendap.components.concept :as concept]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.ous.granule :as granule]
    [cmr.opendap.ous.query.params.core :as params]
@@ -13,6 +12,7 @@
    [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.ous.variable :as variable]
+   [cmr.opendap.results.errors :as errors]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
    [taoensso.timbre :as log]))

@@ -6,9 +6,9 @@
    [clojure.java.io :as io]
    [cmr.authz.token :as token]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.errors :as errors]
-   [cmr.opendap.ous.core :as ous]
    [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.core :as ous]
+   [cmr.opendap.results.errors :as errors]
    [org.httpkit.server :as server]
    [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))

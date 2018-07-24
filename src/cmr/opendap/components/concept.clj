@@ -7,9 +7,9 @@
    [clojure.string :as string]
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.errors :as errors]
    [cmr.opendap.ous.collection :as collection]
    [cmr.opendap.ous.granule :as granule]
+   [cmr.opendap.results.errors :as errors]
    [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])

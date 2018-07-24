@@ -1,6 +1,7 @@
-(ns cmr.opendap.errors
+(ns cmr.opendap.results.errors
   (:require
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [cmr.opendap.results.common :as common]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,9 +132,7 @@
 
 (defn get-errors
   [data]
-  (or (:errors data)
-      (when-let [error (:error data)]
-        [error])))
+  (common/get-results data :errors :error))
 
 (defn erred?
   ""
@@ -144,8 +143,7 @@
   [coll]
   (some erred? coll))
 
+
 (defn collect
   [& coll]
-  (let [errors (vec (remove nil? (mapcat get-errors coll)))]
-    (when (seq errors)
-      {:errors errors})))
+  (common/collect-results coll :errors :error))

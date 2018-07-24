@@ -11,7 +11,7 @@
    [clojure.string :as string]
    [cmr.authz.errors :as authz-errors]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.errors :as errors]
+   [cmr.opendap.results.errors :as errors]
    [ring.util.http-response :as ring-response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in])

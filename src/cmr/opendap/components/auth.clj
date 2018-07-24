@@ -14,7 +14,7 @@
    [cmr.authz.roles :as roles]
    [cmr.authz.token :as token]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.errors :as cmro-errors]
+   [cmr.opendap.results.errors :as cmro-errors]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
