@@ -6,6 +6,7 @@
    [clojure.java.io :as io]
    [cmr.authz.token :as token]
    [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.results.errors :as errors]
@@ -22,10 +23,11 @@
   GET."
   [component request user-token concept-id data]
   (log/debug "Generating URLs based on HTTP GET ...")
-  (->> data
-       (merge {:collection-id concept-id})
-       (ous/get-opendap-urls component user-token)
-       (response/json request)))
+  (let [api-version (request/accept-api-version component request)]
+    (->> data
+         (merge {:collection-id concept-id})
+         (ous/get-opendap-urls component api-version user-token)
+         (response/json request))))
 
 (defn- generate-via-get
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
