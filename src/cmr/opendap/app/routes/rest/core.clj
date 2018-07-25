@@ -15,4 +15,5 @@
   (case (keyword version)
     :v1 (v1/all httpd-component)
     :v2 (v2/all httpd-component)
-    :v2.1 (v2-1/all httpd-component)))
+    :v2.1 (v2-1/all httpd-component)
+    (v2-1/all httpd-component)))

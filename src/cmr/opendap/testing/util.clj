@@ -2,9 +2,23 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [cmr.opendap.http.request :as request])
   (:import
    (clojure.lang Keyword)))
+
+(def vendor "cmr-opendap.")
+
+(defn override-api-version-header
+  ([version]
+    (override-api-version-header {} version))
+  ([req version]
+    (request/add-header req
+                        "Accept"
+                        (format request/version-format
+                                vendor
+                                version
+                                "json"))))
 
 (defn parse-response
   [response]

@@ -57,7 +57,7 @@
   (let [[vars params bounding-box gridded-warns]
         (common/apply-gridded-conditions vars params bounding-box)
         services-promise (service/async-get-metadata endpoint token service-ids)
-        bounding-infos (if (seq bounding-box)
+        bounding-infos (if-not (seq gridded-warns)
                          (map #(variable/extract-bounding-info
                                 coll % bounding-box)
                               vars)

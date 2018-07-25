@@ -23,6 +23,8 @@
 ;;;   Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def version-format "application/vnd.%s%s+%s")
+
 (defn add-user-agent
   ([]
     (add-user-agent {}))
@@ -79,7 +81,7 @@
 
 (defn default-accept
   [system]
-  (format "application/vnd.%s%s+%s"
+  (format version-format
           (config/vendor system)
           (config/api-version-dotted system)
           (config/default-content-type system)))

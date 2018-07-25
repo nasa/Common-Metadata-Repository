@@ -65,6 +65,7 @@
 ;; XXX This is being tracked in CMR-4982
 (def lat-reversed-datasets
   #{"Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"
+    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC [Testing Variable Dimensions]"
     "MODIS/Terra Aerosol Cloud Water Vapor Ozone Daily L3 Global 1Deg CMG V006"})
 
 (defn lat-reversed?
