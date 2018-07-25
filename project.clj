@@ -140,7 +140,7 @@
                            :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
                            :type "text/javascript"}]]]}
         :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/opendap/docs/reference"}}
+        :output-path "resources/public/docs/opendap/docs/current/reference"}}
       :slate {
         :plugins [[lein-shell "0.5.0"]]
         ;;
@@ -174,7 +174,7 @@
     ;; Documentation and static content
     "codox" ["with-profile" "+docs" "codox"]
     "marginalia" ["with-profile" "+docs"
-      "marg" "--dir" "resources/public/docs/opendap/docs/marginalia"
+      "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
     "slate" ["with-profile" "+slate"
