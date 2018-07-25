@@ -13,6 +13,7 @@
    [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.results.core :as results]
    [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.warnings :as warnings]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
    [taoensso.timbre :as log]))
@@ -64,6 +65,41 @@
       ","
       (format-opendap-lat-lon coll bounding-infos bounding-box)))))
 
+(defn lat-dim?
+  [dim]
+  (= "LATITUDE_DIMENSION" (:Type dim)))
+
+(defn lon-dim?
+  [dim]
+  (= "LONGITUDE_DIMENSION" (:Type dim)))
+
+(defn gridded-dim?
+  "Variables have a collection of dims; this function tests just one."
+  [dim]
+  (or (lat-dim? dim) (lon-dim? dim)))
+
+(defn gridded-dims?
+  "This function is intended to test all the dims in a var. To count as
+  gridded data, the dimensions of a variable must contain both a latitude
+  and longitude value."
+  [dims]
+  (->> dims
+       (map gridded-dim?)
+       (remove false?)
+       count
+       (= 2)))
+
+(defn gridded-vars?
+  "Given a collection of vars, extract the dims and test those. To count
+  as gridded, all vars must be gridded."
+  [vars]
+  (->> vars
+       (map #(gridded-dims? (get-in % [:umm :Dimensions])))
+       (every? true?)))
+
+(defn strip-spatial
+  [params]
+  (assoc params :bounding-box [] :subset []))
 
 ;; XXX The `fallback-*` vars are left-overs from previous work done in the
 ;;     Node.js prorotype. For more context, see CMR-4901 abd CMR-4912.
@@ -118,7 +154,7 @@
 
 (defn process-results
   ([results start errs]
-    (process-results results start errs []))
+    (process-results results start errs {:warnings nil}))
   ([{:keys [params data-files query]} start errs warns]
     (log/trace "Got data-files:" (vec data-files))
     (if errs
@@ -211,11 +247,16 @@
   * adding a warning to API consumers that the spatial subsetting parameters
     have been stripped due to non-applicability."
   [vars params bounding-box]
-  (let [warnings []]
-    (log/error "vars:" vars)
-    (log/error "params:" params)
-    (log/error "bounding-box:" bounding-box)
-    [vars params bounding-box warnings]))
+  (if (gridded-vars? vars)
+    [vars params bounding-box {}]
+    (let [var-ids (string/join ", " (map #(get-in % [:meta :concept-id]) vars))
+          warn1 (format warnings/non-gridded var-ids)]
+      (log/warn warn1)
+      (log/warn warnings/non-gridded-stripped)
+      [vars
+       (strip-spatial params)
+       []
+       {:warnings [warn1 warnings/non-gridded-stripped]}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Stages for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

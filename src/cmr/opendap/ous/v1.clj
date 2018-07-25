@@ -118,7 +118,7 @@
                        bounding-box
                        {:endpoint search-endpoint
                         :token user-token
-                        :params raw-params})
+                        :params params})
         ;; Stage 4
         [query s4-errs]
         (common/stage4 component

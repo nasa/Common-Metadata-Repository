@@ -12,14 +12,13 @@
 
 (defn create
   [results & {:keys [elapsed warnings]}]
-  (let [warnings (if (seq warnings) {:warnings warnings} {})]
-    (map->CollectionResults
-      (merge {;; Our 'hits' is simplistic for now; will change when we support
-              ;; paging, etc.
-              :hits (count results)
-              :took elapsed
-              :items results}
-             warnings))))
+  (map->CollectionResults
+    (merge {;; Our 'hits' is simplistic for now; will change when we support
+            ;; paging, etc.
+            :hits (count results)
+            :took elapsed
+            :items results}
+           warnings)))
 
 (defn elided
   [results]

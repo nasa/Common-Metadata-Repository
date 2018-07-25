@@ -57,9 +57,11 @@
   (let [[vars params bounding-box gridded-warns]
         (common/apply-gridded-conditions vars params bounding-box)
         services-promise (service/async-get-metadata endpoint token service-ids)
-        bounding-infos (map #(variable/extract-bounding-info
-                              coll % bounding-box)
-                            vars)
+        bounding-infos (if (seq bounding-box)
+                         (map #(variable/extract-bounding-info
+                                coll % bounding-box)
+                              vars)
+                         [])
         errs (apply errors/collect bounding-infos)
         warns (warnings/collect gridded-warns)]
     (when errs
@@ -100,7 +102,7 @@
                 bounding-box
                 {:endpoint search-endpoint
                  :token user-token
-                 :params raw-params})
+                 :params params})
         ;; Stage 4
         [query s4-errs]
         (common/stage4 component
