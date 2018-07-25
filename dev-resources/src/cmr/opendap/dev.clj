@@ -16,7 +16,7 @@
     [cmr.opendap.components.core]
     [cmr.opendap.http.request :as request]
     [cmr.opendap.http.response :as response]
-    [cmr.opendap.ous.variable :as variable]
+    [cmr.opendap.ous.concepts.variable :as variable]
     [cmr.opendap.ous.util.geog :as geog]
     [cmr.opendap.results.errors :as errors]
     [com.stuartsierra.component :as component]
