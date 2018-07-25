@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.variable
+(ns cmr.opendap.ous.concepts.variable
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]

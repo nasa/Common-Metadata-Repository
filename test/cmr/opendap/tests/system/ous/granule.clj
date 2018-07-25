@@ -2,7 +2,7 @@
   "Note: this namespace is exclusively for system tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.granule :as granule]
+    [cmr.opendap.ous.concepts.granule :as granule]
     [cmr.opendap.testing.config :as test-system]
     [ring.util.codec :as codec]))
 

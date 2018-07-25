@@ -4,7 +4,7 @@
     [clojure.test :refer :all]
     [clojusc.twig :as logger]
     [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.variable :as variable]))
+    [cmr.opendap.ous.concepts.variable :as variable]))
 
 (logger/set-level! '[] :fatal)
 

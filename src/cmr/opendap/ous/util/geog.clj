@@ -135,7 +135,7 @@
 
   Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  `cmr.opendap.ous.variable/create-opendap-lookup-reversed`)."
+  `cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed`)."
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
     (int
@@ -148,7 +148,7 @@
 
   Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  `cmr.opendap.ous.variable/create-opendap-lookup-reversed`)."
+  `cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed`)."
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
     (int

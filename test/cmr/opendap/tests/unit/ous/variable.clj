@@ -2,7 +2,7 @@
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.variable :as variable]))
+    [cmr.opendap.ous.concepts.variable :as variable]))
 
 (def lat-lon-dims
   [{:Name "EmisFreqIR"

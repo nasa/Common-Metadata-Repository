@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.granule
+(ns cmr.opendap.ous.concepts.granule
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]

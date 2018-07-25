@@ -10,11 +10,11 @@
   has not been updated to use UMM-Var 1.2."
   (:require
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.collection :as collection]
     [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.granule :as granule]
-    [cmr.opendap.ous.service :as service]
-    [cmr.opendap.ous.variable :as variable]
+    [cmr.opendap.ous.concepts.collection :as collection]
+    [cmr.opendap.ous.concepts.granule :as granule]
+    [cmr.opendap.ous.concepts.service :as service]
+    [cmr.opendap.ous.concepts.variable :as variable]
     [cmr.opendap.results.core :as results]
     [cmr.opendap.results.errors :as errors]
     [cmr.opendap.results.warnings :as warnings]

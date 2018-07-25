@@ -1,9 +1,9 @@
 (ns cmr.opendap.ous.v1
   (:require
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.collection :as collection]
     [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.granule :as granule]
+    [cmr.opendap.ous.concepts.collection :as collection]
+    [cmr.opendap.ous.concepts.granule :as granule]
     [cmr.opendap.results.core :as results]
     [cmr.opendap.results.errors :as errors]
     [cmr.opendap.util :as util]
