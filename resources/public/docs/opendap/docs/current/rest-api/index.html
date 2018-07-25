@@ -264,10 +264,13 @@
             <a href="#about-the-docs" class="toc-h1 toc-link" data-title="about-the-docs">About the Docs</a>
           </li>
           <li>
-            <a href="#authorized-access" class="toc-h1 toc-link" data-title="authorized-access">Authorized Access</a>
+            <a href="#releases" class="toc-h1 toc-link" data-title="releases">Releases</a>
           </li>
           <li>
             <a href="#versioned-api" class="toc-h1 toc-link" data-title="versioned-api">Versioned API</a>
+          </li>
+          <li>
+            <a href="#authorized-access" class="toc-h1 toc-link" data-title="authorized-access">Authorized Access</a>
           </li>
           <li>
             <a href="#responses" class="toc-h1 toc-link" data-title="responses">Responses</a>
@@ -327,6 +330,9 @@
                     <a href="#dependent-services" class="toc-h2 toc-link" data-title="dependent-services">Dependent Services</a>
                   </li>
                   <li>
+                    <a href="#cmr-opendap-warnings" class="toc-h2 toc-link" data-title="cmr-opendap-warnings">CMR OPeNDAP Warnings</a>
+                  </li>
+                  <li>
                     <a href="#cmr-opendap-errors" class="toc-h2 toc-link" data-title="cmr-opendap-errors">CMR OPeNDAP Errors</a>
                   </li>
               </ul>
@@ -374,30 +380,37 @@ breaks.</p>
   environment (which would have different concept ids). Be sure to use
   the concept ids that you know exist in your target environment.
 </aside>
-<h1 id='authorized-access'>Authorized Access</h1>
-<p>CMR OPeNDAP requires the use of tokens in order to provide access to
-potentially protected collections, services, variables, and/or granules.</p>
+<h1 id='releases'>Releases</h1>
+<p>The following table provides a mapping between CMR OPeNDAP releases
+and the API versions supported in each.</p>
 
-<blockquote>
-<p>A token needs to be included in each request, and this is done by sending
-a special header:</p>
-</blockquote>
-<pre class="highlight plaintext"><code>"Echo-Token: &lt;YOUR_TOKEN&gt;"
-</code></pre>
-<blockquote>
-<p>For example, if you have stored your token in a file:</p>
-</blockquote>
-<pre class="highlight shell tab-shell"><code><span class="s2">"Echo-Token: </span><span class="sb">`</span>cat /path/to/tokens/sit<span class="sb">`</span><span class="s2">"</span>
-</code></pre><pre class="highlight clojure"><code><span class="w">
-</span></code></pre>
-<p>Both ECHO as well as URS/Earthdata Login tokens are supported.</p>
-
-<p>Many of the examples in the documentation below show usage of the
-Echo token.</p>
+<table><thead>
+<tr>
+<th>Release</th>
+<th>REST API Versions</th>
+<th>Status</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1.1.0</td>
+<td>v1, v2, v2.1</td>
+<td>In development</td>
+</tr>
+<tr>
+<td>1.0.0</td>
+<td>v1, v2</td>
+<td>Released</td>
+</tr>
+<tr>
+<td>0.1.0</td>
+<td>v1</td>
+<td>Released</td>
+</tr>
+</tbody></table>
 <h1 id='versioned-api'>Versioned API</h1>
 <p>The CMR OPeNDAP REST API is versioned. By default, the most recent version of
 the API is accessed when a request is submitted without specificing the
-desired version.</p>
+desired version. Currently, this is <code>v2.1</code>.</p>
 
 <p>To request a specific version of the REST API, you must send an additional
 header in your request to CMR OPeNDAP.</p>
@@ -405,12 +418,12 @@ header in your request to CMR OPeNDAP.</p>
 <blockquote>
 <p>An <code>Accept</code> header is required to request a specific version of the API:</p>
 </blockquote>
-<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v1+json"
+<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v2+json"
 </code></pre>
 <blockquote>
 <p>The following is also valid:</p>
 </blockquote>
-<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v1"
+<pre class="highlight plaintext"><code>"Accept: application/vnd.cmr-opendap.v2"
 </code></pre>
 <p>All HTTP responses from the REST API also provide information on the version
 used when processing the request. This can be useful for clients debugging
@@ -442,6 +455,26 @@ calls to the service.</p>
   to be using. Then your use of new versions of the API will be an
   intentional decision.
 </aside>
+<h1 id='authorized-access'>Authorized Access</h1>
+<p>CMR OPeNDAP requires the use of tokens in order to provide access to
+potentially protected collections, services, variables, and/or granules.</p>
+
+<blockquote>
+<p>A token needs to be included in each request, and this is done by sending
+a special header:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>"Echo-Token: &lt;YOUR_TOKEN&gt;"
+</code></pre>
+<blockquote>
+<p>For example, if you have stored your token in a file:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="s2">"Echo-Token: </span><span class="sb">`</span>cat /path/to/tokens/sit<span class="sb">`</span><span class="s2">"</span>
+</code></pre><pre class="highlight clojure"><code><span class="w">
+</span></code></pre>
+<p>Both ECHO as well as URS/Earthdata Login tokens are supported.</p>
+
+<p>Many of the examples in the documentation below show usage of the
+Echo token.</p>
 <h1 id='responses'>Responses</h1><h2 id='success'>Success</h2>
 <p>CMR OPeNDAP responses have pareticular formats, inherited from CMR response
 data. A successful request will provide the results, the number of results
@@ -454,6 +487,7 @@ and, the time taken to process the request.</p>
   "hits": ...,
   "took": ...,
   "items": [...]
+  "warnings:" null
 }
 </code></pre><h2 id='errors'>Errors</h2>
 <p>When CMR OPeNDAP returns errors, it does so in a consistent format. In
@@ -483,7 +517,7 @@ API that will impact users of the default version.</p>
 <pre class="highlight plaintext"><code>{
   "hits": ...,
   "took": ...,
-  "warnings": ...,
+  "warnings": [...],
   "items": [...]
 }
 </code></pre>
@@ -491,7 +525,7 @@ API that will impact users of the default version.</p>
 <p>Warnings sent in an error response body:</p>
 </blockquote>
 <pre class="highlight plaintext"><code>{
-  "warnings": ...,
+  "warnings": [...],
   "errors": [...]
 }
 </code></pre><h1 id='ous-resources'>OUS Resources</h1>
@@ -603,7 +637,12 @@ note the acceptance of either dash or underscore in the parameter name:</p>
      <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      bounding-box=-9.984375,56.109375,19.828125,67.640625"</span>
-</code></pre><h3 id='exclude-granules'><code>exclude-granules</code></h3>
+</code></pre>
+<p>Note that spatial subsetting on non-gridded data is not supported. If
+<code>bounding-box</code> is provided against a collection whose granules
+are not gridded, the spatial subsetting information will be dropped and one
+or more warning messages will be returned in the payload.</p>
+<h3 id='exclude-granules'><code>exclude-granules</code></h3>
 <p>This allows clients to perform the inverse of a granule search. If the
 value of this parameter is set to <code>&quot;true&quot;</code>, then all granules <em>except</em>
 the ones passed will be returned.</p>
@@ -812,7 +851,12 @@ in the granule data extracted by the OPeNDAP query to an area of interest.</p>
      <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)"</span>
-</code></pre><h3 id='timeposition'><code>timeposition</code></h3>
+</code></pre>
+<p>Note that spatial subsetting on non-gridded data is not supported. If
+<code>subset</code> is provided against a collection whose granules
+are not gridded, the spatial subsetting information will be dropped and one
+or more warning messages will be returned in the payload.</p>
+<h3 id='timeposition'><code>timeposition</code></h3>
 <p>This provides clients with the ability to select a temporal subset of data to
 include in the granule data extracted by the OPeNDAP query, only providing data
 for the time of interest.</p>
@@ -889,6 +933,25 @@ available for use by anyone.</p>
 <p>CMR OPeNDAP will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.</p>
+<h2 id='cmr-opendap-warnings'>CMR OPeNDAP Warnings</h2>
+<p>Warning messages will generally be included in a successful reponse, and thus
+will usually have an HTTP status of 200.</p>
+<h3 id='gridded-data'>Gridded Data</h3>
+<table><thead>
+<tr>
+<th>HTTP Status</th>
+<th>Warning Message</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>200</td>
+<td>The variables <em>__, _</em>_, ... are not gridded.</td>
+</tr>
+<tr>
+<td>200</td>
+<td>The bounding information for the query has been removed.</td>
+</tr>
+</tbody></table>
 <h2 id='cmr-opendap-errors'>CMR OPeNDAP Errors</h2><h3 id='authorization'>Authorization</h3>
 <table><thead>
 <tr>

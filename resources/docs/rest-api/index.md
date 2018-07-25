@@ -50,39 +50,24 @@ breaks.
   the concept ids that you know exist in your target environment.
 </aside>
 
-# Authorized Access
 
-CMR OPeNDAP requires the use of tokens in order to provide access to
-potentially protected collections, services, variables, and/or granules.
+# Releases
 
-> A token needs to be included in each request, and this is done by sending
-a special header:
+The following table provides a mapping between CMR OPeNDAP releases
+and the API versions supported in each.
 
-```
-"Echo-Token: <YOUR_TOKEN>"
-```
-
-> For example, if you have stored your token in a file:
-
-```shell
-"Echo-Token: `cat /path/to/tokens/sit`"
-```
-
-```clj
-
-```
-
-Both ECHO as well as URS/Earthdata Login tokens are supported.
-
-Many of the examples in the documentation below show usage of the
-Echo token.
+Release | REST API Versions | Status
+------- | ----------------- | --------------
+1.1.0   | v1, v2, v2.1      | In development
+1.0.0   | v1, v2            | Released
+0.1.0   | v1                | Released
 
 
 # Versioned API
 
 The CMR OPeNDAP REST API is versioned. By default, the most recent version of
 the API is accessed when a request is submitted without specificing the
-desired version.
+desired version. Currently, this is `v2.1`.
 
 To request a specific version of the REST API, you must send an additional
 header in your request to CMR OPeNDAP.
@@ -90,13 +75,13 @@ header in your request to CMR OPeNDAP.
 > An `Accept` header is required to request a specific version of the API:
 
 ```
-"Accept: application/vnd.cmr-opendap.v1+json"
+"Accept: application/vnd.cmr-opendap.v2+json"
 ```
 
 > The following is also valid:
 
 ```
-"Accept: application/vnd.cmr-opendap.v1"
+"Accept: application/vnd.cmr-opendap.v2"
 ```
 
 All HTTP responses from the REST API also provide information on the version
@@ -139,6 +124,34 @@ Cmr-Media-Type: cmr-opendap.v2; format=json
 </aside>
 
 
+# Authorized Access
+
+CMR OPeNDAP requires the use of tokens in order to provide access to
+potentially protected collections, services, variables, and/or granules.
+
+> A token needs to be included in each request, and this is done by sending
+a special header:
+
+```
+"Echo-Token: <YOUR_TOKEN>"
+```
+
+> For example, if you have stored your token in a file:
+
+```shell
+"Echo-Token: `cat /path/to/tokens/sit`"
+```
+
+```clj
+
+```
+
+Both ECHO as well as URS/Earthdata Login tokens are supported.
+
+Many of the examples in the documentation below show usage of the
+Echo token.
+
+
 # Responses
 
 ## Success
@@ -154,6 +167,7 @@ and, the time taken to process the request.
   "hits": ...,
   "took": ...,
   "items": [...]
+  "warnings:" null
 }
 ```
 
@@ -190,7 +204,7 @@ API that will impact users of the default version.
 {
   "hits": ...,
   "took": ...,
-  "warnings": ...,
+  "warnings": [...],
   "items": [...]
 }
 ```
@@ -199,7 +213,7 @@ API that will impact users of the default version.
 
 ```
 {
-  "warnings": ...,
+  "warnings": [...],
   "errors": [...]
 }
 ```
@@ -324,6 +338,11 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      bounding-box=-9.984375,56.109375,19.828125,67.640625"
 ```
+
+Note that spatial subsetting on non-gridded data is not supported. If
+`bounding-box` is provided against a collection whose granules
+are not gridded, the spatial subsetting information will be dropped and one
+or more warning messages will be returned in the payload.
 
 
 ### `exclude-granules`
@@ -554,6 +573,11 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)"
 ```
 
+Note that spatial subsetting on non-gridded data is not supported. If
+`subset` is provided against a collection whose granules
+are not gridded, the spatial subsetting information will be dropped and one
+or more warning messages will be returned in the payload.
+
 
 ### `timeposition`
 
@@ -642,6 +666,18 @@ The following resources are provided for use in various tests:
 CMR OPeNDAP will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.
+
+## CMR OPeNDAP Warnings
+
+Warning messages will generally be included in a successful reponse, and thus
+will usually have an HTTP status of 200.
+
+### Gridded Data
+
+HTTP Status | Warning Message
+----------- |---------------------------------
+200         | The variables ___, ___, ... are not gridded.
+200         | The bounding information for the query has been removed.
 
 
 ## CMR OPeNDAP Errors
