@@ -20,7 +20,7 @@
         :invalid-data
         "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
-(defn- get-granule-parent-collection-and-concept
+(defn-timed get-granule-parent-collection-and-concept
   "Returns the parent collection concept, parsed UMM spec record, and the parse UMM lib record for a
   granule as a tuple. Finds the parent collection using the provider id and collection ref. This will
   correctly handle situations where there might be multiple concept ids that used a short name and

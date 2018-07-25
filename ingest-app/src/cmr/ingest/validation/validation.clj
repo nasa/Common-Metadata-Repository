@@ -2,6 +2,7 @@
   "Provides functions to validate concept"
   (:require
     [clojure.string :as str]
+    [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.log :as log :refer (warn)]
@@ -46,7 +47,7 @@
   (when (<= (count (:metadata concept)) 4)
     (errors/throw-service-error :bad-request "Request content is too short.")))
 
-(defn validate-concept-request
+(defn-timed validate-concept-request
   "Validates the initial request to ingest a concept."
   [concept]
   (validate-format concept)
@@ -108,7 +109,7 @@
         accepted-umm-version-with-padded-zeros (pad-zeros-to-version accepted-umm-version)]
     (compare umm-version-with-padded-zeros accepted-umm-version-with-padded-zeros))) 
 
-(defn validate-concept-metadata
+(defn-timed validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
                    (if (mt/umm-json? (:format concept))
@@ -167,7 +168,7 @@
         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
-(defn validate-granule-umm-spec
+(defn-timed validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
@@ -187,7 +188,7 @@
                                    context collection false)
                                   granule)))
 
-(defn validate-business-rules
+(defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
   [context concept]
   (if-errors-throw :invalid-data
