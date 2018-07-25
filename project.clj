@@ -142,9 +142,7 @@
         :doc-paths ["resources/docs/markdown"]
         :output-path "resources/public/docs/opendap/docs/current/reference"}}
       :slate {
-        :plugins [[lein-shell "0.5.0"]]
-        ;;
-      }}
+        :plugins [[lein-shell "0.5.0"]]}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
