@@ -111,7 +111,7 @@
     vendor is supplied))
 
   All other groups are unused."
-  (re-pattern "(.+)/((vnd\\.([^.+]+)(\\.(v[0-9]+))?(\\+(.+))?)|(.+))"))
+  (re-pattern "(.+)/((vnd\\.([^.+]+)(\\.(v[0-9.]+))?(\\+(.+))?)|(.+))"))
 
 (def accept-pattern-keys
   [:all
