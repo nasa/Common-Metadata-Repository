@@ -3,10 +3,14 @@
 SLATE_REPL=https://github.com/cmr-exchange/slate.git
 SLATE_CLONE=resources/docs/rest-api/slate
 SLATE_BUILD=$SLATE_CLONE/build
-REST_API_DIR=resources/public/docs/opendap/docs/rest-api
+REST_API_DIR=resources/public/docs/opendap/docs/current/rest-api
 
 if [ ! -d "$SLATE_CLONE" ]; then
 	git clone "$SLATE_REPL" "$SLATE_CLONE"
+fi
+
+if [ ! -d "$REST_API_DIR" ]; then
+	mkdir -p "$REST_API_DIR"
 fi
 
 # CMR-specific files needed

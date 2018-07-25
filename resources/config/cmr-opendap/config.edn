@@ -37,13 +37,16 @@
    :rest-docs
      {:base-url-template "%%OPENDAP_BASE_URL%%"
       :source "resources/docs/rest-api/index.md"
-      :outdir "resources/public/docs/opendap/docs/rest-api"}
+      :outdir "resources/public/docs/opendap/docs/current/rest-api"}
    :skip-static #{"/opendap/docs"}
-   :replace-base-url #{"/opendap/docs/rest-api"
-                       "/opendap/docs/reference/2000-usage.html"}
-   :index-dirs #{"/opendap/docs/marginalia"
-                 "/opendap/docs/reference"
-                 "/opendap/docs/rest-api"}}
+   :replace-base-url #{"/opendap/docs/current/rest-api"
+                       "/opendap/docs/current/reference/2000-usage.html"}
+   :index-dirs #{"/opendap/docs/1.0.0/marginalia"
+                 "/opendap/docs/1.0.0/reference"
+                 "/opendap/docs/1.0.0/rest-api"
+                 "/opendap/docs/current/marginalia"
+                 "/opendap/docs/current/reference"
+                 "/opendap/docs/current/rest-api"}}
  :logging {
    :level :debug
    :nss [cmr.opendap cmr.authz cmr.http.kit cmr.mission-control org.httpkit]
