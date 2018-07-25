@@ -62,6 +62,12 @@ Release | REST API Versions | Status
 1.0.0   | v1, v2            | Released
 0.1.0   | v1                | Released
 
+Summary of changes in REST API:
+
+* v2.1: Use of UMM-Var 1.2 new dimensional metadata to remove old hacks
+* v2: Breaking change to cache management admin resource
+* v1: First version of API (including admin resources)
+
 
 # Versioned API
 

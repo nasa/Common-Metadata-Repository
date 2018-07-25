@@ -15,6 +15,10 @@
 
 (use-fixtures :once test-system/with-system)
 
+(def options (-> {}
+                 (request/add-token-header (util/get-sit-token))
+                 (util/override-api-version-header "v2")))
+
 (deftest collection-GET-query-coverage
   (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
@@ -24,7 +28,7 @@
                                 collection-id)
                            (test-system/http-port)
                            collection-id)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
             "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
@@ -41,7 +45,7 @@
                                 "&rangesubset=V1200267322-HMR_TME,V1200267323-HMR_TME")
                            (test-system/http-port)
                            collection-id)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
             "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
@@ -58,7 +62,7 @@
                                 "&subset=lon(-9.984375,19.828125)")
                            (test-system/http-port)
                            collection-id)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
             "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
@@ -75,7 +79,7 @@
                                 "&subset=lon(-181,19.828125)")
                            (test-system/http-port)
                            collection-id)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 400 (:status response)))
     (is (= {:errors ["The values provided for latitude are not within the valid range of -90 degrees through 90 degrees."
                      "The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."
@@ -94,7 +98,7 @@
                                                ",2000-01-02T00:00:00Z")
                              (test-system/http-port)
                              collection-id)
-                     (request/add-token-header {} (util/get-sit-token)))]
+                     options)]
       (is (= 200 (:status response)))
       (is (= []
              (util/parse-response response)))))
@@ -107,7 +111,7 @@
                                                ",2016-07-03T00:00:00Z")
                              (test-system/http-port)
                              collection-id)
-                     (request/add-token-header {} (util/get-sit-token)))]
+                     options)]
       (is (= 200 (:status response)))
       (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
              (util/parse-response response)))))
@@ -120,7 +124,7 @@
                                                ",2016-07-03T00:00:00Z")
                              (test-system/http-port)
                              collection-id)
-                     (request/add-token-header {} (util/get-sit-token)))]
+                     options)]
       (is (= 200 (:status response)))
       (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
               "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
@@ -136,7 +140,7 @@
                                                ",2016-07-03T00:00:00Z")
                              (test-system/http-port)
                              collection-id)
-                     (request/add-token-header {} (util/get-sit-token)))]
+                     options)]
       (is (= 200 (:status response)))
       (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
               "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]
@@ -155,7 +159,7 @@
                            collection-id
                            granule-id
                            variable-ids)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst,lat,lon"]
            (util/parse-response response)))))
@@ -172,7 +176,7 @@
                            (test-system/http-port)
                            collection-id
                            granule-id)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst[0:1:0][13161:1:17071][10630:1:11419],analysis_error[0:1:0][13161:1:17071][10630:1:11419],mask[0:1:0][13161:1:17071][10630:1:11419],sea_ice_fraction[0:1:0][13161:1:17071][10630:1:11419],lat[13161:1:17071],lon[10630:1:11419]"]
            (util/parse-response response)))))
@@ -192,7 +196,7 @@
                            collection-id
                            granule-id
                            variable-ids)
-                   (request/add-token-header {} (util/get-sit-token)))]
+                   options)]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?analysed_sst[0:1:0][13161:1:17071][10630:1:11419],lat[13161:1:17071],lon[10630:1:11419]"]
            (util/parse-response response)))))

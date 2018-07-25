@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>OPeNDAP/CMR Integration -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/cmr-exchange/cmr-opendap">OPeNDAP/CMR Integration</a></h1><h2 class="project-version">1.1.0-SNAPSHOT</h2><br /><p>OPeNDAP Integration in the CMR</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.esri.geometry/esri-geometry-api</td><td class="dotted"><hr /></td><td class="dep-version">2.2.0</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.vividsolutions/jts</td><td class="dotted"><hr /></td><td class="dep-version">1.13</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-authz</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-http-kit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-mission-control</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">net.sf.geographiclib/GeographicLib-Java</td><td class="dotted"><hr /></td><td class="dep-version">1.49</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">org.geotools/gt-geometry</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">org.geotools/gt-referencing</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.1</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.8</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v2-1">cmr.opendap.app.routes.rest.v2-1</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.granule">cmr.opendap.ous.granule</a></li><li><a href="#cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</a></li><li><a href="#cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</a></li><li><a href="#cmr.opendap.ous.v2-1">cmr.opendap.ous.v2-1</a></li><li><a href="#cmr.opendap.ous.collection">cmr.opendap.ous.collection</a></li><li><a href="#cmr.opendap.ous.common">cmr.opendap.ous.common</a></li><li><a href="#cmr.opendap.ous.v1">cmr.opendap.ous.v1</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.variable">cmr.opendap.ous.variable</a></li><li><a href="#cmr.opendap.ous.service">cmr.opendap.ous.service</a></li><li><a href="#cmr.opendap.ous.query.params.cmr">cmr.opendap.ous.query.params.cmr</a></li><li><a href="#cmr.opendap.ous.query.params.wcs">cmr.opendap.ous.query.params.wcs</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.validation">cmr.opendap.validation</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.results.warnings">cmr.opendap.results.warnings</a></li><li><a href="#cmr.opendap.results.common">cmr.opendap.results.common</a></li><li><a href="#cmr.opendap.results.core">cmr.opendap.results.core</a></li><li><a href="#cmr.opendap.results.errors">cmr.opendap.results.errors</a></li><li><a href="#cmr.opendap.components.concept">cmr.opendap.components.concept</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.auth">cmr.opendap.components.auth</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</a></li><li><a href="#cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</a></li><li><a href="#cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</a></li><li><a href="#cmr.opendap.geom.util">cmr.opendap.geom.util</a></li><li><a href="#cmr.opendap.geom.core">cmr.opendap.geom.core</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</a></li><li><a href="#cmr.opendap.data.size.util">cmr.opendap.data.size.util</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">cheshire</td><td class="dotted"><hr /></td><td class="dep-version">5.8.0</td></tr><tr><td class="dep-name">clojusc/trifl</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0</td></tr><tr><td class="dep-name">clojusc/twig</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.esri.geometry/esri-geometry-api</td><td class="dotted"><hr /></td><td class="dep-version">2.2.0</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">com.vividsolutions/jts</td><td class="dotted"><hr /></td><td class="dep-version">1.13</td></tr><tr><td class="dep-name">environ</td><td class="dotted"><hr /></td><td class="dep-version">1.1.0</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-authz</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-http-kit</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-mission-control</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">gov.nasa.earthdata/cmr-site-templates</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.3.0</td></tr><tr><td class="dep-name">markdown-clj</td><td class="dotted"><hr /></td><td class="dep-version">1.0.2</td></tr><tr><td class="dep-name">metosin/reitit-core</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/reitit-ring</td><td class="dotted"><hr /></td><td class="dep-version">0.1.3</td></tr><tr><td class="dep-name">metosin/ring-http-response</td><td class="dotted"><hr /></td><td class="dep-version">0.9.0</td></tr><tr><td class="dep-name">net.sf.geographiclib/GeographicLib-Java</td><td class="dotted"><hr /></td><td class="dep-version">1.49</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.9.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.4.474</td></tr><tr><td class="dep-name">org.clojure/core.cache</td><td class="dotted"><hr /></td><td class="dep-version">0.7.1</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.2.0-alpha5</td></tr><tr><td class="dep-name">org.geotools/gt-geometry</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">org.geotools/gt-referencing</td><td class="dotted"><hr /></td><td class="dep-version">19.1</td></tr><tr><td class="dep-name">ring/ring-core</td><td class="dotted"><hr /></td><td class="dep-version">1.6.3</td></tr><tr><td class="dep-name">ring/ring-codec</td><td class="dotted"><hr /></td><td class="dep-version">1.1.1</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.3.2</td></tr><tr><td class="dep-name">selmer</td><td class="dotted"><hr /></td><td class="dep-version">1.11.8</td></tr><tr><td class="dep-name">tolitius/xml-in</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</a></li><li><a href="#cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</a></li><li><a href="#cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</a></li><li><a href="#cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</a></li><li><a href="#cmr.opendap.app.middleware">cmr.opendap.app.middleware</a></li><li><a href="#cmr.opendap.app.core">cmr.opendap.app.core</a></li><li><a href="#cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</a></li><li><a href="#cmr.opendap.app.routes.rest.v2-1">cmr.opendap.app.routes.rest.v2-1</a></li><li><a href="#cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</a></li><li><a href="#cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</a></li><li><a href="#cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</a></li><li><a href="#cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</a></li><li><a href="#cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</a></li><li><a href="#cmr.opendap.ous.v2-1">cmr.opendap.ous.v2-1</a></li><li><a href="#cmr.opendap.ous.common">cmr.opendap.ous.common</a></li><li><a href="#cmr.opendap.ous.v1">cmr.opendap.ous.v1</a></li><li><a href="#cmr.opendap.ous.core">cmr.opendap.ous.core</a></li><li><a href="#cmr.opendap.ous.concepts.granule">cmr.opendap.ous.concepts.granule</a></li><li><a href="#cmr.opendap.ous.concepts.collection">cmr.opendap.ous.concepts.collection</a></li><li><a href="#cmr.opendap.ous.concepts.variable">cmr.opendap.ous.concepts.variable</a></li><li><a href="#cmr.opendap.ous.concepts.service">cmr.opendap.ous.concepts.service</a></li><li><a href="#cmr.opendap.ous.query.params.cmr">cmr.opendap.ous.query.params.cmr</a></li><li><a href="#cmr.opendap.ous.query.params.wcs">cmr.opendap.ous.query.params.wcs</a></li><li><a href="#cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</a></li><li><a href="#cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</a></li><li><a href="#cmr.opendap.util">cmr.opendap.util</a></li><li><a href="#cmr.opendap.validation">cmr.opendap.validation</a></li><li><a href="#cmr.opendap.core">cmr.opendap.core</a></li><li><a href="#cmr.opendap.testing.util">cmr.opendap.testing.util</a></li><li><a href="#cmr.opendap.testing.system">cmr.opendap.testing.system</a></li><li><a href="#cmr.opendap.testing.config">cmr.opendap.testing.config</a></li><li><a href="#cmr.opendap.results.warnings">cmr.opendap.results.warnings</a></li><li><a href="#cmr.opendap.results.common">cmr.opendap.results.common</a></li><li><a href="#cmr.opendap.results.core">cmr.opendap.results.core</a></li><li><a href="#cmr.opendap.results.errors">cmr.opendap.results.errors</a></li><li><a href="#cmr.opendap.components.concept">cmr.opendap.components.concept</a></li><li><a href="#cmr.opendap.components.caching">cmr.opendap.components.caching</a></li><li><a href="#cmr.opendap.components.core">cmr.opendap.components.core</a></li><li><a href="#cmr.opendap.components.logging">cmr.opendap.components.logging</a></li><li><a href="#cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</a></li><li><a href="#cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</a></li><li><a href="#cmr.opendap.components.auth">cmr.opendap.components.auth</a></li><li><a href="#cmr.opendap.components.config">cmr.opendap.components.config</a></li><li><a href="#cmr.opendap.components.httpd">cmr.opendap.components.httpd</a></li><li><a href="#cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</a></li><li><a href="#cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</a></li><li><a href="#cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</a></li><li><a href="#cmr.opendap.geom.util">cmr.opendap.geom.util</a></li><li><a href="#cmr.opendap.geom.core">cmr.opendap.geom.core</a></li><li><a href="#cmr.opendap.http.request">cmr.opendap.http.request</a></li><li><a href="#cmr.opendap.http.response">cmr.opendap.http.response</a></li><li><a href="#cmr.opendap.const">cmr.opendap.const</a></li><li><a href="#cmr.opendap.site.data">cmr.opendap.site.data</a></li><li><a href="#cmr.opendap.site.pages">cmr.opendap.site.pages</a></li><li><a href="#cmr.opendap.site.static">cmr.opendap.site.static</a></li><li><a href="#cmr.opendap.health">cmr.opendap.health</a></li><li><a href="#cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</a></li><li><a href="#cmr.opendap.data.size.util">cmr.opendap.data.size.util</a></li><li><a href="#cmr.opendap.config">cmr.opendap.config</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.app.handler.collection" name="cmr.opendap.app.handler.collection"><h1 class="project-name">cmr.opendap.app.handler.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>This namespace defines the REST API handlers for collection resources.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.app.handler.collection
   (:require
    [cheshire.core :as json]
@@ -3441,134 +3441,13 @@ net.brehaut.ClojureTools = (function (SH) {
   * v2 - changes to the admin API (in particular, how caching is managed)
   * v2.1 - changes in the behaviour of how URLs are generated, with non-gridded
            granules having any spatial subsetting requests stripped.</p>
-
-<p>  Note that the REST API version is not to be confused with the two different
-  versions used for query parameters. In that case, v1 parameters refer to what
-  what used in the original Node.js prototype (WCS-compatibility), and the v2
-  parameters refer to what has been done in the Clojure implementation, providing
-  CMR/EDSC-compatible parameters.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn all
   [httpd-component version]
   (case (keyword version)
     :v1 (v1/all httpd-component)
     :v2 (v2/all httpd-component)
-    :v2.1 (v2-1/all httpd-component)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.granule" name="cmr.opendap.ous.granule"><h1 class="project-name">cmr.opendap.ous.granule</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.granule
-  (:require
-   [clojure.string :as string]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.const :as const]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.opendap.ous.util.core :as ous-util]
-   [cmr.opendap.results.core :as results]
-   [cmr.opendap.results.errors :as errors]
-   [cmr.opendap.util :as util]
-   [ring.util.codec :as codec]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn build-include
-  [gran-ids]
-  (string/join
-   &quot;&amp;&quot;
-   (conj
-    (map #(str (codec/url-encode &quot;concept_id[]&quot;)
-               &quot;=&quot;
-               %)
-         gran-ids)
-    (str &quot;page_size=&quot; (count gran-ids)))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn build-exclude
-  [component gran-ids]
-  (string/join
-   &quot;&amp;&quot;
-   (conj
-    (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]&quot;)
-               &quot;=&quot;
-               %)
-         gran-ids)
-    ;; We don't know how many granule ids will be involved in an exclude,
-    ;; so we use CMR's max page size.
-    (str &quot;page_size=&quot; (config/cmr-max-pagesize component)))))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
-  passed in the parameters.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn build-query
-  [component params]
-  (let [coll-id (:collection-id params)
-        gran-ids (util/remove-empty (:granules params))
-        exclude? (:exclude-granules params)
-        bounding-box (:bounding-box params)
-        temporal (:temporal params)]
-    (str &quot;collection_concept_id=&quot; coll-id
-         (when (seq gran-ids)
-          (str &quot;&amp;&quot;
-               (if exclude?
-                 (build-exclude component gran-ids)
-                 (build-include gran-ids))))
-         (when (seq bounding-box)
-          (str &quot;&amp;bounding_box=&quot;
-               (ous-util/seq-&gt;str bounding-box)))
-         (when (seq temporal)
-          (str &quot;&amp;&quot;
-               (ous-util/temporal-seq-&gt;cmr-query temporal))))))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, :granules, and :exclude-granules
-  keys, get the metadata for the desired granules.</p>
-
-<p>  Which granule metadata is returned depends upon the values of :granules and
-  :exclude-granules</p>
-</td><td class="codes"><pre class="brush: clojure">(defn async-get-metadata
-  [component search-endpoint user-token params]
-  (let [url (str search-endpoint &quot;/granules&quot;)
-        payload (build-query component params)]
-    (log/debug &quot;Granules query CMR URL:&quot; url)
-    (log/debug &quot;Granules query CMR payload:&quot; payload)
-    (request/async-post
-     url
-     (-&gt; {}
-         (request/add-token-header user-token)
-         (request/add-accept &quot;application/json&quot;)
-         (request/add-form-ct)
-         (request/add-payload payload)
-         ((fn [x] (log/debug &quot;Client request options:&quot; x) x)))
-     response/json-handler)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn extract-metadata
-  [promise]
-  (let [rslts @promise]
-    (if (errors/erred? rslts)
-      (do
-        (log/error errors/granule-metadata)
-        rslts)
-      (do
-        (log/trace &quot;Got results from CMR granule search:&quot;
-                   (results/elided rslts))
-        (log/trace &quot;Remaining results:&quot; (results/remaining-items rslts))
-        (get-in rslts [:feed :entry])))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
-  [component search-endpoint user-token params]
-  (let [promise (async-get-metadata component search-endpoint user-token params)]
-    (extract-metadata promise)))</pre></td></tr><tr><td class="docs"><p>The criteria defined in the prototype was to iterate through the links,
-  only examining those links that were not 'inherited', and find the one
-  whose :rel value matched a particular string.</p>
-
-<p>  It is currently unclear what the best criteria for this decision is.</p>
-
-<p>XXX The following may need to change once CMR-4912 is addressed ...</p>
-</td><td class="codes"><pre class="brush: clojure">(defn match-datafile-link
-  [link-data]
-  (log/trace &quot;Link data:&quot; link-data)
-  (let [rel (:rel link-data)]
-    (and (not (:inherited link-data))
-              (= const/datafile-link-rel rel))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn extract-datafile-link
-  [granule-entry]
-  (log/trace &quot;Granule entry: &quot; granule-entry)
-  (let [link (-&gt;&gt; (:links granule-entry)
-                  (filter match-datafile-link)
-                  first)
-        gran-id (:id granule-entry)]
-    (if link
-      {:granule-id gran-id
-       :link-rel (:rel link)
-       :link-href (:href link)}
-      {:errors [errors/empty-gnl-data-file-url
-                (when gran-id
-                  (format errors/problem-granules gran-id))]})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util.geog" name="cmr.opendap.ous.util.geog"><h1 class="project-name">cmr.opendap.ous.util.geog</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+    :v2.1 (v2-1/all httpd-component)
+    (v2-1/all httpd-component)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.util.geog" name="cmr.opendap.ous.util.geog"><h1 class="project-name">cmr.opendap.ous.util.geog</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.util.geog
   (:require
    [cmr.opendap.const :as const]
@@ -3678,7 +3557,7 @@ schemes an explicit operation on explicit data.</p>
 
 <p>  Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  <code>cmr.opendap.ous.variable/create-opendap-lookup-reversed</code>).</p>
+  <code>cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed</code>).</p>
 </td><td class="codes"><pre class="brush: clojure">(defn lat-lo-phase-shift-reversed
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
@@ -3689,7 +3568,7 @@ schemes an explicit operation on explicit data.</p>
 
 <p>  Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  <code>cmr.opendap.ous.variable/create-opendap-lookup-reversed</code>).</p>
+  <code>cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed</code>).</p>
 </td><td class="codes"><pre class="brush: clojure">(defn lat-hi-phase-shift-reversed
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
@@ -3898,11 +3777,11 @@ actual number will varry, depending upon the resolution of the data).</p></li>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.v2-1
   (:require
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.collection :as collection]
     [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.granule :as granule]
-    [cmr.opendap.ous.service :as service]
-    [cmr.opendap.ous.variable :as variable]
+    [cmr.opendap.ous.concepts.collection :as collection]
+    [cmr.opendap.ous.concepts.granule :as granule]
+    [cmr.opendap.ous.concepts.service :as service]
+    [cmr.opendap.ous.concepts.variable :as variable]
     [cmr.opendap.results.core :as results]
     [cmr.opendap.results.errors :as errors]
     [cmr.opendap.results.warnings :as warnings]
@@ -3940,7 +3819,7 @@ actual number will varry, depending upon the resolution of the data).</p></li>
   (let [[vars params bounding-box gridded-warns]
         (common/apply-gridded-conditions vars params bounding-box)
         services-promise (service/async-get-metadata endpoint token service-ids)
-        bounding-infos (if (seq bounding-box)
+        bounding-infos (if-not (seq gridded-warns)
                          (map #(variable/extract-bounding-info
                                 coll % bounding-box)
                               vars)
@@ -4004,60 +3883,20 @@ actual number will varry, depending upon the resolution of the data).</p></li>
                         [not data-files errors/empty-gnl-data-files])})]
     (common/process-results {:params params
                              :data-files data-files
-                             :query query} start errs warns)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.collection" name="cmr.opendap.ous.collection"><h1 class="project-name">cmr.opendap.ous.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.collection
-  (:require
-   [clojure.string :as string]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Collection API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn build-query
-  [concept-id]
-  (str &quot;concept_id=&quot; concept-id))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, get the metadata for the
-  associated collection.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn async-get-metadata
-  [search-endpoint user-token params]
-  (let [concept-id (:collection-id params)
-        url (str search-endpoint
-                 &quot;/collections?&quot;
-                 (build-query concept-id))]
-    (log/debug &quot;Collection query to CMR:&quot; url)
-    (request/async-get
-     url
-     (-&gt; {}
-         (request/add-token-header user-token)
-         (request/add-accept &quot;application/json&quot;))
-     response/json-handler)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn extract-metadata
-  [promise]
-  (let [results @promise]
-    (log/trace &quot;Got results from CMR granule collection:&quot; results)
-    (first (get-in results [:feed :entry]))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
-  [search-endpoint user-token params]
-  (let [promise (async-get-metadata search-endpoint user-token params)]
-    (extract-metadata promise)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn extract-variable-ids
-  [entry]
-  (sort (get-in entry [:associations :variables])))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn extract-service-ids
-  [entry]
-  (sort (get-in entry [:associations :services])))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.common" name="cmr.opendap.ous.common"><h1 class="project-name">cmr.opendap.ous.common</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+                             :query query} start errs warns)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.common" name="cmr.opendap.ous.common"><h1 class="project-name">cmr.opendap.ous.common</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.common
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.opendap.components.concept :as concept]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.ous.collection :as collection]
-   [cmr.opendap.ous.granule :as granule]
+   [cmr.opendap.ous.concepts.collection :as collection]
+   [cmr.opendap.ous.concepts.granule :as granule]
+   [cmr.opendap.ous.concepts.service :as service]
+   [cmr.opendap.ous.concepts.variable :as variable]
    [cmr.opendap.ous.query.params.core :as params]
-   [cmr.opendap.ous.service :as service]
    [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.ous.variable :as variable]
    [cmr.opendap.results.core :as results]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.results.warnings :as warnings]
@@ -4128,7 +3967,10 @@ actual number will varry, depending upon the resolution of the data).</p></li>
   [vars]
   (-&gt;&gt; vars
        (map #(gridded-dims? (get-in % [:umm :Dimensions])))
-       (every? true?)))</pre></td></tr><tr><td class="docs"><p>XXX The <code>fallback-*</code> vars are left-overs from previous work done in the
+       (every? true?)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn strip-spatial
+  [params]
+  (assoc params :bounding-box [] :subset []))</pre></td></tr><tr><td class="docs"><p>XXX The <code>fallback-*</code> vars are left-overs from previous work done in the
     Node.js prorotype. For more context, see CMR-4901 abd CMR-4912.
     Their continued use is a special case that needs to be addressed
     before CMR OPeNDAP can be used in general, for all granules. As such.
@@ -4175,7 +4017,7 @@ actual number will varry, depending upon the resolution of the data).</p></li>
         (map #(str % &quot;.&quot; (:format params) query-string) urls)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn process-results
   ([results start errs]
-    (process-results results start errs []))
+    (process-results results start errs {:warnings nil}))
   ([{:keys [params data-files query]} start errs warns]
     (log/trace &quot;Got data-files:&quot; (vec data-files))
     (if errs
@@ -4271,7 +4113,7 @@ have been stripped due to non-applicability.</li>
       (log/warn warn1)
       (log/warn warnings/non-gridded-stripped)
       [vars
-       (assoc params :bounding-box [] :subset [])
+       (strip-spatial params)
        []
        {:warnings [warn1 warnings/non-gridded-stripped]}])))</pre></td></tr><tr><td class="docs"><p>  Stages for URL Generation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 
@@ -4350,9 +4192,9 @@ the code could be properly prepared for async execution.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.v1
   (:require
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.collection :as collection]
     [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.granule :as granule]
+    [cmr.opendap.ous.concepts.collection :as collection]
+    [cmr.opendap.ous.concepts.granule :as granule]
     [cmr.opendap.results.core :as results]
     [cmr.opendap.results.errors :as errors]
     [cmr.opendap.util :as util]
@@ -4478,8 +4320,164 @@ were at 1.2.</p>
   (log/trace &quot;Got API version:&quot; api-version)
   (case (keyword api-version)
     :v2.1 (v2-1/get-opendap-urls component user-token raw-params)
-    (v1/get-opendap-urls component user-token raw-params)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.variable" name="cmr.opendap.ous.variable"><h1 class="project-name">cmr.opendap.ous.variable</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.variable
+    (v1/get-opendap-urls component user-token raw-params)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.concepts.granule" name="cmr.opendap.ous.concepts.granule"><h1 class="project-name">cmr.opendap.ous.concepts.granule</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.concepts.granule
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.const :as const]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.util.core :as ous-util]
+   [cmr.opendap.results.core :as results]
+   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.util :as util]
+   [ring.util.codec :as codec]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-include
+  [gran-ids]
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;concept_id[]&quot;)
+               &quot;=&quot;
+               %)
+         gran-ids)
+    (str &quot;page_size=&quot; (count gran-ids)))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-exclude
+  [component gran-ids]
+  (string/join
+   &quot;&amp;&quot;
+   (conj
+    (map #(str (codec/url-encode &quot;exclude[echo_granule_id][]&quot;)
+               &quot;=&quot;
+               %)
+         gran-ids)
+    ;; We don't know how many granule ids will be involved in an exclude,
+    ;; so we use CMR's max page size.
+    (str &quot;page_size=&quot; (config/cmr-max-pagesize component)))))</pre></td></tr><tr><td class="docs"><p>Build the query string for querying granles, bassed upon the options
+  passed in the parameters.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [component params]
+  (let [coll-id (:collection-id params)
+        gran-ids (util/remove-empty (:granules params))
+        exclude? (:exclude-granules params)
+        bounding-box (:bounding-box params)
+        temporal (:temporal params)]
+    (str &quot;collection_concept_id=&quot; coll-id
+         (when (seq gran-ids)
+          (str &quot;&amp;&quot;
+               (if exclude?
+                 (build-exclude component gran-ids)
+                 (build-include gran-ids))))
+         (when (seq bounding-box)
+          (str &quot;&amp;bounding_box=&quot;
+               (ous-util/seq-&gt;str bounding-box)))
+         (when (seq temporal)
+          (str &quot;&amp;&quot;
+               (ous-util/temporal-seq-&gt;cmr-query temporal))))))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, :granules, and :exclude-granules
+  keys, get the metadata for the desired granules.</p>
+
+<p>  Which granule metadata is returned depends upon the values of :granules and
+  :exclude-granules</p>
+</td><td class="codes"><pre class="brush: clojure">(defn async-get-metadata
+  [component search-endpoint user-token params]
+  (let [url (str search-endpoint &quot;/granules&quot;)
+        payload (build-query component params)]
+    (log/debug &quot;Granules query CMR URL:&quot; url)
+    (log/debug &quot;Granules query CMR payload:&quot; payload)
+    (request/async-post
+     url
+     (-&gt; {}
+         (request/add-token-header user-token)
+         (request/add-accept &quot;application/json&quot;)
+         (request/add-form-ct)
+         (request/add-payload payload)
+         ((fn [x] (log/debug &quot;Client request options:&quot; x) x)))
+     response/json-handler)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-metadata
+  [promise]
+  (let [rslts @promise]
+    (if (errors/erred? rslts)
+      (do
+        (log/error errors/granule-metadata)
+        rslts)
+      (do
+        (log/trace &quot;Got results from CMR granule search:&quot;
+                   (results/elided rslts))
+        (log/trace &quot;Remaining results:&quot; (results/remaining-items rslts))
+        (get-in rslts [:feed :entry])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [component search-endpoint user-token params]
+  (let [promise (async-get-metadata component search-endpoint user-token params)]
+    (extract-metadata promise)))</pre></td></tr><tr><td class="docs"><p>The criteria defined in the prototype was to iterate through the links,
+  only examining those links that were not 'inherited', and find the one
+  whose :rel value matched a particular string.</p>
+
+<p>  It is currently unclear what the best criteria for this decision is.</p>
+
+<p>XXX The following may need to change once CMR-4912 is addressed ...</p>
+</td><td class="codes"><pre class="brush: clojure">(defn match-datafile-link
+  [link-data]
+  (log/trace &quot;Link data:&quot; link-data)
+  (let [rel (:rel link-data)]
+    (and (not (:inherited link-data))
+              (= const/datafile-link-rel rel))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-datafile-link
+  [granule-entry]
+  (log/trace &quot;Granule entry: &quot; granule-entry)
+  (let [link (-&gt;&gt; (:links granule-entry)
+                  (filter match-datafile-link)
+                  first)
+        gran-id (:id granule-entry)]
+    (if link
+      {:granule-id gran-id
+       :link-rel (:rel link)
+       :link-href (:href link)}
+      {:errors [errors/empty-gnl-data-file-url
+                (when gran-id
+                  (format errors/problem-granules gran-id))]})))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.concepts.collection" name="cmr.opendap.ous.concepts.collection"><h1 class="project-name">cmr.opendap.ous.concepts.collection</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.concepts.collection
+  (:require
+   [clojure.string :as string]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>  Collection API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn build-query
+  [concept-id]
+  (str &quot;concept_id=&quot; concept-id))</pre></td></tr><tr><td class="docs"><p>Given a data structure with :collection-id, get the metadata for the
+  associated collection.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn async-get-metadata
+  [search-endpoint user-token params]
+  (let [concept-id (:collection-id params)
+        url (str search-endpoint
+                 &quot;/collections?&quot;
+                 (build-query concept-id))]
+    (log/debug &quot;Collection query to CMR:&quot; url)
+    (request/async-get
+     url
+     (-&gt; {}
+         (request/add-token-header user-token)
+         (request/add-accept &quot;application/json&quot;))
+     response/json-handler)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-metadata
+  [promise]
+  (let [results @promise]
+    (log/trace &quot;Got results from CMR granule collection:&quot; results)
+    (first (get-in results [:feed :entry]))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata
+  [search-endpoint user-token params]
+  (let [promise (async-get-metadata search-endpoint user-token params)]
+    (extract-metadata promise)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-variable-ids
+  [entry]
+  (sort (get-in entry [:associations :variables])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn extract-service-ids
+  [entry]
+  (sort (get-in entry [:associations :services])))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.concepts.variable" name="cmr.opendap.ous.concepts.variable"><h1 class="project-name">cmr.opendap.ous.concepts.variable</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.concepts.variable
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]
@@ -4535,6 +4533,7 @@ long:
 <p>XXX This is being tracked in CMR-4982</p>
 </td><td class="codes"><pre class="brush: clojure">(def lat-reversed-datasets
   #{&quot;Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC&quot;
+    &quot;Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC [Testing Variable Dimensions]&quot;
     &quot;MODIS/Terra Aerosol Cloud Water Vapor Ozone Daily L3 Global 1Deg CMG V006&quot;})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn lat-reversed?
   [coll]
@@ -4752,8 +4751,8 @@ long:
          :opendap (create-opendap-bounds
                    dims bounding-box {:reversed? (lat-reversed? coll)})
          :size (get-in entry [:umm :Characteristics :Size])}))
-    {:errors [errors/variable-metadata]}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.service" name="cmr.opendap.ous.service"><h1 class="project-name">cmr.opendap.ous.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.service
+    {:errors [errors/variable-metadata]}))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#cmr.opendap.ous.concepts.service" name="cmr.opendap.ous.concepts.service"><h1 class="project-name">cmr.opendap.ous.concepts.service</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns cmr.opendap.ous.concepts.service
   (:require
    [clojure.string :as string]
    [cmr.opendap.components.config :as config]
@@ -5096,9 +5095,21 @@ long:
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [cmr.opendap.http.request :as request])
   (:import
    (clojure.lang Keyword)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def vendor &quot;cmr-opendap.&quot;)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn override-api-version-header
+  ([version]
+    (override-api-version-header {} version))
+  ([req version]
+    (request/add-header req
+                        &quot;Accept&quot;
+                        (format request/version-format
+                                vendor
+                                version
+                                &quot;json&quot;))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn parse-response
   [response]
   (try
@@ -5369,8 +5380,8 @@ disable logging entirely for tests.</p>
    [clojure.string :as string]
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
-   [cmr.opendap.ous.collection :as collection]
-   [cmr.opendap.ous.granule :as granule]
+   [cmr.opendap.ous.concepts.collection :as collection]
+   [cmr.opendap.ous.concepts.granule :as granule]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
@@ -6410,6 +6421,7 @@ systems created for testing).</p>
 (def add-payload request/add-payload)
 (def options request/options)</pre></td></tr><tr><td class="docs"><p>  Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def version-format &quot;application/vnd.%s%s+%s&quot;)</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn add-user-agent
   ([]
     (add-user-agent {}))
@@ -6452,7 +6464,7 @@ systems created for testing).</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn default-accept
   [system]
-  (format &quot;application/vnd.%s%s+%s&quot;
+  (format version-format
           (config/vendor system)
           (config/api-version-dotted system)
           (config/default-content-type system)))</pre></td></tr><tr><td class="docs">
@@ -6849,7 +6861,7 @@ systems created for testing).</p>
           (service-&gt;base-public-url service)
           (or (get-in service [:relative :root :url])
               (:context service)
-              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2-1">cmr.opendap.app.routes.rest.v2-1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.granule">cmr.opendap.ous.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.v2-1">cmr.opendap.ous.v2-1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.collection">cmr.opendap.ous.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.common">cmr.opendap.ous.common</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.v1">cmr.opendap.ous.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.variable">cmr.opendap.ous.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.service">cmr.opendap.ous.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.cmr">cmr.opendap.ous.query.params.cmr</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.wcs">cmr.opendap.ous.query.params.wcs</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.validation">cmr.opendap.validation</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.warnings">cmr.opendap.results.warnings</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.common">cmr.opendap.results.common</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.core">cmr.opendap.results.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.errors">cmr.opendap.results.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.concept">cmr.opendap.components.concept</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.auth">cmr.opendap.components.auth</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.util">cmr.opendap.geom.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.core">cmr.opendap.geom.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.util">cmr.opendap.data.size.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+              &quot;/&quot;)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.collection">cmr.opendap.app.handler.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.concept-cache">cmr.opendap.app.handler.concept-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.core">cmr.opendap.app.handler.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.handler.auth-cache">cmr.opendap.app.handler.auth-cache</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.middleware">cmr.opendap.app.middleware</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.core">cmr.opendap.app.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.site">cmr.opendap.app.routes.site</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2-1">cmr.opendap.app.routes.rest.v2-1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v1">cmr.opendap.app.routes.rest.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.v2">cmr.opendap.app.routes.rest.v2</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.app.routes.rest.core">cmr.opendap.app.routes.rest.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.geog">cmr.opendap.ous.util.geog</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.util.core">cmr.opendap.ous.util.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.v2-1">cmr.opendap.ous.v2-1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.common">cmr.opendap.ous.common</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.v1">cmr.opendap.ous.v1</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.core">cmr.opendap.ous.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.concepts.granule">cmr.opendap.ous.concepts.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.concepts.collection">cmr.opendap.ous.concepts.collection</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.concepts.variable">cmr.opendap.ous.concepts.variable</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.concepts.service">cmr.opendap.ous.concepts.service</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.cmr">cmr.opendap.ous.query.params.cmr</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.wcs">cmr.opendap.ous.query.params.wcs</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.core">cmr.opendap.ous.query.params.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.ous.query.params.const">cmr.opendap.ous.query.params.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.util">cmr.opendap.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.validation">cmr.opendap.validation</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.core">cmr.opendap.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.util">cmr.opendap.testing.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.system">cmr.opendap.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.testing.config">cmr.opendap.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.warnings">cmr.opendap.results.warnings</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.common">cmr.opendap.results.common</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.core">cmr.opendap.results.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.results.errors">cmr.opendap.results.errors</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.concept">cmr.opendap.components.concept</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.caching">cmr.opendap.components.caching</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.core">cmr.opendap.components.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.logging">cmr.opendap.components.logging</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.system">cmr.opendap.components.testing.system</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.testing.config">cmr.opendap.components.testing.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.auth">cmr.opendap.components.auth</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.config">cmr.opendap.components.config</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.components.httpd">cmr.opendap.components.httpd</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.jts">cmr.opendap.geom.impl.jts</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.esri">cmr.opendap.geom.impl.esri</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.impl.geographiclib">cmr.opendap.geom.impl.geographiclib</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.util">cmr.opendap.geom.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.geom.core">cmr.opendap.geom.core</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.request">cmr.opendap.http.request</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.http.response">cmr.opendap.http.response</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.const">cmr.opendap.const</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.data">cmr.opendap.site.data</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.pages">cmr.opendap.site.pages</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.site.static">cmr.opendap.site.static</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.health">cmr.opendap.health</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.granule">cmr.opendap.data.size.granule</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.data.size.util">cmr.opendap.data.size.util</li><li class="floating-toc-li" id="floating-toc_cmr.opendap.config">cmr.opendap.config</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
