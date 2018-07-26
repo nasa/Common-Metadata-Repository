@@ -73,18 +73,39 @@
   [context]
   (:object-identity-types (cache/context->cache context acl-cache-key)))
 
-(defn- process-search-for-acls
-  "Calls acl search endpoint using converting object-identity-types
-   and processes response and formats it for get-acls"
+(defn- get-all-acls
+  "Calls acl search endpoint using object-identity-types. Pages through results as needed."
   [context object-identity-types]
-  (map (comp :acl util/map-keys->kebab-case)
-       (get
-        (access-control/search-for-acls (assoc context :token (config/echo-system-token))
-                                        {:identity-type (object-identity-types->identity-strings
-                                                         object-identity-types)
-                                         :include-full-acl true
-                                         :page-size 2000})
-        :items)))
+  (let [page-size 2000
+        response (access-control/search-for-acls (assoc context :token (config/echo-system-token))
+                                                 {:identity-type (object-identity-types->identity-strings
+                                                                  object-identity-types)
+                                                  :include-full-acl true
+                                                  :page-size page-size})
+        total-pages (int (Math/ceil (/ (:hits response) page-size)))]
+    (if (> total-pages 1)
+      ;; Take the items from first page of the response from above,
+      ;; and concat each page after that in sequence.
+      (reduce (fn [all-items new-items]
+                (conj all-items new-items))
+              [response]
+              (for [page-num (range 2 (+ 1 total-pages))
+                    :let [response (access-control/search-for-acls (assoc context :token (config/echo-system-token))
+                                                                   {:identity-type (object-identity-types->identity-strings
+                                                                                    object-identity-types)
+                                                                    :include-full-acl true
+                                                                    :page-size page-size
+                                                                    :page-num page-num})]]
+                response))
+      [response])))
+
+(defn- process-search-for-acls
+  "Processes response and formats it for get-all-acls"
+  [context object-identity-types]
+  (->> (get-all-acls context object-identity-types)
+       (mapcat :items)
+       (map :acl)
+       (map util/map-keys->kebab-case)))
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
