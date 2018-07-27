@@ -26,7 +26,7 @@
           "description": "This element is used to identify the list of supported input projections types.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SupportedInputProjectionType"
+            "$ref": "#/definitions/SupportedProjectionType"
           },
           "minItems": 0
         },
@@ -34,7 +34,7 @@
           "description": "This element is used to identify the list of supported output projections types.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SupportedOutputProjectionType"
+            "$ref": "#/definitions/SupportedProjectionType"
           },
           "minItems": 0
         },
@@ -68,55 +68,13 @@
         }
       }
     },
-    "SupportedInputProjectionType": {
+    "SupportedProjectionType": {
       "type": "object",
       "additionalProperties": false,
       "description": "This element is used to identify the input projection type of the variable.",
       "properties": {
         "ProjectionName": {
-          "description": "This element is used to identify the list of supported input projection types.",
-          "type": "string",
-          "enum": ["Geographic", "Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"]
-        },
-        "ProjectionLatitudeOfCenter": {
-          "description": "This element is used to identify the origin of the x-coordinates at the center of the projection.",
-          "type": "number"
-        },
-        "ProjectionLongitudeOfCenter": {
-          "description": "This element is used to identify the origin of the y-coordinates at the center of the projection.",
-          "type": "number"
-        },
-        "ProjectionFalseEasting": {
-          "description": "This element is used to identify the linear value applied to the origin of the y-coordinates. False easting and northing values are usually applied to ensure that all the x and y values are positive.",
-          "type": "number"
-        },
-        "ProjectionFalseNorthing": {
-          "description": "This element is used to identify the linear value applied to the origin of the x-coordinates. False easting and northing values are usually applied to ensure that all the x and y values are positive.",
-          "type": "number"
-        },
-        "ProjectionAuthority": {
-          "description": "This element is used to identify the authority, expressed as the EPSG code, for the list of supported input projection types",
-          "$ref": "#/definitions/CRSIdentifierTypeEnum"
-        },
-        "ProjectionUnit": {
-          "description": "This element is used to identify the projection unit of measurement.",
-          "type": "string",
-          "enum": ["Meters", "Degrees"]
-        },
-        "ProjectionDatumName": {
-          "description": "This element is used to identify the projection datum name.",
-          "type": "string",
-          "enum": ["North American Datum (NAD) 1927", "North American Datum (NAD) 1983", "World Geodetic System (WGS) 1984"]
-        }
-      }
-    },
-    "SupportedOutputProjectionType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "This element is used to identify the output projection type of the variable.",
-      "properties": {
-        "ProjectionName": {
-          "description": "This element is used to identify the list of supported output projection types.",
+          "description": "This element is used to identify the list of supported projection types.",
           "type": "string",
           "enum": ["Geographic", "Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"]
         },
@@ -597,7 +555,7 @@
       },
       "required": ["ResourceLinkage"]
     },
-    "OperationChainMetadataType": {
+    "OperationChainedMetadataType": {
       "type": "object",
       "additionalProperties": false,
       "description": "This element contains the name of the chained operation(s) made possible via this service.",
@@ -666,7 +624,6 @@
         },
         "DataResourceSpatialType": {
           "description": "The spatial extent of the layer, feature type or coverage available from the service.",
-          "type": "string",
           "$ref": "#/definitions/DataResourceSpatialTypeEnum"
         },
         "SpatialResolution": {
@@ -680,12 +637,10 @@
         },
         "DataResourceTemporalExtent": {
           "description": "The temporal extent of the layer, feature type or coverage available from the service.",
-          "type": "string",
           "$ref": "#/definitions/DataResourceTemporalExtentType"
         },
         "DataResourceTemporalType": {
           "description": "The temporal extent of the layer, feature type or coverage available from the service.",
-          "type": "string",
           "$ref": "#/definitions/DataResourceTemporalTypeEnum"
         },
         "TemporalResolution": {
