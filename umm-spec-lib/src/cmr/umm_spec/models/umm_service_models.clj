@@ -5,12 +5,6 @@
 
 (defrecord UMM-S
   [
-   ;; This element contains important information about the coverage for the service.
-   Coverage
-
-   ;; A field needed for pattern substitution in OPeNDAP services
-   OnlineAccessURLPatternSubstitution
-
    ;; The service provider, or organization, or institution responsible for developing, archiving,
    ;; and/or distributing the service, software, or tool.
    ServiceOrganizations
@@ -32,9 +26,6 @@
    ;; maintained in the Keyword Management System (KMS).
    ServiceKeywords
 
-   ;; A field needed for pattern matching in OPeNDAP services
-   OnlineAccessURLPatternMatch
-
    ;; Allows for the specification of Earth Science keywords that are representative of the service,
    ;; software, or tool being described. The controlled vocabulary for Science Keywords is
    ;; maintained in the Keyword Management System (KMS).
@@ -55,6 +46,9 @@
 
    ;; A brief description of the service.
    Description
+
+   ;; This class describes the signature of the operational metadata provided by the service.
+   OperationMetadata
 
    ;; The type of the service, software, or tool.
    Type
@@ -141,12 +135,6 @@
    ;; This is the roles of the service contact.
    Roles
 
-   ;; Uuid of the service contact.
-   Uuid
-
-   ;; This is the contact person or group that is not affiliated with the service organizations.
-   NonServiceOrganizationAffiliation
-
    ;; This is the contact information of the service contact.
    ContactInformation
 
@@ -179,6 +167,28 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOrganizationType)
 
+;; The general grid consists of a CRS Identifier and an Axis.
+(defrecord GeneralGridType
+  [
+   ;; The CRS identifier (srsName) of the general grid.
+   CRSIdentifier
+
+   ;; The grid axis identifiers, all distinct within a grid.
+   Axis
+  ])
+(record-pretty-printer/enable-record-pretty-printing GeneralGridType)
+
+;; This element contains the name of the chained operation(s) made possible via this service.
+(defrecord OperationChainedMetadataType
+  [
+   ;; TThis element contains the name of the operation chain made possible via this service.
+   OperationChainName
+
+   ;; This element contains the description of the operation chain made possible via this service.
+   OperationChainDescription
+  ])
+(record-pretty-printer/enable-record-pretty-printing OperationChainedMetadataType)
+
 ;; Enables specification of Earth science service keywords related to the service. The Earth Science
 ;; Service keywords are chosen from a controlled keyword hierarchy maintained in the Keyword
 ;; Management System (KMS).
@@ -194,36 +204,63 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceKeywordType)
 
-;; This element describes coverage information.
-(defrecord CoverageType
+(defrecord DataResourceSpatialExtentType
   [
-   ;; The name of the coverage available from the service.
-   Name
+   ;; The spatial extent of the layer, feature type or coverage described by a point.
+   SpatialPoints
 
-   ;; The spatial extent of the coverage available from the service. These are coordinate pairs
-   ;; which describe either the point, line string, or polygon representing the spatial extent. The
-   ;; bounding box is described by the west, south, east and north ordinates
-   CoverageSpatialExtent
+   ;; The spatial extent of the layer, feature type or coverage described by a line string.
+   SpatialLineStrings
 
-   ;; The spatial resolution of the coverage available from the service.
-   SpatialResolution
+   ;; The spatial extent of the layer, feature type or coverage described by a bounding box.
+   SpatialBoundingBox
 
-   ;; The unit of the spatial resolution of the coverage available from the service.
-   SpatialResolutionUnit
+   ;; The spatial extent of the layer, feature type or coverage described by a general grid.
+   GeneralGrid
 
-   ;; The temporal extent of the coverage available from the service.
-   CoverageTemporalExtent
-
-   ;; The temporal resolution of the coverage available from the service.
-   TemporalResolution
-
-   ;; The unit of the temporal resolution of the coverage available from the service.
-   TemporalResolutionUnit
-
-   ;; Path relative to the root universal resource locator for the coverage.
-   RelativePath
+   ;; The spatial extent of the layer, feature type or coverage described by a polygon.
+   SpatialPolygons
   ])
-(record-pretty-printer/enable-record-pretty-printing CoverageType)
+(record-pretty-printer/enable-record-pretty-printing DataResourceSpatialExtentType)
+
+;; The bounding box consists of west bounding, south bounding, east bounding and north bounding
+;; cordinates amd the CRS identifier.
+(defrecord SpatialBoundingBoxType
+  [
+   ;; The CRS identifier of the bounding box.
+   CRSIdentifier
+
+   ;; The west bounding coordinate of the bounding box.
+   WestBoundingCoordinate
+
+   ;; The south bounding coordinate of the bounding box.
+   SouthBoundingCoordinate
+
+   ;; The east bounding coordinate of the bounding box.
+   EastBoundingCoordinate
+
+   ;; The north bounding coordinate of the bounding box.
+   NorthBoundingCoordinate
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialBoundingBoxType)
+
+;; This element contains the name of the chained operation(s) made possible via this service.
+(defrecord CoupledResourceType
+  [
+   ;; This element contains the name of the resource(s) coupled to this service.
+   ScopedName
+
+   ;; This element contains the DOI for the resource(s) coupled to this service.
+   DataResourceDOI
+
+   ;; This element contains the data identification and scope for the resource(s) coupled to this
+   ;; service.
+   DataResource
+
+   ;; This element contains the coupling type for the resource(s) coupled to this service.
+   CouplingType
+  ])
+(record-pretty-printer/enable-record-pretty-printing CoupledResourceType)
 
 ;; Method for contacting the service contact. A contact can be available via phone, email, Facebook,
 ;; or Twitter.
@@ -239,35 +276,22 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
-(defrecord CoverageTemporalExtentType
+;; The extent consists of .
+(defrecord ExtentType
   [
-   ;; The type of the temporal extent for the coverage available from the service.
-   CoverageTemporalExtentTypeType
+   ;; The label of the extent.
+   ExtentLabel
 
-   ;; Points in time representing the temporal extent of the layer or coverage.
-   CoverageTimePoints
+   ;; The lowest value along this grid axis.
+   LowerBound
 
-   ;; Uuid of the temporal extent.
-   Uuid
+   ;; The highest value along this grid axis.
+   UpperBound
+
+   ;; The unit of measure in which values along this axis are expressed.
+   UOMLabel
   ])
-(record-pretty-printer/enable-record-pretty-printing CoverageTemporalExtentType)
-
-;; The bounding box consists of min x, min y, max y and max y ordinates.
-(defrecord BBoxType
-  [
-   ;; The minimum x ordinate of the bounding box.
-   MinX
-
-   ;; The minimum y ordinate of the bounding box.
-   MinY
-
-   ;; The maximum x ordinate of the bounding box.
-   MaxX
-
-   ;; The maximum y ordinate of the bounding box.
-   MaxY
-  ])
-(record-pretty-printer/enable-record-pretty-printing BBoxType)
+(record-pretty-printer/enable-record-pretty-printing ExtentType)
 
 ;; This object describes service quality, composed of the quality flag, the quality flagging system,
 ;; traceability and lineage.
@@ -284,6 +308,42 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceQualityType)
 
+;; This element is used to identify the input projection type of the variable.
+(defrecord SupportedProjectionType
+  [
+   ;; This element is used to identify the list of supported projection types.
+   ProjectionName
+
+   ;; This element is used to identify the origin of the x-coordinates at the center of the
+   ;; projection.
+   ProjectionLatitudeOfCenter
+
+   ;; This element is used to identify the origin of the y-coordinates at the center of the
+   ;; projection.
+   ProjectionLongitudeOfCenter
+
+   ;; This element is used to identify the linear value applied to the origin of the y-coordinates.
+   ;; False easting and northing values are usually applied to ensure that all the x and y values
+   ;; are positive.
+   ProjectionFalseEasting
+
+   ;; This element is used to identify the linear value applied to the origin of the x-coordinates.
+   ;; False easting and northing values are usually applied to ensure that all the x and y values
+   ;; are positive.
+   ProjectionFalseNorthing
+
+   ;; This element is used to identify the authority, expressed as the EPSG code, for the list of
+   ;; supported input projection types
+   ProjectionAuthority
+
+   ;; This element is used to identify the projection unit of measurement.
+   ProjectionUnit
+
+   ;; This element is used to identify the projection datum name.
+   ProjectionDatumName
+  ])
+(record-pretty-printer/enable-record-pretty-printing SupportedProjectionType)
+
 ;; The line string consists of two points: a start point and an end ppint.
 (defrecord LineStringType
   [
@@ -295,16 +355,103 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LineStringType)
 
+(defrecord DataResourceTemporalExtentType
+  [
+   ;; Points in time representing the temporal extent of the layer or coverage.
+   DataResourceTimePoints
+  ])
+(record-pretty-printer/enable-record-pretty-printing DataResourceTemporalExtentType)
+
+;; The DataResource class describes the layers, feature types or coverages available from the
+;; service.
+(defrecord DataResourceType
+  [
+   ;; The resource type of the layer, feature type or coverage available from the service.
+   DataResourceSourceType
+
+   ;; The temporal extent of the layer, feature type or coverage available from the service.
+   DataResourceTemporalExtent
+
+   ;; The identifier of the layer, feature type or coverage available from the service.
+   DataResourceIdentifier
+
+   ;; TThe temporal resolution of the layer, feature type or coverage available from the service.
+   TemporalResolution
+
+   ;; Path relative to the root URL for the layer, feature type or coverage service.
+   RelativePath
+
+   ;; The unit of the temporal resolution of the layer, feature type or coverage available from the
+   ;; service.
+   TemporalResolutionUnit
+
+   ;; The spatial extent of the layer, feature type or coverage available from the service.
+   DataResourceSpatialType
+
+   ;; The spatial resolution of the layer, feature type or coverage available from the service.
+   SpatialResolution
+
+   ;; The spatial extent of the coverage available from the service. These are coordinate pairs
+   ;; which describe either the point, line string, or polygon representing the spatial extent. The
+   ;; bounding box is described by the west, south, east and north ordinates
+   DataResourceSpatialExtent
+
+   ;; The unit of the spatial resolution of the layer, feature type or coverage available from the
+   ;; service.
+   SpatialResolutionUnit
+
+   ;; The temporal extent of the layer, feature type or coverage available from the service.
+   DataResourceTemporalType
+  ])
+(record-pretty-printer/enable-record-pretty-printing DataResourceType)
+
+;; This class describes the signature of the operational metadata provided by the service.
+(defrecord OperationMetadataType
+  [
+   ;; This element contains the name of the operation(s) made possible via this service.
+   OperationName
+
+   ;; This element contains the distributed computing platform (protocol) for the operation(s) made
+   ;; possible via this service.
+   DistributedComputingPlatform
+
+   ;; This element contains the description of the operation(s) made possible via this service.
+   OperationDescription
+
+   ;; This element contains the name of the invocation of the operation(s) made possible via this
+   ;; service.
+   InvocationName
+
+   ;; This element contains the URL of the invocation of the operation(s) made possible via this
+   ;; service.
+   ConnectPoint
+
+   ;; This element contains the name of the chained operation(s) made possible via this service.
+   OperationChainedMetadata
+
+   ;; This element contains important information about the resource(s) coupled to this service.
+   CoupledResource
+  ])
+(record-pretty-printer/enable-record-pretty-printing OperationMetadataType)
+
+;; The axis consisists of an extent and grid information.
+(defrecord AxisType
+  [
+   ;; The axis label of the general grid.
+   AxisLabel
+
+   ;; The resolution of the general grid.
+   GridResolution
+
+   ;; The extent of the general grid.
+   Extent
+  ])
+(record-pretty-printer/enable-record-pretty-printing AxisType)
+
 (defrecord ContactPersonType
   [
    ;; This is the roles of the service contact.
    Roles
-
-   ;; Uuid of the data contact.
-   Uuid
-
-   ;; This is the contact person or group that is not affiliated with the service organization.
-   NonServiceOrganizationAffiliation
 
    ;; This is the contact information of the service contact.
    ContactInformation
@@ -320,44 +467,76 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
 
+;; This element contains important information about the parameter associated with the resource(s)
+;; coupled to this service.
+(defrecord ParameterType
+  [
+   ;; This element contains the name of the parameter associated with the resource(s) coupled to
+   ;; this service.
+   ParameterName
+
+   ;; This element contains the direction of the parameter associated with the resource(s) coupled
+   ;; to this service.
+   ParameterDirection
+
+   ;; This element contains the description of the parameter associated with the resource(s) coupled
+   ;; to this service.
+   ParameterDescription
+
+   ;; This element contains the optionality of the parameter associated with the resource(s) coupled
+   ;; to this service
+   ParameterOptionality
+
+   ;; This element contains the repeatability of the parameter associated with the resource(s)
+   ;; coupled to this service.
+   ParameterRepeatability
+  ])
+(record-pretty-printer/enable-record-pretty-printing ParameterType)
+
+;; This element contains the URL of the invocation of the operation(s) made possible via this
+;; service.
+(defrecord ConnectPointType
+  [
+   ;; This element contains the name of the resource(s) coupled to this service.
+   ResourceName
+
+   ;; This element contains the URL of the resource(s) coupled to this service.
+   ResourceLinkage
+
+   ;; This element contains the description of the resource(s) coupled to this service.
+   ResourceDescription
+  ])
+(record-pretty-printer/enable-record-pretty-printing ConnectPointType)
+
 ;; This object describes service options, data transformations and output formats.
 (defrecord ServiceOptionsType
   [
    ;; This element is used to identify the list of supported subsetting requests.
    SubsetTypes
 
-   ;; This element is used to identify the list of supported projections types.
-   SupportedProjections
+   ;; This element is used to identify the list of supported methods of variable aggregation.
+   VariableAggregationSupportedMethods
+
+   ;; This element is used to identify the list of supported input projections types.
+   SupportedInputProjections
+
+   ;; This element is used to identify the list of supported output projections types.
+   SupportedOutputProjections
 
    ;; This element is used to identify the list of supported interpolation types.
    InterpolationTypes
 
-   ;; This project element describes the list of names of the formats supported by the service.
-   SupportedFormats
+   ;; The project element describes the list of input format names supported by the service.
+   SupportedInputFormats
+
+   ;; The project element describes the list of output format names supported by the service.
+   SupportedOutputFormats
+
+   ;; This field indicates the maximum number of granules which this service can download with one
+   ;; request.
+   MaxGranules
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOptionsType)
-
-(defrecord CoverageSpatialExtentType
-  [
-   ;; Type of the spatial extent for the coverage available from the service..
-   CoverageSpatialExtentTypeType
-
-   ;; Uuid of the spatial extent.
-   Uuid
-
-   ;; The spatial extent of the layer or coverage described by a point.
-   SpatialPoints
-
-   ;; The spatial extent of the layer or coverage described by a line string.
-   SpatialLineStrings
-
-   ;; The spatial extent of the layer or coverage described by a bounding box.
-   SpatialBoundingBox
-
-   ;; The spatial extent of the layer or coverage described by a polygon.
-   SpatialPolygons
-  ])
-(record-pretty-printer/enable-record-pretty-printing CoverageSpatialExtentType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType
