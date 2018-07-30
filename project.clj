@@ -63,7 +63,7 @@
       :source-paths ["test"]}
     :system {
       :dependencies [
-        [clojusc/dev-system "0.1.0"]]}
+        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
