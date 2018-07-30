@@ -5,9 +5,12 @@
   here will use one or more integration test fixtures."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.testing.system :as test-system]))
+    [cmr.opendap.testing.system :as test-system])
+  (:import
+    (clojusc.system_manager.system.impl.management StateManager)))
 
 (use-fixtures :once test-system/with-system)
 
 (deftest system-type-check
- (is (record? @test-system/*mgr*)))
+  (is (record? (test-system/manager)))
+  (is (instance? StateManager (test-system/manager))))
