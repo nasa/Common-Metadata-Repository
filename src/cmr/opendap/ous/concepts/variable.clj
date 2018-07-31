@@ -18,7 +18,11 @@
 
 ;; XXX We can pull this from configuration once async-get-metadata function
 ;;     signatures get updated to accept the system data structure as an arg.
+(def variables-api-path "/variables")
 (def pinned-variable-schema-version "1.2")
+(def results-content-type "application/vnd.nasa.cmr.umm_results+json")
+(def charset "charset=utf-8")
+(def accept-format "%s; version=%s; %s")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,7 +133,7 @@
   variables, if params does not contain any."
   [search-endpoint user-token {variable-ids :variables}]
   (if (seq variable-ids)
-    (let [url (str search-endpoint "/variables")
+    (let [url (str search-endpoint variables-api-path)
           payload (build-query variable-ids)]
       (log/debug "Variables query CMR URL:" url)
       (log/debug "Variables query CMR payload:" payload)
@@ -137,10 +141,10 @@
        url
        (-> {}
            (request/add-token-header user-token)
-           (request/add-accept (format "%s; version=%s; %s"
-                                       "application/vnd.nasa.cmr.umm_results+json"
+           (request/add-accept (format accept-format
+                                       results-content-type
                                        pinned-variable-schema-version
-                                       "charset=utf-8"))
+                                       charset))
            (request/add-form-ct)
            (request/add-payload payload)
            ((fn [x] (log/trace "Full request:" x) x)))
