@@ -15,25 +15,39 @@
    [clojurewerkz.neocons.rest.nodes :as nn]
    [clojurewerkz.neocons.rest.paths :as np]
    [clojurewerkz.neocons.rest.relationships :as nrl]
-   [clojusc.dev.system.core :as system-api]
+   [clojusc.system-manager.core :as system-api]
    [cmr.graph.components.core :as components]
    [cmr.graph.components.neo4j :as neo4j]
    [cmr.graph.config :as config]
    [cmr.graph.demo.movie :as movie-demo]
-   [cmr.graph.dev :as dev]
+   [cmr.graph.repl :as dev]
    [cmr.graph.health :as health]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   State Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def setup-options {
+  :init 'cmr.graph.components.core/init
+  :after-refresh 'cmr.graph.repl/init-and-startup
+  :throw-errors false})
 
-(def startup #'dev/startup)
-(def shutdown #'dev/shutdown)
-(def system #'dev/system)
+(defn init
+  []
+  "This is used to set the options and any other global data.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Reloading Management   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  This is defined in a function for re-use. For instance, when a REPL is
+  reloaded, the options will be lost and need to be re-applied."
+  (system-api/setup-manager setup-options))
 
-(def reset #'dev/reset)
-(def refresh #'repl/refresh)
+(defn init-and-startup
+  []
+  "This is used as the 'after-refresh' function by the REPL tools library.
+  Not only do the options (and other global operations) need to be re-applied,
+  the system also needs to be started up, once these options have be set up."
+  (init)
+  (system-api/startup))
+
+;; It is not always desired that a system be started up upon REPL loading.
+;; Thus, we set the options and perform any global operations with init,
+;; and let the user determine when then want to bring up (a potentially
+;; computationally intensive) system.
+(init)
+
+(def reset #'system-api/reset)
