@@ -32,14 +32,6 @@
   [{:Name "EmisFreqIR"
     :Size 4}])
 
-(deftest parse-lat-lon
-  (testing "With Lat/Lon ..."
-    (is (= [270 130] (variable/parse-lat-lon lat-lon-dims))))
-  (testing "With XDim/YDim ..."
-    (is (= [200 100] (variable/parse-lat-lon x-y-dims))))
-  (testing "With none; using defaults ..."
-    (is (= [360.0 180.0] (variable/parse-lat-lon no-spatial-dims)))))
-
 (deftest extract-dimensions
   (let [dims (variable/extract-dimensions {:umm {:Dimensions lat-lon-dims}})]
     (is (= (array-map :EmisFreqIR 4 :Latitude 130 :Longitude 270)

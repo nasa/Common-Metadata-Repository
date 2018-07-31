@@ -93,6 +93,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn normalize-lat-lon
+  "This function normalizes the names of lat/lon in order to simplify internal,
+  CMR OPeNDAP-only logic. The original dimension names are recorded, and when
+  needed, referenced."
   [dim]
   (-> dim
       (assoc :Latitude (or (:Latitude dim)
@@ -162,15 +165,6 @@
   [search-endpoint user-token variables]
   (let [promise (async-get-metadata search-endpoint user-token variables)]
     (extract-metadata promise)))
-
-(defn parse-lat-lon
-  [dim]
-  [(or (:Size (first (filter #(= "Longitude" (:Name %)) dim)))
-       (:Size (first (filter #(= "XDim" (:Name %)) dim)))
-       const/default-lon-abs-hi)
-   (or (:Size (first (filter #(= "Latitude" (:Name %)) dim)))
-       (:Size (first (filter #(= "YDim" (:Name %)) dim)))
-       const/default-lat-abs-hi)])
 
 (defn extract-dimensions
   [entry]
