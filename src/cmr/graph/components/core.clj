@@ -39,6 +39,11 @@
            [:config :logging :neo4jd])})
 
 
+(def es
+  {:elastic (component/using
+             (elastic/create-component)
+             [:config :logging])})
+
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
@@ -63,7 +68,8 @@
            log
            neo4jd
            neo4j
-           httpd)))
+           httpd
+           es)))
 
 (def init-lookup
   {:basic #'initialize-bare-bones
