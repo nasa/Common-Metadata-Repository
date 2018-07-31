@@ -84,7 +84,6 @@
       :dependencies [
         [debugger "0.2.1"]]
       :jvm-opts [
-        "-Dcmr.testing.config.data=testing-value"
         "-Dcmr.opendap.logging.color=true"]
       :repl-options {
         :init-ns cmr.opendap.dev
@@ -105,6 +104,8 @@
       :plugins [
         [lein-ltest "0.3.0"]
         [test2junit "1.4.2"]]
+      :jvm-opts [
+        "-Dcmr.testing.config.data=testing-value"]
       :test2junit-output-dir "junit-test-results"
       :test-selectors {
         :unit #(not (or (:integration %) (:system %)))

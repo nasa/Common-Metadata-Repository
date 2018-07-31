@@ -33,7 +33,7 @@
    bounds
    ;; OPeNDAP lookup array
    opendap
-   ;; :umm :Characteristics :Size
+   ;; :umm :Characteristics :Size -- no longer used for UMM-Vars 1.2+
    size])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
