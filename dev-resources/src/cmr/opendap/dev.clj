@@ -17,7 +17,7 @@
     [cmr.opendap.http.request :as request]
     [cmr.opendap.http.response :as response]
     [cmr.opendap.ous.concepts.variable :as variable]
-    [cmr.opendap.ous.util.geog :as geog]
+    ; [cmr.opendap.ous.util.geog :as geog]
     [cmr.opendap.results.errors :as errors]
     [com.stuartsierra.component :as component]
     [debugger.core :as debug]
@@ -28,7 +28,8 @@
   (:import
     (java.net URI)
     (java.nio.file Paths)
-    (net.sf.geographiclib Geodesic PolygonArea)))
+    ; (net.sf.geographiclib Geodesic PolygonArea)
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
