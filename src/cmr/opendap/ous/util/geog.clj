@@ -34,7 +34,12 @@
    ;; OPeNDAP lookup array
    opendap
    ;; :umm :Characteristics :Size -- no longer used for UMM-Vars 1.2+
-   size])
+   size
+   ;; A Boolean value indicating wheter latitude is recorded normally in
+   ;; OPeNDAP (increasing indices starting at 0 correlating up from -90N to
+   ;; 90N) or reversed (increasing indices starting at 0 correlating down from
+   ;; 90N to -90N)
+   lat-reversed?])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
