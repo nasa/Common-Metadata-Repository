@@ -81,29 +81,6 @@
   (is (= {:Size 36000, :Name :lon, :Type :LONGITUDE_DIMENSION}
          (variable/lon-dim (variable/extract-dimensions ummvar-1-2-dims)))))
 
-(deftest lat-dim
-  (is (nil? (variable/lat-dim (variable/extract-dimensions no-spatial-dims))))
-  (is (= {:Size 130, :Name :Latitude, :Type nil}
-         (variable/lat-dim (variable/extract-dimensions lat-lon-dims))))
-  (is (= {:Size 130, :Name :Latitude, :Type nil}
-         (variable/lat-dim (variable/extract-dimensions lat-lon-dims-mixed-order))))
-  (is (= {:Size 100, :Name :YDim, :Type nil}
-         (variable/lat-dim (variable/extract-dimensions x-y-dims))))
-  (is (= {:Size 17999, :Name :lat, :Type :LATITUDE_DIMENSION}
-         (variable/lat-dim (variable/extract-dimensions ummvar-1-2-dims)))))
-
-(deftest restructure-dims
-  (is (= {:EmisFreqIR {:Size 4 :Type nil :Name :EmisFreqIR}
-          :XDim {:Size 200 :Type nil :Name :XDim}
-          :YDim {:Size 100 :Type nil :Name :YDim}}
-         (variable/restructure-dims
-          (get-in x-y-dims [:umm :Dimensions]))))
-  (is (= {:LATITUDE_DIMENSION {:Size 17999 :Type :LATITUDE_DIMENSION :Name :lat}
-          :LONGITUDE_DIMENSION {:Size 36000 :Type :LONGITUDE_DIMENSION :Name :lon}
-          :time {:Size 1 :Type :OTHER :Name :time}}
-         (variable/restructure-dims
-          (get-in ummvar-1-2-dims [:umm :Dimensions])))))
-
 (deftest extract-dimensions
   (let [dims (variable/extract-dimensions lat-lon-dims)]
     (is (= {:EmisFreqIR {:Size 4 :Type nil :Name :EmisFreqIR}

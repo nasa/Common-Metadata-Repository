@@ -76,10 +76,8 @@
 
 (defn normalize-lat-lon
   "This function normalizes the names of lat/lon in order to simplify internal,
-  CMR OPeNDAP-only logic.
-
-  Note that the original names are preserved in the data structure (done as part
-  of `restructure-dim`)."
+  CMR OPeNDAP-only logic. The original dimension names are recorded, and when
+  needed, referenced."
   [dim]
   (-> dim
       (assoc :Latitude (lat-dim dim)
