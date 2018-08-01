@@ -132,6 +132,12 @@
          (variable/normalize-lat-lon
           (variable/extract-dimensions no-spatial-dims)))))
 
+(deftest extract-bounds
+  (is (= {:low {:lon -180 :lat -90}
+          :high {:lon 180 :lat 90}
+          :lat-reversed? false}
+         (into {} (variable/extract-bounds ummvar-1-2-bounds)))))
+
 (deftest create-opendap-bounds
   (let [dims (array-map :Longitude {:Size 360} :Latitude {:Size 180})
         bounds [-27.421875 53.296875 18.5625 69.75]
