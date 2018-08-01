@@ -101,7 +101,10 @@
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']")
 
 (def extent-alt-xpath
-  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']/gmd:geographicElement/gmd:EX_GeographicDescription[@id='GranuleSpatialRepresentation']/gmd:geographicIdentifier/gmd:MD_Identifier")
+  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent"
+       "/gmd:EX_Extent[@id='boundingExtent']/gmd:geographicElement"
+       "/gmd:EX_GeographicDescription[@id='GranuleSpatialRepresentation']"
+       "/gmd:geographicIdentifier/gmd:MD_Identifier"))
 
 (defn- parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
