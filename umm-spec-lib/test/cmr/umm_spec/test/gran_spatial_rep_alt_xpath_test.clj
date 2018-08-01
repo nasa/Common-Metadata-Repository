@@ -3,11 +3,11 @@
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer :all]
-   [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.json-schema :as json-schema]
+   [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.umm-spec-core :as core]))
 
-(def test-context (lkt/setup-context-for-test))
+(def test-context (location-keywords-helper/setup-context-for-test))
 
 (defn alt-xpath-example-file
   "Returns an example ISO19115 metadata file with alternative GranuleSpatialRepresentation xpath."
@@ -22,13 +22,13 @@
 (deftest test-alt-xpath-example-file 
   "Verify the returned GranuleSpatialRepresentation is CARTESIAN"
   (let [metadata (slurp (alt-xpath-example-file))
-        umm (js/parse-umm-c (core/parse-metadata test-context :collection :iso19115 metadata))]
+        umm (json-schema/parse-umm-c (core/parse-metadata test-context :collection :iso19115 metadata))]
     (is (= "HORIZONTAL" (get-in umm [:SpatialExtent :SpatialCoverageType])))
     (is (= "CARTESIAN" (get-in umm [:SpatialExtent :GranuleSpatialRepresentation]))))) 
          
 (deftest test-mixed-example-file 
   "Verify that the returned GranuleSpatialRepresentation is GEODETIC."
   (let [metadata (slurp (mixed-example-file))
-        umm (js/parse-umm-c (core/parse-metadata test-context :collection :iso19115 metadata))]
+        umm (json-schema/parse-umm-c (core/parse-metadata test-context :collection :iso19115 metadata))]
     (is (= "HORIZONTAL" (get-in umm [:SpatialExtent :SpatialCoverageType])))
     (is (= "GEODETIC" (get-in umm [:SpatialExtent :GranuleSpatialRepresentation])))))
