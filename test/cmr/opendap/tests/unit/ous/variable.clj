@@ -56,6 +56,17 @@
         :Size 36000
         :Type "LONGITUDE_DIMENSION"}]}})
 
+(def ummvar-1-2-bounds
+  {:umm
+    {:Characteristics
+      {:Bounds
+        {:LowerLeft
+          {:Lat -90
+           :Lon -180}
+         :UpperRight
+          {:Lat 90
+           :Lon 180}}}}})
+
 (deftest lon-dim
   (is (nil? (variable/lon-dim (variable/extract-dimensions no-spatial-dims))))
   (is (= {:Size 270, :Name :Longitude, :Type nil}
