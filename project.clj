@@ -163,7 +163,7 @@
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
-    "ubercompile" ["with-profile" "+system,+geo,+ubercompile" "compile"]
+    "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
     "uberjar" ["with-profile" "+system,+geo" "uberjar"]
     "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
