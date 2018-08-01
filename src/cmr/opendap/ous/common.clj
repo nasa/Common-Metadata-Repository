@@ -23,24 +23,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn format-opendap-lat-lon
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
-  [coll bounding-infos bounding-box]
+  [bounding-infos bounding-box]
   (when-let [bounding-info (first bounding-infos)]
     (variable/format-opendap-lat-lon bounding-info)))
 
 (defn bounding-infos->opendap-query
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
-  ([coll bounding-infos]
-   (bounding-infos->opendap-query coll bounding-infos nil))
-  ([coll bounding-infos bounding-box]
+  ([bounding-infos]
+   (bounding-infos->opendap-query bounding-infos nil))
+  ([bounding-infos bounding-box]
    (when (seq bounding-infos)
      (str
       (->> bounding-infos
@@ -48,7 +38,7 @@
            (string/join ",")
            (str "?"))
       ","
-      (format-opendap-lat-lon coll bounding-infos bounding-box)))))
+      (format-opendap-lat-lon bounding-infos bounding-box)))))
 
 (defn lat-dim?
   [dim]
@@ -293,16 +283,10 @@
   :not-implemented)
 
 (defn stage3
-  [component coll service-ids vars bounding-box {:keys [endpoint token]}]
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
+  [component service-ids vars bounding-box {:keys [endpoint token]}]
   (log/debug "Starting stage 3 ...")
   (let [services-promise (service/async-get-metadata endpoint token service-ids)
-        bounding-infos (map #(variable/extract-bounding-info
-                              coll % bounding-box)
+        bounding-infos (map #(variable/extract-bounding-info % bounding-box)
                             vars)
         errs (apply errors/collect bounding-infos)]
     (when errs
@@ -312,10 +296,10 @@
     [services-promise bounding-infos errs]))
 
 (defn stage4
-  [_component coll services-promise bounding-box bounding-infos _options]
+  [_component services-promise bounding-box bounding-infos _options]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
-        query (bounding-infos->opendap-query coll bounding-infos bounding-box)
+        query (bounding-infos->opendap-query bounding-infos bounding-box)
         errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))

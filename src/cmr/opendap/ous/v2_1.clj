@@ -39,27 +39,16 @@
     (log/trace "data-files:" (vec data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    ;; XXX coll is returned here because it's needed in a workaround
-    ;;     for different data sets using different starting points
-    ;;     for their indices in OPeNDAP
-    ;;
-    ;; XXX This is being tracked in CMR-4982
-    [coll params data-files service-ids vars errs]))
+    [params data-files service-ids vars errs]))
 
 (defn stage3
-  [component coll service-ids vars bounding-box {:keys [endpoint token params]}]
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
+  [component service-ids vars bounding-box {:keys [endpoint token params]}]
   (log/debug "Starting stage 3 ...")
   (let [[vars params bounding-box gridded-warns]
         (common/apply-gridded-conditions vars params bounding-box)
         services-promise (service/async-get-metadata endpoint token service-ids)
         bounding-infos (if-not (seq gridded-warns)
-                         (map #(variable/extract-bounding-info
-                                coll % bounding-box)
+                         (map #(variable/extract-bounding-info % bounding-box)
                               vars)
                          [])
         errs (apply errors/collect bounding-infos)
@@ -86,7 +75,7 @@
                         :token user-token
                         :params raw-params})
         ;; Stage 2
-        [coll params data-files service-ids vars s2-errs]
+        [params data-files service-ids vars s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
@@ -96,7 +85,6 @@
         ;; Stage 3
         [services vars params bounding-info s3-errs s3-warns]
         (stage3 component
-                coll
                 service-ids
                 vars
                 bounding-box
@@ -106,7 +94,6 @@
         ;; Stage 4
         [query s4-errs]
         (common/stage4 component
-                       coll
                        services
                        bounding-box
                        bounding-info

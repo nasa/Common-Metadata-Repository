@@ -4,6 +4,42 @@
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;; Notes on representing spatial extents.
+;;;;
+;;;; EDSC uses URL-encoded long/lat numbers representing a bounding box
+;;;; Note that the ordering is the same as that used by CMR (see below).
+;;;;  `-9.984375%2C56.109375%2C19.828125%2C67.640625`
+;;;; which URL-decodes to:
+;;;;  `-9.984375,56.109375,19.828125,67.640625`
+;;;;
+;;;; OPeNDAP download URLs have something I haven't figured out yet; given that
+;;;; one of the numbers if over 180, it can't be degrees ... it might be what
+;;;; WCS uses for `x` and `y`?
+;;;;  `Latitude[22:34],Longitude[169:200]`
+;;;;
+;;;; The OUS Prototype uses the WCS standard for lat/long:
+;;;;  `SUBSET=axis[,crs](low,high)`
+;;;; For lat/long this takes the following form:
+;;;;  `subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
+;;;;
+;;;; CMR supports bounding spatial extents by describing a rectangle using four
+;;;; comma-separated values:
+;;;;  1. lower left longitude
+;;;;  2. lower left latitude
+;;;;  3. upper right longitude
+;;;;  4. upper right latitude
+;;;; For example:
+;;;;  `bounding_box==-9.984375,56.109375,19.828125,67.640625`
+;;;;
+;;;; Google's APIs use lower left, upper right, but the specify lat first, then
+;;;; long:
+;;;;  `southWest = LatLng(56.109375,-9.984375);`
+;;;;  `northEast = LatLng(67.640625,19.828125);`
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constants/Default Values   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -20,7 +56,7 @@
 
 (defrecord Point [lon lat])
 
-(defrecord ArrayLookup [low high])
+(defrecord ArrayLookup [low high lat-reversed?])
 
 (defrecord BoundingInfo
   [;; :meta :concept-id
@@ -44,6 +80,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn lat-reversed?
+  [lo-lat hi-lat]
+  (> lo-lat hi-lat))
+
+(defn parse-coord-part
+  [value default-value]
+  (cond (string? value) (Float/parseFloat value)
+        (nil? value) default-value
+        :else value))
+
+(defn parse-lon-low
+  [value]
+  (parse-coord-part value const/default-lon-lo))
+
+(defn parse-lon-high
+  [value]
+  (parse-coord-part value const/default-lon-hi))
+
+(defn parse-lat-low
+  [value]
+  (parse-coord-part value const/default-lat-lo))
+
+(defn parse-lat-high
+  [value]
+  (parse-coord-part value const/default-lat-hi))
 
 (defn adjusted-lon
   ([lon]
@@ -215,7 +277,8 @@
                   {:low {:lon lon-lo
                          :lat lat-lo}
                    :high {:lon lon-hi
-                          :lat lat-hi}})
+                          :lat lat-hi}
+                   :lat-reversed? reversed?})
           reversed-hi-lat (get-in lookup [:high :lat])
           reversed-lo-lat (get-in lookup [:low :lat])]
       (if reversed?
@@ -246,9 +309,11 @@
 
 (defn bounding-box->lookup-indices
   ([bounding-box]
-    (bounding-box->lookup-indices bounding-box ["Longitude" "Latitude"]))
-  ([bounding-box index-names]
-    (bounding-box->lookup-indices bounding-box false index-names))
+    (bounding-box->lookup-indices bounding-box false))
+  ([bounding-box reversed?]
+    (bounding-box->lookup-indices bounding-box
+                                  reversed?
+                                  ["Longitude" "Latitude"]))
   ([bounding-box reversed? index-names]
     (bounding-box->lookup-indices bounding-box
                                   reversed?

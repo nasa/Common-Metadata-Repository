@@ -22,17 +22,6 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; The need for these functions was absurd: "Not Provided" and "NA" are
-;; considered valid values for collection proccessing level. CMR OPeNDAP
-;; currently only supports level 3 and 4, and one of the supported collections
-;; is level 3, but has a proccessing level value set to "Not Provided".
-;; Thus, this hack.
-;;
-;; This work was tracked in CMR-4989 and CMR-5035; in the latter ticket, the
-;; hack was rolled into a versioned portion of the API (this namespace) in
-;; order to minimize breakages in demos, etc., until all ingested UMM-Vars
-;; were at 1.2.
-
 (defn sanitize-processing-level
   [level]
   (if (or (= "NA" level)
@@ -79,12 +68,7 @@
     (log/trace "data-files:" (vec data-files))
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    ;; XXX coll is returned here because it's needed in a workaround
-    ;;     for different data sets using different starting points
-    ;;     for their indices in OPeNDAP
-    ;;
-    ;; XXX This is being tracked in CMR-4982
-    [coll params data-files service-ids vars errs]))
+    [params data-files service-ids vars errs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -102,7 +86,7 @@
                         :token user-token
                         :params raw-params})
         ;; Stage 2
-        [coll params data-files service-ids vars s2-errs]
+        [params data-files service-ids vars s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
@@ -112,7 +96,6 @@
         ;; Stage 3
         [services bounding-info s3-errs]
         (common/stage3 component
-                       coll
                        service-ids
                        vars
                        bounding-box
@@ -122,7 +105,6 @@
         ;; Stage 4
         [query s4-errs]
         (common/stage4 component
-                       coll
                        services
                        bounding-box
                        bounding-info

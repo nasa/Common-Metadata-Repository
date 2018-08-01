@@ -16,12 +16,10 @@
     (testing "No bounds, Latitude & Longitude ..."
      (is (= "?MyVar,Latitude,Longitude"
             (common/bounding-infos->opendap-query
-             collection
              [{:name "MyVar"
                :dimensions dims}])))
      (is (= "?MyVar1,MyVar2,Latitude,Longitude"
             (common/bounding-infos->opendap-query
-             collection
              [{:name "MyVar1"
                :dimensions dims}
               {:name "MyVar2"
@@ -34,19 +32,16 @@
                             :opendap (variable/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
        (is (= "?MyVar[20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
-              (common/bounding-infos->opendap-query
-               collection bounding-info bounds))))))
+              (common/bounding-infos->opendap-query bounding-info bounds))))))
   (let [dims (array-map :Latitude {:Size 180 :Name :lat}
                         :Longitude {:Size 360 :Name :lon})]
     (testing "No bounds, lat & lon ..."
      (is (= "?MyVar,lat,lon"
             (common/bounding-infos->opendap-query
-             collection
              [{:name "MyVar"
                :dimensions dims}])))
      (is (= "?MyVar1,MyVar2,lat,lon"
             (common/bounding-infos->opendap-query
-             collection
              [{:name "MyVar1"
                :dimensions dims}
               {:name "MyVar2"
@@ -59,8 +54,7 @@
                             :opendap (variable/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
        (is (= "?MyVar[20:1:37][152:1:199],lat[20:1:37],lon[152:1:199]"
-              (common/bounding-infos->opendap-query
-               collection bounding-info bounds)))))))
+              (common/bounding-infos->opendap-query bounding-info bounds)))))))
 
 ;;; UMM-Var Test data
 

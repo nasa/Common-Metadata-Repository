@@ -29,74 +29,6 @@
                            charset))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Notes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Notes on representing spatial extents.
-;;
-;; EDSC uses URL-encoded long/lat numbers representing a bounding box
-;; Note that the ordering is the same as that used by CMR (see below).
-;;  `-9.984375%2C56.109375%2C19.828125%2C67.640625`
-;; which URL-decodes to:
-;;  `-9.984375,56.109375,19.828125,67.640625`
-;;
-;; OPeNDAP download URLs have something I haven't figured out yet; given that
-;; one of the numbers if over 180, it can't be degrees ... it might be what
-;; WCS uses for `x` and `y`?
-;;  `Latitude[22:34],Longitude[169:200]`
-;;
-;; The OUS Prototype uses the WCS standard for lat/long:
-;;  `SUBSET=axis[,crs](low,high)`
-;; For lat/long this takes the following form:
-;;  `subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)`
-;;
-;; CMR supports bounding spatial extents by describing a rectangle using four
-;; comma-separated values:
-;;  1. lower left longitude
-;;  2. lower left latitude
-;;  3. upper right longitude
-;;  4. upper right latitude
-;; For example:
-;;  `bounding_box==-9.984375,56.109375,19.828125,67.640625`
-;;
-;; Google's APIs use lower left, upper right, but the specify lat first, then
-;; long:
-;;  `southWest = LatLng(56.109375,-9.984375);`
-;;  `northEast = LatLng(67.640625,19.828125);`
-
-;; XXX The following set and function are a hard-coded work-around for the
-;;     fact that we don't currently have a mechanism for identifying the
-;;     "direction of storage" or "endianness" of latitude data in different
-;;     data sets: some store data from -90 to 90N starting at index 0, some
-;;     from 90 to -90.
-;;
-;; XXX This is being tracked in CMR-4982
-(def lat-reversed-datasets
-  #{"Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"
-    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC [Testing Variable Dimensions]"
-    "MODIS/Terra Aerosol Cloud Water Vapor Ozone Daily L3 Global 1Deg CMG V006"})
-
-(defn lat-reversed?
-  [coll]
-  (log/debug "Checking collection for reversed latitudinal values ...")
-  (log/trace "Collection data:" coll)
-  (let [dataset-id (:dataset_id coll)
-        reversed? (contains? lat-reversed-datasets dataset-id)]
-    (log/debug "Data set id:" dataset-id)
-    (if reversed?
-      (log/debug "Identfied data set as having reversed latitude order ...")
-      (log/debug "Identfied data set as having normal latitude order ..."))
-    ;; XXX coll is required as an arg here because it's needed in a
-    ;;     workaround for different data sets using different starting
-    ;;     points for their indices in OPeNDAP
-    ;;
-    ;;     Ideally, we'll have something in a UMM-Var's metadata that
-    ;;     will allow us to make the reversed? assessment.
-    ;;
-    ;; XXX This is being tracked in CMR-4982 and CMR-4896
-    reversed?))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -216,39 +148,20 @@
   (restructure-dims
    (get-in entry [:umm :Dimensions])))
 
-(defn parse-annotated-bounds
-  "Parse bounds that are annotated with Lat and Lon, returning values
-  in the same order that CMR uses for spatial bounding boxes."
-  [bounds]
-  (let [lon-regex "Lon:\\s*(-?[0-9]+),\\s*(-?[0-9]+).*;\\s*"
-        lat-regex "Lat:\\s*(-[0-9]+),\\s*(-?[0-9]+).*"
-        [lon-lo lon-hi lat-lo lat-hi]
-         (rest (re-find (re-pattern (str lon-regex lat-regex)) bounds))]
-    [lon-lo lat-lo lon-hi lat-hi]))
-
-(defn parse-cmr-bounds
-  [bounds]
-  "Parse a list of lat/lon values ordered according to the CMR convention
-  of lower-left lon, lower-left lat, upper-right long, upper-right lat."
-  (map string/trim (string/split bounds #",\s*")))
-
-(defn parse-bounds
-  [bounds]
-  (if (string/starts-with? bounds "Lon")
-    (parse-annotated-bounds bounds)
-    (parse-cmr-bounds bounds)))
-
 (defn extract-bounds
   [entry]
   (when entry
-    (->> entry
-         (#(get-in % [:umm :Characteristics :Bounds]))
-         parse-bounds
-         (map #(Float/parseFloat %)))))
+    (let [bounds (get-in entry [:umm :Characteristics :Bounds])
+          ll-lon (geog/parse-lon-low (get-in bounds [:LowerLeft :Lon]))
+          ll-lat (geog/parse-lat-low (get-in bounds [:LowerLeft :Lat]))
+          ur-lon (geog/parse-lon-high (get-in bounds [:UpperRight :Lon]))
+          ur-lat (geog/parse-lat-high (get-in bounds [:UpperRight :Lat]))
+          reversed? (geog/lat-reversed? ll-lat ur-lat)]
+      (geog/create-array-lookup ll-lon ll-lat ur-lon ur-lat reversed?))))
 
 (defn create-opendap-bounds
   ([bounding-box]
-   (create-opendap-bounds bounding-box {:reversed? true}))
+   (create-opendap-bounds bounding-box {:reversed? false}))
   ([bounding-box opts]
    (create-opendap-bounds {:Longitude const/default-lon-abs-hi
                            :Latitude const/default-lat-abs-hi}
@@ -311,23 +224,22 @@
   "This function is executed at the variable level, however it has general,
   non-variable-specific bounding info passed to it in order to support
   spatial subsetting"
-  [coll entry bounding-box]
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
-  (log/trace "Got collection:" coll)
+  [entry bounding-box]
   (log/trace "Got variable entry:" entry)
   (log/trace "Got bounding-box:" bounding-box)
   (if (:umm entry)
-    (let [dims (normalize-lat-lon (extract-dimensions entry))]
+    (let [dims (normalize-lat-lon (extract-dimensions entry))
+          var-array-lookup (extract-bounds entry)
+          reversed? (:lat-reversed? var-array-lookup)]
       (geog/map->BoundingInfo
         {:concept-id (get-in entry [:meta :concept-id])
          :name (get-in entry [:umm :Name])
          :dimensions dims
          :bounds bounding-box
          :opendap (create-opendap-bounds
-                   dims bounding-box {:reversed? (lat-reversed? coll)})
-         :size (get-in entry [:umm :Characteristics :Size])}))
+                   dims
+                   bounding-box
+                   {:reversed? reversed?})
+         :size (get-in entry [:umm :Characteristics :Size])
+         :lat-reversed? reversed?}))
     {:errors [errors/variable-metadata]}))
