@@ -22,19 +22,6 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn bbox->bounding-info
-  ;; XXX coll is required as an arg here because it's needed in a
-  ;;     workaround for different data sets using different starting
-  ;;     points for their indices in OPeNDAP
-  ;;
-  ;; XXX This is being tracked in CMR-4982
-  [coll bounding-box]
-  (geog/map->BoundingInfo
-    {:bounds bounding-box
-     :opendap (variable/create-opendap-bounds
-               bounding-box
-               {:reversed? (variable/lat-reversed? coll)})}))
-
 (defn format-opendap-lat-lon
   ;; XXX coll is required as an arg here because it's needed in a
   ;;     workaround for different data sets using different starting
@@ -42,10 +29,8 @@
   ;;
   ;; XXX This is being tracked in CMR-4982
   [coll bounding-infos bounding-box]
-  (if-let [bounding-info (first bounding-infos)]
-    (variable/format-opendap-lat-lon bounding-info)
-    (variable/format-opendap-lat-lon
-     (bbox->bounding-info coll bounding-box))))
+  (when-let [bounding-info (first bounding-infos)]
+    (variable/format-opendap-lat-lon bounding-info)))
 
 (defn bounding-infos->opendap-query
   ;; XXX coll is required as an arg here because it's needed in a
@@ -54,7 +39,7 @@
   ;;
   ;; XXX This is being tracked in CMR-4982
   ([coll bounding-infos]
-    (bounding-infos->opendap-query coll bounding-infos nil))
+   (bounding-infos->opendap-query coll bounding-infos nil))
   ([coll bounding-infos bounding-box]
    (when (seq bounding-infos)
      (str
