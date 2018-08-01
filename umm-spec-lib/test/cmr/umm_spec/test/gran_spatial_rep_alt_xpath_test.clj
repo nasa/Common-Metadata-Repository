@@ -4,10 +4,8 @@
    [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-   [cmr.umm-spec.umm-spec-core :as core]
-   [cmr.umm-spec.util :as util]))
+   [cmr.umm-spec.umm-spec-core :as core]))
 
 (def test-context (lkt/setup-context-for-test))
 
