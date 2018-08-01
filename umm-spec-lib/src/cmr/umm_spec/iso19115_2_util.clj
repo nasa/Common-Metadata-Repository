@@ -100,6 +100,9 @@
 (def extent-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']")
 
+(def extent-alt-xpath
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']/gmd:geographicElement/gmd:EX_GeographicDescription[@id='GranuleSpatialRepresentation']/gmd:geographicIdentifier/gmd:MD_Identifier")
+
 (defn- parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
   [description-str]
@@ -126,8 +129,14 @@
   "Returns a map of equal-separated pairs from the comma-separated list in the ISO document's extent
   description element."
   [doc]
-  (let [[extent-el] (select doc extent-xpath)]
-    (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))))
+  (let [[extent-el] (select doc extent-xpath)
+        extent-info-map (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))]
+    (if (get extent-info-map "SpatialGranuleSpatialRepresentation")
+      extent-info-map
+      (let [[extent-alt-el] (select doc extent-alt-xpath)]
+        (merge extent-info-map
+               {"SpatialGranuleSpatialRepresentation" 
+                (value-of extent-alt-el "gmd:code/gco:CharacterString")})))))
 
 (defn parse-data-dates
   "Parses the collection DataDates from the the collection document."

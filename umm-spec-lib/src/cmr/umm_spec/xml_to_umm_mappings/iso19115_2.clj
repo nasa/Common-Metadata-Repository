@@ -125,9 +125,9 @@
       some?))
 
 (defn- parse-temporal-extents
-  "Parses the collection temporal extents from the the collection document, the extent information,
+  "Parses the collection temporal extents from the the collection document
   and the data identification element."
-  [doc extent-info md-data-id-el]
+  [doc md-data-id-el]
   (for [temporal (select md-data-id-el temporal-xpath)]
     {:PrecisionOfSeconds (value-of doc precision-xpath)
      :EndsAtPresentFlag (temporal-ends-at-present? temporal)
@@ -262,7 +262,7 @@
       :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc "")
       :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
-      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
+      :TemporalExtents (or (seq (parse-temporal-extents doc md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
       :ProcessingLevel {:Id
@@ -297,6 +297,5 @@
 (defn parse-doc-temporal-extents
  "Standalone function to parse temporal extents outside of full collection parsing"
  [doc]
- (let [md-data-id-el (first (select doc md-data-id-base-xpath))
-       extent-info (iso-util/get-extent-info-map doc)]
-  (parse-temporal-extents doc extent-info md-data-id-el)))
+ (let [md-data-id-el (first (select doc md-data-id-base-xpath))]
+  (parse-temporal-extents doc md-data-id-el)))
