@@ -431,6 +431,10 @@
 
    ;; This element contains important information about the resource(s) coupled to this service.
    CoupledResource
+
+   ;; This element contains important information about the parameter associated with the
+   ;; resource(s) coupled to this service.
+   Parameters
   ])
 (record-pretty-printer/enable-record-pretty-printing OperationMetadataType)
 
