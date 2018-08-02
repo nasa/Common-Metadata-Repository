@@ -5,6 +5,7 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.log :refer [debug error info warn]]
    [cmr.common-app.services.search.messages :as msg]
    [cmr.common-app.services.search.params :as p]
    [cmr.common.concepts :as cc]
@@ -116,7 +117,8 @@
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
-  (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
+  (let [page-size-errors [(str "page_size must be a number between 0.3 and " max-page-size)]]
+    (println "*** Andy page-size-validation has been reached.")
     (try
       (when-let [page-size-i (get-ivalue-from-params params :page-size)]
         (when (or (neg? page-size-i) (> page-size-i max-page-size))
@@ -390,6 +392,11 @@
         (apply-type-validations params validations))
       [params []])))
 
+(defn wkt-validation
+  "Validates Well Known Text"
+  [param wktext]
+  (debug "*** Andy wkt-validation has been reached."))
+
 (def common-validations
   "A set of validations common to all concept types."
   [single-value-validation
@@ -401,6 +408,7 @@
    scroll-excludes-offset-validation
    page-size-validation
    page-num-validation
+   wkt-validation
    offset-validation
    paging-depth-validation
    sort-key-validation

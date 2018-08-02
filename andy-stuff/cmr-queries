@@ -1,0 +1,168 @@
+------------ get a specific granule
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?readable_granule_name\[\]=cm1449&pretty=true" >junk.json
+
+------------- get a list of collections
+curl "https://cmr.earthdata.nasa.gov/search/collections.json?pretty=true" >junk.json
+curl "https://cmr.earthdata.nasa.gov/search/collections.json?pretty=true&dataset_id\[\]=R1_STD_FRAME_L1" >junk_collections.json
+
+------------ get list of granules
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=400" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37&temporal=2000-03-19T00:00:00Z,2015-03-18T00:00:00Z" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37&temporal=2000-03-19T00:00:00Z,2015-03-18T00:00:00Z&platform\[\]=RADARSAT-1" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37&temporal=2000-03-19T00:00:00Z,2015-03-18T00:00:00Z&platform\[\]=RADARSAT-1&platform\[\]=UAVSAR" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37&temporal=2000-03-19T00:00:00Z,2015-03-18T00:00:00Z&platform\[\]=RADARSAT-1&options\[platform\]\[ignore_case\]=true" >junk.json
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-102,37,-94,37,-94,39,-102,39,-102,37&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&platform\[\]=RADARSAT-1" >junk.xml
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF" >junk.xml
+
+----------- get caches --- we do not have permission. need "INGESTMANAGEMENTACL" token with read or update permission
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/caches"
+
+----------- get facets
+https://cmr.earthdata.nasa.gov/search/collections?page_size=0&provider_id=ASF&include_facets=true
+https://cmr.earthdata.nasa.gov:443/search/collections?platform=RADARSAT-1&include_facets=true
+
+--- URL snippets
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-152.05,64.75,-152.05,64.15,-149.94,64.15,-149.94,64.90,-152.05,64.75&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&platform\[\]=RADARSAT-1" >junk.xml
+
+https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider=ASF&temporal=2000-03-19T00:00:00Z,2015-03-18T00:00:00Z&platform=SENTINEL-1A
+
+https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider=ASF&producer_granule_id=S1A_S3_RAW__0SDH_20140615T034443_20140615T034516_001055_00107C_BCD2
+
+https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true&page_size=100&page_num=1&provider=ASF&producer_granule_id=S1A_IW_SLC__1SDV_20150418T035515_20150418T035538_005533_007132_F8E0
+
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=string,polarization,HH"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=string,polarization,HH"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,153&attribute\[\]=int,FRAME_NUMBER,154"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,153,154"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,{155,154}&attribute\[\]=int,FRAME_NUMBER,{154,155}"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,153&attribute\[\]=int,FRAME_NUMBER,154"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,{153,154}&attribute\[\]=int,FRAME_NUMBER,{154,157}"
+
+curl -i -XGET "https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&platform\[\]=RADARSAT-1&attribute\[\]=int,PATH_NUMBER,154&attribute\[\]=int,FRAME_NUMBER,154"
+
+https://cmr.earthdata.nasa.gov/search/granules.echo10?pretty=true&page_size=10&page_num=1&provider[]=ASF&platform[]=SEASAT 1
+
+---------------- different types of queries
+
+curl -XPOST -H "Content-Type: application/json" https://cmr.earthdata.nasa.gov/search/collections -d '{"condition": { "and": [{ "not": { "or": [{"provider": "TEST" }, { "and": [{ "project": "test-project", "platform": {"short_name": "mars-satellite"}}]}]}}, { "bounding_box": [-45,15,0,25], "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
+
+curl -i -XPOST -H "Content-Type: application/xml" https://cmr.earthdata.nasa.gov/search/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?> <query><for value="collections"/><dataCenterId><all/></dataCenterId> <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
+
+curl -i -XPOST -H "Content-Type: application/xml" https://cmr.earthdata.nasa.gov/search/granule/search -d '<?xml version="1.0" encoding="UTF-8"?> <query><for value="granules"/><dataCenterId><all/></dataCenterId> </query>'
+
+
+------------------- things to do in CMR dev locally ----------------------------
+
+*** start CMR from the CMR directory
+export PATH=$PATH:`pwd`/bin
+source resources/shell/cmr-bash-autocomplete
+lein modules clean
+cmr start repl
+
+(reset)
+(set-logging-level! :debug)
+
+cmr.system-int-test.search.granule-spatial-search-test
+lein test
+---- or ----
+
+1) in `cmr` (above `dev-system`), run `lein install!`  (only needed once)
+2) in `dev-system`, run `lein uberjar`
+3) when that's done, run `java -jar target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar` (edited)
+
+`(configure-systems-logging system :debug)`
+that sets the logging level
+you can make it quieter with `(configure-systems-logging system :info)`
+make it noisier with `(configure-systems-logging system :trace)`
+or effectively turn off logging with `(configure-systems-logging system :fatal)`
+
+oh, hey
+there's a better call
+you don't have to mess with the system map this way:
+(though you do need to make sure you have a running system first)
+`(set-logging-level! :debug)`
+
+*** establish some very basic data
+(ltest/run-tests '[cmr.system-int-test.search.granule-search-test])`\
+(ltest/run-test #'cmr.system-int-test.search.granule-search-test/search-by-concept-id)
+
+*** list the collections
+curl "http://localhost:3003/collections.umm_json_v1_4?pretty=true"
+curl "http://localhost:3003/collections.echo10?pretty=true&provider\[\]=PROV1"
+http://localhost:3003/collections.echo10?pretty=true
+
+*** list granules
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true"
+http://localhost:3003/granules.echo10?provider[]=PROV1&pretty=true
+
+*** WKT param testing
+curl -i -XGET "http://localhost:3003/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&polygon=-152.05,64.75,-152.05,64.15,-149.94,64.15,-149.94,64.90,-152.05,64.75&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&platform\[\]=RADARSAT-1" >junk.xml
+curl -i -XGET "http://localhost:3003/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=ASF&wkt=-152.05,64.75,-152.05,64.15,-149.94,64.15,-149.94,64.90,-152.05,64.75&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&platform\[\]=RADARSAT-1" >junk.xml
+
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&wkt\[\]=xyz&pretty=true"
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]='POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))'"
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))'
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON'
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((30%2010,%2040%2040,%2020%2040,%2010%2020,%2030%2010))"
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((30+10,40+40,20+40,10+20,30+10))'
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=LINESTRING%20(-0.37%20-14.07,4.75%201.27,25.13%20-15.51)"
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POINT%20(30%2010)"
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&POLYGON\[\]=30,10,40,40,20,40,10,20,30,10'
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&bounding_box=-10,-5,10,5"
+http://localhost:3003/granules.echo10?provider[]=PROV1&wkt[]=xyz&pretty=true
+
+
+["30,10,40,40,20,40,10,20,30,10"]
+
+
+http://localhost:3003/health?pretty=true
+
+curl -i -XGET "http://localhost:3003/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=PROV1"
+
+not in original docs but nece(ssary ----> brew install maven
+
+@settings/run-modes
+(set-modes! :db :in-memory)
+(reset)
+(ltest/run-tests '[cmr.system-int-test.search.granule-search-test])`\
+(ltest/run-test #'cmr.system-int-test.search.granule-search-test/search-by-concept-id)
+
+*** list collections
+curl "https://cmr.earthdata.nasa.gov/search/collections.umm_json_v1_4?pretty=true"
+https://cmr.earthdata.nasa.gov/search/collections.umm_json_v1_4?pretty=true&provider_short_name[]=ASF
+
+
+------
+curl -i -XPOST -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3008/tokens -d ' {"token": {"username":"asfuser", "password":"topsecret", "client_id":"asftest", "user_ip_address":"127.0.0.1", "group_guids":["guid1", "guid2"]}}'
+
+curl -i -H "Accept: application/json" -H "Echo-Token: foo" http://localhost:3008/tokens/ABC-1/token_info
+
+
+----------
+
+curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: ABC-1" http://localhost:3002/providers/PROV1/granules/sampleGranuleNativeId33 -d \
+"<Granule>
+   <GranuleUR>Sample Granule</GranuleUR>
+   <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
+   <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate>
+   <Collection>
+     <DataSetId>E1</DataSetId>
+   </Collection>
+   <Orderable>true</Orderable>
+</Granule>"
+
+(when-not (contains? #{"true" "false"} value)
+      [(format "Parameter must take value of true or false but was"
+               )])

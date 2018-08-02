@@ -2,6 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util]
+   [cmr.common.log :refer [debug error info warn]]
    [cmr.search.services.parameters.parameter-validation :as pv]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.search.services.messages.attribute-messages :as attrib-msg]
@@ -144,6 +145,15 @@
   (testing "a geometry parameter which is invalid returns a parsing error"
     (is (= ["[10.0,-.3] is not a valid URL encoded point"]
            (pv/point-validation :granule {:point "10.0,-.3"}))))
+
+  ;; WKT Well Known Text Validation
+  (testing "A WKT parameters are limited to, polygon, line, point."
+    (debug "*** Andy wkt testing has been reached.")
+    (testing "Simple arithmetic test."
+      (is (= -5 (+ -2 -2))))
+    (testing "WKT is not valid."
+      (is (not= ["the wkt parameter is not valid"]
+          (cpv/wkt-validation "Andy" )))))
 
   ;; Boolean parameter validations
   (testing "valid boolean parameters do not return an error"

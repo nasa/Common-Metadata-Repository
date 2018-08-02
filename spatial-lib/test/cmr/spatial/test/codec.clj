@@ -13,6 +13,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.wkt :as wkt]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.test.generators :as sgen]
@@ -97,6 +98,10 @@
     (let [line (d/calculate-derived shape)]
       (= line (d/calculate-derived (c/url-decode :line (c/url-encode line)))))))
 
+(defspec wkt-encode-decode-test 100
+  ;; wkts with a single ring
+  (for-all [shape sgen/geodetic-polygons-without-holes]
+    (= shape (c/url-decode :wkt (c/url-encode shape)))))
 
 
 

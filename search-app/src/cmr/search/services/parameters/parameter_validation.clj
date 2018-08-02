@@ -53,7 +53,7 @@
     {:single-value #{:echo-compatible :include-facets}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
-                       :platform :sensor}
+                       :platform :sensor :wkt}
      :always-case-sensitive #{:echo-granule-id}
      :disallow-pattern #{:echo-granule-id}}))
 
@@ -171,7 +171,8 @@
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
    :created-at cpv/and-option
-   :revision-date cpv/and-option})
+   :revision-date cpv/and-option
+   :wkt cpv/string-param-options})
 
 (defmethod cpv/valid-parameter-options :tag
   [_]
@@ -599,6 +600,10 @@
 (defn polygon-validation
   ([params] (polygon-validation nil params))
   ([_ params] (spatial-validation params :polygon)))
+
+(defn wkt-validation
+  ([params] (wkt-validation nil params))
+  ([_ params] (spatial-validation params :wkt)))
 
 (defn bounding-box-validation
   ([params] (bounding-box-validation nil params))

@@ -1,6 +1,7 @@
 (ns cmr.spatial.codec
   "Makes the spatial areas URL encodeable as accepted on the Catalog REST API"
   (:require [cmr.spatial.polygon :as poly]
+            [cmr.spatial.wkt :as wkt]
             [cmr.spatial.point :as p]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.line-string :as l]
@@ -71,6 +72,10 @@
   (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
     (rb/compile-regex (rb/group point (rb/n-or-more-times 3 "," point)))))
 
+(def wkt-regex
+  (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
+    (rb/compile-regex (rb/group point (rb/n-or-more-times 3 "," point)))))
+
 (def line-regex
   (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
     (rb/compile-regex (rb/group point (rb/n-or-more-times 1 "," point)))))
@@ -106,6 +111,13 @@
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
       (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
+
+(defmethod url-decode :wkt
+  [type s]
+  (if-let [match (re-matches wkt-regex s)]
+    (let [ordinates (map #(Double. ^String %) (str/split s #","))]
+      (wkt/wkt :geodetic [(rr/ords->ring :geodetic ordinates)]))
+    {:errors [(smsg/shape-decode-msg :wkt s)]}))
 
 (defmethod url-decode :line
   [type s]

@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Date: Wed, 25 Jul 2018 17:21:40 GMT
+Content-Type: application/echo10+xml; charset=UTF-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 0
+CMR-Took: 54
+CMR-Request-Id: 5962ad67-f200-4f52-b003-94b68047189a
+Content-Length: 99
+Server: Jetty(9.2.10.v20150310)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>0</hits>
+    <took>31</took>
+</results>
