@@ -47,8 +47,10 @@
   and SupportedOutputProjections in v1.2 ServiceOptions when migrate from 1.1 to 1.2."
   [service-options]
   (-> service-options
-      (assoc :SupportedInputProjections (:SupportedProjections service-options))
-      (assoc :SupportedOutputProjections (:SupportedProjections service-options))
+      (assoc :SupportedInputProjections (seq (map #(hash-map :ProjectionName %)
+                                                  (:SupportedProjections service-options))))
+      (assoc :SupportedOutputProjections (seq (map #(hash-map :ProjectionName %)
+                                                   (:SupportedProjections service-options))))
       (dissoc :SupportedProjections)))
 
 (defn- duplicate-supported-Formats
@@ -107,7 +109,8 @@
   to SupportedProjections in v1.1 ServiceOptions when migrate from 1.2 to 1.1."
   [service-options]
   (-> service-options
-      (assoc :SupportedProjections (:SupportedInputProjections service-options))
+      (assoc :SupportedProjections (seq (map :ProjectionName
+                                             (:SupportedInputProjections service-options))))
       (dissoc :SupportedInputProjections :SupportedOutputProjections)))
 
 (defn- supported-Formats-1-2->1-1

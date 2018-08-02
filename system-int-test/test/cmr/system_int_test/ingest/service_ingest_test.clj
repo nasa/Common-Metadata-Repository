@@ -152,7 +152,7 @@
       (is (= 400 status))
       (is (= [(str "/Type instance value (\"\") not found in enum "
                    "(possible values: [\"OPeNDAP\",\"THREDDS\",\"WEB SERVICES\","
-                   "\"WCS\",\"WMS\",\"SOFTWARE PACKAGE\",\"TOOL\",\"WEB PORTAL\","
+                   "\"ESI\",\"ECHO ORDERS\",\"WCS\",\"WMS\",\"SOFTWARE PACKAGE\",\"TOOL\",\"WEB PORTAL\","
                    "\"International Web Portal\",\"MODEL\",\"NOT PROVIDED\"])")]
              errors))))
   (testing "ingest of service concept JSON schema validation invalid field"

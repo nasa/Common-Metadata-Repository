@@ -36,15 +36,15 @@
         {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv2"
                                          :Name "service2"
-                                         :ServiceOptions {:SupportedFormats ["image/png"]}})
+                                         :ServiceOptions {:SupportedInputFormats ["PNG"]}})
         {serv3-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv3"
                                          :Name "service3"
-                                         :ServiceOptions {:SupportedFormats ["image/tiff"]}})
+                                         :ServiceOptions {:SupportedInputFormats ["TIFF"]}})
         serv4-concept (service-util/make-service-concept
                        {:native-id "serv4"
                         :Name "Service4"
-                        :ServiceOptions {:SupportedFormats ["image/png" "image/tiff"]}})
+                        :ServiceOptions {:SupportedOutputFormats ["PNG" "TIFF"]}})
         {serv4-concept-id :concept-id} (service-util/ingest-service serv4-concept)]
     ;; index the collections so that they can be found during service association
     (index/wait-until-indexed)
@@ -99,7 +99,7 @@
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
-        :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]
+        :ServiceOptions {:SupportedInputFormats ["TIFF" "JPEG"]
                          :SubsetTypes ["Spatial"]}})
       (index/wait-until-indexed)
 
@@ -129,7 +129,7 @@
          [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
-  (testing "SupportedProjections affects has-transforms"
+  (testing "SupportedInputProjections and SupportedOutputProjections affects has-transforms"
     (let [token (e/login (s/context) "user1")
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                   :short-name "S1"
@@ -147,20 +147,20 @@
           (service-util/ingest-service-with-attrs
            {:native-id "serv2"
             :Name "service2"
-            :ServiceOptions {:SupportedProjections ["WGS 84 / Antarctic Polar Stereographic"]}})
+            :ServiceOptions {:SupportedInputProjections [{:ProjectionName "Mercator"}]}})
 
           {serv3-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
            {:native-id "serv3"
             :Name "service3"
-            :ServiceOptions {:SupportedProjections ["WGS84 - World Geodetic System 1984"]}})
+            :ServiceOptions {:SupportedInputProjections [{:ProjectionName "Sinusoidal"}]}})
 
           {serv4-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
            {:native-id "serv4"
             :Name "Service4"
-            :ServiceOptions {:SupportedProjections ["WGS 84 / Antarctic Polar Stereographic"
-                                                    "WGS84 - World Geodetic System 1984"]}})]
+            :ServiceOptions {:SupportedOutputProjections [{:ProjectionName "Mercator"}
+                                                         {:ProjectionName "Sinusoidal"}]}})]
       ;; index the collections so that they can be found during service association
       (index/wait-until-indexed)
       (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}
@@ -230,7 +230,7 @@
                         {:native-id "serv11"
                          :Name "service11"
                          :ServiceOptions {:SubsetTypes ["Spatial"]
-                                          :SupportedFormats ["image/tiff" "JPEG"]}})
+                                          :SupportedInputFormats ["TIFF" "JPEG"]}})
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
 

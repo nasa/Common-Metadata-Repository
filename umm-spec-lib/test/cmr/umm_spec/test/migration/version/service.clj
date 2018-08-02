@@ -80,8 +80,8 @@
   (is (= {:Type "OPeNDAP"
           :LongName "long name"
           :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
-                           :SupportedInputProjections [ "Geographic" ]
-                           :SupportedOutputProjections [ "Geographic" ]
+                           :SupportedInputProjections [{:ProjectionName "Geographic"}]
+                           :SupportedOutputProjections [{:ProjectionName "Geographic"}]
                            :SupportedInputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]
                            :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]}
           :ServiceOrganizations [{:Roles ["DEVELOPER"]
@@ -109,8 +109,8 @@
           {:Type "OPeNDAP"
            :LongName "long name"
            :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
-                            :SupportedInputProjections [ "Geographic" ]
-                            :SupportedOutputProjections [ "Geographic" ]
+                            :SupportedInputProjections [{:ProjectionName "Geographic"}]
+                            :SupportedOutputProjections [{:ProjectionName "Geographic"}]
                             :SupportedInputFormats ["BINARY" "HDF4" "HDF-EOS2" "HDF-EOS" "KML"]
                             :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS4"]}
            :ServiceOrganizations [{:Roles ["DEVELOPER"]

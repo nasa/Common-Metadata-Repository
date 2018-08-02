@@ -71,10 +71,11 @@
       service-concept)))
 
 (defn- has-formats?
-  "Returns true if the given service has more than one SupportedFormats value."
+  "Returns true if the given service has more than one supported formats value."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
-        supported-formats (get-in service [:ServiceOptions :SupportedFormats])]
+        supported-formats (concat (get-in service [:ServiceOptions :SupportedInputFormats])
+                                  (get-in service [:ServiceOptions :SupportedOutputFormats]))]
     (> (count supported-formats) 1)))
 
 (defn- has-spatial-subsetting?
@@ -88,13 +89,17 @@
 
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
-  or multiple SupportedProjections values."
+  or multiple supported projections values."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
         {service-options :ServiceOptions} service
         {subset-types :SubsetTypes
          interpolation-types :InterpolationTypes
-         supported-projections :SupportedProjections} service-options]
+         input-projections :SupportedInputProjections
+         output-projections :SupportedOutputProjections} service-options
+        supported-projections (distinct (concat
+                                         (map :ProjectionName input-projections)
+                                         (map :ProjectionName output-projections)))]
     (or (seq subset-types)
         (seq interpolation-types)
         (> (count supported-projections) 1))))
