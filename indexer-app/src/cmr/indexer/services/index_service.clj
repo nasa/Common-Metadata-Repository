@@ -34,6 +34,7 @@
    [cmr.transmit.index-set :as tis]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
+   [cmr.transmit.search :as search]
    [cmr.umm.umm-core :as umm]))
 
 (defconfig use-doc-values-fields
@@ -488,8 +489,14 @@
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
+      (as-> (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
+                    concept-id revision-id all-revisions-index?) info-string
+      (when (= concept-type :collection)
+        (let [granule-references 
+              (->> (search/find-granule-references context {:collection-concept-id concept-id})
+                   (map #(get % :concept-id)))]
+          (format "%s. Removing %d granules %s" info-string (count granule-references) (pr-str granule-references))))
+      (info info-string))
       (let [index-names (idx-set/get-concept-index-names
                          context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
