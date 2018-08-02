@@ -133,7 +133,7 @@
 	                   "ProjectionName":"Spherical Mercator",
 	                   "ProjectionAuthority":"900913"
 	             	 }
-	             	 
+
 	               ],
 	              "SupportedOutputFormats":
 	                ["BINARY", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32"]
@@ -164,11 +164,11 @@
 	           	   {
 	           	   	"GeneralGrid":
 	           	   	  {
-	           	   	   "CRSIdentifier":"26917",	
+	           	   	   "CRSIdentifier":"26917",
 	           	   	   "Axis":
 	           	   	   [{
 	           	   	     "AxisLabel":"x",
-	           	   	     "GridResolution":"30",
+	           	   	     "GridResolution":30,
 	           	   	     "Extent":
 	           	   	       {
 	           	   	         "LowerBound":0,
@@ -178,7 +178,7 @@
 	           	   	   },
 					   {
 	           	   	     "AxisLabel":"y",
-	           	   	     "GridResolution":"30",
+	           	   	     "GridResolution":30,
 	           	   	     "Extent":
 	           	   	       {
 	           	   	         "LowerBound":0,

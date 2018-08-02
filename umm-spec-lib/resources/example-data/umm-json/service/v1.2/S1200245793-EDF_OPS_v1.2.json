@@ -111,7 +111,7 @@
 	    }
 	  ],
       "SupportedOutputFormats":
-      ["HDF4","netCDF-3","netCDF-4","Binary","ASCII"]
+      ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII"]
     },
     "OperationMetadata":
 	           [{
@@ -133,7 +133,7 @@
 	         "DataResource":
 	           {
 	           	 "DataResourceIdentifier":"Aqua_AIRS_Level3/AIRX3STD.006",
-	           	 "DataResourceType":"Collection",
+	           	 "DataResourceSourceType":"Collection",
 	           	 "DataResourceSpatialType":"BOUNDING_BOX",
 	           	 "DataResourceSpatialExtent":
 	           	   {
@@ -164,5 +164,5 @@
 	           }
 	           }
 	           }]
-   
+
 }

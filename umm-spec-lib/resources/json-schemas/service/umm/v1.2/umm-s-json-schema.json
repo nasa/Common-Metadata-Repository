@@ -76,7 +76,7 @@
         "ProjectionName": {
           "description": "This element is used to identify the list of supported projection types.",
           "type": "string",
-          "enum": ["Geographic", "Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"]
+          "enum": ["Geographic", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "World Mollweide", "Mercator", "Space Oblique Mercator", "Transverse Mercator", "Universal Transverse Mercator", "UTM Northern Hemisphere", "UTM Southern Hemisphere", "State Plane Coordinates", "Albers Equal-Area Conic",  "Lambert Conic Conformal", "Lambert Equal Area", "Lambert Azimuthal Equal Area", "Cylindrical", "Cylindrical Equal Area", "Polar Stereographic", "EASE-Grid", "EASE-Grid 2.0", "WGS 84 / UPS North (N,E)", "WGS84 - World Geodetic System 1984", "NSIDC EASE-Grid North", "NSIDC EASE-Grid Global", "NSIDC Sea Ice Polar Stereographic North", "WGS 84 / NSIDC Sea Ice Polar Stereographic North", "NSIDC EASE Grid North and South (Lambert EA)", "WGS 84 / North Pole LAEA Bering Sea", "WGS 84 / North Pole LAEA Alaska", "WGS 84 / North Pole LAEA Canada", "WGS 84 / North Pole LAEA Atlantic", "WGS 84 / North Pole LAEA Europe", "WGS 84 / North Pole LAEA Russia", "WGS 84 / NSIDC EASE-Grid North", "WGS 84 / NSIDC EASE-Grid Global", "WGS 84 / UTM zone 24N", "WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI", "Google Maps Global Mercator -- Spherical Mercator", "WGS 84 / Antarctic Polar Stereographic", "NSIDC EASE-Grid South", "NSIDC Sea Ice Polar Stereographic South", "WGS 84 / NSIDC EASE-Grid South", "WGS 84 / NSIDC Sea Ice Polar Stereographic South", "WGS 84 / UPS South (N,E)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "NAD83 / UTM zone 17N"]
         },
         "ProjectionLatitudeOfCenter": {
           "description": "This element is used to identify the origin of the x-coordinates at the center of the projection.",
@@ -128,7 +128,7 @@
     "SupportedFormatTypeEnum": {
      "description": "This element contains a list of file formats supported by the service.",
      "type": "string",
-     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "NETCDF-3", "NETCDF-4", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML"]
+     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "HDF-EOS5", "NETCDF-3", "NETCDF-4", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML", "PNG24", "BMP"]
     },
     "ServiceKeywordType": {
       "type": "object",
@@ -526,6 +526,14 @@
         "CoupledResource": {
           "description": "This element contains important information about the resource(s) coupled to this service.",
           "$ref": "#/definitions/CoupledResourceType"
+        },
+        "Parameters": {
+          "description": "This element contains important information about the parameter associated with the resource(s) coupled to this service.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterType"
+          },
+          "minItems": 0
         }
       }
     },
