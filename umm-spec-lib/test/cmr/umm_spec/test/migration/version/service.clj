@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.test.migration.version.service
   (:require
+   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
@@ -74,3 +75,124 @@
                              :Lineage (apply str (repeat 4000 "x"))}
             :Coverage {:CoverageSpatialExtent {:CoverageSpatialExtentTypeType
                                                "SPATIAL_POINT"}}}))))
+
+(deftest migrate-service-options-1_1-up-to-1_2
+  (is (= {:Type "OPeNDAP"
+          :LongName "long name"
+          :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
+                           :SupportedInputProjections [ "Geographic" ]
+                           :SupportedOutputProjections [ "Geographic" ]
+                           :SupportedInputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]
+                           :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]}
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                 :ShortName "EED2"}]}
+         (vm/migrate-umm
+          {} :service "1.1" "1.2"
+          {:Type "OPeNDAP"
+           :LongName "long name"
+           :ServiceOptions {:SubsetTypes [ "Spatial" "Variable" ]
+                            :SupportedProjections [ "Geographic" ]
+                            :SupportedFormats ["Binary" "HDF4" "netCDF-3" "HDF-EOS4"]}
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"}]}))))
+
+(deftest migrate-service-options-1_2-down-to-1_1
+  (is (= {:Type "OPeNDAP"
+          :LongName "long name"
+          :ServiceOptions {:SubsetTypes [ "Spatial" "Variable" ]
+                           :SupportedProjections [ "Geographic" ]
+                           :SupportedFormats ["Binary" "HDF4" "HDF-EOS4" "HDF-EOS5"]}
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                 :ShortName "EED2"}]}
+         (vm/migrate-umm
+          {} :service "1.2" "1.1"
+          {:Type "OPeNDAP"
+           :LongName "long name"
+           :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
+                            :SupportedInputProjections [ "Geographic" ]
+                            :SupportedOutputProjections [ "Geographic" ]
+                            :SupportedInputFormats ["BINARY" "HDF4" "HDF-EOS2" "HDF-EOS" "KML"]
+                            :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS4"]}
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"}]}))))
+
+(deftest migrate-contact-groups-1_1-up-to-1_2
+  (is (= {:Type "OPeNDAP"
+          :LongName "long name"
+          :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+                           :GroupName "I TEAM"}]
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"
+                                  :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                                   :GroupName "D TEAM"}]}]}
+         (vm/migrate-umm
+          {} :service "1.1" "1.2"
+          {:Type "OPeNDAP"
+           :LongName "long name"
+           :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+                            :Uuid "74a1f32f-ca06-489b-bd61-4ce85872df9c"
+                            :NonServiceOrganizationAffiliation "MSFC"
+                            :GroupName "I TEAM"}]
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                   :ShortName "EED2"
+                                   :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                                    :Uuid "86a1f32f-ca06-489b-bd61-4ce85872df08"
+                                                    :NonServiceOrganizationAffiliation "GSFC"
+                                                    :GroupName "D TEAM"}]}]}))))
+
+(deftest migrate-contact-groups-1_2-down-to-1_1
+  (is (= {:Type "OPeNDAP"
+          :LongName "long name"
+          :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+                           :GroupName "I TEAM"}]
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"
+                                  :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                                   :GroupName "D TEAM"}]}]}
+         (vm/migrate-umm
+          {} :service "1.2" "1.1"
+          {:Type "OPeNDAP"
+           :LongName "long name"
+           :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+                            :GroupName "I TEAM"}]
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                   :ShortName "EED2"
+                                   :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                                    :GroupName "D TEAM"}]}]}))))
+
+(deftest migrate-main-fields-1_1-up-to-1_2
+  (is (= {:Type "OPeNDAP"
+          :LongName "long name"
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"}]}
+         (vm/migrate-umm
+          {} :service "1.1" "1.2"
+          {:Type "OPeNDAP"
+           :LongName "long name"
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                   :ShortName "EED2"}]
+           :OnlineAccessURLPatternMatch "abc*"
+           :OnlineAccessURLPatternSubstitution "dummy_pattern"
+           :Coverage {:Name "dummy"}}))))
+
+(deftest migrate-main-fields-1_2-down-to-1_1
+  (is (= {:Type "WEB SERVICES"
+          :LongName (apply str (repeat 120 "x"))
+          :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                  :ShortName "EED2"}]}
+         (vm/migrate-umm
+          {} :service "1.2" "1.1"
+          {:Type "ESI"
+           :LongName (apply str (repeat 200 "x"))
+           :ServiceOrganizations [{:Roles ["DEVELOPER"]
+                                   :ShortName "EED2"}]
+           :OperationMetadata []}))))
+
+(comment
+
+ (core/validate-metadata
+  :service "application/vnd.nasa.cmr.umm+json; version=1.2"
+  (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S1200245793-EDF_OPS_v1.2.json"))))
+  ; (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S10000000-TEST_ORNL_WCS_v1.2.json"))))
+
+ )
