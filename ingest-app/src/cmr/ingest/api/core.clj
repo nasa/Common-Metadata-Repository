@@ -16,7 +16,9 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as tokens])
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.search :as search])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -257,8 +259,15 @@
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (info (format "Deleting %s %s from client %s"
-                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+    (as-> (format "Deleting %s %s from client %s"
+                    (name concept-type) (pr-str concept-attribs) (:client-id request-context)) info-string
+      (when (= concept-type :collection)
+        (let [granule-references 
+              (->> {:collection-concept-id (mdb/get-concept-id request-context concept-type provider-id native-id)}
+                   (search/find-granule-references request-context)
+                   (map #(get % :concept-id)))]
+          (format "%s. Removing %d granules %s" info-string (count granule-references) (pr-str granule-references))))
+      (info info-string))
     (generate-ingest-response headers
                               (contextualize-warnings
                                (ingest/delete-concept
