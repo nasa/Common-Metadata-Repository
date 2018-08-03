@@ -53,7 +53,7 @@
                                                    (:SupportedProjections service-options))))
       (dissoc :SupportedProjections)))
 
-(defn- duplicate-supported-Formats
+(defn- duplicate-supported-formats
   "Duplicate the SupportedFormats in v1.1 ServiceOptions to SupportedInputFormats
   and SupportedOutputFormats in v1.2 ServiceOptions when migrate from 1.1 to 1.2."
   [service-options]
@@ -102,7 +102,7 @@
   [service-options]
   (-> service-options
       (update :SupportedFormats supported-Formats-1-1->1-2)
-      duplicate-supported-Formats))
+      duplicate-supported-formats))
 
 (defn- revert-supported-projections
   "Revert the SupportedInputProjections and SupportedOutputProjections in v1.2 ServiceOptions
