@@ -126,7 +126,6 @@
   ([attribs]
    (umm-s/map->ContactGroupType
     (merge {:Roles ["SERVICE PROVIDER CONTACT" "TECHNICAL CONTACT"]
-            :NonServiceOrganizationAffiliation "Non-group contact info"
             :ContactInformation (contact-info)
             :GroupName "Contact Group Name"}
             attribs))))

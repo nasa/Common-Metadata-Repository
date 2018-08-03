@@ -130,7 +130,7 @@
 	                   "ProjectionAuthority":"54009"
 	             	 },
 	             	 	                 {
-	                   "ProjectionName":"Spherical Mercator",
+	                   "ProjectionName":"WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI",
 	                   "ProjectionAuthority":"900913"
 	             	 }
 
@@ -193,10 +193,10 @@
 	           	"DataResourceTemporalType":"TIME_STAMP",
 	           	"DataResourceTemporalExtent":
 	           	   {
-	           	   	"TimePoints":
+	           	   	"DataResourceTimePoints":
 	           	   	 [{
-	           	   	   "Time":"%Y",
-	           	   	   "Value":"2011",
+	           	   	   "TimeFormat":"%Y",
+	           	   	   "TimeValue":"2011",
 	           	   	   "Description":"Time stamp of the layer"
 	           	   	 }]
 	           	   },
