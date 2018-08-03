@@ -74,8 +74,9 @@
   "Returns true if the given service has more than one supported formats value."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
-        supported-formats (concat (get-in service [:ServiceOptions :SupportedInputFormats])
-                                  (get-in service [:ServiceOptions :SupportedOutputFormats]))]
+        supported-formats (distinct (concat
+                                     (get-in service [:ServiceOptions :SupportedInputFormats])
+                                     (get-in service [:ServiceOptions :SupportedOutputFormats])))]
     (> (count supported-formats) 1)))
 
 (defn- has-spatial-subsetting?

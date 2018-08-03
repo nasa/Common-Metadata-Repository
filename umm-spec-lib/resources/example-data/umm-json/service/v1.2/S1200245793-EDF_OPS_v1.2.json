@@ -151,10 +151,10 @@
 	           	"DataResourceTemporalType":"TIME_STAMP",
 	           	"DataResourceTemporalExtent":
 	           	   {
-	           	   	"TimePoints":
+	           	   	"DataResourceTimePoints":
 	           	   	 [{
-	           	   	   "Time":"%Y%M%D",
-	           	   	   "Value":"2009-01-08",
+	           	   	   "TimeFormat":"%Y%M%D",
+	           	   	   "TimeValue":"2009-01-08",
 	           	   	   "Description":"Time stamp of the granule within the collection"
 	           	   	 }]
 	           	   },
