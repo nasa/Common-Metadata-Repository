@@ -130,7 +130,7 @@
 	                   "ProjectionAuthority":"54009"
 	             	 },
 	             	 	                 {
-	                   "ProjectionName":"WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI",
+	                   "ProjectionName":"Spherical Mercator",
 	                   "ProjectionAuthority":"900913"
 	             	 }
 
