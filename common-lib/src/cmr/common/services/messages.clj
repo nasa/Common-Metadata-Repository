@@ -53,6 +53,6 @@
     (if (not-empty granule-references)
       (format "%s %s" 
               appended-string 
-              (pr-str (map #(get % :concept-id) granule-references)))
+              (pr-str (vec (map #(get % :concept-id) granule-references))))
       appended-string)))
 
