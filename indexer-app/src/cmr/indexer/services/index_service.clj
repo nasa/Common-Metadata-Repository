@@ -14,6 +14,7 @@
    [cmr.common.date-time-parser :as date]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.messages :as cmsg]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -475,6 +476,15 @@
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
+(defn get-concept-delete-log-string
+  "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
+  [concept-type context concept-id revision-id all-revisions-index?]
+  (let [log-string (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
+                    concept-id revision-id all-revisions-index?)]
+    (if (= concept-type :collection)
+      (cmsg/append-granule-references-to-log-string log-string (search/find-granule-references context {:collection-concept-id concept-id}))
+      log-string)))
+
 (defmulti delete-concept
   "Delete the concept with the given id"
   (fn [context concept-id revision-id options]
@@ -489,14 +499,7 @@
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (as-> (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?) info-string
-      (when (= concept-type :collection)
-        (let [granule-references 
-              (->> (search/find-granule-references context {:collection-concept-id concept-id})
-                   (map #(get % :concept-id)))]
-          (format "%s. Removing %d granules %s" info-string (count granule-references) (pr-str granule-references))))
-      (info info-string))
+      (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names
                          context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
