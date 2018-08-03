@@ -256,10 +256,10 @@
                            (:client-id context))]
     (if (= concept-type :collection)
       (->> (mdb/get-concept-id 
-             context 
-             concept-type 
-             (:provider-id concept-attribs) 
-             (:native-id concept-attribs))
+            context 
+            concept-type 
+            (:provider-id concept-attribs) 
+            (:native-id concept-attribs))
            (hash-map :collection-concept-id)
            (search/find-granule-references context)
            (cmsg/append-granule-references-to-log-string log-string))
