@@ -251,9 +251,16 @@
   "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
   [concept-type context concept-attribs]
   (let [log-string (format "Deleting %s %s from client %s"
-                    (name concept-type) (pr-str concept-attribs) (:client-id context))]
+                           (name concept-type) 
+                           (pr-str concept-attribs) 
+                           (:client-id context))]
     (if (= concept-type :collection)
-      (->> {:collection-concept-id (mdb/get-concept-id context concept-type (:provider-id concept-attribs) (:native-id concept-attribs))}
+      (->> (mdb/get-concept-id 
+             context 
+             concept-type 
+             (:provider-id concept-attribs) 
+             (:native-id concept-attribs))
+           (hash-map :collection-concept-id)
            (search/find-granule-references context)
            (cmsg/append-granule-references-to-log-string log-string))
       log-string)))
