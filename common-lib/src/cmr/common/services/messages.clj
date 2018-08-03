@@ -47,12 +47,12 @@
   "Append granule references to log string. Granule references take form of 
   ({:concept-id :granule-ur} {:concept-id :granule-ur} ...)"
   [log-string granule-references]
-  (let [appended-string (format "%s. Removed %d granule(s)" 
+  (let [appended-string (format "%s. Removing %d granule(s)" 
                                 log-string 
                                 (count granule-references))]
     (if (not-empty granule-references)
       (format "%s %s" 
               appended-string 
-              (pr-str (vec (map #(get % :concept-id) granule-references))))
+              (pr-str (mapv #(get % :concept-id) granule-references)))
       appended-string)))
 
