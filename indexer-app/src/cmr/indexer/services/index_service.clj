@@ -480,9 +480,13 @@
   "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
   [concept-type context concept-id revision-id all-revisions-index?]
   (let [log-string (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?)]
+                           concept-id 
+                           revision-id 
+                           all-revisions-index?)]
     (if (= concept-type :collection)
-      (cmsg/append-granule-references-to-log-string log-string (search/find-granule-references context {:collection-concept-id concept-id}))
+      (->> {:collection-concept-id concept-id}
+           (search/find-granule-references context)
+           (cmsg/append-granule-references-to-log-string log-string))
       log-string)))
 
 (defmulti delete-concept
