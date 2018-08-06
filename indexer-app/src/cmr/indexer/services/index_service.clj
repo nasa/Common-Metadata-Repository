@@ -484,10 +484,9 @@
                            revision-id 
                            all-revisions-index?)]
     (if (= concept-type :collection)
-      (->> {:collection-concept-id concept-id}
-           (search/find-granule-hits context)
-           (format "%s. Removing %d granules"
-                   log-string))
+      (format "%s. Removing %d granules."
+              log-string
+              (search/find-granule-hits context {:collection-concept-id concept-id}))
       log-string)))
 
 (defmulti delete-concept
