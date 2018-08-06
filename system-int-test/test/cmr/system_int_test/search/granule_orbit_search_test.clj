@@ -109,10 +109,10 @@
                   (println "Actual:" (->> found :refs (map :name) sort pr-str)))
                 matches?)
         
-        "CMR-5007: Search north pole with altitude higher than 86.52 threw 500 error."
+        "CMR-5007: Search north pole with altitude > 86.52 won't throw 500 error."
         [granule] [-30,87 90,87 150,87 -150,87 -90,87 -30,87] nil
 
-        "CMR-5007: Search south pole with altitude lower than -86.52 threw 500 error."
+        "CMR-5007: Search south pole with altitude < -86.52 won't throw 500 error."
         [granule] [-30,-87 -90,-87 -150,-87 150,-87 90,-87 -30,-87] nil))
 
     (testing "line searches"
@@ -127,7 +127,7 @@
                   (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                   (println "Actual:" (->> found :refs (map :name) sort pr-str)))
                 matches?)
-        "Line search with altitude > -86.52 won't throw 500 error."
+        "Line search with altitude < -86.52 won't throw 500 error."
         [granule] [-180,-86.6,0,0] nil
 
         "Line search with altitude > 86.52 won't throw 500 error."
