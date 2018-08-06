@@ -152,8 +152,8 @@ module Orbits
     # by fast_area_crossing_range)
     def fast_poly_crossing_range(lat_range, points, ascending, debug=false)
       # Easy case first
-      return LongitudeCoverage.full if points.any? {|p| p.phi.abs > full_coverage_phi}
-
+      return [[lat_range, LongitudeCoverage.full]] if points.any? {|p| p.phi.abs > full_coverage_phi}
+      
       # Create an array of segments, one for each pair of adjacent points in the array.
       segments = points.slice(0..-2).zip(points.slice(1..-1))
       #debug_log "Original:    #{segments.map {|s| s.join(', ')}}"

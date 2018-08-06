@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule>
+<GranuleUR>OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t0003-o01132_v003-2016m0615t191111.he5</GranuleUR>
+  <InsertTime>2016-06-17T12:36:40Z</InsertTime>
+  <LastUpdate>2016-06-17T12:36:40Z</LastUpdate>
+  <Collection>
+    <ShortName>OMSO2</ShortName>
+    <VersionId>003</VersionId>
+  </Collection>
+  <DataGranule>
+    <SizeMBDataGranule>39.3792247772217</SizeMBDataGranule>
+    <ProducerGranuleId>OMI-Aura_L2-OMSO2_2004m1001t0003-o01132_v003-2016m0615t191111.he5</ProducerGranuleId>
+    <DayNightFlag>DAY</DayNightFlag>
+    <ProductionDateTime>2016-06-15T19:11:11.000Z</ProductionDateTime>
+  </DataGranule>
+  <PGEVersionClass>
+    <PGEVersion>0.1.7</PGEVersion>
+  </PGEVersionClass>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2004-10-01T00:03:05.000000Z</BeginningDateTime>
+      <EndingDateTime>2004-10-01T01:41:58.000000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Spatial>
+    <HorizontalSpatialDomain>
+      <ZoneIdentifier>Text</ZoneIdentifier>
+      <Orbit>
+        <AscendingCrossing>-167.57</AscendingCrossing>
+        <StartLat>-78.238093</StartLat>
+        <StartDirection>D</StartDirection>
+        <EndLat>76.514451</EndLat>
+        <EndDirection>D</EndDirection>
+      </Orbit>
+    </HorizontalSpatialDomain>
+  </Spatial>
+  <OrbitCalculatedSpatialDomains>
+    <OrbitCalculatedSpatialDomain>
+      <OrbitNumber>1132</OrbitNumber>
+      <EquatorCrossingLongitude>-167.57</EquatorCrossingLongitude>
+      <EquatorCrossingDateTime>2004-10-01T00:52:22.000000Z</EquatorCrossingDateTime>
+    </OrbitCalculatedSpatialDomain>
+  </OrbitCalculatedSpatialDomains>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>https://aura.gesdisc.eosdis.nasa.gov/data//Aura_OMI_Level2/OMSO2.003/2004/275/OMI-Aura_L2-OMSO2_2004m1001t0003-o01132_v003-2016m0615t191111.he5</URL>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>https://aura.gesdisc.eosdis.nasa.gov/opendap/Aura_OMI_Level2/OMSO2.003/2004/275/OMI-Aura_L2-OMSO2_2004m1001t0003-o01132_v003-2016m0615t191111.he5</URL>
+      <Description>The OPENDAP location for the granule.</Description>
+      <Type>GET DATA : OPENDAP DATA</Type>
+      <MimeType>application/x-hdf</MimeType>
+    </OnlineResource>
+  </OnlineResources>
+  <Orderable>false</Orderable>
+</Granule>
