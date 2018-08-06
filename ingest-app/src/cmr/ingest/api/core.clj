@@ -11,15 +11,12 @@
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.services.messages :as cmsg]
    [cmr.common.xml.gen :refer :all]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.metadata-db :as mdb]
-   [cmr.transmit.search :as search])
+   [cmr.transmit.echo.tokens :as tokens])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -247,24 +244,6 @@
                            :errors errors
                            :default-format default-response-format})))))))
 
-(defn get-concept-delete-log-string
-  "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
-  [concept-type context concept-attribs]
-  (let [log-string (format "Deleting %s %s from client %s"
-                           (name concept-type) 
-                           (pr-str concept-attribs) 
-                           (:client-id context))]
-    (if (= concept-type :collection)
-      (->> (mdb/get-concept-id 
-            context 
-            concept-type 
-            (:provider-id concept-attribs) 
-            (:native-id concept-attribs))
-           (hash-map :collection-concept-id)
-           (search/find-granule-references context)
-           (cmsg/append-granule-references-to-log-string log-string))
-      log-string)))
-
 (defn delete-concept
   "Delete the given concept by its concept type, provider id and native id."
   [concept-type provider-id native-id request]
@@ -278,7 +257,8 @@
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (info (get-concept-delete-log-string concept-type request-context concept-attribs))
+    (info (format "Deleting %s %s from client %s"
+                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers
                               (contextualize-warnings
                                (ingest/delete-concept
