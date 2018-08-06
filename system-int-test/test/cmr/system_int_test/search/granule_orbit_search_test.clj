@@ -81,6 +81,58 @@
         "CMR-4722: Search crossing the equator should not erroneously find the granule"
         [] [-128.32 53.602 -46.758 -1.241]))))
 
+(deftest orbit-bug-CMR-5007
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-5007/dif10_Collection_C1239966837-GES_DISC.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "GES_DISC-collection"
+                                                   :format-key :dif10})
+        granule (d/ingest-concept-with-metadata-file "CMR-5007/echo10_Granlue_G1278223734-GES_DISC.xml"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :concept-id "C4-PROV1"
+                                                      :native-id "GES_DISC-granule"
+                                                      :format-key :echo10})]
+    (index/wait-until-indexed)
+
+    (testing "Polygon search for granules near poles."
+      (u/are3 [items coords params]
+              (let [found (search/find-refs
+                            :granule
+                            (merge {:polygon
+                                    (apply st/search-poly coords)
+                                    :provider "PROV1"
+                                    :page-size 50} params))
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
+        
+        "CMR-5007: Search north pole with altitude > 86.52 won't throw 500 error."
+        [granule] [-30,87 90,87 150,87 -150,87 -90,87 -30,87] nil
+
+        "CMR-5007: Search south pole with altitude < -86.52 won't throw 500 error."
+        [granule] [-30,-87 -90,-87 -150,-87 150,-87 90,-87 -30,-87] nil))
+
+    (testing "line searches"
+      (u/are3 [items coords params]
+              (let [found (search/find-refs
+                            :granule
+                            {:line (codec/url-encode (l/ords->line-string :geodetic coords))
+                             :provider "PROV1"
+                             :page-size 50})
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
+        "Line search with altitude < -86.52 won't throw 500 error."
+        [granule] [-180,-86.6,0,0] nil
+
+        "Line search with altitude > 86.52 won't throw 500 error."
+        [granule] [0,0 180, 86.6] nil))))
+
 ;; This tests searching for bounding boxes or polygons that cross the start circular
 ;; latitude of the collection with fractional orbit granules. This was added to test
 ;; the fix for this issue as described in CMR-1168 and uses the collection/granules from
