@@ -116,15 +116,18 @@ curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[
 curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))'
 curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON'
 curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((30%2010,%2040%2040,%2020%2040,%2010%2020,%2030%2010))"
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((-152.05,64.75,-152.05,64.15,-149.94,64.15,-149.94,64.90,-152.05,64.75&))"
+curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((-180%20-90,%200%20-90,%200%200,-180%200,%20-180%200%20-90))"
 curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((30+10,40+40,20+40,10+20,30+10))'
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((-140+10,40+40,20+40,10+20,-140+10))'
 curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=LINESTRING%20(-0.37%20-14.07,4.75%201.27,25.13%20-15.51)"
 curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POINT%20(30%2010)"
 curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&POLYGON\[\]=30,10,40,40,20,40,10,20,30,10'
 curl "http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&bounding_box=-10,-5,10,5"
 http://localhost:3003/granules.echo10?provider[]=PROV1&wkt[]=xyz&pretty=true
 
-
-["30,10,40,40,20,40,10,20,30,10"]
+curl -i -XGET "http://localhost:3003/granules.echo10?pretty=true&page_size=100&page_num=1&provider\[\]=PROV1"
+curl 'http://localhost:3003/granules.echo10?provider\[\]=PROV1&pretty=true&wkt\[\]=POLYGON%20((-140+10,40+-40,20+40,10+20,-140+10))'
 
 
 http://localhost:3003/health?pretty=true
