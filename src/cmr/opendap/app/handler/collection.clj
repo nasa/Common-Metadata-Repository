@@ -10,6 +10,7 @@
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.sizing.core :as sizing]
    [org.httpkit.server :as server]
    [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))
@@ -107,3 +108,21 @@
                              false))
               (recur (inc id))))))
         (timer/schedule-task timeout (server/close channel)))))))
+
+(defn estimate-size
+  [component]
+  (log/debug "Estimating download size based on HTTP GET ...")
+  (fn [request]
+    (let [user-token (token/extract request)
+          concept-id (get-in request [:path-params :concept-id])
+          api-version (request/accept-api-version component request)]
+      (->> request
+           :params
+           (merge {:collection-id concept-id})
+           (sizing/estimate-size component api-version user-token)
+           (response/json request)))))
+
+(defn stream-estimate-size
+  [component]
+  (fn [request]
+    :not-implemented))

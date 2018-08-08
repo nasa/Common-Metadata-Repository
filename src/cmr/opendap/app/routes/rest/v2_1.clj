@@ -17,15 +17,7 @@
 (defn ous-api
   [httpd-component]
   [["/opendap/ous/collections" {
-    :post {:handler collection-handler/batch-generate
-          ;; XXX CMR-4864, CMR-4863
-          ;;     Protecting collections will be a little different than
-          ;;     protecting a single collection, since the concept-id isn't in
-          ;;     the path-params. Instead, we'll have to parse the body,
-          ;;     extract the concepts ids from that, create an ACL query
-          ;;     containing multiple concept ids, and then check those results.
-          ;; :permission #{...?}
-          }
+    :post {:handler collection-handler/batch-generate}
     :options core-handler/ok}]
    ["/opendap/ous/collection/:concept-id" {
     :get {:handler (collection-handler/generate-urls httpd-component)
@@ -36,6 +28,16 @@
    ["/opendap/ous/streaming-collection/:concept-id" {
     :get (collection-handler/stream-urls httpd-component)}]])
 
+(defn size-estimate-api
+  [httpd-component]
+  [["/opendap/size-estimate/collection/:concept-id" {
+    :get {:handler (collection-handler/estimate-size httpd-component)
+          :permissions #{:read}}
+    :post {:handler (collection-handler/estimate-size httpd-component)
+           :permissions #{:read}}}]
+   ["/opendap/size-estimate/streaming-collection/:concept-id" {
+    :get (collection-handler/stream-estimate-size httpd-component)}]])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,5 +46,6 @@
   [httpd-component]
   (concat
    (ous-api httpd-component)
+   (size-estimate-api httpd-component)
    (routes-v2/admin-api httpd-component)
    routes-v1/testing))
