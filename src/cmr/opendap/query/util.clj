@@ -1,6 +1,8 @@
-(ns cmr.opendap.ous.util.core
+(ns cmr.opendap.query.util
   (:require
+   [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.opendap.query.const :as const]
    [ring.util.codec :as codec]))
 
 (defn normalize-param
@@ -111,3 +113,26 @@
   (let [id (filter #(string/starts-with? % "C") coverage)]
     (when (seq id)
       (first id))))
+
+(defn not-array?
+  [array]
+  (or (nil? array)
+      (empty? array)))
+
+(defn unique-params-keys
+  [record-constructor]
+  "This function returns only the record fields that are unique to the
+  record of the given style. This is done by checking against a hard-coded set
+  of fields shared that have been declared as common to all other parameter
+  styles (see the `const` namespace)."
+  (set/difference
+   (set (keys (record-constructor {})))
+   const/shared-keys))
+
+(defn style?
+  [record-constructor raw-params]
+  "This function checks the raw params to see if they have any keys that
+  overlap with the WCS-style record."
+  (seq (set/intersection
+        (set (keys raw-params))
+        (unique-params-keys record-constructor))))

@@ -8,9 +8,9 @@
    [cmr.opendap.ous.concepts.granule :as granule]
    [cmr.opendap.ous.concepts.service :as service]
    [cmr.opendap.ous.concepts.variable :as variable]
-   [cmr.opendap.query.core :as params]
-   [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.ous.util.geog :as geog]
+   [cmr.opendap.query.core :as params]
+   [cmr.opendap.query.util :as query-util]
    [cmr.opendap.results.core :as results]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.results.warnings :as warnings]
@@ -260,10 +260,10 @@
         bounding-box (:bounding-box params)
         valid-lat (when bounding-box
                     (validation/validate-latitude
-                     (ous-util/bounding-box-lat bounding-box)))
+                     (query-util/bounding-box-lat bounding-box)))
         valid-lon (when bounding-box
                     (validation/validate-longitude
-                     (ous-util/bounding-box-lon bounding-box)))
+                     (query-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component endpoint token params)
         ; grans-promise (concept/get :granules

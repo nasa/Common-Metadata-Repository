@@ -1,17 +1,9 @@
 (ns cmr.opendap.query.impl.cmr
   (:require
    [cmr.opendap.query.const :as const]
-   [cmr.opendap.ous.util.core :as ous-util]
+   [cmr.opendap.query.util :as query-util]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
-
-(def collection-behaviour
-  {:->cmr identity})
-
-(defn not-array?
-  [array]
-  (or (nil? array)
-      (empty? array)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation of Collection Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,6 +53,11 @@
    ;; and ending values being ISO 8601 datetime stamps.
    temporal])
 
+(def collection-behaviour
+  {:->cmr identity})
+
+(def style? #(query-util/style? map->CollectionCmrStyleParams %))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,13 +65,13 @@
 (defn create
   [params]
   (log/trace "Instantiating params protocol ...")
-  (let [bounding-box (ous-util/split-comma->coll (:bounding-box params))
+  (let [bounding-box (query-util/split-comma->coll (:bounding-box params))
         subset (:subset params)
-        granules-array (ous-util/split-comma->coll
+        granules-array (query-util/split-comma->coll
                         (get params (keyword "granules[]")))
-        variables-array (ous-util/split-comma->coll
+        variables-array (query-util/split-comma->coll
                          (get params (keyword "variables[]")))
-        temporal-array (ous-util/->coll
+        temporal-array (query-util/->coll
                         (get params (keyword "temporal[]")))]
     (log/trace "original bounding-box:" (:bounding-box params))
     (log/trace "bounding-box:" bounding-box)
@@ -84,22 +81,22 @@
     (map->CollectionCmrStyleParams
       (assoc params
         :format (or (:format params) const/default-format)
-        :granules (if (not-array? granules-array)
-                    (ous-util/split-comma->sorted-coll (:granules params))
+        :granules (if (query-util/not-array? granules-array)
+                    (query-util/split-comma->sorted-coll (:granules params))
                     granules-array)
-        :variables (if (not-array? variables-array)
-                     (ous-util/split-comma->sorted-coll (:variables params))
+        :variables (if (query-util/not-array? variables-array)
+                     (query-util/split-comma->sorted-coll (:variables params))
                      variables-array)
         :exclude-granules (util/bool (:exclude-granules params))
         :subset (if (seq bounding-box)
-                 (ous-util/bounding-box->subset bounding-box)
+                 (query-util/bounding-box->subset bounding-box)
                  (:subset params))
         :bounding-box (if (seq bounding-box)
                         (mapv #(Float/parseFloat %) bounding-box)
                         (when (seq subset)
-                          (ous-util/subset->bounding-box subset)))
-        :temporal (if (not-array? temporal-array)
-                    (ous-util/->coll (:temporal params))
+                          (query-util/subset->bounding-box subset)))
+        :temporal (if (query-util/not-array? temporal-array)
+                    (query-util/->coll (:temporal params))
                     temporal-array)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

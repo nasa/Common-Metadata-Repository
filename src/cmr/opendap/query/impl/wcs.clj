@@ -2,7 +2,7 @@
   (:require
    [cmr.opendap.query.const :as const]
    [cmr.opendap.query.impl.cmr :as cmr]
-   [cmr.opendap.ous.util.core :as util]
+   [cmr.opendap.query.util :as util]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,6 +52,8 @@
 
 (def collection-behaviour
   {:->cmr ->cmr})
+
+(def style? #(util/style? map->CollectionWcsStyleParams %))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -3,12 +3,11 @@
   using HTTP POST, keys in a JSON payload. Additionall, functions for working
   with these parameters are defined here."
   (:require
-   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.opendap.query.const :as const]
-   [cmr.opendap.query.impl.wcs :as wcs]
    [cmr.opendap.query.impl.cmr :as cmr]
-   [cmr.opendap.ous.util.core :as util]
+   [cmr.opendap.query.impl.wcs :as wcs]
+   [cmr.opendap.query.util :as util]
    [cmr.opendap.results.errors :as errors]
    [taoensso.timbre :as log])
   (:import
@@ -17,33 +16,11 @@
   (:refer-clojure :exclude [parse]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn unique-params-keys
-  [record-constructor]
-  "This function returns only the record fields that are unique to the
-  record of the given style. This is done by checking against a hard-coded set
-  of fields shared that have been declared as common to all other parameter
-  styles (see the `const` namespace)."
-  (set/difference
-   (set (keys (record-constructor {})))
-   const/shared-keys))
-
-(defn style?
-  [record-constructor raw-params]
-  "This function checks the raw params to see if they have any keys that
-  overlap with the WCS-style record."
-  (seq (set/intersection
-        (set (keys raw-params))
-        (unique-params-keys record-constructor))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocol Defnition   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol CollectionParamsAPI
-  (->cmr [this]))
+  (->cmr [this] "Convert params record to CMR."))
 
 (extend CollectionCmrStyleParams
         CollectionParamsAPI
@@ -60,8 +37,8 @@
 (defn create
   ([raw-params]
     (create (cond (nil? (:collection-id raw-params)) :missing-collection-id
-                  (style? cmr/map->CollectionCmrStyleParams raw-params) :cmr
-                  (style? wcs/map->CollectionWcsStyleParams raw-params) :wcs
+                  (cmr/style? raw-params) :cmr
+                  (wcs/style? raw-params) :wcs
                   :else :unknown-parameters-type)
             raw-params))
   ([params-type raw-params]

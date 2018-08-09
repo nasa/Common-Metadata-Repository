@@ -5,7 +5,7 @@
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [cmr.opendap.ous.util.core :as ous-util]
+   [cmr.opendap.query.util :as query-util]
    [cmr.opendap.results.core :as results]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.util :as util]
@@ -53,10 +53,10 @@
                  (build-include gran-ids))))
          (when (seq bounding-box)
           (str "&bounding_box="
-               (ous-util/seq->str bounding-box)))
+               (query-util/seq->str bounding-box)))
          (when (seq temporal)
           (str "&"
-               (ous-util/temporal-seq->cmr-query temporal))))))
+               (query-util/temporal-seq->cmr-query temporal))))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
