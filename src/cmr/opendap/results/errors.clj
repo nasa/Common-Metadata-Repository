@@ -44,6 +44,9 @@
 (def invalid-parameter
   "One or more of the parameters provided were invalid.")
 
+(def missing-collection-id
+  "The provided parameters are missing the required field 'collection-id'.")
+
 (def invalid-lat-params
   (str "The values provided for latitude are not within the valid range of "
        "-90 degrees through 90 degrees."))

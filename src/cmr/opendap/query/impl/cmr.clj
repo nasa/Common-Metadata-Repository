@@ -1,10 +1,21 @@
 (ns cmr.opendap.query.impl.cmr
   (:require
-   [clojure.set :as set]
    [cmr.opendap.query.const :as const]
    [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
+
+(def collection-behaviour
+  {:->cmr identity})
+
+(defn not-array?
+  [array]
+  (or (nil? array)
+      (empty? array)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation of Collection Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CollectionCmrStyleParams
   [;; `collection-id` is the concept id for the collection in question. Note
@@ -50,24 +61,13 @@
    ;; and ending values being ISO 8601 datetime stamps.
    temporal])
 
-(def params-keys
-  (set/difference
-   (set (keys (map->CollectionCmrStyleParams {})))
-   const/shared-keys))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn params?
+(defn create
   [params]
-  (seq (set/intersection
-        (set (keys params))
-        params-keys)))
-
-(defn not-array?
-  [array]
-  (or (nil? array)
-      (empty? array)))
-
-(defn create-params
-  [params]
+  (log/trace "Instantiating params protocol ...")
   (let [bounding-box (ous-util/split-comma->coll (:bounding-box params))
         subset (:subset params)
         granules-array (ous-util/split-comma->coll
@@ -102,6 +102,10 @@
                     (ous-util/->coll (:temporal params))
                     temporal-array)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation of Collections Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defrecord CollectionsCmrStyleParams
   [;; This isn't defined for the OUS Prototype, since it didn't support
    ;; submitting multiple collections at a time. As such, there is no
@@ -109,3 +113,7 @@
    ;;
    ;; `collections` is a list of `CollectionCmrStyleParams` records.
    collections])
+
+(def collections-behaviour
+  ;; Reserved for later use.
+  {})

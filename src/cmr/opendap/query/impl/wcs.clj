@@ -1,8 +1,13 @@
 (ns cmr.opendap.query.impl.wcs
   (:require
-   [clojure.set :as set]
    [cmr.opendap.query.const :as const]
-   [cmr.opendap.ous.util.core :as util]))
+   [cmr.opendap.query.impl.cmr :as cmr]
+   [cmr.opendap.ous.util.core :as util]
+   [taoensso.timbre :as log]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation of Collection Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CollectionWcsStyleParams
   [;; `format` is any of the formats supported by the target OPeNDAP server,
@@ -28,19 +33,33 @@
    ;; and ending values being ISO 8601 datetime stamps, separated by a comma.
    timeposition])
 
-(def params-keys
-  (set/difference
-   (set (keys (map->CollectionWcsStyleParams {})))
-   const/shared-keys))
+(defn ->cmr
+  [this]
+  (let [subset (:subset this)]
+    (-> this
+        (assoc :collection-id (or (:collection-id this)
+                                  (util/coverage->collection (:coverage this)))
+               :granules (util/coverage->granules (:coverage this))
+               :variables (:rangesubset this)
+               ;; There was never an analog in wcs for exclude-granules, so set
+               ;; to false.
+               :exclude-granules false
+               :bounding-box (when (seq subset)
+                              (util/subset->bounding-box subset))
+               :temporal (:timeposition this))
+        (dissoc :coverage :rangesubset :timeposition)
+        (cmr/map->CollectionCmrStyleParams))))
 
-(defn params?
-  [params]
-  (seq (set/intersection
-        (set (keys params))
-        params-keys)))
+(def collection-behaviour
+  {:->cmr ->cmr})
 
-(defn create-params
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn create
   [params]
+  (log/trace "Instantiating params protocol ...")
   (map->CollectionWcsStyleParams
     (assoc params :format (or (:format params)
                               const/default-format)
