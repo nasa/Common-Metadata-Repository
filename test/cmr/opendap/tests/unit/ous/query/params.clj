@@ -2,9 +2,9 @@
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.query.params.core :as params]
-    [cmr.opendap.ous.query.params.wcs :as wcs]
-    [cmr.opendap.ous.query.params.cmr :as cmr])
+    [cmr.opendap.query.core :as params]
+    [cmr.opendap.query.impl.wcs :as wcs]
+    [cmr.opendap.query.impl.cmr :as cmr])
   (:refer-clojure :exclude [parse]))
 
 (deftest params-keys

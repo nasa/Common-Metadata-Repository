@@ -8,7 +8,7 @@
    [cmr.opendap.ous.concepts.granule :as granule]
    [cmr.opendap.ous.concepts.service :as service]
    [cmr.opendap.ous.concepts.variable :as variable]
-   [cmr.opendap.ous.query.params.core :as params]
+   [cmr.opendap.query.core :as params]
    [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.results.core :as results]

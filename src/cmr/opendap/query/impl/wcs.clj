@@ -1,7 +1,7 @@
-(ns cmr.opendap.ous.query.params.wcs
+(ns cmr.opendap.query.impl.wcs
   (:require
    [clojure.set :as set]
-   [cmr.opendap.ous.query.params.const :as const]
+   [cmr.opendap.query.const :as const]
    [cmr.opendap.ous.util.core :as util]))
 
 (defrecord CollectionWcsStyleParams

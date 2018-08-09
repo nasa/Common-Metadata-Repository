@@ -1,7 +1,7 @@
-(ns cmr.opendap.ous.query.params.cmr
+(ns cmr.opendap.query.impl.cmr
   (:require
    [clojure.set :as set]
-   [cmr.opendap.ous.query.params.const :as const]
+   [cmr.opendap.query.const :as const]
    [cmr.opendap.ous.util.core :as ous-util]
    [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
