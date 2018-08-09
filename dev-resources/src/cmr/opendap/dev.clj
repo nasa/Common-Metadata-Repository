@@ -1,35 +1,39 @@
 (ns cmr.opendap.dev
   "CMR OPeNDAP development namespace."
   (:require
-    [cheshire.core :as json]
-    [clojure.data.xml :as xml]
-    [clojure.java.io :as io]
-    [clojure.pprint :refer [pprint]]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [clojure.tools.namespace.repl :as repl]
-    [clojusc.system-manager.core :as system-api :refer :all]
-    [clojusc.twig :as logger]
-    [cmr.authz.components.caching :as auth-caching]
-    [cmr.opendap.components.caching :as concept-caching]
-    [cmr.opendap.components.config :as config]
-    [cmr.opendap.components.core]
-    [cmr.opendap.http.request :as request]
-    [cmr.opendap.http.response :as response]
-    [cmr.opendap.ous.concepts.variable :as variable]
-    ; [cmr.opendap.ous.util.geog :as geog]
-    [cmr.opendap.results.errors :as errors]
-    [com.stuartsierra.component :as component]
-    [debugger.core :as debug]
-    [org.httpkit.client :as httpc]
-    [ring.util.codec :as codec]
-    [trifl.java :refer [show-methods]]
-    [xml-in.core :as xml-in])
+   [cheshire.core :as json]
+   [clojure.data.xml :as xml]
+   [clojure.java.io :as io]
+   [clojure.pprint :refer [pprint]]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [clojure.tools.namespace.repl :as repl]
+   [clojusc.system-manager.core :as system-api :refer :all]
+   [clojusc.twig :as logger]
+   [cmr.authz.components.caching :as auth-caching]
+   [cmr.opendap.components.caching :as concept-caching]
+   [cmr.opendap.components.config :as config]
+   [cmr.opendap.components.core]
+   [cmr.opendap.http.request :as request]
+   [cmr.opendap.http.response :as response]
+   [cmr.opendap.ous.concepts.variable :as variable]
+   ; [cmr.opendap.ous.util.geog :as geog]
+   [cmr.opendap.query.impl.wcs :as wcs]
+   [cmr.opendap.query.impl.cmr :as cmr]
+   [cmr.opendap.results.errors :as errors]
+   [com.stuartsierra.component :as component]
+   [debugger.core :as debug]
+   [org.httpkit.client :as httpc]
+   [ring.util.codec :as codec]
+   [trifl.java :refer [show-methods]]
+   [xml-in.core :as xml-in])
   (:import
-    (java.net URI)
-    (java.nio.file Paths)
-    ; (net.sf.geographiclib Geodesic PolygonArea)
-    ))
+   (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
+   (cmr.opendap.query.impl.wcs CollectionWcsStyleParams)
+   (java.net URI)
+   (java.nio.file Paths)
+   ; (net.sf.geographiclib Geodesic PolygonArea)
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
