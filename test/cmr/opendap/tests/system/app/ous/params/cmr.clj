@@ -358,8 +358,9 @@
                           "?"
                           (codec/url-encode "temporal[]")
                           "="
-                          (codec/url-encode
-                           "2000-01-01T00:00:00Z,2000-01-02T00:00:00Z"))
+                          (codec/url-encode "2000-01-01T00:00:00Z")
+                          ","
+                          (codec/url-encode "2000-01-02T00:00:00Z"))
                      options)]
       (is (= 200 (:status response)))
       (is (= []

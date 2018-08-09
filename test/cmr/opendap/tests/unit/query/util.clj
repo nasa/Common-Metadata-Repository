@@ -2,6 +2,8 @@
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
+    [cmr.opendap.query.impl.wcs :as wcs]
+    [cmr.opendap.query.impl.cmr :as cmr]
     [cmr.opendap.query.util :as util]
     [ring.util.codec :as codec]))
 
@@ -82,3 +84,9 @@
            result))
     (is (= "temporal[]=2002-09-01T00:00:00Z&temporal[]=2016-07-03T00:00:00Z"
            (codec/url-decode result)))))
+
+(deftest unique-params-keys
+  (is (= #{:coverage :rangesubset :timeposition}
+         (util/unique-params-keys wcs/map->CollectionWcsStyleParams)))
+  (is (= #{:exclude-granules :variables :granules :bounding-box :temporal}
+         (util/unique-params-keys cmr/map->CollectionCmrStyleParams))))

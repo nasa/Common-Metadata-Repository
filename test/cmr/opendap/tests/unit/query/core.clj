@@ -1,0 +1,152 @@
+(ns cmr.opendap.tests.unit.query.core
+  "Note: this namespace is exclusively for unit tests."
+  (:require
+    [clojure.test :refer :all]
+    [cmr.opendap.query.core :as query]
+    [cmr.opendap.query.impl.wcs :as wcs]
+    [cmr.opendap.query.impl.cmr :as cmr])
+  (:refer-clojure :exclude [parse]))
+
+(deftest cmr-style?
+  (is (cmr/style?
+       {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
+  (is (cmr/style?
+       {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
+        :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}))
+  (is (cmr/style?
+       {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
+  (is (cmr/style?
+       {:granules ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
+        :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]})))
+
+(deftest wcs-style?
+  (is (wcs/style?
+       {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
+  (is (wcs/style?
+       {:coverage "G1200267320-HMR_TME,G1200267319-HMR_TME"
+        :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]}))
+  (is (wcs/style?
+       {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]}))
+  (is (wcs/style?
+       {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
+        :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]})))
+
+(deftest ->cmr
+  (is (= (cmr/map->CollectionCmrStyleParams {:exclude-granules false})
+         (query/->cmr
+          (wcs/map->CollectionWcsStyleParams {}))))
+  (is (= (cmr/map->CollectionCmrStyleParams
+          {:format "nc"
+           :collection-id "C123"
+           :granules ["G234" "G345" "G456"]
+           :variables ["V234" "V345" "V456"]
+           :exclude-granules false
+           :bounding-box [169.0 22.0 200.0 34.0]
+           :subset ["lat(22,34)" "lon(169,200)"]
+           :temporal "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"})
+         (query/->cmr
+          (wcs/map->CollectionWcsStyleParams {
+           :format "nc"
+           :coverage ["C123"
+                      "G234"
+                      "G345"
+                      "G456"]
+           :rangesubset ["V234" "V345" "V456"]
+           :subset ["lat(22,34)" "lon(169,200)"]
+           :timeposition "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"}))))
+  (testing "Temporal variations ..."
+    (is (= (cmr/map->CollectionCmrStyleParams
+            {:collection-id "C123"
+             :granules ["G234" "G345" "G456"]
+             :temporal ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]
+             :exclude-granules false})
+           (query/->cmr
+            (wcs/map->CollectionWcsStyleParams {
+             :coverage ["C123"
+                        "G234"
+                        "G345"
+                        "G456"]
+             :timeposition ["2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"]}))))
+    (is (= (cmr/map->CollectionCmrStyleParams
+            {:collection-id "C123"
+             :granules ["G234" "G345" "G456"]
+             :temporal ["2000-01-01T00:00:00Z,2002-10-01T00:00:00Z"
+                        "2010-07-01T00:00:00Z,2016-07-03T00:00:00Z"]
+             :exclude-granules false})
+           (query/->cmr
+            (wcs/map->CollectionWcsStyleParams {
+             :coverage ["C123"
+                        "G234"
+                        "G345"
+                        "G456"]
+             :timeposition ["2000-01-01T00:00:00Z,2002-10-01T00:00:00Z"
+                            "2010-07-01T00:00:00Z,2016-07-03T00:00:00Z"]}))))))
+
+(deftest cmr-create
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :collection-id "C130"
+          :format "nc"
+          :granules []
+          :exclude-granules false
+          :variables ["V234" "V345"]
+          :subset nil
+          :bounding-box nil
+          :temporal []})
+         (cmr/create {:collection-id "C130" :variables ["V234" "V345"]}))
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :collection-id "C130"
+          :format "nc"
+          :granules []
+          :exclude-granules false
+          :variables ["V234" "V345"]
+          :subset nil
+          :bounding-box nil
+          :temporal []})
+         (query/parse {:collection-id "C130" "variables[]" ["V234" "V345"]})))
+
+(deftest parse
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :bounding-box nil
+          :collection-id "C130"
+          :exclude-granules false
+          :format "nc"
+          :granules ()
+          :subset nil
+          :temporal []
+          :variables ()}
+         (query/parse {:collection-id "C130"})))
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :bounding-box nil
+          :collection-id "C130"
+          :exclude-granules false
+          :format "nc"
+          :granules ()
+          :subset []
+          :temporal []
+          :variables ()}
+         (query/parse {:collection-id "C130" :subset []})))
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :collection-id "C130"
+          :format "nc"
+          :granules []
+          :exclude-granules false
+          :variables ["V234" "V345"]
+          :subset nil
+          :bounding-box nil
+          :temporal []})
+         (query/parse {:collection-id "C130" :variables ["V234" "V345"]}))
+  (is (= #cmr.opendap.query.impl.cmr.CollectionCmrStyleParams{
+          :collection-id "C130"
+          :format "nc"
+          :granules []
+          :exclude-granules false
+          :variables ["V234" "V345"]
+          :subset nil
+          :bounding-box nil
+          :temporal []})
+         (query/parse {:collection-id "C130" "variables[]" ["V234" "V345"]}))
+  (is (= {:errors ["The provided parameters are missing the required field 'collection-id'."]}
+         (query/parse {:variables ["V234" "V345"]})))
+  (is (= {:errors ["One or more of the parameters provided were invalid."
+                   "Parameters: {:collection-id \"C130\", :blurg \"some weird data\"}"]}
+         (query/parse {:collection-id "C130" :blurg "some weird data"}))))
