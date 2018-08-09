@@ -120,19 +120,40 @@
       (empty? array)))
 
 (defn unique-params-keys
-  [record-constructor]
   "This function returns only the record fields that are unique to the
   record of the given style. This is done by checking against a hard-coded set
   of fields shared that have been declared as common to all other parameter
   styles (see the `const` namespace)."
-  (set/difference
-   (set (keys (record-constructor {})))
-   const/shared-keys))
+  ([record-constructor]
+    (unique-params-keys record-constructor #{}))
+  ([record-constructor other-allowed]
+    (set/difference
+     (set/union (set (keys (record-constructor {}))) other-allowed)
+     const/shared-keys)))
 
 (defn style?
-  [record-constructor raw-params]
   "This function checks the raw params to see if they have any keys that
   overlap with the WCS-style record."
-  (seq (set/intersection
-        (set (keys raw-params))
-        (unique-params-keys record-constructor))))
+  ([record-constructor raw-params]
+    (style? record-constructor raw-params #{}))
+  ([record-constructor raw-params other-allowed]
+    (seq (set/intersection
+          (set (keys raw-params))
+          (unique-params-keys record-constructor other-allowed)))))
+
+(defn ambiguous-style?
+  [raw-params]
+  (set/subset? (set (keys raw-params)) const/shared-keys))
+
+(defn get-array-param
+  "This pulls parameters names like `param[]` out of the params
+  and extracts their values as a collection."
+  [params param-key]
+  (let [str-key (str (name param-key) "[]")]
+    (case param-key
+      :temporal (->coll
+                  (or (get params str-key)
+                      (get params (keyword str-key))))
+      (split-comma->coll
+        (or (get params str-key)
+            (get params (keyword str-key)))))))

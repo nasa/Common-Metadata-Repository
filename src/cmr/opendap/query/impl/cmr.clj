@@ -56,7 +56,11 @@
 (def collection-behaviour
   {:->cmr identity})
 
-(def style? #(query-util/style? map->CollectionCmrStyleParams %))
+(def style? #(query-util/style? map->CollectionCmrStyleParams
+                                %
+                                #{"granules[]"
+                                  "temporal[]"
+                                  "variables[]"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -67,37 +71,38 @@
   (log/trace "Instantiating params protocol ...")
   (let [bounding-box (query-util/split-comma->coll (:bounding-box params))
         subset (:subset params)
-        granules-array (query-util/split-comma->coll
-                        (get params (keyword "granules[]")))
-        variables-array (query-util/split-comma->coll
-                         (get params (keyword "variables[]")))
-        temporal-array (query-util/->coll
-                        (get params (keyword "temporal[]")))]
+        granules-array (query-util/get-array-param params :granules)
+        variables-array (query-util/get-array-param params :variables)
+        temporal-array (query-util/get-array-param params :temporal)]
     (log/trace "original bounding-box:" (:bounding-box params))
     (log/trace "bounding-box:" bounding-box)
     (log/trace "subset:" subset)
-    (log/trace "granules-array:" granules-array)
-    (log/trace "variables-array:" variables-array)
+    (when granules-array
+      (log/trace "granules-array:" granules-array))
+    (when variables-array
+      (log/trace "variables-array:" variables-array))
     (map->CollectionCmrStyleParams
-      (assoc params
-        :format (or (:format params) const/default-format)
-        :granules (if (query-util/not-array? granules-array)
-                    (query-util/split-comma->sorted-coll (:granules params))
-                    granules-array)
-        :variables (if (query-util/not-array? variables-array)
-                     (query-util/split-comma->sorted-coll (:variables params))
-                     variables-array)
-        :exclude-granules (util/bool (:exclude-granules params))
-        :subset (if (seq bounding-box)
-                 (query-util/bounding-box->subset bounding-box)
-                 (:subset params))
-        :bounding-box (if (seq bounding-box)
-                        (mapv #(Float/parseFloat %) bounding-box)
-                        (when (seq subset)
-                          (query-util/subset->bounding-box subset)))
-        :temporal (if (query-util/not-array? temporal-array)
-                    (query-util/->coll (:temporal params))
-                    temporal-array)))))
+      (-> params
+          (assoc
+           :format (or (:format params) const/default-format)
+           :granules (if (query-util/not-array? granules-array)
+                       (query-util/split-comma->sorted-coll (:granules params))
+                       granules-array)
+           :variables (if (query-util/not-array? variables-array)
+                        (query-util/split-comma->sorted-coll (:variables params))
+                        variables-array)
+           :exclude-granules (util/bool (:exclude-granules params))
+           :subset (if (seq bounding-box)
+                    (query-util/bounding-box->subset bounding-box)
+                    (:subset params))
+           :bounding-box (if (seq bounding-box)
+                           (mapv #(Float/parseFloat %) bounding-box)
+                           (when (seq subset)
+                             (query-util/subset->bounding-box subset)))
+           :temporal (if (query-util/not-array? temporal-array)
+                       (query-util/->coll (:temporal params))
+                       temporal-array))
+          (dissoc "granules[]" "temporal[]" "varaibles[]")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation of Collections Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -39,6 +39,7 @@
     (create (cond (nil? (:collection-id raw-params)) :missing-collection-id
                   (cmr/style? raw-params) :cmr
                   (wcs/style? raw-params) :wcs
+                  (util/ambiguous-style? raw-params) :cmr
                   :else :unknown-parameters-type)
             raw-params))
   ([params-type raw-params]
