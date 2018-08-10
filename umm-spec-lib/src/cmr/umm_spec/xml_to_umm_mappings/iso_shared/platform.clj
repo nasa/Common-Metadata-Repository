@@ -49,7 +49,10 @@
                              (select doc (str base-xpath platforms-xpath))))]
      (or (seq platforms) (when sanitize? su/not-provided-platforms))))
   ([doc base-xpath sanitize? alt-xpath-options]
-   ;; This is isomends case where alternative xpath exist for both instrments and platforms.
+   ;; This is isomends case where alternative xpath exist for both instruments and platforms.
+   ;; Note: I'm leaving this parse-platforms function in iso_shared because the current implementation
+   ;; for isomends alternative xpath is just temporary. Once the relationship between the platforms
+   ;; and instruments is established, it will be changed.
    (let [inst-alt-xpath (:inst-alt-xpath alt-xpath-options)
          plat-alt-xpath (:plat-alt-xpath alt-xpath-options)
          plat-elems (select doc (str base-xpath platforms-xpath))
