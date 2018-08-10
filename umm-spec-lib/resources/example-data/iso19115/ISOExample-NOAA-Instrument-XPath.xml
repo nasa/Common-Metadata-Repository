@@ -1745,18 +1745,12 @@
                 </gmi:MI_Operation>
             </gmi:operation>
             <gmi:platform>
-                <eos:EOS_Platform id="AQUA">
+                <gmi:MI_Platform>
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
-                                <gco:CharacterString>AQUA</gco:CharacterString>
+                                <gco:CharacterString>NOAA-18 &gt; National Oceanic &amp; Atmospheric Administration-18</gco:CharacterString>
                             </gmd:code>
-                            <gmd:codeSpace>
-                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
-                            </gmd:codeSpace>
-                            <gmd:description>
-                                <gco:CharacterString>Earth Observing System, AQUA</gco:CharacterString>
-                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmi:identifier>
                     <!-- This is UMM Platform Type -->
@@ -1764,51 +1758,15 @@
                         <gco:CharacterString>Earth Observation Satellites</gco:CharacterString>
                     </gmi:description>
                     <gmi:instrument xlink:href="#MODIS2"/>
-                    <eos:otherProperty>
-                        <gco:Record>
-                            <eos:AdditionalAttributes>
-                                <eos:AdditionalAttribute>
-                                    <eos:reference>
-                                        <eos:EOS_AdditionalAttributeDescription>
-                                            <eos:type>
-                                                <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
-                                            </eos:type>
-                                            <eos:name>
-                                                <gco:CharacterString>PlatformCaracteristicAquaName</gco:CharacterString>
-                                            </eos:name>
-                                            <eos:description>
-                                                <gco:CharacterString>Platform Characteristics Aqua Description</gco:CharacterString>
-                                            </eos:description>
-                                            <eos:dataType>
-                                                <eos:EOS_AdditionalAttributeDataTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="Integer">Integer</eos:EOS_AdditionalAttributeDataTypeCode>
-                                            </eos:dataType>
-                                            <eos:parameterUnitsOfMeasure>
-                                                <gco:CharacterString>Degrees</gco:CharacterString>
-                                            </eos:parameterUnitsOfMeasure>
-                                        </eos:EOS_AdditionalAttributeDescription>
-                                    </eos:reference>
-                                    <eos:value>
-                                        <gco:CharacterString>40</gco:CharacterString>
-                                    </eos:value>
-                                </eos:AdditionalAttribute>
-                            </eos:AdditionalAttributes>
-                        </gco:Record>
-                    </eos:otherProperty>
-                </eos:EOS_Platform>
+                </gmi:MI_Platform>
             </gmi:platform>
             <gmi:platform>
-                <eos:EOS_Platform id="TERRA">
+                <gmi:MI_Platform>
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
-                                <gco:CharacterString>TERRA</gco:CharacterString>
+                                <gco:CharacterString>NOAA-18-2 &gt; National Oceanic &amp; Atmospheric Administration-18-2</gco:CharacterString>
                             </gmd:code>
-                            <gmd:codeSpace>
-                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
-                            </gmd:codeSpace>
-                            <gmd:description>
-                                <gco:CharacterString>Earth Observing System, TERRA (AM-1)</gco:CharacterString>
-                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmi:identifier>
                     <!-- This is UMM Platform Type -->
@@ -1816,52 +1774,15 @@
                         <gco:CharacterString>Earth Observation Satellites</gco:CharacterString>
                     </gmi:description>
                     <gmi:instrument xlink:href="#MODIS1"/>
-                    <eos:otherProperty>
-                        <gco:Record>
-                            <eos:AdditionalAttributes>
-                                <eos:AdditionalAttribute>
-                                    <eos:reference>
-                                        <eos:EOS_AdditionalAttributeDescription>
-                                            <eos:type>
-
-                                                <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
-                                            </eos:type>
-                                            <eos:name>
-                                                <gco:CharacterString>PlatformCaracteristicTerraName</gco:CharacterString>
-                                            </eos:name>
-                                            <eos:description>
-                                                <gco:CharacterString>Platform Characteristics Terra Description</gco:CharacterString>
-                                            </eos:description>
-                                            <eos:dataType>
-                                                <eos:EOS_AdditionalAttributeDataTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="Integer">Integer</eos:EOS_AdditionalAttributeDataTypeCode>
-                                            </eos:dataType>
-                                            <eos:parameterUnitsOfMeasure>
-                                                <gco:CharacterString>Degrees</gco:CharacterString>
-                                            </eos:parameterUnitsOfMeasure>
-                                        </eos:EOS_AdditionalAttributeDescription>
-                                    </eos:reference>
-                                    <eos:value>
-                                        <gco:CharacterString>50</gco:CharacterString>
-                                    </eos:value>
-                                </eos:AdditionalAttribute>
-                            </eos:AdditionalAttributes>
-                        </gco:Record>
-                    </eos:otherProperty>
-                </eos:EOS_Platform>
+                </gmi:MI_Platform>
             </gmi:platform>
             <gmi:platform>
-                <eos:EOS_Platform id="Aircraft1">
+                <gmi:MI_Platform>
                     <gmi:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
-                                <gco:CharacterString>B-200</gco:CharacterString>
+                                <gco:CharacterString>NOAA-18-3 &gt; National Oceanic &amp; Atmospheric Administration-18-3</gco:CharacterString>
                             </gmd:code>
-                            <gmd:codeSpace>
-                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
-                            </gmd:codeSpace>
-                            <gmd:description>
-                                <gco:CharacterString>Beechcraft King Air B-200</gco:CharacterString>
-                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmi:identifier>
                     <!-- This is UMM Platform Type -->
@@ -1869,38 +1790,7 @@
                         <gco:CharacterString>Aircraft</gco:CharacterString>
                     </gmi:description>
                     <gmi:instrument xlink:href="#Instrument3"/>
-                    <eos:otherProperty>
-                        <gco:Record>
-                            <eos:AdditionalAttributes>
-                                <eos:AdditionalAttribute>
-                                    <eos:reference>
-                                        <eos:EOS_AdditionalAttributeDescription>
-                                            <eos:type>
-
-                                                <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
-                                            </eos:type>
-                                            <eos:name>
-                                                <gco:CharacterString>Tail Number</gco:CharacterString>
-                                            </eos:name>
-                                            <eos:description>
-                                                <gco:CharacterString>Aircraft Tail Number</gco:CharacterString>
-                                            </eos:description>
-                                            <eos:dataType>
-                                                <eos:EOS_AdditionalAttributeDataTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="string">string</eos:EOS_AdditionalAttributeDataTypeCode>
-                                            </eos:dataType>
-                                            <eos:parameterUnitsOfMeasure>
-                                                <gco:CharacterString>Not Applicable</gco:CharacterString>
-                                            </eos:parameterUnitsOfMeasure>
-                                        </eos:EOS_AdditionalAttributeDescription>
-                                    </eos:reference>
-                                    <eos:value>
-                                        <gco:CharacterString>EER2365876</gco:CharacterString>
-                                    </eos:value>
-                                </eos:AdditionalAttribute>
-                            </eos:AdditionalAttributes>
-                        </gco:Record>
-                    </eos:otherProperty>
-                </eos:EOS_Platform>
+                </gmi:MI_Platform>
             </gmi:platform>
         </gmi:MI_AcquisitionInformation>
     </gmi:acquisitionInformation>
