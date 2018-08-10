@@ -6,12 +6,14 @@
    [clojure.string :as string]
    [cmr.opendap.query.const :as const]
    [cmr.opendap.query.impl.cmr :as cmr]
+   [cmr.opendap.query.impl.giovanni :as giovanni]
    [cmr.opendap.query.impl.wcs :as wcs]
    [cmr.opendap.query.util :as util]
    [cmr.opendap.results.errors :as errors]
    [taoensso.timbre :as log])
   (:import
    (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
+   (cmr.opendap.query.impl.giovanni CollectionGiovanniStyleParams)
    (cmr.opendap.query.impl.wcs CollectionWcsStyleParams))
   (:refer-clojure :exclude [parse]))
 
@@ -26,6 +28,10 @@
         CollectionParamsAPI
         cmr/collection-behaviour)
 
+(extend CollectionGiovanniStyleParams
+        CollectionParamsAPI
+        giovanni/collection-behaviour)
+
 (extend CollectionWcsStyleParams
         CollectionParamsAPI
         wcs/collection-behaviour)
@@ -38,6 +44,7 @@
   ([raw-params]
     (create (cond (nil? (:collection-id raw-params)) :missing-collection-id
                   (cmr/style? raw-params) :cmr
+                  (giovanni/style? raw-params) :giovanni
                   (wcs/style? raw-params) :wcs
                   (util/ambiguous-style? raw-params) :cmr
                   :else :unknown-parameters-type)
@@ -45,6 +52,7 @@
   ([params-type raw-params]
     (case params-type
       :wcs (wcs/create raw-params)
+      :giovanni (giovanni/create raw-params)
       :cmr (cmr/create raw-params)
       :missing-collection-id {:errors [errors/missing-collection-id]}
       :unknown-parameters-type {:errors [errors/invalid-parameter
