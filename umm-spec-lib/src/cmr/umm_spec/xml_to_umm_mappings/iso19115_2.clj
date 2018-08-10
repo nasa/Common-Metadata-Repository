@@ -93,6 +93,15 @@
   (str identifier-base-xpath "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
        "/gmd:code/gco:CharacterString"))
 
+(def platform-alternative-xpath
+  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
+       "/gmi:MI_Platform"))
+
+(def instrument-alternative-xpath
+  "NOAA instrument xpath"
+  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
+       "/gmi:MI_Instrument"))
+
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -236,6 +245,8 @@
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
         extent-info (iso-util/get-extent-info-map doc)
+        alt-xpath-options {:plat-alt-xpath platform-alternative-xpath
+                           :inst-alt-xpath instrument-alternative-xpath}
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
     (merge
      (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
@@ -274,7 +285,7 @@
                         (char-string-value
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
       :Distributions (dru/parse-distributions doc sanitize?)
-      :Platforms (platform/parse-platforms doc "" sanitize?)
+      :Platforms (platform/parse-platforms doc "" sanitize? alt-xpath-options)
       :Projects (project/parse-projects doc projects-xpath sanitize?)
 
       :PublicationReferences (parse-publication-references doc md-data-id-el sanitize?)

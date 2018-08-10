@@ -13,11 +13,6 @@
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
        "/eos:EOS_Instrument"))
 
-(def instrument-alternative-xpath
-  "NOAA instrument xpath"
-  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
-       "/gmi:MI_Instrument"))
-
 (def composed-of-xpath
   (str instrument-xpath "/eos:sensor/eos:EOS_Sensor"))
 
@@ -136,8 +131,12 @@
 (defn xml-elem->instruments-mapping
   "Returns the instrument id to Instrument mapping by parsing the given xml element.
    Alternatively, in NOAA case, it will return the list of instruments when they are not associated with platforms"
-  [doc base-xpath]
-  (if-let [instruments (select doc (str base-xpath instrument-xpath))] 
-    (into {} (map (partial xml-elem->instrument-mapping doc base-xpath) instruments))
-    (let [instruments (select doc (str base-xpath instrument-alternative-xpath))]
-      (map #((partial xml-elem->instrument-mapping doc base-xpath) % {:alt-xpath? true}) instruments))))
+  ([doc base-xpath]
+   ;; This is the iso-smap case where alternative xpath doesn't apply.
+   (into {}
+         (map (partial xml-elem->instrument-mapping doc base-xpath) (select doc (str base-xpath instrument-xpath)))))
+  ([doc base-xpath inst-alt-xpath]
+   (if-let [instruments (select doc (str base-xpath instrument-xpath))]
+     (into {} (map (partial xml-elem->instrument-mapping doc base-xpath) instruments))
+     (let [instruments (select doc (str base-xpath inst-alt-xpath))]
+       (map #((partial xml-elem->instrument-mapping doc base-xpath) % {:alt-xpath? true}) instruments)))))

@@ -12,8 +12,12 @@
 (def test-context (lkt/setup-context-for-test))
 
 (def expected-noaa-platforms
-  (let [instruments [(cmn/map->InstrumentType {:ShortName "AMSR2" :LongName "Advanced Microwave Scanning Radiometer 2"})]]
-    (seq (map #(assoc % :Instruments instruments) util/not-provided-platforms))))
+  (let [plats-alt [(cmn/map->PlatformType {:ShortName "NOAA-18" :LongName "National Oceanic & Atmospheric Administration-18"})
+                   (cmn/map->PlatformType {:ShortName "NOAA-18-2" :LongName "National Oceanic & Atmospheric Administration-18-2"})
+                   (cmn/map->PlatformType {:ShortName "NOAA-18-3" :LongName "National Oceanic & Atmospheric Administration-18-3"})]
+        instrs-alt [(cmn/map->InstrumentType {:ShortName "AMSR2" :LongName "Advanced Microwave Scanning Radiometer 2"})]
+        not-provided-plats (seq (map #(assoc % :Instruments instrs-alt) util/not-provided-platforms))]
+    (into [] (concat plats-alt not-provided-plats))))
 
 (defn noaa-example-file
   "Returns an example ISO19115 metadata file with NOAA instrument xpath."
