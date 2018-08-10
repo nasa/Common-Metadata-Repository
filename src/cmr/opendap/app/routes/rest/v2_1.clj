@@ -38,6 +38,12 @@
    ["/opendap/size-estimate/streaming-collection/:concept-id" {
     :get (collection-handler/stream-estimate-size httpd-component)}]])
 
+(defn service-bridge-api
+  [httpd-component]
+  [["/service-bridge/collection/:concept-id" {
+    :get {:handler (collection-handler/bridge-services httpd-component)
+          :permissions #{:read}}}]])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,5 +53,6 @@
   (concat
    (ous-api httpd-component)
    (size-estimate-api httpd-component)
+   (service-bridge-api httpd-component)
    (routes-v2/admin-api httpd-component)
    routes-v1/testing))

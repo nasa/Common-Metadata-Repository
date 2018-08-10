@@ -101,7 +101,7 @@
               (server/close channel)
             (when (< id iterations)
               (timer/schedule-task
-               (* id heartbeat) ;; send a message every heartbeat period
+               (* id heartbeat) ; send a message every heartbeat period
                (log/trace "\tSending 0-byte placeholder chunk to client ...")
                (server/send! channel
                              {:status 202}
@@ -109,10 +109,14 @@
               (recur (inc id))))))
         (timer/schedule-task timeout (server/close channel)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Size Estimate Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn estimate-size
   [component]
-  (log/debug "Estimating download size based on HTTP GET ...")
   (fn [request]
+    (log/debug "Estimating download size based on HTTP GET ...")
     (let [user-token (token/extract request)
           concept-id (get-in request [:path-params :concept-id])
           api-version (request/accept-api-version component request)]
@@ -126,3 +130,16 @@
   [component]
   (fn [request]
     :not-implemented))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Service Bridge Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn bridge-services
+  [component]
+  (fn [request]
+    (let [user-token (token/extract request)
+          {:keys [concept-id source destination]} (:path-params request)
+          api-version (request/accept-api-version component request)]
+      (log/warnf "Briding %s service to %s ..." source destination)
+      )))
