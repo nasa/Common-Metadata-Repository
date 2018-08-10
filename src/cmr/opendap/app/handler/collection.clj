@@ -9,6 +9,7 @@
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.core :as ous]
+   [cmr.opendap.query.core :as query]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.sizing.core :as sizing]
    [org.httpkit.server :as server]
@@ -129,17 +130,47 @@
 (defn stream-estimate-size
   [component]
   (fn [request]
-    :not-implemented))
+    {:errors [:not-implemented]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Service Bridge Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn get-service-endpoint
+  [component destination]
+  (case destination
+    :cmr (config/get-cmr-search-endpoint component)
+    :giovanni (config/get-giovanni-endpoint component)
+    :edsc (config/get-edsc-endpoint component)))
+
+(defn params->service-url
+  [component destination data]
+  (let [service-endpoint (get-service-endpoint component destination)]
+    (format "%s?%s" service-endpoint
+                    (-> data
+                        query/parse
+                        query/->query-string))))
+
 (defn bridge-services
+  "Here's what we expect a request might look like:
+
+  https://this-service/service-bridge/collection/c123?
+    destination=giovanni&
+    bounding-box=[...]&
+    temporal=[...]&
+    variables=V123,V234,V345&
+    granules=G123"
   [component]
   (fn [request]
     (let [user-token (token/extract request)
-          {:keys [concept-id source destination]} (:path-params request)
-          api-version (request/accept-api-version component request)]
-      (log/warnf "Briding %s service to %s ..." source destination)
-      )))
+          {:keys [concept-id destination]} (:path-params request)
+          api-version (request/accept-api-version component request)
+          data (-> request
+                   :params
+                   (merge {:collection-id concept-id}))]
+      (log/warnf "Handling bridge request from %s ..." (:referer request))
+      (log/warnf "Bridging service to %s ..." destination)
+      (response/json {
+       :service {
+        :url (params->service-url component destination data)}}))))
+

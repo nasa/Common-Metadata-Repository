@@ -22,7 +22,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol CollectionParamsAPI
-  (->cmr [this] "Convert params record to CMR."))
+  (->cmr [this] "Convert params record to CMR.")
+  (->query-string [this] (str "Format all the defined parameters as a search "
+                              "URL that represents a canonical query in the "
+                              "service defined by the implementation.")))
 
 (extend CollectionCmrStyleParams
         CollectionParamsAPI

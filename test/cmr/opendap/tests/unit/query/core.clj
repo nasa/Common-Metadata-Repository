@@ -3,8 +3,9 @@
   (:require
     [clojure.test :refer :all]
     [cmr.opendap.query.core :as query]
-    [cmr.opendap.query.impl.wcs :as wcs]
-    [cmr.opendap.query.impl.cmr :as cmr])
+    [cmr.opendap.query.impl.cmr :as cmr]
+    [cmr.opendap.query.impl.giovanni :as giovanni]
+    [cmr.opendap.query.impl.wcs :as wcs])
   (:refer-clojure :exclude [parse]))
 
 (deftest cmr-style?
@@ -30,6 +31,10 @@
   (is (wcs/style?
        {:coverage ["G1200267320-HMR_TME" "G1200267319-HMR_TME"]
         :subset ["lat(56.109375,67.640625)" "lon(-9.984375,19.828125)"]})))
+
+(deftest giovanni-style?
+  (is (giovanni/style?
+       {:bbox [169.0 22.0 200.0 34.0]})))
 
 (deftest ->cmr
   (is (= (cmr/map->CollectionCmrStyleParams {:exclude-granules false})
