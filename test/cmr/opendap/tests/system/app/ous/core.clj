@@ -14,87 +14,7 @@
 
 (use-fixtures :once test-system/with-system)
 
-(deftest gridded-with-ummvar-1-1-api-v2
-  (let [collection-id "C1200267318-HMR_TME"
-        granule-id "G1200267320-HMR_TME"
-        variable-id "V1200267322-HMR_TME"
-        options (-> {}
-                    (request/add-token-header (util/get-sit-token))
-                    (util/override-api-version-header "v2"))]
-    (testing "GET without bounding box ..."
-      (let [response @(httpc/get
-                       (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
-                                    "?granules=%s"
-                                    "&variables=%s")
-                               (test-system/http-port)
-                               collection-id
-                               granule-id
-                               variable-id)
-                       options)]
-        (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2; format=json"
-               (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
-               (util/parse-response response)))))
-    (testing "GET without subset ..."
-      (let [response @(httpc/get
-                       (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
-                                    "?coverage=%s"
-                                    "&rangesubset=%s")
-                               (test-system/http-port)
-                               collection-id
-                               granule-id
-                               variable-id)
-                       options)]
-        (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2; format=json"
-               (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
-               (util/parse-response response)))))
-    (testing "GET with bounding box ..."
-      (let [response @(httpc/get
-                       (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
-                                    "?granules=%s"
-                                    "&variables=%s"
-                                    "&bounding-box="
-                                    "-9.984375,56.109375,19.828125,67.640625")
-                               (test-system/http-port)
-                               collection-id
-                               granule-id
-                               variable-id)
-                       options)]
-        (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2; format=json"
-               (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
-               (util/parse-response response)))))
-    (testing "GET with subset ..."
-      (let [response @(httpc/get
-                       (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
-                                    "?coverage=%s"
-                                    "&rangesubset=%s"
-                                    "&subset=lat(56.109375,67.640625)"
-                                    "&subset=lon(-9.984375,19.828125)")
-                               (test-system/http-port)
-                               collection-id
-                               granule-id
-                               variable-id)
-                       options)]
-        (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2; format=json"
-               (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
-               (util/parse-response response)))))))
-
 (deftest gridded-with-ummvar-1-1-api-v2-1
-  ;; All of these ingested items are UMM-Var 1.1; since they are using v2.1 of
-  ;; the REST API, Dimensions will be searched (and not found, since that field
-  ;; is in UMM-Var 1.2), and will subsequently conclude that the data is not
-  ;; gridded, stripping away the bounding info from all OPeNDAP queries.
   (let [collection-id "C1200267318-HMR_TME"
         granule-id "G1200267320-HMR_TME"
         variable-id "V1200267322-HMR_TME"
@@ -132,7 +52,15 @@
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
-               (util/parse-response response)))))
+               (util/parse-response response)))))))
+
+(deftest gridded-with-ummvar-1-1-api-v2-1-bounds
+  (let [collection-id "C1200276782-HMR_TME"
+        granule-id "G1200276783-HMR_TME"
+        variable-id "V1200276788-HMR_TME"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))]
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
@@ -149,7 +77,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/MOAA/MOD08_D3.006/2012.01.02/MOD08_D3.A2012002.006.2015056234420.hdf.nc?Solar_Zenith_Mean[22:1:34][169:1:200],YDim[22:1:34],XDim[169:1:200]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
@@ -167,7 +95,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/MOAA/MOD08_D3.006/2012.01.02/MOD08_D3.A2012002.006.2015056234420.hdf.nc?Solar_Zenith_Mean[22:1:34][169:1:200],YDim[22:1:34],XDim[169:1:200]"]
                (util/parse-response response)))))))
 
 (deftest gridded-with-ummvar-1-2-api-v2-1
