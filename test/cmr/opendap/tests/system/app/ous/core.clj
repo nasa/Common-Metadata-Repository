@@ -55,6 +55,50 @@
                (util/parse-response response)))))))
 
 (deftest gridded-with-ummvar-1-1-api-v2-1-bounds
+  (let [collection-id "C1200276834-HMR_TME"
+        granule-id "G1200276835-HMR_TME"
+        variable-id "V1200276840-HMR_TME"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))]
+    (testing "GET with bounding box ..."
+      (let [response @(httpc/get
+                       (format (str "http://localhost:%s"
+                                    "/opendap/ous/collection/%s"
+                                    "?granules=%s"
+                                    "&variables=%s"
+                                    "&bounding-box="
+                                    "-9.984375,56.109375,19.828125,67.640625")
+                               (test-system/http-port)
+                               collection-id
+                               granule-id
+                               variable-id)
+                       options)]
+        (is (= 200 (:status response)))
+        (is (= "cmr-opendap.v2.1; format=json"
+               (get-in response [:headers :cmr-media-type])))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?dt_1km_data_VarBounds[0:1:0][14610:1:15764][17001:1:19983],lat[14610:1:15764],lon[17001:1:19983]"]
+               (util/parse-response response)))))
+    (testing "GET with subset ..."
+      (let [response @(httpc/get
+                       (format (str "http://localhost:%s"
+                                    "/opendap/ous/collection/%s"
+                                    "?coverage=%s"
+                                    "&rangesubset=%s"
+                                    "&subset=lat(56.109375,67.640625)"
+                                    "&subset=lon(-9.984375,19.828125)")
+                               (test-system/http-port)
+                               collection-id
+                               granule-id
+                               variable-id)
+                       options)]
+        (is (= 200 (:status response)))
+        (is (= "cmr-opendap.v2.1; format=json"
+               (get-in response [:headers :cmr-media-type])))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?dt_1km_data_VarBounds[0:1:0][14610:1:15764][17001:1:19983],lat[14610:1:15764],lon[17001:1:19983]"]
+               (util/parse-response response)))))))
+
+(deftest gridded-with-ummvar-1-1-api-v2-1-bounds-reversed
   (let [collection-id "C1200276782-HMR_TME"
         granule-id "G1200276783-HMR_TME"
         variable-id "V1200276788-HMR_TME"
@@ -99,9 +143,9 @@
                (util/parse-response response)))))))
 
 (deftest gridded-with-ummvar-1-2-api-v2-1
-  (let [collection-id "C1200274974-HMR_TME"
-        granule-id "G1200274976-HMR_TME"
-        variable-id "V1200274983-HMR_TME"
+  (let [collection-id "C1200276794-HMR_TME"
+        granule-id "G1200276796-HMR_TME"
+        variable-id "V1200276801-HMR_TME"
         options (-> {}
                     (request/add-token-header (util/get-sit-token))
                     (util/override-api-version-header "v2.1"))]
@@ -119,7 +163,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct_VarDims,Latitude,Longitude"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET without subset ..."
       (let [response @(httpc/get
@@ -135,7 +179,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct_VarDims,Latitude,Longitude"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
@@ -153,7 +197,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct_VarDims[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
@@ -171,5 +215,5 @@
         (is (= 200 (:status response)))
         (is (= "cmr-opendap.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A_ct_VarDims[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))))

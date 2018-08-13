@@ -243,7 +243,7 @@
 
 (deftest collection-GET-spatial
   (testing "GET with subset ..."
-    (let [collection-id "C1200267318-HMR_TME"
+    (let [collection-id "C1200276794-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s"
@@ -253,11 +253,11 @@
                              collection-id)
                      options)]
       (is (= 200 (:status response)))
-      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.01.01/AIRS.2016.01.01.L3.RetStd001.v6.0.31.0.G16004140142.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response)))))
   (testing "GET with bounding box ..."
-    (let [collection-id "C1200267318-HMR_TME"
+    (let [collection-id "C1200276794-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s"
@@ -267,8 +267,8 @@
                              collection-id)
                      options)]
       (is (= 200 (:status response)))
-      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.01.01/AIRS.2016.01.01.L3.RetStd001.v6.0.31.0.G16004140142.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response))))))
 
 (deftest collection-GET-invalid-bounding-box
@@ -416,19 +416,19 @@
 
 (deftest collection-GET-multiple-params
   (testing "GET with variables, graules, and bounding box ..."
-    (let [collection-id "C1200267318-HMR_TME"
+    (let [collection-id "C1200276794-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s"
-                                  "?variables=V1200267322-HMR_TME&"
-                                  "granules=G1200267320-HMR_TME&"
+                                  "?variables=V1200276801-HMR_TME&"
+                                  "granules=G1200276795-HMR_TME&"
                                   "bounding-box="
                                   "-9.984375,56.109375,19.828125,67.640625")
                              (test-system/http-port)
                              collection-id)
                      options)]
       (is (= 200 (:status response)))
-      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.01.01/AIRS.2016.01.01.L3.RetStd001.v6.0.31.0.G16004140142.hdf.nc?SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response))))))
 
 (deftest collection-POST
@@ -546,7 +546,7 @@
 
 (deftest collection-POST-spatial
   (testing "POST with subset ..."
-    (let [collection-id "C1200267318-HMR_TME"
+    (let [collection-id "C1200276794-HMR_TME"
           response @(httpc/post
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s")
@@ -558,11 +558,11 @@
                                  "lon(-9.984375,19.828125)"]})
                       options))]
       (is (= 200 (:status response)))
-      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.01.01/AIRS.2016.01.01.L3.RetStd001.v6.0.31.0.G16004140142.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response)))))
   (testing "POST with bounding box ..."
-    (let [collection-id "C1200267318-HMR_TME"
+    (let [collection-id "C1200276794-HMR_TME"
           response @(httpc/post
                      (format (str "http://localhost:%s"
                                   "/opendap/ous/collection/%s")
@@ -573,6 +573,6 @@
                        {:bounding-box "-9.984375,56.109375,19.828125,67.640625"})
                       options))]
       (is (= 200 (:status response)))
-      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
-              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A[0:1:23][22:1:34][169:1:200],CH4_VMR_A_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_A_err[0:1:23][22:1:34][169:1:200],CH4_VMR_A_max[0:1:23][22:1:34][169:1:200],CH4_VMR_A_min[0:1:23][22:1:34][169:1:200],CH4_VMR_A_sdev[0:1:23][22:1:34][169:1:200],CH4_VMR_D[0:1:23][22:1:34][169:1:200],CH4_VMR_D_ct[0:1:23][22:1:34][169:1:200],CH4_VMR_D_err[0:1:23][22:1:34][169:1:200],CH4_VMR_D_max[0:1:23][22:1:34][169:1:200],CH4_VMR_D_min[0:1:23][22:1:34][169:1:200],CH4_VMR_D_sdev[0:1:23][22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
+      (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.01.01/AIRS.2016.01.01.L3.RetStd001.v6.0.31.0.G16004140142.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"
+              "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_ct_VarBounds[22:1:34][169:1:200],SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
              (util/parse-response response))))))
