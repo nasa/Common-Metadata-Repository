@@ -51,6 +51,15 @@
      :bad-request
      [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
+(defn- validate-collection
+   "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
+   [context provider-id collection-id]
+   (let [provider (get-provider context provider-id)]
+     (when-not (bulk/get-collection context provider collection-id)
+       (errors/throw-service-errors
+        :bad-request
+        [(format "Collection [%s] does not exist." collection-id)]))))
+
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
   [context dispatcher provider-id start-index]
@@ -61,15 +70,6 @@
   "Bulk index all the concepts with a revision date later than the given date-time."
   [context dispatcher date-time]
   (dispatch/index-data-later-than-date-time dispatcher context date-time))
-
-(defn- validate-collection
-  "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
-  [context provider-id collection-id]
-  (let [provider (get-provider context provider-id)]
-    (when-not (bulk/get-collection context provider collection-id)
-      (errors/throw-service-errors
-       :bad-request
-       [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
@@ -136,7 +136,8 @@
     (info (format "Starting to rebalance granules for collection [%s] to target [%s]."
                   concept-id target))
     (rebalancing-collections/validate-target target concept-id)
-    (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
+    (when (= "separate-index" target)
+      (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id))
     ;; This will throw an exception if the collection is already rebalancing
     (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
                                           (csk/->kebab-case-keyword target))
@@ -164,7 +165,6 @@
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
   [context concept-id]
-  (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   (let [fetched-index-set (index-set/get-index-set context indexer-index-set/index-set-id)
         target (get-in fetched-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])]
     (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."

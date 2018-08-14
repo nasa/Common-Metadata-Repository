@@ -4,10 +4,14 @@
   (:require
    [clojure.test :refer :all]
    [clj-http.client :as client]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.time-keeper :as tk]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.system :as s]
+   [cmr.metadata-db.int-test.utility :as mdb-util]
+   [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
@@ -62,6 +66,10 @@
                :errors [(str "The index set does not contain the rebalancing collection ["
                              (:concept-id coll1)"]")]}
               (bootstrap/finalize-rebalance-collection (:concept-id coll1)))))
+     (testing "Finalizing non existent collection"
+       (is (= {:status 400
+               :errors ["The index set does not contain the rebalancing collection [C1-NON_EXIST]"]}
+              (bootstrap/finalize-rebalance-collection "C1-NON_EXIST"))))
      (testing "Starting already rebalancing collection"
        (bootstrap/start-rebalance-collection (:concept-id coll1) {:synchronous true})
        (is (= {:status 400
@@ -457,3 +465,39 @@
      (assert-rebalance-status {:small-collections 2} coll2)
      (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
      (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)}))))))))
+
+(deftest rebalance-old-deleted-collection-back-to-small-collections-test
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (s/only-with-real-database
+   (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}))
+         granules (doseq [n (range 2)]
+                    (ingest-granule-for-coll deleted-coll n))
+         deleted-coll-concept (mdb/get-concept (:concept-id deleted-coll))]
+
+     ;; Start collection with a seperate index
+     (index/wait-until-indexed)
+     (rebalance-to-separate-index (:concept-id deleted-coll))
+     (assert-rebalance-status {:small-collections 0 :separate-index 2} deleted-coll)
+     (index/wait-until-indexed)
+
+     (dev-sys-util/clear-caches)
+
+     ; Delete collection and remove the tombstone
+     (ingest/delete-concept deleted-coll-concept)
+     (index/wait-until-indexed)
+     (side/eval-form `(tk/advance-time! ~(* (concept-service/days-to-keep-tombstone) 24 3600)))
+     (is (= 204 (mdb-util/old-revision-concept-cleanup)))
+
+     ;; Rebalance to small-collections
+     (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
+     (index/wait-until-indexed)
+     (assert-rebalance-status {:small-collections 0 :separate-index 0} deleted-coll)
+     (bootstrap/finalize-rebalance-collection (:concept-id deleted-coll))
+
+     ;; Remove index and search for granules
+     (index/wait-until-indexed)
+     (index/delete-elasticsearch-index deleted-coll)
+     (index/wait-until-indexed)
+     (assert-rebalance-status {:small-collections 0} deleted-coll)
+     (is (= 0 (count (:refs (search/find-refs :granule {:concept-id (:concept-id deleted-coll)})))))))
+  (side/eval-form `(tk/clear-current-time!)))
