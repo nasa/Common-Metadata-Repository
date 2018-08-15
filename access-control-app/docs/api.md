@@ -47,6 +47,10 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 All Access Control API operations require specifying a token obtained from URS or ECHO. The token should be specified using the `Echo-Token` header.
 
+#### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
+
+The revision id header allows specifying the revision id to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
+
 ***
 
 ### <a name="responses"></a> Responses
