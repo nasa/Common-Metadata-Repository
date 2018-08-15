@@ -101,17 +101,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SamplingIdentifierType)
 
-;; The bounds consist of a LowerLeft and an UpperRight pair of coordinates.
-(defrecord BoundsType
-  [
-   ;; The lower left coordinates of the bounds.
-   LowerLeft
-
-   ;; The upper right coordinates of the bounds.
-   UpperRight
-  ])
-(record-pretty-printer/enable-record-pretty-printing BoundsType)
-
 ;; The elements of this section apply to a measurement name. The measurement name is structured
 ;; according to the form defined by Scott Peckham. This is: <object>_<quantity>.
 (defrecord MeasurementNameType
@@ -177,12 +166,23 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing DimensionType)
 
+;; The index ranges consist of a LatRange and an LonRange.
+(defrecord IndexRangesType
+  [
+   ;; The LatRange consists of an index range for latitude.
+   LatRange
+
+   ;; The LonRange consists of an index range for longitude.
+   LonRange
+  ])
+(record-pretty-printer/enable-record-pretty-printing IndexRangesType)
+
 ;; The elements of this section apply to a variable.
 (defrecord CharacteristicsType
   [
-   ;; Describes the spatial bounds of a variable, which consist of a LowerLeft and an UpperRight
-   ;; pair of coordinates.
-   Bounds
+   ;; Describes the index ranges of a variable, which consist of a LatRange and an LonRange. Each
+   ;; field consists of an index range.
+   IndexRanges
 
    ;; The full path to the variable within the Granule structure. For example,
    ;; '/MODIS_Grid_Daily_1km_LST/Data_Fields'.

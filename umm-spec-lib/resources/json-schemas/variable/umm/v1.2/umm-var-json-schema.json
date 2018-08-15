@@ -6,9 +6,9 @@
       "additionalProperties": false,
       "description": "The elements of this section apply to a variable.",
       "properties": {
-        "Bounds": {
-          "description": "Describes the spatial bounds of a variable, which consist of a LowerLeft and an UpperRight pair of coordinates.",
-          "$ref": "#/definitions/BoundsType"
+        "IndexRanges": {
+          "description": "Describes the index ranges of a variable, which consist of a LatRange and an LonRange. Each field consists of an index range.",
+          "$ref": "#/definitions/IndexRangesType"
         },
         "GroupPath": {
           "description": "The full path to the variable within the Granule structure. For example, '/MODIS_Grid_Daily_1km_LST/Data_Fields'.",
@@ -18,21 +18,29 @@
         }
       }
     },
-    "BoundsType": {
+    "IndexRangesType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The bounds consist of a LowerLeft and an UpperRight pair of coordinates.",
+      "description": "The index ranges consist of a LatRange and an LonRange.",
       "properties": {
-        "LowerLeft": {
-          "description": "The lower left coordinates of the bounds.",
-          "$ref": "#/definitions/CoordinatesType"
+        "LatRange": {
+          "description": "The LatRange consists of an index range for latitude.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
         },
-        "UpperRight": {
-          "description": "The upper right coordinates of the bounds.",
-          "$ref": "#/definitions/CoordinatesType"
+        "LonRange": {
+          "description": "The LonRange consists of an index range for longitude.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
         }
       },
-      "required": ["LowerLeft", "UpperRight"]
+      "required": ["LatRange", "LonRange"]
     },
     "CoordinatesType": {
       "type": "object",
