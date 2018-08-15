@@ -177,7 +177,7 @@
             acl-concept-id
             {:group_permissions [{:permissions [:read]
                                   :user_type :registered}]
-             :catalog_item_identity {:name "coll1 read and order"
+             :catalog_item_identity {:name "coll1 read only"
                                      :collection_applicable true
                                      :provider_id "PROV1"}})
 
