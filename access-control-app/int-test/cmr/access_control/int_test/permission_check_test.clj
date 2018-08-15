@@ -97,8 +97,6 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         update-acl-invalid-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
                                                                                :cmr-revision-id "invalid"})
-        update-acl-invalid-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
-                                                                               :cmr-revision-id "invalid"})
         update-acl-conflict-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
                                                                                :cmr-revision-id 2})
         update-acl-working-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
