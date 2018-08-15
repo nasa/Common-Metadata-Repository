@@ -152,4 +152,4 @@
      mt/dif (dif-util/parse-access-constraints metadata true)
      mt/dif10 (dif-util/parse-access-constraints metadata true)
      mt/iso19115 (iso19115-2-to-umm/parse-access-constraints metadata true)
-     mt/iso-smap nil)))
+     nil)))
