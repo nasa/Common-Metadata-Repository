@@ -8,62 +8,53 @@
     "DataType":"int16",
 	"ValidRanges":
 	  [{
-	     "Min":0,
-	     "Max":32767
+	    "Min":0,
+	    "Max":32767
 	  }],
 	"Dimensions":
 	  [{
-	     "Name":"StdPressureLev",
-	     "Size":24,
-	     "Type":"PRESSURE_DIMENSION"
+	    "Name":"StdPressureLev",
+	    "Size":24,
+	    "Type":"PRESSURE_DIMENSION"
 	   },
 	   {
-	     "Name":"Latitude",
-	     "Size":180,
-	     "Type":"LATITUDE_DIMENSION"
+	    "Name":"Latitude",
+	    "Size":180,
+	    "Type":"LATITUDE_DIMENSION"
 	   },
 	   {
-	   	 "Name":"Longitude",
-	   	 "Size":360,
-	   	 "Type":"LONGITUDE_DIMENSION"
-	   }],
+	   	"Name":"Longitude",
+	   	"Size":360,
+	   	"Type":"LONGITUDE_DIMENSION"
+	  }],
 	"Scale":1,
 	"Offset":0,
 	"FillValues":
 	  [{
-	     "Value":-1,
-	     "Type":"ANCILLARY_FILLVALUE"
+	    "Value":-1,
+	    "Type":"ANCILLARY_FILLVALUE"
 	  }],
-	"Characteristics":
-	  {
-	     "Bounds":
-	     	  {
-	    		"LowerLeft":
-	    		  {
-	    		  	"Lat":-90,
-	    		    "Lon":-180
-	    		  },
-	    		"UpperRight":
-	    		  {
-	    		   "Lat":90,
-	    		   "Lon":180
-	    		  }
-	   		  },
-	     "GroupPath":"/"
-	   },
+    "Characteristics":
+      {
+        "IndexRanges":
+          {
+            "LatRange": [-90, 90],
+            "LonRange": [-180, 180]
+          }
+      },
 	"ScienceKeywords":
 	  [{
-	     "Category":"EARTH SCIENCE",
-	     "Topic":"ATMOSPHERE",
-	     "Term":"ATMOSPHERIC CHEMISTRY",
-	     "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
-	     "VariableLevel2":"METHANE"
+	    "Category":"EARTH SCIENCE",
+	    "Topic":"ATMOSPHERE",
+	    "Term":"ATMOSPHERIC CHEMISTRY",
+	    "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
+	    "VariableLevel2":"METHANE"
 	  }],
     "Sets":
 	  [{
-	     "Name":"AIRX3STD",
-	     "Type":"AIRS+AMSU Level 3 Gridded",
-	     "Size":24,
-	     "Index":2
+	    "Name":"AIRX3STD",
+	    "Type":"AIRS+AMSU Level 3 Gridded",
+	    "Size":24,
+	    "Index":2
 	  }]
 }
