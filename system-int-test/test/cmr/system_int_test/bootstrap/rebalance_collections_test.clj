@@ -10,7 +10,6 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.system :as s]
-   [cmr.metadata-db.int-test.utility :as mdb-util]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -486,7 +485,7 @@
      (ingest/delete-concept deleted-coll-concept)
      (index/wait-until-indexed)
      (side/eval-form `(tk/advance-time! ~(* (concept-service/days-to-keep-tombstone) 24 3600)))
-     (is (= 204 (mdb-util/old-revision-concept-cleanup)))
+     (is (= 204 (:status (mdb/cleanup-old-revisions))))
 
      ;; Rebalance to small-collections
      (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
