@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.header_test
   "Tests for headers in ingest and search responses"
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clojure.string :as string]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.common-app.api.routes :as routes]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common-app.api.routes :as routes]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
