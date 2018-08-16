@@ -427,3 +427,30 @@
     (e/logout (s/context) user1-token)
     ;; The token should be cached
     (d/assert-refs-match [coll1] (search/find-refs :collection {:token user1-token}))))
+
+(deftest collection-search-changed-entry-titles-test
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        guest-token (e/login-guest (s/context))
+        user1-token (e/login (s/context) "user1" [group1-concept-id])
+        user2-token (e/login (s/context) "user2")
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                :native-id "coll1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                :native-id "coll2"}))
+        coll1-edited (-> coll1
+                         (assoc :entry-title "coll1-edited")
+                         (assoc :revision-id 2))]
+    (index/wait-until-indexed)
+    (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id
+                                                   "PROV1" (e/coll-id ["coll1" "coll2"])))
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+    (index/wait-until-indexed)
+    (d/assert-refs-match [coll1 coll2] (search/find-refs :collection {:token user1-token}))
+    (d/assert-refs-match [] (search/find-refs :collection {:token user2-token}))
+    (d/assert-refs-match [] (search/find-refs :collection {:token guest-token}))
+    (d/ingest "PROV1" (dc/collection {:entry-title "coll1-edited"
+                                      :native-id "coll1"}))
+    (index/wait-until-indexed)
+    (d/assert-refs-match [coll1-edited coll2] (search/find-refs :collection {:token user1-token}))
+    (d/assert-refs-match [] (search/find-refs :collection {:token user2-token}))
+    (d/assert-refs-match [] (search/find-refs :collection {:token guest-token}))))
