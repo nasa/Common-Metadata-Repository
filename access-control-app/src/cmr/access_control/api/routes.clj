@@ -133,7 +133,7 @@
   (acl-schema/validate-acl-json body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
-       (acl-service/update-acl ctx concept-id)
+       (acl-service/update-acl ctx concept-id (get headers "cmr-revision-id"))
        util/map-keys->snake_case
        api-response))
 

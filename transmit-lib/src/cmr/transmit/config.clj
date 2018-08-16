@@ -40,6 +40,9 @@
 (def token-header
   "echo-token")
 
+(def revision-id-header
+  "cmr-revision-id")
+
 (def user-id-header
   "user-id")
 

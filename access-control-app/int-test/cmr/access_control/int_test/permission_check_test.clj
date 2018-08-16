@@ -3,6 +3,7 @@
   (require
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
@@ -94,6 +95,12 @@
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        update-acl-invalid-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
+                                                                               :cmr-revision-id "invalid"})
+        update-acl-conflict-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
+                                                                               :cmr-revision-id 2})
+        update-acl-working-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
+                                                                               :cmr-revision-id 3})
         get-collection-permissions #(get-permissions %1 coll1)
         get-granule-permissions #(get-permissions %1 gran1)
         ;;remove some ACLs created in fixtures which we dont want polluting tests
@@ -137,6 +144,52 @@
             :guest []
             :registered ["read" "order"]
             "user1" ["read" "order"]))
+
+        (testing "update acl with revision-id"
+          ;; invalid revision-id
+          (try
+            (update-acl-invalid-revision-id
+              acl-concept-id
+              {:group_permissions [{:permissions [:read :order]
+                                    :user_type :registered}]
+               :catalog_item_identity {:name "coll1 read and order"
+                                       :collection_applicable true
+                                       :provider_id "PROV1"}})
+            (catch Exception e
+              (is (= true
+                     (string/includes?  e "{:errors [\"Invalid revision-id [invalid]. Cmr-Revision-id in the header must be a positive integer.\"]}")))))
+
+          ;; conflict revision-id: The previous test already updates the acl to revision 2,
+          (try
+            (update-acl-conflict-revision-id
+              acl-concept-id
+              {:group_permissions [{:permissions [:read :order]
+                                    :user_type :registered}]
+               :catalog_item_identity {:name "coll1 read and order"
+                                       :collection_applicable true
+                                       :provider_id "PROV1"}})
+            (catch Exception e
+              (is (= true
+                     (string/includes?  e "Expected revision-id of [3] got [2]")))))
+
+          ;; working revision-id: 3, as expected.
+          (update-acl-working-revision-id
+            acl-concept-id
+            {:group_permissions [{:permissions [:read]
+                                  :user_type :registered}]
+             :catalog_item_identity {:name "coll1 read only"
+                                     :collection_applicable true
+                                     :provider_id "PROV1"}})
+
+          (are3 [user permissions]
+            (is (= {coll1 permissions}
+                   (get-collection-permissions user)))
+            "for guest users"
+            :guest []
+            "for registered"
+            :registered ["read"]
+            "for user1"
+            "user1" ["read"]))
 
         (testing "acls granting access to specific groups"
 

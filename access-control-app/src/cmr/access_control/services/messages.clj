@@ -17,3 +17,7 @@
   [managing-group-id]
   (format "Managing group id [%s] is invalid, no group with this concept id can be found." 
           managing-group-id))
+
+(defn invalid-revision-id
+  [revision-id]
+  (format "Invalid revision-id [%s]. Cmr-Revision-id in the header must be a positive integer." revision-id))
