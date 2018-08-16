@@ -136,18 +136,19 @@
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]
   (let [{:keys [format metadata]} concept]
-    (condp = format
+    (condp = (mt/base-mime-type-of format)
      mt/echo10 (echo10-to-umm/parse-temporal metadata)
      mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
      mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
      mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
-     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
+     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
+     nil)))
 
 (defn parse-collection-access-value
   "Convert a metadata db concept map into the access value by parsing its metadata."
   [concept]
   (let [{:keys [format metadata]} concept]
-    (condp = format
+    (condp = (mt/base-mime-type-of format)
      mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
      mt/dif (dif-util/parse-access-constraints metadata true)
      mt/dif10 (dif-util/parse-access-constraints metadata true)
