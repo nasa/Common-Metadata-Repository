@@ -30,9 +30,14 @@
    :search {:protocol "https"
             :host "cmr.sit.earthdata.nasa.gov"
             :relative {:root {:url "/search"}}}}
- ;; :giovanni {
- ;;  ...
- ;;  }
+ :giovanni {
+   :search {:protocol "https"
+            :host "giovanni.gsfc.nasa.gov"
+            :relative {:root {:url "/giovanni"}}}}
+ :edsc {
+   :search {:protocol "https"
+            :host "search.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
  :httpd {
    :port 3013
    :docs "resources/public/docs"

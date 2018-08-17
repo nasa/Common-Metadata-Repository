@@ -84,31 +84,31 @@
     (let [heartbeat (config/streaming-heartbeat component)
           timeout (config/streaming-timeout component)
           iterations (Math/floor (/ timeout heartbeat))]
-    (log/debug "Processing stream request ...")
-    (server/with-channel request channel
-      (log/debug "Setting 'on-close' callback ...")
-      (server/on-close channel
-                       (fn [status]
-                        (println "Channel closed; status " status)))
-      (let [result-channel (async/thread
-                              ((generate-urls component) request))]
-        (log/trace "Starting loop ...")
-        (async/go-loop [id 0]
-          (log/trace "Loop id:" id)
-          (if-let [result (async/<! result-channel)]
-            (do
-              (log/trace "Result:" result)
-              (server/send! channel result)
-              (server/close channel)
-            (when (< id iterations)
-              (timer/schedule-task
-               (* id heartbeat) ; send a message every heartbeat period
-               (log/trace "\tSending 0-byte placeholder chunk to client ...")
-               (server/send! channel
-                             {:status 202}
-                             false))
-              (recur (inc id))))))
-        (timer/schedule-task timeout (server/close channel)))))))
+      (log/debug "Processing stream request ...")
+      (server/with-channel request channel
+        (log/debug "Setting 'on-close' callback ...")
+        (server/on-close channel
+                         (fn [status]
+                          (println "Channel closed; status " status)))
+        (let [result-channel (async/thread
+                                ((generate-urls component) request))]
+          (log/trace "Starting loop ...")
+          (async/go-loop [id 0]
+            (log/trace "Loop id:" id)
+            (if-let [result (async/<! result-channel)]
+              (do
+                (log/trace "Result:" result)
+                (server/send! channel result)
+                (server/close channel)
+              (when (< id iterations)
+                (timer/schedule-task
+                 (* id heartbeat) ; send a message every heartbeat period
+                 (log/trace "\tSending 0-byte placeholder chunk to client ...")
+                 (server/send! channel
+                               {:status 202}
+                               false))
+                (recur (inc id))))))
+          (timer/schedule-task timeout (server/close channel)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Size Estimate Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -148,12 +148,11 @@
   (let [service-endpoint (get-service-endpoint component destination)]
     (format "%s?%s" service-endpoint
                     (-> data
-                        query/parse
+                        (query/parse destination)
                         query/->query-string))))
 
 (defn bridge-services
   "Here's what we expect a request might look like:
-
   https://this-service/service-bridge/collection/c123?
     destination=giovanni&
     bounding-box=[...]&
@@ -163,6 +162,8 @@
   [component]
   (fn [request]
     (let [user-token (token/extract request)
+          ;; TODO: Destination will not be found in path-params.
+          ;; We need to retrieve this from the raw-params.
           {:keys [concept-id destination]} (:path-params request)
           api-version (request/accept-api-version component request)
           data (-> request
@@ -171,6 +172,5 @@
       (log/warnf "Handling bridge request from %s ..." (:referer request))
       (log/warnf "Bridging service to %s ..." destination)
       (response/json {
-       :service {
-        :url (params->service-url component destination data)}}))))
-
+                      :service {
+                                :url (params->service-url component destination data)}}))))

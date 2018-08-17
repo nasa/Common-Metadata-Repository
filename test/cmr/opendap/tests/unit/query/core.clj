@@ -2,11 +2,20 @@
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
+    [clojure.string :as string]
     [cmr.opendap.query.core :as query]
     [cmr.opendap.query.impl.cmr :as cmr]
     [cmr.opendap.query.impl.giovanni :as giovanni]
-    [cmr.opendap.query.impl.wcs :as wcs])
+    [cmr.opendap.query.impl.wcs :as wcs]
+    [ring.util.codec :as codec])
   (:refer-clojure :exclude [parse]))
+
+(defn- decode-and-split-as-set
+  [query]
+  (-> query
+      codec/url-decode
+      (string/split #"&")
+      set))
 
 (deftest cmr-style?
   (is (cmr/style?
@@ -35,6 +44,62 @@
 (deftest giovanni-style?
   (is (giovanni/style?
        {:bbox [169.0 22.0 200.0 34.0]})))
+
+(deftest ->query-string
+  (testing "CMR ->query-string ..."
+    (is (= (decode-and-split-as-set
+            (query/->query-string
+             (cmr/map->CollectionCmrStyleParams
+              {:format "nc"
+               :collection-id "C123"
+               :granules ["G234" "G345" "G456"]
+               :variables ["V234" "V345" "V456"]
+               :exclude-granules false
+               :bounding-box [169.0 22.0 200.0 34.0]
+               :subset ["lat(22,34)" "lon(169,200)"]
+               :temporal "2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"})))
+           #{"format=nc"
+             "collection-id=C123"
+             "granules=G234"
+             "granules=G345"
+             "granules=G456"
+             "variables=V234"
+             "variables=V345"
+             "variables=V456"
+             "exclude-granules=false"
+             "bounding-box=169.0,22.0,200.0,34.0"
+             "subset=lat(22,34)"
+             "subset=lon(169,200)"
+             "temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"})))
+  (testing "Cmr ->query-string with empty and nil values ..."
+    (is (= (decode-and-split-as-set
+            (query/->query-string
+             (cmr/map->CollectionCmrStyleParams
+              {:format nil
+               :collection-id "C123"
+               :granules []
+               :variables []
+               :bounding-box []}))))
+        #{"colleciton-id=C123"}))
+  (testing "Giovanni ->query-string ..."
+    (is (= (decode-and-split-as-set
+            (query/->query-string
+             (giovanni/map->CollectionGiovanniStyleParams
+              {:bbox [-180 -90 180 90]
+               :data ["data0" "data1" "data2"]})))
+           #{"bbox=-180,-90,180,90"
+             "data=data0"
+             "data=data1"
+             "data=data2"})))
+  (testing "WCS ->query-string ..."
+    (is (= (decode-and-split-as-set
+            (query/->query-string
+             (wcs/map->CollectionWcsStyleParams
+              {:coverage ["coverage0" "coverage1"]
+               :timeposition "2001-01-01T00:00:00"})))
+           #{"coverage=coverage0"
+             "coverage=coverage1"
+             "timeposition=2001-01-01T00:00:00"}))))
 
 (deftest ->cmr
   (is (= (cmr/map->CollectionCmrStyleParams {:exclude-granules false})

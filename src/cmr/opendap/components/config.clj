@@ -161,6 +161,18 @@
   [system]
   (:vendor (get-cfg system)))
 
+(defn get-cmr-search-endpoint
+  [system]
+  (get-search-url system))
+
+(defn get-giovanni-endpoint
+  [system]
+  (config/service->url (get-in (get-cfg system) [:giovanni :search])))
+
+(defn get-edsc-endpoint
+  [system]
+  (config/service->url (get-in (get-cfg system) [:edsc :search])))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

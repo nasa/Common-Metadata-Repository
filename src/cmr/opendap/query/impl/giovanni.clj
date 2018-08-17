@@ -48,8 +48,16 @@
       (dissoc :data :dataKeyword :bbox :starttime :endtime)
       (cmr/map->CollectionCmrStyleParams)))
 
+(defn ->query-string
+  [this]
+  ;; TODO once we are clear on the format of the giovanni query strings
+  ;; we will need to add some special casings because the giovanni query
+  ;; strings are full of edge cases.
+  (util/->query-string this))
+
 (def collection-behaviour
-  {:->cmr ->cmr})
+  {:->cmr ->cmr
+   :->query-string ->query-string})
 
 (def style? #(util/style? map->CollectionGiovanniStyleParams %))
 
@@ -67,4 +75,3 @@
            :endtime (:endtime params)
            :dataKeyword (:dataKeyword params)
            :data (util/split-comma->coll (:data params)))))
-

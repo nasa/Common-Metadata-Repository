@@ -53,14 +53,19 @@
    ;; and ending values being ISO 8601 datetime stamps.
    temporal])
 
-(def collection-behaviour
-  {:->cmr identity})
-
 (def style? #(query-util/style? map->CollectionCmrStyleParams
                                 %
                                 #{"granules[]"
                                   "temporal[]"
                                   "variables[]"}))
+
+(defn ->query-string
+  [this]
+  (query-util/->query-string this))
+
+(def collection-behaviour
+  {:->cmr identity
+   :->query-string ->query-string})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

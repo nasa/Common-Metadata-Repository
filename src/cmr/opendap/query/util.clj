@@ -157,3 +157,35 @@
       (split-comma->coll
         (or (get params str-key)
             (get params (keyword str-key)))))))
+
+(defn empty-param?
+  "Returns true if parameter is nil/empty/blank."
+  [param]
+  (cond
+    (nil? param) true
+    (coll? param) (empty? param)
+    (string? param) (string/blank? param)
+    :else false))
+
+(defn update-values
+  "Apply function to map based on list of keys."
+  [m keys f]
+  (reduce #(update-in %1 [%2] f) m keys))
+
+(defn adjust-query-string
+  "Special case query string adjustments."
+  [params]
+  (update-values params [:bounding-box :bbox] seq->str))
+
+(defn remove-keys-if
+  "Remove keys predicated on values."
+  [m f]
+  (apply dissoc m (filter #(f (% m)) (keys m))))
+
+(defn ->query-string
+  "Convert to query string."
+  [params]
+  (-> params
+      (adjust-query-string)
+      (remove-keys-if empty-param?)
+      (codec/form-encode)))

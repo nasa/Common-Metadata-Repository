@@ -61,15 +61,20 @@
       :unknown-parameters-type {:errors [errors/invalid-parameter
                                          (str "Parameters: " raw-params)]})))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   High-level API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn parse
   "This is a convenience function for calling code that wants to create a
-  collection params instance "
-  [raw-params]
-  (let [collection-params (create raw-params)]
-    (if (errors/erred? collection-params)
-      collection-params
-      (->cmr collection-params))))
+  collection params instance. By default, the params are converted to the
+  default internal representation. However, in the case of the 2-arity an
+  explicit desired type is indicated so no conversion is performed."
+  ([raw-params]
+    (let [collection-params (create raw-params)]
+      (if (errors/erred? collection-params)
+        collection-params
+        (->cmr collection-params))))
+  ([raw-params destination]
+    (create raw-params destination)))

@@ -50,8 +50,13 @@
         (dissoc :coverage :rangesubset :timeposition)
         (cmr/map->CollectionCmrStyleParams))))
 
+(defn ->query-string
+  [this]
+  (util/->query-string this))
+
 (def collection-behaviour
-  {:->cmr ->cmr})
+  {:->cmr ->cmr
+   :->query-string ->query-string})
 
 (def style? #(util/style? map->CollectionWcsStyleParams %))
 
