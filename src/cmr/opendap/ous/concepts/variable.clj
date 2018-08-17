@@ -148,16 +148,16 @@
   (restructure-dims
    (get-in entry [:umm :Dimensions])))
 
-(defn extract-bounds
+(defn extract-indexranges
   [entry]
   (when entry
-    (let [bounds (get-in entry [:umm :Characteristics :Bounds])
-          ll-lon (geog/parse-lon-low (get-in bounds [:LowerLeft :Lon]))
-          ll-lat (geog/parse-lat-low (get-in bounds [:LowerLeft :Lat]))
-          ur-lon (geog/parse-lon-high (get-in bounds [:UpperRight :Lon]))
-          ur-lat (geog/parse-lat-high (get-in bounds [:UpperRight :Lat]))
-          reversed? (geog/lat-reversed? ll-lat ur-lat)]
-      (geog/create-array-lookup ll-lon ll-lat ur-lon ur-lat reversed?))))
+    (let [ranges (get-in entry [:umm :Characteristics :IndexRanges])
+          lo-lon (geog/parse-lon-low (first (:LonRange ranges)))
+          hi-lon (geog/parse-lon-high (last (:LonRange ranges)))
+          lo-lat (geog/parse-lat-low (first (:LatRange ranges)))
+          hi-lat (geog/parse-lat-high (last (:LatRange ranges)))
+          reversed? (geog/lat-reversed? lo-lat hi-lat)]
+      (geog/create-array-lookup lo-lon lo-lat hi-lon hi-lat reversed?))))
 
 (defn create-opendap-bounds
   ([bounding-box]
@@ -217,8 +217,8 @@
   ([{bound-name :name :as bounding-info} stride]
    (log/trace "Bounding info:" bounding-info)
    (format "%s%s"
-            bound-name
-            (format-opendap-dims bounding-info stride))))
+           bound-name
+           (format-opendap-dims bounding-info stride))))
 
 (defn extract-bounding-info
   "This function is executed at the variable level, however it has general,
@@ -229,7 +229,7 @@
   (log/trace "Got bounding-box:" bounding-box)
   (if (:umm entry)
     (let [dims (normalize-lat-lon (extract-dimensions entry))
-          var-array-lookup (extract-bounds entry)
+          var-array-lookup (extract-indexranges entry)
           reversed? (:lat-reversed? var-array-lookup)]
       (geog/map->BoundingInfo
         {:concept-id (get-in entry [:meta :concept-id])

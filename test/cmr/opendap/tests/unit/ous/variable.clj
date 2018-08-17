@@ -56,16 +56,19 @@
         :Size 36000
         :Type "LONGITUDE_DIMENSION"}]}})
 
-(def ummvar-1-2-bounds
+(def ummvar-1-2-index-ranges
   {:umm
     {:Characteristics
-      {:Bounds
-        {:LowerLeft
-          {:Lat -90
-           :Lon -180}
-         :UpperRight
-          {:Lat 90
-           :Lon 180}}}}})
+      {:IndexRanges
+        {:LatRange [-90 90]
+         :LonRange [-180 180]}}}})
+
+(def ummvar-1-2-index-ranges-reversed
+  {:umm
+    {:Characteristics
+      {:IndexRanges
+        {:LatRange [90 -90]
+         :LonRange [-180 180]}}}})
 
 (deftest lon-dim
   (is (nil? (variable/lon-dim (variable/extract-dimensions no-spatial-dims))))
@@ -143,11 +146,17 @@
          (variable/normalize-lat-lon
           (variable/extract-dimensions no-spatial-dims)))))
 
-(deftest extract-bounds
-  (is (= {:low {:lon -180 :lat -90}
-          :high {:lon 180 :lat 90}
-          :lat-reversed? false}
-         (into {} (variable/extract-bounds ummvar-1-2-bounds)))))
+(deftest extract-indexranges
+  (testing "Index ranges indicating non-reversed latitudinal values ..."
+    (is (= {:low {:lon -180 :lat -90}
+            :high {:lon 180 :lat 90}
+            :lat-reversed? false}
+           (into {} (variable/extract-indexranges ummvar-1-2-index-ranges)))))
+  (testing "Index ranges indicating reversed latitudinal values ..."
+    (is (= {:low {:lon -180 :lat -90}
+            :high {:lon 180 :lat 90}
+            :lat-reversed? true}
+           (into {} (variable/extract-indexranges ummvar-1-2-index-ranges-reversed))))))
 
 (deftest create-opendap-bounds
   (let [dims (array-map :Longitude {:Size 360} :Latitude {:Size 180})
