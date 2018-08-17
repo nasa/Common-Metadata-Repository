@@ -389,7 +389,9 @@
              concept-id
              revision-id
              elastic-version
-             elastic-options)))))))
+             elastic-options)
+            (info (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
+                          concept-id revision-id all-revisions-index?))))))))
 
 (defn- index-associated-collection
   "Index the associated collection concept of the given concept. This is used by indexing
@@ -480,8 +482,8 @@
   "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
   [concept-type context concept-id revision-id all-revisions-index?]
   (let [log-string (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
-                           concept-id 
-                           revision-id 
+                           concept-id
+                           revision-id
                            all-revisions-index?)]
     (if (= concept-type :collection)
       (format "%s. Removing %d granules."
