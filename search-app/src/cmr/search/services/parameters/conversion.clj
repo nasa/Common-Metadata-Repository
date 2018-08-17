@@ -63,6 +63,7 @@
    :updated-since :updated-since
    :version :string
    :facets-size :string
+   :wkt :wkt
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -114,7 +115,8 @@
    :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
    :updated-since :updated-since
-   :version :collection-query})
+   :version :collection-query
+   :wkt :wkt})
 
 (defmethod common-params/param-mappings :tag
   [_]

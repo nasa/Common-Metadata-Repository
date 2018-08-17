@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.converters.spatial
   "Contains parameter converters for spatial parameters"
-  (:require [cmr.common-app.services.search.params :as p]
+  (:require [cmr.common.log :refer [debug error info warn]]
+            [cmr.common-app.services.search.params :as p]
             [cmr.search.models.query :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.spatial.codec :as spatial-codec]
@@ -37,3 +38,23 @@
 (defmethod p/parameter->condition :line
   [_context concept-type param value options]
   (url-value->spatial-conditions :line value))
+
+(defmethod p/parameter->condition :wkt
+  [_context concept-type param value options]
+  (def keyw (first value))
+  (def p1 (str/trim (re-find #".+?(?=[(])" keyw)))
+  (def p1 (str/lower-case p1))
+  (def v1 (subs (first (re-find #"([(](.+?)[)])" keyw) ) 1) )
+  (def v1 (str/replace v1 #"[()]" ""))
+  (def v1 (str/replace v1 #"[,]" " "))
+  (def v1 (str/trim v1))
+  (def v1 (str/replace v1 #"[ ]{2,}" " "))
+  (def v1 (str/replace v1 #"[ ]" ","))
+  (def v1 [v1])
+  (case p1
+    "polygon"     (url-value->spatial-conditions :polygon v1)
+    "point"       (url-value->spatial-conditions :point v1)
+    "linestring"  (url-value->spatial-conditions :line v1)
+    "default")
+  )
+
