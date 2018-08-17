@@ -118,7 +118,6 @@
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
   (let [page-size-errors [(str "page_size must be a number between 0.3 and " max-page-size)]]
-    (println "*** Andy page-size-validation has been reached.")
     (try
       (when-let [page-size-i (get-ivalue-from-params params :page-size)]
         (when (or (neg? page-size-i) (> page-size-i max-page-size))
@@ -394,8 +393,7 @@
 
 (defn wkt-validation
   "Validates Well Known Text"
-  [param wktext]
-  (debug "*** Andy wkt-validation has been reached."))
+  [param wktext])
 
 (def common-validations
   "A set of validations common to all concept types."

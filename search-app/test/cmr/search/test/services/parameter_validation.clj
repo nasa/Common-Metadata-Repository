@@ -147,13 +147,7 @@
            (pv/point-validation :granule {:point "10.0,-.3"}))))
 
   ;; WKT Well Known Text Validation
-  (testing "A WKT parameters are limited to, polygon, line, point."
-    (debug "*** Andy wkt testing has been reached.")
-    (testing "Simple arithmetic test."
-      (is (= -5 (+ -2 -2))))
-    (testing "WKT is not valid."
-      (is (not= ["the wkt parameter is not valid"]
-          (cpv/wkt-validation "Andy" )))))
+  (testing "A WKT parameters are limited to, polygon, line, point.")
 
   ;; Boolean parameter validations
   (testing "valid boolean parameters do not return an error"
