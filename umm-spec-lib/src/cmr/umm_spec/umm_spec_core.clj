@@ -131,7 +131,8 @@
                                                             source-version
                                                             (umm-json-version :service fmt)
                                                             umm))))))
-
+;; FIXME CMR-5113 We need to update each of these parse functions to cover every possible scenario
+;; with respect to umm-json.
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]

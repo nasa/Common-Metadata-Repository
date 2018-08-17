@@ -26,6 +26,8 @@
     (when (and (not min-value) (not max-value) (not include-undefined-value))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined-value was false"))
+    ;; We use lazy get here for performance reasons, we do not want to parse the entire concept, we just
+    ;; want to pull out this specific value
     (if-let [^double access-value (:Value (u/get-real-or-lazy umm :AccessConstraints))]
       ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
@@ -95,6 +97,8 @@
                   (empty? entry-titles)))
          (or (nil? access-value)
              (matches-access-value-filter? :collection coll access-value))
+         ;; We use lazy get here for performance reasons, we do not want to parse the entire concept, we just
+         ;; want to pull out this specific value
          (or (nil? temporal)
              (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
 
@@ -126,6 +130,8 @@
  [umm-temporal]
  (for [temporal umm-temporal]
    (-> temporal
+       ;; We use lazy assoc here for performance reasons, we do not want to parse the entire concept, we just
+       ;; want to pull out these specific values
        (update-in-each [:RangeDateTimes] update :BeginningDateTime #(f/parse (f/formatters :date-time) %))
        (update-in-each [:RangeDateTimes] update :EndingDateTime #(f/parse (f/formatters :date-time) %))
        (update-in-each [:SingleDateTimes] #(f/parse (f/formatters :date-time) %)))))
