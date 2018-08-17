@@ -14,11 +14,11 @@
   :throw-errors true})
 
 (defn init
-  []
   "This is used to set the options and any other global data.
 
   This is defined in a function for re-use. For instance, when a REPL is
   reloaded, the options will be lost and need to be re-applied."
+  []
   (logger/set-level! '[] :fatal)
   (system-api/setup-manager setup-options))
 
