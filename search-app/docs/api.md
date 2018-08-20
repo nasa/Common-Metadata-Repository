@@ -71,6 +71,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#c-bounding-box)
         * [Point](#c-point)
         * [Line](#c-line)
+        * [Wkt](#c-wkt)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
@@ -89,6 +90,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#g-bounding-box)
         * [Point](#g-point)
         * [Line](#g-line)
+        * [Wkt](#g-wkt)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -1569,7 +1571,13 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
-Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
+##### <a name="c-wkt"></a> Wkt
+
+Various spatial geometries can be represented using a subset of Well Known Text (WKT). The currently supported geometries include: point, line, and polygon.
+
+    curl "%CMR-ENDPOINT%/collections?wkt\[\]=polygon%20((-140+10,40+40,20+40,10+20,-140+10))"
+    curl "%CMR-ENDPOINT%/collections?wkt\[\]=linestring%20(-0.37%20-14.07,4.75%201.27,25.13%20-15.51)"
+    curl "%CMR-ENDPOINT%/collections?wkt\[\]=point%20(30%2010)"
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
@@ -1781,7 +1789,15 @@ The parameters used for searching granules by spatial are the same as the spatia
 
 ##### <a name="g-line"></a> Line
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"  
+    
+##### <a name="g-wkt"></a> Wkt
+
+Various spatial geometries can be represented using a subset of Well Known Text (WKT). The currently supported geometries include: point, line, and polygon.
+
+    curl "%CMR-ENDPOINT%/granule?wkt\[\]=polygon%20((-140+10,40+40,20+40,10+20,-140+10))"
+    curl "%CMR-ENDPOINT%/granule?wkt\[\]=linestring%20(-0.37%20-14.07,4.75%201.27,25.13%20-15.51)"
+    curl "%CMR-ENDPOINT%/granule?wkt\[\]=point%20(30%2010)"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
