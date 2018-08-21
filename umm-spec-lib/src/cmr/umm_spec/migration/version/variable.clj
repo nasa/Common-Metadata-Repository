@@ -28,12 +28,12 @@
 (defmethod interface/migrate-umm-version [:variable "1.0" "1.1"]
   ;; Migrate up to 1.1
   [context v & _]
-  v)
+  (dissoc v :Services))
 
 (defmethod interface/migrate-umm-version [:variable "1.1" "1.0"]
   ;; Migrate down to 1.0
   [context v & _]
-  (dissoc v :Services))
+  v)
 
 (defmethod interface/migrate-umm-version [:variable "1.1" "1.2"]
   ;; Migrate up to 1.2

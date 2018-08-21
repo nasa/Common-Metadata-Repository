@@ -21,7 +21,10 @@
    :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
    :Scale 1.0
    :Offset 0
-   :ScienceKeywords []})
+   :ScienceKeywords []
+   :Services [{:ServiceTypes ["OPeNDAP"]
+               :Visualizable false
+               :Subsettable false}]})
 
 (def variable-concept-11
   {:Name "var1"
@@ -44,10 +47,7 @@
                       :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
                       :ReportingConditions "STP: 1013 mb and 273 K"}]
    :Measurements [{:MeasurementName "radiative_flux"
-                   :MeasurementSource "BODC"}]
-   :Services [{:ServiceTypes ["OPeNDAP"]
-               :Visualizable false
-               :Subsettable false}]})
+                   :MeasurementSource "BODC"}]})
 
 (def variable-concept-12
   {:Name "var1"
@@ -66,10 +66,7 @@
                              :MeasurementSource "BODC"}]
    :SamplingIdentifiers [{:SamplingMethod "radiometric detection"
                           :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
-                          :ReportingConditions "STP: 1013 mb and 273 K"}]
-   :Services [{:ServiceTypes ["OPeNDAP"]
-               :Visualizable false
-               :Subsettable false}]})
+                          :ReportingConditions "STP: 1013 mb and 273 K"}]})
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2"]}}
@@ -91,11 +88,11 @@
       (empty? (core/validate-metadata :variable dest-media-type metadata)))))
 
 (deftest migrate-10->11
-  (is (= variable-concept-10
+  (is (= (dissoc variable-concept-10 :Services)
          (vm/migrate-umm {} :variable "1.0" "1.1" variable-concept-10))))
 
 (deftest migrate-11->10
-  (is (= (dissoc variable-concept-11 :Services)
+  (is (= variable-concept-11
          (vm/migrate-umm {} :variable "1.1" "1.0" variable-concept-11))))
 
 (deftest migrate-11->12
@@ -111,10 +108,7 @@
                                  :ReportingConditions "STP: 1013 mb and 273 K"}]
           :MeasurementIdentifiers [{:MeasurementSource "BODC"
                                     :MeasurementName {:MeasurementObject "radiative_flux"}
-                                    }]
-          :Services [{:ServiceTypes ["OPeNDAP"]
-                      :Visualizable false
-                      :Subsettable false}]}
+                                    }]}
          (vm/migrate-umm {} :variable "1.1" "1.2" variable-concept-11))))
 
 (deftest migrate-12->11
@@ -127,8 +121,5 @@
           :Scale 1.0
           :Offset 0
           :Measurements [{:MeasurementName "radiative_flux"
-                          :MeasurementSource "BODC"}]
-          :Services [{:ServiceTypes ["OPeNDAP"]
-                      :Visualizable false
-                      :Subsettable false}]}
+                          :MeasurementSource "BODC"}]}
          (vm/migrate-umm {} :variable "1.2" "1.1" variable-concept-12))))
