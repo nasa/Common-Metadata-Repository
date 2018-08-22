@@ -2,7 +2,15 @@
   "Contains utility functions for working with keywords when adding data
   to elasticsearch for indexing."
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.indexer.data.concepts.attribute :as attrib]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.util :as su]))
+
+;; Aliases for NEAR_REAL_TIME
+(def nrt-aliases
+  ["near_real_time","nrt","near real time","near-real time","near-real-time","near real-time"])
 
 (def ^:private keywords-separator-regex
   "Defines Regex to split strings with special characters into multiple words for keyword searches."
@@ -34,12 +42,70 @@
 
 (defn- contact-person->keywords
   "Converts a compound field into a vector of terms for keyword searches."
-  [data]
+  [contact-person]
   (let [{first-name :FirstName
          last-name :LastName
-         roles :Roles} data]
+         roles :Roles} contact-person]
     (concat [first-name last-name]
             roles)))
+
+(defn- get-contact-persons
+  "Retrieve a vector of contact persons."
+  [data]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} data]
+    (concat ContactPersons ContactGroups
+     (mapcat :ContactGroups DataCenters)
+     (mapcat :ContactPersons DataCenters))))
+
+(defn- get-contact-mechanisms->keywords
+  "Retrieve contact mechanisms and convert into a vector of terms for keyword searches."
+  [data]
+  (map #(:Value (first %))
+       (map #(get-in % [:ContactInformation :ContactMechanisms])
+            (get-contact-persons data))))
+
+(defn- data-center->keywords
+  "Convert a compound field into a vector of terms for keyword searches."
+  [data-center]
+  (let [{contact-persons :ContactPersons
+         contact-groups :ContactGroups} data-center]
+    (concat (mapcat contact-person->keywords contact-persons)
+            (mapcat contact-group->keywords contact-groups)
+            [(:ShortName data-center)])))
+
+(defn- collection-citation->keywords
+  "Convert a compound field into a vector of terms for keyword searches."
+  [collection-citation]
+  [(:Creator collection-citation)
+   (:OtherCitationDetails collection-citation)])
+
+(defn- characteristic->keywords
+  "Convert a compound field into a vector of terms for keyword searches."
+  [characteristic]
+  [(:name characteristic)
+   (:description characteristic)
+   (:value characteristic)])
+
+(defn- collection-platforms->keywords
+  "Convert a collection of platforms into a vector of terms for keyword searches."
+  [platforms]
+  (let [platforms (map util/map-keys->kebab-case
+                       (when-not (= su/not-provided-platforms platforms) platforms))
+        platform-short-names (map :short-name platforms)
+        platform-instruments (mapcat :instruments platforms)
+        instruments (concat platform-instruments (mapcat :composed-of platform-instruments))
+        instrument-short-names (distinct (keep :short-name instruments))
+        instrument-techniques (keep :technique instruments)
+        instrument-characteristics (mapcat characteristic->keywords
+                                           (mapcat :characteristics instruments))
+        platform-characteristics (mapcat characteristic->keywords
+                                         (mapcat :characteristics platforms))]
+    (concat
+     platform-characteristics
+     instrument-characteristics
+     instrument-short-names
+     instrument-techniques
+     platform-short-names)))
 
 (defn- names->keywords
   "Converts a compound field into a vector of terms for keyword searches."
@@ -49,11 +115,23 @@
     [long-name
      short-name]))
 
+(defn- additional-attribute->keywords
+  "Convert a compound field into a vector of terms for keyword searches."
+  [attribute]
+  (attrib/aa->keywords (util/map-keys->kebab-case attribute)))
+
+(defn- collection-data-type->keywords
+  "Return collection data type keywords."
+  [data-type]
+  (if (= "NEAR_REAL_TIME" data-type)
+    nrt-aliases
+    data-type))
+
 (defn- platform->keywords
   "Converts a compound field into a vector of terms for keyword searches."
-  [data]
-  (let [{instruments :Instruments} data]
-    (concat (names->keywords data)
+  [platform]
+  (let [{instruments :Instruments} platform]
+    (concat (names->keywords platform)
             (mapcat names->keywords instruments))))
 
 (defn- related-url->keywords
@@ -138,6 +216,34 @@
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 
+(def ^:private collection-fields->fn-mapper
+  "A data structure that maps UMM collection field names to functions that
+  extract keyword data for those fields. Intended only to be used as part
+  of a larger map for multiple field types.
+
+  See `fields->fn-mapper`, below."
+  {;; Simple single-values data
+   :Abstract :Abstract
+   :DOI #(get-in % [:DOI :DOI])
+   :EntryTitle :EntryTitle
+   :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
+   :ShortName :ShortName
+   :VersionDescription :VersionDescription
+   ;; Simple multi-values data
+   :AdditionalAttributes #(mapcat additional-attribute->keywords (:AdditionalAttributes %))
+   :CollectionCitations #(mapcat collection-citation->keywords (:CollectionCitations %))
+   :CollectionDataType #(collection-data-type->keywords (:CollectionDataType %))
+   :CollectionPlatforms #(collection-platforms->keywords (:Platforms %))
+   :ContactMechanisms get-contact-mechanisms->keywords
+   :DataCenters #(mapcat data-center->keywords (:DataCenters %))
+   :DirectoryNames #(mapcat names->keywords (:DirectoryNames %))
+   :ISOTopicCategories :ISOTopicCategories
+   :LocationKeywords #(lk/location-keywords->spatial-keywords-for-indexing (:LocationKeywords %))
+   :Projects #(mapcat names->keywords (:Projects %))
+   :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
+   :TemporalKeywords :TemporalKeywords
+   :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))})
+
 (def ^:private shared-fields->fn-mapper
   "A data structure that maps UMM field names used by multiple types to
   functions that extract keyword data for those fields. Intended only to be
@@ -158,6 +264,7 @@
     (map (:ScienceKeywords fields->fn-mapper) parsed-concept))"
   (merge variable-fields->fn-mapper
          service-fields->fn-mapper
+         collection-fields->fn-mapper
          shared-fields->fn-mapper))
 
 (defn- flatten-collections
@@ -180,7 +287,8 @@
     (->> parsed-concept
          extractor
          flatten-collections
-         (remove nil?))))
+         (remove nil?)
+         (remove #(su/default-value? %)))))
 
 (defn concept-keys->keywords
   "Given a parsed concept and a sequence of schema keys, get the keywords

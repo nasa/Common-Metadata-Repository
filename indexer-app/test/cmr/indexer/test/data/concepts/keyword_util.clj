@@ -2,7 +2,217 @@
   "Functions for testing cmr.indexer.data.concepts.keyword-util namespace."
   (:require
    [clojure.test :refer :all]
+   [cmr.indexer.data.concepts.collection.keyword :as ckw]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
+
+(def sample-umm-collection-concept
+  "This sample UMM Collection data is a mish-mash of several examples, done this
+  way simply to provide full testing coverage in a single record. It is not
+  intended to represent an actual collection and should not be used for anything
+  other than testing."
+  {:Abstract "An abstract summary"
+   :AdditionalAttributes [{:Name "ALBEDOFILEID"
+                           :Description "ID of the kernel albedo table used."
+                           :Value "aa-value-0"
+                           :DataType "INT"}
+                          {:Name "ASTERMapProjection"
+                           :Description "The map projection of the granule"
+                           :Value "aa-value-1"
+                           :DataType "STRING"}]
+   :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+   :CollectionCitations [{:Creator "Bowen Island Forest and Water Management Society (BIFWMS)"
+                          :OtherCitationDetails (str "U.S. Geological Survey, 1993, Digital Elevation"
+                                                     " Models--data users guide 5:[Reston, Virginia],"
+                                                     " U.S. Geological Survey, 48 p.")}
+                         {:Creator "Solanki, S.K., I.G. Usoskin, B. Kromer, M. Schussler and J. Beer"
+                          :OtherCitationDetails "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce"}
+                         {:Creator "Dublin Transport Office"
+                          :OtherCitationDetails "Full report in PDF is available online"}]
+   :DataCenters [{:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                  :ShortName "IRIS/PASSCAL"
+                  :LongName "PASSCAL Instrument Center, Incorporated Research Institutions for Seismology"
+                  :Uuid "10000000-0000-4000-a000-000000000000"
+                  :ContactGroups [{:Roles ["Data Center Contact" "Technical Contact"]
+                                   :Uuid "00000000-0000-4000-a000-000000000000"
+                                   :ContactInformation {:RelatedUrls
+                                                        {:Description "A sample related url description."
+                                                         :URLContentType "CollectionURL"
+                                                         :Type "GET DATA"
+                                                         :Subtype "ECHO"
+                                                         :URL "example-related-url-one.com"
+                                                         :GetData {:Format "ascii"
+                                                                   :MimeType "application/json"
+                                                                   :Size "0"
+                                                                   :Unit "KB"
+                                                                   :Fees "None"
+                                                                   :Checksum "SHA1-checksum"}
+                                                         :GetService {:Format "binary"
+                                                                      :MimeType "application/pdf"
+                                                                      :Protocol "HTTP"
+                                                                      :FullName "ContactGroups/ContactInformation/RelatedUrls/GetService/FullName"
+                                                                      :DataID "Contact group contact infomation related url Data ID"
+                                                                      :URI ["URI one" "URI two"]}}
+                                                        :ServiceHours "9:00 AM to 5:00 PM Monday - Friday."
+                                                        :ContactInstruction "Sample contact instructions."
+                                                        :ContactMechanisms [{:Type "Email"
+                                                                             :Value "sample-email-one@anywhere.com"}
+                                                                            {:Type "Mobile"
+                                                                             :Value "555-555-5555"}]
+                                                        :Addresses [{:StreetAddresses ["15 Minte Drive" "5 Perry Hall Lane"]
+                                                                     :City "Baltimore"
+                                                                     :StateProvince "Maryland"
+                                                                     :Country "USA"
+                                                                     :PostalCode "21236"}]}
+                                   :GroupName "White Marsh Institute of Health"}]
+                  :ContactPersons [{:Roles ["Technical Contact" "Science Contact"]
+                                    :Uuid "20000000-0000-4000-a000-000000000000"
+                                    :FirstName "John"
+                                    :LastName "Doe"
+                                    :ContactInformation {:RelatedUrls
+                                                         {:Description "A sample related url description."
+                                                          :URLContentType "PublicationURL"
+                                                          :Type "GET SERVICE"
+                                                          :Subtype "EDG"
+                                                          :URL "http://example-two.com"
+                                                          :GetData {:Format "MODIS Tile SIN"
+                                                                    :MimeType "application/x-hdf"
+                                                                    :Size "1"
+                                                                    :Unit "MB"
+                                                                    :Fees "1000"
+                                                                    :Checksum "Checksum"}
+                                                          :GetService {:Format "binary"
+                                                                       :MimeType "application/pdf"
+                                                                       :Protocol "HTTP"
+                                                                       :FullName "John Doe"
+                                                                       :URI ["uri-1" "uri-2"]}}
+                                                        :ContactMechanisms [{:Type "Email"
+                                                                             :Value "sample-email-two@example.com"}
+                                                                            {:Type "Mobile"
+                                                                             :Value "666-666-6666"}]
+                                                        :Addresses [{:StreetAddresses ["4 Cherrywood Lane" "8100 Baltimore Avenue"]
+                                                                     :City "College Park"
+                                                                     :StateProvince "MD"
+                                                                     :Country "America"
+                                                                     :PostalCode "20770"}]}}]}]
+   :DirectoryNames [{:ShortName "directory-shortname-one"
+                     :LongName "directory-longname-one"}
+                    {:ShortName "directory-shortname-two"
+                     :LongName "directory-longname-two"}]
+   :CollectionDataType "NEAR_REAL_TIME"
+   :DOI {:DOI "Dummy-DOI"}
+   :EntryTitle "The collection entry title."
+   :ShortName "VIIRS"
+   :LongName "Visible Infrared Imaging Radiometer suite."
+   :ISOTopicCategories ["elevation" "GEOSCIENTIFIC INFORMATION" "OCEANS"]
+   :LocationKeywords [{:Category "CONTINENT"
+                       :Type "NORTH AMERICA"
+                       :Subregion1 "UNITED STATES OF AMERICA"
+                       :Subregion2 "MICHIGAN"
+                       :Subregion3 "DETROIT"
+                       :DetailedLocation "MOUNTAIN"}
+                      {:Category "OCEAN"
+                       :Type "ATLANTIC OCEAN"
+                       :Subregion1 "NORTH ATLANTIC OCEAN"
+                       :Subregion2 "GULF OF MEXICO"
+                       :DetailedLocation "WATER"}]
+   :ProcessingLevel {:Id "4"}
+   :TemporalKeywords ["Composit" "Annual" "Day"]
+   :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
+                                  :Coordinate1 {:MinimumValue 0
+                                                :MaximumValue 10}
+                                  :Coordinate2 {:MinimumValue 100
+                                                :MaximumValue 150}}
+                                 {:TilingIdentificationSystemName "CALIPSO"
+                                  :Coordinate1 {:MinimumValue -10
+                                                :MaximumValue 10}
+                                  :Coordinate2 {:MinimumValue -50
+                                                :MaximumValue -25}}]
+   :Version "001"
+   :VersionDescription "The beggining version of a sample collection."
+   :Platforms [{:Type "In Situ Land-based Platforms"
+                :ShortName "SURFACE WATER WIER"
+                :LongName "In-situ-longname"
+                :Characteristics [{:Name "characteristic-name-one"
+                                   :Description "characteristic-description-one"
+                                   :Value "256"
+                                   :Unit "Meters"
+                                   :DataType "INT"}]
+                :Instruments [{:ShortName "LIDAR"
+                               :LongName "Light Detection and Ranging"
+                               :Characteristics [{:Name "characteristic-name-two"
+                                                  :Description "characteristic-description-two"
+                                                  :Value "1024.5"
+                                                  :Unit "Inches"
+                                                  :DataType "FLOAT"}]}
+                              {:ShortName "WCMS"
+                               :LongName "Water Column Mapping System"}]}]
+   :Projects [{:ShortName "EOSDIS"
+               :LongName "Earth Observing System Data Information System"}
+              {:ShortName "GTOS"
+               :LongName "Global Terrestrial Observing System"}
+              {:ShortName "ESI"
+               :LongName "Environmental Sustainability Index"}]
+   :RelatedUrls [{:Description "Related-url description."
+                  :URLContentType "PublicationURL"
+                  :Type "GET SERVICE"
+                  :Subtype "EDG"
+                  :URL "related-url-example.com"}
+                 {:Description "A test related url."
+                  :URLContentType "DataCenterURL"
+                  :Type "HOME PAGE"
+                  :Subtype "GENERAL DOCUMENTATION"
+                  :URL "related-url-example-two.com"}]
+   :ContactPersons [
+     {:Roles ["AUTHOR"]
+      :ContactInformation {
+        :ContactMechanisms [
+          {:Type "Email"
+           :Value "ncdc.orders at noaa.gov"}
+          {:Type "Telephone"
+           :Value "+1 828-271-4800"}]
+        :Addresses [
+          {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
+           :City "Asheville"
+           :StateProvince "NC"
+           :Country "USA"
+           :PostalCode "28801-5001"}]}
+      :FirstName "Alice"
+      :MiddleName ""
+      :LastName "Bob"}]
+   :ContactGroups [
+     {:Roles ["SCIENCE CONTACT"]
+      :GroupName "TEAM SPOCK"
+      :LongName "VULCAN YET LIVES"
+      :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
+      :NonServiceOrganizationAffiliation "TEAM KIRK"
+      :ContactInformation {
+        :ContactMechanisms
+          [{:Type "Email"
+            :Value "custserv at usgs.gov"}
+           {:Type "Fax"
+            :Value "605-594-6589"}
+           {:Type "Telephone"
+            :Value "605-594-6151"}]
+        :Addresses [
+          {:StreetAddresses ["47914 252nd Street"]
+           :City "Sioux Falls"
+           :StateProvince "SD"
+           :Country "USA"
+           :PostalCode "57198-0001"}]}}]
+   :ScienceKeywords [
+     {:Category "EARTH SCIENCE SERVICES"
+      :Topic "DATA ANALYSIS AND VISUALIZATION"
+      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+     {:Category "ATMOSPHERE"
+      :Topic "ATMOSPHERIC WINDS"
+      :Term "SURFACE WINDS"
+      :VariableLevel1 "SPECTRAL/ENGINEERING"
+      :VariableLevel2 "MICROWAVE"
+      :VariableLevel3 "MICROWAVE IMAGERY"
+      :DetailedVariable "RADAR"}
+     {:Category "SCIENCE CAT 3"
+      :Topic "SCIENCE TOPIC 3"
+      :Term "SCIENCE TERM 3"}]})
 
 (def sample-umm-service-concept
   "This sample UMM Service data is a mish-mash of several examples, done this
@@ -110,30 +320,86 @@
           :LastName "Eve"}]}]})
 
 (deftest fields->fn-mapper-single-valued
+  (is (= "An abstract summary"
+         ((:Abstract keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= "Dummy-DOI"
+         ((:DOI keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= "The collection entry title."
+         ((:EntryTitle keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= "OPeNDAP Service for AIRS Level-3 retrieval products"
          ((:LongName keyword-util/fields->fn-mapper) sample-umm-service-concept)))
   (is (= "AIRX3STD"
          ((:Name keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= "4"
+         ((:ProcessingLevel keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= "VIIRS"
+         ((:ShortName keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= "1.9"
-         ((:Version keyword-util/fields->fn-mapper) sample-umm-service-concept))))
+         ((:Version keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= "The beggining version of a sample collection."
+         ((:VersionDescription keyword-util/fields->fn-mapper) sample-umm-collection-concept))))
 
 (deftest fields->fn-mapper-multi-valued
+  (is (= ["ALBEDOFILEID" "ID of the kernel albedo table used."
+          "ASTERMapProjection" "The map projection of the granule"]
+         ((:AdditionalAttributes keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["Data Visualization" "Data Discovery"]
          ((:AncillaryKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+         ((:AncillaryKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["Bowen Island Forest and Water Management Society (BIFWMS)"
+          "U.S. Geological Survey, 1993, Digital Elevation Models--data users guide 5:[Reston, Virginia], U.S. Geological Survey, 48 p."
+          "Solanki, S.K., I.G. Usoskin, B. Kromer, M. Schussler and J. Beer"
+          "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce"
+          "Dublin Transport Office"
+          "Full report in PDF is available online"]
+         ((:CollectionCitations keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["near_real_time" "nrt" "near real time","near-real time" "near-real-time" "near real-time"]
+         ((:CollectionDataType keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["TEAM SPOCK" "SCIENCE CONTACT"]
          ((:ContactGroups keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["TEAM SPOCK" "SCIENCE CONTACT"]
+         ((:ContactGroups keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["ncdc.orders at noaa.gov" "custserv at usgs.gov" "sample-email-one@anywhere.com" "sample-email-two@example.com"]
+         ((:ContactMechanisms keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["Alice" "Bob" "AUTHOR"]
          ((:ContactPersons keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["Alice" "Bob" "AUTHOR"]
+         ((:ContactPersons keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["John" "Doe" "Technical Contact" "Science Contact" "White Marsh Institute of Health"
+          "Data Center Contact" "Technical Contact" "IRIS/PASSCAL"]
+         ((:DataCenters keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["elevation" "GEOSCIENTIFIC INFORMATION" "OCEANS"]
+         ((:ISOTopicCategories keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["CONTINENT" "NORTH AMERICA" "UNITED STATES OF AMERICA" "MICHIGAN" "DETROIT" "MOUNTAIN"
+          "OCEAN" "ATLANTIC OCEAN" "NORTH ATLANTIC OCEAN" "GULF OF MEXICO" "WATER"]
+         ((:LocationKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["Airbus A340-600" "A340-600" "Senso-matic Wonder Eye 4B" "SMWE4B"]
          ((:Platforms keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["characteristic-name-one" "characteristic-description-one" "256" "characteristic-name-two"
+          "characteristic-description-two" "1024.5" "LIDAR" "WCMS" "SURFACE WATER WIER"]
+         ((:CollectionPlatforms keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["Earth Observing System Data Information System" "EOSDIS"
+          "Global Terrestrial Observing System" "GTOS"
+          "Environmental Sustainability Index" "ESI"]
+         ((:Projects keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["OPeNDAP Service" "ACCESS WEB SERVICE" "GET SERVICE" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" "CollectionURL"]
          ((:RelatedURLs keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["Related-url description." "EDG" "GET SERVICE" "related-url-example.com" "PublicationURL"
+          "A test related url." "GENERAL DOCUMENTATION" "HOME PAGE" "related-url-example-two.com" "DataCenterURL"]
+         ((:RelatedUrls keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION" nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING" "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
          ((:ScienceKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION" nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING" "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
+         ((:ScienceKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= ["DATA ANALYSIS AND VISUALIZATION" nil nil "VISUALIZATION/IMAGE PROCESSING" "DATA ANALYSIS AND VISUALIZATION" nil nil nil nil nil nil "STATISTICAL APPLICATIONS"]
          ((:ServiceKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
   (is (= [nil "LDPAAC" "SERVICE PROVIDER" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES" "USGS/EROS" "Carol" "Eve" "PUBLISHER" "SERVICE PROVIDER"]
-         ((:ServiceOrganizations keyword-util/fields->fn-mapper) sample-umm-service-concept))))
+         ((:ServiceOrganizations keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+  (is (= ["MISR" "CALIPSO"]
+         ((:TilingIdentificationSystems keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+  (is (= ["Composit" "Annual" "Day"]
+       ((:TemporalKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept))))
 
 (deftest concept-key->keywords
   (is (= ["OPeNDAP Service for AIRS Level-3 retrieval products"]
