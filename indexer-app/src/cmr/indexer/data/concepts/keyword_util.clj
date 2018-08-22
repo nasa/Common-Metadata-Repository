@@ -87,7 +87,7 @@
    (:value characteristic)])
 
 (defn- collection-platforms->keywords
-  "Convert a collection of platforms into a vector of terms for keyword searches."
+  "Convert the given platforms to a list of terms for keyword searches."
   [platforms]
   (let [platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
