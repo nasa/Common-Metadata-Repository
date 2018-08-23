@@ -204,7 +204,8 @@
                                             (parser/parse-datetime end-date))
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
-                                :exclusive? exclude-boundary})))
+                                :exclusive? exclude-boundary
+                                :concept-type concept-type})))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."
