@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.core
   "Supports the ingest API definitions."
   (:require
+   [clj-memory-meter.core :as memory-meter]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
@@ -205,6 +206,7 @@
 (defn metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
+  (info (format "Size of metadata to be ingested: [%s]" (memory-meter/measure metadata)))
   (-> {:metadata metadata
        :format (mt/keep-version content-type)
        :native-id (:name metadata)
