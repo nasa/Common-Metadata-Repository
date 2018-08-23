@@ -28,6 +28,7 @@
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
    [cmr.indexer.data.concepts.spatial :as spatial]
    [cmr.indexer.data.concepts.tag :as tag]
@@ -177,7 +178,7 @@
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
-                               (concat [collection-data-type] k/nrt-aliases)
+                               (concat [collection-data-type] keyword-util/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
