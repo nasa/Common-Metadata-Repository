@@ -10,6 +10,7 @@
     [org.slf4j/slf4j-api]
     [ring/ring-codec]]
   :dependencies [
+    [com.clojure-goes-fast/clj-memory-meter "0.1.1"]
     [clj-http "2.3.0"]
     [commons-codec/commons-codec "1.11"]
     [commons-io "2.6"]
@@ -100,4 +101,3 @@
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
-
