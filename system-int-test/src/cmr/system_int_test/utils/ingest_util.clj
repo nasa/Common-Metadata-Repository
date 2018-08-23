@@ -7,11 +7,11 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.acl.core :as acl]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
-   [cmr.ingest.config :as icfg]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
@@ -21,6 +21,7 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.versioning :as umm-versioning]
    [cmr.umm.echo10.echo10-collection :as c]
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm.echo10.granule :as g])
@@ -631,6 +632,11 @@
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn set-collection-ingest-umm-version-to-current
+  "Set the collection ingest-accept-umm-version to current-collection-version."
+  []
+  (side/eval-form `(common-config/set-collection-umm-version!
+                     umm-versioning/current-collection-version)))
 
 (defn create-provider
   "Creates a provider along with ACLs to create and access the providers data.
@@ -703,8 +709,10 @@
           :grant-all-access-control? grant-all-access-control?})))))
 
 (defn reset-fixture
-  "Resets all the CMR systems then uses the `setup-providers` function to
-  create a testing fixture.
+  "Resets all the CMR systems then uses the `set-collection-ingest-umm-version-to-current`
+  function to set the accepted umm version for collection ingest to the umm-versioning/current-collection-version,
+  so that all the ingest tests are testing against the latest umm version.
+  and uses the `setup-providers` function to create a testing fixture.
 
   For the format of the providers data structure, see `setup-providers`."
   ([]
@@ -714,6 +722,7 @@
   ([providers options]
    (fn [f]
      (dev-sys-util/reset)
+     (set-collection-ingest-umm-version-to-current)
      (when-not (empty? providers)
       (setup-providers providers options))
      (f))))
