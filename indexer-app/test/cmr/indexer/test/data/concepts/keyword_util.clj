@@ -128,7 +128,7 @@
                                   :Coordinate2 {:MinimumValue -50
                                                 :MaximumValue -25}}]
    :Version "001"
-   :VersionDescription "The beggining version of a sample collection."
+   :VersionDescription "The beginning version of a sample collection."
    :Platforms [{:Type "In Situ Land-based Platforms"
                 :ShortName "SURFACE WATER WIER"
                 :LongName "In-situ-longname"
@@ -336,7 +336,7 @@
          ((:ShortName keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
   (is (= "1.9"
          ((:Version keyword-util/fields->fn-mapper) sample-umm-service-concept)))
-  (is (= "The beggining version of a sample collection."
+  (is (= "The beginning version of a sample collection."
          ((:VersionDescription keyword-util/fields->fn-mapper) sample-umm-collection-concept))))
 
 (deftest fields->fn-mapper-multi-valued

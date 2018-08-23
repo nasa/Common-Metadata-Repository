@@ -50,22 +50,24 @@
             roles)))
 
 (defn- get-contact-persons
-  "Retrieve a vector of contact persons."
-  [data]
-  (let [{:keys [ContactPersons ContactGroups DataCenters]} data]
-    (concat ContactPersons ContactGroups
-     (mapcat :ContactGroups DataCenters)
-     (mapcat :ContactPersons DataCenters))))
+  "Retrieve a list of contact persons from the given collection."
+  [collection]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection]
+    (concat ContactPersons
+            ContactGroups
+            (mapcat :ContactGroups DataCenters)
+            (mapcat :ContactPersons DataCenters))))
 
 (defn- get-contact-mechanisms->keywords
-  "Retrieve contact mechanisms and convert into a vector of terms for keyword searches."
-  [data]
+  "Retrieve contact mechanisms from the given collection
+  and convert into a list of terms for keyword searches."
+  [collection]
   (map #(:Value (first %))
        (map #(get-in % [:ContactInformation :ContactMechanisms])
-            (get-contact-persons data))))
+            (get-contact-persons collection))))
 
 (defn- data-center->keywords
-  "Convert a compound field into a vector of terms for keyword searches."
+  "Convert a compound field into a list of terms for keyword searches."
   [data-center]
   (let [{contact-persons :ContactPersons
          contact-groups :ContactGroups} data-center]
@@ -100,12 +102,11 @@
                                            (mapcat :characteristics instruments))
         platform-characteristics (mapcat characteristic->keywords
                                          (mapcat :characteristics platforms))]
-    (concat
-     platform-characteristics
-     instrument-characteristics
-     instrument-short-names
-     instrument-techniques
-     platform-short-names)))
+    (concat platform-characteristics
+            instrument-characteristics
+            instrument-short-names
+            instrument-techniques
+            platform-short-names)))
 
 (defn- names->keywords
   "Converts a compound field into a vector of terms for keyword searches."
