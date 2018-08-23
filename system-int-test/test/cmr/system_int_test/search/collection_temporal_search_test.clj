@@ -109,6 +109,11 @@
       [coll2 coll3] {"temporal[]" "2001-01-01T00:00:00Z,2002-01-01T00:00:00Z"
                      "options[temporal][limit_to_granules]" true}
 
+      "CMR-4433: adding additional search parameter should not make coll1 returned in search result"
+      [] {:concept_id (:concept-id coll1)
+          "temporal[]" "2001-01-01T00:00:00Z,2002-01-01T00:00:00Z"
+          "options[temporal][limit_to_granules]" true}
+      
       "Search by temporal start and end day is supported"
       [coll2 coll3] {"temporal[]" "2000-01-01T00:00:00Z,2003-01-01T00:00:00Z,50,70"
                      "options[temporal][limit_to_granules]" true}
