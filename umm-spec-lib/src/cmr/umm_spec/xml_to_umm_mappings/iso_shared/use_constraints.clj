@@ -23,7 +23,7 @@
                               (when (= license-label (str/lower-case label))
                                 value)))
                          other-constraints-list)]
-    (let [label-pattern (re-pattern (str (first (str/split value #":")) ":")) 
+    (let [label-pattern (re-pattern (str (first (str/split value #":")) ":"))
           license-value (second (str/split value label-pattern))]
       license-value)))
 
@@ -35,7 +35,7 @@
                             (when-not (.contains value "Restriction Comment:")
                               value))
                          description-list)]
-    (su/truncate value su/USECONSTRAINTS_MAX sanitize?))) 
+    (su/truncate value su/USECONSTRAINTS_MAX sanitize?)))
 
 (defn- get-use-constraints
   "Get the use constraints."
@@ -63,10 +63,10 @@
 
 (defn parse-use-constraints
   "Parse the use constraints from XML resource constraint.
-   constraints-xpath is: 
+   constraints-xpath is:
    /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints.
    We want to find the first Description, the first LicenseUrl and the first LicenseText, and then return UseConstraints
-   as one of the combinations in the following order, if the values exist: 
+   as one of the combinations in the following order, if the values exist:
    {:Description first-desc :LicenseUrl first-lic-url}, {:Description first-desc :LicenseText first-lic-text},
    {:Description first-desc}, {:LicenseUrl first-lic-url} and {:LicenseText first-lic-text}. "
   [doc constraints-xpath sanitize?]
@@ -80,4 +80,37 @@
         {:Description first-description
          :LicenseUrl first-license-url
          :LicenseText (when-not first-license-url
-                        first-license-text)})))) 
+                        first-license-text)}))))
+
+(defn- regex-value
+  "Utitlity function to return the value of the element that matches the given xpath and regex."
+  [element xpath regex]
+  (when-let [elements (select element xpath)]
+    (when-let [matches (seq
+                         (for [match-el elements
+                               :let [match (re-matches regex (text match-el))]
+                               :when match]
+                           ;; A string response implies there is no group in the regular expression and the
+                           ;; entire matching string is returned and if there is a group in the regular
+                           ;; expression, the first group of the matching string is returned.
+                           (if (string? match) match (second match))))]
+      (str/join matches))))
+
+(defn parse-access-constraints
+  "If both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with su/not-provided"
+  [doc constraints-xpath sanitize?]
+  (let [value (regex-value doc (str constraints-xpath
+                                 "/gmd:otherConstraints/gco:CharacterString")
+               #"(?s)Restriction Flag:(.+)")
+        access-constraints-record
+        {:Description (su/truncate
+                       (regex-value doc (str constraints-xpath
+                                         "/gmd:useLimitation/gco:CharacterString")
+                         #"(?s)Restriction Comment: (.+)")
+                       su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                       sanitize?)
+         :Value (when value
+                 (Double/parseDouble value))}]
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(su/with-default % sanitize?)))))

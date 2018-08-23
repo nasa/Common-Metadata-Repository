@@ -7,7 +7,7 @@
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]
@@ -112,20 +112,6 @@
             :when (not (keyword-types-to-ignore (value-of kw "gmd:type/gmd:MD_KeywordTypeCode")))]
         (values-at kw "gmd:keyword/gco:CharacterString")))))
 
-(defn- regex-value
-  "Utitlity function to return the value of the element that matches the given xpath and regex."
-  [element xpath regex]
-  (when-let [elements (select element xpath)]
-    (when-let [matches (seq
-                         (for [match-el elements
-                               :let [match (re-matches regex (text match-el))]
-                               :when match]
-                           ;; A string response implies there is no group in the regular expression and the
-                           ;; entire matching string is returned and if there is a group in the regular
-                           ;; expression, the first group of the matching string is returned.
-                           (if (string? match) match (second match))))]
-      (string/join matches))))
-
 (defn- temporal-ends-at-present?
   [temporal-el]
   (-> temporal-el
@@ -144,25 +130,6 @@
                        {:BeginningDateTime (value-of period "gml:beginPosition")
                         :EndingDateTime    (value-of period "gml:endPosition")})
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
-
-(defn parse-access-constraints
-  "If both value and Description are nil, return nil.
-  Otherwise, if Description is nil, assoc it with su/not-provided"
-  [doc sanitize?]
-  (let [value (regex-value doc (str constraints-xpath
-                                 "/gmd:otherConstraints/gco:CharacterString")
-               #"(?s)Restriction Flag:(.+)")
-        access-constraints-record
-        {:Description (su/truncate
-                       (regex-value doc (str constraints-xpath
-                                         "/gmd:useLimitation/gco:CharacterString")
-                         #"(?s)Restriction Comment: (.+)")
-                       su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
-                       sanitize?)
-         :Value (when value
-                 (Double/parseDouble value))}]
-    (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(su/with-default % sanitize?)))))
 
 (defn- parse-abstract-version-description
   "Returns the Abstract and VersionDescription parsed from the collection
@@ -265,7 +232,7 @@
                             sanitize?)
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
-      :AccessConstraints (parse-access-constraints doc sanitize?)
+      :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
       :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
       :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")

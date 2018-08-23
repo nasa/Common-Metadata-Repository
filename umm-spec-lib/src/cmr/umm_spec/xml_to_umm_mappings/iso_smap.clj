@@ -140,6 +140,7 @@
                              sanitize?)
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
+       :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
        :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (platform/parse-platforms doc base-xpath sanitize?)
