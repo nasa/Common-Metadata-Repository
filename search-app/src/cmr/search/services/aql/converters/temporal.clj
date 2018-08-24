@@ -14,5 +14,4 @@
     (q/map->TemporalCondition {:start-date start-date
                                :end-date stop-date
                                :start-day (pt/string->int-value start-day)
-                               :end-day (pt/string->int-value end-day)
-                               :concept-type concept-type})))
+                               :end-day (pt/string->int-value end-day)})))
