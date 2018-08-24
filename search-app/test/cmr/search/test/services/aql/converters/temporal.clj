@@ -21,8 +21,7 @@
       (= (q/map->TemporalCondition {:start-date (when start-date (dt-parser/parse-datetime start-date))
                                     :end-date (when stop-date (dt-parser/parse-datetime stop-date))
                                     :start-day start-day
-                                    :end-day end-day
-                                    :concept-type :collection})
+                                    :end-day end-day})
          (aql-temporal-elem->condition aql-snippet))
 
       "2001-12-03T01:02:03Z" nil nil nil
