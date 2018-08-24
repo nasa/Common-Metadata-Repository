@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-spec-core
   "Contains functions for parsing, generating and validating metadata of various metadata formats."
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
@@ -132,8 +133,7 @@
                                                             source-version
                                                             (umm-json-version :service fmt)
                                                             umm))))))
-;; FIXME CMR-5113 We need to update each of these parse functions to cover every possible scenario
-;; with respect to umm-json.
+
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]
@@ -144,6 +144,7 @@
      mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
      mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
      mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
+     mt/umm-json (:TemporalExtents (json/parse-string metadata true))
      nil)))
 
 (defn parse-collection-access-value
@@ -162,4 +163,5 @@
                   metadata
                   iso-smap-to-umm/constraints-xpath
                   true)
+     mt/umm-json (:AccessConstraints (json/parse-string metadata true))
      nil)))

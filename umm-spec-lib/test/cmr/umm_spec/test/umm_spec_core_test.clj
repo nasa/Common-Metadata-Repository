@@ -85,7 +85,7 @@
 
     "umm-json"
     :umm-json
-    nil))
+    (:TemporalExtents umm-c-record)))
 
 (deftest parse-collection-access-value-test
   (are3 [format expected]
@@ -120,4 +120,4 @@
 
     "umm-json"
     :umm-json
-    nil))
+    (:AccessConstraints umm-c-record)))
