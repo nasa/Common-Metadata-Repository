@@ -729,6 +729,27 @@
           <gmd:purpose>
             <gco:CharacterString>InsertTime</gco:CharacterString>
           </gmd:purpose>
+          <gmd:resourceConstraints>
+              <gmd:MD_LegalConstraints>
+                  <gmd:useLimitation>
+                      <gco:CharacterString>This product must not be used for the purposes of determining water quality2.</gco:CharacterString>
+                  </gmd:useLimitation>
+                  <gmd:useLimitation>
+                      <gco:CharacterString>Restriction Comment: A restriction comment.</gco:CharacterString>
+                  </gmd:useLimitation>
+                  <gmd:useConstraints>
+                      <gmd:MD_RestrictionCode
+                        codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions
+                      </gmd:MD_RestrictionCode>
+                  </gmd:useConstraints>
+                  <gmd:otherConstraints>
+                      <gco:CharacterString>LicenseUrl: https://www.nasa.examplelicenseurl.gov</gco:CharacterString>
+                  </gmd:otherConstraints>
+                  <gmd:otherConstraints>
+                      <gco:CharacterString>Restriction Flag: 15</gco:CharacterString>
+                  </gmd:otherConstraints>
+              </gmd:MD_LegalConstraints>
+          </gmd:resourceConstraints>
           <gmd:language>
             <gco:CharacterString>eng</gco:CharacterString>
           </gmd:language>
