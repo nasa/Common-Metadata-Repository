@@ -16,6 +16,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
@@ -227,39 +228,6 @@
                         :when (some? v)]
                     (str k "=" (string/replace v #"[,=]" ""))))))
 
-(defn- generate-user-constraints
-  "Returns the constraints appropriate for the given metadata."
-  [c]
-  (let [description (get-in c [:AccessConstraints :Description])
-        value (get-in c [:AccessConstraints :Value])
-        use-constraints (:UseConstraints c)
-        uc-description (:Description (:Description use-constraints))
-        license-url (:LicenseUrl use-constraints)
-        license-text (:LicenseText use-constraints)]
-    [:gmd:resourceConstraints
-     (when (or description value use-constraints)
-       [:gmd:MD_LegalConstraints
-        (when uc-description
-          [:gmd:useLimitation 
-            [:gco:CharacterString uc-description]]) 
-        (when description
-          [:gmd:useLimitation
-            [:gco:CharacterString (str "Restriction Comment: " description)]])
-        (when (or license-url license-text)
-          [:gmd:useConstraints
-            [:gmd:MD_RestrictionCode 
-              {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
-               :codeListValue "otherRestrictions"} "otherRestrictions"]])
-        (when license-url
-          [:gmd:otherConstraints 
-            [:gco:CharacterString (str "LicenseUrl:" (:Linkage license-url))]])
-        (when license-text
-          [:gmd:otherConstraints 
-            [:gco:CharacterString (str "LicenseText:" license-text)]])
-        (when value
-          [:gmd:otherConstraints
-            [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
-
 (defn- generate-doi
   "Returns the DOI field."
   [c]
@@ -364,7 +332,7 @@
           (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
           (platform/generate-platform-keywords platforms)
           (platform/generate-instrument-keywords platforms)
-          (generate-user-constraints c)
+          (use-constraints/generate-user-constraints c)
           (ma/generate-non-source-metadata-associations c)
           (generate-publication-references (:PublicationReferences c))
           (sdru/generate-publication-related-urls c)

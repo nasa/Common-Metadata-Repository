@@ -85,12 +85,12 @@
 
     "umm-json"
     :umm-json
-    nil))
+    (:TemporalExtents umm-c-record)))
 
 (deftest parse-collection-access-value-test
   (are3 [format expected]
     (is (= (umm-cmn/map->AccessConstraintsType expected)
-           (umm-cmn/map->AccessConstraintsType 
+           (umm-cmn/map->AccessConstraintsType
              (core/parse-collection-access-value
                {:metadata (core/generate-metadata context umm-c-record format)
                 :format (mt/format->mime-type format)}))))
@@ -116,8 +116,8 @@
 
     "iso-smap"
     :iso-smap
-    nil
+    (:AccessConstraints umm-c-record)
 
     "umm-json"
     :umm-json
-    nil))
+    (:AccessConstraints umm-c-record)))
