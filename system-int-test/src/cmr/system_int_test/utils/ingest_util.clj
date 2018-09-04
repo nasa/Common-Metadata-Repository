@@ -12,6 +12,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
+   [cmr.ingest.config :as ingest-config]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
@@ -632,11 +633,15 @@
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn set-collection-ingest-umm-version-to-current
-  "Set the collection ingest-accept-umm-version to current-collection-version."
+(defn set-ingest-umm-version-to-current
+  "Set the ingest-accept-umm-version to the latest UMM version defined in umm-spec-lib."
   []
   (side/eval-form `(common-config/set-collection-umm-version!
-                     umm-versioning/current-collection-version)))
+                     umm-versioning/current-collection-version))
+  (side/eval-form `(ingest-config/set-variable-umm-version!
+                     umm-versioning/current-variable-version))
+  (side/eval-form `(ingest-config/set-service-umm-version!
+                     umm-versioning/current-service-version)))
 
 (defn create-provider
   "Creates a provider along with ACLs to create and access the providers data.
@@ -709,9 +714,9 @@
           :grant-all-access-control? grant-all-access-control?})))))
 
 (defn reset-fixture
-  "Resets all the CMR systems then uses the `set-collection-ingest-umm-version-to-current`
-  function to set the accepted umm version for collection ingest to the umm-versioning/current-collection-version,
-  so that all the ingest tests are testing against the latest umm version.
+  "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
+  function to set the accepted umm versions for ingest to the the latest UMM version defined in
+  umm-spec-lib, so that all the ingest tests are testing against the latest umm version.
   and uses the `setup-providers` function to create a testing fixture.
 
   For the format of the providers data structure, see `setup-providers`."
@@ -722,7 +727,7 @@
   ([providers options]
    (fn [f]
      (dev-sys-util/reset)
-     (set-collection-ingest-umm-version-to-current)
+     (set-ingest-umm-version-to-current)
      (when-not (empty? providers)
       (setup-providers providers options))
      (f))))
