@@ -580,9 +580,9 @@
                          msg/concept-with-concept-id-and-rev-id-does-not-exist
                          concept-id
                          revision-id)
-        ((cmsg/data-error :not-found
-                          msg/concept-does-not-exist
-                          concept-id))))))
+        (cmsg/data-error :not-found
+                         msg/concept-does-not-exist
+                         concept-id)))))
 
 (defn- update-service-associations
   "Create a new revision for the non-tombstoned service associations that is related to the

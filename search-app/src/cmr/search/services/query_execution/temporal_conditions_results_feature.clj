@@ -12,13 +12,13 @@
    [cmr.common.util :as util]
    [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
 
-(defprotocol AddConceptTypToTemporalCondition
+(defprotocol AddConceptTypeToTemporalCondition
   "Defines a function to add concept type to the temporal conditions within the query."
   (add-concept-type-to-temporal-condition
     [c concept-type]
     "Add concept type to temporal condition."))
 
-(extend-protocol AddConceptTypToTemporalCondition
+(extend-protocol AddConceptTypeToTemporalCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.Query
   (add-concept-type-to-temporal-condition
