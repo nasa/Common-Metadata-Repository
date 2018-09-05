@@ -51,7 +51,7 @@
      :bad-request
      [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
-(defn- validate-collection
+(defn validate-collection
    "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
    [context provider-id collection-id]
    (let [provider (get-provider context provider-id)]
@@ -76,7 +76,6 @@
   ([context dispatcher provider-id collection-id]
    (index-collection context dispatcher provider-id collection-id nil))
   ([context dispatcher provider-id collection-id options]
-   (validate-collection context provider-id collection-id)
    (dispatch/index-collection dispatcher context provider-id collection-id options)))
 
 (defn index-system-concepts
