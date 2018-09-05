@@ -143,7 +143,7 @@
                                :SingleDateTimes (dates-at-str temporal "Single_DateTime")
                                :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
                                                     {:Name (value-of pdt "Name")
-                                                     :StartDate (date-at pdt "Start_Date")
+                                                     :StartDate (date-at-str pdt "Start_Date")
                                                      :EndDate (parse-dif-end-date (value-of pdt "End_Date"))
                                                      :DurationUnit (value-of pdt "Duration_Unit")
                                                      :DurationValue (value-of pdt "Duration_Value")
