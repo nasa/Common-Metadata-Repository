@@ -25,6 +25,7 @@
   (let [dispatcher (api-util/get-dispatcher context params :index-collection)
         provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
+        _ (service/validate-collection context provider-id collection-id)
         result (service/index-collection
                 context dispatcher provider-id collection-id)]
     {:status 202

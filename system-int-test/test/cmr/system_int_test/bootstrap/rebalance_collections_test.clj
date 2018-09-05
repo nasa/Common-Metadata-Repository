@@ -50,7 +50,7 @@
        (is (= {:status 400
                :errors ["Provider: [NON_EXIST] does not exist in the system"]}
               (bootstrap/start-rebalance-collection "C1-NON_EXIST" {:synchronous false}))))
-     (testing "Non existent collection"
+     (testing "Non existent collection cannot be moved to a separate index"
        (is (= {:status 400
                :errors ["Collection [C1-PROV1] does not exist."]}
               (bootstrap/start-rebalance-collection "C1-PROV1" {:synchronous false}))))
@@ -481,11 +481,14 @@
 
      (dev-sys-util/clear-caches)
 
-     ; Delete collection and remove the tombstone
+     ;; Delete collection and remove the tombstone
      (ingest/delete-concept deleted-coll-concept)
      (index/wait-until-indexed)
-     (side/eval-form `(tk/advance-time! ~(* (concept-service/days-to-keep-tombstone) 24 3600)))
+     (side/eval-form `(tk/advance-time! ~(* (inc (concept-service/days-to-keep-tombstone)) 24 3600)))
      (is (= 204 (:status (mdb/cleanup-old-revisions))))
+     ;; Verify collection revisions are all removed from the database to make sure test is valid
+     (is (= 404 (:status (search/retrieve-concept (:concept-id deleted-coll) 1))))
+     (is (= 404 (:status (search/retrieve-concept (:concept-id deleted-coll) 2))))
 
      ;; Rebalance to small-collections
      (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
