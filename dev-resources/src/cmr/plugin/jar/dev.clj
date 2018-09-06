@@ -8,6 +8,8 @@
    [clojure.tools.namespace.repl :as repl]
    [clojusc.system-manager.core :as system-api :refer :all]
    [clojusc.twig :as logger]
+   [cmr.plugin.jar.components.registry :as registry]
+   [cmr.plugin.jar.core :as plugin]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
   (:import
