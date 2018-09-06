@@ -1,0 +1,13 @@
+{:plugin {
+   :registry {
+     :default {
+       :plugin-name "CMR-Plugin"
+       :plugin-type ".*"
+       :config-file "cmr-opendap/config.edn" ; the in-JAR path to the config file
+       }
+     :web {
+       :route-keys [:web :route-fns]}}}
+ :logging {
+   :level :debug
+   :nss [cmr]
+   :color true}}
