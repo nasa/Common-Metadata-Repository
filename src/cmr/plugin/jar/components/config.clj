@@ -49,6 +49,14 @@
   [system]
   (get-in (get-cfg system) [:plugin :registry :web :route-keys]))
 
+(defn api-route-key
+  [system]
+  (get-in (get-cfg system) [:plugin :registry :web :api-route-key]))
+
+(defn site-route-key
+  [system]
+  (get-in (get-cfg system) [:plugin :registry :web :site-route-key]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

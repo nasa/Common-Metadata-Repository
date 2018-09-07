@@ -8,7 +8,7 @@
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Registry Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn jars
@@ -36,19 +36,27 @@
         plugin-type (config/default-plugin-type this)
         in-jar-filepath (config/default-config-file this)
         route-keys (config/default-route-keys this)
+        api-key (config/api-route-key this)
+        site-key (config/site-route-key this)
         jarfiles (plugin/jarfiles plugin-name plugin-type)]
     (log/debug "Started plugin registry component.")
     (-> this
         (assoc-in [:registry :jars]
-                  (mapv #(hash-map :file (.getName %) :object %) jarfiles))
+                  (plugin/named-jars jarfiles))
         (assoc-in [:registry :routes]
-                  (web/plugins-routes jarfiles in-jar-filepath route-keys))
+                  (web/plugins-routes jarfiles
+                                      in-jar-filepath
+                                      route-keys
+                                      api-key
+                                      site-key))
         (assoc-in [:registry :assembled-routes]
                   (web/assemble-routes jarfiles
                                        plugin-name
                                        plugin-type
                                        in-jar-filepath
-                                       route-keys)))))
+                                       route-keys
+                                       api-key
+                                       site-key)))))
 
 (defn stop
   [this]

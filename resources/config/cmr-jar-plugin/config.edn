@@ -6,7 +6,9 @@
        :config-file "cmr-opendap/config.edn" ; the in-JAR path to the config file
        }
      :web {
-       :route-keys [:web :route-fns]}}}
+       :route-keys [:web :route-fns]
+       :api-route-key :api
+       :site-route-key :site}}}
  :logging {
    :level :debug
    :nss [cmr]

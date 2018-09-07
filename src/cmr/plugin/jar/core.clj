@@ -8,7 +8,14 @@
   (java.util.jar JarFile)
   (java.util.jar Attributes$Name)))
 
-(defn create-jarfile-reducer
+(defn named-jars
+  "Generate a collection of `JarFile` maps, each with a `:file` and `:object`
+  key for easy readability and use."
+  [jarfiles]
+  (mapv #(hash-map :file (.getName %) :object %) jarfiles))
+
+(defn create-has-manifest-reducer
+  "This reducer will generate a collection of JAR files that have a MANIFEST file."
   [plugin-name plugin-type]
   (fn [acc x]
     (conj acc
