@@ -1,5 +1,7 @@
 (ns cmr.plugin.jar.jarfile
   "Clojure-idiomatic wrappers for JAR-related methods."
+ (:require
+  [cmr.plugin.jar.util :as util])
  (:import
   (java.util.jar JarFile)
   (java.util.jar Attributes$Name)
@@ -38,6 +40,17 @@
   (when-let [m (manifest this)]
     (get m key-name)))
 
+(defn matches-manifest-key?
+  [^JarFile this key-name]
+  (when-let [m (manifest this)]
+    (util/matches-key? m key-name)))
+
+(defn matches-manifest-value?
+  [^JarFile this key-pattern value-pattern]
+  (when-let [m (manifest this)]
+    (and (matches-manifest-key? this key-pattern)
+         (util/matches-val? m value-pattern))))
+
 (defn name
   [^JarFile this]
   (.getName this))
@@ -56,8 +69,7 @@
 
 (defn read
   [^JarFile this ^String in-jar-filepath]
-  (doall
-    (->> in-jar-filepath
-         (entry this)
-         (input-stream this)
-         slurp)))
+  (->> in-jar-filepath
+       (entry this)
+       (input-stream this)
+       slurp))

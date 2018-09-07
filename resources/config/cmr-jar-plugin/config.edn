@@ -2,11 +2,11 @@
    :jarfiles {
      ;; The reducer factory function must take two args: plugin name and plugin
      ;; type -- both of type ^String.
-     :reducer-factory cmr.plugin.jar.core/create-regex-plugin-type-reducer}
+     :reducer-factory cmr.plugin.jar.core/create-regex-plugin-reducer}
    :registry {
      :component-key :plugin
      :default {
-       :plugin-name "CMR-Plugin"
+       :plugin-name "CMR-.*"
        :plugin-type ".*"
        ;; The fowllowing is an in-JAR path to the config file
        :config-file "cmr-opendap/config.edn"}

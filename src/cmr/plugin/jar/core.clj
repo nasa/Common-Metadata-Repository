@@ -37,9 +37,8 @@
   [plugin-name]
   (fn [acc ^JarFile jar]
     (conj acc
-          (when-let [m (jarfile/manifest jar)]
-            (when (jarfile/manifest-has-key? plugin-name))
-              jar))))
+          (when (jarfile/manifest-has-key? jar plugin-name))
+            jar)))
 
 (defn create-regex-plugin-name-reducer
   "This creates a reducer that will generate a collection of JAR files that
@@ -48,9 +47,8 @@
   [plugin-name]
   (fn [acc ^JarFile jar]
     (conj acc
-          (when-let [m (jarfile/manifest jar)]
-            (when (jarfile/manifest-has-key? plugin-name))
-              jar))))
+          (when (jarfile/matches-manifest-key? jar plugin-name))
+            jar)))
 
 (defn create-regex-plugin-type-reducer
   "This creates a reducer that will generate a collection of JAR files that
@@ -75,26 +73,23 @@
   [plugin-name plugin-type]
   (fn [acc ^JarFile jar]
     (conj acc
-          (when-let [p-type (jarfile/manifest-value jar plugin-name)]
-            (when (re-matches (re-pattern plugin-type) p-type)
-              jar)))))
+          (when (jarfile/matches-manifest-value? jar plugin-name plugin-type)
+            jar))))
 
 (defn config-data
   "Extract the EDN configuration data stored in a jarfile at the given location
   in the JAR."
   [^JarFile jar in-jar-filepath]
-  (doall
-    (->> in-jar-filepath
-         (jarfile/read jar)
-         edn/read-string)))
+  (->> in-jar-filepath
+       (jarfile/read jar)
+       edn/read-string))
 
 (defn jarfiles
   "Given a plugin name (MANIFEST file entry), plugin type (the MANIFEST file
   entry's value), and a reducer-factory function, return all the JAR files
   that are accumulated by the redcuer."
   [^String plugin-name ^String plugin-type reducer]
-  (doall
-    (->> (classpath/classpath-jarfiles)
-         (reduce (reducer plugin-name plugin-type)
-                 [])
-         (remove nil?))))
+  (->> (classpath/classpath-jarfiles)
+       (reduce (reducer plugin-name plugin-type)
+               [])
+       (remove nil?)))
