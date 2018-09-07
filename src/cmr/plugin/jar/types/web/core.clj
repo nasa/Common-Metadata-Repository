@@ -3,16 +3,15 @@
    [clojure.edn :as edn]
    [clojure.java.classpath :as classpath]
    [clojure.string :as string]
-   [cmr.plugin.jar.core :as plugin])
+   [cmr.plugin.jar.core :as plugin]
+   [cmr.plugin.jar.util :as util])
  (:import
   (clojure.lang Keyword)
   (java.util.jar JarFile)))
 
-(defn resolve-route
-  [route]
-  (let [[namesp fun] (mapv symbol (string/split (str route) #"/"))]
-    (require namesp)
-    (var-get (ns-resolve namesp fun))))
+(defn resolve-routes
+  [routes-symbols]
+  (apply concat (map util/resolve-fully-qualified-fn routes-symbols)))
 
 (defn plugin-routes
   [^JarFile jarfile in-jar-filepath route-keys ^Keyword api-key ^Keyword site-key]
@@ -37,5 +36,5 @@
   ([jarfiles ^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
     (let [data (plugins-routes jarfiles in-jar-filepath route-keys api-key site-key)]
-      {api-key (apply concat (map resolve-route (api-key data)))
-       site-key (apply concat (map resolve-route (site-key data)))})))
+      {api-key (resolve-routes (api-key data))
+       site-key (resolve-routes (site-key data))})))

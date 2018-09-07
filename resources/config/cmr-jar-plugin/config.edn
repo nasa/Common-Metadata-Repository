@@ -2,7 +2,7 @@
    :jarfiles {
      ;; The reducer factory function must take two args: plugin name and plugin
      ;; type -- both of type ^String.
-     :reducer-factory cmr.plugin.jar.core/create-plugin-type-reducer}
+     :reducer-factory cmr.plugin.jar.core/create-regex-plugin-type-reducer}
    :registry {
      :default {
        :plugin-name "CMR-Plugin"

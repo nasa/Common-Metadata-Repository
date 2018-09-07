@@ -38,7 +38,8 @@
         route-keys (config/default-route-keys this)
         api-key (config/api-route-key this)
         site-key (config/site-route-key this)
-        jarfiles (plugin/jarfiles plugin-name plugin-type)]
+        reducer (config/jarfiles-reducer this)
+        jarfiles (plugin/jarfiles plugin-name plugin-type reducer)]
     (log/debug "Started plugin registry component.")
     (-> this
         (assoc-in [:registry :jars]
