@@ -2,7 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.java.classpath :as classpath]
-   [cmr.plugin.jar.util :refer [when-let*]]
+   [cmr.plugin.jar.jarfile :as jarfile]
    [taoensso.timbre :as log])
  (:import
   (java.util.jar JarFile)
@@ -12,36 +12,45 @@
   "Generate a collection of `JarFile` maps, each with a `:file` and `:object`
   key for easy readability and use."
   [jarfiles]
-  (mapv #(hash-map :file (.getName %) :object %) jarfiles))
+  (mapv #(hash-map :file (jarfile/name %) :object %) jarfiles))
 
 (defn no-manifest-reducer
   "This reducer will generate a collection of JAR files that have no MANIFEST file.
   Primarily useful for debugging/curiosity."
-  [acc jarfile]
+  [acc ^JarFile jar]
   (conj acc
-        (when-not (.getManifest jarfile)
-          jarfile)))
+        (when-not (jarfile/manifest jar)
+          jar)))
 
-(defn create-has-manifest-reducer
-  "This creates a reducer that will generate a collection of JAR files that
+(defn has-manifest-reducer
+  "This is a reducer that will generate a collection of JAR files that
   have a MANIFEST file."
-  []
-  (fn [acc jarfile]
-    (conj acc
-          (when (.getManifest jarfile)
-            jarfile))))
+  [acc ^JarFile jar]
+  (conj acc
+        (when (jarfile/manifest jar)
+          jar)))
 
 (defn create-has-plugin-name-reducer
   "This creates a reducer that will generate a collection of JAR files that
   have a MANIFEST file and that also have a key in the MANIFEST file which
   exactly matches the given pluging name."
   [plugin-name]
-  (fn [acc jarfile]
+  (fn [acc ^JarFile jar]
     (conj acc
-          (when-let* [m (.getManifest jarfile)
-                      attrs (.getMainAttributes m)]
-            (when (.containsKey attrs (new Attributes$Name plugin-name))
-              jarfile)))))
+          (when-let [m (jarfile/manifest jar)]
+            (when (jarfile/manifest-has-key? plugin-name))
+              jar))))
+
+(defn create-regex-plugin-name-reducer
+  "This creates a reducer that will generate a collection of JAR files that
+  have a MANIFEST file and that also have a key in the MANIFEST file which
+  exactly matches the given pluging name."
+  [plugin-name]
+  (fn [acc ^JarFile jar]
+    (conj acc
+          (when-let [m (jarfile/manifest jar)]
+            (when (jarfile/manifest-has-key? plugin-name))
+              jar))))
 
 (defn create-regex-plugin-type-reducer
   "This creates a reducer that will generate a collection of JAR files that
@@ -50,23 +59,33 @@
      name, and
   2) have a value for the plugin key that matches the configured plugin type."
   [plugin-name plugin-type]
-  (fn [acc jarfile]
+  (fn [acc ^JarFile jar]
     (conj acc
-          (when-let* [m (.getManifest jarfile)
-                      attrs (.getMainAttributes m)
-                      p-type (.getValue attrs plugin-name)]
+          (when-let [p-type (jarfile/manifest-value jar plugin-name)]
             (when (re-matches (re-pattern plugin-type) p-type)
-              jarfile)))))
+              jar)))))
+
+(defn create-regex-plugin-reducer
+  "This creates a reducer that will generate a collection of JAR files that
+  have a MANIFEST file and that:
+  1) have a key in the MANIFEST file which regex-matches (Clojure-style regex
+     string) the configured plugin name, and
+  2) have a value for the plugin key which regex-matches (Clojure-style regex
+     string) the configured plugin type."
+  [plugin-name plugin-type]
+  (fn [acc ^JarFile jar]
+    (conj acc
+          (when-let [p-type (jarfile/manifest-value jar plugin-name)]
+            (when (re-matches (re-pattern plugin-type) p-type)
+              jar)))))
 
 (defn config-data
   "Extract the EDN configuration data stored in a jarfile at the given location
   in the JAR."
-  [^JarFile jarfile in-jar-filepath]
+  [^JarFile jar in-jar-filepath]
   (doall
     (->> in-jar-filepath
-         (.getEntry jarfile)
-         (.getInputStream jarfile)
-         slurp
+         (jarfile/read jar)
          edn/read-string)))
 
 (defn jarfiles

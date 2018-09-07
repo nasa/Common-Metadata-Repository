@@ -11,6 +11,7 @@
    [cmr.plugin.jar.components.config :as config]
    [cmr.plugin.jar.components.registry :as registry]
    [cmr.plugin.jar.core :as plugin]
+   [cmr.plugin.jar.jarfile :as jarfile]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
   (:import
