@@ -1,4 +1,6 @@
 (ns cmr.plugin.jar.components.registry
+  "This component defines the plugin registry for the CMR JAR/MANIFEST plugin
+  library."
   (:require
     [clojusc.twig :as logger]
     [com.stuartsierra.component :as component]
@@ -13,15 +15,15 @@
 
 (defn jars
   [system]
-  (get-in system [:plugin :registry :jars]))
+  (get-in system [(config/plugin-component-key system) :registry :jars]))
 
 (defn routes
   [system]
-  (get-in system [:plugin :registry :routes]))
+  (get-in system [(config/plugin-component-key system) :registry :routes]))
 
 (defn assembled-routes
   [system]
-  (get-in system [:plugin :registry :assembled-routes]))
+  (get-in system [(config/plugin-component-key system) :registry :assembled-routes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -4,6 +4,7 @@
      ;; type -- both of type ^String.
      :reducer-factory cmr.plugin.jar.core/create-regex-plugin-type-reducer}
    :registry {
+     :component-key :plugin
      :default {
        :plugin-name "CMR-Plugin"
        :plugin-type ".*"
