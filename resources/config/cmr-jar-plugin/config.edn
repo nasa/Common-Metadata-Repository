@@ -6,7 +6,7 @@
    :registry {
      :component-key :plugin
      :default {
-       :plugin-name "CMR-.*"
+       :plugin-name ".*[Pp]lugin.*"
        :plugin-type ".*"
        ;; The fowllowing is an in-JAR path to the config file
        :config-file "cmr-opendap/config.edn"}
