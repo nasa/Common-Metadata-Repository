@@ -6,7 +6,7 @@
     [com.stuartsierra.component :as component]
     [cmr.plugin.jar.components.config :as config]
     [cmr.plugin.jar.core :as plugin]
-    [cmr.plugin.jar.types.web.core :as web]
+    [cmr.plugin.jar.types.web.routes :as routes]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,19 +47,19 @@
         (assoc-in [:registry :jars]
                   (plugin/named-jars jarfiles))
         (assoc-in [:registry :routes]
-                  (web/plugins-routes jarfiles
-                                      in-jar-filepath
-                                      route-keys
-                                      api-key
-                                      site-key))
+                  (routes/plugins-routes jarfiles
+                                         in-jar-filepath
+                                         route-keys
+                                         api-key
+                                         site-key))
         (assoc-in [:registry :assembled-routes]
-                  (web/assemble-routes jarfiles
-                                       plugin-name
-                                       plugin-type
-                                       in-jar-filepath
-                                       route-keys
-                                       api-key
-                                       site-key)))))
+                  (routes/assemble-routes jarfiles
+                                          plugin-name
+                                          plugin-type
+                                          in-jar-filepath
+                                          route-keys
+                                          api-key
+                                          site-key)))))
 
 (defn stop
   [this]

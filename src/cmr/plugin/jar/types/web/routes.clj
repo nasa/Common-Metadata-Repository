@@ -1,4 +1,4 @@
-(ns cmr.plugin.jar.types.web.core
+(ns cmr.plugin.jar.types.web.routes
   (:require
    [clojure.edn :as edn]
    [clojure.java.classpath :as classpath]
