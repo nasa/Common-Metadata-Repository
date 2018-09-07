@@ -89,21 +89,26 @@ file name.
 While this project was originally designed for use by the NASA/Earthdata's
 CMR suite of services, it can be used anywhere with any name. Names can be
 either strings or (Clojure-style) regular expressions. The same is true for the
-plugin type.
+plugin type. Note, however, that the closer a match you provide, the quicker
+the plugins will be processed (too library a regular expression will let
+through all the JAR files in your project's classpath, and each of those will
+be searched for the plugin config file.)
 
-cmr-jar-plugin comes with a handful of reducer-creating functions, the most
+`cmr-jar-plugin` comes with a handful of reducer-creating functions, the most
 flexible of which is the one in the default configuration. These functions
 take as arguments a plugin name and a plugin type (e.g., the key and value that
-are used in a manifest file). The return a reducer function (so, a function
+are used in a manifest file). They return a reducer function (a function
 whose first arg is an accumulator and whose second argument is the item being
 processed in any given step). You can create your own if you so desire, and
-put that in your configuration file.
+reference it in your configuration file.
 
 Once the reducer has created a collection of JAR files that match what you
-specified in your configuration, they will then read the plugin's configuration
+specified in your configuration, they will then read each plugin's configuration
 file (stored in the JAR file at the location you indicated with
-`:config-file`). By default, the web/routes plugin expects to find your routes
-configuration at `[:web :route-fns]`:
+`:config-file`).
+
+By default, a web/routes plugin expects to find your routes configuration at
+`[:web :route-fns]`:
 
 ```clj
 {:web {
