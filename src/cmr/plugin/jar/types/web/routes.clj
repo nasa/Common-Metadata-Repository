@@ -4,7 +4,8 @@
    [clojure.java.classpath :as classpath]
    [clojure.string :as string]
    [cmr.plugin.jar.core :as plugin]
-   [cmr.plugin.jar.util :as util])
+   [cmr.plugin.jar.util :as util]
+   [taoensso.timbre :as log])
  (:import
   (clojure.lang Keyword)
   (java.util.jar JarFile)))

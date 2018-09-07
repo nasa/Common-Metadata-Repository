@@ -1,7 +1,8 @@
 (ns cmr.plugin.jar.jarfile
   "Clojure-idiomatic wrappers for JAR-related methods."
  (:require
-  [cmr.plugin.jar.util :as util])
+  [cmr.plugin.jar.util :as util]
+  [taoensso.timbre :as log])
  (:import
   (java.util.jar JarFile)
   (java.util.jar Attributes$Name)
@@ -41,14 +42,14 @@
     (get m key-name)))
 
 (defn matches-manifest-key?
-  [^JarFile this key-name]
+  [^JarFile this key-pattern]
   (when-let [m (manifest this)]
-    (util/matches-key? m key-name)))
+    (util/matches-key? m key-pattern)))
 
 (defn matches-manifest-value?
   [^JarFile this key-pattern value-pattern]
   (when-let [m (manifest this)]
-    (and (matches-manifest-key? this key-pattern)
+    (or (util/matches-key? m key-pattern)
          (util/matches-val? m value-pattern))))
 
 (defn name
@@ -69,7 +70,9 @@
 
 (defn read
   [^JarFile this ^String in-jar-filepath]
-  (->> in-jar-filepath
-       (entry this)
-       (input-stream this)
-       slurp))
+  (try
+    (when-let [e (entry this in-jar-filepath)]
+      (when-let [s (input-stream this e)]
+        (slurp s)))
+    (catch Exception _
+      (log/error "Error reading " (name this)))))
