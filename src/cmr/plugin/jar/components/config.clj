@@ -1,6 +1,7 @@
 (ns cmr.plugin.jar.components.config
   (:require
    [cmr.plugin.jar.config :as config]
+   [cmr.plugin.jar.util :as util]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import
@@ -56,6 +57,12 @@
 (defn site-route-key
   [system]
   (get-in (get-cfg system) [:plugin :registry :web :site-route-key]))
+
+(defn jarfiles-reducer
+  [system]
+  (-> (get-cfg system)
+      (get-in [:plugin :jarfiles :reducer-factory])
+      util/resolve-fully-qualified-fn))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
