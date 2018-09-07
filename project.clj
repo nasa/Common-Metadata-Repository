@@ -120,9 +120,9 @@
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
-    "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
-    "uberjar" ["with-profile" "+system,+geo" "uberjar"]
-    "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
+    "ubercompile" ["with-profile" "+system,+local,+ubercompile" "compile"]
+    "uberjar" ["with-profile" "+system" "uberjar"]
+    "uberjar-aot" ["with-profile" "+system,+ubercompile" "uberjar"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
@@ -139,11 +139,9 @@
       ]
     "ltest" ["with-profile" "+test,+system" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
-    "ltest-with-geo" ["with-profile" "+test,+system,+geo" "ltest"]
-    "junit-with-geo" ["with-profile" "+test,+system,+geo" "test2junit"]
     ;; Documentation and static content
-    "codox" ["with-profile" "+docs,+system,+geo" "codox"]
-    "marginalia" ["with-profile" "+docs,+system,+geo"
+    "codox" ["with-profile" "+docs,+system" "codox"]
+    "marginalia" ["with-profile" "+docs,+system"
       "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
@@ -154,8 +152,8 @@
     "build-lite" ["do"
       ["ltest" ":unit"]]
     "build" ["do"
-      ["ltest-with-geo" ":unit"]
-      ["junit-with-geo" ":unit"]
+      ["ltest" ":unit"]
+      ["junit" ":unit"]
       ["ubercompile"]
       ["uberjar"]]
     "build-full" ["do"
