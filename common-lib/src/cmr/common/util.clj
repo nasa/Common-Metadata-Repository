@@ -932,3 +932,12 @@
           #(string/replace % "_" "-")
           #(string/replace % #"^CMR_" ""))
     #(string/starts-with? %1 "CMR_")))
+
+(defn get-index-or-nil
+ "Get the index of the key in the string. Return nil if the key does not
+ exist in the string"
+ [s key]
+ (when s
+  (let [index (.indexOf s key)]
+   (when (>= index 0)
+    index))))

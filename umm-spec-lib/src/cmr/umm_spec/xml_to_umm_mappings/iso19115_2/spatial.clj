@@ -2,6 +2,7 @@
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
@@ -102,8 +103,8 @@
   (when-let [vertical-domains (select doc vertical-string-xpath)]
     (for [vertical-domain vertical-domains
           :let [vertical-string (value-of (clojure.data.xml/emit-str vertical-domain) "CharacterString")
-                type-index (iso-shared-distrib/get-index-or-nil vertical-string "Type:")
-                value-index (iso-shared-distrib/get-index-or-nil vertical-string "Value:")
+                type-index (util/get-index-or-nil vertical-string "Type:")
+                value-index (util/get-index-or-nil vertical-string "Value:")
                 end-index (count vertical-string)
                 type (when type-index
                        (iso-shared-distrib/get-substring vertical-string type-index value-index end-index))

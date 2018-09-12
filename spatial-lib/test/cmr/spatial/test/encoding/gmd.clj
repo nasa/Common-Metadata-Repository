@@ -10,11 +10,12 @@
             [cmr.spatial.encoding.gmd :as gmd]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as mbr]
+            [cmr.spatial.orbit :as orbit]
             [cmr.spatial.test.generators :as spatial-gen]))
 
 ;; known example XML document with valid GML elements from NASA docs
 
-(def gmd-xml
+(def gmd-xml-mbr
   "<root xmlns:gml=\"http://www.opengis.net/gml\"
          xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"
          xmlns:gco=\"http://www.isotc211.org/2005/gco\">
@@ -48,6 +49,29 @@
      </gmd:geographicElement>
    </root>")
 
+(def gmd-xml-orbit
+  "<root xmlns:gml=\"http://www.opengis.net/gml\"
+         xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"
+         xmlns:gco=\"http://www.isotc211.org/2005/gco\">
+     <gmd:geographicElement>
+       <gmd:EX_GeographicDescription>
+         <gmd:geographicIdentifier>
+           <gmd:MD_Identifier>
+             <gmd:code>
+               <gco:CharacterString>AscendingCrossing: -140.0 StartLatitude: 1.0 StartDirection: D EndLatitude: 0.0 EndDirection: A</gco:CharacterString>
+             </gmd:code>
+             <gmd:codeSpace>
+               <gco:CharacterString>gov.nasa.esdis.umm.orbitparameters</gco:CharacterString>
+             </gmd:codeSpace>
+             <gmd:description>
+               <gco:CharacterString>OrbitParameters</gco:CharacterString>
+             </gmd:description>
+           </gmd:MD_Identifier>
+         </gmd:geographicIdentifier>
+       </gmd:EX_GeographicDescription>
+     </gmd:geographicElement>
+   </root>")
+
 (defn- emit-gmd-str
   "Helper for emitting an XML document string with an xmlns attribtue
   for the gml prefix."
@@ -58,9 +82,15 @@
                          :xmlns:gco "http://www.isotc211.org/2005/gco")))
 
 (deftest test-decode-gmd-xml
-  (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml) [:geographicElement])))
-         [(mbr/mbr -178.0 75.0 180.0 -78.0)
-          (p/point -110.45 45.256)])))
+  (testing "GMD decode"
+    (testing "Minimum bounding box"
+      (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml-mbr) [:geographicElement])))
+             [(mbr/mbr -178.0 75.0 180.0 -78.0)
+              (p/point -110.45 45.256)])))
+
+    (testing "Orbits"
+      (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml-orbit) [:geographicElement])))
+             [(orbit/->Orbit -140.0 1.0 "D" 0.0 "A")])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Property-Based Tests
@@ -68,6 +98,7 @@
 (defspec check-gmd-round-trip 1000
   (for-all [spatial (gen/one-of [spatial-gen/mbrs
                                  spatial-gen/points
+                                 spatial-gen/orbits
                                  spatial-gen/cartesian-lines
                                  spatial-gen/cartesian-polygons-with-holes])]
     (let [decoded (first (-> spatial gmd/encode emit-gmd-str x/parse-str gmd/decode))]

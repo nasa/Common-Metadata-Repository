@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system
   (:require
+   [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -20,10 +21,10 @@
   "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system
   parameter string."
   [tiling-system-str]
-  (let [c1-min-index (iso-shared-distrib/get-index-or-nil tiling-system-str "c1-min:")
-        c1-max-index (iso-shared-distrib/get-index-or-nil tiling-system-str "c1-max:")
-        c2-min-index (iso-shared-distrib/get-index-or-nil tiling-system-str "c2-min:")
-        c2-max-index (iso-shared-distrib/get-index-or-nil tiling-system-str "c2-max:")
+  (let [c1-min-index (util/get-index-or-nil tiling-system-str "c1-min:")
+        c1-max-index (util/get-index-or-nil tiling-system-str "c1-max:")
+        c2-min-index (util/get-index-or-nil tiling-system-str "c2-min:")
+        c2-max-index (util/get-index-or-nil tiling-system-str "c2-max:")
         end-index (count tiling-system-str)
         c1-min (when c1-min-index
                   (iso-shared-distrib/get-substring tiling-system-str c1-min-index c1-max-index c2-min-index c2-max-index end-index))

@@ -9,14 +9,6 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
-(defn get-index-or-nil
- "Get the index of the key in the description. Return nil if the key does not
- exist in the description"
- [description key]
- (let [index (.indexOf description key)]
-  (when (>= index 0)
-   index)))
-
 (defn get-substring
   "Get a substring from the input string. Use start as the starting index. All of the rest
    of the input parameters are stop indexes in numerical order or nil i.e. (34 nil 50). The
@@ -32,11 +24,11 @@
  Parse all available elements out from the description string."
  [description]
  (when description
-  (let [description-index (get-index-or-nil description "Description:")
-        url-content-type-index (get-index-or-nil description "URLContentType:")
-        type-index (get-index-or-nil description " Type:")
-        subtype-index (get-index-or-nil description "Subtype:")
-        checksum-index (get-index-or-nil description "Checksum:")]
+  (let [description-index (util/get-index-or-nil description "Description:")
+        url-content-type-index (util/get-index-or-nil description "URLContentType:")
+        type-index (util/get-index-or-nil description " Type:")
+        subtype-index (util/get-index-or-nil description "Subtype:")
+        checksum-index (util/get-index-or-nil description "Checksum:")]
    (if (and (nil? description-index)(nil? url-content-type-index)
             (nil? type-index) (nil? subtype-index))
     {:Description description} ; Description not formatted like above, so just description
@@ -69,10 +61,10 @@
   "Parses operationDescription string, returns MimeType, DataID, and DataType"
   [operation-description]
   (when operation-description
-    (let [mime-type-index (get-index-or-nil operation-description "MimeType:")
-          data-id-index (get-index-or-nil operation-description "DataID:")
-          data-type-index (get-index-or-nil operation-description "DataType:")
-          format-index (get-index-or-nil operation-description "Format:")]
+    (let [mime-type-index (util/get-index-or-nil operation-description "MimeType:")
+          data-id-index (util/get-index-or-nil operation-description "DataID:")
+          data-type-index (util/get-index-or-nil operation-description "DataType:")
+          format-index (util/get-index-or-nil operation-description "Format:")]
       {:MimeType (when mime-type-index
                    (let [mime-type (subs operation-description
                                     mime-type-index
@@ -117,7 +109,7 @@
     (merge url-types
            {:URL (when url-link (url/format-url url-link sanitize?))
             :Description (when (seq description)
-                           (str/trim description))} 
+                           (str/trim description))}
            (util/remove-nil-keys
             {:GetService (when (or MimeType full-name DataID protocol DataType Format
                                   (not (empty? uris)))
@@ -134,8 +126,8 @@
   "Parses distributor format string, returns MimeType and Format"
   [distributor distributor-xpaths-map]
   (when-let [format-name (value-of distributor (get distributor-xpaths-map :Format))]
-    (let [mime-type-index (get-index-or-nil format-name "MimeType:")
-          format-index (get-index-or-nil format-name "Format:")]
+    (let [mime-type-index (util/get-index-or-nil format-name "MimeType:")
+          format-index (util/get-index-or-nil format-name "Format:")]
       {:Format (when format-index
                  (let [format (subs format-name
                                     format-index

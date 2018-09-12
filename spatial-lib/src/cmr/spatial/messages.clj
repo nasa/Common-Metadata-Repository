@@ -102,5 +102,9 @@
   (format "The bounding rectangle north value [%s] was less than the south value [%s]"
           (u/double->string north) (u/double->string south)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Orbit messages
 
-
+(defn start-end-direction
+  [direction]
+  (format "The orbit start and end direction must be either A or D."))
