@@ -1,14 +1,15 @@
 (ns cmr.spatial.mbr
-  (:require [cmr.spatial.math :as math :refer :all]
-            [primitive-math]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.derived :as d]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.validations.core :as v]
-            [pjstadig.assertions :as pj]
-            [cmr.spatial.validation :as sv]
-            [cmr.spatial.messages :as msg]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [cmr.spatial.math :as math :refer :all]
+   [primitive-math]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.derived :as d]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v]
+   [pjstadig.assertions :as pj]
+   [cmr.spatial.validation :as sv]
+   [cmr.spatial.messages :as msg]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.point.Point))
 
 (primitive-math/use-primitive-operators)
