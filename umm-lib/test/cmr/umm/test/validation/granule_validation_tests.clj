@@ -94,11 +94,7 @@
         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
         granule-with-orbit (make-granule {:spatial-coverage
                                           (g/map->SpatialCoverage
-                                            {:orbit (g/map->Orbit {:ascending-crossing 76.123
-                                                                   :start-lat 50.0
-                                                                   :start-direction :asc
-                                                                   :end-lat 50.0
-                                                                   :end-direction :desc})})})
+                                            {:orbit (o/->Orbit 76.123 50.0 "A" 50.0 "D")})})
         granule-with-no-spatial (make-granule {})]
     (testing "granule spatial does not match with granule spatial representation"
       (are [collection granule expected-errors]
