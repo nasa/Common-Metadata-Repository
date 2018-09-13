@@ -1,16 +1,18 @@
 (ns cmr.umm.test.validation.granule-validation-tests
   "This has tests for UMM validations."
-  (:require [clojure.test :refer :all]
-            [cmr.umm.validation.validation-core :as v]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.test.validation.validation-test-helpers :as helpers]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.common.services.errors :as e]
-            [cmr.common.util :as u]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.umm.validation.validation-core :as v]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.test.validation.validation-test-helpers :as helpers]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.orbit :as o]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.services.errors :as e]
+   [cmr.common.util :as u]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn assert-valid-gran
   "Asserts that the given granule is valid."
@@ -50,6 +52,10 @@
   [geometries]
   (make-granule {:spatial-coverage (g/map->SpatialCoverage {:geometries geometries})}))
 
+(defn gran-with-orbits
+  [orbit]
+  (make-granule {:spatial-coverage (g/map->SpatialCoverage {:orbit orbit})}))
+
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
 (deftest granule-spatial-coverage
@@ -75,8 +81,27 @@
         (assert-multiple-invalid-gran
           collection
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
-          expected-errors)))))
-
+          expected-errors))))
+  (let [collection (make-collection {:spatial-coverage {:granule-spatial-representation :orbit
+                                                        :orbit-parameters {:inclination-angle 98.2
+                                                                           :period 100.0
+                                                                           :swath-width 2600.0
+                                                                           :start-circular-latitude 50.0
+                                                                           :number-of-orbits 2.0}}})
+        invalid-orbit (o/->Orbit -181.0 180 "C" 700 "E")
+        valid-orbit (o/->Orbit -180.0 90 "A" 70 "D")]
+    (testing "Valid single orbit"
+      (assert-valid-gran collection (gran-with-orbits valid-orbit)))
+    (testing "Invalid single orbit"
+      (assert-invalid-gran
+        collection
+        (gran-with-orbits invalid-orbit)
+        [:spatial-coverage :orbit]
+        ["Spatial validation error: Ascending Crossing must be within [-180.0] and [180.0] but was [-181.0]."
+         "Spatial validation error: Start Lat must be within [-90.0] and [90.0] but was [180]."
+         "Spatial validation error: End Lat must be within [-90.0] and [90.0] but was [700]."
+         "Spatial validation error: The orbit start and end direction must be either A or D."
+         "Spatial validation error: The orbit start and end direction must be either A or D."]))))
 
 (deftest granule-spatial-representation
   (let [collection-with-geodetic (make-collection {:spatial-coverage

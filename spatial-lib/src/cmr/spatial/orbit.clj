@@ -16,8 +16,8 @@
 
 (defn- start-end-direction
   [field-path direction]
-  (when (or (= "A" direction)
-            (= "D" direction))
+  (when (and (not= "A" direction)
+             (not= "D" direction))
     {field-path [(msg/start-end-direction direction)]}))
 
 (def validations
