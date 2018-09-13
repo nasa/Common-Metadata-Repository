@@ -104,7 +104,6 @@
         start-direction (util/get-index-or-nil orbit-str "StartDirection:")
         end-lat (util/get-index-or-nil orbit-str "EndLatitude:")
         end-direction (util/get-index-or-nil orbit-str "EndDirection:")]
-    (proto-repl.saved-values/save 1)
     (when (= description-type "OrbitParameters")
       (orbit/->Orbit
        (when ascending-crossing
