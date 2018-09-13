@@ -76,7 +76,8 @@
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;; polygons etc do not know whether they are geodetic or not.
      set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)})])
+     {:geometries (v/every sv/spatial-validation)
+      :orbit (v/when-present sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -235,5 +236,3 @@
     :related-urls h/online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])
-
-
