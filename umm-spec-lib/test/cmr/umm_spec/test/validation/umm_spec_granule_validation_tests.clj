@@ -68,7 +68,6 @@
 
 (defn gran-with-orbits
   [orbit]
-  (proto-repl.saved-values/save 7)
   (make-granule {:spatial-coverage (g/map->SpatialCoverage {:orbit orbit})}))
 
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
