@@ -85,3 +85,13 @@
     (let [parsed (parse-xpath xpath)]
       `(date-at* ~element ~parsed))
     `(date-at* ~element ~xpath)))
+
+(defn date-at-str
+  "Return element date at xpath as string if not empty else nil."
+  [element xpath]
+  (not-empty (str (date-at element xpath))))
+
+(defn dates-at-str
+  "Return element dates at xpath as string values if date is not nil else nil."
+  [element xpath]
+  (map #(not-empty (str %)) (dates-at element xpath)))

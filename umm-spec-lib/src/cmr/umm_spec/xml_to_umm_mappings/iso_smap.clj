@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
@@ -110,12 +111,13 @@
 (defn parse-temporal-extents
   "Parses the collection temporal extents from the data identification element"
   [data-id-el]
-  (for [temporal (select data-id-el temporal-extent-xpath-str)]
-    {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                       {:BeginningDateTime (value-of period "gml:beginPosition")
-                        :EndingDateTime    (value-of period "gml:endPosition")})
-     :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
-     :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
+  (util/doall-recursive
+   (for [temporal (select data-id-el temporal-extent-xpath-str)]
+     {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                        {:BeginningDateTime (date-at-str period "gml:beginPosition")
+                         :EndingDateTime    (date-at-str period "gml:endPosition")})
+      :SingleDateTimes (dates-at-str temporal "gml:TimeInstant/gml:timePosition")
+      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})))
 
 (defn iso-smap-xml-to-umm-c
   "Returns UMM-C collection record from ISO-SMAP collection XML document. The :sanitize? option

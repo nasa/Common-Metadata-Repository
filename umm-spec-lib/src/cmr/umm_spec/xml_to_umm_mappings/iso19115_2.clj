@@ -123,13 +123,14 @@
   "Parses the collection temporal extents from the the collection document
   and the data identification element."
   [doc md-data-id-el]
-  (for [temporal (select md-data-id-el temporal-xpath)]
-    {:PrecisionOfSeconds (value-of doc precision-xpath)
-     :EndsAtPresentFlag (temporal-ends-at-present? temporal)
-     :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                       {:BeginningDateTime (value-of period "gml:beginPosition")
-                        :EndingDateTime    (value-of period "gml:endPosition")})
-     :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
+  (util/doall-recursive
+   (for [temporal (select md-data-id-el temporal-xpath)]
+     {:PrecisionOfSeconds (value-of doc precision-xpath)
+      :EndsAtPresentFlag (temporal-ends-at-present? temporal)
+      :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                        {:BeginningDateTime (date-at-str period "gml:beginPosition")
+                         :EndingDateTime    (date-at-str period "gml:endPosition")})
+      :SingleDateTimes (dates-at-str temporal "gml:TimeInstant/gml:timePosition")})))
 
 (defn- parse-abstract-version-description
   "Returns the Abstract and VersionDescription parsed from the collection

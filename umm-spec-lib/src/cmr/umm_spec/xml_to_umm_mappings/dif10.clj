@@ -117,11 +117,11 @@
                (cond
                  (and bdt-valid?
                       edt-valid?)
-                 {:BeginningDateTime (date/with-default bdt sanitize?)
+                 {:BeginningDateTime (date/with-default (str (dtp/parse-datetime bdt)) sanitize?)
                   :EndingDateTime (parse-dif-end-date edt)}
                  (and bdt-valid?
                       (not edt-valid?))
-                 {:BeginningDateTime (date/with-default bdt sanitize?)}
+                 {:BeginningDateTime (date/with-default (str (dtp/parse-datetime bdt)) sanitize?)}
                  (and (not bdt-valid?)
                       edt-valid?)
                  nil
@@ -140,10 +140,10 @@
                               {:PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
                                :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                                :RangeDateTimes (parse-range-date-times temporal sanitize?)
-                               :SingleDateTimes (values-at temporal "Single_DateTime")
+                               :SingleDateTimes (dates-at-str temporal "Single_DateTime")
                                :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
                                                     {:Name (value-of pdt "Name")
-                                                     :StartDate (value-of pdt "Start_Date")
+                                                     :StartDate (date-at-str pdt "Start_Date")
                                                      :EndDate (parse-dif-end-date (value-of pdt "End_Date"))
                                                      :DurationUnit (value-of pdt "Duration_Unit")
                                                      :DurationValue (value-of pdt "Duration_Value")
