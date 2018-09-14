@@ -92,9 +92,10 @@
  "Return a list of temporal extents from the XML doc"
  [doc sanitize?]
  (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
-  [{:RangeDateTimes (doall (for [temporal temporals]
-                             {:BeginningDateTime (date/with-default (date-at-str temporal "Start_Date") sanitize?)
-                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))}))}]
+  [{:RangeDateTimes (doall
+                     (for [temporal temporals]
+                       {:BeginningDateTime (date/with-default (date-at-str temporal "Start_Date") sanitize?)
+                        :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))}))}]
   (when sanitize? su/not-provided-temporal-extents)))
 
 (defn- parse-collection-citation
