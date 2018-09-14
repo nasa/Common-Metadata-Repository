@@ -1,6 +1,7 @@
 (ns cmr.plugin.jar.jarfile
   "Clojure-idiomatic wrappers for JAR-related methods."
  (:require
+  [clojure.java.classpath :as classpath]
   [cmr.plugin.jar.util :as util]
   [taoensso.timbre :as log])
  (:import
@@ -8,6 +9,10 @@
   (java.util.jar Attributes$Name)
   (java.util.zip ZipEntry))
  (:refer-clojure :exclude [name read]))
+
+(defn all-jars
+  []
+  (classpath/classpath-jarfiles))
 
 (defn manifest-obj
   [^JarFile this]

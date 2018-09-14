@@ -1,7 +1,6 @@
 (ns cmr.plugin.jar.core
   (:require
    [clojure.edn :as edn]
-   [clojure.java.classpath :as classpath]
    [cmr.plugin.jar.jarfile :as jarfile]
    [taoensso.timbre :as log])
  (:import
@@ -89,7 +88,7 @@
   entry's value), and a reducer-factory function, return all the JAR files
   that are accumulated by the redcuer."
   [^String plugin-name ^String plugin-type reducer]
-  (->> (classpath/classpath-jarfiles)
+  (->> (jarfile/all-jars)
        (reduce (reducer plugin-name plugin-type)
                [])
        (remove nil?)))
