@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-http-kit "0.1.2-SNAPSHOT"
   :description "Utilities and wrappers for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
   :license {
