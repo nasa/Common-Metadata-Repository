@@ -2,9 +2,10 @@
   (:require
    [clojure.data.xml :as x]
    [clojure.string :as str]
+   [cmr.common.log :refer [info debug error]]
+   [cmr.common.util :as util]
    [cmr.common.validations.core :as v]
    [cmr.common.xml :as cx]
-   [cmr.common.util :as util]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.messages :as msg]
    [cmr.spatial.validation :as sv]
@@ -39,7 +40,7 @@
     [record]
     (v/create-error-messages (v/validate validations record))))
 
-(defn build-orbit-string
+(defn- build-orbit-string
   "Builds ISO SMAP orbit string using umm values."
   [orbit]
   (let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit]
@@ -47,6 +48,14 @@
             ascending-crossing
             start-lat (convert-direction start-direction)
             end-lat (convert-direction end-direction))))
+
+(defn- coerce-float
+  "Coerce's string to float, catches exceptions and produces error message."
+  [field value]
+  (try
+    (Float. value)
+    (catch Exception e
+      (error e (format "For orbit field [%s] the value [%s] is not a number." field value)))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
@@ -76,13 +85,13 @@
                            ascending-crossing
                            (or start-lat start-direction end-lat end-direction
                                (count orbit-str)))]
-           (Float. (str/trim (subs asc-c (inc (.indexOf asc-c ":")))))))
+           (coerce-float :ascending-crossing (str/trim (subs asc-c (inc (.indexOf asc-c ":")))))))
        (when start-lat
          (let [sl (subs orbit-str
                         start-lat
                         (or start-direction end-lat end-direction
                             (count orbit-str)))]
-           (Float. (str/trim (subs sl (inc (.indexOf sl ":")))))))
+           (coerce-float :start-lat (str/trim (subs sl (inc (.indexOf sl ":")))))))
        (when start-direction
          (let [sd (subs orbit-str
                         start-direction
@@ -94,7 +103,7 @@
                         end-lat
                         (or end-direction
                             (count orbit-str)))]
-           (Float. (str/trim (subs el (inc (.indexOf el ":")))))))
+           (coerce-float :end-lat (str/trim (subs el (inc (.indexOf el ":")))))))
        (when end-direction
          (let [ed (subs orbit-str
                         end-direction)]
