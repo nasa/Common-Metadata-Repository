@@ -14,7 +14,7 @@
   "Returns true or false depending on the existence of the :ascending-crossing key existing in the
   spatial coverage map."
   [spatial-map]
-  (some #(= :ascending-crossing %) (keys spatial-map)))
+  (some #{:ascending-crossing} (keys spatial-map)))
 
 (defn xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage from a parsed XML structure"
@@ -23,8 +23,8 @@
         geometries (flatten (map spatial/decode spatial-elems))]
     (when (seq geometries)
       (g/map->SpatialCoverage (util/remove-map-keys empty?
-                                {:geometries (remove #(orbit? %) geometries)
-                                 :orbit (first (filter #(orbit? %) geometries))})))))
+                                {:geometries (remove orbit? geometries)
+                                 :orbit (first (filter orbit? geometries))})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
