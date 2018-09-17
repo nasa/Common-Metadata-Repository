@@ -9,7 +9,8 @@
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.messages :as msg]
    [cmr.spatial.validation :as sv]
-   [cmr.umm.umm-granule :as g]))
+   [cmr.umm.umm-granule :as g])
+  (:import cmr.umm.umm_granule.Orbit))
 
 (defn- start-end-direction
   [field-path direction]
@@ -72,7 +73,7 @@
 (defmethod gmd/decode-geo-content :EX_GeographicDescription
   [geo-desc]
   (let [orbit-str (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :code :CharacterString])
-        description-type  (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :description :CharacterString])
+        description-type (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :description :CharacterString])
         ascending-crossing (util/get-index-or-nil orbit-str "AscendingCrossing:")
         start-lat (util/get-index-or-nil orbit-str "StartLatitude:")
         start-direction (util/get-index-or-nil orbit-str "StartDirection:")

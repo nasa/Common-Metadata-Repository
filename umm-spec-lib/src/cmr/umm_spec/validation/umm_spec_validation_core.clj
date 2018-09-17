@@ -1,14 +1,16 @@
 (ns cmr.umm-spec.validation.umm-spec-validation-core
   "Defines validations UMM concept types."
-  (:require [clj-time.core :as t]
-            [cmr.common.validations.core :as v]
-            [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
-            [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]
-            [cmr.umm-spec.validation.granule :as vg]
-            [cmr.umm-spec.validation.parent-weaver :as pw]
-            [cmr.umm-spec.additional-attribute :as aa]
-            [cmr.common.services.errors :as e]
-            [clojure.string :as str]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.common.validations.core :as v]
+   [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
+   [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]
+   [cmr.umm-spec.validation.granule :as vg]
+   [cmr.umm-spec.validation.parent-weaver :as pw]
+   [cmr.umm-spec.additional-attribute :as aa]
+   [cmr.common.services.errors :as e]
+   [clojure.string :as str]
+   [cmr.umm.iso-smap.granule.orbit]))
 
 (defmulti humanize-field-for-error-msg
   "Converts a field name into an easier to read field name.  This should only be used when

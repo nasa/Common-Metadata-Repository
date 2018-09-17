@@ -1,20 +1,20 @@
 (ns cmr.umm.validation.granule
   "Defines validations for UMM granules"
-  (:require [clj-time.core :as t]
-            [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.validations.core :as v]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm.validation.product-specific-attribute :as psa]))
-
+  (:require
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.validations.core :as v]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.spatial.validation :as sv]
+   [cmr.umm.validation.validation-utils :as vu]
+   [cmr.umm.validation.validation-helper :as h]
+   [cmr.common.services.errors :as errors]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.validation.product-specific-attribute :as psa]))
 
 (defn- spatial-field-not-allowed
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field exists"
