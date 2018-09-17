@@ -1,3 +1,19 @@
+(defn get-banner
+  []
+  (try
+    (str
+      (slurp "resources/text/banner.txt")
+      ;(slurp "resources/text/loading.txt")
+      )
+    ;; If another project can't find the banner, just skip it.
+    (catch Exception _ "")))
+
+(defn get-prompt
+  [ns]
+  (str "\u001B[35m[\u001B[34m"
+       ns
+       "\u001B[35m]\u001B[33m λ\u001B[m=> "))
+
 (defproject gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"
   :description "Utilities and wrappers for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
@@ -17,6 +33,19 @@
     :ubercompile {
       :aot :all
       :source-paths ["test"]}
+    :dev {
+      :dependencies [
+        [clojusc/system-manager "0.3.0-SNAPSHOT"]
+        [org.clojure/java.classpath "0.3.0"]
+        [org.clojure/tools.namespace "0.2.11"]
+        [proto-repl "0.3.1"]]
+      :plugins [
+        [venantius/ultra "0.5.2"]]
+      :source-paths ["dev-resources/src"]
+      :repl-options {
+        :init-ns cmr.http.kit.dev
+        :prompt ~get-prompt
+        :init ~(println (get-banner))}}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []

@@ -1,0 +1,20 @@
+{:httpd {
+   :port 3013
+   :entry-point-fn identity
+   :docs nil
+   :assets nil
+   :rest-docs
+     {:base-url-template nil
+      :source nil
+      :outdir nil}
+   :skip-static #{}
+   :replace-base-url #{}
+   :index-dirs #{}}
+ :logging {
+   :level :debug
+   :nss [cmr org.httpkit]
+   :color true}
+ :streaming {
+   :timeout 20000 ; milliseconds 20 seconds * 1000
+   :heartbeat 200 ; milliseconds
+   }}
