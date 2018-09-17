@@ -8,7 +8,6 @@
    [cmr.umm.test.validation.validation-test-helpers :as helpers]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
-   [cmr.spatial.orbit :as o]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u]
@@ -88,8 +87,8 @@
                                                                            :swath-width 2600.0
                                                                            :start-circular-latitude 50.0
                                                                            :number-of-orbits 2.0}}})
-        invalid-orbit (o/->Orbit -181.0 180 "C" 700 "E")
-        valid-orbit (o/->Orbit -180.0 90 "A" 70 "D")]
+        invalid-orbit (g/->Orbit -181.0 180 "C" 700 "E")
+        valid-orbit (g/->Orbit -180.0 90 :asc 70 :desc)]
     (testing "Valid single orbit"
       (assert-valid-gran collection (gran-with-orbits valid-orbit)))
     (testing "Invalid single orbit"
@@ -119,7 +118,7 @@
         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
         granule-with-orbit (make-granule {:spatial-coverage
                                           (g/map->SpatialCoverage
-                                            {:orbit (o/->Orbit 76.123 50.0 "A" 50.0 "D")})})
+                                            {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})})
         granule-with-no-spatial (make-granule {})]
     (testing "granule spatial does not match with granule spatial representation"
       (are [collection granule expected-errors]

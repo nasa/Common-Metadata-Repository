@@ -12,7 +12,6 @@
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
-   [cmr.spatial.orbit :as o]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.vector :as v]
@@ -41,9 +40,6 @@
 
 (def points
   (ext-gen/model-gen p/point lons lats))
-
-(def orbits
-  (ext-gen/model-gen o/->Orbit lons lats (gen/elements ["A" "D"]) lats (gen/elements ["A" "D"])))
 
 (def line-segments
   (let [non-equal-point-pairs

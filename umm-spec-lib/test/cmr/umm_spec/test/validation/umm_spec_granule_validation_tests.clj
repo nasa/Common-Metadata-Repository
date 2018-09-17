@@ -9,7 +9,6 @@
    [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
-   [cmr.spatial.orbit :as o]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u :refer [are3]]
@@ -76,11 +75,13 @@
   (let [valid-point p/north-pole
         valid-mbr (m/mbr 0 0 0 0)
         invalid-point (p/point -181 0)
-        invalid-orbit (o/->Orbit -181 190 "C" 190 "P")
-        invalid-mbr (m/mbr -180 45 180 46)]
+        invalid-orbit (g/->Orbit -181 190 "C" 190 "P")
+        invalid-mbr (m/mbr -180 45 180 46)
+        valid-orbit (g/->Orbit -180.0 90 :asc 70 :desc)]
     (testing "Valid spatial areas"
       (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point]))
-      (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point valid-mbr])))
+      (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point valid-mbr]))
+      (assert-valid-gran collection-with-orbit (gran-with-orbits valid-orbit)))
     (testing "Invalid single geometry"
       (assert-invalid-gran
         collection-with-geodetic
@@ -119,7 +120,7 @@
         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
         granule-with-orbit (make-granule {:spatial-coverage
                                           (g/map->SpatialCoverage
-                                           {:orbit (o/->Orbit 76.123 50.0 "A" 50.0 "D")})})
+                                           {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})})
         granule-with-no-spatial (make-granule {})]
     (testing "granule spatial does not match with granule spatial representation"
       (are [collection granule expected-errors]
