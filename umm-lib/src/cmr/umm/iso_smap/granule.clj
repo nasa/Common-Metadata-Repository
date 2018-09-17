@@ -52,7 +52,7 @@
                xml-struct
                [:composedOf :DS_DataSet :has :MI_Metadata :distributionInfo :MD_Distribution
                 :distributor :MD_Distributor :distributorTransferOptions :MD_DigitalTransferOptions
-                :transferSize :Real]) 
+                :transferSize :Real])
         producer-gran-id (cx/string-at-path
                            xml-struct
                            [:composedOf :DS_DataSet :has :MI_Metadata :identificationInfo
@@ -63,7 +63,7 @@
                                 :DQ_DataQuality :lineage :LI_Lineage :processStep :LE_ProcessStep
                                 :dateTime :DateTime])]
     (when (or producer-gran-id production-date-time)
-      (g/map->DataGranule {:size size 
+      (g/map->DataGranule {:size size
                            :producer-gran-id producer-gran-id
                            :production-date-time production-date-time}))))
 
@@ -118,6 +118,11 @@
   "Parses the XML and extracts the temporal data."
   [xml]
   (gt/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-spatial
+  "Parses the XML and extracts the SpatialCoverage data."
+  [xml]
+  (s/xml-elem->SpatialCoverage (x/parse-str xml)))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
@@ -264,5 +269,3 @@
   "Validates the XML against the SMAP ISO schema."
   [xml]
   (v/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
-
-
