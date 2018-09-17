@@ -8,7 +8,6 @@
     "Validates the record and returns a list of error messages. If the list is empty then the record
     is valid."))
 
-
 (defn spatial-validation
   "Implements a cmr.common.validation function for any spatial area."
   [field-path record]
