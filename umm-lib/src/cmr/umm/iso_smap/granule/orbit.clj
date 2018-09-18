@@ -50,7 +50,7 @@
             start-lat (convert-direction start-direction)
             end-lat (convert-direction end-direction))))
 
-(defn- coerce-float
+(defn-parse-float
   "Coerce's string to float, catches exceptions and logs error message and returns nil if
   value is not parseable."
   [field value]
@@ -88,13 +88,13 @@
                            ascending-crossing
                            (or start-lat start-direction end-lat end-direction
                                (count orbit-str)))]
-           (coerce-float :ascending-crossing (str/trim (subs asc-c (inc (.indexOf asc-c ":")))))))
+           (parse-float :ascending-crossing (str/trim (subs asc-c (inc (.indexOf asc-c ":")))))))
        (when start-lat
          (let [sl (subs orbit-str
                         start-lat
                         (or start-direction end-lat end-direction
                             (count orbit-str)))]
-           (coerce-float :start-lat (str/trim (subs sl (inc (.indexOf sl ":")))))))
+           (parse-float :start-lat (str/trim (subs sl (inc (.indexOf sl ":")))))))
        (when start-direction
          (let [sd (subs orbit-str
                         start-direction
@@ -106,7 +106,7 @@
                         end-lat
                         (or end-direction
                             (count orbit-str)))]
-           (coerce-float :end-lat (str/trim (subs el (inc (.indexOf el ":")))))))
+           (parse-float :end-lat (str/trim (subs el (inc (.indexOf el ":")))))))
        (when end-direction
          (let [ed (subs orbit-str
                         end-direction)]
