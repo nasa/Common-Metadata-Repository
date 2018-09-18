@@ -444,3 +444,18 @@
     (testing "Granule successfully indexed for search"
       (is (= 1 (:hits granule-search-response)))
       (is (= gran-concept-id (-> granule-search-response :refs first :id))))))
+
+(deftest CMR-5129-invalid-iso-smap-orbit-values-test
+  (let [coll-metadata (-> "iso-samples/CMR-5129-coll.xml" io/resource slurp)
+        invalid-gran-metadata (-> "iso-samples/invalid-CMR-5129-gran.xml" io/resource slurp)
+        valid-gran-metadata (-> "iso-samples/valid-CMR-5129-gran.xml" io/resource slurp)
+        _ (ingest/ingest-concept
+            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+    (testing "Invalid orbit"
+      (let [{:keys [status]} (ingest/ingest-concept
+                               (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
+         (is (= 422 status))))
+    (testing "Valid orbit"
+      (let [{:keys [status]} (ingest/ingest-concept
+                               (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
+         (is (= 201 status))))))
