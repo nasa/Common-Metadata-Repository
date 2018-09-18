@@ -22,7 +22,8 @@
 
 (defn log-color?
   [system]
-  (get-in (get-cfg system) [:logging :color]))
+  (boolean
+    (new Boolean (get-in (get-cfg system) [:logging :color]))))
 
 (defn log-level
   [system]
