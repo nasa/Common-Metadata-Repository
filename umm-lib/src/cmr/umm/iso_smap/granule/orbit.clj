@@ -29,9 +29,9 @@
     :default direction))
 
 (def validations
-  [{:ascending-crossing [v/required (v/within-range -180.0 180.0)]
-    :start-lat [v/required (v/within-range -90.0 90.0)]
-    :end-lat [v/required (v/within-range -90.0 90.0)]
+  [{:ascending-crossing [v/required v/number (v/within-range -180.0 180.0)]
+    :start-lat [v/required v/number (v/within-range -90.0 90.0)]
+    :end-lat [v/required v/number (v/within-range -90.0 90.0)]
     :start-direction start-end-direction
     :end-direction start-end-direction}])
 
@@ -58,7 +58,9 @@
     (Float. value)
     (catch Exception e
       (info (format "For orbit field [%s] the value [%s] is not a number." field value))
-      value)))
+      ;; We return nil her instead of value because within-range validation can't handle comparing a
+      ;; string to a double.
+      nil)))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
