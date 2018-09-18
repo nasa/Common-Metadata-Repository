@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-common "0.1.2-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"
   :description "Cross-project functionality, utilities, and general-use components"
   :url "https://github.com/cmr-exchange/cmr-exchange-common"
   :license {
