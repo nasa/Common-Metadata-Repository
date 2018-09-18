@@ -3,14 +3,14 @@
     [clojusc.system-manager.core :as system-api]
     [clojusc.twig :as logger]
     [cmr.opendap.components.config :as config]
-    [cmr.opendap.components.testing.config]))
+    [cmr.opendap.components.core]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Setup and Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def setup-options {
-  :init 'cmr.opendap.components.testing.config/init
+  :init 'cmr.opendap.components.core/testing-config-only
   :throw-errors true})
 
 (defn init

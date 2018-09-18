@@ -1,7 +1,8 @@
 (ns cmr.opendap.components.config
   (:require
    [cmr.authz.components.config :as authz-config]
-   [cmr.opendap.config :as config]
+   [cmr.exchange.common.components.config :as config]
+   [cmr.opendap.config :as config-lib]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import
@@ -11,11 +12,7 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- get-cfg
-  [system]
-  (->> [:config :data]
-       (get-in system)
-       (into {})))
+(def get-cfg config/get-cfg)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,27 +67,29 @@
 (defn get-service
   [system service]
   (let [svc-cfg (get-in (get-cfg system)
-                        (concat [:cmr] (config/service-keys service)))]
+                        (concat [:cmr] (config-lib/service-keys service)))]
     svc-cfg))
 
 (defn cmr-base-url
   [system]
-  (config/service->base-url (get-service system :search)))
+  (config-lib/service->base-url (get-service system :search)))
 
 (defn opendap-base-url
   "This function returns the cmr-opendap URL with a trailing slash, but without
   the 'opendap' appended."
   [system]
-  (str (config/service->base-public-url (get-service system :opendap)) "/"))
+  (str
+    (config-lib/service->base-public-url (get-service system :opendap)) "/"))
 
 (defn opendap-url
   "This function returns the cmr-opendap URL with a trailing slash."
   [system]
-  (str (config/service->public-url (get-service system :opendap)) "/"))
+  (str
+    (config-lib/service->public-url (get-service system :opendap)) "/"))
 
 (defn get-service-url
   [system service]
-  (config/service->url (get-service system service)))
+  (config-lib/service->url (get-service system service)))
 
 ;; The URLs returned by these functions have no trailing slash:
 (def get-access-control-url #'authz-config/get-access-control-url)
@@ -98,6 +97,10 @@
 (def get-ingest-url #(get-service-url % :ingest))
 (def get-opendap-url #(get-service-url % :opendap))
 (def get-search-url #(get-service-url % :search))
+
+(defn http-entry-point-fn
+  [system]
+  (get-in (get-cfg system) [:httpd :entry-point-fn]))
 
 (defn http-assets
   [system]
@@ -136,18 +139,9 @@
   [system]
   (get-in (get-cfg system) [:httpd :skip-static]))
 
-(defn log-color?
-  [system]
-  (or (get-in (get-cfg system) [:cmr :opendap :logging :color])
-      (get-in (get-cfg system) [:logging :color])))
-
-(defn log-level
-  [system]
-  (get-in (get-cfg system) [:logging :level]))
-
-(defn log-nss
-  [system]
-  (get-in (get-cfg system) [:logging :nss]))
+(def log-color? config/log-color?)
+(def log-level config/log-level)
+(def log-nss config/log-nss)
 
 (defn streaming-heartbeat
   [system]
@@ -167,45 +161,20 @@
 
 (defn get-giovanni-endpoint
   [system]
-  (config/service->url (get-in (get-cfg system) [:giovanni :search])))
+  (config-lib/service->url (get-in (get-cfg system) [:giovanni :search])))
 
 (defn get-edsc-endpoint
   [system]
-  (config/service->url (get-in (get-cfg system) [:edsc :search])))
+  (config-lib/service->url (get-in (get-cfg system) [:edsc :search])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord Config [data])
-
-(defn start
-  [this]
-  (log/info "Starting config component ...")
-  (log/debug "Started config component.")
-  (let [cfg (config/data)]
-    (log/trace "Built configuration:" cfg)
-    (assoc this :data cfg)))
-
-(defn stop
-  [this]
-  (log/info "Stopping config component ...")
-  (log/debug "Stopped config component.")
-  this)
-
-(def lifecycle-behaviour
-  {:start start
-   :stop stop})
-
-(extend Config
-  component/Lifecycle
-  lifecycle-behaviour)
+;; Implemented in cmr.exchange.common.components.config
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-component
-  ""
-  []
-  (map->Config {}))
+;; Implemented in cmr.exchange.common.components.config

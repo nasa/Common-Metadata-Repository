@@ -1,10 +1,10 @@
 (ns cmr.opendap.config
   (:require
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.exchange.common.file :as file]
    [cmr.opendap.util :as util]
-   [environ.core :as environ])
+   [environ.core :as environ]
+   [taoensso.timbre :as log])
   (:import
     (clojure.lang Keyword)))
 
@@ -14,35 +14,66 @@
   ([]
     (cfg-data config-file))
   ([filename]
-    (with-open [rdr (io/reader (io/resource filename))]
-      (edn/read (new java.io.PushbackReader rdr)))))
+    (file/read-edn-resource filename)))
 
-(defn cmr-only
+(defn parse-kv
+  [k v splitter-regex]
+  [(mapv keyword (string/split k splitter-regex))
+   (try
+    (Integer/parseInt v)
+    (catch Exception _e
+      v))])
+
+(defn normalize-env
   [[k v]]
   (let [key-name (name k)]
-    (when (string/starts-with? key-name "cmr-")
-      [(mapv keyword (string/split key-name #"-"))
-       (try
-        (Integer/parseInt v)
-        (catch Exception _e
-          v))])))
+    (when
+      (or
+        (string/starts-with? key-name "cmr-")
+        (string/starts-with? key-name "httpd-")
+        (string/starts-with? key-name "logging-"))
+      (parse-kv key-name v #"-"))))
+
+(defn normalize-prop
+  [[k v]]
+  (let [key-name (name k)]
+    (when-not
+      (or
+        (string/starts-with? key-name "java")
+        (string/ends-with? key-name "class-path"))
+      (parse-kv (name k) v #"-"))))
 
 (defn nest-vars
   [acc [ks v]]
-  (assoc-in acc ks v))
+  (try
+    (assoc-in acc ks v)
+    (catch Exception _e
+      (log/warn (format (str "Had a problem adding config data key %s (of "
+                             "type %s) and value %s (of type %s)")
+                        ks
+                        (type ks)
+                        v (type v)))
+      acc)))
 
-(defn env-props-data
+(defn props-data
   []
   (->> (#'environ/read-system-props)
-       (util/deep-merge (#'environ/read-system-env))
-       (map cmr-only)
+       (map normalize-prop)
+       (remove nil?)
+       (reduce nest-vars {})))
+
+(defn env-data
+  []
+  (->> (#'environ/read-system-env)
+       (map normalize-env)
        (remove nil?)
        (reduce nest-vars {})))
 
 (defn data
   []
   (util/deep-merge (cfg-data)
-                   (env-props-data)))
+                   (props-data)
+                   (env-data)))
 
 (defn service-keys
   "We need to special-case two-word services, as split by the environment and

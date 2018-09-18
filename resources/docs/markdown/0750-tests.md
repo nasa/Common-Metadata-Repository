@@ -50,5 +50,5 @@ like to run the system or integration tests, you can use an environment
 variable to ensure no conflicts with a port that's alredy bound:
 
 ```
-CMR_OPENDAP_PORT=5099 CMR_SIT_TOKEN=`cat ~/.cmr/tokens/sit` lein ltest :all
+HTTPD_PORT=5099 CMR_SIT_TOKEN=`cat ~/.cmr/tokens/sit` lein ltest :all
 ```

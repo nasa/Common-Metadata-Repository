@@ -1,21 +1,23 @@
 (ns cmr.opendap.components.core
   (:require
     [cmr.authz.components.caching :as auth-caching]
+    [cmr.exchange.common.components.config :as config]
+    [cmr.exchange.common.components.logging :as logging]
+    [cmr.http.kit.components.server :as httpd]
     [cmr.mission-control.components.pubsub :as pubsub]
     [cmr.opendap.components.auth :as auth]
     [cmr.opendap.components.caching :as concept-caching]
     [cmr.opendap.components.concept :as concept]
-    [cmr.opendap.components.config :as config]
-    [cmr.opendap.components.httpd :as httpd]
-    [cmr.opendap.components.logging :as logging]
+    [cmr.opendap.config :as config-lib]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Common Configuration Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def cfg
-  {:config (config/create-component)})
+(defn cfg
+  []
+  {:config (config/create-component (config-lib/data))})
 
 (def log
   {:logging (component/using
@@ -83,19 +85,18 @@
 
 (defn initialize-config-only
   []
-  (component/map->SystemMap cfg))
+  (component/map->SystemMap (cfg)))
 
 (defn initialize-bare-bones
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            log)))
 
 (defn initialize-with-web
   []
   (component/map->SystemMap
-    (merge cfg
-           log
+    (merge (initialize-bare-bones)
            pubsub
            auth-cache
            authz
@@ -106,7 +107,7 @@
 (defn initialize-without-logging
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            pubsub-without-logging
            auth-cache-without-logging
            authz
@@ -125,3 +126,6 @@
     (init :web))
   ([mode]
     ((mode init-lookup))))
+
+(def testing #(init :testing))
+(def testing-config-only #(init :testing-config-only))

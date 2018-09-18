@@ -25,12 +25,13 @@ cmr-opendap is configured in several ways:
   data structure.
 * **Environment variables** - this is the recommended way to override
   configuration values in different deployment environments. Environment
-  variables must be prefixed with `CMR_`. Variables names are split on
-  underscores in the same way that system properties are split on the period
-  character. As such, when executing `CMR_SOME_PROP_NAME=value lein run`,
-  the configuration data will have the same nested data as show above,
-  namely: `{:cmr {:some {:prop {:name "value"}}}}`. As with system property
-  conifguration, environment variables that can be based as integers, are.
+  variables must be prefixed with `CMR_`, `HTTPD_`, or `LOGGING_`.
+  Variables names are split on underscores in the same way that system properties
+  are split on the period character. As such, when executing
+  `CMR_SOME_PROP_NAME=value lein run`, the configuration data will have the
+  same nested data as show above, namely: `{:cmr {:some {:prop {:name "value"}}}}`.
+  As with system property conifguration, environment variables that can be
+  based as integers, are.
 
 
 ## Order of Precedence
