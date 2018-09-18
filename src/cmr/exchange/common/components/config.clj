@@ -42,15 +42,13 @@
   [this]
   (log/info "Starting config component ...")
   (log/debug "Started config component.")
-  (let [cfg (config/data)]
-    (log/trace "Built configuration:" cfg)
-    (assoc this :data cfg)))
+  this)
 
 (defn stop
   [this]
   (log/info "Stopping config component ...")
   (log/debug "Stopped config component.")
-  this)
+  (assoc this :data nil))
 
 (def lifecycle-behaviour
   {:start start
@@ -66,5 +64,8 @@
 
 (defn create-component
   ""
-  []
-  (map->Config {}))
+  ([]
+    (create-component (config/data)))
+  ([cfg-data]
+    (log/trace "Built configuration:" cfg-data)
+    (map->Config {:data cfg-data})))
