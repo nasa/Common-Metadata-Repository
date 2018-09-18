@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
+   [clojure.java.classpath :as classpath]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.set :as set]
@@ -14,6 +15,7 @@
    [cmr.opendap.components.caching :as concept-caching]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.components.core]
+   [cmr.opendap.config :as config-lib]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.concepts.variable :as variable]
@@ -21,8 +23,11 @@
    [cmr.opendap.query.impl.wcs :as wcs]
    [cmr.opendap.query.impl.cmr :as cmr]
    [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.testing.util :as testing-util]
+   [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
    [debugger.core :as debug]
+   [environ.core :as environ]
    [org.httpkit.client :as httpc]
    [ring.util.codec :as codec]
    [trifl.java :refer [show-methods]]
@@ -30,6 +35,7 @@
   (:import
    (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
    (cmr.opendap.query.impl.wcs CollectionWcsStyleParams)
+   (com.jcabi.manifests Manifests)
    (java.net URI)
    (java.nio.file Paths)
    ; (net.sf.geographiclib Geodesic PolygonArea)
