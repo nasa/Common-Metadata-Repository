@@ -1,7 +1,6 @@
 (ns cmr.graph.config
   (:require
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]))
+   [cmr.exchange.common.file :as file]))
 
 (def config-file "config/cmr-graph/config.edn")
 
@@ -9,5 +8,4 @@
   ([]
     (data config-file))
   ([filename]
-    (with-open [rdr (io/reader (io/resource filename))]
-      (edn/read (new java.io.PushbackReader rdr)))))
+    (file/read-edn-resource filename)))

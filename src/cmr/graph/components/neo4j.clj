@@ -5,16 +5,18 @@
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
+(def neo4j-db-endpoint "http://localhost:7474/db/data/")
+(def max-connection-attempts 20)
 (def connection-attempt-delay 3000) ; in milliseconds
 
 (defn attempt-connection
-  ([max-tries]
-    (attempt-connection max-tries 1))
+  ([]
+    (attempt-connection max-connection-attempts 1))
   ([max-tries current-try]
     (if (= (inc max-tries) current-try)
       (log/error "Maximum tries exceeded.")
       (try
-        (nr/connect "http://localhost:7474/db/data/")
+        (nr/connect neo4j-db-endpoint)
         (log/debugf "Connection %s succeeded!" current-try)
         (catch Exception e
           (log/warnf "Connection %s failed; trying again ..." current-try)
@@ -38,7 +40,7 @@
 (defn start
   [this]
   (log/info "Starting Neo4j component ...")
-  (attempt-connection 10)
+  (attempt-connection)
   (let [conn (nr/connect (format "http://%s:%s%s"
                                  (config/neo4j-host this)
                                  (config/neo4j-port this)

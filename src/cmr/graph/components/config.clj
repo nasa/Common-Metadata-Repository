@@ -1,6 +1,6 @@
 (ns cmr.graph.components.config
   (:require
-   [cmr.graph.config :as config]
+   [cmr.exchange.common.components.config :as config]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
@@ -8,9 +8,7 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- get-cfg
-  [system]
-  (get-in system [:config :data]))
+(def get-cfg config/get-cfg)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Config Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,13 +34,9 @@
   [system]
   (get-in (get-cfg system) [:httpd :docroot]))
 
-(defn log-level
-  [system]
-  (get-in (get-cfg system) [:logging :level]))
-
-(defn log-nss
-  [system]
-  (get-in (get-cfg system) [:logging :nss]))
+(def log-color? config/log-color?)
+(def log-level config/log-level)
+(def log-nss config/log-nss)
 
 (defn neo4j-host
   [system]
@@ -60,35 +54,10 @@
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord Config [data])
-
-(defn start
-  [this]
-  (log/info "Starting config component ...")
-  (log/debug "Started config component.")
-  (let [cfg (config/data)]
-    (log/trace "Built configuration:" cfg)
-    (assoc this :data cfg)))
-
-(defn stop
-  [this]
-  (log/info "Stopping config component ...")
-  (log/debug "Stopped config component.")
-  (assoc this :data nil))
-
-(def lifecycle-behaviour
-  {:start start
-   :stop stop})
-
-(extend Config
-  component/Lifecycle
-  lifecycle-behaviour)
+;; Implemented in cmr.exchange.common.components.config
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-component
-  ""
-  []
-  (map->Config {}))
+;; Implemented in cmr.exchange.common.components.config

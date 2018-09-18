@@ -1,10 +1,11 @@
 (ns cmr.graph.components.core
   (:require
-    [cmr.graph.components.config :as config]
+    [cmr.exchange.common.components.config :as config]
+    [cmr.exchange.common.components.logging :as logging]
     [cmr.graph.components.elastic :as elastic]
     [cmr.graph.components.httpd :as httpd]
-    [cmr.graph.components.logging :as logging]
     [cmr.graph.components.neo4j :as neo4j]
+    [cmr.graph.config :as config-lib]
     [cmr.process.manager.components.docker :as docker]
     [com.stuartsierra.component :as component]))
 
@@ -12,8 +13,9 @@
 ;;;   Common Configuration Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def cfg
-  {:config (config/create-component)})
+(defn cfg
+  []
+  {:config (config/create-component (config-lib/data))})
 
 (def log
   {:logging (component/using
@@ -56,7 +58,7 @@
 (defn initialize-bare-bones
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            log
            neo4jd
            neo4j)))
@@ -64,7 +66,7 @@
 (defn initialize-with-web
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            log
            neo4jd
            neo4j
