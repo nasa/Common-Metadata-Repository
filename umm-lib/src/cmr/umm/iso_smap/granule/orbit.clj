@@ -56,7 +56,8 @@
   (try
     (Float. value)
     (catch Exception e
-      (error e (format "For orbit field [%s] the value [%s] is not a number." field value)))))
+      (info (format "For orbit field [%s] the value [%s] is not a number." field value))
+      nil)))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
