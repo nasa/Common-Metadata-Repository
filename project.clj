@@ -24,6 +24,7 @@
     [cheshire "5.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]

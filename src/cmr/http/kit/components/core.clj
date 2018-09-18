@@ -1,16 +1,18 @@
 (ns cmr.http.kit.components.core
   (:require
-    [cmr.http.kit.components.config :as config]
-    [cmr.http.kit.components.logging :as logging]
+    [cmr.exchange.common.components.config :as config]
+    [cmr.exchange.common.components.logging :as logging]
     [cmr.http.kit.components.server :as httpd]
+    [cmr.http.kit.config :as config-lib]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Common Configuration Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def cfg
-  {:config (config/create-component)})
+(defn cfg
+  []
+  {:config (config/create-component (config-lib/data))})
 
 (def log
   {:logging (component/using
@@ -36,25 +38,25 @@
 
 (defn initialize-config-only
   []
-  (component/map->SystemMap cfg))
+  (component/map->SystemMap (cfg)))
 
 (defn initialize-bare-bones
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            log)))
 
 (defn initialize-with-web
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            log
            httpd)))
 
 (defn initialize-without-logging
   []
   (component/map->SystemMap
-    (merge cfg
+    (merge (cfg)
            httpd-without-logging)))
 
 (def init-lookup
