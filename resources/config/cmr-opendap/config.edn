@@ -40,6 +40,7 @@
             :relative {:root {:url "/search"}}}}
  :httpd {
    :port 3013
+   :entry-point-fn cmr.opendap.app.core/main
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
