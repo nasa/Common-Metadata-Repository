@@ -1,41 +1,19 @@
 (ns cmr.process.manager.util
   (:require
     [clojure.java.io :as io]
+    [cmr.exchange.common.util :as util]
     [me.raynes.conch.low-level :as shell]))
 
 (def ^:dynamic *byte-buffer-size* 1024)
 
-(defn newline?
-  ""
-  [byte]
-  (= (char byte) \newline))
-
-(defn bytes->ascii
-  ""
-  [bytes]
-  (.trim (new String bytes "US-ASCII")))
-
-(defn bytes->utf8
-  ""
-  [bytes]
-  (.trim (new String bytes "UTF-8")))
-
-(defn bytes->int
-  ""
-  [bytes]
-  (-> bytes
-      (bytes->ascii)
-      (Integer/parseInt)))
-
-(defn str->bytes
-  ""
-  [str]
-  (.getBytes str))
-
-(defn str->stream
-  ""
-  [str]
-  (io/input-stream (str->bytes str)))
+;; XXX Copied here for backwards compatibility; can be removed when references
+;; are updated.
+(def newline? util/newline?)
+(def bytes->ascii util/bytes->ascii)
+(def bytes->utf8 util/bytes->utf8)
+(def bytes->int util/bytes->int)
+(def str->bytes util/str->bytes)
+(def str->stream util/str->stream)
 
 (defn make-byte-array
   ([]

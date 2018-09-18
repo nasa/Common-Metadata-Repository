@@ -21,6 +21,7 @@
     [clojusc/trifl "0.3.0-SNAPSHOT"]
     [clojusc/twig "0.3.2"]
     [com.stuartsierra/component "0.3.2"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [me.raynes/conch "0.8.0"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]]
