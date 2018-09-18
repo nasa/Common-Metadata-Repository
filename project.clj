@@ -25,10 +25,13 @@
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
+    [ring/ring-defaults "0.3.2"]
+    [selmer "1.11.8"]
     [tolitius/xml-in "0.1.0"]]
   :profiles {
     :ubercompile {

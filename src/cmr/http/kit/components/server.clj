@@ -13,13 +13,28 @@
 (defrecord HTTPD [])
 
 (defn start
+  "The `entry-point` in configuration needs to be of the form
+  `name.space/function-name` and should point to a function that takes at least
+  one parameter: the httpd component/system data structure.
+
+  Furthermore, when that `entry-point` function is called, it requires that
+  two other configuration values have been set:
+  * API routes
+  * web site routes
+
+  Note that the API route takes an additional parameter: the version of the
+  API; unlike the site routes, the API routes are built at the time of the
+  HTTP request (in order to support versioned APIs).
+
+  For more information on the expected placement in configuration, see
+  `cmr.http.kit.components.config`."
   [this]
   (log/info "Starting httpd component ...")
   (let [port (config/http-port this)
-        entry-point (util/resolve-fully-qualified-fn
-                     (config/http-entry-point-fn this))
+        entry-point (config/http-entry-point-fn this)
         server (server/run-server (entry-point this)
                                   {:port port})]
+    (log/trace "Entry point:" entry-point)
     (log/debugf "HTTPD is listening on port %s" port)
     (log/debug "Started httpd component.")
     (assoc this :server server)))

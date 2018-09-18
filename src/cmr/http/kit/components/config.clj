@@ -1,6 +1,7 @@
 (ns cmr.http.kit.components.config
   (:require
    [cmr.exchange.common.components.config :as config]
+   [cmr.exchange.common.util :as util]
    [taoensso.timbre :as log])
   (:import
    (clojure.lang Keyword)))
@@ -17,7 +18,8 @@
 
 (defn http-entry-point-fn
   [system]
-  (get-in (get-cfg system) [:httpd :entry-point-fn]))
+  (util/resolve-fully-qualified-fn
+    (get-in (get-cfg system) [:httpd :entry-point-fn])))
 
 (defn http-assets
   [system]
@@ -55,17 +57,27 @@
   [system]
   (get-in (get-cfg system) [:httpd :skip-static]))
 
-(def log-color? config/log-color?)
-(def log-level config/log-level)
-(def log-nss config/log-nss)
-
 (defn streaming-heartbeat
   [system]
-  (get-in (get-cfg system) [:streaming :heartbeat]))
+  (get-in (get-cfg system) [:httpd :streaming :heartbeat]))
 
 (defn streaming-timeout
   [system]
-  (get-in (get-cfg system) [:streaming :timeout]))
+  (get-in (get-cfg system) [:httpd :streaming :timeout]))
+
+(defn api-routes
+  [system]
+  (util/resolve-fully-qualified-fn
+    (get-in (get-cfg system) [:httpd :route-fns :api])))
+
+(defn site-routes
+  [system]
+  (util/resolve-fully-qualified-fn
+    (get-in (get-cfg system) [:httpd :route-fns :site])))
+
+(def log-color? config/log-color?)
+(def log-level config/log-level)
+(def log-nss config/log-nss)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

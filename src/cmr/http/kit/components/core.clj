@@ -4,6 +4,7 @@
     [cmr.exchange.common.components.logging :as logging]
     [cmr.http.kit.components.server :as httpd]
     [cmr.http.kit.config :as config-lib]
+    [cmr.plugin.jar.components.registry :as plugin-registry]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,18 +20,28 @@
              (logging/create-component)
              [:config])})
 
+(def reg
+  {:plugin (component/using
+            (plugin-registry/create-component)
+            [:config :logging])})
+
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging])})
+           [:config :logging :plugin])})
 
 ;;; Additional components for systems that want to supress logging (e.g.,
 ;;; systems created for testing).
 
+(def reg-without-logging
+  {:plugin (component/using
+            (plugin-registry/create-component)
+            [:config])})
+
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config])})
+           [:config :plugin])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,22 +62,24 @@
   (component/map->SystemMap
     (merge (cfg)
            log
+           reg
            httpd)))
 
 (defn initialize-without-logging
   []
   (component/map->SystemMap
     (merge (cfg)
+           reg-without-logging
            httpd-without-logging)))
 
 (def init-lookup
   {:basic #'initialize-bare-bones
    :testing-config-only #'initialize-config-only
    :testing #'initialize-without-logging
-   :web #'initialize-with-web})
+   :main #'initialize-with-web})
 
 (defn init
   ([]
-    (init :web))
+    (init :main))
   ([mode]
     ((mode init-lookup))))
