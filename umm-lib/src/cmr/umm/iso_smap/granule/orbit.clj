@@ -16,7 +16,7 @@
   [field-path direction]
   (when (and (not= :asc direction)
              (not= :desc direction))
-    {field-path [(msg/start-end-direction direction)]}))
+    {field-path [(msg/start-end-direction field-path direction)]}))
 
 (defn- convert-direction
   "Converts :asc <=> A and :desc <=> D"
@@ -26,12 +26,12 @@
     (= "D" direction) :desc
     (= :asc direction) "A"
     (= :desc direction) "D"
-    :default nil))
+    :default direction))
 
 (def validations
-  [{:ascending-crossing [v/required v/number (v/within-range -180.0 180.0)]
-    :start-lat [v/required v/number (v/within-range -90.0 90.0)]
-    :end-lat [v/required v/number (v/within-range -90.0 90.0)]
+  [{:ascending-crossing [v/required (v/within-range -180.0 180.0)]
+    :start-lat [v/required (v/within-range -90.0 90.0)]
+    :end-lat [v/required (v/within-range -90.0 90.0)]
     :start-direction start-end-direction
     :end-direction start-end-direction}])
 
@@ -50,7 +50,7 @@
             start-lat (convert-direction start-direction)
             end-lat (convert-direction end-direction))))
 
-(defn-parse-float
+(defn- parse-float
   "Coerce's string to float, catches exceptions and logs error message and returns nil if
   value is not parseable."
   [field value]
@@ -58,7 +58,7 @@
     (Float. value)
     (catch Exception e
       (info (format "For orbit field [%s] the value [%s] is not a number." field value))
-      nil)))
+      value)))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]

@@ -148,9 +148,11 @@
   "Creates a validator within a specified range"
   [minv maxv]
   (fn [field-path value]
-    (when (and value (or (neg? (compare value minv))
-                         (pos? (compare value maxv))))
-      {field-path [(msg/within-range minv maxv value)]})))
+    (if (and value (not (number? value)))
+      {field-path [(msg/number value)]}
+      (when (and value (or (neg? (compare value minv))
+                           (pos? (compare value maxv))))
+        {field-path [(msg/within-range minv maxv value)]}))))
 
 (defn field-cannot-be-changed
   "Validation that a field in a object has not been modified. Accepts optional
