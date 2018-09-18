@@ -1,8 +1,9 @@
 (ns cmr.mission-control.components.core
   (:require
-    [cmr.mission-control.components.config :as config]
-    [cmr.mission-control.components.logging :as logging]
+    [cmr.exchange.common.components.config :as config]
+    [cmr.exchange.common.components.logging :as logging]
     [cmr.mission-control.components.pubsub :as pubsub]
+    [cmr.mission-control.config :as config-lib]
     [com.stuartsierra.component :as component]
     [taoensso.timbre :as log]))
 
@@ -11,8 +12,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cfg
-  [cfg-data]
-  {:config (config/create-component cfg-data)})
+  []
+  {:config (config/create-component (config-lib/data))})
 
 (def log
   {:logging (component/using
@@ -25,13 +26,14 @@
             [:config :logging])})
 
 (defn basic
-  [cfg-data]
-  (merge (cfg cfg-data)
+  []
+  (merge (cfg)
          log))
 
 (defn mission-control
-  [cfg-data]
-  (merge (basic cfg-data)
+  []
+  (merge (cfg)
+         log
          pubsub))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,15 +42,11 @@
 
 (defn initialize-bare-bones
   []
-  (-> (config/build-config)
-      basic
-      component/map->SystemMap))
+  (component/map->SystemMap (basic)))
 
 (defn initialize
   []
-  (-> (config/build-config)
-      mission-control
-      component/map->SystemMap))
+  (component/map->SystemMap (mission-control)))
 
 (def init-lookup
   {:basic #'initialize-bare-bones

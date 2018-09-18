@@ -19,8 +19,9 @@
       :aot :all}
     :dev {
       :dependencies [
-        [clojusc/dev-system "0.1.0"]
+        [clojusc/system-manager "0.3.0-SNAPSHOT"]
         [clojusc/trifl "0.2.0"]
+        [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-shell "0.5.0"]
