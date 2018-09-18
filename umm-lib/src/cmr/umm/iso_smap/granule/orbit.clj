@@ -51,7 +51,8 @@
             end-lat (convert-direction end-direction))))
 
 (defn- coerce-float
-  "Coerce's string to float, catches exceptions and produces error message."
+  "Coerce's string to float, catches exceptions and logs error message and returns nil if
+  value is not parseable."
   [field value]
   (try
     (Float. value)
