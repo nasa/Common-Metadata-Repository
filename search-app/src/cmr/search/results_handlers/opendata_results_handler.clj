@@ -243,7 +243,7 @@
                             :distribution (distribution related-urls)
                             :landingPage (landing-page related-urls)
                             :language  [LANGUAGE_CODE]
-                            :references (not-empty (distinct (map :url related-urls)))
+                            :references (not-empty (distinct (map #(ru/related-url->encoded-url (:url %)) related-urls)))
                             :issued (not-empty insert-time)})))
 
 (defn- results->opendata
