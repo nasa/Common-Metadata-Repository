@@ -1,6 +1,6 @@
 {:httpd {
    :port 3013
-   :entry-point-fn identity
+   :entry-point-fn clojure.core/identity
    :docs nil
    :assets nil
    :rest-docs
