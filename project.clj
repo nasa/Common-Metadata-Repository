@@ -25,15 +25,19 @@
     [cheshire "5.8.0"]
     [clojusc/trifl "0.2.0"]
     [clojusc/twig "0.3.2"]
+    [com.jcabi/jcabi-manifests "1.1"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.2-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [markdown-clj "1.0.2"]
+    [me.delete/plugin-a "0.1.0-SNAPSHOT"]
+    [me.delete/plugin-b "0.1.0-SNAPSHOT"]
+    [me.delete/plugin-c "0.1.0-SNAPSHOT"]
     [metosin/reitit-core "0.1.3"]
     [metosin/reitit-ring "0.1.3"]
     [metosin/ring-http-response "0.9.0"]
@@ -41,6 +45,7 @@
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
+    [org.clojure/java.classpath "0.3.0"]
     [ring/ring-core "1.6.3"]
     [ring/ring-codec "1.1.1"]
     [ring/ring-defaults "0.3.2"]
@@ -81,12 +86,12 @@
         [lein-project-version "0.1.0"]
         [lein-shell "0.5.0"]
         [venantius/ultra "0.5.2"]]
-      :source-paths ["dev-resources/src"]}
+      :source-paths ["dev-resources/src"]
+      :jvm-opts [
+        "-Dlogging.color=true"]}
     :dev {
       :dependencies [
         [debugger "0.2.1"]]
-      :jvm-opts [
-        "-Dcmr.opendap.logging.color=true"]
       :repl-options {
         :init-ns cmr.opendap.dev
         :prompt ~get-prompt
