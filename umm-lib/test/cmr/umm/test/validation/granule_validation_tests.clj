@@ -99,8 +99,8 @@
         ["Spatial validation error: Ascending Crossing must be within [-180.0] and [180.0] but was [-181.0]."
          "Spatial validation error: Start Lat must be within [-90.0] and [90.0] but was [180]."
          "Spatial validation error: End Lat must be within [-90.0] and [90.0] but was [700]."
-         "Spatial validation error: The orbit start and end direction must be either A or D."
-         "Spatial validation error: The orbit start and end direction must be either A or D."]))))
+         "Spatial validation error: The orbit [:start-direction] is [C], must be either A or D."
+         "Spatial validation error: The orbit [:end-direction] is [E], must be either A or D."]))))
 
 (deftest granule-spatial-representation
   (let [collection-with-geodetic (make-collection {:spatial-coverage

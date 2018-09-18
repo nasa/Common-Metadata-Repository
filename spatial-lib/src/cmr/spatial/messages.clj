@@ -106,5 +106,5 @@
 ;; Orbit messages
 
 (defn start-end-direction
-  [direction]
-  (format "The orbit start and end direction must be either A or D."))
+  [field direction]
+  (format "The orbit %s is [%s], must be either A or D." field direction))
