@@ -1,6 +1,7 @@
 (ns cmr.http.kit.components.server
   (:require
     [com.stuartsierra.component :as component]
+    [cmr.exchange.common.util :as util]
     [cmr.http.kit.components.config :as config]
     [org.httpkit.server :as server]
     [taoensso.timbre :as log]))
@@ -15,7 +16,8 @@
   [this]
   (log/info "Starting httpd component ...")
   (let [port (config/http-port this)
-        entry-point (config/http-entry-point-fn this)
+        entry-point (util/resolve-fully-qualified-fn
+                     (config/http-entry-point-fn this))
         server (server/run-server (entry-point this)
                                   {:port port})]
     (log/debugf "HTTPD is listening on port %s" port)
