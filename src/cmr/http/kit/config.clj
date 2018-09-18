@@ -1,8 +1,6 @@
 (ns cmr.http.kit.config
   (:require
-   [cmr.exchange.common.file :as file])
-  (:import
-   (clojure.lang Keyword)))
+   [cmr.exchange.common.file :as file]))
 
 (def config-file "config/cmr-http-kit/config.edn")
 
