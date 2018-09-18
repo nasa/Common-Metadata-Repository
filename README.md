@@ -1,6 +1,6 @@
 # cmr-exchange-common
 
-*TBD*
+*Cross-project functionality, utilities, and general-use components*
 
 [![][logo]][logo]
 
