@@ -1,13 +1,18 @@
+(defn get-banner
+  []
+  (try
+    (str
+      (slurp "resources/text/banner.txt")
+      ;(slurp "resources/text/loading.txt")
+      )
+    ;; If another project can't find the banner, just skip it.
+    (catch Exception _ "")))
+
 (defn get-prompt
   [ns]
   (str "\u001B[35m[\u001B[34m"
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
-
-(defn print-welcome
-  []
-  (println (slurp "dev-resources/text/banner.txt"))
-  (println (slurp "dev-resources/text/loading.txt")))
 
 (defproject gov.nasa.earthdata/cmr-process-manager "0.1.1-SNAPSHOT"
   :description "Process management functionality for CMR services"
@@ -36,13 +41,15 @@
         }}
     :dev {
       :dependencies [
-        [clojusc/dev-system "0.1.0"]
         [clojusc/ltest "0.3.0"]
+        [clojusc/system-manager "0.3.0-SNAPSHOT"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths [
         "dev-resources/src"]
       :repl-options {
-        :init-ns cmr.process.manager.repl}}
+        :init-ns cmr.process.manager.repl
+        :prompt ~get-prompt
+        :init ~(println (get-banner))}}
     :test {
       :plugins [
         [jonase/eastwood "0.2.6"]
