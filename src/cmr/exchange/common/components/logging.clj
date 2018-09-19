@@ -17,7 +17,7 @@
   (let [log-level (config/log-level this)
         log-nss (config/log-nss this)]
     (log/debug "Setting up logging with level" log-level)
-    (log/warn "Log config:" (get-in this [:config :data :logging]))
+    (log/trace "Log config:" (get-in this [:config :data :logging]))
     (log/debug "Logging namespaces:" log-nss)
     (if (true? (config/log-color? this))
       (do
