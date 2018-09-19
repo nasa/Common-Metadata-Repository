@@ -1,7 +1,8 @@
 (ns cmr.umm.related-url-helper
   "Contains functions for categorizing UMM related urls."
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ring.util.codec :as codec]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
@@ -86,3 +87,23 @@
   "Returns a sequence of atom links for the given related urls"
   [related-urls]
   (map related-url->atom-link related-urls))
+
+(defn- encode-url
+  "Encode the query portion of the url."
+  [url]
+  (let [split-url (string/split url #"\?" 2)
+        base-url (first split-url)
+        params (second split-url)]
+    (if params
+      (->> params
+           codec/form-decode
+           codec/form-encode
+           (str base-url "?"))
+      url)))
+
+(defn related-url->encoded-url
+  "Ensure URL is encoded."
+  [related-url]
+  (if related-url
+    (encode-url related-url)
+    related-url))
