@@ -15,21 +15,15 @@
 
 (defn jars
   [system]
-  (get-in system [(config/plugin-component-key system)
-                  :registry
-                  :jars]))
+  (get-in system [:plugin :registry :jars]))
 
 (defn routes
   [system]
-  (get-in system [(config/plugin-component-key system)
-                  :registry
-                  :routes]))
+  (get-in system [:plugin :registry :routes]))
 
 (defn assembled-routes
   [system]
-  (get-in system [(config/plugin-component-key system)
-                  :registry
-                  :assembled-routes]))
+  (get-in system [:plugin :registry :assembled-routes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

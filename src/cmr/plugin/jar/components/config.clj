@@ -21,10 +21,6 @@
 (def log-level config/log-level)
 (def log-nss config/log-nss)
 
-(defn plugin-component-key
-  [system]
-  (get-in (get-cfg system) [:plugin :registry :component-key]))
-
 (defn default-plugin-name
   [system]
   (get-in (get-cfg system) [:plugin :registry :default :plugin-name]))
