@@ -23,6 +23,11 @@ This project offers two key pieces of fucntionality:
 1. Using the [Component](https://github.com/stuartsierra/component)
    library to register these in a running system.
 
+**Question**: At a high-level, how do I use this? How do a plan a project to
+take advantage of this?
+
+**Answer**: TBD!
+
 
 ## Dependencies [&#x219F;](#contents)
 
@@ -65,7 +70,6 @@ default config file:
      ;; type -- both of type ^String.
      :reducer-factory cmr.plugin.jar.core/create-regex-plugin-reducer}
    :registry {
-     :component-key :plugin
      :default {
        :plugin-name ".*"
        :plugin-type ".*"
@@ -113,8 +117,8 @@ By default, a web/routes plugin expects to find your routes configuration at
 ```clj
 {:web {
    :route-fns {
-   	 :api my.plugin1.app.api.routes/all
-   	 :site my.plugin1.app.site.routes/all}}}
+     :api my.plugin1.app.api.routes/all
+     :site my.plugin1.app.site.routes/all}}}
 ```
 
 If your web plugin's routes are configured elsewhere, just update the
@@ -129,11 +133,129 @@ Finally, all that's left' to be done is `lein install` or `lein deploy clojars`
 
 ### Library
 
-TBD
+Note that the results in the following example usages were captured on a
+system where sample plugin JARs were added as dependencies to a sample project.
+
+```clj
+(require '[cmr.plugin.jar.core :as jar-plugin]
+         '[cmr.plugin.jar.jarfile :as jarfile])
+```
+
+Get a list of JAR files that declare themselves as plugins with a given name:
+
+```clj
+(def plugins (jar-plugin/jarfiles "CMR-Plugin"
+                                  "service-bridge-app"
+                                  jar-plugin/create-has-plugin-name-reducer))
+plugins
+```
+```clj
+(#object[java.util.jar.JarFile 0x7f2c21ed "java.util.jar.JarFile@7f2c21ed"]
+ #object[java.util.jar.JarFile 0x1fddbdfb "java.util.jar.JarFile@1fddbdfb"]
+ #object[java.util.jar.JarFile 0x5f6c7f61 "java.util.jar.JarFile@5f6c7f61"])
+```
+
+You can see the actual JAR file names with this:
+```clj
+(map jarfile/name plugins)
+```
+```clj
+("/Users/oubiwann/.m2/repository/me/delete/plugin-c/0.1.0-SNAPSHOT/plugin-c-0.1.0-SNAPSHOT.jar"
+ "/Users/oubiwann/.m2/repository/me/delete/plugin-a/0.1.0-SNAPSHOT/plugin-a-0.1.0-SNAPSHOT.jar"
+ "/Users/oubiwann/.m2/repository/me/delete/plugin-b/0.1.0-SNAPSHOT/plugin-b-0.1.0-SNAPSHOT.jar")
+```
+
+And, with even more fine-grained detail, you can see the plugin types with
+this:
+
+```clj
+(map #(jarfile/manifest-value % "CMR-Plugin") plugins)
+```
+```clj
+("concept" "service-bridge-routes" "service-bridge-routes")
+```
+
+As you can see, there are different plugin types for plugins with the same
+name. You can filter by type, if you so desire:
+
+```clj
+(def plugins (jar-plugin/jarfiles "CMR-Plugin"
+                                  "service-bridge-routes"
+                                  jar-plugin/create-has-plugin-type-reducer))
+plugins
+```
+```clj
+(#object[java.util.jar.JarFile 0x2a1d7585 "java.util.jar.JarFile@2a1d7585"]
+ #object[java.util.jar.JarFile 0x65815455 "java.util.jar.JarFile@65815455"])
+```
+
+
 
 ### Registry
 
-TBD
+Note that the results in the following example usages were captured on a
+system where sample plugin JARs were added as dependencies to a sample project.
+
+The plugin registry is just a specialized
+[Component](https://github.com/stuartsierra/component) in a running system.
+Once the system is brought up, you can use the functions that have been written
+for the plugin regsitry component:
+
+```clj
+(require '[cmr.plugin.jar.components.registry :as registry])
+(registry/jars system)
+```
+```clj
+[{:file "/Users/oubiwann/.m2/repository/me/delete/plugin-c/0.1.0-SNAPSHOT/plugin-c-0.1.0-SNAPSHOT.jar"
+  :object #object[java.util.jar.JarFile 0x7797053f "java.util.jar.JarFile@7797053f"]
+  :plugin-name "CMR-Plugin"
+  :plugin-type "concept"}
+ {:file "/Users/oubiwann/.m2/repository/me/delete/plugin-a/0.1.0-SNAPSHOT/plugin-a-0.1.0-SNAPSHOT.jar"
+  :object #object[java.util.jar.JarFile 0x2ec9c57a "java.util.jar.JarFile@2ec9c57a"]
+  :plugin-name "CMR-Plugin"
+  :plugin-type "service-bridge-routes"}
+ {:file "/Users/oubiwann/.m2/repository/me/delete/plugin-b/0.1.0-SNAPSHOT/plugin-b-0.1.0-SNAPSHOT.jar"
+  :object #object[java.util.jar.JarFile 0x2de0f074 "java.util.jar.JarFile@2de0f074"]
+  :plugin-name "CMR-Plugin"
+  :plugin-type "service-bridge-routes"}]
+```
+
+Then, for route plugins:
+
+```clj
+(registry/routes system)
+```
+```clj
+{:api [plugin-c.core/foo plugin-a.core/foo plugin-b.core/foo]
+ :site [plugin-c.core/foo plugin-a.core/foo plugin-b.core/foo]}
+```
+
+```clj
+(registry/assembled-routes system)
+```
+```clj
+{:api (["/c/1" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/c/2" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/c/3" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/a/1" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/a/2" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/a/3" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/b/1" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/b/2" {:get #<Fn@62977afb clojure.core/identity>}]
+       ["/b/3" {:get #<Fn@62977afb clojure.core/identity>}])
+ :site (["/c/1" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/c/2" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/c/3" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/a/1" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/a/2" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/a/3" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/b/1" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/b/2" {:get #<Fn@62977afb clojure.core/identity>}]
+        ["/b/3" {:get #<Fn@62977afb clojure.core/identity>}])}
+```
+
+Note that calling the last two functions for a system that has plugins, but not
+route plguins, will result in `nil` values.
 
 
 ## License [&#x219F;](#contents)

@@ -75,46 +75,7 @@
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
         :system :system
-        :default (complement :system)}}
-    :docs {
-      :dependencies [
-        [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
-      :plugins [
-        [lein-codox "0.10.4"]
-        [lein-marginalia "0.9.1"]]
-      :source-paths ["resources/docs/src"]
-      :codox {
-        :project {
-          :name "CMR JAR-Plugin"
-          :description :project/description}
-        :namespaces [#"^cmr\.opendap\.(?!dev)"]
-        :metadata {
-          :doc/format :markdown
-          :doc "Documentation forthcoming"}
-        :themes [:eosdis]
-        :html {
-          :transforms [[:head]
-                       [:append
-                         [:script {
-                           :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
-                           :id "earthdata-tophat-script"
-                           :data-show-fbm "true"
-                           :data-show-status "true"
-                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
-                           :data-status-polling-interval "10"}]]
-                       [:body]
-                       [:prepend
-                         [:div {:id "earthdata-tophat2"
-                                :style "height: 32px;"}]]
-                       [:body]
-                       [:append
-                         [:script {
-                           :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
-                           :type "text/javascript"}]]]}
-        :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/opendap/docs/current/reference"}}
-      :slate {
-        :plugins [[lein-shell "0.5.0"]]}}
+        :default (complement :system)}}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
@@ -143,15 +104,6 @@
       ]
     "ltest" ["with-profile" "+test,+system" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
-    ;; Documentation and static content
-    "codox" ["with-profile" "+docs,+system" "codox"]
-    "marginalia" ["with-profile" "+docs,+system"
-      "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
-             "--file" "index.html"
-             "--name" "OPeNDAP/CMR Integration"]
-    "docs" ["do"
-      ["codox"]
-      ["marginalia"]]
     ;; Build tasks
     "build-lite" ["do"
       ["ltest" ":unit"]]
