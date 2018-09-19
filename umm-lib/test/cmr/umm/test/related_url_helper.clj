@@ -2,9 +2,9 @@
   "Tests functions that categorize related urls."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.test.url-util :as uu]
+   [cmr.common.test.url-util :as url-util]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.related-url-helper :as related-url-helper]
    [cmr.umm.umm-collection :as umm-c]))
 
 (deftest categorize-related-urls
@@ -26,16 +26,16 @@
                          {:type "GET SERVICE"
                           :url "http://camex.nsstc.nasa.gov/camex3/"})
           related-urls [downloadable-url browse-url documentation-url metadata-url]]
-      (is (= [downloadable-url] (ru/downloadable-urls related-urls)))
-      (is (= [browse-url] (ru/browse-urls related-urls)))
-      (is (= [documentation-url] (ru/documentation-urls related-urls)))
-      (is (= [metadata-url] (ru/metadata-urls related-urls))))))
+      (is (= [downloadable-url] (related-url-helper/downloadable-urls related-urls)))
+      (is (= [browse-url] (related-url-helper/browse-urls related-urls)))
+      (is (= [documentation-url] (related-url-helper/documentation-urls related-urls)))
+      (is (= [metadata-url] (related-url-helper/metadata-urls related-urls))))))
 
 (deftest related-url->encoded-url
   (testing "encode related urls"
     (are3 [expected-url url-to-encode]
-          (is (= (uu/url->comparable-url expected-url)
-                 (uu/url->comparable-url (ru/related-url->encoded-url url-to-encode))))
+          (is (= (url-util/url->comparable-url expected-url)
+                 (url-util/url->comparable-url (related-url-helper/related-url->encoded-url url-to-encode))))
 
           "URL with no query string"
           "https://cmr.earthdata.nasa.gov/search/collections.umm_json?"
@@ -61,7 +61,7 @@
           "https://example.org/example?arithmetic=1%2B2%2B3%2B4&slashes=a%2Fb%2Fc&spaces=a+b+c&spaces=a+b+c&spaces=a+b+c"
           "https://example.org/example?arithmetic=1%2B2%2B3%2B4&slashes=a/b/c&spaces=a%20b%20c&spaces=a+b+c&spaces=a b c"
 
-          "Plus signs/spaces remaing spaces and arithmetic plus sign encodings remain encoded"
+          "Plus signs/spaces remain spaces and arithmetic plus sign encodings remain encoded"
           "https://plus-signs.plus/addition?arithmetic=1%2B2%2B3&spaces=a+b+c&spaces=a+b+c"
           "https://plus-signs.plus/addition?arithmetic=1%2B2%2B3&spaces=a%20b%20c&spaces=a+b+c"
 

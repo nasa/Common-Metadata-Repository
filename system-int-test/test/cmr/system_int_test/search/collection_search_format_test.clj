@@ -10,7 +10,7 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
-   [cmr.common.test.url-util :as uu]
+   [cmr.common.test.url-util :as url-util]
    [cmr.common.util :as util :refer [are2 are3]]
    [cmr.common.xml :as cx]
    [cmr.search.validators.opendata :as opendata-json]
@@ -693,7 +693,7 @@
           _ (index/wait-until-indexed)
           opendata (search/find-concepts-opendata :collection {:concept_id (:concept-id concept)})
           references (:references (first (get-in opendata [:results :dataset])))]
-      (is (= (set (map uu/url->comparable-url
+      (is (= (set (map url-util/url->comparable-url
                        ["https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
                         "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
                         "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"
@@ -707,7 +707,7 @@
                         "https://disc.gsfc.nasa.gov/information/documents?title=AIRS+Documentation"
                         "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
                         "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_Files_Description.pdf"]))
-             (set (map uu/url->comparable-url references)))))))
+             (set (map url-util/url->comparable-url references)))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]
