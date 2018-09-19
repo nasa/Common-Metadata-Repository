@@ -9,8 +9,9 @@
    [clojusc.system-manager.core :as system-api :refer :all]
    [clojusc.twig :as logger]
    [cmr.plugin.jar.components.config :as config]
+   [cmr.plugin.jar.components.core]
    [cmr.plugin.jar.components.registry :as registry]
-   [cmr.plugin.jar.core :as plugin]
+   [cmr.plugin.jar.core :as jar-plugin]
    [cmr.plugin.jar.jarfile :as jarfile]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])

@@ -1,7 +1,6 @@
 (ns cmr.plugin.jar.config
   (:require
-   [clojure.edn :as edn]
-   [clojure.java.io :as io])
+   [cmr.exchange.common.file :as file])
   (:import
    (java.io PushbackReader)))
 
@@ -11,5 +10,4 @@
   ([]
     (data config-file))
   ([filename]
-    (with-open [rdr (io/reader (io/resource filename))]
-      (edn/read (new PushbackReader rdr)))))
+    (file/read-edn-resource filename)))

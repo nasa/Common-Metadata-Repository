@@ -25,6 +25,7 @@
     [clojusc/trifl "0.3.0"]
     [clojusc/twig "0.3.3"]
     [com.stuartsierra/component "0.3.2"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/java.classpath "0.3.0"]]
   :aot [clojure.tools.logging.impl]
@@ -38,7 +39,10 @@
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
-        [proto-repl "0.3.1"]]
+        [proto-repl "0.3.1"]
+        [me.delete/plugin-a "0.1.0-SNAPSHOT"]
+        [me.delete/plugin-b "0.1.0-SNAPSHOT"]
+        [me.delete/plugin-c "0.1.0-SNAPSHOT"]]
       :plugins [
         [lein-project-version "0.1.0"]
         [lein-shell "0.5.0"]

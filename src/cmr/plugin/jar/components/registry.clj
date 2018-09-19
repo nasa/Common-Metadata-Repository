@@ -15,21 +15,27 @@
 
 (defn jars
   [system]
-  (get-in system [(config/plugin-component-key system) :registry :jars]))
+  (get-in system [(config/plugin-component-key system)
+                  :registry
+                  :jars]))
 
 (defn routes
   [system]
-  (get-in system [(config/plugin-component-key system) :registry :routes]))
+  (get-in system [(config/plugin-component-key system)
+                  :registry
+                  :routes]))
 
 (defn assembled-routes
   [system]
-  (get-in system [(config/plugin-component-key system) :registry :assembled-routes]))
+  (get-in system [(config/plugin-component-key system)
+                  :registry
+                  :assembled-routes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord PluginRegistry [])
+(defrecord PluginRegistry [registry])
 
 (defn start
   [this]
@@ -45,7 +51,7 @@
     (log/debug "Started plugin registry component.")
     (-> this
         (assoc-in [:registry :jars]
-                  (plugin/named-jars jarfiles))
+                  (plugin/tagged-jars jarfiles plugin-name plugin-type))
         (assoc-in [:registry :routes]
                   (routes/plugins-routes jarfiles
                                          in-jar-filepath
