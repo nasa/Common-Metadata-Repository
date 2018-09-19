@@ -7,11 +7,15 @@
   (java.util.jar JarFile)
   (java.util.jar Attributes$Name)))
 
-(defn named-jars
+(defn tagged-jars
   "Generate a collection of `JarFile` maps, each with a `:file` and `:object`
   key for easy readability and use."
-  [jarfiles]
-  (mapv #(hash-map :file (jarfile/name %) :object %) jarfiles))
+  [jarfiles plugin-name plugin-type]
+  (mapv #(hash-map :file (jarfile/name %)
+                   :plugin-name (first (jarfile/matched-manifest-keys % plugin-name))
+                   :plugin-type (first (jarfile/matched-manifest-values % plugin-name plugin-type))
+                   :object %)
+        jarfiles))
 
 (defn no-manifest-reducer
   "This reducer will generate a collection of JAR files that have no MANIFEST file.
@@ -32,29 +36,40 @@
 (defn create-has-plugin-name-reducer
   "This creates a reducer that will generate a collection of JAR files that
   have a MANIFEST file and that also have a key in the MANIFEST file which
-  exactly matches the given pluging name."
-  [plugin-name]
+  exactly matches the given plugin name."
+  [plugin-name _]
   (fn [acc ^JarFile jar]
     (conj acc
-          (when (jarfile/manifest-has-key? jar plugin-name))
-            jar)))
+          (when (jarfile/manifest-has-key? jar plugin-name)
+            jar))))
+
+(defn create-has-plugin-type-reducer
+  "This creates a reducer that will generate a collection of JAR files that
+  have a MANIFEST file and that also have a key in the MANIFEST file which
+  exactly matches both the given plugin name as well as the plugin type."
+  [plugin-name plugin-type]
+  (fn [acc ^JarFile jar]
+    (conj acc
+          (when (jarfile/manifest-has-value? jar plugin-name plugin-type)
+            jar))))
 
 (defn create-regex-plugin-name-reducer
   "This creates a reducer that will generate a collection of JAR files that
   have a MANIFEST file and that also have a key in the MANIFEST file which
-  exactly matches the given pluging name."
-  [plugin-name]
+  matches the given plugin name (possibly a regular expression)."
+  [plugin-name _]
   (fn [acc ^JarFile jar]
     (conj acc
-          (when (jarfile/matches-manifest-key? jar plugin-name))
-            jar)))
+          (when (jarfile/matches-manifest-key? jar plugin-name)
+            jar))))
 
 (defn create-regex-plugin-type-reducer
   "This creates a reducer that will generate a collection of JAR files that
   have a MANIFEST file and that:
   1) have a key in the MANIFEST file which exactly matches the given plugin
      name, and
-  2) have a value for the plugin key that matches the configured plugin type."
+  2) have a value for the plugin key that matches the configured plugin type,
+     where the plugin type is possibly a regular expression."
   [plugin-name plugin-type]
   (fn [acc ^JarFile jar]
     (conj acc
@@ -87,8 +102,8 @@
   "Given a plugin name (MANIFEST file entry), plugin type (the MANIFEST file
   entry's value), and a reducer-factory function, return all the JAR files
   that are accumulated by the redcuer."
-  [^String plugin-name ^String plugin-type reducer]
+  [^String plugin-name ^String plugin-type reducer-factory]
   (->> (jarfile/all-jars)
-       (reduce (reducer plugin-name plugin-type)
+       (reduce (reducer-factory plugin-name plugin-type)
                [])
        (remove nil?)))
