@@ -46,6 +46,11 @@
   (when-let [m (manifest this)]
     (get m key-name)))
 
+(defn manifest-has-value?
+  [^JarFile this key-name key-value]
+  (and (manifest-has-key? this key-name)
+       (= key-value (manifest-value this key-name))))
+
 (defn matches-manifest-key?
   [^JarFile this key-pattern]
   (when-let [m (manifest this)]
@@ -54,8 +59,18 @@
 (defn matches-manifest-value?
   [^JarFile this key-pattern value-pattern]
   (when-let [m (manifest this)]
-    (or (util/matches-key? m key-pattern)
+    (and (util/matches-key? m key-pattern)
          (util/matches-val? m value-pattern))))
+
+(defn matched-manifest-keys
+  [^JarFile this key-pattern]
+  (when-let [m (manifest this)]
+    (util/matched-keys m key-pattern)))
+
+(defn matched-manifest-values
+  [^JarFile this key-pattern value-pattern]
+  (when-let [m (manifest this)]
+    (util/matched-vals m key-pattern value-pattern)))
 
 (defn name
   [^JarFile this]
