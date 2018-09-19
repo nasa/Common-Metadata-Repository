@@ -28,6 +28,7 @@
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
@@ -49,7 +50,8 @@
              "-Xms2g"
              "-Xmx2g"]
   :main cmr.opendap.core
-  :aot [cmr.opendap.core]
+  :aot [clojure.tools.logging.impl
+        cmr.opendap.core]
   :profiles {
     :ubercompile {
       :aot :all
