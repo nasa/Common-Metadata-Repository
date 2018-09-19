@@ -1,8 +1,11 @@
 (ns cmr.umm.test.related-url-helper
   "Tests functions that categorize related urls."
-  (:require [clojure.test :refer :all]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.umm-collection :as umm-c]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.test.url-util :as uu]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.umm-collection :as umm-c]))
 
 (deftest categorize-related-urls
   (testing "categorize related urls"
@@ -27,3 +30,41 @@
       (is (= [browse-url] (ru/browse-urls related-urls)))
       (is (= [documentation-url] (ru/documentation-urls related-urls)))
       (is (= [metadata-url] (ru/metadata-urls related-urls))))))
+
+(deftest related-url->encoded-url
+  (testing "encode related urls"
+    (are3 [expected-url url-to-encode]
+          (is (= (uu/url->comparable-url expected-url)
+                 (uu/url->comparable-url (ru/related-url->encoded-url url-to-encode))))
+
+          "URL with no query string"
+          "https://cmr.earthdata.nasa.gov/search/collections.umm_json?"
+          "https://cmr.earthdata.nasa.gov/search/collections.umm_json?"
+
+          "Already encoded URL"
+          "https://nasa.gov/search?bbox=-180%2C-90%2C180%2C90&temporal=2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z&keyword=AQUA+AIRS&keyword=AQUA+AIRS"
+          "https://nasa.gov/search?bbox=-180%2C-90%2C180%2C90&temporal=2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z&keyword=AQUA%20AIRS&keyword=AQUA+AIRS"
+
+          "Already encoded nested URL"
+          "https://earthdata.nasa.gov/search?keyword=AQUA+AIRS&temporal=2005-01-01T00%3A00%3A00Z&url=https%3A%2F%2Fnasa.gov%2Fsearch%3Fbbox%3D-180%2C-90%2C180%2C90%26temporal%3D2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z%26keyword%3DAQUA+AIRS"
+          "https://earthdata.nasa.gov/search?keyword=AQUA+AIRS&temporal=2005-01-01T00%3A00%3A00Z&url=https%3A%2F%2Fnasa.gov%2Fsearch%3Fbbox%3D-180%2C-90%2C180%2C90%26temporal%3D2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z%26keyword%3DAQUA+AIRS"
+
+          "Not encoded URL"
+          "https://example.org/example?bbox=-180%2C-90%2C180%2C90&temporal=2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z&keyword=AQUA+AIRS"
+          "https://example.org/example?bbox=-180,-90,180,90&temporal=2005-01-01T00:00:00Z,2006-01-01T00:00:00Z&keyword=AQUA AIRS"
+
+          "Half encoded nested URL"
+          "https://nasa.gov/search?bbox=-180%2C-90%2C180%2C90&keywords=A+SAMPLE+KEY+WORD+SEARCH&URL=https%3A%2F%2Fnasa.gov%2Fsearch%3Fkeyword%3DAQUA+AIRS+AIRS%26temporal%3D2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z"
+          "https://nasa.gov/search?bbox=-180,-90,180,90&keywords=A SAMPLE KEY WORD%20SEARCH&URL=https%3A%2F%2Fnasa.gov%2Fsearch%3Fkeyword%3DAQUA%20AIRS+AIRS%26temporal%3D2005-01-01T00%3A00%3A00Z%2C2006-01-01T00%3A00%3A00Z"
+
+          "Half encoded random URL"
+          "https://example.org/example?arithmetic=1%2B2%2B3%2B4&slashes=a%2Fb%2Fc&spaces=a+b+c&spaces=a+b+c&spaces=a+b+c"
+          "https://example.org/example?arithmetic=1%2B2%2B3%2B4&slashes=a/b/c&spaces=a%20b%20c&spaces=a+b+c&spaces=a b c"
+
+          "Plus signs/spaces remaing spaces and arithmetic plus sign encodings remain encoded"
+          "https://plus-signs.plus/addition?arithmetic=1%2B2%2B3&spaces=a+b+c&spaces=a+b+c"
+          "https://plus-signs.plus/addition?arithmetic=1%2B2%2B3&spaces=a%20b%20c&spaces=a+b+c"
+
+          "nil URL"
+          nil
+          nil)))

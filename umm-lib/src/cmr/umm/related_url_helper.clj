@@ -88,18 +88,13 @@
   [related-urls]
   (map related-url->atom-link related-urls))
 
-(defn- url-encoded?
-  "Test to see if url is encoded."
-  [url]
-  (not (= url (codec/url-decode url))))
-
 (defn- encode-url
   "Encode the query portion of the url."
   [url]
-  (let [split-url (string/split url #"\?")
+  (let [split-url (string/split url #"\?" 2)
         base-url (first split-url)
-        params (apply str (rest split-url))]
-    (if (not-empty params)
+        params (second split-url)]
+    (if params
       (->> params
            codec/form-decode
            codec/form-encode
@@ -107,8 +102,8 @@
       url)))
 
 (defn related-url->encoded-url
-  "Test to see if the url is encoded. If not, encode it."
+  "Ensure URL is encoded."
   [related-url]
-  (if (and related-url (not (url-encoded? related-url)))
+  (if related-url
     (encode-url related-url)
     related-url))
