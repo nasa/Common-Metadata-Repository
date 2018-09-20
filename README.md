@@ -1,6 +1,6 @@
 # cmr-http-kit
 
-*Utilities and wrappers for http-kit interop*
+*Utilities, wrappers, middleware, and components for http-kit interop*
 
 [![][logo]][logo]
 
