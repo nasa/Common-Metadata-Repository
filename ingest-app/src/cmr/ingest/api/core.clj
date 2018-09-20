@@ -205,8 +205,6 @@
 (defn metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
-  (info (format "Size of metadata (in bytes) to be ingested: [%s]"
-                (-> metadata (.getBytes "UTF-8") alength)))
   (-> {:metadata metadata
        :format (mt/keep-version content-type)
        :native-id (:name metadata)
@@ -232,6 +230,15 @@
   "Returns a string with information about the concept as a loggable string."
   [concept]
   (pr-str (dissoc concept :metadata)))
+
+(defn log-concept-with-metadata-size
+  "Log the concept with metadata-size-bytes added, and metadata removed."
+  [concept request-context]
+  (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
+        concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
+    (info (format "Successfully ingested %s from client %s"
+                  (concept->loggable-string concept)
+                  (:client-id request-context)))))
 
 (defn set-default-error-format [default-response-format handler]
   "Ring middleware to add a default format to the exception-info created during exceptions. This

@@ -29,10 +29,16 @@
     (acl/verify-ingest-management-permission
       request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (validate-and-prepare-service-concept concept)]
-      (->> (api-core/set-user-id concept request-context headers)
-           (ingest/save-service request-context)
-           (api-core/generate-ingest-response headers)))))
+    (let [concept (validate-and-prepare-service-concept concept)
+          concept-with-user-id (api-core/set-user-id concept request-context headers)
+          ;; Log the ingest attempt
+          _ (info (format "Ingesting service %s from client %s"
+                          (api-core/concept->loggable-string concept-with-user-id) 
+                          (:client-id request-context)))
+          save-service-result (ingest/save-service request-context concept-with-user-id)]
+      ;; Log the successful ingest, with the metadata size in bytes. 
+      (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+      (api-core/generate-ingest-response headers save-service-result))))
 
 (defn delete-service
   "Deletes the service with the given provider id and native id."
