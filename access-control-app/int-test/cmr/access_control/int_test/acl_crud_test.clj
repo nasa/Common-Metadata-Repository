@@ -1042,7 +1042,6 @@
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
 
 (deftest entry-titles-concept-ids-sync
-  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 3))
   (let [token (e/login-guest (u/conn-context))
         make-catalog-item (fn [name coll-id]
                             (-> catalog-item-acl
@@ -1164,7 +1163,6 @@
              (actual->set
               (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
-  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 100)))
 
 (deftest CMR-5128-mmt-dashboard-acl-test
   (let [token (e/login (u/conn-context) "admin")
