@@ -90,6 +90,8 @@ This element must be one of the following enum values:
 * `SYSTEM_OPTION_DEFINITION_DEPRECATION`
 * `INGEST_MANAGEMENT_ACL`
 * `SYSTEM_CALENDAR_EVENT`
+* `DASHBOARD_ADMIN`
+* `DASHBOARD_ARC_CURATOR`
 
 ### `TemporalIdentifierType` (object)
 
@@ -184,3 +186,4 @@ This element must be one of the following enum values:
 * `DATA_QUALITY_SUMMARY_DEFINITION`
 * `DATA_QUALITY_SUMMARY_ASSIGNMENT`
 * `PROVIDER_CALENDAR_EVENT`
+* `DASHBOARD_DAAC_CURATOR`

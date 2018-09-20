@@ -41,6 +41,7 @@
                               "CATALOG_ITEM_ACL"                [c r u d]
                               "INGEST_MANAGEMENT_ACL"           [r u]
                               "DATA_QUALITY_SUMMARY_DEFINITION" [c u d]
+                              "DASHBOARD_DAAC_CURATOR_ROLE"     [c r u d]
                               "DATA_QUALITY_SUMMARY_ASSIGNMENT" [c d]
                               "PROVIDER_CALENDAR_EVENT"         [c u d]}
    :system-identity          {"SYSTEM_AUDIT_REPORT"             [r]
@@ -65,7 +66,9 @@
                               "SYSTEM_OPTION_DEFINITION"        [c d]
                               "SYSTEM_OPTION_DEFINITION_DEPRECATION" [c]
                               "INGEST_MANAGEMENT_ACL"                [r u]
-                              "SYSTEM_CALENDAR_EVENT"                [c u d]}})
+                              "SYSTEM_CALENDAR_EVENT"                [c u d]
+                              "DASHBOARD_ADMIN"                      [c r u d]
+                              "DASHBOARD_ARC_CURATOR"                [c r u d]}})
 
 (comment
   ;; evaluate the following expression to generate Markdown for the API docs
