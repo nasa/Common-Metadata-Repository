@@ -31,14 +31,15 @@
                                "\"ORDER_AND_ORDER_ITEMS\" \"PROVIDER\" \"TAG_GROUP\" \"TAXONOMY\" "
                                "\"TAXONOMY_ENTRY\" \"USER_CONTEXT\" \"USER\" \"GROUP\" \"ANY_ACL\" "
                                "\"EVENT_NOTIFICATION\" \"EXTENDED_SERVICE\" \"SYSTEM_OPTION_DEFINITION\" "
-                               "\"SYSTEM_OPTION_DEFINITION_DEPRECATION\" \"INGEST_MANAGEMENT_ACL\" \"SYSTEM_CALENDAR_EVENT\"]")
+                               "\"SYSTEM_OPTION_DEFINITION_DEPRECATION\" \"INGEST_MANAGEMENT_ACL\" \"SYSTEM_CALENDAR_EVENT\" "
+                               "\"DASHBOARD_ADMIN\" \"DASHBOARD_ARC_CURATOR\"]")
         prov-target-err (str "Parameter [target] must be one of: [\"AUDIT_REPORT\" "
                              "\"OPTION_ASSIGNMENT\" \"OPTION_DEFINITION\" \"OPTION_DEFINITION_DEPRECATION\" "
                              "\"DATASET_INFORMATION\" \"PROVIDER_HOLDINGS\" \"EXTENDED_SERVICE\" \"PROVIDER_ORDER\" "
                              "\"PROVIDER_ORDER_RESUBMISSION\" \"PROVIDER_ORDER_ACCEPTANCE\" \"PROVIDER_ORDER_REJECTION\" "
                              "\"PROVIDER_ORDER_CLOSURE\" \"PROVIDER_ORDER_TRACKING_ID\" \"PROVIDER_INFORMATION\" "
                              "\"PROVIDER_CONTEXT\" \"AUTHENTICATOR_DEFINITION\" \"PROVIDER_POLICIES\" \"USER\" "
-                             "\"GROUP\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
+                             "\"GROUP\" \"DASHBOARD_DAAC_CURATOR\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
                              "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\"]")]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
