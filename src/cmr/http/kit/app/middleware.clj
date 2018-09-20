@@ -115,11 +115,7 @@
             (do
               (when (nil? status)
                 (log/debug "Got nil status in not-found middleware ..."))
-              (assoc (pages/not-found
-                      system
-                      req
-                      {:base-url (config/http-base-url system)})
-                     :status 404))
+              (assoc (pages/not-found system req) :status 404))
 
             :else
             response))))

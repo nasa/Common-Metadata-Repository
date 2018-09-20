@@ -21,9 +21,17 @@
   (util/resolve-fully-qualified-fn
     (get-in (get-cfg system) [:httpd :entry-point-fn])))
 
+(defn default-page-title
+  [system]
+  (get-in (get-cfg system) [:httpd :pages :default-title]))
+
 (defn http-assets
   [system]
   (get-in (get-cfg system) [:httpd :assets]))
+
+(defn http-base-url
+  [system]
+  (get-in (get-cfg system) [:httpd :base-url]))
 
 (defn http-docs
   [system]
