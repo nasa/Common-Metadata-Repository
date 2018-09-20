@@ -34,10 +34,12 @@
     (acl/verify-ingest-management-permission
       request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (validate-and-prepare-variable-concept concept)]
-      (->> (api-core/set-user-id concept request-context headers)
-           (ingest/save-variable request-context)
-           (api-core/generate-ingest-response headers)))))
+    (let [concept (validate-and-prepare-variable-concept concept)
+          concept-with-user-id (api-core/set-user-id concept request-context headers)
+          save-variable-result (ingest/save-variable request-context concept-with-user-id)]
+      ;;Log the size of the metadata after successful ingest.
+      (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+      (api-core/generate-ingest-response headers save-variable-result))))
 
 (defn delete-variable
   "Deletes the variable with the given provider id and native id."

@@ -48,9 +48,9 @@
                                   request-context
                                   (api-core/set-user-id concept request-context headers)
                                   validation-options)]
-      (info (format "Ingesting collection %s from client %s"
-              (api-core/concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result)))
-              (:client-id request-context)))
+      ;;Log the size of the metadata after successful ingest.
+      (api-core/log-concept-with-metadata-size 
+        (assoc concept :entry-title (:entry-title save-collection-result)) request-context)
       (api-core/generate-ingest-response headers
                                          (api-core/contextualize-warnings
                                           ;; entry-title is added just for the logging above.

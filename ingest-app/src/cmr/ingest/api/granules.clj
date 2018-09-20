@@ -65,10 +65,11 @@
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (api-core/body->concept! :granule provider-id native-id body content-type headers)]
-      (info (format "Ingesting granule %s from client %s"
-                    (api-core/concept->loggable-string concept) (:client-id request-context)))
-      (api-core/generate-ingest-response headers (ingest/save-granule request-context concept)))))
+    (let [concept (api-core/body->concept! :granule provider-id native-id body content-type headers)
+          save-granule-result (ingest/save-granule request-context concept)]
+      ;;Log the size of the metadata after successful ingest.
+      (api-core/log-concept-with-metadata-size concept request-context)
+      (api-core/generate-ingest-response headers save-granule-result))))
 
 (defn delete-granule
   [provider-id native-id request]
