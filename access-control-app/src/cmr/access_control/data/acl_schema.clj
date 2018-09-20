@@ -38,7 +38,9 @@
    "SYSTEM_OPTION_DEFINITION"
    "SYSTEM_OPTION_DEFINITION_DEPRECATION"
    "INGEST_MANAGEMENT_ACL"
-   "SYSTEM_CALENDAR_EVENT"])
+   "SYSTEM_CALENDAR_EVENT"
+   "DASHBOARD_ADMIN"
+   "DASHBOARD_ARC_CURATOR"])
 
 (def ingest-management-acl-target "INGEST_MANAGEMENT_ACL")
 (def provider-catalog-item-acl-target "CATALOG_ITEM_ACL")
@@ -65,6 +67,7 @@
    "PROVIDER_POLICIES"
    "USER"
    "GROUP"
+   "DASHBOARD_DAAC_CURATOR"
    provider-object-acl-target
    provider-catalog-item-acl-target
    ingest-management-acl-target
