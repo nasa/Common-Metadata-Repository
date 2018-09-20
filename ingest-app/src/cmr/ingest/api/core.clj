@@ -236,8 +236,7 @@
   [concept request-context]
   (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
         concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
-    (info (format "Ingesting %s %s from client %s"
-                  (name (:concept-type concept)) 
+    (info (format "Successfully ingested %s from client %s"
                   (concept->loggable-string concept)
                   (:client-id request-context)))))
 
