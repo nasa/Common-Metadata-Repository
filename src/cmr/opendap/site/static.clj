@@ -6,7 +6,6 @@
    [clojusc.twig :as logger]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.components.core :as components]
-   [cmr.opendap.site.data :as data]
    [com.stuartsierra.component :as component]
    [markdown.core :as markdown]
    [selmer.parser :as selmer]

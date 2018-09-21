@@ -9,6 +9,7 @@
     [cmr.opendap.components.caching :as concept-caching]
     [cmr.opendap.components.concept :as concept]
     [cmr.opendap.config :as config-lib]
+    [cmr.plugin.jar.components.registry :as plugin-registry]
     [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,6 +24,11 @@
   {:logging (component/using
              (logging/create-component)
              [:config])})
+
+(def reg
+  {:plugin (component/using
+            (plugin-registry/create-component)
+            [:config :logging])})
 
 (def pubsub
   {:pubsub (component/using
@@ -52,12 +58,17 @@
 (def httpd
   {:httpd (component/using
            (httpd/create-component)
-           [:config :logging :pubsub
-            :auth-caching :auth
+           [:config :logging :plugin
+            :pubsub :auth-caching :auth
             :concept-caching :concepts])})
 
 ;;; Additional components for systems that want to supress logging (e.g.,
 ;;; systems created for testing).
+
+(def reg-without-logging
+  {:plugin (component/using
+            (plugin-registry/create-component)
+            [:config])})
 
 (def pubsub-without-logging
   {:pubsub (component/using
@@ -77,7 +88,9 @@
 (def httpd-without-logging
   {:httpd (component/using
            (httpd/create-component)
-           [:config :pubsub :auth-caching :auth :concept-caching :concepts])})
+           [:config :plugin :pubsub
+            :auth-caching :auth
+            :concept-caching :concepts])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Initializations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,6 +110,7 @@
   []
   (component/map->SystemMap
     (merge (initialize-bare-bones)
+           reg
            pubsub
            auth-cache
            authz
@@ -108,6 +122,7 @@
   []
   (component/map->SystemMap
     (merge (cfg)
+           reg-without-logging
            pubsub-without-logging
            auth-cache-without-logging
            authz

@@ -25,6 +25,7 @@
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.testing.util :as testing-util]
    [cmr.opendap.util :as util]
+   [cmr.plugin.jar.components.registry :as plugin-registry]
    [com.stuartsierra.component :as component]
    [debugger.core :as debug]
    [environ.core :as environ]

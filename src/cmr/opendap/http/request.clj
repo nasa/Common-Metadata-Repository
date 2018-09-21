@@ -114,3 +114,9 @@
     (or (:content-type parsed)
         (:no-vendor-content-type parsed)
         (config/default-content-type system))))
+
+(defn accept-media-type-format
+  [system req]
+  (format "%s; format=%s"
+          (accept-media-type system req)
+          (accept-format system req)))

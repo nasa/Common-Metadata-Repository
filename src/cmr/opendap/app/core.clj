@@ -1,25 +1,20 @@
 (ns cmr.opendap.app.core
   (:require
-   [clojure.java.io :as io]
-   [cmr.opendap.app.handler.core :as handler]
+   [cmr.http.kit.app.core :as base-app]
+   [cmr.http.kit.app.middleware :as base-middleware]
    [cmr.opendap.app.middleware :as middleware]
-   [cmr.opendap.app.routes.site :as site-routes]
-   [cmr.opendap.components.config :as config]
-   [ring.middleware.defaults :as ring-defaults]
-   [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
 (defn main
   [httpd-component]
-  (let [docs-resource (config/http-docs httpd-component)
-        assets-resource (config/http-assets httpd-component)]
-    (-> httpd-component
-        site-routes/all
-        (middleware/wrap-api-version-dispatch
-          httpd-component
-          (middleware/reitit-auth httpd-component))
-        (ring-defaults/wrap-defaults ring-defaults/api-defaults)
-        (middleware/wrap-resource httpd-component)
-        middleware/wrap-trailing-slash
-        middleware/wrap-cors
-        (middleware/wrap-not-found httpd-component))))
+  (log/trace "httpd-component keys:" (keys httpd-component))
+  (let [{site-routes :site-routes :as route-data}
+        (base-app/collected-routes httpd-component)]
+    (log/debug "Got site routes:" (vec site-routes))
+    (-> site-routes
+        ;; initial routes and middleware are reitit-based
+        (middleware/wrap-reitit-middleware route-data httpd-component)
+        ;; the wrap-api-version-dispatch makes a call which converts the
+        ;; reitit-based middleware/routes to ring; from here on out, all
+        ;; middleware is ring-based
+        (base-middleware/wrap-ring-middleware httpd-component))))

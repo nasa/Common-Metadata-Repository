@@ -62,8 +62,8 @@
       (response/html request (slurp file-resource)))))
 
 (defn dynamic-page
-  [page-fn data]
-  #(page-fn % data))
+  [system page-fn data]
+  #(page-fn system % data))
 
 (defn permanent-redirect
   [location]

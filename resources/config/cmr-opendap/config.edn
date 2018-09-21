@@ -7,11 +7,6 @@
  :concept-caching {:init {}
                    :ttl {:hours 24}
                    :dumpfile "data/cache/concept-dump.edn"}
- ;; XXX Change this to use the same parts that the rest of the CMR uses,
- ;;     namely scheme, host, port. path ... we use the below base-url for
- ;;     hitting access-control and search, so we'll want to split this out
- ;;     into searate configs for each of those; at that point, we'll be able
- ;;     to update the config loading in the config component.
  :cmr {
    :access {:control {:protocol "https"
                           :host "cmr.sit.earthdata.nasa.gov"
@@ -41,6 +36,12 @@
  :httpd {
    :port 3013
    :entry-point-fn cmr.opendap.app.core/main
+   :route-fns {
+     :api cmr.opendap.app.routes.rest.core/all
+     :site cmr.opendap.app.routes.site/all}
+   :pages {
+     :default-title "CMR OPeNDAP"}
+   :base-url "/opendap"
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
@@ -55,15 +56,32 @@
                  "/opendap/docs/1.0.0/rest-api"
                  "/opendap/docs/current/marginalia"
                  "/opendap/docs/current/reference"
-                 "/opendap/docs/current/rest-api"}}
+                 "/opendap/docs/current/rest-api"}
+   :streaming {
+     :timeout 20000 ; milliseconds (20 seconds * 1000)
+     :heartbeat 200 ; milliseconds
+     }}
  :logging {
    :level :debug
-   :nss [cmr.opendap cmr.authz cmr.http.kit cmr.mission-control org.httpkit]
+   :nss [cmr org.httpkit]
    :color false}
-:mission-control {
+ :mission-control {
    :messaging-type :core-async}
- :streaming {
-   :timeout 20000 ; milliseconds 20 seconds * 1000
-   :heartbeat 200 ; milliseconds
-   }
+ :plugin {
+   :jarfiles {
+     ;; The reducer factory function must take two args: plugin name and plugin
+     ;; type -- both of type ^String. The default reducer checks for an exact
+     ;; string match.
+     :reducer-factory cmr.plugin.jar.core/create-has-plugin-type-reducer}
+   :registry {
+     :default {
+       :plugin-name "CMR-Plugin"
+       :plugin-type "service-bridge-routes"
+       ;; The fowllowing needs to be an in-JAR path to a plugin's config file
+       ;; once it has been identifed as a plugin of the desired name/type.
+       :config-file "config/cmr-plugin/config.edn"}
+     :web {
+       :route-keys [:httpd :route-fns]
+       :api-route-key :api
+       :site-route-key :site}}}
  :vendor "cmr-opendap"}

@@ -4,8 +4,9 @@
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
-   [cmr.opendap.components.config :as config]
+   [cmr.http.kit.site.pages :as base-pages]
    [cmr.opendap.app.handler.core :as core-handler]
+   [cmr.opendap.components.config :as config]
    [cmr.opendap.health :as health]
    [cmr.opendap.site.pages :as pages]
    [reitit.ring :as ring]
@@ -19,6 +20,7 @@
   [httpd-component]
   [["/opendap" {
     :get (core-handler/dynamic-page
+          httpd-component
           pages/home
           {:base-url (config/opendap-url httpd-component)})
     :head core-handler/ok}]])
@@ -29,6 +31,7 @@
   [httpd-component]
   [["/opendap/docs" {
     :get (core-handler/dynamic-page
+          httpd-component
           pages/opendap-docs
           {:base-url (config/opendap-url httpd-component)})}]])
 
