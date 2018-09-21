@@ -6,11 +6,15 @@
   by single use or composition."
   (:require
    [cheshire.core :as json]
+   [cheshire.generate :as json-gen]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
+   [cmr.exchange.common.results.errors :as errors]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in])
+  (:import
+    (java.lang.ref SoftReference))
   (:refer-clojure :exclude [error-handler]))
 
 (defn stream->str
@@ -18,6 +22,24 @@
   (if (string? body)
     body
     (slurp body)))
+
+(defn soft-reference->json!
+  "Given a soft reference object and a Cheshire JSON generator, write the
+  data stored in the soft reference to the generator as a JSON string.
+
+  Note, however, that sometimes the value is not a soft reference, but rather
+  a raw value from the response. In that case, we need to skip the object
+  conversion, and just do the realization."
+  [obj json-generator]
+  (let [data @(if (isa? obj SoftReference)
+                (.get obj)
+                obj)
+        data-str (json/generate-string data)]
+    (log/trace "Encoder got data: " data)
+    (.writeString json-generator data-str)))
+
+;; This adds support for JSON-encoding the data cached in a SoftReference.
+(json-gen/add-encoder SoftReference soft-reference->json!)
 
 (defn parse-json-body
   [body]
@@ -144,3 +166,51 @@
 
 (def json-handler #(client-handler % error-handler parse-json-body))
 (def xml-handler #(client-handler % error-handler parse-xml-body))
+
+(defn process-ok-results
+  [data]
+  {:headers {"CMR-Took" (:took data)
+             "CMR-Hits" (:hits data)}
+   :status 200})
+
+(defn process-err-results
+  [data]
+  {:status errors/default-error-code})
+
+(defn process-results
+  ([data]
+    (process-results process-err-results data))
+  ([err-fn data]
+    (process-results err-fn process-ok-results data))
+  ([err-fn ok-fn data]
+    (if (:errors data)
+      (err-fn data)
+      (ok-fn data))))
+
+(defn json
+  ([request data]
+    (json request process-results data))
+  ([_request process-fn data]
+    (log/trace "Got data for JSON:" data)
+    (-> data
+        process-fn
+        (assoc :body (json/generate-string data))
+        (response/content-type "application/json"))))
+
+(defn text
+  ([request data]
+    (text request process-results data))
+  ([_request process-fn data]
+    (-> data
+        process-fn
+        (assoc :body data)
+        (response/content-type "text/plain"))))
+
+(defn html
+  ([request data]
+    (html request process-results data))
+  ([_request process-fn data]
+    (-> data
+        process-fn
+        (assoc :body data)
+        (response/content-type "text/html"))))
