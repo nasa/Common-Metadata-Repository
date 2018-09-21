@@ -11,8 +11,8 @@
   (java.util.jar JarFile)))
 
 (defn resolve-routes
-  [routes-symbols]
-  (apply concat (map util/resolve-fully-qualified-fn routes-symbols)))
+  [routes-symbols args]
+  (mapcat #(apply (util/resolve-fully-qualified-fn %) args) routes-symbols))
 
 (defn plugin-routes
   [^JarFile jarfile in-jar-filepath route-keys ^Keyword api-key ^Keyword site-key]
@@ -23,19 +23,19 @@
   [jarfiles in-jar-filepath route-keys ^Keyword api-key ^Keyword site-key]
   (let [data (map #(plugin-routes % in-jar-filepath route-keys api-key site-key)
                   jarfiles)]
-    {api-key (mapv first data)
-     site-key (mapv second data)}))
+    {api-key (vec (remove nil? (map first data)))
+     site-key (vec (remove nil? (map second data)))}))
 
-(defn assemble-routes
+(defn assemble-routes-fns
   ([^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
-    (assemble-routes (plugin/jarfiles plugin-name plugin-type)
-                     plugin-name
-                     plugin-type
-                     in-jar-filepath
-                     route-keys))
+    (assemble-routes-fns (plugin/jarfiles plugin-name plugin-type)
+                        plugin-name
+                        plugin-type
+                        in-jar-filepath
+                        route-keys))
   ([jarfiles ^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
     (let [data (plugins-routes jarfiles in-jar-filepath route-keys api-key site-key)]
-      {api-key (resolve-routes (api-key data))
-       site-key (resolve-routes (site-key data))})))
+      {api-key #(resolve-routes (api-key data) %)
+       site-key #(resolve-routes (site-key data) %)})))

@@ -9,6 +9,11 @@
     [cmr.plugin.jar.types.web.routes :as routes]
     [taoensso.timbre :as log]))
 
+(defn trace-pass-thru
+  [msg data]
+  (log/tracef "%s: %s" msg data)
+  data)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Registry Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,7 +28,12 @@
 
 (defn assembled-routes
   [system]
-  (get-in system [:plugin :registry :assembled-routes]))
+  (let [{apis-fn :api sites-fn :site}
+        (get-in system [:plugin :registry :assembled-routes-fns])]
+    (log/trace "sites-fn:" apis-fn)
+    (log/trace "apis-fn:" sites-fn)
+    {:api (apis-fn [system])
+     :site (sites-fn [system])}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -53,21 +63,29 @@
     (log/debug "Started plugin registry component.")
     (-> this
         (assoc-in [:registry :jars]
-                  (plugin/tagged-jars jarfiles plugin-name plugin-type))
+                  (trace-pass-thru "tagged-jars"
+                  (plugin/tagged-jars
+                   jarfiles
+                   plugin-name
+                   plugin-type)))
         (assoc-in [:registry :routes]
-                  (routes/plugins-routes jarfiles
-                                         in-jar-filepath
-                                         route-keys
-                                         api-key
-                                         site-key))
-        (assoc-in [:registry :assembled-routes]
-                  (routes/assemble-routes jarfiles
-                                          plugin-name
-                                          plugin-type
-                                          in-jar-filepath
-                                          route-keys
-                                          api-key
-                                          site-key)))))
+                  (trace-pass-thru "plugins-routes"
+                  (routes/plugins-routes
+                   jarfiles
+                   in-jar-filepath
+                   route-keys
+                   api-key
+                   site-key)))
+        (assoc-in [:registry :assembled-routes-fns]
+                  (trace-pass-thru "assemble-routes-fns"
+                  (routes/assemble-routes-fns
+                   jarfiles
+                   plugin-name
+                   plugin-type
+                   in-jar-filepath
+                   route-keys
+                   api-key
+                   site-key))))))
 
 (defn stop
   [this]
