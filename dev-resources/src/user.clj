@@ -6,10 +6,7 @@
   minimal ns was created for Proto-REPL users, so they too can have an env
   that supports startup and shutdown."
   (:require
-   [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
-   [clojusc.system-manager.core :refer :all]
-   [cmr.opendap.dev :as dev]
-   [org.httpkit.client :as httpc]))
+   [cmr.sizing.dev :as dev]))

@@ -1,6 +1,6 @@
-# cmr-opendap
+# cmr-sizing-plugin
 
-*OPeNDAP Integration in the CMR*
+*A CMR Service-Bridge plugin for GIS data size estimates*
 
 [![][logo]][logo]
 
@@ -15,14 +15,7 @@
 
 ## About [&#x219F;](#contents)
 
-The Common Metadata Repository (CMR) is a high-performance, high-quality,
-continuously evolving metadata system that catalogs Earth Science data and
-associated service metadata records. These metadata records are registered,
-modified, discovered, and accessed through programmatic interfaces leveraging
-standard protocols and APIs.
-
-The CMR OPeNDAP API allows client applications to integrate core CMR metadata
-more easily with provider OPeNDAP deployments.
+TBD
 
 
 ## Dependencies [&#x219F;](#contents)
@@ -33,17 +26,7 @@ more easily with provider OPeNDAP deployments.
 
 ## Documentation [&#x219F;](#contents)
 
-Documentation for CMR OPeNDAP is availble
-[here](https://cmr.sit.earthdata.nasa.gov/opendap/docs). The content there
-is broken down by category; some of that is offered below as a convenience:
-
-* [Introduction](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/reference/0000-intro.html)
-* [Configuration](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/reference/0500-configuration.html)
-* [Running the Tests](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/reference/0750-tests.html)
-* [Quick Start](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/reference/1000-quick-start.html)
-* [REST API Usage](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/rest-api)
-* [Source Code API Reference](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/reference/index.html)
-* [Source Code Annotation](https://cmr.sit.earthdata.nasa.gov/opendap/docs/current/marginalia/index.html)
+TBD
 
 
 ## License [&#x219F;](#contents)
