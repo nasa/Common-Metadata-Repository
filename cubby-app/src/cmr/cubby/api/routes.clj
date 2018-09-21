@@ -74,13 +74,16 @@
     (GET "/" {context :request-context}
       (get-keys context))
     (DELETE "/" {context :request-context}
+      (acl/verify-ingest-management-permission context :update)
       (delete-all-values context))
     (context "/:key-name" [key-name]
       (GET "/" {context :request-context}
         (get-value context key-name))
       (PUT "/" {context :request-context body :body}
+        (acl/verify-ingest-management-permission context :update)
         (set-value context key-name (slurp body)))
       (DELETE "/" {context :request-context}
+        (acl/verify-ingest-management-permission context :update)
         (delete-value context key-name)))))
 
 (def admin-routes
