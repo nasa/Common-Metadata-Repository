@@ -12,7 +12,7 @@
     business logic"
   (:require
    [clojure.java.io :as io]
-   [clojusc.twig :as twig]
+   [cmr.http.kit.app.handler :as base-handler]
    [cmr.opendap.health :as health]
    [cmr.opendap.http.response :as response]
    [ring.middleware.file :as file-middleware]
@@ -40,14 +40,10 @@
 ;;;   Utility Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn status
-  [status-keyword]
-  (fn [request]
-    ((ns-resolve 'ring.util.http-response (symbol (name status-keyword))) {})))
-
-(def ok
-  (fn [request]
-    (response/ok request)))
+(def status base-handler/status)
+(def ok base-handler/ok)
+(def dynamic-page base-handler/dynamic-page)
+(def permanent-redirect base-handler/permanent-redirect)
 
 (defn text-file
   [filepath]
@@ -61,11 +57,3 @@
     (if-let [file-resource (io/resource filepath)]
       (response/html request (slurp file-resource)))))
 
-(defn dynamic-page
-  [system page-fn data]
-  #(page-fn system % data))
-
-(defn permanent-redirect
-  [location]
-  (fn [request]
-    (ring-response/redirect location :moved-permanently)))
