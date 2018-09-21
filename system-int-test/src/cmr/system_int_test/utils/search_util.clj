@@ -393,7 +393,7 @@
   ([concept-type params]
     (find-concepts-umm-json concept-type params {}))
   ([concept-type params options]
-    (find-concepts-umm-json-common concept-type params mime-types/umm-json options))) 
+    (find-concepts-umm-json-common concept-type params mime-types/umm-json options)))
 
 (defn find-concepts-legacy-umm-json
   "Returns the response of a search in legacy-umm-json format."

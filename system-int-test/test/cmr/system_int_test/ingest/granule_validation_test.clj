@@ -118,7 +118,7 @@
         (testing "invalid granule metadata format"
           (assert-validation-errors
             415
-            ["Invalid content-type: application/xml. Valid content-types: application/echo10+xml, application/iso:smap+xml."]
+            ["Invalid content-type: application/xml. Valid content-types: application/echo10+xml, application/vnd.nasa.cmr.umm+json, application/iso:smap+xml."]
             (-> (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
                 (assoc :format "application/xml"))
             coll-concept))

@@ -1,16 +1,17 @@
 (ns cmr.system-int-test.search.umm-json-search-test
   "Integration test for UMMJSON format search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.umm-json :as du]
-            [cmr.umm-spec.versioning :as umm-version]
-            [cmr.spatial.point :as p]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util :refer [are3]]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.spatial.point :as p]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -174,7 +175,9 @@
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"
     (is (= {:status 400
-            :errors [(str "The mime type [application/vnd.nasa.cmr.umm_results+json] is not supported for granules.")]}
+            :errors [(format "The mime type [%s] with version [%s] is not supported for granules."
+                             (mt/format->mime-type :umm-json-results)
+                             umm-version/current-granule-version)]}
            (select-keys (search/find-concepts-umm-json :granule {}) [:status :errors]))))
   (testing "Searching with invalid UMM JSON extension"
     (is (= {:status 400
