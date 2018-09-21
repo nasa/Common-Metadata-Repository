@@ -3,6 +3,7 @@
    [cmr.http.kit.app.middleware :as middleware]
    [cmr.http.kit.components.config :as config]
    [cmr.plugin.jar.components.registry :as registry]
+   [cmr.plugin.jar.types.web.routes :as jar-routes]
    [taoensso.timbre :as log]))
 
 (defn collected-routes
@@ -29,6 +30,7 @@
     ;; the configuration function which extract the routes from the config
     ;; data. The route functions provided in the configuration data will be
     ;; called by a middleware wrapper.
-    {:site-routes (concat plugins-site-routes (main-site-routes-fn httpd-component))
+    {:site-routes (concat plugins-site-routes
+                          (main-site-routes-fn httpd-component))
      :plugins-api-routes plugins-api-routes
      :main-api-routes-fn (config/api-routes httpd-component)}))
