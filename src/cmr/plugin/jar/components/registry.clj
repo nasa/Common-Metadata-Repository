@@ -42,6 +42,14 @@
         site-key (config/site-route-key this)
         reducer (config/jarfiles-reducer this)
         jarfiles (plugin/jarfiles plugin-name plugin-type reducer)]
+    (log/debug "plugin-name:" plugin-name)
+    (log/debug "plugin-type:" plugin-type)
+    (log/debug "in-jar-filepath:" in-jar-filepath)
+    (log/debug "route-keys:" route-keys)
+    (log/debug "api-key:" api-key)
+    (log/debug "site-key:" site-key)
+    (log/debug "reducer:" reducer)
+    (log/debug "jarfiles:" jarfiles)
     (log/debug "Started plugin registry component.")
     (-> this
         (assoc-in [:registry :jars]
