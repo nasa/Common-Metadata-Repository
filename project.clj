@@ -79,9 +79,9 @@
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
-    "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
-    "uberjar" ["with-profile" "+system,+geo" "uberjar"]
-    "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
+    "ubercompile" ["with-profile" "+system,+local,+ubercompile" "compile"]
+    "uberjar" ["with-profile" "+system" "uberjar"]
+    "uberjar-aot" ["with-profile" "+system,+ubercompile" "uberjar"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]

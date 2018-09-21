@@ -2,9 +2,7 @@
   "This namespace defines the REST API handlers for collection resources."
   (:require
    [cmr.authz.token :as token]
-   ;; XXX need an answer to these deps ...
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
+   [cmr.http.kit.response :as response]
    [cmr.sizing.core :as sizing]
    [taoensso.timbre :as log]))
 
@@ -22,6 +20,8 @@
            :params
            (merge {:collection-id concept-id})
            (sizing/estimate-size component user-token)
+           ;; We may need to override this in our own response ns if the base
+           ;; error handler in cmr.http.kit isn't sufficient ...
            (response/json req)))))
 
 (defn stream-estimate-size

@@ -26,5 +26,4 @@
 
 (defn all
   [httpd-component]
-  (concat
-   (size-estimate-api httpd-component))
+  (size-estimate-api httpd-component))
