@@ -18,6 +18,10 @@
   "The current version of the collection UMM schema."
   (-> versions :collection last))
 
+(def current-granule-version
+  "The current version of the granule UMM schema."
+  (-> versions :granule last))
+
 (def current-variable-version
   "The current version of the variable UMM schema."
   (-> versions :variable last))
