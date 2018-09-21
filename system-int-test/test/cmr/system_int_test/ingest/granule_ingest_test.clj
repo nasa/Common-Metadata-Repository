@@ -459,3 +459,29 @@
       (let [{:keys [status]} (ingest/ingest-concept
                                (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))))))
+
+(deftest ingest-umm-json-granule-test
+  (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
+                                                                                 :ShortName "S1"
+                                                                                 :Version "V1"}))]
+    (testing "Valid UMM JSON granule with collection-ref attributes"
+      (are3 [attrs]
+        (let [granule (-> (dg/granule-with-umm-spec-collection collection
+                                                               (:concept-id collection)
+                                                               {:granule-ur "Gran1"})
+                          (assoc :collection-ref (umm-g/map->CollectionRef attrs))
+                          (d/item->concept :umm-json))
+              {:keys [status] :as response} (ingest/ingest-concept granule)]
+          (index/wait-until-indexed)
+          (is (#{200 201} status) (pr-str response)))
+
+        "EntryTitle"
+        {:entry-title "correct"}
+        "ShortName Version"
+        {:short-name "S1" :version-id "V1"}
+        "EntryTitle ShortName"
+        {:entry-title "correct" :short-name "S1"}
+        "EntryTitle Version"
+        {:entry-title "correct" :version-id "V1"}
+        "EntryTitle ShortName Version"
+        {:entry-title "correct" :short-name "S1" :version-id "V1"}))))

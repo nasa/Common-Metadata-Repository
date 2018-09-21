@@ -18,6 +18,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as ver]
    [cmr.umm.umm-core :as umm]))
 
 (defn- item->native-id
@@ -35,8 +36,12 @@
   ([item]
    (item->concept item :echo10))
   ([item format-key]
-   (let [format (mime-types/format->mime-type format-key)]
-     (merge {:concept-type (umm-legacy/item->concept-type item)
+   (let [concept-type (umm-legacy/item->concept-type item)
+         format (if (= :umm-json format-key)
+                  (mime-types/format->mime-type {:format format-key
+                                                 :version (ver/current-version concept-type)})
+                  (mime-types/format->mime-type format-key))]
+     (merge {:concept-type concept-type
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
              :metadata (when-not (:deleted item)

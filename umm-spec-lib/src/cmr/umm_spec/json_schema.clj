@@ -17,6 +17,7 @@
 (def concept-schema-name
   "A map of concept types to schema names."
   {:collection "umm-c-json-schema.json"
+   :granule "umm-g-json-schema.json"
    :service "umm-s-json-schema.json"
    :variable "umm-var-json-schema.json"})
 
@@ -53,6 +54,8 @@
 
         (:oneOf type-def) "oneOf"
 
+        (:anyOf type-def) "anyOf"
+
         ;; This will trigger an error
         :else
         (throw (Exception. (str "Unable to resolve ref on " (pr-str type-def)))))))
@@ -71,18 +74,19 @@
   (into {} (for [[n type-def] definition-map]
              [n (resolve-ref schema-name type-def)])))
 
-(defn- resolve-one-of
-  "Resolves oneOf definitions in object type."
-  [schema-name object]
-  (if (:oneOf object)
-      (update-in object [:oneOf]
-                 (fn [one-ofs]
-                   (map (fn [o]
-                          (if (:properties o)
-                            (update-in o [:properties] (partial resolve-ref-deflist schema-name))
-                            o))
-                        one-ofs)))
-      object))
+(defn- resolve-one-of-any-of
+  "Resolves oneOf/anyOf definitions in object type.
+  The type-selector argument can be either :oneOf or :anyOf."
+  [schema-name type-selector object]
+  (if (type-selector object)
+    (update-in object [type-selector]
+               (fn [one-ofs]
+                 (map (fn [o]
+                        (if (:properties o)
+                          (update-in o [:properties] (partial resolve-ref-deflist schema-name))
+                          o))
+                      one-ofs)))
+    object))
 
 (defmethod resolve-ref :$ref
   [schema-name type-def]
@@ -99,7 +103,8 @@
                   (update-in type-def [:properties] (partial resolve-ref-deflist schema-name))
                   type-def)]
     (->> updated
-         (resolve-one-of schema-name))))
+         (resolve-one-of-any-of schema-name :oneOf)
+         (resolve-one-of-any-of schema-name :anyOf))))
          ;; other resolvers can go here, e.g. for allOf
 
 
@@ -109,7 +114,11 @@
 
 (defmethod resolve-ref "oneOf"
   [schema-name type-def]
-  (resolve-one-of schema-name type-def))
+  (resolve-one-of-any-of schema-name :oneOf type-def))
+
+(defmethod resolve-ref "anyOf"
+  [schema-name type-def]
+  (resolve-one-of-any-of schema-name :anyOf type-def))
 
 ;;; No resolution
 
@@ -133,7 +142,9 @@
   [type-def]
   (concat
     (mapcat referenced-schema-names (vals (:properties type-def)))
-    (mapcat referenced-schema-names (mapcat (comp vals :properties) (:oneOf type-def)))))
+    (mapcat referenced-schema-names (mapcat (comp vals :properties)
+                                            (:oneOf type-def)
+                                            (:anyOf type-def)))))
 
 (defmethod referenced-schema-names "array"
   [type-def]
@@ -314,6 +325,13 @@
        (seq (filter #(= "object" (:type %))
                     (:oneOf type-definition)))))
 
+(defn- top-level-any-of-definition
+  "Returns true if the definition is a anyOf definition with multiple potential object definitions."
+  [type-definition]
+  (and (:anyOf type-definition)
+       (seq (filter #(= "object" (:type %))
+                    (:anyOf type-definition)))))
+
 (defn coerce
   "Returns x coerced according to a JSON schema type type definition."
   ([schema x]
@@ -324,6 +342,9 @@
          [schema type-definition] (resolve-$refs [schema type-definition])
          type-definition (if (top-level-one-of-definition type-definition)
                            (assoc type-definition :type "oneOf")
+                           type-definition)
+         type-definition (if (top-level-any-of-definition type-definition)
+                           (assoc type-definition :type "anyOf")
                            type-definition)]
      (case (:type type-definition)
 
@@ -349,6 +370,7 @@
        ;; Note that this would not support creating records for any fields within a oneOf that
        ;; could also potentially be records. Those would just stay as maps instead of records.
        "oneOf" ((record-ctor schema type-name) x)
+       "anyOf" ((record-ctor schema type-name) x)
 
        ;; The most important job of this function:
        "object"  (let [ctor (record-ctor schema type-name)

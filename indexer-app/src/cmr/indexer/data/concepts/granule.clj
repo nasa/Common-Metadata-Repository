@@ -151,7 +151,10 @@
             :entry-title EntryTitle
             :entry-title.lowercase (s/lower-case EntryTitle)
             :entry-title.lowercase-doc-values (s/lower-case EntryTitle)
-            :metadata-format (name (mt/base-mime-type-to-format format))
+            :metadata-format (-> format
+                                 mt/base-mime-type-of
+                                 mt/base-mime-type-to-format
+                                 name)
             :update-time update-time
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))

@@ -16,6 +16,11 @@
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})
 
+(defconfig granule-umm-version
+  "Defines the latest granule umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.4"})
+
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
@@ -31,6 +36,7 @@
   [concept-type]
   (get
    {:collection (common-config/collection-umm-version)
+    :granule (granule-umm-version)
     :variable (variable-umm-version)
     :service (service-umm-version)}
    concept-type))

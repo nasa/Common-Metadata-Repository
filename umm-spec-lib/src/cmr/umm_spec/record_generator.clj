@@ -6,6 +6,7 @@
    [clojure.string :as str]
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]
+   [cmr.umm-spec.models.umm-granule-models]
    [cmr.umm-spec.models.umm-service-models]
    [cmr.umm-spec.models.umm-variable-models]))
 
@@ -17,6 +18,7 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
+   "umm-g-json-schema.json" 'cmr.umm-spec.models.umm-granule-models
    "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
@@ -110,9 +112,10 @@
   "Converts a JSON Schema definition into a record description if it's appropriate to have a record
   for it. Returns nil otherwise."
   [type-name type-def]
-  (when (or (= "object" (:type type-def)) (:oneOf type-def))
+  (when (or (= "object" (:type type-def)) (:oneOf type-def) (:anyOf type-def))
     (let [merged-properties (apply merge (:properties type-def)
-                                   (map :properties (:oneOf type-def)))]
+                                   (concat (map :properties (:oneOf type-def))
+                                           (map :properties (:anyOf type-def))))]
       {:record-name (name type-name)
        :description (:description type-def)
        :fields (for [[property-name prop-def] merged-properties]
@@ -178,6 +181,11 @@
    {:the-ns 'cmr.umm-spec.models.umm-collection-models
     :description "Defines UMM-C clojure records."
     :schema-resource (js/concept-schema-resource :collection)})
+
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-granule-models
+    :description "Defines UMM-G clojure records."
+    :schema-resource (js/concept-schema-resource :granule)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-service-models
