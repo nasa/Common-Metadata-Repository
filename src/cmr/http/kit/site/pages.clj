@@ -29,21 +29,6 @@
 ;;;   HTML page-genereating functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn home
-  "Prepare the home page template."
-  [system request data]
-  (render-html
-   "templates/opendap-home.html"
-   (data/base-dynamic system data)))
-
-(defn opendap-docs
-  "Prepare the top-level search docs page."
-  [system request data]
-  (log/debug "Calling opendap-docs page ...")
-  (render-html
-   "templates/opendap-docs.html"
-   (data/base-dynamic system data)))
-
 (defn not-found
   "Prepare the home page template."
   ([system request]
@@ -51,5 +36,5 @@
      system request {:base-url (str (config/http-base-url system) "/")}))
   ([system request data]
     (render-html
-     "templates/opendap-not-found.html"
+     "templates/http-kit-not-found.html"
      (data/base-dynamic system data))))
