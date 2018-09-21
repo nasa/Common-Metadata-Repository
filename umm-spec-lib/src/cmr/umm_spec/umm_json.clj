@@ -54,6 +54,7 @@
     (cond
       (:type schema-type) (:type schema-type)
       (:oneOf schema-type) "oneOf"
+      (:anyOf schema-type) "anyOf"
       (:$ref schema-type) :$ref)))
 
 (defmethod parse-json :default
@@ -67,7 +68,8 @@
   [schema type-name-path type-name schema-type js-data]
   (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
         merged-prop-types (apply merge (:properties schema-type)
-                                 (map :properties (:oneOf schema-type)))
+                                 (concat (map :properties (:oneOf schema-type))
+                                         (map :properties (:anyOf schema-type))))
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get merged-prop-types k)]]
@@ -79,6 +81,17 @@
   (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
         merged-prop-types (apply merge (:properties schema-type)
                                  (map :properties (:oneOf schema-type)))
+        properties (into {}
+                         (for [[k v] js-data
+                               :let [sub-type-def (get merged-prop-types k)]]
+                           [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
+    (constructor-fn properties)))
+
+(defmethod parse-json "anyOf"
+  [schema type-name-path type-name schema-type js-data]
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+        merged-prop-types (apply merge (:properties schema-type)
+                                 (map :properties (:anyOf schema-type)))
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get merged-prop-types k)]]

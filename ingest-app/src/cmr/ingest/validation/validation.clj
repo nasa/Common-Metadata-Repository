@@ -23,7 +23,7 @@
 (def ^:private
   valid-concept-mime-types
   {:collection #{mt/echo10 mt/iso-smap mt/iso19115 mt/dif mt/dif10 mt/umm-json}
-   :granule #{mt/echo10 mt/iso-smap}
+   :granule #{mt/echo10 mt/iso-smap mt/umm-json}
    :variable #{mt/umm-json}
    :service #{mt/umm-json}})
 
@@ -107,7 +107,7 @@
   [umm-version accepted-umm-version]
   (let [umm-version-with-padded-zeros (pad-zeros-to-version umm-version)
         accepted-umm-version-with-padded-zeros (pad-zeros-to-version accepted-umm-version)]
-    (compare umm-version-with-padded-zeros accepted-umm-version-with-padded-zeros))) 
+    (compare umm-version-with-padded-zeros accepted-umm-version-with-padded-zeros)))
 
 (defn-timed validate-concept-metadata
   [concept]
@@ -116,7 +116,7 @@
                      (let [umm-version (mt/version-of (:format concept))
                            accept-version (config/ingest-accept-umm-version (:concept-type concept))]
                        ;; when the umm-version goes to 1.10 and accept-version is 1.9, we need
-                       ;; to compare the versions with padded zeros.  
+                       ;; to compare the versions with padded zeros.
                        (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)

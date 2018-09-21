@@ -30,7 +30,7 @@
     },
     "DataGranule": {
       "description": "This entity stores basic descriptive characteristics associated with a granule.",
-      "$ref": "#/definitions/DataGranuleType"   
+      "$ref": "#/definitions/DataGranuleType"
     },
     "PGEVersionClass": {
       "description": "This entity stores basic descriptive characteristics related to the Product Generation Executable associated with a granule.",
@@ -132,9 +132,9 @@
     }
   },
   "required": ["GranuleUR", "ProviderDates", "CollectionReference"],
-  
-  
-  
+
+
+
   "definitions": {
     "ProviderDateType": {
       "type": "object",
@@ -182,7 +182,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 1030
-          }  
+          }
         },
         "required": ["EntryTitle"]
       }]
@@ -214,7 +214,7 @@
           "description": "A list of the file(s) or file package(s) that make up the granule. A file package is something like a tar or zip file.",
           "type": "array",
           "items": {
-            "anyOf": [{"$ref": "#/definitions/FilePackageType"},{"$ref": "#/definitions/FileType"}]
+            "$ref": "#/definitions/ArchiveAndDistributionInformationType"
           },
           "minItems": 1,
           "uniqueItems":true
@@ -223,7 +223,7 @@
           "description": "Granule level, stating what reprocessing may be performed on this granule.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80          
+          "maxLength": 80
         },
         "ReprocessingActual": {
           "description": "Granule level, stating what reprocessing has been performed on this granule.",
@@ -251,47 +251,90 @@
       },
       "required": ["DayNightFlag", "ProductionDateTime"]
     },
-    "FilePackageType": {
+    "ArchiveAndDistributionInformationType": {
       "type": "object",
-      "additionalProperties": false,
-      "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
-      "properties": {
-        "Name": {
-          "description": "This field describes the name of the actual file.",
-          "$ref": "#/definitions/FileNameType"
+      "anyOf": [{
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
+        "properties": {
+          "Name": {
+            "description": "This field describes the name of the actual file.",
+            "$ref": "#/definitions/FileNameType"
+          },
+          "Size": {
+            "description": "The size of the file.",
+            "type": "number"
+          },
+          "SizeUnit": {
+            "description": "The unit of the file size.",
+            "$ref": "#/definitions/FileSizeUnitEnum"
+          },
+          "Format": {
+            "description": "This element defines a single format for a distributable artifact.",
+            "$ref": "#/definitions/DataFormatEnum"
+          },
+          "MimeType": {
+            "description": "The mime type of the resource.",
+            "$ref": "#/definitions/MimeTypeEnum"
+          },
+          "Checksum": {
+            "description": "Allows the provider to provide the checksum value for the file.",
+            "$ref": "#/definitions/ChecksumType"
+          },
+          "Files": {
+            "description": "Allows the provider to add the list of the files that are included in this one.",
+            "type": "array",
+            "items": {"$ref": "#/definitions/FileType"},
+            "uniqueItems": true,
+            "minItems": 1
+          }
         },
-        "Size": {
-          "description": "The size of the file.",
-          "type": "number"
-        },
-        "SizeUnit": {
-          "description": "The unit of the file size.",
-          "$ref": "#/definitions/FileSizeUnitEnum"
-        },
-        "Format": {
-          "description": "This element defines a single format for a distributable artifact.",
-          "$ref": "#/definitions/DataFormatEnum"
-        },
-        "MimeType": {
-          "description": "The mime type of the resource.",
-          "$ref": "#/definitions/MimeTypeEnum"
-        },
-        "Checksum": {
-          "description": "Allows the provider to provide the checksum value for the file.",
-          "$ref": "#/definitions/ChecksumType"
-        },
-        "Files": {
-          "description": "Allows the provider to add the list of the files that are included in this one.",
-          "type": "array",
-          "items": {"$ref": "#/definitions/FileType"},
-          "uniqueItems": true,
-          "minItems": 1
+        "required": ["Name"],
+        "dependencies": {
+          "Size": ["SizeUnit"]
         }
       },
-      "required": ["Name"],
-      "dependencies": {
-        "Size": ["SizeUnit"]
-      }
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This set of elements describes a file. The file can be a part of the entire granule or is the granule.",
+        "properties": {
+          "Name": {
+            "description": "This field describes the name of the actual file.",
+            "$ref": "#/definitions/FileNameType"
+          },
+          "Size": {
+            "description": "The size of the file.",
+            "type": "number"
+          },
+          "SizeUnit": {
+            "description": "The unit of the file size.",
+            "$ref": "#/definitions/FileSizeUnitEnum"
+          },
+          "Format": {
+            "description": "This element defines a single format for a distributable artifact.",
+            "$ref": "#/definitions/DataFormatEnum"
+          },
+          "FormatType": {
+            "description": "Allows the provider to state whether the distributable item's format is its native format or another supported format.",
+            "type": "string",
+            "enum": ["Native", "Supported", "NA"]
+          },
+          "MimeType": {
+            "description": "The mime type of the resource.",
+            "$ref": "#/definitions/MimeTypeEnum"
+          },
+          "Checksum": {
+            "description": "Allows the provider to provide the checksum value for the file.",
+            "$ref": "#/definitions/ChecksumType"
+          }
+        },
+        "required": ["Name"],
+        "dependencies": {
+          "Size": ["SizeUnit"]
+        }
+      }]
     },
     "FileType": {
       "type": "object",
@@ -380,7 +423,7 @@
             "maxLength": 80
           }
         },
-        "required": ["Identifier","IdentifierType","IdentifierName"] 
+        "required": ["Identifier","IdentifierType","IdentifierName"]
       }]
     },
     "PGEVersionClassType": {
@@ -656,7 +699,7 @@
         },
         "StartLatitude": {
           "description": "Granule's starting latitude.",
-          "$ref": "#/definitions/LatitudeType"  
+          "$ref": "#/definitions/LatitudeType"
         },
         "StartDirection": {
           "description": "Ascending or descending. Valid input: 'A' or 'D'",
@@ -664,7 +707,7 @@
         },
         "EndLatitude": {
           "description": "Granule's ending latitude.",
-          "$ref": "#/definitions/LatitudeType"  
+          "$ref": "#/definitions/LatitudeType"
         },
         "EndDirection": {
           "description": "Ascending or descending. Valid input: 'A' or 'D'",
@@ -712,11 +755,11 @@
         "required":["Type","MinimumValue", "MaximumValue"]
       }],
       "allOf": [{
-        "not": { 
+        "not": {
           "required": ["Value", "MinimumValue"]
         }
       }, {
-        "not": { 
+        "not": {
           "required": ["Value", "MaximumValue"]
         }
       }]
@@ -766,11 +809,11 @@
         "required": ["BeginOrbitNumber", "EndOrbitNumber"]
       }],
       "allOf": [{
-        "not": { 
+        "not": {
           "required": ["OrbitNumber", "BeginOrbitNumber"]
         }
       }, {
-        "not": { 
+        "not": {
           "required": ["OrbitNumber", "EndOrbitNumber"]
         }
       }]
@@ -1108,7 +1151,7 @@
         "Algorithm": {
           "description": "The algorithm name by which the checksum was calulated. This allows the user to re-calculate the checksum to verify the integrity of the downloaded data.",
           "type": "string",
-          "enum": ["Adler-32", "BSD checksum", "Fletcher-32", "Fletcher-64", "MD5", "POSIX", "SHA-1", "SHA-2", "SHA-256", "SHA-384", "SHA-512", "SM3", "SYSV"] 
+          "enum": ["Adler-32", "BSD checksum", "Fletcher-32", "Fletcher-64", "MD5", "POSIX", "SHA-1", "SHA-2", "SHA-256", "SHA-384", "SHA-512", "SM3", "SYSV"]
         }
       },
       "required": ["Value", "Algorithm"]
@@ -1116,7 +1159,7 @@
     "ProjectionNameType": {
       "description": "Represents the native projection of the granule if the granule has a native projection. The projection name must match the projection that has been defined in the parent collection.",
       "type": "string",
-      "enum": ["Geographic", "Mercator", "Spherical Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"] 
+      "enum": ["Geographic", "Mercator", "Spherical Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"]
     },
     "GridMappingNameType": {
       "description": "Represents the native grid mapping of the granule, if the granule is gridded. The grid name must match a grid that has been defined in the parent collection.",
@@ -1202,7 +1245,7 @@
                "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA",
                "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)", "WEB MAP SERVICE (WMS)", "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT",
                "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY",
-               "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", 
+               "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO",
                "IMPORTANT NOTICE","INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE", "PI DOCUMENTATION",
                "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
                "PRODUCTION HISTORY", "PUBLICATIONS", "READ-ME",

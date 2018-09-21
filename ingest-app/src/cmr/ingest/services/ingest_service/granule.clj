@@ -1,5 +1,6 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
+   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -63,13 +64,16 @@
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
-
+   
    (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
           umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     (v/validate-granule-umm-spec context umm-spec-collection granule)
+     ;; TODO (Leo): skip the UMM validation temporarily, need to remove this check once UMM-G
+     ;; support is added for the fields involved in validations
+     (when-not (mt/umm-json? (:format concept))
+       (v/validate-granule-umm-spec context umm-spec-collection granule))
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
