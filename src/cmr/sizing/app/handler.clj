@@ -17,12 +17,11 @@
   (fn [req]
     (log/debug "Estimating download size based on HTTP GET ...")
     (let [user-token (token/extract req)
-          concept-id (get-in req [:path-params :concept-id])
-          api-version (request/accept-api-version component req)]
+          concept-id (get-in req [:path-params :concept-id])]
       (->> req
            :params
            (merge {:collection-id concept-id})
-           (sizing/estimate-size component api-version user-token)
+           (sizing/estimate-size component user-token)
            (response/json req)))))
 
 (defn stream-estimate-size
