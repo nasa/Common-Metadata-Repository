@@ -34,6 +34,7 @@
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-sizing-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
     [markdown-clj "1.0.2"]
     [metosin/reitit-core "0.1.3"]
