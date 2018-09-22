@@ -12,15 +12,15 @@
 
 (defn home
   "Prepare the home page template."
-  [request data]
+  [system request data]
   (pages/render-html
    "templates/opendap-home.html"
-   (data/base-dynamic data)))
+   (data/base-dynamic system data)))
 
 (defn opendap-docs
   "Prepare the top-level search docs page."
-  [request data]
+  [system request data]
   (log/debug "Calling opendap-docs page ...")
   (pages/render-html
    "templates/opendap-docs.html"
-   (data/base-dynamic data)))
+   (data/base-dynamic system data)))

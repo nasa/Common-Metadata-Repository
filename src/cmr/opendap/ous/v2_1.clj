@@ -9,15 +9,16 @@
   have the results previously expected when making calls against metadata that
   has not been updated to use UMM-Var 1.2."
   (:require
+    [cmr.exchange.common.results.core :as results]
+    [cmr.exchange.common.results.errors :as errors]
+    [cmr.exchange.common.results.warnings :as warnings]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.ous.common :as common]
     [cmr.opendap.ous.concepts.collection :as collection]
     [cmr.opendap.ous.concepts.granule :as granule]
     [cmr.opendap.ous.concepts.service :as service]
     [cmr.opendap.ous.concepts.variable :as variable]
-    [cmr.opendap.results.core :as results]
-    [cmr.opendap.results.errors :as errors]
-    [cmr.opendap.results.warnings :as warnings]
+    [cmr.opendap.results.errors :as ous-errors]
     [cmr.opendap.util :as util]
     [taoensso.timbre :as log]))
 
@@ -109,7 +110,7 @@
               services bounding-info s3-errs
               query s4-errs
               {:errors (errors/check
-                        [not data-files errors/empty-gnl-data-files])})]
+                        [not data-files ous-errors/empty-gnl-data-files])})]
     (common/process-results {:params params
                              :data-files data-files
                              :query query} start errs warns)))

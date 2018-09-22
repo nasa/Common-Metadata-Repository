@@ -1,11 +1,12 @@
 (ns cmr.opendap.ous.concepts.service
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.results.core :as results]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
-   [cmr.opendap.results.core :as results]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -43,7 +44,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error errors/service-metadata)
+        (log/error ous-errors/service-metadata)
         rslts)
       (do
         (log/trace "Got results from CMR service search:"

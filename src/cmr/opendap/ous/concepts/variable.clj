@@ -1,13 +1,14 @@
 (ns cmr.opendap.ous.concepts.variable
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.results.core :as results]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.results.core :as results]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
@@ -127,7 +128,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error errors/variable-metadata)
+        (log/error ous-errors/variable-metadata)
         (log/error rslts)
         rslts)
       (do
@@ -240,4 +241,4 @@
                    {:reversed? reversed?})
          :size (get-in entry [:umm :Characteristics :Size])
          :lat-reversed? reversed?}))
-    {:errors [errors/variable-metadata]}))
+    {:errors [ous-errors/variable-metadata]}))

@@ -13,8 +13,8 @@
    [cmr.authz.permissions :as permissions]
    [cmr.authz.roles :as roles]
    [cmr.authz.token :as token]
+   [cmr.exchange.common.results.errors :as base-errors]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.results.errors :as cmro-errors]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 
@@ -58,7 +58,7 @@
      #(token/->user (config/get-echo-rest-url system) token))
     (catch Exception e
       (log/error e)
-      {:errors (cmro-errors/exception-data e)})))
+      {:errors (base-errors/exception-data e)})))
 
 (defn cached-admin-role
   "Look up the roles for token+user in the cache; if there is a miss, make the
@@ -72,7 +72,7 @@
                                   user-id))
     (catch Exception e
       (log/error e)
-      {:errors (cmro-errors/exception-data e)})))
+      {:errors (base-errors/exception-data e)})))
 
 (defn cached-concept-permission
   "Look up the permissions for a concept in the cache; if there is a miss,
@@ -88,7 +88,7 @@
                       concept-id))
     (catch Exception e
       (log/error e)
-      {:errors (cmro-errors/exception-data e)})))
+      {:errors (base-errors/exception-data e)})))
 
 (defn check-roles
   "A supporting function for `check-roles-permissions` that handles the roles

@@ -2,6 +2,8 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.exchange.common.results.core :as results]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.components.concept :as concept]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.ous.concepts.collection :as collection]
@@ -11,8 +13,7 @@
    [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.query.core :as params]
    [cmr.opendap.query.util :as query-util]
-   [cmr.opendap.results.core :as results]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [cmr.opendap.results.warnings :as warnings]
    [cmr.opendap.util :as util]
    [cmr.opendap.validation :as validation]
@@ -105,7 +106,7 @@
                             (str "$1" fallback-replacement "$3")))
 
           :else
-          (let [msg (format errors/no-matching-service-pattern
+          (let [msg (format ous-errors/no-matching-service-pattern
                             fallback-pattern
                             data-url)]
             (log/error msg)

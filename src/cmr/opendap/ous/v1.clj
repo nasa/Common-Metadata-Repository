@@ -1,11 +1,12 @@
 (ns cmr.opendap.ous.v1
   (:require
+    [cmr.exchange.common.results.core :as results]
+    [cmr.exchange.common.results.errors :as errors]
     [cmr.opendap.components.config :as config]
     [cmr.opendap.ous.common :as common]
     [cmr.opendap.ous.concepts.collection :as collection]
     [cmr.opendap.ous.concepts.granule :as granule]
-    [cmr.opendap.results.core :as results]
-    [cmr.opendap.results.errors :as errors]
+    [cmr.opendap.results.errors :as ous-errors]
     [cmr.opendap.util :as util]
     [taoensso.timbre :as log]))
 
@@ -44,8 +45,8 @@
     (log/info "Got level:" level)
     (if (contains? supported-processing-levels level)
       params
-      {:errors [errors/unsupported-processing-level
-                (format errors/problem-processing-level
+      {:errors [ous-errors/unsupported-processing-level
+                (format ous-errors/problem-processing-level
                         level
                         (:id coll))]})))
 
@@ -118,7 +119,7 @@
               services bounding-info s3-errs
               query s4-errs
               {:errors (errors/check
-                        [not data-files errors/empty-gnl-data-files])})]
+                        [not data-files ous-errors/empty-gnl-data-files])})]
     (common/process-results {:params params
                              :data-files data-files
                              :query query} start errs)))

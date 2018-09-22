@@ -28,16 +28,6 @@
    ["/opendap/ous/streaming-collection/:concept-id" {
     :get (collection-handler/stream-urls httpd-component)}]])
 
-(defn size-estimate-api
-  [httpd-component]
-  [["/opendap/size-estimate/collection/:concept-id" {
-    :get {:handler (collection-handler/estimate-size httpd-component)
-          :permissions #{:read}}
-    :post {:handler (collection-handler/estimate-size httpd-component)
-           :permissions #{:read}}}]
-   ["/opendap/size-estimate/streaming-collection/:concept-id" {
-    :get (collection-handler/stream-estimate-size httpd-component)}]])
-
 (defn service-bridge-api
   [httpd-component]
   [["/service-bridge/collection/:concept-id" {
@@ -48,11 +38,13 @@
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Note that, since this uses the JAR-file plugin, routes are also pulled
+;; in implicitly.
+
 (defn all
   [httpd-component]
   (concat
    (ous-api httpd-component)
-   (size-estimate-api httpd-component)
    (service-bridge-api httpd-component)
    (routes-v2/admin-api httpd-component)
    routes-v1/testing))

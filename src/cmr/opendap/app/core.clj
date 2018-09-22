@@ -10,10 +10,9 @@
   (log/trace "httpd-component keys:" (keys httpd-component))
   (let [{site-routes :site-routes :as route-data}
         (base-app/collected-routes httpd-component)]
-    (log/debug "Got site routes:" (vec site-routes))
     (-> site-routes
         ;; initial routes and middleware are reitit-based
-        (middleware/wrap-reitit-middleware route-data httpd-component)
+        (middleware/wrap-api-version-dispatch route-data httpd-component)
         ;; the wrap-api-version-dispatch makes a call which converts the
         ;; reitit-based middleware/routes to ring; from here on out, all
         ;; middleware is ring-based

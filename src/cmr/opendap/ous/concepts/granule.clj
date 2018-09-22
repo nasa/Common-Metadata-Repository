@@ -1,13 +1,14 @@
 (ns cmr.opendap.ous.concepts.granule
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.results.core :as results]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.query.util :as query-util]
-   [cmr.opendap.results.core :as results]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
@@ -84,7 +85,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error errors/granule-metadata)
+        (log/error ous-errors/granule-metadata)
         rslts)
       (do
         (log/trace "Got results from CMR granule search:"
@@ -121,6 +122,6 @@
       {:granule-id gran-id
        :link-rel (:rel link)
        :link-href (:href link)}
-      {:errors [errors/empty-gnl-data-file-url
+      {:errors [ous-errors/empty-gnl-data-file-url
                 (when gran-id
-                  (format errors/problem-granules gran-id))]})))
+                  (format ous-errors/problem-granules gran-id))]})))

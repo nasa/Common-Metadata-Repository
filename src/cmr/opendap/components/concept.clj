@@ -5,11 +5,11 @@
   these instead of making repeated queries to the CMR."
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.components.caching :as caching]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.ous.concepts.collection :as collection]
    [cmr.opendap.ous.concepts.granule :as granule]
-   [cmr.opendap.results.errors :as errors]
    [cmr.opendap.util :as util]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])

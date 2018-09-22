@@ -2,20 +2,27 @@
   "Note: this namespace is exclusively for unit tests."
   (:require
    [clojure.test :refer :all]
-   [cmr.opendap.results.errors :as errors]))
+   [cmr.exchange.common.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]))
 
+;; XXX These tests need to be moved into
+;;     cmr.exchange.common.tests.unit.results.errors
 (deftest any-client-errors?
   (is (not (errors/any-client-errors? {:errors []})))
-  (is (errors/any-client-errors? {:errors ["Oops"
-                                           errors/empty-svc-pattern]}))
-  (is (errors/any-client-errors? {:errors [errors/empty-svc-pattern]})))
+  (is (errors/any-client-errors? ous-errors/status-map
+                                 {:errors ["Oops"
+                                           ous-errors/empty-svc-pattern]}))
+  (is (errors/any-client-errors? ous-errors/status-map
+                                 {:errors [ous-errors/empty-svc-pattern]})))
 
 (deftest any-server-errors?
   (is (not (errors/any-server-errors? {:errors []})))
   (is (not (errors/any-server-errors? {:errors ["Oops"]})))
-  (is (errors/any-server-errors? {:errors ["Oops"
-                                           errors/no-matching-service-pattern]}))
-  (is (errors/any-server-errors? {:errors [errors/no-matching-service-pattern]})))
+  (is (errors/any-server-errors? ous-errors/status-map
+                                 {:errors ["Oops"
+                                           ous-errors/no-matching-service-pattern]}))
+  (is (errors/any-server-errors? ous-errors/status-map
+                                 {:errors [ous-errors/no-matching-service-pattern]})))
 
 (deftest erred?
   (is (errors/erred? {:error ["an error message"]}))

@@ -10,13 +10,12 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.authz.errors :as authz-errors]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [ring.util.http-response :as ring-response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in])
-  (:import
-    (java.lang.ref SoftReference))
   (:refer-clojure :exclude [error-handler]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,32 +36,6 @@
 (def not-allowed response/not-allowed)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn soft-reference->json!
-  "Given a soft reference object and a Cheshire JSON generator, write the
-  data stored in the soft reference to the generator as a JSON string.
-
-  Note, however, that sometimes the value is not a soft reference, but rather
-  a raw value from the response. In that case, we need to skip the object
-  conversion, and just do the realization."
-  [obj json-generator]
-  (let [data @(if (isa? obj SoftReference)
-                (.get obj)
-                obj)
-        data-str (json/generate-string data)]
-    (log/trace "Encoder got data: " data)
-    (.writeString json-generator data-str)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Global operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; This adds support for JSON-encoding the data cached in a SoftReference.
-(json-gen/add-encoder SoftReference soft-reference->json!)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Custom Response Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -78,21 +51,15 @@
 
 (def json-handler #(client-handler % response/parse-json-body))
 
-(defn process-ok-results
-  [data]
-  {:headers {"CMR-Took" (:took data)
-             "CMR-Hits" (:hits data)}
-   :status 200})
-
 (defn process-err-results
   [data]
   (cond (authz-errors/any-errors? data)
         {:status authz-errors/error-code}
 
-        (errors/any-server-errors? data)
+        (errors/any-server-errors? ous-errors/status-map data)
         {:status errors/server-error-code}
 
-        (errors/any-client-errors? data)
+        (errors/any-client-errors? ous-errors/status-map data)
         {:status errors/client-error-code}
 
         :else
@@ -100,28 +67,16 @@
 
 (defn process-results
   [data]
-  (if (:errors data)
-    (process-err-results data)
-    (process-ok-results data)))
+  (response/process-results process-err-results data))
 
 (defn json
-  [_request data]
-  (log/trace "Got data for JSON:" data)
-  (-> data
-      process-results
-      (assoc :body (json/generate-string data))
-      (ring-response/content-type "application/json")))
+  [request data]
+  (response/json request process-results data))
 
 (defn text
-  [_request data]
-  (-> data
-      process-results
-      (assoc :body data)
-      (ring-response/content-type "text/plain")))
+  [request data]
+  (response/text request process-results data))
 
 (defn html
-  [_request data]
-  (-> data
-      process-results
-      (assoc :body data)
-      (ring-response/content-type "text/html")))
+  [request data]
+  (response/html request process-results data))

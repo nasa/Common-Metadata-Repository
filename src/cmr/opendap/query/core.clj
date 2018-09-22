@@ -4,12 +4,13 @@
   with these parameters are defined here."
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.results.errors :as errors]
    [cmr.opendap.query.const :as const]
    [cmr.opendap.query.impl.cmr :as cmr]
    [cmr.opendap.query.impl.giovanni :as giovanni]
    [cmr.opendap.query.impl.wcs :as wcs]
    [cmr.opendap.query.util :as util]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.opendap.results.errors :as ous-errors]
    [taoensso.timbre :as log])
   (:import
    (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
@@ -62,7 +63,6 @@
         :missing-collection-id {:errors [errors/missing-collection-id]}
         :unknown-parameters-type {:errors [errors/invalid-parameter
                                            (str "Parameters: " raw-params)]}))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   High-level API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

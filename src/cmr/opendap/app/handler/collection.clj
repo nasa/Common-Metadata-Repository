@@ -5,13 +5,13 @@
    [clojure.core.async :as async]
    [clojure.java.io :as io]
    [cmr.authz.token :as token]
+   [cmr.exchange.common.results.errors :as base-errors]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.core :as ous]
    [cmr.opendap.query.core :as query]
    [cmr.opendap.results.errors :as errors]
-   [cmr.opendap.sizing.core :as sizing]
    [org.httpkit.server :as server]
    [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))
@@ -53,7 +53,7 @@
 (defn unsupported-method
   "XXX"
   [request]
-  {:error errors/not-implemented})
+  {:error base-errors/not-implemented})
 
 (defn generate-urls
   "XXX"
@@ -75,7 +75,7 @@
   ;;     this may require creating divergent logic/impls ...
   ;; XXX This is being tracked in CMR-4864
   (fn [request]
-    {:error errors/not-implemented}))
+    {:error base-errors/not-implemented}))
 
 (defn stream-urls
   ""
@@ -109,28 +109,6 @@
                                false))
                 (recur (inc id))))))
           (timer/schedule-task timeout (server/close channel)))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Size Estimate Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn estimate-size
-  [component]
-  (fn [request]
-    (log/debug "Estimating download size based on HTTP GET ...")
-    (let [user-token (token/extract request)
-          concept-id (get-in request [:path-params :concept-id])
-          api-version (request/accept-api-version component request)]
-      (->> request
-           :params
-           (merge {:collection-id concept-id})
-           (sizing/estimate-size component api-version user-token)
-           (response/json request)))))
-
-(defn stream-estimate-size
-  [component]
-  (fn [request]
-    {:errors [:not-implemented]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Service Bridge Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

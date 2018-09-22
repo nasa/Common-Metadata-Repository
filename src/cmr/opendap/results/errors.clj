@@ -1,15 +1,8 @@
 (ns cmr.opendap.results.errors
   (:require
    [clojure.set :as set]
-   [cmr.opendap.results.common :as common]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def default-error-code 400)
-(def client-error-code 400)
-(def server-error-code 500)
+   [cmr.exchange.common.results.errors :as errors]
+   [cmr.exchange.common.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Error Messages   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,18 +13,7 @@
 (def no-permissions "You do not have permissions to access that resource.")
 (def token-required "An ECHO token is required to access this resource.")
 
-;; Generic
-
-(def status-code
-  "HTTP Error status code: %s.")
-
 ;; OUS - General
-
-(def not-implemented
-  "This capability is not currently implemented.")
-
-(def unsupported
-  "This capability is not currently supported.")
 
 (def unsupported-processing-level
   "The requst includes a dataset whose processing level is not supported.")
@@ -40,9 +22,6 @@
   "Problematic processing level %s for collection %s.")
 
 ;; OUS - Parameters
-
-(def invalid-parameter
-  "One or more of the parameters provided were invalid.")
 
 (def missing-collection-id
   "The provided parameters are missing the required field 'collection-id'.")
@@ -93,60 +72,17 @@
 (def status-map
   "This is a lookup data structure for how HTTP status/error codes map to CMR
   OPeNDAP errors."
-  {client-error-code #{empty-svc-pattern
-                       invalid-lat-params
-                       invalid-lon-params
-                       not-implemented
-                       unsupported
-                       unsupported-processing-level
-                       problem-processing-level}
-   server-error-code #{empty-gnl-data-files
-                       ;;empty-gnl-data-file-url
-                       problem-granules
-                       no-matching-service-pattern
-                       granule-metadata
-                       service-metadata
-                       variable-metadata}})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Error Handling API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn any-client-errors?
-  [errors]
-  (seq (set/intersection (get status-map client-error-code)
-                         (set (:errors errors)))))
-
-(defn any-server-errors?
-  [errors]
-  (seq (set/intersection (get status-map server-error-code)
-                         (set (:errors errors)))))
-
-(defn check
-  ""
-  [& msgs]
-  (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
-                    msgs)))
-
-(defn exception-data
-  [exception]
-  [(or (.getMessage exception)
-       (ex-data exception))])
-
-(defn get-errors
-  [data]
-  (common/get-results data :errors :error))
-
-(defn erred?
-  ""
-  [data]
-  (seq (get-errors data)))
-
-(defn any-erred?
-  [coll]
-  (some erred? coll))
-
-
-(defn collect
-  [& coll]
-  (common/collect-results coll :errors :error))
+  (util/deep-merge
+    errors/status-map
+    {errors/client-error-code #{empty-svc-pattern
+                                invalid-lat-params
+                                invalid-lon-params
+                                unsupported-processing-level
+                                problem-processing-level}
+     errors/server-error-code #{empty-gnl-data-files
+                                ;;empty-gnl-data-file-url
+                                problem-granules
+                                no-matching-service-pattern
+                                granule-metadata
+                                service-metadata
+                                variable-metadata}}))

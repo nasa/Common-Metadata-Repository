@@ -31,24 +31,20 @@
 
 (defn wrap-api-version-dispatch
   ""
-  [site-routes {:keys [api-routes-fn plugins-api-routes]} system opts]
-  (fn [req]
-    (log/trace "Got site-routes:" (vec site-routes))
-    (let [api-version (request/accept-api-version system req)
-          routes (concat site-routes
-                         plugins-api-routes
-                         (api-routes-fn system api-version))
-          handler (ring/ring-handler (ring/router routes opts))]
-      (log/debug "API version:" api-version)
-      (log/trace "Made routes:" (vec routes))
-      (response/version-media-type
-        (handler req)
-        (request/accept-media-type-format system req)))))
-
-(defn wrap-reitit-middleware
-  [site-routes route-data system]
-  (wrap-api-version-dispatch
-    site-routes
-    route-data
-    system
-    (reitit-auth system)))
+  ([site-routes route-data system]
+    (wrap-api-version-dispatch
+      site-routes route-data system (reitit-auth system)))
+  ([site-routes {:keys [main-api-routes-fn plugins-api-routes]} system opts]
+    (fn [req]
+      (log/debug "Got site-routes:" (vec site-routes))
+      (let [api-version (request/accept-api-version system req)
+            api-routes (main-api-routes-fn system api-version)
+            _ (log/debug "Got plugins-api-routes:" (vec plugins-api-routes))
+            _ (log/debug "Got api-routes:" (vec api-routes))
+            routes (concat site-routes plugins-api-routes api-routes)
+            handler (ring/ring-handler (ring/router routes opts))]
+        (log/debug "API version:" api-version)
+        (log/debug "Made routes:" (vec routes))
+        (response/version-media-type
+          (handler req)
+          (request/accept-media-type-format system req))))))
