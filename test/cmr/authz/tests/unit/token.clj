@@ -20,5 +20,5 @@
          (token/parse-token xml-test-body))))
 
 (deftest parse-username
-  (is (= ["4l1c3"]
+  (is (= "4l1c3"
          (token/parse-username xml-test-body))))
