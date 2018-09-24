@@ -39,7 +39,6 @@
   (:import
    (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
    (cmr.opendap.query.impl.wcs CollectionWcsStyleParams)
-   (com.jcabi.manifests Manifests)
    (java.net URI)
    (java.nio.file Paths)
    ; (net.sf.geographiclib Geodesic PolygonArea)
