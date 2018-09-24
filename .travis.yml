@@ -1,0 +1,13 @@
+language: clojure
+script:
+  - lein build
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+env:
+  - LEIN_SNAPSHOTS_IN_RELEASE=true
+notifications:
+  email:
+    - duncan.mcgreggor@nasa.gov
+
