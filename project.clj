@@ -40,7 +40,7 @@
     :security {
       :plugins [
         [lein-nvd "0.5.4"]]
-        :source-paths ^:replace ["src"]
+      :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
       :exclusions [
@@ -49,9 +49,11 @@
         [com.google.javascript/closure-compiler-unshaded]
         [commons-fileupload]]
       :dependencies [
-        ;; The following pull required deps that have been excluded above due
-        ;; to CVEs
-        [commons-fileupload "1.3.3"]]}
+        ;; The following pull required deps that have been either been
+        ;; explicitly or implicitly excluded above due to CVEs and need
+        ;; declare secure versions of the libs pulled in
+        [commons-fileupload "1.3.3"]
+        [commons-io "2.5"]]}
     :dev {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]
