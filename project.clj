@@ -24,6 +24,7 @@
     :security {
       :plugins [
         [lein-nvd "0.5.4"]]
+        :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
       :exclusions [
@@ -60,6 +61,7 @@
     "check-deps" ["do"
       ["check-jars"]
       ["check-vers"]]
+    "ltest" ["with-profile" "+test,+system,+security" "ltest"]
     ;; Linting
     "kibit" ["with-profile" "+lint" "kibit"]
     "eastwood" ["with-profile" "+lint" "eastwood" "{:namespaces [:source-paths]}"]
@@ -67,11 +69,10 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    ;; Testing
-    "ltest" ["with-profile" "+test,+system,+security" "ltest"]
     ;; Security
-    "check-sec" ["with-profile" "+security" "nvd" "check"]
-    ;; Documentation and static content
+    "check-sec" ["with-profile" "+security" "do"
+      ["clean"]
+      ["nvd" "check"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+security" "jar"]
     "build-uberjar" ["with-profile" "+security" "uberjar"]
@@ -87,4 +88,9 @@
     "build-full" ["do"
       ["ltest" ":unit"]
       ["ubercompile"]
-      ["build-uberjar"]]})
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
