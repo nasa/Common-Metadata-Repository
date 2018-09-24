@@ -7,13 +7,8 @@
 
 (defn- parse-umm-json-concept
   [context {:keys [concept-type metadata format] :as concept-map}]
-  (if (= :granule concept-type)
-    (umm-spec/parse-metadata context concept-type format metadata)
-    ;; Convert the UMM JSON metadata into ECHO10 metadata using umm-spec-lib, and then use the old
-    ;; umm-lib to parse it into a UMM record.
-    (let [model (umm-spec/parse-metadata context concept-type format metadata)
-          echo10-metadata (umm-spec/generate-metadata context model :echo10)]
-      (umm/parse-concept (assoc concept-map :format mt/echo10 :metadata echo10-metadata)))))
+  (when (= :granule concept-type)
+    (umm-spec/parse-metadata context concept-type format metadata)))
 
 (defn parse-concept
   "Returns UMM record from a concept map, like cmr.umm.umm-core/parse-concept, but supports additional

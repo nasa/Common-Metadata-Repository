@@ -464,7 +464,7 @@
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                                                  :ShortName "S1"
                                                                                  :Version "V1"}))]
-    (testing "Valid UMM JSON granule with collection-ref attributes"
+    (testing "Valid UMM JSON granule with collection-ref attributes, default UMM-G version"
       (are3 [attrs]
         (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                                (:concept-id collection)
@@ -484,4 +484,48 @@
         "EntryTitle Version"
         {:entry-title "correct" :version-id "V1"}
         "EntryTitle ShortName Version"
-        {:entry-title "correct" :short-name "S1" :version-id "V1"}))))
+        {:entry-title "correct" :short-name "S1" :version-id "V1"}))
+
+    (testing "Valid UMM JSON granule with specific valid UMM-G version"
+      (let [granule (-> (dg/granule-with-umm-spec-collection collection
+                                                             (:concept-id collection)
+                                                             {:granule-ur "Gran1"})
+                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                        (d/item->concept {:format :umm-json
+                                          :version "1.4"}))
+            {:keys [status] :as response} (ingest/ingest-concept granule)]
+        (is (#{200 201} status) (pr-str response))))
+
+    (testing "Ingest UMM JSON granule with invalid UMM-G version"
+      (let [granule (-> (dg/granule-with-umm-spec-collection collection
+                                                             (:concept-id collection)
+                                                             {:granule-ur "Gran1"})
+                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                        (d/item->concept {:format :umm-json
+                                          :version "1.1"}))
+            {:keys [status errors]} (ingest/ingest-concept granule)]
+        (is (= 400 status))
+        (is (= ["Unknown UMM JSON schema version: \"1.1\""] errors))))
+
+    (testing "Ingest UMM JSON granule with empty body"
+      (let [granule (-> (dg/granule-with-umm-spec-collection collection
+                                                             (:concept-id collection)
+                                                             {:granule-ur "Gran1"})
+                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                        (d/item->concept {:format :umm-json
+                                          :version "1.1"}))
+            granule-with-empty-body (assoc granule :metadata "")
+            {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
+        (is (= 400 status))
+        (is (= ["Request content is too short."] errors))))
+
+    (testing "Ingest invalid UMM JSON granule record"
+      (let [granule (-> (dg/granule-with-umm-spec-collection collection
+                                                             (:concept-id collection)
+                                                             {:granule-ur "Gran1"})
+                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                        (assoc :granule-ur "")
+                        (d/item->concept :umm-json))
+            {:keys [status errors]} (ingest/ingest-concept granule)]
+        (is (= 400 status))
+        (is (= ["/GranuleUR string \"\" is too short (length: 0, required minimum: 1)"] errors))))))

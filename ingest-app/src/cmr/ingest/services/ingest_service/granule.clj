@@ -64,13 +64,13 @@
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
-   
+
    (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
           umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     ;; TODO (Leo): skip the UMM validation temporarily, need to remove this check once UMM-G
+     ;; CMR-5211 (Leo): skip the UMM validation temporarily, need to remove this check once UMM-G
      ;; support is added for the fields involved in validations
      (when-not (mt/umm-json? (:format concept))
        (v/validate-granule-umm-spec context umm-spec-collection granule))
