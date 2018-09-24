@@ -31,16 +31,28 @@
 
 (def context (lkt/setup-context-for-test))
 
+(defn- format-key->concept-format
+  "Returns the format of the concept based on the format key, which could be a map with UMM version
+  for UMM JSON format."
+  [concept-type format-key]
+  (if-let [version (:version format-key)]
+    (mime-types/format->mime-type {:format format-key
+                                   :version version})
+    (if (= :umm-json format-key)
+      (mime-types/format->mime-type {:format format-key
+                                     :version (ver/current-version concept-type)})
+      (mime-types/format->mime-type format-key))))
+
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
   ([item]
    (item->concept item :echo10))
   ([item format-key]
    (let [concept-type (umm-legacy/item->concept-type item)
-         format (if (= :umm-json format-key)
-                  (mime-types/format->mime-type {:format format-key
-                                                 :version (ver/current-version concept-type)})
-                  (mime-types/format->mime-type format-key))]
+         format (format-key->concept-format concept-type format-key)
+         format-key (if-let [umm-format (:format format-key)]
+                      umm-format
+                      format-key)]
      (merge {:concept-type concept-type
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
