@@ -33,6 +33,16 @@
     :ubercompile {
       :aot :all
       :source-paths ["test"]}
+    :security {
+      :plugins [
+        [lein-nvd "0.5.4"]]
+        :source-paths ^:replace ["src"]
+      :nvd {
+        :suppression-file "resources/security/false-positives.xml"}
+      :exclusions [
+        ;; The following are excluded due to their being flagged as a CVE
+        [com.google.protobuf/protobuf-java]
+        [com.google.javascript/closure-compiler-unshaded]]}
     :system {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
@@ -86,8 +96,6 @@
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
     "ubercompile" ["with-profile" "+system,+local,+ubercompile" "compile"]
-    "uberjar" ["with-profile" "+system" "uberjar"]
-    "uberjar-aot" ["with-profile" "+system,+ubercompile" "uberjar"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
@@ -95,6 +103,9 @@
     "check-deps" ["do"
       ["check-jars"]
       ["check-vers"]]
+    "ltest" ["with-profile" "+test,+system" "ltest"]
+    "junit" ["with-profile" "+test,+system" "test2junit"]
+    ;; Lintint
     "kibit" ["with-profile" "+lint" "kibit"]
     "eastwood" ["with-profile" "+lint" "eastwood" "{:namespaces [:source-paths]}"]
     "yagni" ["with-profile" "+lint" "yagni"]
@@ -102,18 +113,25 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test,+system" "ltest"]
-    "junit" ["with-profile" "+test,+system" "test2junit"]
+    ;; Security
+    "check-sec" ["with-profile" "+security,+system" "do"
+      ["clean"]
+      ["nvd" "check"]]
     ;; Build tasks
+    "build-jar" ["with-profile" "+security,+system" "jar"]
+    "build-uberjar" ["with-profile" "+security,+system" "uberjar"]
+    "build-uberjar-aot" ["with-profile" "+security,+system,+ubercompile" "uberjar"]
     "build-lite" ["do"
       ["ltest" ":unit"]]
     "build" ["do"
+      ["clean"]
+      ["check-vers"]
+      ["check-sec"]
       ["ltest" ":unit"]
-      ["junit" ":unit"]
       ["ubercompile"]
-      ["uberjar"]]
-    "build-full" ["do"
-      ["ltest" ":unit"]
-      ["docs"]
-      ["ubercompile"]
-      ["uberjar"]]})
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security,+system" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
