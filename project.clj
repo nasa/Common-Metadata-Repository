@@ -23,9 +23,8 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.0"]
-    [clojusc/trifl "0.2.0"]
-    [clojusc/twig "0.3.2"]
-    [com.jcabi/jcabi-manifests "1.1"]
+    [clojusc/trifl "0.3.0"]
+    [clojusc/twig "0.3.3"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
@@ -60,6 +59,18 @@
     :ubercompile {
       :aot :all
       :source-paths ["test"]}
+    :security {
+      :plugins [
+        [lein-nvd "0.5.4"]]
+      :source-paths ^:replace ["src"]
+      :nvd {
+        :suppression-file "resources/security/false-positives.xml"}
+      :exclusions [
+        ;; The following are excluded due to their being flagged as a CVE
+        [com.google.protobuf/protobuf-java]
+        [com.google.javascript/closure-compiler-unshaded]
+        ;; The following is excluded because it stomps on twig's logger
+        [org.slf4j/slf4j-simple]]}
     :geo {
       :repositories [
         ["osgeo" "https://download.osgeo.org/webdav/geotools"]]
@@ -190,6 +201,10 @@
     "junit" ["with-profile" "+test,+system" "test2junit"]
     "ltest-with-geo" ["with-profile" "+test,+system,+geo" "ltest"]
     "junit-with-geo" ["with-profile" "+test,+system,+geo" "test2junit"]
+    ;; Security
+    "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
+      ["clean"]
+      ["nvd" "check"]]
     ;; Documentation and static content
     "codox" ["with-profile" "+docs,+system,+geo" "codox"]
     "marginalia" ["with-profile" "+docs,+system,+geo"
