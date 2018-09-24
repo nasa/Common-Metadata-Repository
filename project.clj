@@ -22,9 +22,9 @@
     :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
   :dependencies [
-    [cheshire "5.8.0"]
-    [clojusc/trifl "0.3.0-SNAPSHOT"]
-    [clojusc/twig "0.3.2"]
+    [cheshire "5.8.1"]
+    [clojusc/trifl "0.3.0"]
+    [clojusc/twig "0.3.3"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [me.raynes/conch "0.8.0"]
@@ -32,11 +32,22 @@
     [org.clojure/core.async "0.4.474"]]
   :profiles {
     ;; Tasks
-    :ubercompile {:aot :all}
+    :ubercompile {
+      :aot :all}
+    :security {
+      :plugins [
+        [lein-nvd "0.5.4"]]
+      :source-paths ^:replace ["src"]
+      :nvd {
+        :suppression-file "resources/security/false-positives.xml"}
+      :exclusions [
+        ;; The following are excluded due to their being flagged as a CVE
+        [com.google.protobuf/protobuf-java]
+        [com.google.javascript/closure-compiler-unshaded]]}
     ;; Environments
     :custom-repl {
       :repl-options {
-        ;:prompt ~get-prompt
+        :prompt ~get-prompt
         ;:welcome ~(print-welcome)
         }}
     :dev {
@@ -50,15 +61,23 @@
         :init-ns cmr.process.manager.repl
         :prompt ~get-prompt
         :init ~(println (get-banner))}}
-    :test {
-      :plugins [
-        [jonase/eastwood "0.2.6"]
-        [lein-ancient "0.6.15"]
-        [lein-bikeshed "0.5.1"]
-        [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}
     :lint {
-      :source-paths ^:replace ["src"]}
+      :source-paths ^:replace ["src"]
+      :test-paths ^:replace []
+      :plugins [
+        [jonase/eastwood "0.2.9"]
+        [lein-ancient "0.6.15"]
+        [lein-kibit "0.1.6"]]}
+    :test {
+      :dependencies [
+        [clojusc/ltest "0.3.0"]]
+      :plugins [
+        [lein-ltest "0.3.0"]]
+      :test-selectors {
+        :unit #(not (or (:integration %) (:system %)))
+        :integration :integration
+        :system :system
+        :default (complement :system)}}
     :docs {
       :dependencies [
         [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
@@ -92,24 +111,52 @@
         :namespaces [#"^cmr\.process\.manager\.(?!test)"]
         :metadata {:doc/format :markdown}}}}
   :aliases {
-    ;; General aliases
+    ;; Dev & Testing Aliases
     "repl" ["with-profile" "+custom-repl" "do"
       ["clean"]
       ["repl"]]
-    "ubercompile" ["with-profile" "+ubercompile" "compile"]
-    "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]
-    "lint" ["with-profile" "+test,+lint" "kibit"]
+    "ubercompile" ["with-profile" "+ubercompile,+security" "compile"]
+    "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
+    "check-jars" ["with-profile" "+lint" "do"
+      ["deps" ":tree"]
+      ["deps" ":plugin-tree"]]
+    "check-deps" ["do"
+      ["check-jars"]
+      ["check-vers"]]
+    "ltest" ["with-profile" "+test,+system,+security" "ltest"]
+    ;; Linting
+    "kibit" ["with-profile" "+lint" "kibit"]
+    "eastwood" ["with-profile" "+lint" "eastwood" "{:namespaces [:source-paths]}"]
+    "lint" ["do"
+      ["kibit"]
+      ;["eastwood"]
+      ]
+    ;; Security
+    "check-sec" ["with-profile" "+security" "do"
+      ["clean"]
+      ["nvd" "check"]]
+    ;; Build tasks
+    "build-jar" ["with-profile" "+security" "jar"]
+    "build-uberjar" ["with-profile" "+security" "uberjar"]
     "docs" ["with-profile" "+docs" "do"
       ["clean"]
       ["compile"]
       ["codox"]
       ["clean"]]
-    "build" ["with-profile" "+test" "do"
-      ["check-deps"]
-      ["lint"]
-      ["docs"]
+    "build-lite" ["do"
+      ["ltest" ":unit"]]
+    "build" ["do"
+      ["clean"]
+      ["check-vers"]
+      ["check-sec"]
+      ["ltest" ":unit"]
       ["ubercompile"]
+      ["build-uberjar"]]
+    "build-full" ["do"
+      ["docs"]
+      ["build"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security" "do"
       ["clean"]
-      ["uberjar"]
-      ["clean"]
-      ["test"]]})
+      ["build-jar"]
+      ["deploy" "clojars"]]})
