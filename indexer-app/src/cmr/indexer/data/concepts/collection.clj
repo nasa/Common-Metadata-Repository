@@ -168,7 +168,8 @@
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents} collection
+         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents
+         publication-references :PublicationReferences} collection
         parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
@@ -182,6 +183,8 @@
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
+        opendata-references (keep opendata/publication-reference->opendata-reference
+                                  publication-references)
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
@@ -350,6 +353,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
+            :publication-references opendata-references
             :update-time update-time
             :insert-time insert-time
             :created-at created-at

@@ -5,7 +5,7 @@
    [clj-http.client :as client]
    [clojure.data.xml :as x]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -95,7 +95,7 @@
 (deftest collection-metadata-cache-test
   (let [accepted-version (common-config/collection-umm-version)
         _ (side/eval-form `(common-config/set-collection-umm-version!
-                          umm-version/current-collection-version))
+                             umm-version/current-collection-version))
         c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -206,7 +206,7 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115)))))
-  (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
+    (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 (deftest collection-umm-json-metadata-cache-test
   (let [accepted-version (common-config/collection-umm-version)
@@ -533,7 +533,7 @@
                                                                       (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
                                                                       (m/mbr -180 90 180 -90)
                                                                       (m/mbr -10 20 30 -40)]})}))
-                  (update :entry-title str/trim))
+                  (update :entry-title string/trim))
         coll2 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset2"
                                         :short-name "ShortName#2"
@@ -683,7 +683,7 @@
                 [:status :results])))))))
 
 (deftest opendata-search-result
-  (testing "opendata references are url encoded"
+  (testing "Opendata search response"
     (let [concept (d/ingest-concept-with-metadata-file
                    "cmr-5136-opendata-related-urls.xml"
                    {:provider-id "PROV1"
@@ -692,22 +692,33 @@
                     :native-id "cmr-5136-related-url-test"})
           _ (index/wait-until-indexed)
           opendata (search/find-concepts-opendata :collection {:concept_id (:concept-id concept)})
-          references (:references (first (get-in opendata [:results :dataset])))]
-      (is (= (set (map url-util/url->comparable-url
-                       ["https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
-                        "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
-                        "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"
-                        "https://disc.gsfc.nasa.gov/SSW/#keywords=AIRX3STD%20006"
-                        "https://search.earthdata.nasa.gov/search?q=AIRX3STD+006"
-                        "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&version=1.1.1&request=GetCapabilities"
-                        "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG%3A4326&WIDTH=720&HEIGHT=360&LAYERS=AIRX3STD_TOTH2OVAP_A&TRANSPARENT=TRUE&FORMAT=image%2Fpng&bbox=-180%2C-90%2C180%2C90"
-                        "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCapabilities"
-                        "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCoverage&CRS=EPSG%3A4326&format=netCDF&resx=1.0&resy=1.0&BBOX=-179.5%2C-89.5%2C179.5%2C89.5&Coverage=AIRX3STD%3ACO_VMR_A&Time=2013-08-11"
-                        "https://airs.jpl.nasa.gov/index.html"
-                        "https://disc.gsfc.nasa.gov/information/documents?title=AIRS+Documentation"
-                        "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
-                        "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_Files_Description.pdf"]))
-             (set (map url-util/url->comparable-url references)))))))
+          opendata-coll (first (get-in opendata [:results :dataset]))
+          {:keys [references distribution]} opendata-coll]
+      (testing "references are correct"
+        (is (= #{"https://doi.org/10.1117/1.JRS.8.084994" "https://doi.org/10.5194/acp-14-399-2014"}
+               (set references))))
+      (testing "correct distribution field"
+        (is (= 13 (count distribution)))
+        (testing "every distribution has an access URL."
+          (is (every? #(some? (:accessURL %)) distribution)))
+        (testing "every distribution has a description."
+          (is (every? #(not (string/blank? (:description %))) distribution)))
+        (testing "distribution URLs are correctly URL encoded."
+          (is (= (set (map url-util/url->comparable-url
+                           ["https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
+                            "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
+                            "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"
+                            "https://disc.gsfc.nasa.gov/SSW/#keywords=AIRX3STD%20006"
+                            "https://search.earthdata.nasa.gov/search?q=AIRX3STD+006"
+                            "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&version=1.1.1&request=GetCapabilities"
+                            "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG%3A4326&WIDTH=720&HEIGHT=360&LAYERS=AIRX3STD_TOTH2OVAP_A&TRANSPARENT=TRUE&FORMAT=image%2Fpng&bbox=-180%2C-90%2C180%2C90"
+                            "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCapabilities"
+                            "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCoverage&CRS=EPSG%3A4326&format=netCDF&resx=1.0&resy=1.0&BBOX=-179.5%2C-89.5%2C179.5%2C89.5&Coverage=AIRX3STD%3ACO_VMR_A&Time=2013-08-11"
+                            "https://airs.jpl.nasa.gov/index.html"
+                            "https://disc.gsfc.nasa.gov/information/documents?title=AIRS+Documentation"
+                            "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
+                            "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_Files_Description.pdf"]))
+                 (set (map url-util/url->comparable-url (map :accessURL distribution))))))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]

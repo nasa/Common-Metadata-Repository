@@ -74,7 +74,7 @@
   (let [{:keys [format-key concept-id data-format provider-id]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
-                access-value personnel]} collection
+                access-value personnel publication-references]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
         ;; DIF9 doesn't support DataDates in umm-spec-lib:
@@ -93,7 +93,7 @@
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
-        distribution (not-empty (odrh/distribution related-urls))
+        distribution (not-empty (map odrh/related-url->distribution related-urls))
         project-sn (not-empty (map :short-name projects))
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
@@ -117,7 +117,8 @@
                             :distribution distribution
                             :landingPage (odrh/landing-page related-urls)
                             :language [odrh/LANGUAGE_CODE]
-                            :references (not-empty (map :url related-urls))
+                            :references (not-empty
+                                         (map ru/related-url->encoded-url publication-references))
                             :issued (when insert-time (str insert-time))})))
 
 (defn collections->expected-opendata
