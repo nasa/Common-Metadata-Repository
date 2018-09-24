@@ -49,10 +49,7 @@
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
-        [proto-repl "0.3.1"]
-        [me.delete/plugin-a "0.1.0-SNAPSHOT"]
-        [me.delete/plugin-b "0.1.0-SNAPSHOT"]
-        [me.delete/plugin-c "0.1.0-SNAPSHOT"]]
+        [proto-repl "0.3.1"]]
       :plugins [
         [lein-project-version "0.1.0"]
         [lein-shell "0.5.0"]
