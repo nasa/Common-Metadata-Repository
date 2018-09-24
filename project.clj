@@ -21,9 +21,9 @@
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
-    [cheshire "5.8.0"]
-    [clojusc/trifl "0.2.0"]
-    [clojusc/twig "0.3.2"]
+    [cheshire "5.8.1"]
+    [clojusc/trifl "0.3.0"]
+    [clojusc/twig "0.3.3"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
@@ -31,12 +31,27 @@
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.11.8"]
+    [selmer "1.12.1"]
     [tolitius/xml-in "0.1.0"]]
   :profiles {
     :ubercompile {
       :aot :all
       :source-paths ["test"]}
+    :security {
+      :plugins [
+        [lein-nvd "0.5.4"]]
+        :source-paths ^:replace ["src"]
+      :nvd {
+        :suppression-file "resources/security/false-positives.xml"}
+      :exclusions [
+        ;; The following are excluded due to their being flagged as a CVE
+        [com.google.protobuf/protobuf-java]
+        [com.google.javascript/closure-compiler-unshaded]
+        [commons-fileupload]]
+      :dependencies [
+        ;; The following pull required deps that have been excluded above due
+        ;; to CVEs
+        [commons-fileupload "1.3.3"]]}
     :dev {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]
@@ -54,7 +69,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.6"]
+        [jonase/eastwood "0.2.9"]
         [lein-ancient "0.6.15"]
         [lein-kibit "0.1.6"]]}
     :test {
@@ -72,7 +87,7 @@
     "repl" ["do"
       ["clean"]
       ["repl"]]
-    "ubercompile" ["with-profile" "+ubercompile" "compile"]
+    "ubercompile" ["with-profile" "+ubercompile,+security" "compile"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
@@ -80,19 +95,36 @@
     "check-deps" ["do"
       ["check-jars"]
       ["check-vers"]]
+    "ltest" ["with-profile" "+test,+system,+security" "ltest"]
+    ;; Linting
     "kibit" ["with-profile" "+lint" "kibit"]
     "eastwood" ["with-profile" "+lint" "eastwood" "{:namespaces [:source-paths]}"]
     "lint" ["do"
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test" "ltest"]
-    ;; Documentation and static content
+    ;; Security
+    "check-sec" ["with-profile" "+security" "do"
+      ["clean"]
+      ["nvd" "check"]]
     ;; Build tasks
+    "build-jar" ["with-profile" "+security" "jar"]
+    "build-uberjar" ["with-profile" "+security" "uberjar"]
     "build-lite" ["do"
       ["ltest" ":unit"]]
     "build" ["do"
       ["clean"]
+      ["check-vers"]
+      ["check-sec"]
       ["ltest" ":unit"]
       ["ubercompile"]
-      ["uberjar"]]})
+      ["build-uberjar"]]
+    "build-full" ["do"
+      ["ltest" ":unit"]
+      ["ubercompile"]
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
