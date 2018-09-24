@@ -53,7 +53,7 @@
         ;; explicitly or implicitly excluded above due to CVEs and need
         ;; declare secure versions of the libs pulled in
         [commons-fileupload "1.3.3"]
-        [commons-io "2.5"]]}
+        [commons-io "2.6"]]}
     :dev {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]
