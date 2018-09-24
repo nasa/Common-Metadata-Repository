@@ -105,4 +105,9 @@
       ["check-sec"]
       ["ltest" ":unit"]
       ["ubercompile"]
-      ["build-uberjar"]]})
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
