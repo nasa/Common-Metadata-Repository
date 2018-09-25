@@ -69,27 +69,29 @@
   ([raw-params]
     (-create raw-params {}))
   ([raw-params opts]
-    (let [missing-params (missing-required-params
-                          raw-params (:required-params opts))
+    (let [params (util/normalize-params raw-params)
+          missing-params (missing-required-params
+                          params
+                          (:required-params opts))
           dest (:destination opts)]
       (cond (seq missing-params)
             (missing-params-errors missing-params)
 
-            (util/ambiguous-style? raw-params)
-            (cmr/create raw-params)
+            (util/ambiguous-style? params)
+            (cmr/create params)
 
-            (or (= :cmr dest) (cmr/style? raw-params))
-            (cmr/create raw-params)
+            (or (= :cmr dest) (cmr/style? params))
+            (cmr/create params)
 
-            (or (= :giovanni dest) (giovanni/style? raw-params))
-            (giovanni/create raw-params)
+            (or (= :giovanni dest) (giovanni/style? params))
+            (giovanni/create params)
 
-            (or (= :wcs dest) (wcs/style? raw-params))
-            (wcs/create raw-params)
+            (or (= :wcs dest) (wcs/style? params))
+            (wcs/create params)
 
             :else
             {:errors [errors/invalid-parameter
-                      (str "Parameters: " raw-params)]}))))
+                      (str "Parameters: " params)]}))))
 
 (defn create
   [& args]
@@ -115,10 +117,6 @@
   explicit desired type is indicated so no conversion is performed."
   ([raw-params]
     (parse raw-params nil))
-    ; (let [collection-params (create raw-params)]
-    ;   (if (errors/erred? collection-params)
-    ;     collection-params
-    ;     (->cmr collection-params))))
   ([raw-params destination]
     (create raw-params {:destination destination
                         :required-params #{:collection-id}})))
