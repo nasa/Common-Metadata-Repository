@@ -460,11 +460,11 @@
                                (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))))))
 
-(deftest ingest-umm-json-granule-test
+(deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                                                  :ShortName "S1"
                                                                                  :Version "V1"}))]
-    (testing "Valid UMM JSON granule with collection-ref attributes, default UMM-G version"
+    (testing "Valid UMM-G granule with collection-ref attributes, default UMM-G version"
       (are3 [attrs]
         (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                                (:concept-id collection)
@@ -486,7 +486,7 @@
         "EntryTitle ShortName Version"
         {:entry-title "correct" :short-name "S1" :version-id "V1"}))
 
-    (testing "Valid UMM JSON granule with specific valid UMM-G version"
+    (testing "Valid UMM-G granule with specific valid UMM-G version"
       (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                              (:concept-id collection)
                                                              {:granule-ur "Gran1"})
@@ -496,7 +496,7 @@
             {:keys [status] :as response} (ingest/ingest-concept granule)]
         (is (#{200 201} status) (pr-str response))))
 
-    (testing "Ingest UMM JSON granule with invalid UMM-G version"
+    (testing "Ingest UMM-G granule with invalid UMM-G version"
       (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                              (:concept-id collection)
                                                              {:granule-ur "Gran1"})
@@ -507,7 +507,7 @@
         (is (= 400 status))
         (is (= ["Unknown UMM JSON schema version: \"1.1\""] errors))))
 
-    (testing "Ingest UMM JSON granule with empty body"
+    (testing "Ingest UMM-G granule with empty body"
       (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                              (:concept-id collection)
                                                              {:granule-ur "Gran1"})
@@ -519,7 +519,7 @@
         (is (= 400 status))
         (is (= ["Request content is too short."] errors))))
 
-    (testing "Ingest invalid UMM JSON granule record"
+    (testing "Ingest invalid UMM-G granule record"
       (let [granule (-> (dg/granule-with-umm-spec-collection collection
                                                              (:concept-id collection)
                                                              {:granule-ur "Gran1"})
