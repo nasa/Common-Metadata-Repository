@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.umm-json-search-test
-  "Integration test for UMMJSON format search"
+  "Integration test for UMM-JSON format search"
   (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]

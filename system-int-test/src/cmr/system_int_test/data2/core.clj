@@ -18,7 +18,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.versioning :as ver]
+   [cmr.umm-spec.versioning :as versioning]
    [cmr.umm.umm-core :as umm]))
 
 (defn- item->native-id
@@ -40,7 +40,7 @@
                                    :version version})
     (if (= :umm-json format-key)
       (mime-types/format->mime-type {:format format-key
-                                     :version (ver/current-version concept-type)})
+                                     :version (versioning/current-version concept-type)})
       (mime-types/format->mime-type format-key))))
 
 (defn item->concept
