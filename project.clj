@@ -97,7 +97,7 @@
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
-    "ubercompile" ["with-profile" "+system,+local,+ubercompile" "do"
+    "ubercompile" ["with-profile" "+system,+local,+security,+ubercompile" "do"
       ["clean"]
       ["compile"]]
     "uberjar" ["with-profile" "+system" "uberjar"]
@@ -123,10 +123,17 @@
       ["clean"]
       ["nvd" "check"]]
     ;; Build tasks
+    "build-jar" ["with-profile" "+system,+security" "jar"]
+    "build-uberjar" ["with-profile" "+system,+security" "uberjar"]
     "build" ["do"
       ["clean"]
       ["check-vers"]
       ["check-sec"]
       ["ltest" ":unit"]
       ["ubercompile"]
-      ["build-uberjar"]]})
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+security" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
