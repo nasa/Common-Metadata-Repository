@@ -17,6 +17,7 @@
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
   [umm-g]
   (let [provider-dates (:ProviderDates umm-g)
+        ;; umm-lib Granule model does not have create-time, so ignore it for now.
         ; create-time (get-date-by-type provider-dates "Create")
         insert-time (get-date-by-type provider-dates "Insert")
         update-time (get-date-by-type provider-dates "Update")
