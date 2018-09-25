@@ -4,6 +4,8 @@
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
+   [cmr.exchange.query.core :as query]
+   [cmr.exchange.query.util :as query-util]
    [cmr.opendap.components.concept :as concept]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.ous.concepts.collection :as collection]
@@ -11,8 +13,6 @@
    [cmr.opendap.ous.concepts.service :as service]
    [cmr.opendap.ous.concepts.variable :as variable]
    [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.query.core :as params]
-   [cmr.opendap.query.util :as query-util]
    [cmr.opendap.results.errors :as ous-errors]
    [cmr.opendap.results.warnings :as warnings]
    [cmr.opendap.util :as util]
@@ -257,7 +257,7 @@
 (defn stage1
   [component {:keys [endpoint token params]}]
   (log/debug "Starting stage 1 ...")
-  (let [params (params/parse params)
+  (let [params (query/parse params)
         bounding-box (:bounding-box params)
         valid-lat (when bounding-box
                     (validation/validate-latitude

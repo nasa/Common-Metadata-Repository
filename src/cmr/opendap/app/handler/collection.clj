@@ -6,6 +6,7 @@
    [clojure.java.io :as io]
    [cmr.authz.token :as token]
    [cmr.exchange.common.results.errors :as base-errors]
+   [cmr.exchange.query.core :as base-query]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
@@ -127,7 +128,7 @@
     (format "%s?%s" service-endpoint
                     (-> data
                         (query/parse {:destination destination})
-                        query/->query-string))))
+                        base-query/->query-string))))
 
 (defn bridge-services
   "Here's what we expect a request might look like:
