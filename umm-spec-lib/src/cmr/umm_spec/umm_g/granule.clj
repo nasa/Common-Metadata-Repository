@@ -8,6 +8,25 @@
    [cmr.common.util :as util])
   (:import cmr.umm.umm_granule.UmmGranule))
 
+(defn- get-date-by-type
+  "Returns the date of the given type from the given provider dates"
+  [provider-dates date-type]
+  (some #(when (= date-type (:Type %)) (:Date %)) provider-dates))
+
+(defn- umm-g->DataProviderTimestamps
+  "Returns a UMM DataProviderTimestamps from a parsed XML structure"
+  [umm-g]
+  (let [provider-dates (:ProviderDates umm-g)
+        ; create-time (get-date-by-type provider-dates "Create")
+        insert-time (get-date-by-type provider-dates "Insert")
+        update-time (get-date-by-type provider-dates "Update")
+        delete-time (get-date-by-type provider-dates "Delete")]
+    (g/map->DataProviderTimestamps
+     {;;:create-time create-time
+      :insert-time insert-time
+      :update-time update-time
+      :delete-time delete-time})))
+
 (defn- umm-g->CollectionRef
   "Returns a UMM ref element from a parsed UMM-G JSON"
   [umm-g-json]
@@ -21,7 +40,7 @@
   [umm-g-json]
   (let [coll-ref (umm-g->CollectionRef umm-g-json)]
     (g/map->UmmGranule {:granule-ur (:GranuleUR umm-g-json)
-                        ; :data-provider-timestamps data-provider-timestamps
+                        :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
                         :collection-ref coll-ref
                         ; :data-granule (xml-elem->DataGranule umm-g-json)
                         ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
