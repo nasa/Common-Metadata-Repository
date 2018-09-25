@@ -184,7 +184,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token and Client-Id. Custom response headers supported are CMR-Hits and CMR-Request-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, and CMR-Scroll-Id.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -436,6 +436,8 @@ The results are returned as a sequence of `<result>` XML elements, the contents 
 | revision-id | the CMR revision number of the stored concept |
 
 #### <a name="dif-9"></a> DIF 9
+
+__NOTE:__ The DIF 9 format is being deprecated in favor of DIF 10. While it is still supported, we strongly discourage its use for new metadata.
 
 Mime-type application/dif+xml corresponds to the DIF 9 format. See the [specification](https://cdn.earthdata.nasa.gov/dif/9.x)
 
