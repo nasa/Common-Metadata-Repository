@@ -16,14 +16,6 @@
                            :short-name (:ShortName collection-ref)
                            :version-id (:Version collection-ref)})))
 
-; (defn- umm-g->SpatialCoverage
-;   [umm-g-json]
-;   (let [geometry (get-in umm-g-json [:SpatialExtent :HorizontalSpatialDomain :Geometry])
-;         orbit (get-in umm-g-json [:SpatialExtent :HorizontalSpatialDomain :Orbit])]
-;     (when (or geometry orbit)
-;       (g/map->SpatialCoverage {:geometries (when geometry (s/geometry-element->geometries geom-elem))
-;                                :orbit (when orbit (s/xml-elem->Orbit orbit-elem))}))))
-
 (defn umm-g->Granule
   "Returns a UMM Granule from a parsed UMM-G JSON"
   [umm-g-json]
@@ -48,11 +40,12 @@
 (defn Granule->umm-g
   "Returns UMM-G JSON from a umm-lib Granule"
   [granule]
-  (let [{{:keys [entry-title short-name version-id entry-id]} :collection-ref
-         {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-         :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
+  (let [{:keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                 platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                spatial-coverage orbit two-d-coordinate-system measured-parameters]} granule
+                spatial-coverage orbit two-d-coordinate-system measured-parameters
+                collection-ref data-provider-timestamps]} granule
+        {:keys [entry-title short-name version-id entry-id]} collection-ref
+        {:keys [insert-time update-time delete-time]} data-provider-timestamps
         insert-time (when insert-time
                       {:Date (str insert-time)
                        :Type "Insert"})
