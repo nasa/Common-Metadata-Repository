@@ -11,5 +11,4 @@
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.system-manager.core :refer :all]
-   [cmr.opendap.dev :as dev]
-   [org.httpkit.client :as httpc]))
+   [cmr.exchange.query.repl :as dev]))
