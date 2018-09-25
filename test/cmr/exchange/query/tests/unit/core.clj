@@ -216,7 +216,9 @@
           :temporal []})
          (query/parse {:collection-id "C130" "variables[]" ["V234" "V345"]}))
   (is (= {:errors ["The following required parameters are missing from the request: [:collection-id]"]}
-         (query/parse {:variables ["V234" "V345"]})))
+         (query/parse {:variables ["V234" "V345"]}
+                      nil
+                      {:required-params #{:collection-id}})))
   (is (= {:errors ["One or more of the parameters provided were invalid."
                    "Parameters: {:collection-id \"C130\", :blurg \"some weird data\"}"]}
          (query/parse {:collection-id "C130" :blurg "some weird data"}))))
