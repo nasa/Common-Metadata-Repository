@@ -8,10 +8,10 @@
 (defn normalize-param
   [param]
   (-> param
-      name
+      (#(if (keyword? param) (name %) %))
       (string/replace "_" "-")
       (string/lower-case)
-      keyword))
+      (#(if (keyword? param) (keyword %) %))))
 
 (defn normalize-params
   [params]
