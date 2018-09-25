@@ -29,6 +29,9 @@
 (def invalid-parameter
   "One or more of the parameters provided were invalid.")
 
+(def missing-parameters
+  "The following required parameters are missing from the request:")
+
 (def status-map
   "This is a lookup data structure for how HTTP status/error codes map to CMR
   OPeNDAP errors."
