@@ -45,21 +45,23 @@
 
 (defn create
   ([raw-params]
-    (create (cond (nil? (:collection-id raw-params)) :missing-collection-id
-                  (cmr/style? raw-params) :cmr
-                  (giovanni/style? raw-params) :giovanni
-                  (wcs/style? raw-params) :wcs
-                  (util/ambiguous-style? raw-params) :cmr
-                  :else :unknown-parameters-type)
-            raw-params))
+    (let [params (util/normalize-params raw-params)]
+      (create (cond (nil? (:collection-id params)) :missing-collection-id
+                    (cmr/style? params) :cmr
+                    (giovanni/style? params) :giovanni
+                    (wcs/style? params) :wcs
+                    (util/ambiguous-style? params) :cmr
+                    :else :unknown-parameters-type)
+              params)))
   ([params-type raw-params]
-    (case params-type
-      :wcs (wcs/create raw-params)
-      :giovanni (giovanni/create raw-params)
-      :cmr (cmr/create raw-params)
-      :missing-collection-id {:errors [errors/missing-collection-id]}
-      :unknown-parameters-type {:errors [errors/invalid-parameter
-                                         (str "Parameters: " raw-params)]})))
+    (let [params (util/normalize-params raw-params)]
+      (case params-type
+        :wcs (wcs/create raw-params)
+        :giovanni (giovanni/create raw-params)
+        :cmr (cmr/create raw-params)
+        :missing-collection-id {:errors [errors/missing-collection-id]}
+        :unknown-parameters-type {:errors [errors/invalid-parameter
+                                           (str "Parameters: " raw-params)]}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
