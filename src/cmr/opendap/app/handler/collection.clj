@@ -126,7 +126,7 @@
   (let [service-endpoint (get-service-endpoint component destination)]
     (format "%s?%s" service-endpoint
                     (-> data
-                        (query/parse destination)
+                        (query/parse {:destination destination})
                         query/->query-string))))
 
 (defn bridge-services

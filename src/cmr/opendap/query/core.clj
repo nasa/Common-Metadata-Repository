@@ -41,32 +41,72 @@
         wcs/collection-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn missing-required-param?
+  [raw-params required-params]
+  (some #(nil? (% raw-params)) required-params))
+
+(defn missing-required-params
+  [raw-params required-params]
+  (->> required-params
+       (reduce (fn [acc x] (conj acc (when (nil? (x raw-params)) x))) [])
+       (remove nil?)
+       vec))
+
+(defn missing-params-errors
+  [missing]
+  {:errors [(str errors/missing-parameters
+                 " "
+                 missing)]})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create
+(defn- -create
   ([raw-params]
-    (let [params (util/normalize-params raw-params)]
-      (create (cond (nil? (:collection-id params)) :missing-collection-id
-                    (cmr/style? params) :cmr
-                    (giovanni/style? params) :giovanni
-                    (wcs/style? params) :wcs
-                    (util/ambiguous-style? params) :cmr
-                    :else :unknown-parameters-type)
-              params)))
-  ([params-type raw-params]
-    (let [params (util/normalize-params raw-params)]
-      (case params-type
-        :wcs (wcs/create raw-params)
-        :giovanni (giovanni/create raw-params)
-        :cmr (cmr/create raw-params)
-        :missing-collection-id {:errors [errors/missing-collection-id]}
-        :unknown-parameters-type {:errors [errors/invalid-parameter
-                                           (str "Parameters: " raw-params)]}))))
+    (-create raw-params {}))
+  ([raw-params opts]
+    (let [missing-params (missing-required-params
+                          raw-params (:required-params opts))
+          dest (:destination opts)]
+      (cond (seq missing-params)
+            (missing-params-errors missing-params)
+
+            (util/ambiguous-style? raw-params)
+            (cmr/create raw-params)
+
+            (or (= :cmr dest) (cmr/style? raw-params))
+            (cmr/create raw-params)
+
+            (or (= :giovanni dest) (giovanni/style? raw-params))
+            (giovanni/create raw-params)
+
+            (or (= :wcs dest) (wcs/style? raw-params))
+            (wcs/create raw-params)
+
+            :else
+            {:errors [errors/invalid-parameter
+                      (str "Parameters: " raw-params)]}))))
+
+(defn create
+  [& args]
+  (let [results (apply -create args)]
+    (if (errors/erred? results)
+        results
+        (->cmr results))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   High-level API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; XXX When the query/params code is split out into its own library,
+;; ous needs to retain a version of this function that passes the following
+;; options to create:
+;;
+;;    {:required-params #{:collection-id}}
 
 (defn parse
   "This is a convenience function for calling code that wants to create a
@@ -74,9 +114,11 @@
   default internal representation. However, in the case of the 2-arity an
   explicit desired type is indicated so no conversion is performed."
   ([raw-params]
-    (let [collection-params (create raw-params)]
-      (if (errors/erred? collection-params)
-        collection-params
-        (->cmr collection-params))))
+    (parse raw-params nil))
+    ; (let [collection-params (create raw-params)]
+    ;   (if (errors/erred? collection-params)
+    ;     collection-params
+    ;     (->cmr collection-params))))
   ([raw-params destination]
-    (create raw-params destination)))
+    (create raw-params {:destination destination
+                        :required-params #{:collection-id}})))

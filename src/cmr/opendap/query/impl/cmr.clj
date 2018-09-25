@@ -1,8 +1,8 @@
 (ns cmr.opendap.query.impl.cmr
   (:require
+   [cmr.exchange.common.util :as util]
    [cmr.opendap.query.const :as const]
    [cmr.opendap.query.util :as query-util]
-   [cmr.opendap.util :as util]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,6 +120,10 @@
    ;;
    ;; `collections` is a list of `CollectionCmrStyleParams` records.
    collections])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def collections-behaviour
   ;; Reserved for later use.
