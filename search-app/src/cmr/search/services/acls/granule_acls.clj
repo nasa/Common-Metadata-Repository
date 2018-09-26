@@ -159,18 +159,12 @@
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
     (if-let [{:keys [concept-ids entry-titles access-value temporal]} collection-identifier]
-      (let [entry-titles-cond (provider+entry-titles->collection-condition
-                                context query-coll-ids provider-id entry-titles)
-            concept-ids-cond (provider->collection-condition concept-ids provider-id)
+      (let [concept-ids-cond (provider->collection-condition concept-ids provider-id)
             access-value-cond (some-> (access-value->query-condition access-value)
                                       q/->CollectionQueryCondition)
             temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
-        ;; If there's no entry title condition the other conditions must be scoped by provider
-        ;; In anycase we want to use concept ids instead of entry-titles, because entry-titles can and
-        ;; do frequently change, so to prevent temporary loss of permissions concept ids are used
-        ;; when present.  There really shouldn't be a case where entry-tiles exist and concept-ids do
-        ;; not.
-        (gc/and-conds (remove nil? [(or concept-ids-cond entry-titles-cond)
+
+        (gc/and-conds (remove nil? [(or concept-ids-cond colls-in-prov-cond)
                                     access-value-cond
                                     temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
