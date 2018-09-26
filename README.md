@@ -1,6 +1,6 @@
-# cmr-opendap
+# cmr-service-bridge
 
-*OPeNDAP Integration in the CMR*
+*A CMR connector service that provides an inter-service API*
 
 [![Build Status][travis-badge]][travis]
 [![Security Scan][security-scan-badge]][travis]
@@ -30,8 +30,9 @@ associated service metadata records. These metadata records are registered,
 modified, discovered, and accessed through programmatic interfaces leveraging
 standard protocols and APIs.
 
-The CMR OPeNDAP API allows client applications to integrate core CMR metadata
-more easily with provider OPeNDAP deployments.
+The set of APIs provided by CMR Service-Bridge allows client applications to
+integrate core CMR metadata more easily with other services like OPeNDAP,
+ECHO, ESI/EGI, etc.
 
 
 ## Dependencies [&#x219F;](#contents)
@@ -42,7 +43,7 @@ more easily with provider OPeNDAP deployments.
 
 ## Documentation [&#x219F;](#contents)
 
-Documentation for CMR OPeNDAP is availble
+Documentation for CMR Service-Bridge is availble
 [here](https://cmr.sit.earthdata.nasa.gov/opendap/docs). The content there
 is broken down by category; some of that is offered below as a convenience:
 
@@ -65,11 +66,11 @@ Distributed under the Apache License, Version 2.0.
 <!-- Named page links below: /-->
 
 [logo]: https://avatars2.githubusercontent.com/u/32934967?s=200&v=4
-[travis]: https://travis-ci.org/cmr-exchange/cmr-opendap
-[travis-badge]: https://travis-ci.org/cmr-exchange/cmr-opendap.png?branch=master
+[travis]: https://travis-ci.org/cmr-exchange/cmr-service-bridge
+[travis-badge]: https://travis-ci.org/cmr-exchange/cmr-service-bridge.png?branch=master
 [deps-badge]: https://img.shields.io/badge/deps%20check-passing-brightgreen.svg
-[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-opendap.svg
-[tag]: https://github.com/cmr-exchange/cmr-opendap/tags
+[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-service-bridge.svg
+[tag]: https://github.com/cmr-exchange/cmr-service-bridge/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-opendap
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-opendap.svg
