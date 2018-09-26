@@ -128,13 +128,19 @@
 
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
-  [context collection concept-id]
-  (let [umm-json (umm-json/umm->json
-                  (vm/migrate-umm context
-                                  :collection
-                                  umm-version/current-collection-version
-                                  (context->preview-gem-umm-version context)
-                                  collection))]
+  ([context collection concept-id]
+   (render-collection
+    context
+    collection
+    concept-id
+    (get-additional-information context concept-id)))
+  ([context collection concept-id additional_information]
+   (let [umm-json (umm-json/umm->json
+                   (vm/migrate-umm context
+                                   :collection
+                                   umm-version/current-collection-version
+                                   (context->preview-gem-umm-version context)
+                                   collection))]
     (render-erb (context->jruby-runtime context)
                 collection-preview-erb
                 ;; Arguments for collection preview. See the ERB file for documentation.
@@ -142,4 +148,4 @@
                  "relative_root_url" (context->relative-root-url context)
                  "edsc_url" (search-edsc-url)
                  "concept_id" concept-id
-                 "additional_information" (get-additional-information context concept-id)})))
+                 "additional_information" additional_information}))))
