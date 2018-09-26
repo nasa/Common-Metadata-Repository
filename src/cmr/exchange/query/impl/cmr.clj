@@ -55,9 +55,9 @@
 
 (def style? #(query-util/style? map->CollectionCmrStyleParams
                                 %
-                                #{"granules[]"
-                                  "temporal[]"
-                                  "variables[]"}))
+                                #{(keyword "granules[]")
+                                  (keyword "temporal[]")
+                                  (keyword "variables[]")}))
 
 (defn ->query-string
   [this]
@@ -107,7 +107,7 @@
            :temporal (if (query-util/not-array? temporal-array)
                        (query-util/->coll (:temporal params))
                        temporal-array))
-          (dissoc "granules[]" "temporal[]" "varaibles[]")))))
+          (dissoc (keyword "granules[]") (keyword "temporal[]") (keyword "varaibles[]"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation of Collections Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
