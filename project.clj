@@ -15,9 +15,9 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-opendap "1.4.0-SNAPSHOT"
-  :description "OPeNDAP Integration in the CMR"
-  :url "https://github.com/cmr-exchange/cmr-opendap"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.1.0-SNAPSHOT"
+  :description "A CMR services plugin that performs URL translations for subsetted GIS data"
+  :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
@@ -129,46 +129,7 @@
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
         :system :system
-        :default (complement :system)}}
-    :docs {
-      :dependencies [
-        [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
-      :plugins [
-        [lein-codox "0.10.4"]
-        [lein-marginalia "0.9.1"]]
-      :source-paths ["resources/docs/src"]
-      :codox {
-        :project {
-          :name "CMR OPeNDAP"
-          :description "OPeNDAP/CMR Integration"}
-        :namespaces [#"^cmr\.opendap\.(?!dev)"]
-        :metadata {
-          :doc/format :markdown
-          :doc "Documentation forthcoming"}
-        :themes [:eosdis]
-        :html {
-          :transforms [[:head]
-                       [:append
-                         [:script {
-                           :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
-                           :id "earthdata-tophat-script"
-                           :data-show-fbm "true"
-                           :data-show-status "true"
-                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
-                           :data-status-polling-interval "10"}]]
-                       [:body]
-                       [:prepend
-                         [:div {:id "earthdata-tophat2"
-                                :style "height: 32px;"}]]
-                       [:body]
-                       [:append
-                         [:script {
-                           :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
-                           :type "text/javascript"}]]]}
-        :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/opendap/docs/current/reference"}}
-      :slate {
-        :plugins [[lein-shell "0.5.0"]]}}
+        :default (complement :system)}}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
