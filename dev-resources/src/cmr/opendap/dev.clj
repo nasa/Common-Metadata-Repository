@@ -13,6 +13,8 @@
    [clojusc.twig :as logger]
    [cmr.authz.components.caching :as auth-caching]
    [cmr.exchange.common.util :as common-util]
+   [cmr.exchange.query.impl.cmr :as cmr]
+   [cmr.exchange.query.impl.wcs :as wcs]
    [cmr.opendap.components.caching :as concept-caching]
    [cmr.opendap.components.config :as config]
    [cmr.opendap.components.core]
@@ -21,8 +23,6 @@
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.concepts.variable :as variable]
    ; [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.query.impl.wcs :as wcs]
-   [cmr.opendap.query.impl.cmr :as cmr]
    [cmr.opendap.results.errors :as errors]
    [cmr.opendap.testing.util :as testing-util]
    [cmr.opendap.util :as util]
@@ -37,8 +37,8 @@
    [trifl.java :refer [show-methods]]
    [xml-in.core :as xml-in])
   (:import
-   (cmr.opendap.query.impl.cmr CollectionCmrStyleParams)
-   (cmr.opendap.query.impl.wcs CollectionWcsStyleParams)
+   (cmr.exchange.query.impl.cmr CollectionCmrStyleParams)
+   (cmr.exchange.query.impl.wcs CollectionWcsStyleParams)
    (java.net URI)
    (java.nio.file Paths)
    ; (net.sf.geographiclib Geodesic PolygonArea)
