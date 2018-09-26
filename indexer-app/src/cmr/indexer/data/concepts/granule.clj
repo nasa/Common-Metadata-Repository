@@ -47,6 +47,7 @@
 (defn orbit->circular-latitude-range
   "Compute a circular latitude range from the start and end latitudes of an orbit."
   [orbit]
+  (info "Orbit:" (pr-str orbit))
   (let [{:keys [^double start-lat ^double end-lat start-direction end-direction]} orbit
         start-lat (if (= :desc start-direction)
                     (- 180.0 start-lat)
@@ -62,6 +63,8 @@
 
 (defn spatial->elastic
   [parent-collection granule]
+  (info "Parent collection:" (pr-str parent-collection))
+  (info "Granule model:" (pr-str granule))
   (when-let [gsr (csk/->kebab-case-keyword (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation]))]
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
