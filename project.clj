@@ -12,7 +12,7 @@
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.1-SNAPSHOT"]
     [http-kit "2.3.0"]
-    [metosin/reitit-ring "0.2.2"]
+    [metosin/reitit-ring "0.2.3"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
