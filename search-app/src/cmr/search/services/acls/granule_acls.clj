@@ -158,9 +158,10 @@
   passed in are limited to the provider of the collection identifier."
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
-    (if-let [{:keys [entry-titles access-value temporal]} collection-identifier]
+    (if-let [{:keys [concept-ids entry-titles access-value temporal]} collection-identifier]
       (let [entry-titles-cond (provider+entry-titles->collection-condition
                                 context query-coll-ids provider-id entry-titles)
+            concept-ids-cond (provider->collection-condition concept-ids provider-id)
             access-value-cond (some-> (access-value->query-condition access-value)
                                       q/->CollectionQueryCondition)
             temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
@@ -169,7 +170,10 @@
         ;; do frequently change, so to prevent temporary loss of permissions concept ids are used
         ;; when present.  There really shouldn't be a case where entry-tiles exist and concept-ids do
         ;; not.
-        (gc/and-conds (remove nil? [(or colls-in-prov-cond entry-titles-cond)
+        ; (gc/and-conds (remove nil? [(or entry-titles-cond colls-in-prov-cond)
+        ;                             access-value-cond
+        ;                             temporal-cond]))
+        (gc/and-conds (remove nil? [(or concept-ids-cond entry-titles-cond)
                                     access-value-cond
                                     temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
