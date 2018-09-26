@@ -6,6 +6,8 @@
    [clojure.string :as str]
    [cmr.common.lifecycle :as l]
    [cmr.common.log :refer [info]]
+   [cmr.common-app.services.search :as search]
+   [cmr.common-app.services.search.params :as params]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version]
@@ -110,20 +112,40 @@
   "URL of the Earthdata Search application"
   {:default "https://search.earthdata.nasa.gov/search"})
 
+(defn- get-granule-count-for-collection
+  "Retrieve granule count for the collection corresponding to concept-id."
+  [context concept-id]
+  (->> {:page-size 0
+        :collection-concept-id concept-id}
+       (params/parse-parameter-query context :granule)
+       (search/find-concepts context :granule)
+       :hits))
+
+(defn- get-additional-information
+  "Retrieve additional information for collection rendering."
+  [context concept-id]
+  {"granule_count" (get-granule-count-for-collection context concept-id)})
+
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
-  [context collection concept-id]
-  (let [umm-json (umm-json/umm->json
-                  (vm/migrate-umm context
-                                  :collection
-                                  umm-version/current-collection-version
-                                  (context->preview-gem-umm-version context)
-                                  collection))]
-
+  ([context collection concept-id]
+   (render-collection
+    context
+    collection
+    concept-id
+    (get-additional-information context concept-id)))
+  ([context collection concept-id additional-information]
+   (let [umm-json (umm-json/umm->json
+                   (vm/migrate-umm context
+                                   :collection
+                                   umm-version/current-collection-version
+                                   (context->preview-gem-umm-version context)
+                                   collection))]
     (render-erb (context->jruby-runtime context)
                 collection-preview-erb
                 ;; Arguments for collection preview. See the ERB file for documentation.
                 {"umm_json" umm-json
                  "relative_root_url" (context->relative-root-url context)
                  "edsc_url" (search-edsc-url)
-                 "concept_id" concept-id})))
+                 "concept_id" concept-id
+                 "additional_information" additional-information}))))
