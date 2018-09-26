@@ -1,5 +1,5 @@
 (defproject gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "Templates for CMR content"
   :url "https://github.com/cmr-exchange/cmr-site-templates"
   :license {
     :name "Apache License, Version 2.0"
