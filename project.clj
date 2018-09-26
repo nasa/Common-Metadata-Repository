@@ -86,7 +86,7 @@
         :default (complement :system)}}}
   :aliases {
     ;; Dev & Testing Aliases
-    "repl" ["do"
+    "repl" ["with-profile" "+local,+system,+dev" "do"
       ["clean"]
       ["repl"]]
     "ubercompile" ["with-profile" "+ubercompile,+security" "compile"]
