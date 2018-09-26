@@ -4,6 +4,7 @@
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
+   [cmr.umm.iso-smap.granule.orbit]
    [cmr.umm.umm-spatial :as umm-s]))
 
 ;; Because GML parsing assumes anti-clockwise order, but ISO SMAP
