@@ -134,7 +134,7 @@
     collection
     concept-id
     (get-additional-information context concept-id)))
-  ([context collection concept-id additional_information]
+  ([context collection concept-id additional-information]
    (let [umm-json (umm-json/umm->json
                    (vm/migrate-umm context
                                    :collection
@@ -148,4 +148,4 @@
                  "relative_root_url" (context->relative-root-url context)
                  "edsc_url" (search-edsc-url)
                  "concept_id" concept-id
-                 "additional_information" additional_information}))))
+                 "additional_information" additional-information}))))
