@@ -15,9 +15,9 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-opendap "1.5.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.5.0-SNAPSHOT"
   :description "OPeNDAP Integration in the CMR"
-  :url "https://github.com/cmr-exchange/cmr-opendap"
+  :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
