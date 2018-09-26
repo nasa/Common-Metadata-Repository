@@ -3,13 +3,11 @@
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
-   [cmr.opendap.components.config :as config]
    [cmr.opendap.const :as const]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [cmr.opendap.ous.util.geog :as geog]
    [cmr.opendap.results.errors :as ous-errors]
-   [cmr.opendap.util :as util]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 

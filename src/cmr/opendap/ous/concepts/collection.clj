@@ -1,7 +1,6 @@
 (ns cmr.opendap.ous.concepts.collection
   (:require
    [clojure.string :as string]
-   [cmr.opendap.components.config :as config]
    [cmr.opendap.http.request :as request]
    [cmr.opendap.http.response :as response]
    [taoensso.timbre :as log]))
