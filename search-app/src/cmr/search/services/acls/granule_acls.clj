@@ -170,9 +170,6 @@
         ;; do frequently change, so to prevent temporary loss of permissions concept ids are used
         ;; when present.  There really shouldn't be a case where entry-tiles exist and concept-ids do
         ;; not.
-        ; (gc/and-conds (remove nil? [(or entry-titles-cond colls-in-prov-cond)
-        ;                             access-value-cond
-        ;                             temporal-cond]))
         (gc/and-conds (remove nil? [(or concept-ids-cond entry-titles-cond)
                                     access-value-cond
                                     temporal-cond])))
