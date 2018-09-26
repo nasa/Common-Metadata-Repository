@@ -152,7 +152,6 @@
         (gc/or-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
 
-
 (defn collection-identifier->query-condition
   "Converts an acl collection identifier to an query condition. Switches implementations based
   on whether the user's query contained collection ids. This implementation assumes the query-coll-ids
@@ -165,9 +164,12 @@
             access-value-cond (some-> (access-value->query-condition access-value)
                                       q/->CollectionQueryCondition)
             temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
-
         ;; If there's no entry title condition the other conditions must be scoped by provider
-        (gc/and-conds (remove nil? [(or entry-titles-cond colls-in-prov-cond)
+        ;; In anycase we want to use concept ids instead of entry-titles, because entry-titles can and
+        ;; do frequently change, so to prevent temporary loss of permissions concept ids are used
+        ;; when present.  There really shouldn't be a case where entry-tiles exist and concept-ids do
+        ;; not.
+        (gc/and-conds (remove nil? [(or colls-in-prov-cond entry-titles-cond)
                                     access-value-cond
                                     temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
