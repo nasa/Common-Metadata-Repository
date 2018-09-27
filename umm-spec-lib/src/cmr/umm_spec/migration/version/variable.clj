@@ -23,14 +23,6 @@
   [dims]
   (mapv #(dissoc % :Type) dims))
 
-(defn index-ranges-1-3->1-2
-  "Removes any invalid index ranges. Returns nil if index-ranges is empty."
-  [index-ranges]
-  (if (or (> 2 (count (:LatRange index-ranges)))
-          (> 2 (count (:LonRange index-ranges))))
-    nil
-    index-ranges))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Variable Migration Implementations
 
@@ -71,8 +63,6 @@
   [context v & _]
   ;; Migrate down to 1.2
   (-> v
-      (update-in [:Characteristics] update :IndexRanges index-ranges-1-3->1-2)
-      (update-in [:Characteristics] util/remove-nil-keys)
       (dissoc :SizeEstimation
               :Alias)))
 

@@ -29,7 +29,7 @@
           "items": {
             "type": "number"
           },
-          "minItems": 0
+          "minItems": 2
         },
         "LonRange": {
           "description": "The LonRange consists of an index range for longitude.",
@@ -37,7 +37,7 @@
           "items": {
             "type": "number"
           },
-          "minItems": 0
+          "minItems": 2 
         }
       },
       "required": ["LatRange", "LonRange"]
