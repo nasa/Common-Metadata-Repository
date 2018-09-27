@@ -20,7 +20,7 @@
   "Parses explanation for missing reason out of description."
   [description]
   (when description
-    (when-let [explanation-index (iso-shared-distrib/get-index-or-nil description "Explanation:")]
+    (when-let [explanation-index (util/get-index-or-nil description "Explanation:")]
       (let [explanation (subs description explanation-index)]
         (str/trim (subs explanation (inc (.indexOf explanation ":"))))))))
 

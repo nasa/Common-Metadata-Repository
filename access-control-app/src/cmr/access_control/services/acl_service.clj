@@ -56,35 +56,60 @@
   (let [acl (acl-util/sync-entry-titles-concept-ids context acl)]
     (acl-util/create-acl context acl)))
 
+(defn- parse-validate-revision-id
+  "Parse revision id and return it if it is positive"
+  [revision-id]
+  (try
+    (let [revision-id (Integer/parseInt revision-id)]
+      (when (pos? revision-id)
+        revision-id))
+    (catch NumberFormatException _)))
+
+(defn- set-revision-id-in-concept
+  "Set the revision-id in concept if the revision-id is provided and valid."
+  [concept revision-id]
+  (if revision-id
+    (if-let [revision-id (parse-validate-revision-id revision-id)]
+      (assoc concept :revision-id revision-id)
+      (errors/throw-service-error
+        :invalid-data
+        (msg/invalid-revision-id revision-id)))
+     concept))
+
 (defn update-acl
-  "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
-  [context concept-id acl]
-  (common-enabled/validate-write-enabled context "access control")
-  (v/validate-acl-save! context acl :update)
-  (acl-auth/authorize-acl-action context :update acl)
-  ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
-  (let [existing-concept (fetch-acl-concept context concept-id)
-        existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
-        ;; An empty legacy guid can be passed in and we'll continue to use the same one
-        acl (if existing-legacy-guid
-              (update acl :legacy-guid #(or % existing-legacy-guid))
-              acl)
-        legacy-guid (:legacy-guid acl)]
-    (when-not (= existing-legacy-guid legacy-guid)
-      (errors/throw-service-error :invalid-data
-                                  (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                                          existing-legacy-guid legacy-guid)))
-    (let [acl (acl-util/sync-entry-titles-concept-ids context acl)
-          new-concept (merge (acl-util/acl->base-concept context acl)
-                            {:concept-id concept-id
+  "Update the ACL with the given concept-id and revision-id in Metadata DB.
+  Returns map with concept and revision id of updated acl."
+  ([context concept-id acl]
+   (update-acl context concept-id nil acl))
+  ([context concept-id revision-id acl]
+   (common-enabled/validate-write-enabled context "access control")
+   (v/validate-acl-save! context acl :update)
+   (acl-auth/authorize-acl-action context :update acl)
+   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
+   (let [existing-concept (fetch-acl-concept context concept-id)
+         existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
+         ;; An empty legacy guid can be passed in and we'll continue to use the same one
+         acl (if existing-legacy-guid
+               (update acl :legacy-guid #(or % existing-legacy-guid))
+               acl)
+         legacy-guid (:legacy-guid acl)]
+     (when-not (= existing-legacy-guid legacy-guid)
+       (errors/throw-service-error :invalid-data
+                                   (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                                           existing-legacy-guid legacy-guid)))
+     (let [acl (acl-util/sync-entry-titles-concept-ids context acl)
+           new-concept (merge (acl-util/acl->base-concept context acl)
+                             {:concept-id concept-id
                               :native-id (:native-id existing-concept)})
-          resp (mdb/save-concept context new-concept)]
-      ;; index the saved ACL synchronously
-      (index/index-acl context
-                      (merge new-concept (select-keys resp [:concept-id :revision-id]))
-                      {:synchronous? true})
-      (info (acl-util/acl-log-message context new-concept existing-concept :update))
-      resp)))
+           ;; set revision-id if provided and valid.
+           new-concept (set-revision-id-in-concept new-concept revision-id)
+           resp (mdb/save-concept context new-concept)]
+       ;; index the saved ACL synchronously
+       (index/index-acl context
+                       (merge new-concept (select-keys resp [:concept-id :revision-id]))
+                       {:synchronous? true})
+       (info (acl-util/acl-log-message context new-concept existing-concept :update))
+       resp))))
 
 (defn delete-acl
   "Delete the ACL with the given concept id."
@@ -125,12 +150,6 @@
   "Returns the ACL concept's metadata parased from EDN."
   [acl-concept]
   (edn/read-string (:metadata acl-concept)))
-
-(defn- get-echo-style-acls
-  "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
-  [context identity-type target]
-  (map acl/echo-style-acl
-       (acl-util/get-acl-concepts-by-identity-type-and-target context identity-type target)))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
@@ -196,13 +215,13 @@
   "Returns true if the ECHO-style acl specifically identifies the given provider id."
   [provider-id acl]
   (or
-    (-> acl :provider-object-identity :provider-id (= provider-id))
+    (-> acl :provider-identity :provider-id (= provider-id))
     (-> acl :catalog-item-identity :provider-id (= provider-id))))
 
 (defn- ingest-management-acl?
   "Returns true if the ACL targets a provider INGEST_MANAGEMENT_ACL."
   [acl]
-  (-> acl :provider-object-identity :target (= schema/ingest-management-acl-target)))
+  (-> acl :provider-identity :target (= schema/ingest-management-acl-target)))
 
 (defn- concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
@@ -239,8 +258,10 @@
   [context username-or-type concept-ids]
   (let [sids (auth-util/get-sids context username-or-type)
         acls (concat
-               (get-echo-style-acls context index/provider-identity-type-name schema/ingest-management-acl-target)
-               (get-echo-style-acls context index/catalog-item-identity-type-name nil))]
+               (acl-util/get-acl-concepts-by-identity-type-and-target
+                context index/provider-identity-type-name schema/ingest-management-acl-target)
+               (acl-util/get-acl-concepts-by-identity-type-and-target
+                context index/catalog-item-identity-type-name nil))]
     (into {}
           (for [concept (mdb1/get-latest-concepts context concept-ids)
                 :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
@@ -250,7 +271,7 @@
 (defn system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."
   [system-object-target sids acls]
-  (let [relevant-acls (filter #(-> % :system-object-identity :target (= system-object-target))
+  (let [relevant-acls (filter #(-> % :system-identity :target (= system-object-target))
                               acls)]
     (set
       (for [permission [:create :read :update :delete]
@@ -262,14 +283,15 @@
   "Returns a map of the system object type to the set of permissions granted to the given username or user type."
   [context username-or-type system-object-target]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context index/system-identity-type-name system-object-target)]
+        acls (acl-util/get-acl-concepts-by-identity-type-and-target
+              context index/system-identity-type-name system-object-target)]
     (hash-map system-object-target (system-permissions-granted-by-acls system-object-target sids acls))))
 
 (defn provider-permissions-granted-by-acls
   "Returns all permissions granted to provider target for given sids and acls."
   [provider-id target sids acls]
   (collect-permissions (fn [acl permission]
-                         (and (= target (:target (:provider-object-identity acl)))
+                         (and (= target (:target (:provider-identity acl)))
                               (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
                        acls))
 
@@ -277,7 +299,8 @@
   "Returns a map of target object ids to permissions granted to the specified user for the specified provider id."
   [context username-or-type provider-id target]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context index/provider-identity-type-name target)]
+        acls (acl-util/get-acl-concepts-by-identity-type-and-target
+              context index/provider-identity-type-name target)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
 
 (defn- group-permissions-granted-by-acls
@@ -294,7 +317,8 @@
    granted to the given username or user type."
   [context username-or-type target-group-ids]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context index/single-instance-identity-type-name nil)]
+        acls (acl-util/get-acl-concepts-by-identity-type-and-target
+              context index/single-instance-identity-type-name nil)]
     (into {}
           (for [group-id target-group-ids]
             [group-id (group-permissions-granted-by-acls group-id sids acls)]))))

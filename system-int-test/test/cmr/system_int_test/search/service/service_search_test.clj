@@ -279,10 +279,10 @@
                                         :Subtype "USER'S GUIDE"})
         svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
-                                                  :RelatedURL url1})
+                                                  :RelatedURLs [url1]})
         svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"
-                                                  :RelatedURL url2})
+                                                  :RelatedURLs [url2]})
         svc3 (services/ingest-service-with-attrs {:native-id "svc-3"
                                                   :Name "Service 3"})]
     (index/wait-until-indexed)
@@ -663,8 +663,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.0"
-        {:url-extension "umm_json_v1_0"})))
+        "1.1"
+        {:url-extension "umm_json_v1_1"})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]

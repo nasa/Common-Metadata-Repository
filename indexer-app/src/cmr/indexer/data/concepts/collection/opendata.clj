@@ -29,17 +29,30 @@
 (defn related-url->opendata-related-url
   "Returns the opendata related url for the given collection related url"
   [related-url]
-  (let [{:keys [Title Description Type Subtype URL]} related-url
+  (let [{:keys [Description Type Subtype URL]} related-url
         MimeType (get-in related-url [:GetService :MimeType])
         size (get-in related-url [:GetData :Size])]
-    ;; See CMR-3446. The current UMM JSON RelatedUrlType is flawed in that there can be multiple
-    ;; URLs, but only a single Title, MimeType and FileSize. This model doesn't make sense.
-    ;; Talked to Erich and he said that we are going to change the model.
-    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
     {:type Type
      :sub-type Subtype
      :url URL
      :description Description
      :mime-type MimeType
-     :title Title
      :size size}))
+
+(def doi-base-url
+  "The base DOI URL."
+  "https://doi.org")
+
+(defn- doi->url
+  "Converts a DOI into a URL if it is not already a URL."
+  [doi]
+  (if (re-matches #"http.*" doi)
+    doi
+    (format "%s/%s" doi-base-url doi)))
+
+(defn publication-reference->opendata-reference
+  "Returns an opendata reference for the given collection publication reference. Opendata only
+  allows a string for a publication reference, so we'll use the DOI of the publication reference."
+  [publication-reference]
+  (when-let [doi (-> publication-reference :DOI :DOI)]
+    (doi->url doi)))

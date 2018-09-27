@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-spec-core
   "Contains functions for parsing, generating and validating metadata of various metadata formats."
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
@@ -8,6 +9,7 @@
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
+   [cmr.umm-spec.umm-g.granule :as umm-g]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
    [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
@@ -21,11 +23,13 @@
    [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    ;; Added this to force the loading of the class, so that in CI build, it won't complain about
    ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation
    ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
    [cmr.spatial.ring-validations])
   (:import
+   (cmr.umm.umm_granule UmmGranule)
    (cmr.umm_spec.models.umm_collection_models UMM-C)
    (cmr.umm_spec.models.umm_service_models UMM-S)
    (cmr.umm_spec.models.umm_variable_models UMM-Var)))
@@ -35,6 +39,7 @@
   [record]
   (condp instance? record
     UMM-C :collection
+    UmmGranule :granule
     UMM-S :service
     UMM-Var :variable))
 
@@ -69,9 +74,17 @@
   "Validates the given metadata and returns a list of errors found."
   [concept-type fmt metadata]
   (let [format-key (mt/format-key fmt)]
-    (if (= (mt/format-key fmt) :umm-json)
+    (if (= :umm-json format-key)
       (js/validate-umm-json metadata concept-type (umm-json-version concept-type fmt))
       (validate-xml concept-type format-key metadata))))
+
+(defn- parse-umm-g-metadata
+  "Parses UMM-G metadata into umm-lib granule model"
+  [context fmt metadata]
+  (let [parsed-umm-g (umm-json/json->umm
+                      context :granule metadata (umm-json-version :granule fmt))]
+    ;; convert parsed umm-g into umm-lib granule model
+    (umm-g/umm-g->Granule parsed-umm-g)))
 
 (defn parse-metadata
   "Parses metadata of the specific concept type and format into UMM records.
@@ -93,10 +106,20 @@
      [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c
                               context (xpath/context metadata) options)
      [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata) options)
+     [:granule :umm-json]    (parse-umm-g-metadata context fmt metadata)
      [:variable :umm-json]   (umm-json/json->umm
                               context :variable metadata (umm-json-version :variable fmt))
      [:service :umm-json]   (umm-json/json->umm
                              context :service metadata (umm-json-version :service fmt)))))
+
+(defn- generate-umm-g-metadata
+  "Generate UMM-G metadata from umm-lib granule model"
+  [context source-version fmt umm]
+  (let [parsed-umm-g (umm-g/Granule->umm-g umm)
+        target-umm-json-version (umm-json-version :granule fmt)]
+    ;; migrate parsed umm-g to the version specified in format
+    (umm-json/umm->json
+     (vm/migrate-umm context :granule source-version target-umm-json-version parsed-umm-g))))
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.
@@ -121,35 +144,46 @@
        [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
        [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
        [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
+       [:granule :umm-json]    (generate-umm-g-metadata context source-version fmt umm)
        [:variable :umm-json]   (umm-json/umm->json (vm/migrate-umm context
                                                                    concept-type
                                                                    source-version
                                                                    (umm-json-version :variable fmt)
                                                                    umm))
        [:service :umm-json]   (umm-json/umm->json (vm/migrate-umm context
-                                                            concept-type
-                                                            source-version
-                                                            (umm-json-version :service fmt)
-                                                            umm))))))
+                                                                  concept-type
+                                                                  source-version
+                                                                  (umm-json-version :service fmt)
+                                                                  umm))))))
 
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]
   (let [{:keys [format metadata]} concept]
-    (condp = format
+    (condp = (mt/base-mime-type-of format)
      mt/echo10 (echo10-to-umm/parse-temporal metadata)
      mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
      mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
      mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
-     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
+     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
+     mt/umm-json (:TemporalExtents (json/parse-string metadata true))
+     nil)))
 
 (defn parse-collection-access-value
   "Convert a metadata db concept map into the access value by parsing its metadata."
   [concept]
   (let [{:keys [format metadata]} concept]
-    (condp = format
+    (condp = (mt/base-mime-type-of format)
      mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
      mt/dif (dif-util/parse-access-constraints metadata true)
      mt/dif10 (dif-util/parse-access-constraints metadata true)
-     mt/iso19115 (iso19115-2-to-umm/parse-access-constraints metadata true)
-     mt/iso-smap nil)))
+     mt/iso19115 (use-constraints/parse-access-constraints
+                  metadata
+                  iso19115-2-to-umm/constraints-xpath
+                  true)
+     mt/iso-smap (use-constraints/parse-access-constraints
+                  metadata
+                  iso-smap-to-umm/constraints-xpath
+                  true)
+     mt/umm-json (:AccessConstraints (json/parse-string metadata true))
+     nil)))

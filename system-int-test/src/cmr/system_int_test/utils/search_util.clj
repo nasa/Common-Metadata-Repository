@@ -375,20 +375,32 @@
         :results (od/parse-opendata-result concept-type body)}
        response))))
 
-(defn find-concepts-umm-json
-  "Returns the response of a search in umm-json format"
-  ([concept-type params]
-   (find-concepts-umm-json concept-type params {}))
-  ([concept-type params options]
+(defn- find-concepts-umm-json-common
+  "Returns the response of a search in umm-json-format."
+  [concept-type params umm-json-format options]
    (let [response (get-search-failure-data
-                   (find-concepts-in-format mime-types/umm-json concept-type params options))
+                   (find-concepts-in-format umm-json-format concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
         :body body
         :content-type (get-in response [:headers "content-type"])
         :results (json/decode body true)}
-       response))))
+       response)))
+
+(defn find-concepts-umm-json
+  "Returns the response of a search in umm-json format."
+  ([concept-type params]
+    (find-concepts-umm-json concept-type params {}))
+  ([concept-type params options]
+    (find-concepts-umm-json-common concept-type params mime-types/umm-json options)))
+
+(defn find-concepts-legacy-umm-json
+  "Returns the response of a search in legacy-umm-json format."
+  ([concept-type params]
+    (find-concepts-legacy-umm-json concept-type params {}))
+  ([concept-type params options]
+     (find-concepts-umm-json-common concept-type params mime-types/legacy-umm-json options)))
 
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."

@@ -1,20 +1,22 @@
 (ns cmr.search.results-handlers.metadata-results-handler
   "Handles search results with metadata including ECHO10 and DIF formats."
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.services.query-execution :as qe]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.tags-results-feature :as trf]
-            [cmr.common-app.services.search.results-model :as results]
-            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [cmr.common.util :as u]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.data.xml :as x]
+   [clojure.string :as string]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.search.services.query-execution :as qe]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.query-execution.tags-results-feature :as trf]))
 
 (def result-formats
   "Supported search result formats by concept-types"
@@ -68,7 +70,7 @@
         elastic-matches (get-in elastic-results [:hits :hits])
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
-        [req-time items] (u/time-execution
+        [req-time items] (util/time-execution
                           (metadata-cache/get-formatted-concept-revisions
                            context concept-type tuples result-format))
         ;; add tags to result items if necessary
@@ -79,14 +81,14 @@
                   (add-tags items concept-tags-map))
                 items)]
     (debug "Transformer metadata request time was" req-time "ms.")
-    (results/map->Results {:hits hits 
-                           :items items 
+    (results/map->Results {:hits hits
+                           :items items
                            :result-format result-format
                            :scroll-id scroll-id})))
 
 
 ;; Define transormations methods from query results to concept-ids
-(doseq [format [:echo10 :dif :dif10 :native]]
+(doseq [format [:echo10 :dif :dif10 :iso19115 :native]]
   (defmethod gcrf/query-results->concept-ids format
     [results]
     (->> results
@@ -108,6 +110,13 @@
                                (x/element :tagKey {} tag-key)
                                (when data
                                  (x/element :data {} (json/generate-string data))))))))]))
+
+(defn xml-escape-umm-json-metadata
+  "Returns the metadata. Xml escape the special characters in UMM JSON metadata if applicable."
+  [format metadata]
+  (if (mt/umm-json? format)
+    (cx/escape-xml metadata)
+    metadata))
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
@@ -136,6 +145,7 @@
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id format metadata tags]} metadata-item
+        metadata (xml-escape-umm-json-metadata format metadata)
         granule-count (get granule-counts-map concept-id 0)
         attribs (concat [[:concept-id concept-id]
                          [:revision-id revision-id]
@@ -170,7 +180,8 @@
 
 (defmethod metadata-item->result-string [:collection true]
   [concept-type echo-compatible? results metadata-item]
-  (let [{:keys [concept-id metadata tags]} metadata-item]
+  (let [{:keys [concept-id format metadata tags]} metadata-item
+        metadata (xml-escape-umm-json-metadata format metadata)]
     (concat ["<result echo_dataset_id=\"" concept-id "\">"
              metadata]
             (tags->result-string tags)

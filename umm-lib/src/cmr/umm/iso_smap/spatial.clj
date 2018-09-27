@@ -1,9 +1,13 @@
 (ns cmr.umm.iso-smap.spatial
   "Common functions for ISO SMAP spatial XML parsing and generation."
-  (:require [cmr.spatial.encoding.gmd :as gmd]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.umm-spatial :as umm-s]))
+  (:require
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.umm.umm-spatial :as umm-s]
+
+   ;; Needed in order to pull in multi-method definitions for orbit gmd/encode and gmd/decode
+   [cmr.umm.iso-smap.granule.orbit]))
 
 ;; Because GML parsing assumes anti-clockwise order, but ISO SMAP
 ;; expects points in clockwise order, we need to flip the point order

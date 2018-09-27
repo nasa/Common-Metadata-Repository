@@ -11,7 +11,7 @@
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:eos="http://earthdata.nasa.gov/schema/eos">
-    <gmd:composedOf gco:nilReason="inapplicable"/>
+    <gmd:composedOf gco:nilReason="inapplicable"/>        
     <gmd:seriesMetadata>
         <gmi:MI_Metadata>   <!-- With reference to file name here, do we need to use MD_Identification/CI_Citation to reference the file. -->
             <gmd:fileIdentifier>
@@ -98,7 +98,7 @@
             <gmd:identificationInfo>
                 <gmd:MD_DataIdentification>
                     <gmd:citation>  <!-- If file name reference in MI_Metadata is sufficient, can use this CI_Citation to reference Product Specification Document. -->
-                        <gmd:CI_Citation>
+                        <gmd:CI_Citation>    
                             <gmd:title>    <!-- This field provides the product Long Name required by the ECS. -->
                                 <gco:CharacterString>SMAP L1C Radar Half-Orbit High-Resolution Data on 1 km Swath Grid</gco:CharacterString>
                             </gmd:title>
@@ -187,14 +187,14 @@
                         <gco:CharacterString>Calibrated normalized synthetic aperture radar cross section measures multilooked onto a 1 km grid that conforms to the SMAP spacecraft path.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:purpose>
-                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil
+                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil 
                             moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users</gco:CharacterString>
                     </gmd:purpose>
                     <gmd:credit>  <!-- This field can name individuals or organizations for credit. For now, it specifies NASA. -->
-                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented
+                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented 
                             at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
                     </gmd:credit>
-                    <gmd:status>
+                    <gmd:status> 
                         <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing">onGoing</gmd:MD_ProgressCode>
                     </gmd:status>
                     <gmd:pointOfContact>
@@ -579,47 +579,8 @@
                             </gmd:thesaurusName>
                         </gmd:MD_Keywords>
                     </gmd:descriptiveKeywords>
-                    <gmd:aggregationInfo>
+                    <gmd:aggregationInfo>  
                         <gmd:MD_AggregateInformation>
-                            <gmd:aggregateDataSetName>
-                                <gmd:CI_Citation>
-                                    <gmd:title>
-                                        <gco:CharacterString>Publication URL Name or Title</gco:CharacterString>
-                                    </gmd:title>
-                                    <gmd:date>
-                                        <gmd:CI_Date>
-                                            <gmd:date>
-                                                <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
-                                            </gmd:date>
-                                            <gmd:dateType>
-                                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                                            </gmd:dateType>
-                                        </gmd:CI_Date>
-                                    </gmd:date>
-                                    <gmd:citedResponsibleParty>
-                                        <gmd:CI_ResponsibleParty>
-                                            <gmd:contactInfo>
-                                                <gmd:CI_Contact>
-                                                    <gmd:onlineResource>
-                                                        <gmd:CI_OnlineResource>
-                                                            <gmd:linkage>
-                                                                <gmd:URL>http://www.publicationurl.com</gmd:URL>
-                                                            </gmd:linkage>
-                                                            <gmd:description>
-                                                                <gco:CharacterString>Description: Some Descriptive Text</gco:CharacterString>
-                                                            </gmd:description>
-                                                            <gmd:function>
-                                                                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information">information</gmd:CI_OnLineFunctionCode>
-                                                            </gmd:function>
-                                                        </gmd:CI_OnlineResource>
-                                                    </gmd:onlineResource>
-                                                </gmd:CI_Contact>
-                                            </gmd:contactInfo>
-                                            <gmd:role></gmd:role>
-                                        </gmd:CI_ResponsibleParty>
-                                    </gmd:citedResponsibleParty>
-                                </gmd:CI_Citation>
-                            </gmd:aggregateDataSetName>
                             <gmd:aggregateDataSetIdentifier>
                                 <gmd:MD_Identifier>
                                     <gmd:code>
@@ -635,190 +596,6 @@
                             </gmd:initiativeType>
                         </gmd:MD_AggregateInformation>
                     </gmd:aggregationInfo>
-                    <gmd:aggregationInfo>
-                        <gmd:MD_AggregateInformation>
-                            <gmd:aggregateDataSetName>
-                                <gmd:CI_Citation>
-                                    <gmd:title>
-                                        <gco:CharacterString>Publication URL2 Name or Title</gco:CharacterString>
-                                    </gmd:title>
-                                    <gmd:date>
-                                        <gmd:CI_Date>
-                                            <gmd:date>
-                                                <gco:DateTime>2013-04-06T17:15:00Z</gco:DateTime>
-                                            </gmd:date>
-                                            <gmd:dateType>
-                                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                                            </gmd:dateType>
-                                        </gmd:CI_Date>
-                                    </gmd:date>
-                                    <gmd:citedResponsibleParty>
-                                        <gmd:CI_ResponsibleParty>
-                                            <gmd:contactInfo>
-                                                <gmd:CI_Contact>
-                                                    <gmd:onlineResource>
-                                                        <gmd:CI_OnlineResource>
-                                                            <gmd:linkage>
-                                                                <gmd:URL>http://www.publicationurl2.com</gmd:URL>
-                                                            </gmd:linkage>
-                                                            <gmd:description>
-                                                                <gco:CharacterString>Description: Some Descriptive Text URLContentType: PublicationURL</gco:CharacterString>
-                                                            </gmd:description>
-                                                            <gmd:function>
-                                                                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information">information</gmd:CI_OnLineFunctionCode>
-                                                            </gmd:function>
-                                                        </gmd:CI_OnlineResource>
-                                                    </gmd:onlineResource>
-                                                </gmd:CI_Contact>
-                                            </gmd:contactInfo>
-                                            <gmd:role></gmd:role>
-                                        </gmd:CI_ResponsibleParty>
-                                    </gmd:citedResponsibleParty>
-                                </gmd:CI_Citation>
-                            </gmd:aggregateDataSetName>
-                            <gmd:associationType>
-                                <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
-                            </gmd:associationType>
-                        </gmd:MD_AggregateInformation>
-                    </gmd:aggregationInfo>
-                    <gmd:aggregationInfo>
-                        <gmd:MD_AggregateInformation>
-                            <gmd:aggregateDataSetName>
-                                <gmd:CI_Citation>
-                                    <gmd:title>
-                                        <gco:CharacterString>Publication Reference URL3 Name or Title</gco:CharacterString>
-                                    </gmd:title>
-                                    <gmd:date>
-                                        <gmd:CI_Date>
-                                            <gmd:date>
-                                                <gco:DateTime>2013-04-07T17:15:00Z</gco:DateTime>
-                                            </gmd:date>
-                                            <gmd:dateType>
-                                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                                            </gmd:dateType>
-                                        </gmd:CI_Date>
-                                    </gmd:date>
-                                    <gmd:citedResponsibleParty>
-                                        <gmd:CI_ResponsibleParty>
-                                            <gmd:contactInfo>
-                                                <gmd:CI_Contact>
-                                                    <gmd:onlineResource>
-                                                        <gmd:CI_OnlineResource>
-                                                            <gmd:linkage>
-                                                                <gmd:URL>http://www.publicationurl3.com</gmd:URL>
-                                                            </gmd:linkage>
-                                                            <gmd:description>
-                                                                <gco:CharacterString>Description: Some Descriptive Text PublicationReference:</gco:CharacterString>
-                                                            </gmd:description>
-                                                            <gmd:function>
-                                                                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information">information</gmd:CI_OnLineFunctionCode>
-                                                            </gmd:function>
-                                                        </gmd:CI_OnlineResource>
-                                                    </gmd:onlineResource>
-                                                </gmd:CI_Contact>
-                                            </gmd:contactInfo>
-                                            <gmd:role></gmd:role>
-                                        </gmd:CI_ResponsibleParty>
-                                    </gmd:citedResponsibleParty>
-                                </gmd:CI_Citation>
-                            </gmd:aggregateDataSetName>
-                            <gmd:associationType>
-                                <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
-                            </gmd:associationType>
-                        </gmd:MD_AggregateInformation>
-                    </gmd:aggregationInfo>
-                    <gmd:aggregationInfo>
-                        <gmd:MD_AggregateInformation>
-                            <gmd:aggregateDataSetName>
-                                <gmd:CI_Citation>
-                                    <gmd:title>
-                                        <gco:CharacterString>Collection URL 1 Name or Title</gco:CharacterString>
-                                    </gmd:title>
-                                    <gmd:date>
-                                        <gmd:CI_Date>
-                                            <gmd:date>
-                                                <gco:DateTime>2013-04-08T17:15:00Z</gco:DateTime>
-                                            </gmd:date>
-                                            <gmd:dateType>
-                                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                                            </gmd:dateType>
-                                        </gmd:CI_Date>
-                                    </gmd:date>
-                                    <gmd:citedResponsibleParty>
-                                        <gmd:CI_ResponsibleParty>
-                                            <gmd:contactInfo>
-                                                <gmd:CI_Contact>
-                                                    <gmd:onlineResource>
-                                                        <gmd:CI_OnlineResource>
-                                                            <gmd:linkage>
-                                                                <gmd:URL>http://www.collectionurl1.com</gmd:URL>
-                                                            </gmd:linkage>
-                                                            <gmd:description>
-                                                                <gco:CharacterString>Description: Some Descriptive Text URLContentType: CollectionURL Type: PROFESSIONAL HOME PAGE</gco:CharacterString>
-                                                            </gmd:description>
-                                                            <gmd:function>
-                                                                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information">information</gmd:CI_OnLineFunctionCode>
-                                                            </gmd:function>
-                                                        </gmd:CI_OnlineResource>
-                                                    </gmd:onlineResource>
-                                                </gmd:CI_Contact>
-                                            </gmd:contactInfo>
-                                            <gmd:role></gmd:role>
-                                        </gmd:CI_ResponsibleParty>
-                                    </gmd:citedResponsibleParty>
-                                </gmd:CI_Citation>
-                            </gmd:aggregateDataSetName>
-                            <gmd:associationType>
-                                <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
-                            </gmd:associationType>
-                        </gmd:MD_AggregateInformation>
-                    </gmd:aggregationInfo>
-                    <gmd:aggregationInfo>
-                        <gmd:MD_AggregateInformation>
-                            <gmd:aggregateDataSetName>
-                                <gmd:CI_Citation>
-                                    <gmd:title>
-                                        <gco:CharacterString>Collection URL 2 Name or Title</gco:CharacterString>
-                                    </gmd:title>
-                                    <gmd:date>
-                                        <gmd:CI_Date>
-                                            <gmd:date>
-                                                <gco:DateTime>2013-04-08T17:15:00Z</gco:DateTime>
-                                            </gmd:date>
-                                            <gmd:dateType>
-                                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                                            </gmd:dateType>
-                                        </gmd:CI_Date>
-                                    </gmd:date>
-                                    <gmd:citedResponsibleParty>
-                                        <gmd:CI_ResponsibleParty>
-                                            <gmd:contactInfo>
-                                                <gmd:CI_Contact>
-                                                    <gmd:onlineResource>
-                                                        <gmd:CI_OnlineResource>
-                                                            <gmd:linkage>
-                                                                <gmd:URL>http://www.collectionurl2.com</gmd:URL>
-                                                            </gmd:linkage>
-                                                            <gmd:description>
-                                                                <gco:CharacterString>Description: Some Descriptive Text URLContentType: CollectionURL Type: DATA SET LANDING PAGE</gco:CharacterString>
-                                                            </gmd:description>
-                                                            <gmd:function>
-                                                                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information">information</gmd:CI_OnLineFunctionCode>
-                                                            </gmd:function>
-                                                        </gmd:CI_OnlineResource>
-                                                    </gmd:onlineResource>
-                                                </gmd:CI_Contact>
-                                            </gmd:contactInfo>
-                                            <gmd:role></gmd:role>
-                                        </gmd:CI_ResponsibleParty>
-                                    </gmd:citedResponsibleParty>
-                                </gmd:CI_Citation>
-                            </gmd:aggregateDataSetName>
-                            <gmd:associationType>
-                                <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
-                            </gmd:associationType>
-                        </gmd:MD_AggregateInformation>
-                    </gmd:aggregationInfo>
                     <gmd:spatialRepresentationType>
                         <gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">grid</gmd:MD_SpatialRepresentationTypeCode>
                     </gmd:spatialRepresentationType>
@@ -831,7 +608,7 @@
                     </gmd:spatialResolution>
                     <gmd:language>
                         <gco:CharacterString>eng</gco:CharacterString>
-                    </gmd:language>
+                    </gmd:language> 
                     <gmd:characterSet>
                         <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
                     </gmd:characterSet>
@@ -844,8 +621,8 @@
                     <gmd:extent>
                         <gmd:EX_Extent>
                             <gmd:description>
-                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on.
-                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.
+                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on. 
+                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.  
                                     High resolution radar data are voluminous.  Thus, the SMAP spacecraft downlinks high resolution data when the spacecaft antenna boresight is:
                                     1) Looking forward or looking aft over all land surfaces except Antarctica when the satellite is viewing the Earth at approximately 6:00 AM local time
                                     2) Looking forward over all land surfaces North of 45 degrees North latitude when the satellite is viewing the Earth at approximately 6:00 PM local time, and
@@ -875,12 +652,12 @@
                             <gmd:temporalElement>
                                 <gmd:EX_TemporalExtent>  <!-- Mimics use in GHRSST. See no evidence of conformance to standard -->
                                     <gmd:extent>
-                                        <gml:TimePeriod gml:id="swathTemporalExtent">  <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products.
+                                        <gml:TimePeriod gml:id="swathTemporalExtent">  <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products. 
                                             ECS indicates that they will automatically extend the final time based on receipt of data products. -->
                                             <gml:beginPosition>2013-09-01T00:00:00.000Z</gml:beginPosition>
                                             <gml:endPosition>2020-12-31T23:59:59.999Z</gml:endPosition>
                                         </gml:TimePeriod>
-                                    </gmd:extent>
+                                    </gmd:extent>    
                                 </gmd:EX_TemporalExtent>
                             </gmd:temporalElement>
                         </gmd:EX_Extent>
@@ -952,6 +729,27 @@
           <gmd:purpose>
             <gco:CharacterString>InsertTime</gco:CharacterString>
           </gmd:purpose>
+          <gmd:resourceConstraints>
+              <gmd:MD_LegalConstraints>
+                  <gmd:useLimitation>
+                      <gco:CharacterString>This product must not be used for the purposes of determining water quality2.</gco:CharacterString>
+                  </gmd:useLimitation>
+                  <gmd:useLimitation>
+                      <gco:CharacterString>Restriction Comment: A restriction comment.</gco:CharacterString>
+                  </gmd:useLimitation>
+                  <gmd:useConstraints>
+                      <gmd:MD_RestrictionCode
+                        codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions
+                      </gmd:MD_RestrictionCode>
+                  </gmd:useConstraints>
+                  <gmd:otherConstraints>
+                      <gco:CharacterString>LicenseUrl: https://www.nasa.examplelicenseurl.gov</gco:CharacterString>
+                  </gmd:otherConstraints>
+                  <gmd:otherConstraints>
+                      <gco:CharacterString>Restriction Flag: 15</gco:CharacterString>
+                  </gmd:otherConstraints>
+              </gmd:MD_LegalConstraints>
+          </gmd:resourceConstraints>
           <gmd:language>
             <gco:CharacterString>eng</gco:CharacterString>
           </gmd:language>
@@ -987,6 +785,7 @@
           </gmd:language>
         </gmd:MD_DataIdentification>
       </gmd:identificationInfo>
+
             <gmd:identificationInfo>   <!-- This field is used to reference the Product Specification Document. If and when the model moves to ISO 19115-1, move this reference to additionalDocumentation.  -->
                 <gmd:MD_DataIdentification>
                     <gmd:citation>

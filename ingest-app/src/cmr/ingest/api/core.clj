@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [debug info warn error]]
@@ -230,6 +231,15 @@
   [concept]
   (pr-str (dissoc concept :metadata)))
 
+(defn log-concept-with-metadata-size
+  "Log the concept with metadata-size-bytes added, and metadata removed."
+  [concept request-context]
+  (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
+        concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
+    (info (format "Successfully ingested %s from client %s"
+                  (concept->loggable-string concept)
+                  (:client-id request-context)))))
+
 (defn set-default-error-format [default-response-format handler]
   "Ring middleware to add a default format to the exception-info created during exceptions. This
   is used to determine the default format for each route."
@@ -252,6 +262,7 @@
                              :concept-type concept-type}
                             (set-revision-id headers)
                             (set-user-id request-context headers))]
+    (lt-validation/validate-launchpad-token request-context)
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)

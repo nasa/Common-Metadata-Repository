@@ -3,13 +3,10 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.atom :as atom]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
@@ -17,87 +14,12 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.service-util :as service-util]
-   [cmr.system-int-test.utils.variable-util :as variable-util]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1"})
                 service-util/grant-all-service-fixture]))
-
-(defn- assert-collection-atom-result
-  "Verify the collection ATOM response has-formats, has-variables, has transforms fields
-  have the correct values"
-  [coll expected-fields]
-  (let [coll-with-extra-fields (merge coll expected-fields)
-        {:keys [entry-title]} coll
-        coll-atom (atom/collections->expected-atom
-                   [coll-with-extra-fields]
-                   (format "collections.atom?entry_title=%s" entry-title))
-        {:keys [status results]} (search/find-concepts-atom
-                                  :collection {:entry-title entry-title})]
-
-    (is (= [200 coll-atom]
-           [status results]))))
-
-(defn- assert-collection-json-result
-  "Verify the collection JSON response associations related fields have the correct values"
-  [coll expected-fields serv-concept-ids var-concept-ids]
-  (let [coll-with-extra-fields (merge coll
-                                      expected-fields
-                                      {:services serv-concept-ids
-                                       :variables var-concept-ids})
-        {:keys [entry-title]} coll
-        coll-json (atom/collections->expected-atom
-                   [coll-with-extra-fields]
-                   (format "collections.json?entry_title=%s" entry-title))
-        {:keys [status results]} (search/find-concepts-json
-                                  :collection {:entry-title entry-title})]
-
-    (is (= [200 coll-json]
-           [status results]))))
-
-(defn- assert-collection-atom-json-result
-  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
-  has-spatial-subsetting and associations fields"
-  [coll expected-fields serv-concept-ids var-concept-ids]
-  (let [expected-fields (merge {:has-formats false
-                                :has-variables false
-                                :has-transforms false
-                                :has-spatial-subsetting false}
-                               {:has-variables (some? (seq var-concept-ids))}
-                               expected-fields)]
-    (assert-collection-atom-result coll expected-fields)
-    (assert-collection-json-result coll expected-fields serv-concept-ids var-concept-ids)))
-
-(defn- assert-collection-umm-json-result
-  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
-  has-spatial-subsetting and associations fields"
-  [coll expected-fields serv-concept-ids var-concept-ids]
-  (let [expected-fields (merge {:has-formats false
-                                :has-variables false
-                                :has-transforms false
-                                :has-spatial-subsetting false}
-                               {:has-variables (some? (seq var-concept-ids))}
-                               expected-fields)
-        coll-with-extra-fields (merge coll
-                                      expected-fields
-                                      {:services serv-concept-ids
-                                       :variables var-concept-ids})
-        options {:accept (mt/with-version mt/umm-json-results umm-version/current-collection-version)}
-        {:keys [entry-title]} coll
-        response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
-    (du/assert-umm-jsons-match
-     umm-version/current-collection-version [coll-with-extra-fields] response)))
-
-(defn- assert-collection-search-result
-  "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
-  has-transforms, has-spatial-subsetting and associations fields"
-  ([coll expected-fields serv-concept-ids]
-   (assert-collection-search-result coll expected-fields serv-concept-ids nil))
-  ([coll expected-fields serv-concept-ids var-concept-ids]
-   (assert-collection-atom-json-result coll expected-fields serv-concept-ids var-concept-ids)
-   (assert-collection-umm-json-result coll expected-fields serv-concept-ids var-concept-ids)))
 
 (deftest collection-service-search-result-fields-test
   (let [token (e/login (s/context) "user1")
@@ -114,15 +36,15 @@
         {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv2"
                                          :Name "service2"
-                                         :ServiceOptions {:SupportedFormats ["image/png"]}})
+                                         :ServiceOptions {:SupportedInputFormats ["PNG"]}})
         {serv3-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv3"
                                          :Name "service3"
-                                         :ServiceOptions {:SupportedFormats ["image/tiff"]}})
+                                         :ServiceOptions {:SupportedInputFormats ["TIFF"]}})
         serv4-concept (service-util/make-service-concept
                        {:native-id "serv4"
                         :Name "Service4"
-                        :ServiceOptions {:SupportedFormats ["image/png" "image/tiff"]}})
+                        :ServiceOptions {:SupportedOutputFormats ["PNG" "TIFF"]}})
         {serv4-concept-id :concept-id} (service-util/ingest-service serv4-concept)]
     ;; index the collections so that they can be found during service association
     (index/wait-until-indexed)
@@ -131,8 +53,8 @@
     (index/wait-until-indexed)
 
     ;; verify collection associated with a service with no supported format, has-formats false
-    (assert-collection-search-result coll1 {:has-formats false} [serv1-concept-id])
-    (assert-collection-search-result coll2 {:has-formats false} [serv1-concept-id])
+    (service-util/assert-collection-search-result coll1 {:has-formats false} [serv1-concept-id])
+    (service-util/assert-collection-search-result coll2 {:has-formats false} [serv1-concept-id])
 
     (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
@@ -141,9 +63,9 @@
     (index/wait-until-indexed)
 
     ;; verify collection associated with services with just one supported format, has-formats false
-    (assert-collection-search-result
+    (service-util/assert-collection-search-result
      coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
-    (assert-collection-search-result
+    (service-util/assert-collection-search-result
      coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
 
     (au/associate-by-concept-ids token serv4-concept-id [{:concept-id (:concept-id coll1)}
@@ -151,9 +73,9 @@
     (index/wait-until-indexed)
 
     ;; verify collection associated with services with two supported formats, has-formats true
-    (assert-collection-search-result
+    (service-util/assert-collection-search-result
      coll1 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
-    (assert-collection-search-result
+    (service-util/assert-collection-search-result
      coll2 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
 
     (testing "delete service affect collection search has-formats field"
@@ -162,31 +84,31 @@
       (index/wait-until-indexed)
 
       ;; verify has-formats is false after the service with two supported formats is deleted
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id]))
 
     (testing "update service affect collection search has-formats field"
       ;; before update service3, collections' has formats is false
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
       ;; update service3 to have two supported formats and spatial subsetting
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
-        :ServiceOptions {:SupportedFormats ["image/tiff" "JPEG"]
+        :ServiceOptions {:SupportedInputFormats ["TIFF" "JPEG"]
                          :SubsetTypes ["Spatial"]}})
       (index/wait-until-indexed)
 
       ;; verify has-formats is true after the service is updated with two supported formats
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll1
        {:has-formats true :has-transforms true :has-spatial-subsetting true}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll2
        {:has-formats true :has-transforms true :has-spatial-subsetting true}
        [serv1-concept-id serv2-concept-id serv3-concept-id]))
@@ -197,17 +119,17 @@
                                            :Name "Variable1"})]
         (au/associate-by-concept-ids token var-concept-id [{:concept-id (:concept-id coll1)}])
         (index/wait-until-indexed)
-        (assert-collection-search-result
+        (service-util/assert-collection-search-result
          coll1
          {:has-formats true :has-transforms true :has-spatial-subsetting true}
          [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
-        (assert-collection-search-result
+        (service-util/assert-collection-search-result
          coll2
          {:has-formats true :has-transforms true :has-spatial-subsetting true}
          [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
-  (testing "SupportedProjections affects has-transforms"
+  (testing "SupportedInputProjections and SupportedOutputProjections affects has-transforms"
     (let [token (e/login (s/context) "user1")
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                   :short-name "S1"
@@ -225,20 +147,20 @@
           (service-util/ingest-service-with-attrs
            {:native-id "serv2"
             :Name "service2"
-            :ServiceOptions {:SupportedProjections ["WGS 84 / Antarctic Polar Stereographic"]}})
+            :ServiceOptions {:SupportedInputProjections [{:ProjectionName "Mercator"}]}})
 
           {serv3-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
            {:native-id "serv3"
             :Name "service3"
-            :ServiceOptions {:SupportedProjections ["WGS84 - World Geodetic System 1984"]}})
+            :ServiceOptions {:SupportedInputProjections [{:ProjectionName "Sinusoidal"}]}})
 
           {serv4-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
            {:native-id "serv4"
             :Name "Service4"
-            :ServiceOptions {:SupportedProjections ["WGS 84 / Antarctic Polar Stereographic"
-                                                    "WGS84 - World Geodetic System 1984"]}})]
+            :ServiceOptions {:SupportedOutputProjections [{:ProjectionName "Mercator"}
+                                                         {:ProjectionName "Sinusoidal"}]}})]
       ;; index the collections so that they can be found during service association
       (index/wait-until-indexed)
       (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}
@@ -246,8 +168,8 @@
       (index/wait-until-indexed)
 
       ;; verify collection associated with a service with no supported projection, has-transforms false
-      (assert-collection-search-result coll1 {:has-transforms false} [serv1-concept-id])
-      (assert-collection-search-result coll2 {:has-transforms false} [serv1-concept-id])
+      (service-util/assert-collection-search-result coll1 {:has-transforms false} [serv1-concept-id])
+      (service-util/assert-collection-search-result coll2 {:has-transforms false} [serv1-concept-id])
 
       (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll1)}
                                                            {:concept-id (:concept-id coll2)}])
@@ -256,9 +178,9 @@
       (index/wait-until-indexed)
 
       ;; verify collection associated with services with just one supported projection, has-transforms false
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll1 {:has-transforms false} [serv1-concept-id serv2-concept-id serv3-concept-id])
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll2 {:has-transforms false} [serv1-concept-id serv2-concept-id serv3-concept-id])
 
       (au/associate-by-concept-ids token serv4-concept-id [{:concept-id (:concept-id coll1)}
@@ -266,10 +188,10 @@
       (index/wait-until-indexed)
 
       ;; verify collection associated with services with two supported projections, has-transforms true
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll1 {:has-transforms true}
        [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll2 {:has-transforms true}
        [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])))
 
@@ -308,13 +230,13 @@
                         {:native-id "serv11"
                          :Name "service11"
                          :ServiceOptions {:SubsetTypes ["Spatial"]
-                                          :SupportedFormats ["image/tiff" "JPEG"]}})
+                                          :SupportedInputFormats ["TIFF" "JPEG"]}})
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
 
     (testing "SubsetType affects has-transforms"
       ;; sanity check before the association is made
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll3 {:has-transforms false :has-spatial-subsetting false} [])
 
       ;; associate coll3 with a service that has SubsetType
@@ -322,23 +244,23 @@
       (index/wait-until-indexed)
 
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll3 {:has-transforms true :has-spatial-subsetting true} [serv8-concept-id]))
 
     (testing "InterpolationTypes affects has-transforms"
       ;; sanity check before the association is made
-      (assert-collection-search-result coll4 {:has-transforms false} [])
+      (service-util/assert-collection-search-result coll4 {:has-transforms false} [])
 
       ;; associate coll4 with a service that has InterpolationTypes
       (au/associate-by-concept-ids token serv9-concept-id [{:concept-id (:concept-id coll4)}])
       (index/wait-until-indexed)
 
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))
+      (service-util/assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))
 
     (testing "Non-spatial SubsetType does not affect has-spatial-subsetting"
       ;; sanity check before the association is made
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll5 {:has-spatial-subsetting false} [])
 
       ;; associate coll5 with a service that has SubsetTypes
@@ -346,7 +268,7 @@
       (index/wait-until-indexed)
 
       ;; after service association is made, has-transforms is true
-      (assert-collection-search-result
+      (service-util/assert-collection-search-result
        coll5 {:has-spatial-subsetting false :has-transforms true} [serv10-concept-id])
 
       (testing "deletion of service affects collection search service association fields"
@@ -355,7 +277,7 @@
         (index/wait-until-indexed)
 
         ;; sanity check that all service related fields are true and service associations are present
-        (assert-collection-search-result
+        (service-util/assert-collection-search-result
          coll5
          {:has-formats true :has-transforms true :has-spatial-subsetting true}
          [serv10-concept-id serv11-concept-id])
@@ -365,7 +287,7 @@
         (index/wait-until-indexed)
 
         ;; verify the service related fields affected by service11 are set properly after deletion
-        (assert-collection-search-result
+        (service-util/assert-collection-search-result
          coll5
          {:has-formats false :has-transforms true :has-spatial-subsetting false}
          [serv10-concept-id])
@@ -375,7 +297,7 @@
         (index/wait-until-indexed)
 
         ;; verify service related has_* fields are false and associations is empty now
-        (assert-collection-search-result
+        (service-util/assert-collection-search-result
          coll5
          {:has-formats false :has-transforms false :has-spatial-subsetting false}
          [])))))

@@ -2,6 +2,7 @@
   "Contains functions for manipulating granule acls"
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as cqm]
@@ -50,7 +51,7 @@
   [context coll-ids-by-prov _ acls]
   (filter (fn [acl]
             (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
-                  entry-titles (get-in cii [:collection-identifier :entry-titles])
+                  entry-titles (map string/trim (get-in cii [:collection-identifier :entry-titles]))
                   acl-coll-ids (->> entry-titles
                                     (map (partial coll-cache/get-collection context provider-id))
                                     ;; It's possible an ACL refers to an entry title that doesn't exist
@@ -68,10 +69,10 @@
 (defn- access-value->query-condition
   "Converts an access value filter from an ACL into a query condition."
   [access-value-filter]
-  (when-let [{:keys [include-undefined min-value max-value]} access-value-filter]
+  (when-let [{:keys [include-undefined-value min-value max-value]} access-value-filter]
     (let [value-cond (when (or min-value max-value)
                        (cqm/numeric-range-condition :access-value min-value max-value))
-          include-undefined-cond (when include-undefined
+          include-undefined-cond (when include-undefined-value
                                    (cqm/->NegatedCondition
                                      (cqm/->ExistCondition :access-value)))]
       (if (and value-cond include-undefined-cond)
@@ -81,23 +82,19 @@
 (defn- temporal->query-condition
   "Converts a temporal filter from an ACL into a query condition"
   [temporal-filter]
-  (when-not (= :acquisition (:temporal-field temporal-filter))
-    (errors/internal-error!
-      (str "Found acl with unsupported temporal field " (:temporal-field temporal-filter))))
-
-  (let [{:keys [start-date end-date mask]} temporal-filter]
+  (let [{:keys [start-date stop-date mask]} temporal-filter]
     (case mask
       ;; The granule just needs to intersect with the date range.
-      :intersect (q/map->TemporalCondition {:start-date start-date
-                                             :end-date end-date
+      "intersect" (q/map->TemporalCondition {:start-date start-date
+                                             :end-date stop-date
                                              :exclusive? false})
       ;; Disjoint is intersects negated.
-      :disjoint (cqm/->NegatedCondition (temporal->query-condition
-                                         (assoc temporal-filter :mask :intersect)))
+      "disjoint" (cqm/->NegatedCondition (temporal->query-condition
+                                          (assoc temporal-filter :mask "intersect")))
       ;; The granules temporal must start and end within the temporal range
-      :contains (gc/and-conds [(cqm/date-range-condition :start-date start-date end-date false)
-                               (cqm/->ExistCondition :end-date)
-                               (cqm/date-range-condition :end-date start-date end-date false)]))))
+      "contains" (gc/and-conds [(cqm/date-range-condition :start-date start-date stop-date false)
+                                (cqm/->ExistCondition :end-date)
+                                (cqm/date-range-condition :end-date start-date stop-date false)]))))
 
 (defmulti provider->collection-condition
   "Converts a provider id from an ACL into a collection query condition that will find all collections
@@ -141,7 +138,7 @@
           (reduce (fn [condition-map entry-title]
                     (if-let [{:keys [concept-id]} (coll-cache/get-collection context provider-id entry-title)]
                       (update-in condition-map [:concept-ids] conj concept-id)
-                      (update-in condition-map [:entry-titles] conj entry-title)))
+                      (update-in condition-map [:entry-titles] conj (string/trim entry-title))))
                   {:concept-ids nil
                    :entry-titles nil}
                   entry-titles)
@@ -230,7 +227,6 @@
                provider-ids
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition context coll-ids-by-prov acls)]
-
     (r/resolve-collection-queries
       context
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
@@ -257,7 +253,8 @@
   [context coll-identifier concept]
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
-          collection (coll-cache/get-collection context collection-concept-id)]
+          collection (merge {:concept-id collection-concept-id}
+                            (coll-cache/get-collection context collection-concept-id))]
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."

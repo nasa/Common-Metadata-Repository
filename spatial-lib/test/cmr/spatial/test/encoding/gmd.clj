@@ -14,7 +14,7 @@
 
 ;; known example XML document with valid GML elements from NASA docs
 
-(def gmd-xml
+(def gmd-xml-mbr
   "<root xmlns:gml=\"http://www.opengis.net/gml\"
          xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"
          xmlns:gco=\"http://www.isotc211.org/2005/gco\">
@@ -58,9 +58,11 @@
                          :xmlns:gco "http://www.isotc211.org/2005/gco")))
 
 (deftest test-decode-gmd-xml
-  (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml) [:geographicElement])))
-         [(mbr/mbr -178.0 75.0 180.0 -78.0)
-          (p/point -110.45 45.256)])))
+  (testing "GMD decode"
+    (testing "Minimum bounding box"
+      (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml-mbr) [:geographicElement])))
+             [(mbr/mbr -178.0 75.0 180.0 -78.0)
+              (p/point -110.45 45.256)])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Property-Based Tests

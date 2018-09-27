@@ -5,7 +5,8 @@
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
+   [cmr.search.results-handlers.umm-json-results-helper :as results-helper]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]))
 
 (defn- collection-elastic-result->meta
   "Returns a map of the meta fields for the given collection elastic result."
@@ -14,6 +15,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection UMM JSON
+
+(defn- get-granule-count-for-item
+  "Get the granule count from granule-counts-map using the concept-id in the item."
+  [item granule-counts-map]
+  (get granule-counts-map (get-in item [:meta :concept-id]) 0))
+
+(defn- add-granule-count-to-items
+  "Add the granule-count to the :meta part in each item in items using the granule-counts-map."
+  [items granule-counts-map]
+  (map #(assoc-in % [:meta :granule-count] (get-granule-count-for-item % granule-counts-map))
+       items))
+
+(defmethod gcrf/query-results->concept-ids :umm-json-results
+  [results]
+  (->> results
+       :items 
+       (map :meta)
+       (map :concept-id)))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json-results]
   [concept-type query]
@@ -42,10 +61,20 @@
 
 (defmethod qs/search-results->response [:collection :umm-json-results]
   [context query results]
-  (json/generate-string (select-keys results [:hits :took :items])))
+  (let [granule-counts-map (:granule-counts-map results)
+        items (:items results)
+        results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
+  (json/generate-string (select-keys results [:hits :took :items]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection Legacy UMM JSON
+
+(defmethod gcrf/query-results->concept-ids :legacy-umm-json
+  [results]
+  (->> results
+       :items
+       (map :meta)
+       (map :concept-id)))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
@@ -70,4 +99,7 @@
 
 (defmethod qs/search-results->response [:collection :legacy-umm-json]
   [context query results]
-  (json/generate-string (select-keys results [:hits :took :items])))
+  (let [granule-counts-map (:granule-counts-map results)
+        items (:items results)
+        results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
+    (json/generate-string (select-keys results [:hits :took :items]))))

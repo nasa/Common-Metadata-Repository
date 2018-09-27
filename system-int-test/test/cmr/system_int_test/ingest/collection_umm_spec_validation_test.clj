@@ -340,3 +340,60 @@
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
           "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
+
+(deftest umm-spec-temporal-validation
+  (testing "Invalid temporal extents"
+    (let [invalid-char-range-umm (assoc (data-umm-c/collection)
+                                        :TemporalExtents
+                                        [{:RangeDateTimes [{:BeginningDateTime "2000-01-01c"
+                                                            :EndingDateTime "2006-01-01"}]}])
+          invalid-char-single-umm (assoc (data-umm-c/collection)
+                                         :TemporalExtents
+                                         [{:SingleDateTimes ["2000-01-01" "1993-07-29S" "2005-01-01T00:00:00Z"]}])
+          invalid-year-range-umm (assoc (data-umm-c/collection)
+                                        :TemporalExtents
+                                        [{:RangeDateTimes [{:BeginningDateTime "2005-01-01"
+                                                            :EndingDateTime "200004-01-01"}]}])
+          invalid-year-single-umm (assoc (data-umm-c/collection)
+                                         :TemporalExtents
+                                         [{:SingleDateTimes ["2000-01-01" "1999-01-01T00:00:00Z" "20000006-01-01"]}])
+          invalid-year-periodic-umm (assoc (data-umm-c/collection)
+                                           :TemporalExtents
+                                           [{:PeriodicDateTimes [{:Name "Periodic name"
+                                                                  :DurationUnit "DAY"
+                                                                  :DurationValue "1"
+                                                                  :PeriodCycleDurationUnit "DAY"
+                                                                  :PeriodCycleDurationValue "1"
+                                                                  :StartDate "2005-01-01"
+                                                                  :EndDate "123456789-10-11"}]}])]
+      (are3 [format collection error-message]
+            (let [response (d/ingest-umm-spec-collection "PROV1"
+                                                         collection
+                                                         {:format format
+                                                          :allow-failure? true})]
+              (is (= 422 (:status response)))
+              (is (= error-message (first (:errors response)))))
+
+            "DIF9 invalid character in RangeDateTimes"
+            :dif invalid-char-range-umm "[2000-01-01c] is not a valid datetime"
+
+            "DIF10 invalid year in RangeDateTimes"
+            :dif10 invalid-year-range-umm "[200004-01-01] is not a valid datetime"
+
+            "DIF10 invalid year in SingleDateTimes"
+            :dif10 invalid-year-single-umm "[20000006-01-01] is not a valid datetime"
+
+            "DIF10 invalid year in PeriodicDateTimes"
+            :dif10 invalid-year-periodic-umm "[123456789-10-11] is not a valid datetime"
+
+            "ISO SMAP invalid character in RangeDateTimes"
+            :iso-smap invalid-char-range-umm "[2000-01-01c] is not a valid datetime"
+
+            "ISO SMAP invalid character in SingleDateTimes"
+            :iso-smap invalid-char-single-umm "[1993-07-29S] is not a valid datetime"
+
+            "ISO MENDS invalid character in RangeDateTimes"
+            :iso19115 invalid-char-range-umm "[2000-01-01c] is not a valid datetime"
+
+            "ISO MENDS invalid character in SingleDateTimes"
+            :iso19115 invalid-char-single-umm "[1993-07-29S] is not a valid datetime"))))

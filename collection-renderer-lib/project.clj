@@ -14,7 +14,7 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-      "038b76b94f2"))
+      "64ae79b9895"))
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -27,6 +27,7 @@
     [commons-io]]
   :dependencies [
     [commons-io "2.6"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]

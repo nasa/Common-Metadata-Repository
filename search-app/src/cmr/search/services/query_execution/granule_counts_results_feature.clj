@@ -23,7 +23,11 @@
   "Returns the concept ids from the query results. It is expected that results handlers will
   implement this multi-method"
   (fn [results]
-    (:result-format results)))
+    (let [result-format (:result-format results)]
+      ;; Versioned result-format case like {:format :umm-json-results, :version 1.10}
+      (if-let [format (:format result-format)]
+        format
+        result-format))))
 
 (defn- valid-parent-condition?
   "The granule count query extractor can extract spatial and temporal conditions from a collection
@@ -67,9 +71,12 @@
   "Applies any necessary changes to spatial or temporal condition to make them work with granules"
   [condition]
   (if (instance? TemporalCondition condition)
-    ;; Turn off limit to granules so that the correct fields will be searched. limit to granules is a
-    ;; collection applicable parameter.
-    (assoc condition :limit-to-granules false)
+    ;; Remove collection concept type and turn off limit to granules
+    ;; so that the correct fields will be searched. 
+    ;; limit to granules is a collection applicable parameter.
+    (-> condition
+        (dissoc :concept-type)
+        (assoc :limit-to-granules false))
     condition))
 
 (defn extract-granule-count-query

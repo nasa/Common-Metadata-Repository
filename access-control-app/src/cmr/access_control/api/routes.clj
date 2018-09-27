@@ -13,6 +13,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
@@ -132,7 +133,7 @@
   (acl-schema/validate-acl-json body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
-       (acl-service/update-acl ctx concept-id)
+       (acl-service/update-acl ctx concept-id (get headers "cmr-revision-id"))
        util/map-keys->snake_case
        api-response))
 
@@ -251,6 +252,7 @@
         ;; Create a group
         (POST "/"
               {ctx :request-context params :params headers :headers body :body}
+              (lt-validation/validate-launchpad-token ctx)
               (pv/validate-create-group-route-params params)
               (create-group ctx
                             headers
@@ -269,12 +271,14 @@
           ;; Delete a group
           (DELETE "/"
                   {ctx :request-context params :params}
+                  (lt-validation/validate-launchpad-token ctx)
                   (pv/validate-group-route-params params)
                   (delete-group ctx group-id))
 
           ;; Update a group
           (PUT "/"
                {ctx :request-context params :params headers :headers body :body}
+               (lt-validation/validate-launchpad-token ctx)
                (pv/validate-group-route-params params)
                (update-group ctx headers (slurp body) group-id))
 
@@ -287,11 +291,13 @@
 
             (POST "/"
                   {ctx :request-context params :params headers :headers body :body}
+                  (lt-validation/validate-launchpad-token ctx)
                   (pv/validate-group-route-params params)
                   (add-members ctx headers (slurp body) group-id))
 
             (DELETE "/"
                     {ctx :request-context params :params headers :headers body :body}
+                    (lt-validation/validate-launchpad-token ctx)
                     (pv/validate-group-route-params params)
                     (remove-members ctx headers (slurp body) group-id)))))
 
@@ -313,6 +319,7 @@
         ;; Create an ACL
         (POST "/"
               {ctx :request-context params :params headers :headers body :body}
+              (lt-validation/validate-launchpad-token ctx)
               (pv/validate-standard-params params)
               (create-acl ctx headers (slurp body)))
 
@@ -322,11 +329,13 @@
           ;; Update an ACL
           (PUT "/"
                {ctx :request-context headers :headers body :body}
-            (update-acl ctx concept-id headers (slurp body)))
+               (lt-validation/validate-launchpad-token ctx)
+               (update-acl ctx concept-id headers (slurp body)))
 
           ;; Delete an ACL
           (DELETE "/"
                   {ctx :request-context}
+                  (lt-validation/validate-launchpad-token ctx)
                   (delete-acl ctx concept-id))
 
           ;; Retrieve an ACL

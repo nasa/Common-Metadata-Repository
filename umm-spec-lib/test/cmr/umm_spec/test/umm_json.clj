@@ -65,7 +65,7 @@
 (defn- remove-get-service-and-get-data-nils
   "Removes nil values in GetService and GetData added by json->umm to RelatedUrls,
   this is needed to prevent failures caused by json->umm parser. It will add in :GetService
-  and :GetData that shouldn't be there because it is calling the contructor for RelatedUrlType defrecord.
+  and :GetData that shouldn't be there because it is calling the constructor for RelatedUrlType defrecord.
   So we remove them because they should only be present when URLContentType = DistributionURL and
   Type = GET DATA or GET SERVICE."
   [umm]
@@ -83,12 +83,12 @@
                           (dissoc ru :GetService)
                           :else ru)))]
     (-> umm
-        (util/update-in-all [:RelatedUrls] remove-nils)
         (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls] remove-nils)
         (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls] remove-nils)
-        (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls] remove-nils)
         (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls] remove-nils)
-        (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils))))
+        (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:RelatedUrls] remove-nils))))
 
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929

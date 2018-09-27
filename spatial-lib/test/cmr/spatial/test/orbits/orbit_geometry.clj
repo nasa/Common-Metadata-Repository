@@ -18,10 +18,10 @@
 (def ^:private ascending-crossing-time #'cmr.spatial.orbits.swath-geometry/ascending-crossing-time)
 
 (def ^:private default-orbit-parameters {:inclination-angle 98.2
-                                     :period 100.0
-                                     :swath-width 2
-                                     :start-circular-latitude 50.0
-                                     :number-of-orbits 2.0})
+                                         :period 100.0
+                                         :swath-width 2
+                                         :start-circular-latitude 50.0
+                                         :number-of-orbits 2.0})
 
 (def ^:private default-calculated-spatial-domain {:orbit-number 10
                                                   :equator-crossing-longitude 88.0

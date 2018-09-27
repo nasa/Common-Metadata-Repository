@@ -1,6 +1,8 @@
 (ns cmr.umm-spec.migration.version.interface
   "Contains the interface definition for migrating between versions of UMM
-  schemas.")
+  schemas."
+  (:require
+   [cmr.common.log :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Interface for Migrating Between Versions

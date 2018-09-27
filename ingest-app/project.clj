@@ -15,6 +15,7 @@
     [commons-io "2.6"]
     [compojure "1.6.0"]
     [drift "1.5.3"]
+    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [instaparse "1.4.8"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -99,4 +100,3 @@
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
-

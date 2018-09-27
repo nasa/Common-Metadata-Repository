@@ -696,7 +696,7 @@
 (deftest dif9-missing-version-ingest
   (testing "Ingest of a DIF9 collection with missing version. This verifies that we apply the
            defaults to collections by default during ingest."
-    (let [coll-metadata (slurp (io/resource "example_data/dif/C1214305813-AU_AADC.xml"))
+    (let [coll-metadata (slurp (io/resource "example-data/dif/C1214305813-AU_AADC.xml"))
           {:keys [status]} (ingest/ingest-concept
                             (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))]
       (is (= 201 status)))))

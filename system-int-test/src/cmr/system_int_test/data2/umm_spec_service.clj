@@ -16,11 +16,10 @@
    :Type "OPeNDAP"
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
-   :RelatedURL {
-     :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-     :Description "OPeNDAP Service"
-     :Type "GET SERVICE"
-     :URLContentType "CollectionURL"}
+   :RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                  :Description "OPeNDAP Service"
+                  :Type "GET SERVICE"
+                  :URLContentType "CollectionURL"}]
    :ServiceKeywords [
       {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
        :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}]
@@ -127,7 +126,6 @@
   ([attribs]
    (umm-s/map->ContactGroupType
     (merge {:Roles ["SERVICE PROVIDER CONTACT" "TECHNICAL CONTACT"]
-            :NonServiceOrganizationAffiliation "Non-group contact info"
             :ContactInformation (contact-info)
             :GroupName "Contact Group Name"}
             attribs))))

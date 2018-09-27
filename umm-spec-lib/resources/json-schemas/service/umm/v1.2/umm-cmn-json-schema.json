@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "RelatedUrlType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "properties": {
+        "Description": {
+          "description": "Description of the web page at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "URLContentType": {
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+            "$ref": "#/definitions/RelatedURLContentTypeEnum"
+        },
+        "Type": {
+            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+            "$ref": "#/definitions/RelatedUrlTypeEnum"
+        },
+        "Subtype": {
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+            "$ref": "#/definitions/RelatedURLSubTypeEnum"
+        },
+        "URL": {
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "GetData": {
+               "description": "The data distribution information for the relevant web page (e.g., browse, media).",
+               "$ref": "#/definitions/GetDataType"
+        },
+        "GetService": {
+            "description": "The service distribution for the relevant web page (e.g., OPeNDAP, OpenSearch, WCS, WFS, WMS).",
+            "$ref": "#/definitions/GetServiceType"
+        }
+      },
+      "required": ["URL", "URLContentType", "Type"]
+    },
+    "GetDataType": {
+        "description": "Represents the information needed for a DistributionURL where data is retrieved.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "Format": {
+                "description": "The format of the data.",
+                "$ref": "#/definitions/GetDataTypeFormatEnum"
+            },
+            "Size": {
+                "description": "The size of the data.",
+               "type": "number"
+            },
+            "Unit": {
+                "description": "Unit of information, together with Size determines total size in bytes of the data.",
+                "type": "string",
+                "enum": ["KB", "MB", "GB", "TB", "PB"]
+            },
+            "Fees": {
+                "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "Checksum": {
+                "description": "The checksum, usually a SHA1 or md5 checksum for the data file.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50
+            }
+        },
+        "required": ["Format", "Size", "Unit"]
+    },
+    "GetServiceType": {
+        "description": "Represents a Service through a URL where the service will act on data and return the result to the caller.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "MimeType": {
+                "description": "The mime type of the service.",
+                "$ref": "#/definitions/URLMimeTypeEnum"
+            },
+            "Protocol": {
+                "description": "The protocol of the service.",
+                "type": "string",
+                "enum": ["HTTP", "HTTPS", "FTP", "FTPS", "Not provided"]
+            },
+            "FullName": {
+                "description": "The full name of the service.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "DataID": {
+                "description": "The data identifier of the data provided by the service. Typically, this is a file name.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "DataType": {
+                "description": "The data type of the data provided by the service.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "URI": {
+                "description": "The URI of the data provided by the service.",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                },
+                "minItems": 1
+            }
+        }
+    },
+   "ScienceKeywordType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS).",
+      "properties": {
+        "Category": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Topic": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Term": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel1": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel2": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel3": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "DetailedVariable": {
+          "$ref": "#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Category", "Topic", "Term"]
+    },
+    "UuidType": {
+      "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",
+      "type": "string",
+      "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89abAB][0-9a-f]{3}-[0-9a-f]{12}"
+    },
+    "KeywordStringType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
+    },
+    "RelatedURLContentTypeEnum": {
+      "type": "string",
+      "enum": ["CollectionURL", "PublicationURL", "DataCenterURL", "DistributionURL", "DataContactURL", "VisualizationURL"]
+    },
+    "RelatedUrlTypeEnum": {
+      "type": "string",
+      "enum": ["GET DATA", "GET SERVICE", "GET RELATED VISUALIZATION", "DATA SET LANDING PAGE", "DOI",
+               "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION",
+               "HOME PAGE"]
+    },
+    "RelatedURLSubTypeEnum": {
+      "type": "string",
+      "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
+               "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
+               "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
+               "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
+               "SSW", "SUBSETTER", "THREDDS CATALOG", "THREDDS DATA", "THREDDS DIRECTORY", "TOOL", "WEB COVERAGE SERVICE (WCS)",
+               "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
+               "GIBS", "MAP", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
+               "CASE STUDY", "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
+               "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
+               "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
+               "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
+               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
+    },
+    "URLMimeTypeEnum": {
+      "type": "string",
+      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
+               "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
+               "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
+               "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
+               "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
+    },
+    "GetDataTypeFormatEnum": {
+      "type": "string",
+      "enum": ["ascii", "binary", "GRIB", "BUFR", "HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "jpeg", "png", "tiff", "geotiff", "kml", "Not provided"]
+    }
+  }
+}

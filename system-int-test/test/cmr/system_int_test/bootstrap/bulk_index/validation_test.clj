@@ -10,6 +10,7 @@
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm.echo10.echo10-core :as echo10]))
 
 (use-fixtures :each (join-fixtures
@@ -18,11 +19,33 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
+(defn- create-read-only-token
+  "Create a token with read only permission."
+  []
+  (let [admin-read-only-group-concept-id (e/get-or-create-group (s/context) "admin-read-only-group")]
+    (e/grant-group-admin (s/context) admin-read-only-group-concept-id :read)
+    ;; Create and return token
+    (e/login (s/context) "admin-read-only" [admin-read-only-group-concept-id])))
+
+(deftest invalid-provider-bulk-index-validation-test-with-read-only-token
+  (s/only-with-real-database
+   (let [read-only-token (create-read-only-token)
+         {:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" {transmit-config/token-header read-only-token})]
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors])))))
+
 (deftest invalid-provider-bulk-index-validation-test
   (s/only-with-real-database
     (testing "Validation of a provider supplied in a bulk-index request."
       (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580")]
         (is (= [400 ["Provider: [NCD4580] does not exist in the system"]]
+               [status errors]))))))
+
+(deftest invalid-provider-bulk-index-validation-test-without-token
+  (s/only-with-real-database
+    (testing "Validation of a provider supplied in a bulk-index request."
+      (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" nil)]
+        (is (= [401 ["You do not have permission to perform that action."]]
                [status errors]))))))
 
 (deftest collection-bulk-index-validation-test
@@ -55,8 +78,11 @@
           invalid-coll-id "C12-PROV1"
           err-msg1 (format "Provider: [%s] does not exist in the system" invalid-prov-id)
           err-msg2 (format "Collection [%s] does not exist." invalid-coll-id)
+          no-permission-msg "You do not have permission to perform that action."
           {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
                                                   valid-prov-id valid-coll-id)
+          {:keys [status errors] :as no-permission-stat} (bootstrap/bulk-index-collection
+                                                           valid-prov-id valid-coll-id nil)
           ;; invalid provider and collection
           {:keys [status errors] :as fail-stat1} (bootstrap/bulk-index-collection
                                                    invalid-prov-id invalid-coll-id)
@@ -70,6 +96,7 @@
       (testing "Validation of a collection supplied in a bulk-index request."
         (are [expected actual] (= expected actual)
              [202 nil] [(:status succ-stat) (:errors succ-stat)]
+             [401 [no-permission-msg]] [(:status no-permission-stat) (:errors no-permission-stat)]
              [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]
              [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
              [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))

@@ -52,13 +52,19 @@
            :short-name short-name
            :version-id version-id}}))
 
+(defn- legacy-meta-for-comparison
+  "Returns the meta part of LEGACY UMM JSON for comparision for the given meta"
+  [meta]
+  (util/remove-nil-keys
+   (dissoc meta :granule-count :revision-date)))
+
 (defn assert-legacy-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
   [collections search-result]
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (is (= (set (map collection->legacy-umm-json collections))
-           (set (map #(util/dissoc-in % [:meta :revision-date])
+           (set (map #(update % :meta legacy-meta-for-comparison) 
                      (get-in search-result [:results :items])))))))
 
 (defn- collection->umm-json
@@ -80,6 +86,7 @@
   [meta]
   (util/remove-nil-keys
    (-> meta
+       (dissoc :granule-count)
        (dissoc :revision-date)
        (update :associations (fn [assocs]
                                (when (seq assocs)

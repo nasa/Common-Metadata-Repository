@@ -1,20 +1,20 @@
 (ns cmr.umm.validation.granule
   "Defines validations for UMM granules"
-  (:require [clj-time.core :as t]
-            [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.validations.core :as v]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm.validation.product-specific-attribute :as psa]))
-
+  (:require
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.validations.core :as v]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.spatial.validation :as sv]
+   [cmr.umm.validation.validation-utils :as vu]
+   [cmr.umm.validation.validation-helper :as h]
+   [cmr.common.services.errors :as errors]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.validation.product-specific-attribute :as psa]))
 
 (defn- spatial-field-not-allowed
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field exists"
@@ -76,7 +76,8 @@
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;; polygons etc do not know whether they are geodetic or not.
      set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)})])
+     {:geometries (v/every sv/spatial-validation)
+      :orbit (v/when-present sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -235,5 +236,3 @@
     :related-urls h/online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])
-
-

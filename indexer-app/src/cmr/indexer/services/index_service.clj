@@ -14,6 +14,7 @@
    [cmr.common.date-time-parser :as date]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.messages :as cmsg]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -34,6 +35,7 @@
    [cmr.transmit.index-set :as tis]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
+   [cmr.transmit.search :as search]
    [cmr.umm.umm-core :as umm]))
 
 (defconfig use-doc-values-fields
@@ -84,10 +86,13 @@
                      (let [tag-associations (meta-db/get-associations-for-collection
                                              context concept :tag-association)
                            variable-associations (meta-db/get-associations-for-collection
-                                                  context concept :variable-association)]
+                                                  context concept :variable-association)
+                           service-associations (meta-db/get-associations-for-collection
+                                                  context concept :service-association)]
                        (-> concept
                            (assoc :tag-associations tag-associations)
-                           (assoc :variable-associations variable-associations))))
+                           (assoc :variable-associations variable-associations)
+                           (assoc :service-associations service-associations))))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
 
@@ -384,7 +389,9 @@
              concept-id
              revision-id
              elastic-version
-             elastic-options)))))))
+             elastic-options)
+            (info (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
+                          concept-id revision-id all-revisions-index?))))))))
 
 (defn- index-associated-collection
   "Index the associated collection concept of the given concept. This is used by indexing
@@ -471,6 +478,19 @@
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
+(defn get-concept-delete-log-string
+  "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
+  [concept-type context concept-id revision-id all-revisions-index?]
+  (let [log-string (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
+                           concept-id
+                           revision-id
+                           all-revisions-index?)]
+    (if (= concept-type :collection)
+      (format "%s. Removing %d granules."
+              log-string
+              (search/find-granule-hits context {:collection-concept-id concept-id}))
+      log-string)))
+
 (defmulti delete-concept
   "Delete the concept with the given id"
   (fn [context concept-id revision-id options]
@@ -485,8 +505,7 @@
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
+      (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names
                          context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)

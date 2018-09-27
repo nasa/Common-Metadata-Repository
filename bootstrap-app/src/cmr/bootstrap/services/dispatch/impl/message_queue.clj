@@ -1,5 +1,6 @@
 (ns cmr.bootstrap.services.dispatch.impl.message-queue
-  "Functions implementing the dispatch protocol to support synchronous calls."
+  "Functions implementing the dispatch protocol to support bootstrap operations using a message
+  queue."
   (:require
    [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index]

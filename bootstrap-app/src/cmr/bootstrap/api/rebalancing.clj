@@ -8,8 +8,9 @@
 (defn start-collection
   "Kicks off rebalancing the granules in the collection into their own index."
   [context concept-id params]
-  (let [dispatcher (api-util/get-dispatcher context params :index-collection)]
-    (service/start-rebalance-collection context dispatcher concept-id)
+  (let [dispatcher (api-util/get-dispatcher context params :index-collection)
+        target (get params :target "separate-index")]
+    (service/start-rebalance-collection context dispatcher concept-id target)
     {:status 200
      :body {:message (msg/rebalancing-started concept-id)}}))
 

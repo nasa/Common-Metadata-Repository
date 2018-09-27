@@ -46,7 +46,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/echo10+xml   | ECHO 10           | collection, granule |
 | application/iso19115+xml | ISO 19115 (MENDS) | collection          |
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
-| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection          |
+| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule |
 
 Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
 
@@ -78,7 +78,7 @@ If this header is set to true then ingest will validate that collection keywords
 * Instruments - short name and long name
 * Projects - short name and long name
 * Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
-* Location Keywords - category, type, subregion 1, subregion 2, subregion 3. 
+* Location Keywords - category, type, subregion 1, subregion 2, subregion 3.
 * Data Centers - short name
 * Directory Names - short name
 * ISO Topic Categories - iso topic category
@@ -640,13 +640,13 @@ The following update types are supported:
   * Clear all and replace - clear the list and replace with the update value.
   * Find and replace - replace any instance in the list that matches the find value with the update value.
   * Find and update - merge update value into any instance in the list that matches the find value.
-  * Find and update home page url - A special case for Find and update. 
+  * Find and update home page url - A special case for Find and update.
   * Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
 
   * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
-  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider. 
+  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
   * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  

@@ -4,9 +4,11 @@
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
+   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -31,7 +33,11 @@
      (let [svc1 (service/ingest-service-with-attrs {:provider-id "PROV1"} {} 1)
            ;; create a service on a different provider PROV2
            ;; and this service won't be indexed as a result of indexing services of PROV1
-           svc2 (service/ingest-service-with-attrs {:provider-id "PROV2"} {} 1)]
+           svc2 (service/ingest-service-with-attrs {:provider-id "PROV2"} {} 1)
+           {:keys [status errors]} (bootstrap/bulk-index-services "PROV1" nil)]
+
+       (is (= [401 ["You do not have permission to perform that action."]]
+              [status errors]))
        (is (= 0 (:hits (search/find-refs :service {}))))
        (bootstrap/bulk-index-services "PROV1")
        (index/wait-until-indexed)
@@ -158,3 +164,31 @@
 
        ;; Re-enable message publishing.
        (core/reenable-automatic-indexing)))))
+
+(deftest bulk-index-collections-with-service-association-test
+  (s/only-with-real-database
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+         coll1-concept-id (:concept-id coll1)
+         token (e/login (s/context) "user1")
+         {serv1-concept-id :concept-id} (service/ingest-service-with-attrs
+                                         {:native-id "serv1"
+                                          :Name "service1"})
+         {serv2-concept-id :concept-id} (service/ingest-service-with-attrs
+                                         {:native-id "serv2"
+                                          :Name "service2"})]
+     ;; index the collection and services so that they can be found during service association
+     (index/wait-until-indexed)
+     
+     (core/disable-automatic-indexing)
+     (au/associate-by-concept-ids token serv1-concept-id [{:concept-id coll1-concept-id}])
+     ;; service 2 is used to test service association tombstone is indexed correctly
+     (au/associate-by-concept-ids token serv2-concept-id [{:concept-id coll1-concept-id}])
+     (au/dissociate-by-concept-ids token serv2-concept-id [{:concept-id coll1-concept-id}])
+     (core/reenable-automatic-indexing)
+
+     ;; bulk index the collection
+     (bootstrap/bulk-index-provider "PROV1")
+     (index/wait-until-indexed)
+
+     ;; verify collection is associated with service1, not service2
+     (service/assert-collection-search-result coll1 {:has-formats false} [serv1-concept-id]))))

@@ -11,9 +11,11 @@
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
    [cmr.umm-spec.util :as umm-spec-util]
@@ -57,6 +59,12 @@
 (def DEFAULT_CONTACT_NAME
   "undefined")
 
+(defmethod gcrf/query-results->concept-ids :opendata
+  [results]
+  (svc-errors/throw-service-error
+    :bad-request
+    "Collections search in opendata format is not supported with include_granule_counts option"))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
   (let [opendata-fields ["entry-title"
@@ -68,6 +76,7 @@
                          "short-name"
                          "project-sn"
                          "related-urls"
+                         "publication-references"
                          "start-date"
                          "end-date"
                          "ords-info"
@@ -112,6 +121,7 @@
           science-keywords-flat :science-keywords-flat
           [opendata-format] :opendata-format
           related-urls :related-urls
+          publication-references :publication-references
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
@@ -131,6 +141,7 @@
             :insert-time insert-time
             :concept-type :collection
             :related-urls related-urls
+            :publication-references publication-references
             :project-sn project-sn
             :shapes (srl/ords-info->shapes ords-info ords)
             :personnel personnel
@@ -164,19 +175,13 @@
   [spatial]
   (opendata-spatial/shapes->json spatial))
 
-(defn distribution
-  "Creates the distribution field for the collection with the given related-urls.  If a URL is
-  downloadable the URL will be marked as a :downloadURL otherwise it will be an :accessURL."
-  [related-urls]
-  (not-empty (map (fn [url]
-                    (let [mime-type (or (:mime-type url)
-                                        "application/octet-stream")
-                          url-type (if (ru/downloadable-url? url)
-                                     :downloadURL
-                                     :accessURL)]
-                      {url-type (:url url)
-                       :mediaType mime-type}))
-                  related-urls)))
+(defn related-url->distribution
+  "Returns a distribution open data field for the provided related URL.
+  See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
+  [related-url]
+  (let [{:keys [description url]} related-url]
+    (util/remove-nil-keys {:accessURL (ru/related-url->encoded-url url)
+                           :description description})))
 
 (defn landing-page
   "Creates the landingPage field for the collection with the given related-urls.
@@ -185,11 +190,11 @@
   (if (empty? related-urls)
     umm-spec-util/not-provided-url
     (some (fn [related-url]
-           (let [{:keys [url type]} related-url]
-            (when (or (= "PROJECT HOME PAGE" type) ; UMM-C terminology
-                      (= "VIEW PROJECT HOME PAGE" type)) ; ECHO-10 terminology
-               url)))
-         related-urls)))
+            (let [{:keys [url type]} related-url]
+              (when (or (= "PROJECT HOME PAGE" type) ; UMM-C terminology
+                        (= "VIEW PROJECT HOME PAGE" type)) ; ECHO-10 terminology
+                url)))
+          related-urls)))
 
 (defn publisher
   "Creates the publisher field for the collection based on the archive-center.  Note for the
@@ -217,26 +222,27 @@
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
-                related-urls personnel shapes archive-center]} item]
+                related-urls publication-references personnel shapes archive-center]} item]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
-                            :description (not-empty summary)
-                            :keyword (keywords science-keywords-flat)
-                            :modified (or update-time (generate-end-date end-date))
-                            :publisher (publisher provider-id archive-center)
-                            :contactPoint (contact-point personnel)
-                            :identifier id
-                            :accessLevel ACCESS_LEVEL
-                            :bureauCode [BUREAU_CODE]
-                            :programCode [PROGRAM_CODE]
-                            :spatial (spatial shapes) ;; required if applicable
-                            :temporal (temporal start-date end-date) ;; required if applicable
-                            :theme (theme project-sn) ;; not required
-                            :distribution (distribution related-urls)
-                            :landingPage (landing-page related-urls)
-                            :language  [LANGUAGE_CODE]
-                            :references (not-empty (distinct (map :url related-urls)))
-                            :issued (not-empty insert-time)})))
+                           :description (not-empty summary)
+                           :keyword (keywords science-keywords-flat)
+                           :modified (or update-time (generate-end-date end-date))
+                           :publisher (publisher provider-id archive-center)
+                           :contactPoint (contact-point personnel)
+                           :identifier id
+                           :accessLevel ACCESS_LEVEL
+                           :bureauCode [BUREAU_CODE]
+                           :programCode [PROGRAM_CODE]
+                           :spatial (spatial shapes) ;; required if applicable
+                           :temporal (temporal start-date end-date) ;; required if applicable
+                           :theme (theme project-sn) ;; not required
+                           :distribution (not-empty (map related-url->distribution related-urls))
+                           :landingPage (landing-page related-urls)
+                           :language  [LANGUAGE_CODE]
+                           :references (not-empty
+                                        (map ru/related-url->encoded-url publication-references))
+                           :issued (not-empty insert-time)})))
 
 (defn- results->opendata
   "Convert search results to opendata."

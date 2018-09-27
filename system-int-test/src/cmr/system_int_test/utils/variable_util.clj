@@ -23,7 +23,7 @@
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
-  (mt/with-version content-type versioning/current-service-version))
+  (mt/with-version content-type versioning/current-variable-version))
 
 (def utf-versioned-content-type
   "A default versioned content type with the charset set to UTF-8."

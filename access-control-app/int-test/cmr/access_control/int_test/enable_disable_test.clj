@@ -23,7 +23,7 @@
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "admins"
+   :group_permissions [{:group_id "AG001-CMR"
                         :permissions ["read" "update"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})

@@ -5,7 +5,7 @@ Visit the CMR at [https://earthdata.nasa.gov/about/science-system-description/eo
 ## About
 
 The Common Metadata Repository (CMR) is an earth science metadata repository
-for [NASA](http://nasa.gov) [EOSDIS](https://earthdata.nasa.gov) data. The CMR
+for [NASA](https://www.nasa.gov/) [EOSDIS](https://earthdata.nasa.gov) data. The CMR
 Search API provides access to this metadata.
 
 ## Client-facing Components
@@ -38,11 +38,14 @@ Search API provides access to this metadata.
 
 ## Prerequisites
 
-- Java 1.8.0 or higher
-- Leiningen (http://leiningen.org) 2.5.1 or above.
+- Java 1.8.0 (a.k.a. JAVA8) only; higher versions are not currently supported.
+- Leiningen (https://leiningen.org) 2.5.1 or above.
   - We've had success with Homebrew and with the install script on the
     Leiningen website.
 - Ruby (used to support two legacy apps)
+- Maven (https://maven.apache.org/install.html)
+    - Mac OS X devs can use `brew install maven` 
+    - Linux devs can use `sudo apt-get install maven`
 
 ## Obtaining the Code
 
@@ -98,7 +101,7 @@ Here are the steps to do so:
    following instructions in `./oracle-lib/README.md`. (The CMR must have these
    libraries to build but it does not depend on Oracle DB when running
    locally. It uses a local in-memory database by default.)
-1. With the JAR files downloadded to the proper location, you're now ready
+1. With the JAR files downloaded to the proper location, you're now ready
    to install them for use by the CMR:" `cmr install oracle-libs`
 
 #### Building and Running CMR Dev System in a REPL
@@ -137,7 +140,7 @@ once.
 2. `cmr run uberjar APP`
 
 Where `APP` is any supported CMR app. You can touble-tap the `TAB` key on
-your keyboard to get the `cmr` tool to show you the list of availble apps
+your keyboard to get the `cmr` tool to show you the list of available apps
 after entering `uberjar` in each step above.
 
 ## Checking Dependencies, Static Analysis, and Tests
@@ -266,7 +269,7 @@ small purposed-based services that do a small set of things well.
 
 ### The Microservices
 
-Each microservice has a README file in its root directory, which provides a
+Each microservice has a `README` file in its root directory, which provides a
 short overview of the service's functionality. There are a number of main
 applications, as well as several libraries and support applications.
 
@@ -281,7 +284,7 @@ applications, as well as several libraries and support applications.
 - bootstrap-app
   - Contains APIs for performing various bulk actions in the CMR
   - Main method: cmr.bootstrap.runner
-  - See /bootstrap-app/README.md for a list of lein and uberjar commands
+  - See `/bootstrap-app/README.md` for a list of lein and uberjar commands
 
 - cubby-app
   - Centralized caching for the CMR. Ideally each application will cache

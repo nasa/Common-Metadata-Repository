@@ -123,7 +123,7 @@
     (assert-rebalancing-collections []))
   (testing "Add collection that is already an index"
     (is (= {:status 400
-            :errors ["The collection [C4-PROV3] already has a separate granule index"]}
+            :errors ["The collection [C4-PROV3] already has a separate granule index."]}
            (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C4-PROV3")
                         [:status :errors])))
     (assert-rebalancing-collections []))
@@ -187,7 +187,3 @@
   (testing "reset index-set app"
     (let [{:keys [status]} (util/reset)]
       (is (= 204 status)))))
-
-
-
-

@@ -151,7 +151,10 @@
             :entry-title EntryTitle
             :entry-title.lowercase (s/lower-case EntryTitle)
             :entry-title.lowercase-doc-values (s/lower-case EntryTitle)
-            :metadata-format (name (mt/base-mime-type-to-format format))
+            :metadata-format (-> format
+                                 mt/base-mime-type-of
+                                 mt/base-mime-type-to-format
+                                 name)
             :update-time update-time
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
@@ -204,7 +207,7 @@
             :revision-date-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
-            :created-at created-at
+            :created-at (or created-at revision-date)
             :start-date (index-util/date->elastic start-date)
             :start-date-doc-values (index-util/date->elastic start-date)
             :end-date (index-util/date->elastic end-date)

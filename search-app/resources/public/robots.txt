@@ -20,3 +20,7 @@ Disallow: /access-control/groups/
 Disallow: /access-control/acls/
 Disallow: /access-control/permissions/
 Disallow: /access-control/health
+
+Allow: /opendap/robots.txt
+Allow: /opendap/site
+Disallow: /opendap/

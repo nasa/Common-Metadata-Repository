@@ -300,7 +300,8 @@ module Orbits
       # the swath width is measured perpendicular to the orbit, but the
       # Java code makes this assumption.  This case should almost never
       # happen.  When it does, the numbers are likely close enough.
-      if coord.phi == 0
+
+      if coord.phi.abs <= EPSILON
         return [Coordinate.phi_theta(0, coord.theta - swath_width_rad / 2),
                 Coordinate.phi_theta(0, coord.theta + swath_width_rad / 2)]
       end

@@ -98,12 +98,23 @@
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))
 
+(def sample-granule-xml-orbit
+  (slurp (io/file (io/resource "data/iso_smap/CMR-5129.xml"))))
+
+(def multiple-extents-granule-xml
+  (slurp (io/file (io/resource "data/iso_smap/granule_with_multiple_extents.xml"))))
+
 (def expected-temporal
   (umm-g/map->GranuleTemporal
     {:range-date-time
      (umm-c/map->RangeDateTime
        {:beginning-date-time (p/parse-datetime "2015-05-30T16:01:00.000Z")
         :ending-date-time (p/parse-datetime "2015-05-30T16:01:06.003Z")})}))
+
+(def expected-orbit
+  (umm-g/map->SpatialCoverage
+   {:orbit
+    (umm-g/->Orbit -140.0 1.0 :desc 0.0 :asc)}))
 
 (def expected-granule
   (umm-g/map->UmmGranule
@@ -143,8 +154,12 @@
     (is (= expected-granule (g/parse-granule sample-granule-xml))))
   (testing "parse temporal"
     (is (= expected-temporal (g/parse-temporal sample-granule-xml))))
+  (testing "parse multiple extents, temporal"
+    (is (= expected-temporal (g/parse-temporal multiple-extents-granule-xml))))
   (testing "parse access value"
-    (is (= 32.0 (g/parse-access-value sample-granule-xml)))))
+    (is (= 32.0 (g/parse-access-value sample-granule-xml))))
+  (testing "parse orbit"
+    (is (= expected-orbit (g/parse-spatial sample-granule-xml-orbit)))))
 
 (deftest validate-xml
   (testing "valid xml"
@@ -160,4 +175,3 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (g/validate-xml (s/replace sample-granule-xml "fileIdentifier" "XXXX"))))))
-

@@ -2,6 +2,8 @@
   "Contains helper functions for working with the echo mock"
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.mock-echo-client :as echo-client]
@@ -73,6 +75,21 @@
   "Logs out the specified token."
   [context token]
   (tokens/logout context token))
+
+(def LAUNCHPAD_TOKEN_PADDING
+  "Padding to make a regular token into launchpad token
+   (i.e. make it longer than max length of URS token)."
+  (string/join (repeat lt-validation/URS_TOKEN_MAX_LENGTH "Z")))
+
+(defn login-with-launchpad-token
+  "Logs in as the specified user and returns the launchpad token.
+   This is a wrapper around the login function and just pad the returned URS token to
+   the length of a launchpad token."
+  ([context user]
+   (login-with-launchpad-token context user nil))
+  ([context user group-concept-ids]
+   (let [token (login context user group-concept-ids)]
+     (str token LAUNCHPAD_TOKEN_PADDING))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related
@@ -254,10 +271,9 @@
   "Gets the system administrator group"
   [context]
   (->> (ac/search-for-groups context {:legacy_guid (config/administrators-group-legacy-guid) :token (config/echo-system-token)})
-      :items
-      (map #(assoc (:acl %) :revision_id (:revision_id %) :concept_id (:concept_id %)))
-      (first)))
-
+       :items
+       (map #(assoc (:acl %) :revision_id (:revision_id %) :concept_id (:concept_id %)))
+       (first)))
 
 (def guest-read-ace
   "A CMR style access control entry granting guests read access."

@@ -5,9 +5,12 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.atom :as atom]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
@@ -224,3 +227,77 @@
     (is (= 200 status))
     (is (= (set (map :concept-id expected-colls))
            (set colls)))))
+
+(defn- assert-collection-atom-result
+  "Verify the collection ATOM response has-formats, has-variables, has transforms fields
+  have the correct values"
+  [coll expected-fields]
+  (let [coll-with-extra-fields (merge coll expected-fields)
+        {:keys [entry-title]} coll
+        coll-atom (atom/collections->expected-atom
+                   [coll-with-extra-fields]
+                   (format "collections.atom?entry_title=%s" entry-title))
+        {:keys [status results]} (search/find-concepts-atom
+                                  :collection {:entry-title entry-title})]
+
+    (is (= [200 coll-atom]
+           [status results]))))
+
+(defn- assert-collection-json-result
+  "Verify the collection JSON response associations related fields have the correct values"
+  [coll expected-fields serv-concept-ids var-concept-ids]
+  (let [coll-with-extra-fields (merge coll
+                                      expected-fields
+                                      {:services serv-concept-ids
+                                       :variables var-concept-ids})
+        {:keys [entry-title]} coll
+        coll-json (atom/collections->expected-atom
+                   [coll-with-extra-fields]
+                   (format "collections.json?entry_title=%s" entry-title))
+        {:keys [status results]} (search/find-concepts-json
+                                  :collection {:entry-title entry-title})]
+
+    (is (= [200 coll-json]
+           [status results]))))
+
+(defn- assert-collection-atom-json-result
+  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
+  has-spatial-subsetting and associations fields"
+  [coll expected-fields serv-concept-ids var-concept-ids]
+  (let [expected-fields (merge {:has-formats false
+                                :has-variables false
+                                :has-transforms false
+                                :has-spatial-subsetting false}
+                               {:has-variables (some? (seq var-concept-ids))}
+                               expected-fields)]
+    (assert-collection-atom-result coll expected-fields)
+    (assert-collection-json-result coll expected-fields serv-concept-ids var-concept-ids)))
+
+(defn- assert-collection-umm-json-result
+  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
+  has-spatial-subsetting and associations fields"
+  [coll expected-fields serv-concept-ids var-concept-ids]
+  (let [expected-fields (merge {:has-formats false
+                                :has-variables false
+                                :has-transforms false
+                                :has-spatial-subsetting false}
+                               {:has-variables (some? (seq var-concept-ids))}
+                               expected-fields)
+        coll-with-extra-fields (merge coll
+                                      expected-fields
+                                      {:services serv-concept-ids
+                                       :variables var-concept-ids})
+        options {:accept (mt/with-version mt/umm-json-results versioning/current-collection-version)}
+        {:keys [entry-title]} coll
+        response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
+    (du/assert-umm-jsons-match
+     versioning/current-collection-version [coll-with-extra-fields] response)))
+
+(defn assert-collection-search-result
+  "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
+  has-transforms, has-spatial-subsetting and associations fields"
+  ([coll expected-fields serv-concept-ids]
+   (assert-collection-search-result coll expected-fields serv-concept-ids nil))
+  ([coll expected-fields serv-concept-ids var-concept-ids]
+   (assert-collection-atom-json-result coll expected-fields serv-concept-ids var-concept-ids)
+   (assert-collection-umm-json-result coll expected-fields serv-concept-ids var-concept-ids)))

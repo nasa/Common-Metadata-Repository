@@ -1,47 +1,49 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
   (:require
-    [cheshire.core :as json]
-    [clj-time.core :as t]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common-app.config :as common-config]
-    [cmr.common-app.services.kms-fetcher :as kf]
-    [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.time-keeper :as tk]
-    [cmr.common.util :as util]
-    [cmr.elastic-utils.index-util :as index-util]
-    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-    [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
-    [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
-    [cmr.indexer.data.concepts.collection.data-center :as data-center]
-    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
-    [cmr.indexer.data.concepts.collection.instrument :as instrument]
-    [cmr.indexer.data.concepts.collection.keyword :as k]
-    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
-    [cmr.indexer.data.concepts.collection.opendata :as opendata]
-    [cmr.indexer.data.concepts.collection.platform :as platform]
-    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
-    [cmr.indexer.data.concepts.service :as service]
-    [cmr.indexer.data.concepts.spatial :as spatial]
-    [cmr.indexer.data.concepts.tag :as tag]
-    [cmr.indexer.data.concepts.variable :as variable]
-    [cmr.indexer.data.elasticsearch :as es]
-    [cmr.umm-spec.acl-matchers :as umm-matchers]
-    [cmr.umm-spec.date-util :as date-util]
-    [cmr.umm-spec.location-keywords :as lk]
-    [cmr.umm-spec.models.umm-collection-models :as umm-collection]
-    [cmr.umm-spec.related-url :as ru]
-    [cmr.umm-spec.time :as spec-time]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm-spec.util :as su]
-    [cmr.umm.collection.entry-id :as eid]
-    [cmr.umm.umm-collection :as umm-c]))
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.index-util :as index-util]
+   [cmr.indexer.config :as indexer-config]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.indexer.data.concepts.attribute :as attrib]
+   [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
+   [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
+   [cmr.indexer.data.concepts.collection.data-center :as data-center]
+   [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
+   [cmr.indexer.data.concepts.collection.instrument :as instrument]
+   [cmr.indexer.data.concepts.collection.keyword :as k]
+   [cmr.indexer.data.concepts.collection.location-keyword :as clk]
+   [cmr.indexer.data.concepts.collection.opendata :as opendata]
+   [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
+   [cmr.indexer.data.concepts.service :as service]
+   [cmr.indexer.data.concepts.spatial :as spatial]
+   [cmr.indexer.data.concepts.tag :as tag]
+   [cmr.indexer.data.concepts.variable :as variable]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.umm-spec.acl-matchers :as umm-matchers]
+   [cmr.umm-spec.date-util :as date-util]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-collection]
+   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm-spec.time :as spec-time]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.util :as su]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.umm-collection :as umm-c]))
 
 (defn spatial->elastic
   [collection]
@@ -57,6 +59,20 @@
   "Applies function f to all the values in map m."
   [m f]
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
+
+(defn- determine-ongoing-date
+  "Determines ongoing date using collection's end-date. Ongoing is a date-time field in elastic,
+   and if a collection is determined as ongoing, it uses January 1 3000 for sorting purposes.
+   If its not an ongoing collection, end-date is used.  This is to keep the end-date
+   sorting for collections that are not ongoing."
+  [end-date]
+  (if end-date
+    (if (t/after?
+         end-date
+         (t/minus (tk/now) (t/days (indexer-config/ongoing-days))))
+      (index-util/date->elastic (t/date-time 3000 1 1 0 0 0 0))
+      (index-util/date->elastic end-date))
+    (index-util/date->elastic (t/date-time 3000 1 1 0 0 0 0))))
 
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
@@ -74,7 +90,8 @@
         coll-start (index-util/date->elastic start-date)
         coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
-            :end-date coll-end}
+            :end-date coll-end
+            :ongoing (determine-ongoing-date end-date)}
            (or (when granule-start-date
                  {:granule-start-date (index-util/date->elastic granule-start-date)
                   :granule-end-date (index-util/date->elastic granule-end-date)})
@@ -123,11 +140,11 @@
        ;; Find only acls that are applicable to this collection
        (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
-       (mapcat :aces)
+       (mapcat :group-permissions)
        ;; Find permissions that grant read
-       (filter #(some (partial = :read) (:permissions %)))
+       (filter #(some (partial = "read") (:permissions %)))
        ;; Get the group guids or user type of those permissions
-       (map #(or (:group-guid %) (some-> % :user-type name)))
+       (map #(or (:group-id %) (some-> % :user-type name)))
        distinct))
 
 (defn- associations->gzip-base64-str
@@ -147,11 +164,12 @@
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields
                 tag-associations variable-associations service-associations]} concept
-        collection (remove-index-irrelevant-defaults collection)
+        collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents} collection
+         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents
+         publication-references :PublicationReferences} collection
         parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
@@ -161,10 +179,12 @@
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
-                               (concat [collection-data-type] k/nrt-aliases)
+                               (concat [collection-data-type] keyword-util/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
+        opendata-references (keep opendata/publication-reference->opendata-reference
+                                  publication-references)
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
@@ -333,6 +353,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
+            :publication-references opendata-references
             :update-time update-time
             :insert-time insert-time
             :created-at created-at
@@ -389,6 +410,7 @@
                 native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
+        tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
         tombstone-permitted-group-ids (get-coll-permitted-group-ids context
                                                                     provider-id tombstone-umm)]
     {:concept-id concept-id

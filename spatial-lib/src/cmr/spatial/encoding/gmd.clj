@@ -6,10 +6,15 @@
   information in ISO XML documents.
 
   see: http://www.isotc211.org/schemas/2005/gmd/"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.spatial.encoding.gml :as gml]
-            [cmr.spatial.mbr :as mbr]))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.validations.core :as v]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.encoding.gml :as gml]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.validation :as sv]))
 
 (declare decode-geo-content)
 
@@ -29,10 +34,6 @@
 (defmulti decode-geo-content
   "Decode the content of a gmd:geographicElement"
   :tag)
-
-(defmethod decode-geo-content :default
-  [_]
-  nil)
 
 (defmethod encode cmr.spatial.mbr.Mbr
   [geometry]

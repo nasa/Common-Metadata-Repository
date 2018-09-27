@@ -4,10 +4,11 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.xml.gen :refer :all] 
+   [cmr.common.xml.gen :refer :all]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
@@ -24,6 +25,7 @@
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
           user-id (api-core/get-user-id request-context headers)]
+      (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
       (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content user-id)]
@@ -78,7 +80,7 @@
    :body (xml/emit-str
           (xml/element :result {}
                        (generate-xml-provider-tasks-list result :tasks :task
-                                                         :task-id :name :created-at 
+                                                         :task-id :name :created-at
                                                          [:request-json-body])))})
 
 (defn get-provider-tasks

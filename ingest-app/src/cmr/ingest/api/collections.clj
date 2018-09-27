@@ -3,6 +3,7 @@
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
@@ -37,18 +38,23 @@
 (defn ingest-collection
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request]
+    (lt-validation/validate-launchpad-token request-context)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (let [concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
           validation-options (get-validation-options headers)
+          ;; Log the ingest attempt
+          _ (info (format "Ingesting collection %s from client %s"
+                          (api-core/concept->loggable-string concept)
+                          (:client-id request-context)))
           save-collection-result (ingest/save-collection
                                   request-context
                                   (api-core/set-user-id concept request-context headers)
                                   validation-options)]
-      (info (format "Ingesting collection %s from client %s"
-              (api-core/concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result)))
-              (:client-id request-context)))
+      ;; Log the successful ingest, with the metadata size in bytes.
+      (api-core/log-concept-with-metadata-size 
+        (assoc concept :entry-title (:entry-title save-collection-result)) request-context)
       (api-core/generate-ingest-response headers
                                          (api-core/contextualize-warnings
                                           ;; entry-title is added just for the logging above.

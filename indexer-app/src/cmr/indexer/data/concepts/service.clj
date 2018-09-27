@@ -24,7 +24,7 @@
                      :ContactGroups
                      :ContactPersons
                      :Platforms
-                     :RelatedURL
+                     :RelatedURLs
                      :ScienceKeywords
                      :ServiceKeywords
                      :ServiceOrganizations]
@@ -59,22 +59,20 @@
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))})))
 
-(defn- service-association->service-concept
-  "Returns the service concept and service association for the given service association."
-  [context service-association]
-  (let [{:keys [service-concept-id]} service-association
-        service-concept (mdb/find-latest-concept
-                         context
-                         {:concept-id service-concept-id}
-                         :service)]
-    (when-not (:deleted service-concept)
-      service-concept)))
+(defn- service-associations->service-concepts
+  "Returns the service concepts for the given service associations."
+  [context service-associations]
+  (let [service-concept-ids (map :service-concept-id service-associations)
+        service-concepts (mdb/get-latest-concepts context service-concept-ids true)]
+    (filter #(not (:deleted %)) service-concepts)))
 
 (defn- has-formats?
-  "Returns true if the given service has more than one SupportedFormats value."
+  "Returns true if the given service has more than one supported formats value."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
-        supported-formats (get-in service [:ServiceOptions :SupportedFormats])]
+        supported-formats (distinct (concat
+                                     (get-in service [:ServiceOptions :SupportedInputFormats])
+                                     (get-in service [:ServiceOptions :SupportedOutputFormats])))]
     (> (count supported-formats) 1)))
 
 (defn- has-spatial-subsetting?
@@ -88,13 +86,17 @@
 
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
-  or multiple SupportedProjections values."
+  or multiple supported projections values."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
         {service-options :ServiceOptions} service
         {subset-types :SubsetTypes
          interpolation-types :InterpolationTypes
-         supported-projections :SupportedProjections} service-options]
+         input-projections :SupportedInputProjections
+         output-projections :SupportedOutputProjections} service-options
+        supported-projections (distinct (concat
+                                         (map :ProjectionName input-projections)
+                                         (map :ProjectionName output-projections)))]
     (or (seq subset-types)
         (seq interpolation-types)
         (> (count supported-projections) 1))))
@@ -102,9 +104,7 @@
 (defn service-associations->elastic-doc
   "Converts the service association into the portion going in the collection elastic document."
   [context service-associations]
-  (let [service-concepts (remove nil?
-                                 (map #(service-association->service-concept context %)
-                                      service-associations))
+  (let [service-concepts (service-associations->service-concepts context service-associations)
         service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
         service-concept-ids (map :concept-id service-concepts)]
     {:service-names service-names

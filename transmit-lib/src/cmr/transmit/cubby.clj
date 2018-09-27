@@ -40,21 +40,24 @@
    (h/request context :cubby {:url-fn (partial key-url key-name)
                               :method :put
                               :raw? raw
-                              :http-options {:body value}})))
+                              :http-options {:body value}
+                              :use-system-token? true})))
 
 (defn delete-value
   "Dissociates the value with the given key."
   ([context key-name]
    (delete-value context key-name false))
   ([context key-name raw]
-   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :raw? raw})))
+   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :raw? raw
+                              :use-system-token? true})))
 
 (defn delete-all-values
   "Deletes all values"
   ([context]
    (delete-all-values context false))
   ([context raw]
-   (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? raw})))
+   (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? raw
+                              :use-system-token? true})))
 
 ;; Defines reset function
 (h/defresetter reset :cubby)

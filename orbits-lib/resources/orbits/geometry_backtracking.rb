@@ -96,6 +96,11 @@ module Orbits
         return [[lat_range, LongitudeCoverage.full]]
       end
 
+      # Shift north and south off start latitude a bit if there is an exact match,
+      # so that math could work.
+      north = start_lat_rad - EPSILON if north == start_lat_rad
+      south = start_lat_rad + EPSILON if south == start_lat_rad
+
       # If the northern part of the bounding rectangle is above the orbit's starting latitude
       # and the southern part is below, split into two bounding rectangles, one entirely above
       # and one entirely below and backtrack each
@@ -147,8 +152,8 @@ module Orbits
     # by fast_area_crossing_range)
     def fast_poly_crossing_range(lat_range, points, ascending, debug=false)
       # Easy case first
-      return LongitudeCoverage.full if points.any? {|p| p.phi.abs > full_coverage_phi}
-
+      return [[lat_range, LongitudeCoverage.full]] if points.any? {|p| p.phi.abs > full_coverage_phi}
+      
       # Create an array of segments, one for each pair of adjacent points in the array.
       segments = points.slice(0..-2).zip(points.slice(1..-1))
       #debug_log "Original:    #{segments.map {|s| s.join(', ')}}"

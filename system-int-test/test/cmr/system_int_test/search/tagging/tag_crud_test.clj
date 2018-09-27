@@ -1,16 +1,19 @@
 (ns cmr.system-int-test.search.tagging.tag-crud-test
   "This tests the CMR Search API's tagging capabilities"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.util :refer [are2]]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -243,3 +246,36 @@
       (is (= {:status 404
               :errors ["Tag could not be found with tag-key [tag2]"]}
              (tags/delete-tag token "tag2"))))))
+
+;; This test really only paritally tests the mock, don't have a good way to test the token
+(deftest create-tag-with-launchpad-token-test
+  (testing "Successful creation with launchpad token"
+    (let [tag-key "tag1"
+          tag (tags/make-tag {:tag-key tag-key})
+          token (e/login-with-launchpad-token (s/context) "user1")
+          {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
+      (is (= 201 status))
+      (is concept-id)
+      (is (= 1 revision-id))
+      (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id))))
+
+(deftest launchpad-token-enforcement-test
+  ;; Turn on Launchpad token enforcement
+  (side/eval-form `(common-config/set-launchpad-token-enforced! true))
+  (testing "URS token with launchpad token enforcement turned on"
+    (let [tag-key "tag1"
+          tag (tags/make-tag {:tag-key tag-key})
+          token (e/login (s/context) "user1")
+          {:keys [status errors]} (tags/create-tag token tag)]
+      (is (= 400 status))
+      (is (= ["Launchpad token is required. Token [ABC-1] is not a launchpad token."] errors))))
+  (testing "launchpad token with launchpad token enforcement turned on"
+    (let [tag-key "tag1"
+          tag (tags/make-tag {:tag-key tag-key})
+          token (e/login-with-launchpad-token (s/context) "user1")
+          {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
+      (is (= 201 status))
+      (is concept-id)
+      (is (= 1 revision-id))
+      (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id)))
+  (side/eval-form `(common-config/set-launchpad-token-enforced! false)))

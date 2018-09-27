@@ -580,9 +580,9 @@
                          msg/concept-with-concept-id-and-rev-id-does-not-exist
                          concept-id
                          revision-id)
-        ((cmsg/data-error :not-found
-                          msg/concept-does-not-exist
-                          concept-id))))))
+        (cmsg/data-error :not-found
+                         msg/concept-does-not-exist
+                         concept-id)))))
 
 (defn- update-service-associations
   "Create a new revision for the non-tombstoned service associations that is related to the
@@ -785,24 +785,35 @@
                 (swap! failed-concept-ids conj (:concept-id c))))))
         (recur)))))
 
+(defn- call-force-deletes
+  "Calls functions that do the deletion of concepts or that publish events to message queue."
+  [context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size]
+  (when concept-id-revision-id-tuples
+    (info "Deleting" (count concept-id-revision-id-tuples)
+          "old concept revisions for provider" (:provider-id provider))
+    (when (and tombstone-delete?
+               (= :granule concept-type))
+      ;; Remove any reference to granule from deleted-granule index
+      (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+        (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
+    (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+      ;; performs the cascading delete actions first
+      (force-delete-cascading-events context concept-type concept-id (long revision-id)))
+    (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples)))
+
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
   to find concept id revision id tuples to delete. Stops once the function returns an empty set."
-  [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder]
+  [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size]
   (let [db (util/context->db context)]
-    (cutil/while-let
-     [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-     (info "Deleting" (count concept-id-revision-id-tuples)
-           "old concept revisions for provider" (:provider-id provider))
-     (when (and tombstone-delete?
-                (= :granule concept-type))
-       ;; Remove any reference to granule from deleted-granule index
-       (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-         (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
-     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-       ;; performs the cascading delete actions first
-       (force-delete-cascading-events context concept-type concept-id (long revision-id)))
-     (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
+    (loop [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+      (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
+        (call-force-deletes
+          context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
+        (do
+          (call-force-deletes
+            context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
+          (recur (seq (concept-id-revision-id-tuple-finder))))))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
@@ -824,7 +835,8 @@
          concept-type
          (get num-revisions-to-keep-per-concept-type
               concept-type)
-         concept-truncation-batch-size))
+         concept-truncation-batch-size)
+      concept-truncation-batch-size)
 
     (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
@@ -834,4 +846,5 @@
          provider
          concept-type
          tombstone-cut-off-date
-         concept-truncation-batch-size))))
+         concept-truncation-batch-size)
+      concept-truncation-batch-size)))

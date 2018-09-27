@@ -64,18 +64,17 @@
                                           "revision-id" (:associated-revision-id va)}))
                                       variable-associations))))})))
 
-(defn- variable-association->variable-concept
-  "Returns the variable concept and variable association for the given variable association."
-  [context variable-association]
-  (let [{:keys [variable-concept-id]} variable-association
-        variable-concept (mdb/find-latest-concept
-                          context
-                          {:concept-id variable-concept-id}
-                          :variable)]
-    (when-not (:deleted variable-concept)
-      ;; associate variable association into variable concept, so we can use it to generate
-      ;; elastic document for nested variables field
-      (assoc variable-concept :variable-association variable-association))))
+(defn- variable-associations->variable-concepts
+  "Returns the variable concepts for the given variable associations."
+  [context variable-associations]
+  (let [variable-concept-ids (map :variable-concept-id variable-associations)
+        id->association (zipmap variable-concept-ids variable-associations)
+        add-association-fn (fn [concept]
+                             (assoc concept :variable-association (get id->association (:concept-id concept))))
+        variable-concepts (mdb/get-latest-concepts context variable-concept-ids true)]
+    (->> variable-concepts
+         (filter #(not (:deleted %)))
+         (map add-association-fn))))
 
 (defn- variable-concept->elastic-doc
   "Converts the augmented variable concept into the portion going in the collection elastic document."
@@ -92,9 +91,7 @@
 (defn variable-associations->elastic-doc
   "Converts the variable association into the portion going in the collection elastic document."
   [context variable-associations]
-  (let [variable-concepts (remove nil?
-                                  (map #(variable-association->variable-concept context %)
-                                       variable-associations))
+  (let [variable-concepts (variable-associations->variable-concepts context variable-associations)
         variable-native-ids (map :native-id variable-concepts)
         variable-concept-ids (map :concept-id variable-concepts)
         variable-fields (map :extra-fields variable-concepts)

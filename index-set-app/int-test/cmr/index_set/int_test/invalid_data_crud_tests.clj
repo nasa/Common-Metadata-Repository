@@ -72,8 +72,3 @@
     (let [{:keys [status errors]} (util/create-index-set util/index-set-w-invalid-idx-prop)]
       (is (= 400 status))
       (is (re-find #"MapperParsingException\[mapping \[collection\]\]" (first errors))))))
-
-
-
-
-

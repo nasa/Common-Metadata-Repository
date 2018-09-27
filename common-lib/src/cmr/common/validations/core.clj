@@ -145,9 +145,9 @@
     {field-path [(msg/number value)]}))
 
 (defn within-range
-  "Creates a validator within a specified range"
-  [minv maxv]
-  (fn [field-path value]
+   "Creates a validator within a specified range"
+   [minv maxv]
+   (fn [field-path value]
     (when (and value (or (neg? (compare value minv))
                          (pos? (compare value maxv))))
       {field-path [(msg/within-range minv maxv value)]})))

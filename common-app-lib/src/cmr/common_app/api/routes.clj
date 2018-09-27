@@ -54,7 +54,7 @@
   dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id"
           CORS_ORIGIN_HEADER "*"}
          (when (:hits results) {HITS_HEADER (str (:hits results))})
          (when (:took results) {TOOK_HEADER (str (:took results))})
@@ -77,7 +77,7 @@
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Client-Id, CMR-Request-Id"
+             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Client-Id, CMR-Request-Id, CMR-Scroll-Id"
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})

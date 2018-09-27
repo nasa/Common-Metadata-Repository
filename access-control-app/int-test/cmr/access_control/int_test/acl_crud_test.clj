@@ -28,7 +28,7 @@
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "admins"
+   :group_permissions [{:group_id "AG001-CMR"
                         :permissions ["read" "update"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
@@ -355,6 +355,10 @@
           "Group id doesn't exist for single-instance-identity"
           #"Group with concept-id \[AG123-CMR\] does not exist"
           (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR")
+
+          "Group id is valid CMR concept-id in group-permissions"
+          #"\[INVALID-ID\] is not a valid group concept-id."
+          (update system-acl :group_permissions conj {:group_id "INVALID-ID" :permissions ["read"]})
 
           "Single instance identity target grantable permission check"
           #"\[single-instance-identity\] ACL cannot have \[create, read] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
@@ -1038,7 +1042,6 @@
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
 
 (deftest entry-titles-concept-ids-sync
-  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 3))
   (let [token (e/login-guest (u/conn-context))
         make-catalog-item (fn [name coll-id]
                             (-> catalog-item-acl
@@ -1160,4 +1163,75 @@
              (actual->set
               (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
-  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 100)))
+
+(deftest CMR-5128-mmt-dashboard-acl-test
+  (let [token (e/login (u/conn-context) "admin")
+        user1-token (e/login (u/conn-context) "user1")
+        guest-token (e/login-guest (u/conn-context))
+        group1 (u/ingest-group user1-token {:name "group1"} ["user1"])
+        group1-concept-id (:concept_id group1)
+        dash-daac {:group_permissions [{:user_type "guest"
+                                        :permissions ["read"]}
+                                       {:group_id group1-concept-id
+                                        :permissions ["read" "create" "delete" "update"]}]
+                   :provider_identity {:provider_id "PROV1"
+                                       :target "DASHBOARD_DAAC_CURATOR"}}
+        acl1 (ac/create-acl (u/conn-context)
+                            dash-daac
+                            {:token token})
+        dash-admin {:group_permissions [{:user_type "guest"
+                                         :permissions ["read"]}
+                                        {:group_id group1-concept-id
+                                         :permissions ["read" "create" "delete" "update"]}]
+                    :system_identity {:target "DASHBOARD_ADMIN"}}
+        acl2 (ac/create-acl (u/conn-context)
+                            dash-admin
+                            {:token token})
+        dash-arch {:group_permissions [{:user_type "guest"
+                                        :permissions ["read"]}
+                                       {:group_id group1-concept-id
+                                        :permissions ["read" "create" "delete" "update"]}]
+                   :system_identity {:target "DASHBOARD_ARC_CURATOR"}}
+        acl3 (ac/create-acl (u/conn-context)
+                            dash-arch
+                            {:token token})]
+
+    (is (= dash-daac
+           (ac/get-acl (u/conn-context) (:concept_id acl1) {:token token})))
+    (is (= dash-admin
+           (ac/get-acl (u/conn-context) (:concept_id acl2) {:token token})))
+    (is (= dash-arch
+           (ac/get-acl (u/conn-context) (:concept_id acl3) {:token token})))
+
+    (is (= {"DASHBOARD_DAAC_CURATOR" ["read"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_type "guest"
+                                                   :provider "PROV1"
+                                                   :target "DASHBOARD_DAAC_CURATOR"}
+                                 {:token token}))))
+    (is (= {"DASHBOARD_ADMIN" ["read"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_type "guest"
+                                                   :system_object "DASHBOARD_ADMIN"}
+                                 {:token token}))))
+    (is (= {"DASHBOARD_ARC_CURATOR" ["read"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_type "guest"
+                                                   :system_object "DASHBOARD_ARC_CURATOR"}
+                                 {:token token}))))
+    (is (= {"DASHBOARD_DAAC_CURATOR" ["read" "create" "update" "delete"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_id "user1"
+                                                   :provider "PROV1"
+                                                   :target "DASHBOARD_DAAC_CURATOR"}
+                                 {:token token}))))
+    (is (= {"DASHBOARD_ADMIN" ["read" "create" "update" "delete"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_id "user1"
+                                                   :system_object "DASHBOARD_ADMIN"}
+                                 {:token token}))))
+    (is (= {"DASHBOARD_ARC_CURATOR" ["read" "create" "update" "delete"]}
+           (json/parse-string
+             (ac/get-permissions (u/conn-context) {:user_id "user1"
+                                                   :system_object "DASHBOARD_ARC_CURATOR"}
+                                 {:token token}))))))

@@ -1,18 +1,19 @@
 (ns cmr.umm-spec.test.validation.umm-spec-granule-validation-tests
   "This has tests for UMM validations."
-  (:require [clojure.test :refer :all]
-            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
-            [cmr.umm-spec.models.umm-collection-models :as c]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.common.services.errors :as e]
-            [cmr.common.util :as u :refer [are3]]
-            [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.umm-spec.additional-attribute :as aa]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as v]
+   [cmr.umm-spec.models.umm-collection-models :as c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.services.errors :as e]
+   [cmr.common.util :as u :refer [are3]]
+   [cmr.umm.collection.product-specific-attribute :as psa]
+   [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn assert-valid-gran
   "Asserts that the given granule is valid."
@@ -49,6 +50,10 @@
   "A UMM-C collection with a cartesian spatial representation"
   (make-collection {:SpatialExtent {:GranuleSpatialRepresentation "CARTESIAN"}}))
 
+(def collection-with-orbit
+  "A UMM-C collection with a orbital spatial representation"
+  (make-collection {:SpatialExtent {:GranuleSpatialRepresentation "ORBIT"}}))
+
 (defn make-granule
   "Creates a valid granule with the given attributes"
   [attribs]
@@ -60,16 +65,23 @@
   [geometries]
   (make-granule {:spatial-coverage (g/map->SpatialCoverage {:geometries geometries})}))
 
+(defn gran-with-orbits
+  [orbit]
+  (make-granule {:spatial-coverage (g/map->SpatialCoverage {:orbit orbit})}))
+
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
 (deftest granule-spatial-coverage
   (let [valid-point p/north-pole
         valid-mbr (m/mbr 0 0 0 0)
         invalid-point (p/point -181 0)
-        invalid-mbr (m/mbr -180 45 180 46)]
+        invalid-orbit (g/->Orbit -181 190 "C" 190 "P")
+        invalid-mbr (m/mbr -180 45 180 46)
+        valid-orbit (g/->Orbit -180.0 90 :asc 70 :desc)]
     (testing "Valid spatial areas"
       (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point]))
-      (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point valid-mbr])))
+      (assert-valid-gran collection-with-geodetic (gran-with-geometries [valid-point valid-mbr]))
+      (assert-valid-gran collection-with-orbit (gran-with-orbits valid-orbit)))
     (testing "Invalid single geometry"
       (assert-invalid-gran
         collection-with-geodetic
@@ -84,7 +96,17 @@
         (assert-multiple-invalid-gran
           collection-with-geodetic
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
-          expected-errors)))))
+          expected-errors)))
+    (testing "Invalid single orbit"
+      (assert-invalid-gran
+        collection-with-orbit
+        (gran-with-orbits invalid-orbit)
+        [:spatial-coverage :orbit]
+        ["Spatial validation error: Ascending Crossing must be within [-180.0] and [180.0] but was [-181]."
+         "Spatial validation error: Start Lat must be within [-90.0] and [90.0] but was [190]."
+         "Spatial validation error: End Lat must be within [-90.0] and [90.0] but was [190]."
+         "Spatial validation error: The orbit [:start-direction] is [C], must be either A or D."
+         "Spatial validation error: The orbit [:end-direction] is [P], must be either A or D."]))))
 
 (deftest granule-spatial-representation
   (let [collection-with-orbit (make-collection {:SpatialExtent
@@ -98,11 +120,7 @@
         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
         granule-with-orbit (make-granule {:spatial-coverage
                                           (g/map->SpatialCoverage
-                                           {:orbit (g/map->Orbit {:ascending-crossing 76.123
-                                                                  :start-lat 50.0
-                                                                  :start-direction :asc
-                                                                  :end-lat 50.0
-                                                                  :end-direction :desc})})})
+                                           {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})})
         granule-with-no-spatial (make-granule {})]
     (testing "granule spatial does not match with granule spatial representation"
       (are [collection granule expected-errors]

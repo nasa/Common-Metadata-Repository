@@ -79,6 +79,15 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/cubby-port)))
 
+(defn cubby-keys-url
+  "URL to delete or get all keys"
+  []
+  (format "http://localhost:%s/keys" (transmit-config/cubby-port)))
+
+(defn cubby-key-name-url
+  "URL to get, set, or delete specific keys"
+  [key-name]
+  (format "http://localhost:%s/keys/%s" (transmit-config/cubby-port) key-name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs

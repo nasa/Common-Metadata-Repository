@@ -10,12 +10,17 @@
   "A map of concept type to a sequence of valid UMM Schema versions, with the newest one last.
   The sequence must be updated when new schema versions are added for the concept type."
   {:collection ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.9" "1.10"]
-   :variable ["1.0" "1.1"]
-   :service ["1.0"]})
+   :granule ["1.4"]
+   :variable ["1.0" "1.1" "1.2"]
+   :service ["1.0" "1.1" "1.2"]})
 
 (def current-collection-version
   "The current version of the collection UMM schema."
   (-> versions :collection last))
+
+(def current-granule-version
+  "The current version of the granule UMM schema."
+  (-> versions :granule last))
 
 (def current-variable-version
   "The current version of the variable UMM schema."

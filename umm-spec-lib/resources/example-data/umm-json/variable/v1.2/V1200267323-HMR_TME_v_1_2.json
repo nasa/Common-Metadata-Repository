@@ -1,0 +1,60 @@
+{
+	"Name":"CH4_VMR_A_ct",
+    "Definition":"16-bit count of the number of observations used in the calculation of volume mixing ratio of methane in air.",
+    "LongName":"16-bit count of the number of observations of volume mixing ratio of methane in air ",
+    "VariableType":"ANCILLARY_VARIABLE",
+    "VariableSubType":"OTHER",
+    "Units":"none",
+    "DataType":"int16",
+	"ValidRanges":
+	  [{
+	    "Min":0,
+	    "Max":32767
+	  }],
+	"Dimensions":
+	  [{
+	    "Name":"StdPressureLev",
+	    "Size":24,
+	    "Type":"PRESSURE_DIMENSION"
+	   },
+	   {
+	    "Name":"Latitude",
+	    "Size":180,
+	    "Type":"LATITUDE_DIMENSION"
+	   },
+	   {
+	   	"Name":"Longitude",
+	   	"Size":360,
+	   	"Type":"LONGITUDE_DIMENSION"
+	  }],
+	"Scale":1,
+	"Offset":0,
+	"FillValues":
+	  [{
+	    "Value":-1,
+	    "Type":"ANCILLARY_FILLVALUE"
+	  }],
+    "Characteristics":
+      {
+        "IndexRanges":
+          {
+            "LatRange": [-90, 90],
+            "LonRange": [-180, 180]
+          }
+      },
+	"ScienceKeywords":
+	  [{
+	    "Category":"EARTH SCIENCE",
+	    "Topic":"ATMOSPHERE",
+	    "Term":"ATMOSPHERIC CHEMISTRY",
+	    "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
+	    "VariableLevel2":"METHANE"
+	  }],
+    "Sets":
+	  [{
+	    "Name":"AIRX3STD",
+	    "Type":"AIRS+AMSU Level 3 Gridded",
+	    "Size":24,
+	    "Index":2
+	  }]
+}

@@ -1,0 +1,209 @@
+{
+	"Name":"1286_2",
+	"LongName":"Vegetation classes mapped to LIDAR-derived canopy structure classes in 30-meter, Great Smoky Mountains National Park, 2011",
+	"Type":"WCS",
+	"Version":"1.0.0",
+	"Description":"Access the Vegetation classes mapped to LIDAR-derived canopy structure classes in 30-meter, Great Smoky Mountains National Park, 2011 through WCS.",
+	"AccessConstraints":"None",
+	"UseConstraints":"None",
+	"RelatedURLs":
+	  [{
+	    "Description":"WCS Service for 1286_2",
+	    "URLContentType":"DistributionURL",
+	    "Type":"GET SERVICE",
+	    "Subtype":"WEB COVERAGE SERVICE (WCS)",
+	    "URL":"https://webmap.ornl.gov/cgi-bin/mapserv?coverage=1286_2&request=DescribeCoverage&service=WCS&version=1.0.0"
+	  },
+	  {
+	    "Description":"Spatial Data Analysis Tool",
+	    "URLContentType":"DistributionURL",
+	    "Type":"GET DATA",
+	    "Subtype":"ACCESS MAP VIEWER",
+	    "URL":"https://daac.ornl.gov/VEGETATION/guides/GSMNP_Vegetation_Structure_R1.html#acqmethods"
+	  }],
+	 "ServiceKeywords":
+	   [{
+	     "ServiceCategory":"EARTH SCIENCE SERVICES",
+	     "ServiceTopic":"DATA MANAGEMENT/DATA HANDLING",
+	     "ServiceTerm":"TRANSFORMATION/CONVERSION"}],
+	     "ScienceKeywords":
+	       [{
+	         "Category":"EARTH SCIENCE",
+	         "Topic":"LAND SURFACE",
+	         "Term":"TOPOGRAPHY",
+	         "VariableLevel1":"TERRAIN ELEVATION",
+	         "VariableLevel2":"TOPOLOGICAL RELIEF MAPS"
+	       }],
+	     "Platforms":
+	       [{
+	       	  "ShortName":"AIRBORNE Lidar Survey",
+	       	  "LongName":"AIRBORNE Lidar Survey, conducted February-April 2011 by the Center for remote Sensing and Mapping Science at the University of Georgia and Photoscience, Inc.",
+	       	  "Instruments":
+	       	    [{
+	       	      "ShortName":"LIDAR",
+	       	      "LongName":"LIDAR-derived"
+	       	    }]
+	       	}],
+	       "ServiceOrganizations":
+	         [{
+	         	"Roles":
+	         	  ["SERVICE PROVIDER"],
+	         	"ShortName":"USGS/ORNL",
+	         	"LongName":"Oak Ridge National Laboratory",
+	         	"ContactInformation":
+	         	  {
+	         	  	"ContactMechanisms":
+	         	  	  [{
+	         	  	    "Type":"Email",
+	         	  	    "Value":"santhanavans@ornl.gov"
+	         	  	   }],
+	         	  	"Addresses":
+	         	  	   [{
+	         	  	     "Country":"United States",
+	         	  	     "StreetAddresses":
+	         	  	       [
+	         	  	         "Climate Change Science Institute (CCSI)",
+	         	  	         "Oak Ridge National Laboratory (ORNL)"
+	         	  	       ],
+	         	  	     "City":"Oak Ridge",
+	         	  	     "StateProvince":"TN",
+	         	  	     "PostalCode":"TN 37831"
+	         	  	   }],
+	         	       "RelatedUrls":
+	         	         [{
+	         	           "URLContentType":"DataCenterURL",
+	         	           "Type":"HOME PAGE",
+	         	           "URL":"https://daac.ornl.gov"
+	         	          }]
+	         	        },
+	         	     "ContactPersons":
+	         	       [{
+	         	         "Roles":
+	         	           ["SERVICE PROVIDER"],
+	         	           "FirstName":"Suresh",
+	         	           "LastName":"Vannan"
+	         	       }]
+	         	   }],
+	         "ServiceOptions":
+	           {
+	             "SubsetTypes":
+	               [
+	                 "Spatial"
+	               ],
+	               "InterpolationTypes":
+	               [
+	                 "Nearest Neighbor", "Bilinear Interpolation"
+	               ],
+	              "SupportedInputProjections":
+	               [
+	                 {
+	                   "ProjectionName":"NAD83 / UTM zone 17N",
+	                   "ProjectionAuthority":"26917"
+	             	 }
+	               ],
+	              "SupportedInputFormats":
+	                ["GEOTIFF"],
+	              "SupportedOutputProjections":
+	               [
+	                 {
+	                   "ProjectionName":"NAD83 / UTM zone 17N",
+	                   "ProjectionAuthority":"26917"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"Geographic",
+	                   "ProjectionAuthority":"4326"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"Mercator",
+	                   "ProjectionAuthority":"3785"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"Google Maps Global Mercator -- Spherical Mercator",
+	                   "ProjectionAuthority":"54004"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"Sinusoidal",
+	                   "ProjectionAuthority":"54008"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"World Mollweide",
+	                   "ProjectionAuthority":"54009"
+	             	 },
+	             	 	                 {
+	                   "ProjectionName":"Spherical Mercator",
+	                   "ProjectionAuthority":"900913"
+	             	 }
+
+	               ],
+	              "SupportedOutputFormats":
+	                ["BINARY", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32"]
+	            },
+	         "OperationMetadata":
+	           [{
+	           	 "OperationName":"DescribeCoverage",
+	           	 "DistributedComputingPlatform":["XML","WEBSERVICES"],
+	           	 "OperationDescription":"The DescribeCoverage operation provides service metadata including information about a specific coverage identifier, detailed service capabilities, bounding boxes (extent), authorities (projections), grid axes, labels, time extent and formats",
+	           	 "InvocationName":"ORNL DAAC WCS Server",
+	           	 "ConnectPoint":
+	           	 {
+	           	 	"ResourceName":"1286_2",
+	           	 	"ResourceLinkage": "https://webmap.ornl.gov/cgi-bin/mapserv?coverage=1286_2&request=DescribeCoverage&service=WCS&version=1.0.0",
+	           	    "ResourceDescription":"Vegetation classes mapped to LIDAR-derived canopy structure classes in 30-meter, Great Smoky Mountains National Park, 2011"
+	           	 },
+	         "CoupledResource":
+	           {
+	         "ScopedName":"1286_2",
+	         "DataResourceDOI":"https://doi.org/10.3334/ORNLDAAC/1286",
+	         "CouplingType":"TIGHT",
+	         "DataResource":
+	           {
+	           	 "DataResourceIdentifier":"GreatSmokyMountainsNationalPark",
+	           	 "DataResourceSourceType":"Map",
+	           	 "DataResourceSpatialType":"GENERAL_GRID",
+	           	 "DataResourceSpatialExtent":
+	           	   {
+	           	   	"GeneralGrid":
+	           	   	  {
+	           	   	   "CRSIdentifier":"26917",
+	           	   	   "Axis":
+	           	   	   [{
+	           	   	     "AxisLabel":"x",
+	           	   	     "GridResolution":30,
+	           	   	     "Extent":
+	           	   	       {
+	           	   	         "LowerBound":0,
+	           	   	         "UpperBound":2918,
+	           	   	         "UOMLabel":"Meters"
+	           	   	       }
+	           	   	   },
+					   {
+	           	   	     "AxisLabel":"y",
+	           	   	     "GridResolution":30,
+	           	   	     "Extent":
+	           	   	       {
+	           	   	         "LowerBound":0,
+	           	   	         "UpperBound":1340,
+	           	   	         "UOMLabel":"Meters"
+	           	   	       }
+	           	   	   }]
+	           	   	  }
+	           	   },
+	           	"SpatialResolution":30,
+	           	"SpatialResolutionUnit":"Meters",
+	           	"DataResourceTemporalType":"TIME_STAMP",
+	           	"DataResourceTemporalExtent":
+	           	   {
+	           	   	"DataResourceTimePoints":
+	           	   	 [{
+	           	   	   "TimeFormat":"%Y",
+	           	   	   "TimeValue":"2011",
+	           	   	   "Description":"Time stamp of the layer"
+	           	   	 }]
+	           	   },
+	           	"TemporalResolution":1,
+	           	"TemporalResolutionUnit":"YEAR"
+
+	           }
+	           }
+	           }]
+	    }

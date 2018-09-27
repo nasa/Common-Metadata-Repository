@@ -312,7 +312,7 @@
           ;; Temporal date range
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
-
+          :ongoing                        m/date-field-mapping
           :temporal-ranges                m/date-field-mapping
 
           ;; Temporal range of min and max granule values or the same as collection start and end date
@@ -410,6 +410,7 @@
           ;; field in the opendata format.
           :science-keywords-flat (m/stored m/string-field-mapping)
           :related-urls (m/stored m/string-field-mapping)
+          :publication-references (m/stored m/string-field-mapping)
           :contact-email (m/stored m/string-field-mapping)
           :personnel (m/stored m/string-field-mapping)
 
