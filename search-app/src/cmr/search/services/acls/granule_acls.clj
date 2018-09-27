@@ -51,7 +51,7 @@
   [context coll-ids-by-prov _ acls]
   (filter (fn [acl]
             (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
-                  acl-coll-ids(map string/trim (get-in cii [:collection-identifier :concept-ids]))]
+                  acl-coll-ids (map string/trim (get-in cii [:collection-identifier :concept-ids]))]
               (and (:granule-applicable cii)
                    ;; applies to a provider the user is searching
                    (coll-ids-by-prov provider-id)
