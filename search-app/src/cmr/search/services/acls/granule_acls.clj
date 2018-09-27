@@ -164,7 +164,8 @@
                                       q/->CollectionQueryCondition)
             temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
 
-        (gc/and-conds (remove nil? [(or concept-ids-cond colls-in-prov-cond)
+        (gc/and-conds (remove nil? [concept-ids-cond
+                                    colls-in-prov-cond
                                     access-value-cond
                                     temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
