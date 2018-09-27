@@ -1,8 +1,8 @@
-(ns cmr.opendap.ous.concepts.collection
+(ns cmr.metadata.proxy.concepts.collection
   (:require
    [clojure.string :as string]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,6 +27,7 @@
      (-> {}
          (request/add-token-header user-token)
          (request/add-accept "application/json"))
+     {}
      response/json-handler)))
 
 (defn extract-metadata

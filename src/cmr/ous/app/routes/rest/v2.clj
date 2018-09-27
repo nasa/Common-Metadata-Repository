@@ -1,14 +1,13 @@
-(ns cmr.opendap.app.routes.rest.v2
+(ns cmr.ous.app.routes.rest.v2
   "This namespace defines the Version 2 REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
-   [cmr.opendap.app.handler.auth-cache :as auth-cache-handler]
-   [cmr.opendap.app.handler.collection :as collection-handler]
-   [cmr.opendap.app.handler.concept-cache :as concept-cache-handler]
-   [cmr.opendap.app.handler.core :as core-handler]
-   [cmr.opendap.app.routes.rest.v1 :as routes-v1]
+   [cmr.ous.app.handler.auth-cache :as auth-cache-handler]
+   [cmr.ous.app.handler.collection :as collection-handler]
+   [cmr.ous.app.handler.concept-cache :as concept-cache-handler]
+   [cmr.ous.app.routes.rest.v1 :as routes-v1]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,5 +49,4 @@
   [httpd-component]
   (concat
    (routes-v1/ous-api httpd-component)
-   (admin-api httpd-component)
-   routes-v1/testing))
+   (admin-api httpd-component)))

@@ -1,9 +1,10 @@
-(ns cmr.opendap.components.config
+(ns cmr.ous.components.config
   (:require
    [cmr.authz.components.config :as authz-config]
    [cmr.exchange.common.components.config :as config]
    [cmr.http.kit.components.config :as httpd-config]
-   [cmr.opendap.config :as config-lib]
+   [cmr.metadata.proxy.components.config :as metadata-config]
+   [cmr.ous.config :as config-lib]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import
@@ -31,66 +32,40 @@
   [system]
   (:default-content-type (get-cfg system)))
 
+(defn vendor
+  [system]
+  (:vendor (get-cfg system)))
+
+(defn get-cmr-search-endpoint
+  [system]
+  (get-search-url system))
+
+(defn get-giovanni-endpoint
+  [system]
+  (config-lib/service->url (get-in (get-cfg system) [:giovanni :search])))
+
+(defn get-edsc-endpoint
+  [system]
+  (config-lib/service->url (get-in (get-cfg system) [:edsc :search])))
+
 (def authz-cache-dumpfile #'authz-config/cache-dumpfile)
 (def authz-cache-init #'authz-config/cache-init)
 (def authz-cache-lru-threshold #'authz-config/cache-lru-threshold)
 (def authz-cache-ttl-ms #'authz-config/cache-ttl-ms)
 (def authz-cache-type #'authz-config/cache-type)
 
-(defn concept-cache-dumpfile
-  [system]
-  (get-in (get-cfg system) [:concept-caching :dumpfile]))
+(def concept-cache-dumpfile #'metadata-config/concept-cache-dumpfile)
+(def concept-cache-init #'metadata-config/concept-cache-init)
+(def concept-cache-ttl-ms #'metadata-config/concept-cache-ttl-ms)
+(def cache-type #'metadata-config/cache-type)
+(def cmr-max-pagesize #'metadata-config/cmr-max-pagesize)
+(def concept-variable-version #'metadata-config/concept-variable-version)
 
-(defn concept-cache-init
-  [system]
-  (get-in (get-cfg system) [:concept-caching :init]))
-
-(defn concept-cache-ttl-ms
-  [system]
-  (* (get-in (get-cfg system) [:concept-caching :ttl :hours])
-     60 ; minutes
-     60 ; seconds
-     1000 ; milliseconds
-     ))
-
-(defn cache-type
-  [system]
-  (get-in (get-cfg system) [:auth-caching :type]))
-
-(defn cmr-max-pagesize
-  [system]
-  (get-in (get-cfg system) [:cmr :max-pagesize]))
-
-(defn concept-variable-version
-  [system]
-  (get-in (get-cfg system) [:cmr :concept :variable :version]))
-
-(defn get-service
-  [system service]
-  (let [svc-cfg (get-in (get-cfg system)
-                        (concat [:cmr] (config-lib/service-keys service)))]
-    svc-cfg))
-
-(defn cmr-base-url
-  [system]
-  (config-lib/service->base-url (get-service system :search)))
-
-(defn opendap-base-url
-  "This function returns the cmr-opendap URL with a trailing slash, but without
-  the 'opendap' appended."
-  [system]
-  (str
-    (config-lib/service->base-public-url (get-service system :opendap)) "/"))
-
-(defn opendap-url
-  "This function returns the cmr-opendap URL with a trailing slash."
-  [system]
-  (str
-    (config-lib/service->public-url (get-service system :opendap)) "/"))
-
-(defn get-service-url
-  [system service]
-  (config-lib/service->url (get-service system service)))
+(def get-service #'metadata-config/get-service)
+(def cmr-base-url #'metadata-config/cmr-base-url)
+(def opendap-base-url #'metadata-config/opendap-base-url)
+(def opendap-url #'metadata-config/opendap-url)
+(def get-service-url #'metadata-config/get-service-url)
 
 ;; The URLs returned by these functions have no trailing slash:
 (def get-access-control-url #'authz-config/get-access-control-url)
@@ -121,22 +96,6 @@
 (def log-color? config/log-color?)
 (def log-level config/log-level)
 (def log-nss config/log-nss)
-
-(defn vendor
-  [system]
-  (:vendor (get-cfg system)))
-
-(defn get-cmr-search-endpoint
-  [system]
-  (get-search-url system))
-
-(defn get-giovanni-endpoint
-  [system]
-  (config-lib/service->url (get-in (get-cfg system) [:giovanni :search])))
-
-(defn get-edsc-endpoint
-  [system]
-  (config-lib/service->url (get-in (get-cfg system) [:edsc :search])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

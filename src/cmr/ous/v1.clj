@@ -1,13 +1,13 @@
-(ns cmr.opendap.ous.v1
+(ns cmr.ous.v1
   (:require
     [cmr.exchange.common.results.core :as results]
     [cmr.exchange.common.results.errors :as errors]
-    [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.concepts.collection :as collection]
-    [cmr.opendap.ous.concepts.granule :as granule]
-    [cmr.opendap.results.errors :as ous-errors]
-    [cmr.opendap.util :as util]
+    [cmr.exchange.common.util :as util]
+    [cmr.metadata.proxy.concepts.collection :as collection]
+    [cmr.metadata.proxy.concepts.granule :as granule]
+    [cmr.ous.common :as common]
+    [cmr.ous.components.config :as config]
+    [cmr.ous.results.errors :as ous-errors]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,4 +1,4 @@
-(ns cmr.opendap.query.core
+(ns cmr.ous.query.core
   (:require
    [clojure.string :as string]
    [cmr.exchange.query.core :as query]

@@ -1,8 +1,8 @@
-(ns cmr.opendap.app.routes.rest.core
+(ns cmr.ous.app.routes.rest.core
   (:require
-   [cmr.opendap.app.routes.rest.v1 :as v1]
-   [cmr.opendap.app.routes.rest.v2 :as v2]
-   [cmr.opendap.app.routes.rest.v2-1 :as v2-1]
+   [cmr.ous.app.routes.rest.v1 :as v1]
+   [cmr.ous.app.routes.rest.v2 :as v2]
+   [cmr.ous.app.routes.rest.v2-1 :as v2-1]
    [taoensso.timbre :as log]))
 
 (defn all

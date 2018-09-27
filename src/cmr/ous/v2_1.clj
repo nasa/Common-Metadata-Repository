@@ -1,4 +1,4 @@
-(ns cmr.opendap.ous.v2-1
+(ns cmr.ous.v2-1
   "Version 2.1 was introduced in order to provide better support to EDSC users
   who would see their spatial query parameters removed if the variables in their
   results did not contain metadata for lat/lon dimensions (support for this was
@@ -12,14 +12,14 @@
     [cmr.exchange.common.results.core :as results]
     [cmr.exchange.common.results.errors :as errors]
     [cmr.exchange.common.results.warnings :as warnings]
-    [cmr.opendap.components.config :as config]
-    [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.concepts.collection :as collection]
-    [cmr.opendap.ous.concepts.granule :as granule]
-    [cmr.opendap.ous.concepts.service :as service]
-    [cmr.opendap.ous.concepts.variable :as variable]
-    [cmr.opendap.results.errors :as ous-errors]
-    [cmr.opendap.util :as util]
+    [cmr.exchange.common.util :as util]
+    [cmr.metadata.proxy.concepts.collection :as collection]
+    [cmr.metadata.proxy.concepts.granule :as granule]
+    [cmr.metadata.proxy.concepts.service :as service]
+    [cmr.metadata.proxy.concepts.variable :as variable]
+    [cmr.ous.common :as common]
+    [cmr.ous.components.config :as config]
+    [cmr.ous.results.errors :as ous-errors]
     [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

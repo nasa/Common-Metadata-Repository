@@ -1,4 +1,4 @@
-(ns cmr.ous.dev
+(ns cmr.ous.repl
   "CMR OUS development namespace."
   (:require
    [cheshire.core :as json]
@@ -15,15 +15,15 @@
    [cmr.exchange.common.util :as common-util]
    [cmr.exchange.query.impl.cmr :as cmr]
    [cmr.exchange.query.impl.wcs :as wcs]
+   [cmr.metadata.proxy.concepts.variable :as variable]
    [cmr.ous.components.caching :as concept-caching]
    [cmr.ous.components.config :as config]
    [cmr.ous.components.core]
    [cmr.ous.config :as config-lib]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.ous.concepts.variable :as variable]
-   ; [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.results.errors :as errors]
+   ; [cmr.ous.geog :as geog]
+   [cmr.ous.http.request :as request]
+   [cmr.ous.http.response :as response]
+   [cmr.ous.results.errors :as errors]
    [cmr.plugin.jar.components.registry :as plugin-registry]
    [cmr.plugin.jar.core :as jar-plugin]
    [cmr.plugin.jar.jarfile :as jarfile]
@@ -47,8 +47,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def setup-options {
-  :init 'cmr.opendap.components.core/init
-  :after-refresh 'cmr.opendap.dev/init-and-startup
+  :init 'cmr.ous.components.core/init
+  :after-refresh 'cmr.ous.repl/init-and-startup
   :throw-errors false})
 
 (defn init

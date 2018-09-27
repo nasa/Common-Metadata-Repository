@@ -1,22 +1,22 @@
-(ns cmr.opendap.ous.common
+(ns cmr.ous.common
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
+   [cmr.exchange.common.util :as util]
    [cmr.exchange.query.core :as query]
    [cmr.exchange.query.util :as query-util]
-   [cmr.opendap.components.concept :as concept]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.ous.concepts.collection :as collection]
-   [cmr.opendap.ous.concepts.granule :as granule]
-   [cmr.opendap.ous.concepts.service :as service]
-   [cmr.opendap.ous.concepts.variable :as variable]
-   [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.results.errors :as ous-errors]
-   [cmr.opendap.results.warnings :as warnings]
-   [cmr.opendap.util :as util]
-   [cmr.opendap.validation :as validation]
+   [cmr.metadata.proxy.components.concept :as concept]
+   [cmr.metadata.proxy.concepts.collection :as collection]
+   [cmr.metadata.proxy.concepts.granule :as granule]
+   [cmr.metadata.proxy.concepts.service :as service]
+   [cmr.metadata.proxy.concepts.variable :as variable]
+   [cmr.ous.components.config :as config]
+   [cmr.ous.geog :as geog]
+   [cmr.ous.results.errors :as ous-errors]
+   [cmr.ous.results.warnings :as warnings]
+   [cmr.ous.validation :as validation]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,7 +26,7 @@
 (defn format-opendap-lat-lon
   [bounding-infos bounding-box]
   (when-let [bounding-info (first bounding-infos)]
-    (variable/format-opendap-lat-lon bounding-info)))
+    (geog/format-opendap-lat-lon bounding-info)))
 
 (defn bounding-infos->opendap-query
   ([bounding-infos]
@@ -35,7 +35,7 @@
    (when (seq bounding-infos)
      (str
       (->> bounding-infos
-           (map variable/format-opendap-bounds)
+           (map geog/format-opendap-bounds)
            (string/join ",")
            (str "?"))
       ","
@@ -287,7 +287,7 @@
   [component service-ids vars bounding-box {:keys [endpoint token]}]
   (log/debug "Starting stage 3 ...")
   (let [services-promise (service/async-get-metadata endpoint token service-ids)
-        bounding-infos (map #(variable/extract-bounding-info % bounding-box)
+        bounding-infos (map #(geog/extract-bounding-info % bounding-box)
                             vars)
         errs (apply errors/collect bounding-infos)]
     (when errs

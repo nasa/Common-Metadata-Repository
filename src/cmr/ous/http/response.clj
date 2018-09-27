@@ -1,4 +1,4 @@
-(ns cmr.opendap.http.response
+(ns cmr.ous.http.response
   "This namespace defines a default set of transform functions suitable for use
   in presenting results to HTTP clients.
 
@@ -12,7 +12,7 @@
    [cmr.authz.errors :as authz-errors]
    [cmr.exchange.common.results.errors :as errors]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.results.errors :as ous-errors]
+   [cmr.ous.results.errors :as ous-errors]
    [ring.util.http-response :as ring-response]
    [taoensso.timbre :as log]
    [xml-in.core :as xml-in])

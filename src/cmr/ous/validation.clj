@@ -1,6 +1,6 @@
-(ns cmr.opendap.validation
+(ns cmr.ous.validation
   (:require
-   [cmr.opendap.results.errors :as errors]))
+   [cmr.ous.results.errors :as errors]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Predicates   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

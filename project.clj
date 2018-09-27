@@ -50,12 +50,11 @@
     [ring/ring-defaults "0.3.2"]
     [selmer "1.11.8"]
     [tolitius/xml-in "0.1.0"]]
+  :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
-  :main cmr.opendap.core
-  :aot [clojure.tools.logging.impl
-        cmr.opendap.core]
+  :aot [clojure.tools.logging.impl]
   :profiles {
     :ubercompile {
       :aot :all
@@ -104,7 +103,7 @@
       :dependencies [
         [debugger "0.2.1"]]
       :repl-options {
-        :init-ns cmr.opendap.dev
+        :init-ns cmr.ous.repl
         :prompt ~get-prompt
         :init ~(println (get-banner))}}
     :lint {
@@ -140,7 +139,7 @@
       ["with-profile" "+local,+system,+geo" "repl"]]
     "version" ["do"
       ["version"]
-      ["shell" "echo" "-n" "CMR-OPeNDAP: "]
+      ["shell" "echo" "-n" "CMR OUS: "]
       ["project-version"]]
     "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
     "uberjar" ["with-profile" "+system,+geo" "uberjar"]
@@ -173,17 +172,9 @@
       "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
-    "slate" ["with-profile" "+slate"
-      "shell" "resources/scripts/build-slate-docs"]
-    "generate-html" ["with-profile" "+docs"
-      "run" "-m" "cmr.opendap.site.static"]
     "docs" ["do"
       ["codox"]
-      ["marginalia"]
-      ["slate"]]
-    "generate-static" ["do"
-      ["docs"]
-      ["generate-html"]]
+      ["marginalia"]]
     ;; Build tasks
     "build-lite" ["do"
       ["ltest" ":unit"]]
@@ -197,7 +188,4 @@
       ["ltest" ":unit"]
       ["generate-static"]
       ["ubercompile"]
-      ["uberjar"]]
-    ;; Application
-    "start-cmr-opendap"
-      ["trampoline" "run"]})
+      ["uberjar"]]})

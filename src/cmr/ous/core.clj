@@ -1,7 +1,7 @@
-(ns cmr.opendap.ous.core
+(ns cmr.ous.core
   (:require
-    [cmr.opendap.ous.v1 :as v1]
-    [cmr.opendap.ous.v2-1 :as v2-1]
+    [cmr.ous.v1 :as v1]
+    [cmr.ous.v2-1 :as v2-1]
     [taoensso.timbre :as log]))
 
 (defn get-opendap-urls

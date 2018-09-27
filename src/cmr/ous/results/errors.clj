@@ -1,8 +1,9 @@
-(ns cmr.opendap.results.errors
+(ns cmr.ous.results.errors
   (:require
    [clojure.set :as set]
    [cmr.exchange.common.results.errors :as errors]
-   [cmr.exchange.common.util :as util]))
+   [cmr.exchange.common.util :as util]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Error Messages   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,40 +35,13 @@
   (str "The values provided for longitude are not within the valid range of "
        "-180 degrees through 180 degrees."))
 
-;; OUS - CMR Metadata
-
-(def problem-granules
-  "Problematic granules: [%s].")
-
-(def empty-svc-pattern
-  (str "The service pattern computed was empty. Is there a service associated "
-       "with the given collection? Does the UMM-S record in question have "
-       "values for the pattern fields?"))
-
-(def empty-gnl-data-file-url
-  (str "There was a problem extracting a data URL from the granule's service "
-       "data file."))
-
-(def empty-gnl-data-files
-  "There was a problem extracting a service data file from the granule.")
-
-(def no-matching-service-pattern
-  (str "There was a problem creating URLs from granule file data: couldn't "
-       "match default service pattern %s to service %s."))
-
-(def granule-metadata
-  "There was a problem extracting granule metadata.")
-
-(def service-metadata
-  "There was a problem extracting service metadata.")
-
-(def variable-metadata
-  "There was a problem extracting variable metadata.")
-
 ;; OUS - Results
 
 (def empty-query-string
   "No OPeNDAP query string was generated for the request.")
+
+(def server-errors-set
+  (errors/server-error-code metadata-errors/status-map))
 
 (def status-map
   "This is a lookup data structure for how HTTP status/error codes map to CMR
@@ -79,10 +53,4 @@
                                 invalid-lon-params
                                 unsupported-processing-level
                                 problem-processing-level}
-     errors/server-error-code #{empty-gnl-data-files
-                                ;;empty-gnl-data-file-url
-                                problem-granules
-                                no-matching-service-pattern
-                                granule-metadata
-                                service-metadata
-                                variable-metadata}}))
+     errors/server-error-code server-errors-set}))

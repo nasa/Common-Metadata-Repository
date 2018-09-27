@@ -1,4 +1,4 @@
-(ns cmr.opendap.components.concept
+(ns cmr.metadata.proxy.components.concept
   "This namespace represents the 'concept query' API for CMR OPeNDAP. This is
   where the rest of the application goes when it needs to perform a query to
   CMR to get concept data. This is done in order to cache concepts and use
@@ -6,11 +6,11 @@
   (:require
    [clojure.string :as string]
    [cmr.exchange.common.results.errors :as errors]
-   [cmr.opendap.components.caching :as caching]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.ous.concepts.collection :as collection]
-   [cmr.opendap.ous.concepts.granule :as granule]
-   [cmr.opendap.util :as util]
+   [cmr.exchange.common.util :as util]
+   [cmr.metadata.proxy.components.caching :as caching]
+   [cmr.metadata.proxy.components.config :as config]
+   [cmr.metadata.proxy.concepts.collection :as collection]
+   [cmr.metadata.proxy.concepts.granule :as granule]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [get]))

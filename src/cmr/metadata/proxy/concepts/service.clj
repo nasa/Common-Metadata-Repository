@@ -1,11 +1,11 @@
-(ns cmr.opendap.ous.concepts.service
+(ns cmr.metadata.proxy.concepts.service
   (:require
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.opendap.results.errors :as ous-errors]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -35,6 +35,7 @@
            (request/add-accept "application/vnd.nasa.cmr.umm+json")
            (request/add-form-ct)
            (request/add-payload payload))
+       {}
        response/json-handler))
     (deliver (promise) [])))
 
@@ -43,7 +44,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error ous-errors/service-metadata)
+        (log/error metadata-errors/service-metadata)
         rslts)
       (do
         (log/trace "Got results from CMR service search:"
