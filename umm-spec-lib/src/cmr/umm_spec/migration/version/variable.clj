@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.migration.version.variable
   "Contains functions for migrating between versions of the UMM Variable schema."
   (:require
+   [cmr.common.util :as util]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
 (defn sample-1-1->1-2
@@ -21,6 +22,16 @@
 (defn dimensions-1-2->1-1
   [dims]
   (mapv #(dissoc % :Type) dims))
+
+(defn index-ranges-1-2->1-3
+  "Removes any invalid index ranges. Returns nil if index-ranges is empty."
+  [index-ranges]
+  (let [index-ranges (remove #(or (> 2 (count (:LatRange %)))
+                                  (> 2 (count (:LonRange %))))
+                             index-ranges)]
+    (if (empty? index-ranges)
+      nil
+      index-ranges)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Variable Migration Implementations
@@ -57,3 +68,16 @@
               :Characteristics
               :SamplingIdentifiers
               :VariableSubType)))
+
+(defmethod interface/migrate-umm-version [:variable "1.2" "1.3"]
+  ;; Migrate up to 1.2
+  [context v & _]
+  (-> v
+      (update :IndexRanges)
+      (dissoc :SizeEstimation
+              :Alias)))
+
+(defmethod interface/migrate-umm-version [:variable "1.2" " 1.3"]
+  ;; Migrate down to 1.2
+  [context v & _]
+  v)
