@@ -13,11 +13,13 @@
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as indexer-coll-gran-aggre-cache]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.date-util :as umm-spec-date-util]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.related-url-helper :as ru]))
 
@@ -220,17 +222,30 @@
   [project-short-names]
   (conj project-short-names "geospatial"))
 
+(defn- get-issued-modified-time
+  "Get collection's issued/modified time. Parameter time could be either
+  the collection's insert-time or update-time. Parameter key could be either
+  :granule-start-date or :granule-end-date.
+  when insert-time/update-time is nil or default value, get issued/modified time
+  from collection's earliest granule's start-date, and latest granule's end-date."  
+  [context time concept-id key]
+  (if (and (not-empty time) (not= time (str umm-spec-date-util/parsed-default-date)))
+    time
+    (key (indexer-coll-gran-aggre-cache/get-coll-gran-aggregates context concept-id))))
+     
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
-                related-urls personnel shapes archive-center]} item]
+                related-urls personnel shapes archive-center]} item
+        issued-time (get-issued-modified-time context insert-time id :granule-start-date) 
+        modified-time (get-issued-modified-time context update-time id :granule-end-date)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                             :description (not-empty summary)
                             :keyword (keywords science-keywords-flat)
-                            :modified (or update-time (generate-end-date end-date))
+                            :modified (or modified-time (generate-end-date end-date))
                             :publisher (publisher provider-id archive-center)
                             :contactPoint (contact-point personnel)
                             :identifier id
@@ -244,7 +259,7 @@
                             :landingPage (landing-page related-urls)
                             :language  [LANGUAGE_CODE]
                             :references (not-empty (distinct (map #(ru/related-url->encoded-url (:url %)) related-urls)))
-                            :issued (not-empty insert-time)})))
+                            :issued (not-empty issued-time)})))
 
 (defn- results->opendata
   "Convert search results to opendata."
