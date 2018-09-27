@@ -9,6 +9,7 @@
    [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm.test.generators.granule :as gran-gen]
+   [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
 
 (def umm-g-coll-refs
@@ -17,7 +18,7 @@
   (gen/one-of [gran-gen/coll-refs-w-entry-title gran-gen/coll-refs-w-short-name-version]))
 
 (def umm-g-granules
-  "Generator for UMM-G granule"
+  "Generator for UMM-G granule in umm-lib Granule model."
   (gen/fmap #(assoc % :collection-ref (gen/generate umm-g-coll-refs)) gran-gen/granules))
 
 (defn- umm->expected-parsed
@@ -28,7 +29,6 @@
   (-> gran
       (dissoc :data-granule)
       (dissoc :access-value)
-      (dissoc :temporal)
       (dissoc :spatial-coverage)
       (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
@@ -46,7 +46,7 @@
       (empty? (core/validate-metadata :granule :umm-json metadata)))))
 
 (defspec generate-and-parse-umm-g-granule-test 100
-  (for-all [granule (gen/no-shrink  umm-g-granules)]
+  (for-all [granule umm-g-granules]
     (let [umm-g-metadata (core/generate-metadata {} granule :umm-json)
           parsed (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           expected-parsed (umm->expected-parsed granule)]
@@ -68,7 +68,10 @@
                       :version-id "Version"})
     :data-granule nil
     :access-value nil
-    :temporal nil
+    :temporal (umm-lib-g/map->GranuleTemporal
+               {:range-date-time (umm-c/map->RangeDateTime
+                                  {:beginning-date-time (p/parse-datetime "2018-07-17T00:00:00.000Z")
+                                   :ending-date-time (p/parse-datetime "2018-07-17T23:59:59.999Z")})})
     :spatial-coverage nil
     :related-urls nil}))
 
