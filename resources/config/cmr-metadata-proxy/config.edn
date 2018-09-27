@@ -1,6 +1,4 @@
-{:api-version "v2.1"
- :default-content-type "json"
- :auth-caching {:init {}
+{:auth-caching {:init {}
                 :ttl {:minutes 60}
                 :lru {:threshold 1000}
                 :dumpfile "data/cache/authz-dump.edn"}
@@ -33,34 +31,6 @@
    :search {:protocol "https"
             :host "search.sit.earthdata.nasa.gov"
             :relative {:root {:url "/search"}}}}
- :httpd {
-   :port 3013
-   :entry-point-fn cmr.opendap.app.core/main
-   :route-fns {
-     :api cmr.opendap.app.routes.rest.core/all
-     :site cmr.opendap.app.routes.site/all}
-   :pages {
-     :default-title "CMR OPeNDAP"}
-   :base-url "/opendap"
-   :docs "resources/public/docs"
-   :assets "resources/public/assets"
-   :rest-docs
-     {:base-url-template "%%OPENDAP_BASE_URL%%"
-      :source "resources/docs/rest-api/index.md"
-      :outdir "resources/public/docs/opendap/docs/current/rest-api"}
-   :skip-static #{"/opendap/docs"}
-   :replace-base-url #{"/opendap/docs/current/rest-api"
-                       "/opendap/docs/current/reference/2000-usage.html"}
-   :index-dirs #{"/opendap/docs/1.0.0/marginalia"
-                 "/opendap/docs/1.0.0/reference"
-                 "/opendap/docs/1.0.0/rest-api"
-                 "/opendap/docs/current/marginalia"
-                 "/opendap/docs/current/reference"
-                 "/opendap/docs/current/rest-api"}
-   :streaming {
-     :timeout 20000 ; milliseconds (20 seconds * 1000)
-     :heartbeat 200 ; milliseconds
-     }}
  :logging {
    :level :trace
    :nss [cmr org.httpkit]

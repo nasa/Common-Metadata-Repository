@@ -1,8 +1,8 @@
-(ns cmr.opendap.components.caching
+(ns cmr.metadata.proxy.components.caching
   (:require
    [clojure.core.cache :as cache]
    [clojure.java.io :as io]
-   [cmr.opendap.components.config :as config]
+   [cmr.metadata.proxy.components.config :as config]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log]))
 

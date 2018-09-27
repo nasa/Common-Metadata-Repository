@@ -1,23 +1,10 @@
-(ns cmr.opendap.http.request
+(ns cmr.ous.http.request
   (:require
    [cmr.http.kit.request :as request]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.const :as const]
+   [cmr.ous.components.config :as config]
+   [cmr.ous.const :as const]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [get]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Backwards-compatible Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def get-header request/get-header)
-(def add-header request/add-header)
-(def add-accept request/add-accept)
-(def add-token-header request/add-token-header)
-(def add-content-type request/add-content-type)
-(def add-form-ct request/add-form-ct)
-(def add-payload request/add-payload)
-(def options request/options)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,44 +23,6 @@
     (add-client-id {}))
   ([req]
     (request/add-header req "Client-Id" const/client-id)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   HTTP Client Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def default-options
-  (-> {:user-agent const/user-agent
-       :insecure? true}
-      (add-user-agent)
-      (add-client-id)))
-
-(defn request
-  [method url req & [callback]]
-  (request/request method url req default-options callback))
-
-(defn async-get
-  ([url]
-    (async-get url {}))
-  ([url req]
-    (async-get url req nil))
-  ([url req callback]
-    (request :get url req callback)))
-
-(defn async-post
-  ([url]
-    (async-post url {}))
-  ([url req]
-    (async-post url req nil))
-  ([url req callback]
-    (request :post url req callback)))
-
-(defn get
-  [& args]
-  @(apply async-get args))
-
-(defn post
-  [& args]
-  @(apply async-post args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Accept Header/Version Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

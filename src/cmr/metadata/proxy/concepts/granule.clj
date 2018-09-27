@@ -1,15 +1,15 @@
-(ns cmr.opendap.ous.concepts.granule
+(ns cmr.metadata.proxy.concepts.granule
   (:require
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
+   [cmr.exchange.common.util :as util]
    [cmr.exchange.query.util :as query-util]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.const :as const]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.opendap.results.errors :as ous-errors]
-   [cmr.opendap.util :as util]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
+   [cmr.metadata.proxy.components.config :as config]
+   [cmr.metadata.proxy.const :as const]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -78,6 +78,7 @@
          (request/add-form-ct)
          (request/add-payload payload)
          ((fn [x] (log/debug "Client request options:" x) x)))
+     {}
      response/json-handler)))
 
 (defn extract-metadata
@@ -85,7 +86,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error ous-errors/granule-metadata)
+        (log/error metadata-errors/granule-metadata)
         rslts)
       (do
         (log/trace "Got results from CMR granule search:"
@@ -122,6 +123,6 @@
       {:granule-id gran-id
        :link-rel (:rel link)
        :link-href (:href link)}
-      {:errors [ous-errors/empty-gnl-data-file-url
+      {:errors [metadata-errors/empty-gnl-data-file-url
                 (when gran-id
-                  (format ous-errors/problem-granules gran-id))]})))
+                  (format metadata-errors/problem-granules gran-id))]})))

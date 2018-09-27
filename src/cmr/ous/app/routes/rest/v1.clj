@@ -1,12 +1,11 @@
-(ns cmr.opendap.app.routes.rest.v1
+(ns cmr.ous.app.routes.rest.v1
   "This namespace defines the Version 1 REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
-   [cmr.opendap.app.handler.collection :as collection-handler]
-   [cmr.opendap.app.handler.core :as core-handler]
-   [cmr.opendap.health :as health]
+   [cmr.http.kit.app.handler :as core-handler]
+   [cmr.ous.app.handler.collection :as collection-handler]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,37 +34,10 @@
    ["/opendap/ous/streaming-collection/:concept-id" {
     :get (collection-handler/stream-urls httpd-component)}]])
 
-(defn admin-api
-  [httpd-component]
-  [["/opendap/health" {
-    :get (core-handler/health httpd-component)
-    :options core-handler/ok}]
-   ["/opendap/ping" {
-    :get {:handler core-handler/ping
-          :roles #{:admin}}
-    :post {:handler core-handler/ping
-           :roles #{:admin}}
-    :options core-handler/ok}]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Testing Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def testing
-  [["/testing/401" {:get (core-handler/status :unauthorized)}]
-   ["/testing/403" {:get (core-handler/status :forbidden)}]
-   ["/testing/404" {:get (core-handler/status :not-found)}]
-   ["/testing/405" {:get (core-handler/status :method-not-allowed)}]
-   ["/testing/500" {:get (core-handler/status :internal-server-error)}]
-   ["/testing/503" {:get (core-handler/status :service-unavailable)}]])
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn all
   [httpd-component]
-  (concat
-   (ous-api httpd-component)
-   (admin-api httpd-component)
-   testing))
+  (ous-api httpd-component))

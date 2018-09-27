@@ -1,4 +1,4 @@
-(ns cmr.opendap.app.handler.collection
+(ns cmr.ous.app.handler.collection
   "This namespace defines the REST API handlers for collection resources."
   (:require
    [cheshire.core :as json]
@@ -7,12 +7,12 @@
    [cmr.authz.token :as token]
    [cmr.exchange.common.results.errors :as base-errors]
    [cmr.exchange.query.core :as base-query]
-   [cmr.opendap.components.config :as config]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.opendap.ous.core :as ous]
-   [cmr.opendap.query.core :as query]
-   [cmr.opendap.results.errors :as errors]
+   [cmr.ous.components.config :as config]
+   [cmr.ous.core :as ous]
+   [cmr.ous.http.request :as request]
+   [cmr.ous.http.response :as response]
+   [cmr.ous.query.core :as query]
+   [cmr.ous.results.errors :as errors]
    [org.httpkit.server :as server]
    [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))

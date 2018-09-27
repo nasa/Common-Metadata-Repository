@@ -1,13 +1,12 @@
-(ns cmr.opendap.ous.concepts.variable
+(ns cmr.metadata.proxy.concepts.variable
   (:require
    [clojure.string :as string]
    [cmr.exchange.common.results.core :as results]
    [cmr.exchange.common.results.errors :as errors]
-   [cmr.opendap.const :as const]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
-   [cmr.opendap.ous.util.geog :as geog]
-   [cmr.opendap.results.errors :as ous-errors]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]
+   [cmr.ous.geog :as geog]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -118,6 +117,7 @@
            (request/add-form-ct)
            (request/add-payload payload)
            ((fn [x] (log/trace "Full request:" x) x)))
+       {}
        response/json-handler))
     (deliver (promise) [])))
 
@@ -126,7 +126,7 @@
   (let [rslts @promise]
     (if (errors/erred? rslts)
       (do
-        (log/error ous-errors/variable-metadata)
+        (log/error metadata-errors/variable-metadata)
         (log/error rslts)
         rslts)
       (do
@@ -144,99 +144,3 @@
   [entry]
   (restructure-dims
    (get-in entry [:umm :Dimensions])))
-
-(defn extract-indexranges
-  [entry]
-  (when entry
-    (let [ranges (get-in entry [:umm :Characteristics :IndexRanges])
-          lo-lon (geog/parse-lon-low (first (:LonRange ranges)))
-          hi-lon (geog/parse-lon-high (last (:LonRange ranges)))
-          lo-lat (geog/parse-lat-low (first (:LatRange ranges)))
-          hi-lat (geog/parse-lat-high (last (:LatRange ranges)))
-          reversed? (geog/lat-reversed? lo-lat hi-lat)]
-      (geog/create-array-lookup lo-lon lo-lat hi-lon hi-lat reversed?))))
-
-(defn create-opendap-bounds
-  ([bounding-box]
-   (create-opendap-bounds bounding-box {:reversed? false}))
-  ([bounding-box opts]
-   (create-opendap-bounds {:Longitude const/default-lon-abs-hi
-                           :Latitude const/default-lat-abs-hi}
-                          bounding-box
-                          opts))
-  ([{lon-max :Longitude lat-max :Latitude :as dimensions}
-    bounding-box
-    opts]
-   (log/trace "Got dimensions:" dimensions)
-   (when bounding-box
-     (geog/bounding-box->lookup-record
-      (:Size lon-max)
-      (:Size lat-max)
-      bounding-box
-      (:reversed? opts)))))
-
-(defn replace-defaults-lat-lon
-  [bounding-info stride [k v]]
-  (let [v (or (:Size v) v)]
-    (cond (= k :Longitude) (geog/format-opendap-dim-lon
-                            (:opendap bounding-info) stride)
-          (= k :Latitude) (geog/format-opendap-dim-lat
-                           (:opendap bounding-info) stride)
-          :else (geog/format-opendap-dim 0 stride (dec v)))))
-
-(defn format-opendap-dims
-  ([bounding-info]
-    (format-opendap-dims bounding-info geog/default-dim-stride))
-  ([bounding-info stride]
-    (if (:opendap bounding-info)
-      (->> bounding-info
-           :dimensions
-           (map (partial replace-defaults-lat-lon bounding-info stride))
-           (apply str))
-      "")))
-
-(defn get-lat-lon-names
-  [bounding-info]
-  [(name (get-in bounding-info [:dimensions :Longitude :Name]))
-   (name (get-in bounding-info [:dimensions :Latitude :Name]))])
-
-(defn format-opendap-lat-lon
-  ([bounding-info]
-   (format-opendap-lat-lon bounding-info geog/default-lat-lon-stride))
-  ([bounding-info stride]
-   (geog/format-opendap-lat-lon (:opendap bounding-info)
-                                (get-lat-lon-names bounding-info)
-                                stride)))
-
-(defn format-opendap-bounds
-  ([bounding-info]
-   (format-opendap-bounds bounding-info geog/default-lat-lon-stride))
-  ([{bound-name :name :as bounding-info} stride]
-   (log/trace "Bounding info:" bounding-info)
-   (format "%s%s"
-           bound-name
-           (format-opendap-dims bounding-info stride))))
-
-(defn extract-bounding-info
-  "This function is executed at the variable level, however it has general,
-  non-variable-specific bounding info passed to it in order to support
-  spatial subsetting"
-  [entry bounding-box]
-  (log/trace "Got variable entry:" entry)
-  (log/trace "Got bounding-box:" bounding-box)
-  (if (:umm entry)
-    (let [dims (normalize-lat-lon (extract-dimensions entry))
-          var-array-lookup (extract-indexranges entry)
-          reversed? (:lat-reversed? var-array-lookup)]
-      (geog/map->BoundingInfo
-        {:concept-id (get-in entry [:meta :concept-id])
-         :name (get-in entry [:umm :Name])
-         :dimensions dims
-         :bounds bounding-box
-         :opendap (create-opendap-bounds
-                   dims
-                   bounding-box
-                   {:reversed? reversed?})
-         :size (get-in entry [:umm :Characteristics :Size])
-         :lat-reversed? reversed?}))
-    {:errors [ous-errors/variable-metadata]}))

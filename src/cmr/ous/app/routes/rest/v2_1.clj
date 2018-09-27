@@ -1,13 +1,13 @@
-(ns cmr.opendap.app.routes.rest.v2-1
+(ns cmr.ous.app.routes.rest.v2-1
   "This namespace defines the Version 2.1 REST routes provided by this service.
 
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
-   [cmr.opendap.app.handler.collection :as collection-handler]
-   [cmr.opendap.app.handler.core :as core-handler]
-   [cmr.opendap.app.routes.rest.v1 :as routes-v1]
-   [cmr.opendap.app.routes.rest.v2 :as routes-v2]
+   [cmr.http.kit.app.handler :as core-handler]
+   [cmr.ous.app.handler.collection :as collection-handler]
+   [cmr.ous.app.routes.rest.v1 :as routes-v1]
+   [cmr.ous.app.routes.rest.v2 :as routes-v2]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,12 +28,6 @@
    ["/opendap/ous/streaming-collection/:concept-id" {
     :get (collection-handler/stream-urls httpd-component)}]])
 
-(defn service-bridge-api
-  [httpd-component]
-  [["/service-bridge/collection/:concept-id" {
-    :get {:handler (collection-handler/bridge-services httpd-component)
-          :permissions #{:read}}}]])
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,6 +39,4 @@
   [httpd-component]
   (concat
    (ous-api httpd-component)
-   (service-bridge-api httpd-component)
-   (routes-v2/admin-api httpd-component)
-   routes-v1/testing))
+   (routes-v2/admin-api httpd-component)))

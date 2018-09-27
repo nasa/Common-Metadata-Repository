@@ -1,24 +1,26 @@
-(ns cmr.opendap.testing.util
+(ns cmr.ous.testing.util
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [cmr.opendap.http.request :as request])
+   [cmr.http.kit.request :as base-request]
+   [cmr.ous.http.request :as request])
   (:import
    (clojure.lang Keyword)))
 
-(def vendor "cmr-opendap.")
+(def vendor "cmr-ous.")
 
 (defn override-api-version-header
   ([version]
     (override-api-version-header {} version))
   ([req version]
-    (request/add-header req
-                        "Accept"
-                        (format request/version-format
-                                vendor
-                                version
-                                "json"))))
+    (base-request/add-header
+      req
+      "Accept"
+      (format request/version-format
+              vendor
+              version
+              "json"))))
 
 (defn parse-response
   [response]

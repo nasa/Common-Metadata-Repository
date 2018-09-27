@@ -1,6 +1,6 @@
-(ns cmr.opendap.ous.util.geog
+(ns cmr.ous.geog
   (:require
-   [cmr.opendap.const :as const]
+   [cmr.ous.const :as const]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -202,7 +202,7 @@
 
   Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  `cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed`)."
+  `cmr.metadata.proxy.concepts.variable/create-opendap-lookup-reversed`)."
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
     (int
@@ -215,7 +215,7 @@
 
   Note that this must also be used in conjunction with the hi and lo values
   for latitude in the OPeNDAP lookup array being swapped (see
-  `cmr.opendap.ous.concepts.variable/create-opendap-lookup-reversed`)."
+  `cmr.metadata.proxy.concepts.variable/create-opendap-lookup-reversed`)."
   [lat-max lat-lo]
   (let [res (Math/ceil (/ lat-max const/default-lat-abs-hi))]
     (int
@@ -244,7 +244,7 @@
                        stride
                        (get-in lookup-record [:high :lon]))))
 
-(defn format-opendap-lat-lon
+(defn -format-opendap-lat-lon
   ([lookup-record [lon-name lat-name] stride]
     (format "%s%s,%s%s"
             lat-name
@@ -327,8 +327,107 @@
                                   index-names
                                   stride))
   ([lon-max lat-max bounding-box reversed? index-names stride]
-    (format-opendap-lat-lon
+    (-format-opendap-lat-lon
       (bounding-box->lookup-record bounding-box reversed?)
       index-names
       stride)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Metadata   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn extract-indexranges
+  [entry]
+  (when entry
+    (let [ranges (get-in entry [:umm :Characteristics :IndexRanges])
+          lo-lon (parse-lon-low (first (:LonRange ranges)))
+          hi-lon (parse-lon-high (last (:LonRange ranges)))
+          lo-lat (parse-lat-low (first (:LatRange ranges)))
+          hi-lat (parse-lat-high (last (:LatRange ranges)))
+          reversed? (lat-reversed? lo-lat hi-lat)]
+      (create-array-lookup lo-lon lo-lat hi-lon hi-lat reversed?))))
+
+(defn create-opendap-bounds
+  ([bounding-box]
+   (create-opendap-bounds bounding-box {:reversed? false}))
+  ([bounding-box opts]
+   (create-opendap-bounds {:Longitude const/default-lon-abs-hi
+                           :Latitude const/default-lat-abs-hi}
+                          bounding-box
+                          opts))
+  ([{lon-max :Longitude lat-max :Latitude :as dimensions}
+    bounding-box
+    opts]
+   (log/trace "Got dimensions:" dimensions)
+   (when bounding-box
+     (bounding-box->lookup-record
+      (:Size lon-max)
+      (:Size lat-max)
+      bounding-box
+      (:reversed? opts)))))
+
+(defn replace-defaults-lat-lon
+  [bounding-info stride [k v]]
+  (let [v (or (:Size v) v)]
+    (cond (= k :Longitude) (format-opendap-dim-lon
+                            (:opendap bounding-info) stride)
+          (= k :Latitude) (format-opendap-dim-lat
+                           (:opendap bounding-info) stride)
+          :else (format-opendap-dim 0 stride (dec v)))))
+
+(defn format-opendap-dims
+  ([bounding-info]
+    (format-opendap-dims bounding-info default-dim-stride))
+  ([bounding-info stride]
+    (if (:opendap bounding-info)
+      (->> bounding-info
+           :dimensions
+           (map (partial replace-defaults-lat-lon bounding-info stride))
+           (apply str))
+      "")))
+
+(defn get-lat-lon-names
+  [bounding-info]
+  [(name (get-in bounding-info [:dimensions :Longitude :Name]))
+   (name (get-in bounding-info [:dimensions :Latitude :Name]))])
+
+(defn format-opendap-lat-lon
+  ([bounding-info]
+   (format-opendap-lat-lon bounding-info default-lat-lon-stride))
+  ([bounding-info stride]
+   -(format-opendap-lat-lon (:opendap bounding-info)
+                            (get-lat-lon-names bounding-info)
+                            stride)))
+
+(defn format-opendap-bounds
+  ([bounding-info]
+   (format-opendap-bounds bounding-info default-lat-lon-stride))
+  ([{bound-name :name :as bounding-info} stride]
+   (log/trace "Bounding info:" bounding-info)
+   (format "%s%s"
+           bound-name
+           (format-opendap-dims bounding-info stride))))
+
+(defn extract-bounding-info
+  "This function is executed at the variable level, however it has general,
+  non-variable-specific bounding info passed to it in order to support
+  spatial subsetting"
+  [entry bounding-box]
+  (log/trace "Got variable entry:" entry)
+  (log/trace "Got bounding-box:" bounding-box)
+  (if (:umm entry)
+    (let [dims (normalize-lat-lon (extract-dimensions entry))
+          var-array-lookup (extract-indexranges entry)
+          reversed? (:lat-reversed? var-array-lookup)]
+      (map->BoundingInfo
+        {:concept-id (get-in entry [:meta :concept-id])
+         :name (get-in entry [:umm :Name])
+         :dimensions dims
+         :bounds bounding-box
+         :opendap (create-opendap-bounds
+                   dims
+                   bounding-box
+                   {:reversed? reversed?})
+         :size (get-in entry [:umm :Characteristics :Size])
+         :lat-reversed? reversed?}))
+    {:errors [metadata-errors/variable-metadata]}))

@@ -1,16 +1,16 @@
-(ns cmr.opendap.testing.system
+(ns cmr.ous.testing.system
   (:require
     [clojusc.system-manager.core :as system-api]
     [clojusc.twig :as logger]
-    [cmr.opendap.components.config :as config]
-    [cmr.opendap.components.core]))
+    [cmr.ous.components.config :as config]
+    [cmr.ous.components.core]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Setup and Constants   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def setup-options {
-  :init 'cmr.opendap.components.core/testing
+  :init 'cmr.ous.components.core/testing
   :throw-errors true})
 
 (defn init

@@ -1,4 +1,4 @@
-(ns cmr.opendap.components.auth
+(ns cmr.metadata.proxy.components.auth
   "This namespace represents the authorization API for CMR OPeNDAP. This is
   where the rest of the application goes when it needs to perform checks on
   roles or permissions for a given user and/or concept.
