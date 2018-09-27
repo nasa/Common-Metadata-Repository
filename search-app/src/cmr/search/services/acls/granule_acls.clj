@@ -51,17 +51,12 @@
   [context coll-ids-by-prov _ acls]
   (filter (fn [acl]
             (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
-                  entry-titles (map string/trim (get-in cii [:collection-identifier :entry-titles]))
-                  acl-coll-ids (->> entry-titles
-                                    (map (partial coll-cache/get-collection context provider-id))
-                                    ;; It's possible an ACL refers to an entry title that doesn't exist
-                                    (remove nil?)
-                                    (map :concept-id))]
+                  acl-coll-ids(map string/trim (get-in cii [:collection-identifier :concept-ids]))]
               (and (:granule-applicable cii)
                    ;; applies to a provider the user is searching
                    (coll-ids-by-prov provider-id)
                    (or ; The ACL applies to no specific collection
-                       (empty? entry-titles)
+                       (empty? acl-coll-ids)
                        ;; The acl applies to a specific collection that the user is searching
                        (some (coll-ids-by-prov provider-id) acl-coll-ids)))))
           acls))
@@ -127,43 +122,17 @@
       cqm/match-none)
     (cqm/string-conditions :collection-concept-id concept-ids true)))
 
-(defn- provider+entry-titles->collection-condition
-  "Converts a provider and entry titles from an ACL into a an equivalent query condition.
-  This goes through each entry title and get the equivalent collection and replace it with a
-  concept id. If the collection isn't in the cache it adds a collection query condition of all the
-  entry titles together. "
-  [context query-coll-ids provider-id entry-titles]
-  (when (seq entry-titles)
-    (let [{:keys [concept-ids entry-titles]}
-          (reduce (fn [condition-map entry-title]
-                    (if-let [{:keys [concept-id]} (coll-cache/get-collection context provider-id entry-title)]
-                      (update-in condition-map [:concept-ids] conj concept-id)
-                      (update-in condition-map [:entry-titles] conj (string/trim entry-title))))
-                  {:concept-ids nil
-                   :entry-titles nil}
-                  entry-titles)
-          concept-ids-cond (when concept-ids
-                             (concept-ids->collection-condition query-coll-ids concept-ids))
-          entry-titles-cond (when entry-titles
-                              (q/->CollectionQueryCondition
-                                (gc/and-conds [(cqm/string-condition :provider-id provider-id true false)
-                                               (cqm/string-conditions :entry-title entry-titles true)])))]
-      (if (and concept-ids-cond entry-titles-cond)
-        (gc/or-conds [concept-ids-cond entry-titles-cond])
-        (or concept-ids-cond entry-titles-cond)))))
-
 (defn collection-identifier->query-condition
   "Converts an acl collection identifier to an query condition. Switches implementations based
   on whether the user's query contained collection ids. This implementation assumes the query-coll-ids
   passed in are limited to the provider of the collection identifier."
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
-    (if-let [{:keys [concept-ids entry-titles access-value temporal]} collection-identifier]
+    (if-let [{:keys [concept-ids access-value temporal]} collection-identifier]
       (let [concept-ids-cond (provider->collection-condition concept-ids provider-id)
             access-value-cond (some-> (access-value->query-condition access-value)
                                       q/->CollectionQueryCondition)
             temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
-
         (gc/and-conds (remove nil? [concept-ids-cond
                                     colls-in-prov-cond
                                     access-value-cond
