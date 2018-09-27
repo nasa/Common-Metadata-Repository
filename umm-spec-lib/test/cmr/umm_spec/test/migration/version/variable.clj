@@ -35,17 +35,17 @@
    :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
    :Scale 1.0
    :Offset 0
-   :Characteristics [{:StandardName "VAR_1"
-                      :Reference "http://docs/ref"
-                      :Bounds "Text describing coord bounds"
-                      :Coordinates "Text describing coord range"
-                      :GridMapping "Text describing mapping projection"
-                      :Size 1024
-                      :SizeUnits "bytes"
-                      :ChunkSize 100
-                      :Structure "/file.hdf/MODIS_Grid_Daily_1km_LST/Data_Fields/"
-                      :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
-                      :ReportingConditions "STP: 1013 mb and 273 K"}]
+   :Characteristics {:StandardName "VAR_1"
+                     :Reference "http://docs/ref"
+                     :Bounds "Text describing coord bounds"
+                     :Coordinates "Text describing coord range"
+                     :GridMapping "Text describing mapping projection"
+                     :Size 1024
+                     :SizeUnits "bytes"
+                     :ChunkSize 100
+                     :Structure "/file.hdf/MODIS_Grid_Daily_1km_LST/Data_Fields/"
+                     :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
+                     :ReportingConditions "STP: 1013 mb and 273 K"}
    :Measurements [{:MeasurementName "radiative_flux"
                    :MeasurementSource "BODC"}]})
 
@@ -58,9 +58,9 @@
    :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
    :Scale 1.0
    :Offset 0
-   :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
-                      :IndexRanges {:LatRange [-45 45]
-                                    :LonRange [90 180]}}]
+   :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                     :IndexRanges {:LatRange [-45 45]
+                                   :LonRange [90 180]}}
    :MeasurementIdentifiers [{:MeasurementName {:MeasurementObject "radiative_flux"
                                                :MeasurementQuantity "incoming-sensible"}
                              :MeasurementSource "BODC"}]
@@ -74,15 +74,8 @@
           :SizeEstimation {:AverageSizeOfGranulesSampled 1
                            :AvgCompressionRateASCII 2
                            :AvgCompressionRateNetCDF4 3}
-          :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
-                             :IndexRanges {:LatRange [-45 45]
-                                           :LonRange [90 180]}}
-                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields_2"
-                             :IndexRanges {:LatRange []
-                                           :LonRange []}}
-                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields_3"
-                             :IndexRanges {:LatRange [-45]
-                                           :LonRange [90]}}]}))
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2"]}}
     (is (= [] (#'vm/version-steps :variable "1.2" "1.2")))
@@ -139,7 +132,7 @@
                           :MeasurementSource "BODC"}]}
          (vm/migrate-umm {} :variable "1.2" "1.1" variable-concept-12))))
 
-(deftest mgrate-13->12
+(deftest mgrate-12->13
   (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
           :Scale 1.0
           :Offset 0
@@ -149,19 +142,17 @@
                                  "Sampled Particle Size Range: 90 - 600 nm"
                                  :ReportingConditions "STP: 1013 mb and 273 K"}]
           :Definition "first variable"
-          :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
-                             :IndexRanges {:LatRange [-45 45] :LonRange [90 180]}}
-                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields_2"}
-                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields_3"}]
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                            :IndexRanges {:LatRange [-45 45] :LonRange [90 180]}}
           :Name "var1"
           :MeasurementIdentifiers [{:MeasurementName {:MeasurementObject "radiative_flux"
                                                       :MeasurementQuantity "incoming-sensible"}
                                     :MeasurementSource "BODC"}]
           :LongName "variable 1"
           :DataType "float"}
-         (vm/migrate-umm {} :variable "1.3" "1.2" variable-concept-13))))
+         (vm/migrate-umm {} :variable "1.2" "1.3" variable-concept-12))))
 
-(deftest migrate-12->13
+(deftest migrate-13->12
   (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
           :Scale 1.0
           :Offset 0
@@ -171,14 +162,61 @@
                                  "Sampled Particle Size Range: 90 - 600 nm"
                                  :ReportingConditions "STP: 1013 mb and 273 K"}]
           :Definition "first variable"
-          :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
-                             :IndexRanges {:LatRange [-45 45] :LonRange [90 180]}}]
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                            :IndexRanges {:LatRange [-45 45] :LonRange [90 180]}}
           :Name "var1"
-          :MeasurementIdentifiers
-          [{:MeasurementName
-            {:MeasurementObject "radiative_flux"
-             :MeasurementQuantity "incoming-sensible"}
-            :MeasurementSource "BODC"}]
+          :MeasurementIdentifiers [{:MeasurementName
+                                    {:MeasurementObject "radiative_flux"
+                                     :MeasurementQuantity "incoming-sensible"}
+                                    :MeasurementSource "BODC"}]
           :LongName "variable 1"
           :DataType "float"}
-         (vm/migrate-umm {} :variable "1.2" "1.3" variable-concept-12))))
+         (vm/migrate-umm {} :variable "1.3" "1.2" (assoc-in variable-concept-13
+                                                            [:Characteristics]
+                                                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                                                             :IndexRanges {:LatRange [-45 45]
+                                                                           :LonRange [90 180]}}))))
+  (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
+          :Scale 1.0
+          :Offset 0
+          :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
+          :SamplingIdentifiers [{:SamplingMethod "radiometric detection"
+                                 :MeasurementConditions
+                                 "Sampled Particle Size Range: 90 - 600 nm"
+                                 :ReportingConditions "STP: 1013 mb and 273 K"}]
+          :Definition "first variable"
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}
+          :Name "var1"
+          :MeasurementIdentifiers [{:MeasurementName
+                                    {:MeasurementObject "radiative_flux"
+                                     :MeasurementQuantity "incoming-sensible"}
+                                    :MeasurementSource "BODC"}]
+          :LongName "variable 1"
+          :DataType "float"}
+         (vm/migrate-umm {} :variable "1.3" "1.2" (assoc-in variable-concept-13
+                                                            [:Characteristics]
+                                                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                                                             :IndexRanges {:LatRange []
+                                                                           :LonRange [90 180]}}))))
+  (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
+          :Scale 1.0
+          :Offset 0
+          :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
+          :SamplingIdentifiers [{:SamplingMethod "radiometric detection"
+                                 :MeasurementConditions
+                                 "Sampled Particle Size Range: 90 - 600 nm"
+                                 :ReportingConditions "STP: 1013 mb and 273 K"}]
+          :Definition "first variable"
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}
+          :Name "var1"
+          :MeasurementIdentifiers [{:MeasurementName
+                                    {:MeasurementObject "radiative_flux"
+                                     :MeasurementQuantity "incoming-sensible"}
+                                    :MeasurementSource "BODC"}]
+          :LongName "variable 1"
+          :DataType "float"}
+         (vm/migrate-umm {} :variable "1.3" "1.2" (assoc-in variable-concept-13
+                                                            [:Characteristics]
+                                                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                                                             :IndexRanges {:LatRange [-45 45]
+                                                                           :LonRange [180]}})))))
