@@ -348,9 +348,6 @@
                                                 :native-id "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
                                                 :native-id "coll2"}))
-        coll1-edited (-> coll1
-                         (assoc :entry-title "coll1-edited")
-                         (assoc :revision-id 2))
         gran1 (make-gran 1 coll1)
         gran2 (make-gran 2 coll1)
         gran3 (make-gran 3 coll2)
@@ -368,12 +365,14 @@
                                                         :concept-id (map :concept-id all-colls)}))
     (d/assert-refs-match [] (search/find-refs :granule {:token guest-token
                                                         :concept-id (map :concept-id all-colls)}))
+    ;; Update entry-title in collection.
     (d/ingest "PROV1" (dc/collection {:entry-title "coll1-edited"
                                       :native-id "coll1"}))
 
     (index/wait-until-indexed)
     (dev-sys-util/clear-caches)
 
+    ;; Confirm change in entry-title has not affected granule search.
     (d/assert-refs-match [gran1 gran2 gran3 gran4] (search/find-refs
                                                     :granule
                                                     {:token user1-token
