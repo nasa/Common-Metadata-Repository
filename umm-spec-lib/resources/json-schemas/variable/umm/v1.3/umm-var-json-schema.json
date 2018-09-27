@@ -65,15 +65,15 @@
       "properties": {
         "AverageSizeOfGranulesSampled": {
           "description": "This element contains the average size for the sampled granules in bytes.",
-          "type": "number",
+          "type": "number"
         },
         "AvgCompressionRateASCII": {
           "description": "This element contains the average compression rate as a ratio for the granule in ASCII format.",
-          "type": "number",
+          "type": "number"
         },
         "AvgCompressionRateNetCDF4": {
           "description": "This element contains the average compression rate as a ratio for the granule in NetCDF4 format.",
-          "type": "number",
+          "type": "number"
         }
       }
     },
@@ -347,7 +347,6 @@
       },
       "SizeEstimation": {
         "description": "The size estimation information of a variable.",
-        "items": {
         "$ref": "#/definitions/SizeEstimationType"
       },
       "MeasurementIdentifiers": {

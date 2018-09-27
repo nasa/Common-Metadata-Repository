@@ -26,12 +26,10 @@
 (defn index-ranges-1-2->1-3
   "Removes any invalid index ranges. Returns nil if index-ranges is empty."
   [index-ranges]
-  (let [index-ranges (remove #(or (> 2 (count (:LatRange %)))
-                                  (> 2 (count (:LonRange %))))
-                             index-ranges)]
-    (if (empty? index-ranges)
-      nil
-      index-ranges)))
+  (if (or (> 2 (count (:LatRange index-ranges)))
+          (> 2 (count (:LonRange index-ranges))))
+    nil
+    index-ranges))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Variable Migration Implementations
@@ -69,15 +67,16 @@
               :SamplingIdentifiers
               :VariableSubType)))
 
-(defmethod interface/migrate-umm-version [:variable "1.2" "1.3"]
-  ;; Migrate up to 1.2
+(defmethod interface/migrate-umm-version [:variable "1.3" "1.2"]
   [context v & _]
+  ;; Migrate down to 1.2
   (-> v
-      (update :IndexRanges)
+      (util/update-in-each [:Characteristics] update :IndexRanges index-ranges-1-2->1-3)
+      (util/update-in-each [:Characteristics] util/remove-nil-keys)
       (dissoc :SizeEstimation
               :Alias)))
 
 (defmethod interface/migrate-umm-version [:variable "1.2" " 1.3"]
-  ;; Migrate down to 1.2
+  ;; Migrate up to 1.3
   [context v & _]
   v)

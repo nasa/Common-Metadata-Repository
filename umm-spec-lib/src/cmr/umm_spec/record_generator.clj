@@ -198,9 +198,5 @@
     :schema-resource (js/concept-schema-resource :variable)}))
 
 (comment
-
   (generate-umm-records)
-
-  (generated-file-warning js/umm-c-schema-file)
-
-  )
+  (generated-file-warning js/umm-c-schema-file))
