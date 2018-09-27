@@ -68,6 +68,25 @@
                           :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
                           :ReportingConditions "STP: 1013 mb and 273 K"}]})
 
+(def variable-concept-13
+  {:Name "var1"
+   :LongName "variable 1"
+   :Definition "first variable"
+   :DataType "float"
+   :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
+   :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
+   :Scale 1.0
+   :Offset 0
+   :Characteristics [{:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                      :Bounds {:LowerLeft {:Lat -45 :Lon 90}
+                               :UpperRight {:Lat 45 :Lon 180}}}]
+   :MeasurementIdentifiers [{:MeasurementName {:MeasurementObject "radiative_flux"
+                                               :MeasurementQuantity "incoming-sensible"}
+                             :MeasurementSource "BODC"}]
+   :SamplingIdentifiers [{:SamplingMethod "radiometric detection"
+                          :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
+                          :ReportingConditions "STP: 1013 mb and 273 K"}]})
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2"]}}
     (is (= [] (#'vm/version-steps :variable "1.2" "1.2")))
