@@ -23,7 +23,7 @@
   [dims]
   (mapv #(dissoc % :Type) dims))
 
-(defn index-ranges-1-2->1-3
+(defn index-ranges-1-3->1-2
   "Removes any invalid index ranges. Returns nil if index-ranges is empty."
   [index-ranges]
   (if (or (> 2 (count (:LatRange index-ranges)))
@@ -49,7 +49,7 @@
   [context v & _]
   (-> v
       (assoc :MeasurementIdentifiers (mapv measurement-1-1->1-2 (:Measurements v))
-             :SamplingIdentifiers (mapv sample-1-1->1-2 (:Characteristics v)))
+             :SamplingIdentifiers [(sample-1-1->1-2 (:Characteristics v))])
       (dissoc :Measurements :Characteristics)))
 
 (defmethod interface/migrate-umm-version [:variable "1.2" "1.1"]
@@ -71,8 +71,8 @@
   [context v & _]
   ;; Migrate down to 1.2
   (-> v
-      (util/update-in-each [:Characteristics] update :IndexRanges index-ranges-1-2->1-3)
-      (util/update-in-each [:Characteristics] util/remove-nil-keys)
+      (update-in [:Characteristics] update :IndexRanges index-ranges-1-3->1-2)
+      (update-in [:Characteristics] util/remove-nil-keys)
       (dissoc :SizeEstimation
               :Alias)))
 

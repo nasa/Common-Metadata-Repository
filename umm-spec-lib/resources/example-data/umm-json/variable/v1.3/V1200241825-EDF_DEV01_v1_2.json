@@ -1,0 +1,69 @@
+{
+    "Name":"TotCH4_A",
+    "Definition":"Total Methane",
+    "LongName":"Total Methane",
+    "VariableType":"SCIENCE_VARIABLE",
+    "VariableSubType":"SCIENCE_VECTOR",
+    "Units":"ppv",
+    "DataType":"float32",
+    "Scale":1.0,
+    "Offset":0.0,
+    "ValidRanges":
+      [{
+        "Min":0.0,
+        "Max":1.0
+      }],
+    "FillValues":
+      [{
+        "Value":-9999.0,
+        "Type":"SCIENCE_FILLVALUE"
+      }],
+    "Dimensions":
+      [{
+        "Name":"YDim",
+        "Size":180.0,
+        "Type":"LATITUDE_DIMENSION"
+       },
+       {
+        "Name":"XDim",
+        "Size":360.0,
+        "Type":"LONGITUDE_DIMENSION"
+      }],
+    "Characteristics":
+      {
+        "IndexRanges":
+          {
+            "LatRange": [-90, 90],
+            "LonRange": [-180, 180]
+          }
+      },
+      
+    "Alias": "Test Alias",
+    "SizeEstimation": {"AverageSizeOfGranulesSampled": 1,
+  	                   "AvgCompressionRateASCII": 2,
+  	                   "AvgCompressionRateNetCDF4": 3},
+    "MeasurementIdentifiers":
+      [{
+        "MeasurementName":
+          [{
+            "MeasurementObject":"methane",
+            "MeasurementQuantity":"total_column"
+          }],
+        "MeasurementSource":"CF"
+      }],
+    "ScienceKeywords":
+      [{
+        "Category":"EARTH SCIENCE",
+        "Topic":"ATMOSPHERE",
+        "Term":"ATMOSPHERIC CHEMISTRY",
+        "VariableLevel1":"CARBON AND HYDROCARBON COMPOUNDS",
+        "VariableLevel2":"METHANE"
+      }],
+    "Sets":
+      [{
+        "Name":"/",
+        "Type":"General",
+        "Size":1.0,
+        "Index":1.0
+      }]
+}
