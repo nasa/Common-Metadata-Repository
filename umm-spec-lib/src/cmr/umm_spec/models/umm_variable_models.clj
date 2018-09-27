@@ -59,6 +59,12 @@
    ;; SCIENCE_VECTOR, SCIENCE_ARRAY, SCIENCE_EVENTFLAG, OTHER.
    VariableSubType
 
+   ;; The size estimation information of a variable.
+   SizeEstimation
+
+   ;; The alias for the name of a variable.
+   Alias
+
    ;; The measurement information of a variable.
    MeasurementIdentifiers
 
@@ -134,6 +140,21 @@
    CodeSystemIdentifierValue
   ])
 (record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+
+;; The elements of this section apply to variable size estimation.
+(defrecord SizeEstimationType
+  [
+   ;; This element contains the average size for the sampled granules in bytes.
+   AverageSizeOfGranulesSampled
+
+   ;; This element contains the average compression rate as a ratio for the granule in ASCII format.
+   AvgCompressionRateASCII
+
+   ;; This element contains the average compression rate as a ratio for the granule in NetCDF4
+   ;; format.
+   AvgCompressionRateNetCDF4
+  ])
+(record-pretty-printer/enable-record-pretty-printing SizeEstimationType)
 
 ;; The elements of this section apply to a measurement.
 (defrecord MeasurementIdentifierType
