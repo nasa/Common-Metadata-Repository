@@ -36,6 +36,19 @@
                            :short-name (:ShortName collection-ref)
                            :version-id (:Version collection-ref)})))
 
+(defn umm-g->Temporal
+  "Returns a UMM Temporal from a parsed UMM-G JSON"
+  [umm-g-json]
+  (let [temporal (:TemporalExtent umm-g-json)
+        range-date-time (when-let [range-date-time (:RangeDateTime temporal)]
+                          (umm-c/map->RangeDateTime
+                           {:beginning-date-time (:BeginningDateTime range-date-time)
+                            :ending-date-time (:EndingDateTime range-date-time)}))
+        single-date-time (:SingleDateTime temporal)]
+    (g/map->GranuleTemporal
+     {:range-date-time range-date-time
+      :single-date-time single-date-time})))
+
 (defn umm-g->Granule
   "Returns a UMM Granule from a parsed UMM-G JSON"
   [umm-g-json]
@@ -45,7 +58,7 @@
                         :collection-ref coll-ref
                         ; :data-granule (xml-elem->DataGranule umm-g-json)
                         ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
-                        ; :temporal (gt/xml-elem->Temporal umm-g-json)
+                        :temporal (umm-g->Temporal umm-g-json)
                         ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
                         ; :platform-refs (p-ref/xml-elem->PlatformRefs umm-g-json)
                         ; :project-refs (xml-elem->project-refs umm-g-json)
@@ -81,5 +94,12 @@
                             {:EntryTitle entry-title}
                             {:ShortName short-name
                              :Version version-id})
+     :TemporalExtent (if-let [single-date-time (:single-date-time temporal)]
+                       {:SingleDateTime (str single-date-time)}
+                       (when-let [range-date-time (:range-date-time temporal)]
+                         {:RangeDateTime
+                          {:BeginningDateTime (str (:beginning-date-time range-date-time))
+                           :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
+                                             (str ending-date-time))}}))
      }
     ))
