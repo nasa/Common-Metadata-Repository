@@ -32,7 +32,6 @@
       (dissoc :spatial-coverage)
       (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
-      (dissoc :platform-refs)
       (dissoc :project-refs)
       (dissoc :product-specific-attributes)
       (dissoc :cloud-cover)
@@ -72,6 +71,24 @@
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (p/parse-datetime "2018-07-17T00:00:00.000Z")
                                    :ending-date-time (p/parse-datetime "2018-07-17T23:59:59.999Z")})})
+    :platform-refs [(umm-lib-g/map->PlatformRef
+                     {:short-name "Aqua"
+                      :instrument-refs
+                      [(umm-lib-g/map->InstrumentRef
+                        {:short-name "AMSR-E"
+                         :characteristic-refs [(umm-lib-g/map->CharacteristicRef
+                                                {:name "InstrumentCaracteristicName1",
+                                                 :value "150"})
+                                               (umm-lib-g/map->CharacteristicRef
+                                                {:name "InstrumentCaracteristicName2",
+                                                 :value "22F"})]
+                         :sensor-refs [(umm-lib-g/map->SensorRef
+                                        {:short-name "AMSR-E_ChildInstrument",
+                                         :characteristic-refs
+                                         [(umm-lib-g/map->CharacteristicRef
+                                           {:name "ChildInstrumentCharacteristicName3",
+                                            :value "250"})]})]
+                         :operation-modes ["Mode1" "Mode2"]})]})]
     :spatial-coverage nil
     :related-urls nil}))
 

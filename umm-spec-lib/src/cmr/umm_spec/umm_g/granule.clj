@@ -5,6 +5,7 @@
    [cheshire.core :as json]
    [cmr.umm.umm-granule :as g]
    [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.common.util :as util])
   (:import cmr.umm.umm_granule.UmmGranule))
 
@@ -53,22 +54,23 @@
   "Returns a UMM Granule from a parsed UMM-G JSON"
   [umm-g-json]
   (let [coll-ref (umm-g->CollectionRef umm-g-json)]
-    (g/map->UmmGranule {:granule-ur (:GranuleUR umm-g-json)
-                        :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
-                        :collection-ref coll-ref
-                        ; :data-granule (xml-elem->DataGranule umm-g-json)
-                        ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
-                        :temporal (umm-g->Temporal umm-g-json)
-                        ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
-                        ; :platform-refs (p-ref/xml-elem->PlatformRefs umm-g-json)
-                        ; :project-refs (xml-elem->project-refs umm-g-json)
-                        ; :cloud-cover (cx/double-at-path umm-g-json [:CloudCover])
-                        ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
-                        ; :related-urls (ru/xml-elem->related-urls umm-g-json)
-                        ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
-                        ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
-                        ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
-                        })))
+    (g/map->UmmGranule
+     {:granule-ur (:GranuleUR umm-g-json)
+      :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
+      :collection-ref coll-ref
+      ; :data-granule (xml-elem->DataGranule umm-g-json)
+      ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
+      :temporal (umm-g->Temporal umm-g-json)
+      ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
+      :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
+      ; :project-refs (xml-elem->project-refs umm-g-json)
+      ; :cloud-cover (cx/double-at-path umm-g-json [:CloudCover])
+      ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
+      ; :related-urls (ru/xml-elem->related-urls umm-g-json)
+      ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
+      ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
+      ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
+      })))
 
 (defn Granule->umm-g
   "Returns UMM-G JSON from a umm-lib Granule"
@@ -101,5 +103,6 @@
                           {:BeginningDateTime (str (:beginning-date-time range-date-time))
                            :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
                                              (str ending-date-time))}}))
+     :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      }
     ))
