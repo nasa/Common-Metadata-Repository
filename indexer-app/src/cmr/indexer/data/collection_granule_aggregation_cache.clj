@@ -174,8 +174,8 @@
           {start2 :granule-start-date-stored end2 :granule-end-date-stored} gt2]
       {:granule-start-date-stored (if (< (compare start1 start2) 0) start1 start2)
        :granule-end-date-stored (when (and end1 end2) ;; If either is nil return nil
-                           ;; else return max time
-                           (if (> (compare end1 end2) 0) end1 end2))})
+                                  ;; else return max time
+                                  (if (> (compare end1 end2) 0) end1 end2))})
     (or gt1 gt2)))
 
 (defn- merge-coll-gran-aggregates
