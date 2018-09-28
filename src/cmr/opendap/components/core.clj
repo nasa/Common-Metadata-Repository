@@ -1,13 +1,14 @@
 (ns cmr.opendap.components.core
   (:require
     [cmr.authz.components.caching :as auth-caching]
-    [cmr.exchange.common.components.config :as config]
+    [cmr.exchange.common.components.config :as base-config]
     [cmr.exchange.common.components.logging :as logging]
     [cmr.http.kit.components.server :as httpd]
     [cmr.mission-control.components.pubsub :as pubsub]
     [cmr.opendap.components.auth :as auth]
     [cmr.opendap.components.caching :as concept-caching]
     [cmr.opendap.components.concept :as concept]
+    [cmr.opendap.components.config :as config]
     [cmr.opendap.config :as config-lib]
     [cmr.plugin.jar.components.registry :as plugin-registry]
     [com.stuartsierra.component :as component]))
@@ -18,7 +19,7 @@
 
 (defn cfg
   []
-  {:config (config/create-component (config-lib/data))})
+  {:config (base-config/create-component (config-lib/data))})
 
 (def log
   {:logging (component/using
@@ -55,9 +56,10 @@
               (concept/create-component)
               [:concept-caching :pubsub])})
 
-(def httpd
+(defn httpd
+  [cfg-data]
   {:httpd (component/using
-           (httpd/create-component)
+           (httpd/create-component (config/http-port cfg-data))
            [:config :logging :plugin
             :pubsub :auth-caching :auth
             :concept-caching :concepts])})
@@ -85,9 +87,10 @@
                      (concept-caching/create-component)
                      [:config])})
 
-(def httpd-without-logging
+(defn httpd-without-logging
+  [cfg-data]
   {:httpd (component/using
-           (httpd/create-component)
+           (httpd/create-component (config/http-port cfg-data))
            [:config :plugin :pubsub
             :auth-caching :auth
             :concept-caching :concepts])})
@@ -108,27 +111,29 @@
 
 (defn initialize-with-web
   []
+  (let [cfg-data (initialize-bare-bones)]
   (component/map->SystemMap
-    (merge (initialize-bare-bones)
+    (merge cfg-data
            reg
            pubsub
            auth-cache
            authz
            concept-cache
            concepts
-           httpd)))
+           (httpd cfg-data)))))
 
 (defn initialize-without-logging
   []
-  (component/map->SystemMap
-    (merge (cfg)
-           reg-without-logging
-           pubsub-without-logging
-           auth-cache-without-logging
-           authz
-           concept-cache-without-logging
-           concepts
-           httpd-without-logging)))
+  (let [cfg-data (cfg)]
+    (component/map->SystemMap
+      (merge cfg-data
+             reg-without-logging
+             pubsub-without-logging
+             auth-cache-without-logging
+             authz
+             concept-cache-without-logging
+             concepts
+             (httpd-without-logging cfg-data)))))
 
 (def init-lookup
   {:basic #'initialize-bare-bones

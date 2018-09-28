@@ -39,9 +39,10 @@
       (log/debug "Got site-routes:" (vec site-routes))
       (let [api-version (request/accept-api-version system req)
             api-routes (main-api-routes-fn system api-version)
-            _ (log/debug "Got plugins-api-routes:" (vec plugins-api-routes))
-            _ (log/debug "Got api-routes:" (vec api-routes))
+            _ (log/trace "Got plugins-api-routes:" (vec plugins-api-routes))
+            _ (log/trace "Got api-routes:" (vec api-routes))
             routes (concat site-routes plugins-api-routes api-routes)
+            _ (log/trace "Got assembled routes:" (vec routes))
             handler (ring/ring-handler (ring/router routes opts))]
         (log/debug "API version:" api-version)
         (log/debug "Made routes:" (vec routes))

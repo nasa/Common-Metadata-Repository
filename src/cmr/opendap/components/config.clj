@@ -103,19 +103,28 @@
 (def http-entry-point-fn httpd-config/http-entry-point-fn)
 (def http-assets httpd-config/http-assets)
 (def http-docs httpd-config/http-docs)
-(def http-port httpd-config/http-port)
 (def http-index-dirs httpd-config/http-index-dirs)
 (def http-replace-base-url httpd-config/http-replace-base-url)
 (def http-rest-docs-base-url-template httpd-config/http-rest-docs-base-url-template)
 (def http-rest-docs-outdir httpd-config/http-rest-docs-outdir)
 (def http-rest-docs-source httpd-config/http-rest-docs-source)
 (def http-skip-static httpd-config/http-skip-static)
-(def http-base-url httpd-config/http-base-url)
 (def streaming-heartbeat httpd-config/streaming-heartbeat)
 (def streaming-timeout httpd-config/streaming-timeout)
 (def api-routes httpd-config/api-routes)
 (def site-routes httpd-config/site-routes)
 (def default-page-title httpd-config/default-page-title)
+
+;; Overrides of the HTTPD config component
+(defn http-port
+  [system]
+  (or (get-in (get-cfg system) [:cmr :opendap :port])
+      (httpd-config/http-port system)))
+
+(defn http-base-url
+  [system]
+  (or (get-in (get-cfg system) [:cmr :opendap :relative :root :url])
+      (httpd-config/http-base-url system)))
 
 ;; From the common config component
 (def log-color? config/log-color?)
