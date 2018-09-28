@@ -317,8 +317,10 @@
 
           ;; Temporal range of min and max granule values or the same as collection start and end date
           ;; if the collection has not granules.
-          :granule-start-date             (m/stored m/date-field-mapping)
-          :granule-end-date               (m/stored m/date-field-mapping)
+          :granule-start-date             m/date-field-mapping
+          :granule-end-date               m/date-field-mapping
+          :granule-start-date-stored             (m/stored m/date-field-mapping)
+          :granule-end-date-stored               (m/stored m/date-field-mapping)
 
           :has-granules (m/stored m/bool-field-mapping)
           :has-granules-or-cwic (m/stored m/bool-field-mapping)
@@ -375,7 +377,7 @@
           :temporals temporal-mapping
 
           ;; nested mapping for limit_to_granules case.
-          ;; it either contains [{:start-date granule-start-date :end-date granule-end-date}]
+          ;; it either contains [{:start-date granule-start-date-stored :end-date granule-end-date-stored}]
           ;; or when there're no granules, contains all the temporal ranges within the collection
           :limit-to-granules-temporals temporal-mapping
 
