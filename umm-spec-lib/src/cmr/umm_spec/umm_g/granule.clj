@@ -2,11 +2,9 @@
   "Contains functions for parsing UMM-G JSON into umm-lib granule model
   and generating UMM-G JSON from umm-lib granule model."
   (:require
-   [cheshire.core :as json]
-   [cmr.umm.umm-granule :as g]
-   [cmr.umm.umm-collection :as umm-c]
    [cmr.umm-spec.umm-g.platform :as platform]
-   [cmr.common.util :as util])
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- get-date-by-type
