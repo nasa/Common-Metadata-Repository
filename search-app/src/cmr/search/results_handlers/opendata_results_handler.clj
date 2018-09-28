@@ -18,6 +18,7 @@
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.date-util :as umm-spec-date-util]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.related-url-helper :as ru]))
 
@@ -79,6 +80,8 @@
                          "publication-references"
                          "start-date"
                          "end-date"
+                         "granule-start-date-stored"
+                         "granule-end-date-stored"
                          "ords-info"
                          "ords"
                          "personnel"
@@ -128,11 +131,17 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
+          [granule-start-date-stored] :granule-start-date-stored
+          [granule-end-date-stored] :granule-end-date-stored
           [archive-center] :archive-center} :fields} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]
+        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        granule-start-date-stored (when granule-start-date-stored
+                                    (str/replace (str granule-start-date-stored) #"\+0000" "Z"))
+        granule-end-date-stored (when granule-end-date-stored
+                                  (str/replace (str granule-end-date-stored) #"\+0000" "Z"))]
     (merge {:id concept-id
             :title entry-title
             :short-name short-name
@@ -147,6 +156,8 @@
             :personnel personnel
             :start-date start-date
             :end-date end-date
+            :granule-start-date-stored granule-start-date-stored
+            :granule-end-date-stored granule-end-date-stored
             :provider-id provider-id
             :science-keywords-flat science-keywords-flat
             :entry-title entry-title
@@ -217,17 +228,31 @@
   [project-short-names]
   (conj project-short-names "geospatial"))
 
+(defn- get-issued-modified-time
+  "Get collection's issued/modified time. Parameter time could be either
+  the collection's insert-time or update-time. Parameter gran-time could be either
+  granule-start-date-stored or granule-end-date-stored.
+  when insert-time/update-time is nil or default value, get issued/modified time
+  from collection's earliest granule's start-date, and latest granule's end-date."
+  [time gran-time]
+  (if (and (not-empty time) (not= time (str umm-spec-date-util/parsed-default-date)))
+    time
+    gran-time))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
-                related-urls publication-references personnel shapes archive-center]} item]
+                related-urls publication-references personnel shapes archive-center
+                granule-start-date-stored granule-end-date-stored]} item
+        issued-time (get-issued-modified-time insert-time granule-start-date-stored)
+        modified-time (get-issued-modified-time update-time granule-end-date-stored)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
                            :keyword (keywords science-keywords-flat)
-                           :modified (or update-time (generate-end-date end-date))
+                           :modified (or modified-time (generate-end-date end-date))
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id
@@ -242,7 +267,7 @@
                            :language  [LANGUAGE_CODE]
                            :references (not-empty
                                         (map ru/related-url->encoded-url publication-references))
-                           :issued (not-empty insert-time)})))
+                           :issued (not-empty issued-time)})))
 
 (defn- results->opendata
   "Convert search results to opendata."

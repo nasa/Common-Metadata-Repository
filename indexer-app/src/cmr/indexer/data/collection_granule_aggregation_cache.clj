@@ -93,10 +93,10 @@
                              (get-in bucket [:max-temporal :value]))
                  some-with-no-end (> (get-in bucket [:no-end-date :doc_count]) 0)]]
        [concept-id
-        {:granule-start-date earliest-start
+        {:granule-start-date-stored earliest-start
          ;; Max end date will be nil if there are some that have no end date. This indicates they go on
          ;; forever.
-         :granule-end-date (when-not some-with-no-end latest-end)}]))))
+         :granule-end-date-stored (when-not some-with-no-end latest-end)}]))))
 
 (defn- fetch-coll-gran-aggregates
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
@@ -151,8 +151,8 @@
   (util/map-values
    (fn [aggregate-map]
      (-> aggregate-map
-         (update :granule-start-date joda-time->cachable-value)
-         (update :granule-end-date joda-time->cachable-value)))
+         (update :granule-start-date-stored joda-time->cachable-value)
+         (update :granule-end-date-stored joda-time->cachable-value)))
    coll-gran-aggregates))
 
 (defn- cached-value->coll-gran-aggregates
@@ -161,8 +161,8 @@
   (util/map-values
    (fn [aggregate-map]
      (-> aggregate-map
-         (update :granule-start-date cached-value->joda-time)
-         (update :granule-end-date cached-value->joda-time)))
+         (update :granule-start-date-stored cached-value->joda-time)
+         (update :granule-end-date-stored cached-value->joda-time)))
    cached-value))
 
 (defn- merge-granule-times
@@ -170,12 +170,12 @@
   [gt1 gt2]
 
   (if (and gt1 gt2)
-    (let [{start1 :granule-start-date end1 :granule-end-date} gt1
-          {start2 :granule-start-date end2 :granule-end-date} gt2]
-      {:granule-start-date (if (< (compare start1 start2) 0) start1 start2)
-       :granule-end-date (when (and end1 end2) ;; If either is nil return nil
-                           ;; else return max time
-                           (if (> (compare end1 end2) 0) end1 end2))})
+    (let [{start1 :granule-start-date-stored end1 :granule-end-date-stored} gt1
+          {start2 :granule-start-date-stored end2 :granule-end-date-stored} gt2]
+      {:granule-start-date-stored (if (< (compare start1 start2) 0) start1 start2)
+       :granule-end-date-stored (when (and end1 end2) ;; If either is nil return nil
+                                  ;; else return max time
+                                  (if (> (compare end1 end2) 0) end1 end2))})
     (or gt1 gt2)))
 
 (defn- merge-coll-gran-aggregates

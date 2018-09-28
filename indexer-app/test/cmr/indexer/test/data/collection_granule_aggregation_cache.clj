@@ -30,10 +30,10 @@
                      :no-end-date {:doc_count 1}}]}}})
 
 (def sample-coll-gran-aggregates
-  {"C1-PROV1" {:granule-start-date (t/date-time 2003)
-               :granule-end-date (t/date-time 2008)}
-   "C2-PROV1" {:granule-start-date (t/date-time 2001)
-               :granule-end-date nil}})
+  {"C1-PROV1" {:granule-start-date-stored (t/date-time 2003)
+               :granule-end-date-stored (t/date-time 2008)}
+   "C2-PROV1" {:granule-start-date-stored (t/date-time 2001)
+               :granule-end-date-stored nil}})
 
 
 (deftest parse-aggregations-response-test
@@ -71,8 +71,8 @@
 (def granule-dates
   "Generator of maps containing granule start and end dates where end date is optional"
   (gen/fmap (fn [[start end]]
-              {:granule-start-date start
-               :granule-end-date end})
+              {:granule-start-date-stored start
+               :granule-end-date-stored end})
             ;; generate 1 to 2 dates as longs in order from smallest to largest.
             (gen/fmap sort (gen/vector gen/s-pos-int 1 2))))
 
@@ -86,26 +86,26 @@
   [merged cg1 cg2]
   (every?
    true?
-   (for [[coll {:keys [granule-start-date granule-end-date]}] merged
+   (for [[coll {:keys [granule-start-date-stored granule-end-date-stored]}] merged
          :let [gt1 (get cg1 coll)
                gt2 (get cg2 coll)]]
      (if (and gt1 gt2)
-       (let [{cg1-start :granule-start-date cg1-end :granule-end-date} gt1
-             {cg2-start :granule-start-date cg2-end :granule-end-date} gt2]
+       (let [{cg1-start :granule-start-date-stored cg1-end :granule-end-date-stored} gt1
+             {cg2-start :granule-start-date-stored cg2-end :granule-end-date-stored} gt2]
 
          (and ;The start date is equal the smaller of the two
-              (= granule-start-date (min cg1-start cg2-start))
+              (= granule-start-date-stored (min cg1-start cg2-start))
 
               (or ;The granule end date is nil if one of the others is nil
-                  (and (nil? granule-end-date) (or (nil? cg1-end) (nil? cg2-end)))
+                  (and (nil? granule-end-date-stored) (or (nil? cg1-end) (nil? cg2-end)))
                   ;; else all three are present and granule end date is equal to the largest date.
-                  (and (some? granule-end-date) (some? cg1-end) (some? cg2-end)
-                       (= granule-end-date (max cg1-end cg2-end))))))
+                  (and (some? granule-end-date-stored) (some? cg1-end) (some? cg2-end)
+                       (= granule-end-date-stored (max cg1-end cg2-end))))))
 
 
-       (let [{start :granule-start-date end :granule-end-date} (or gt1 gt2)]
-         (and (= granule-start-date start)
-              (= granule-end-date end)))))))
+       (let [{start :granule-start-date-stored end :granule-end-date-stored} (or gt1 gt2)]
+         (and (= granule-start-date-stored start)
+              (= granule-end-date-stored end)))))))
 
 (defspec merging-collection-granule-aggrates-spec 100
   (for-all [[cg1 cg2] (gen/tuple collection-granule-aggregate-gen collection-granule-aggregate-gen)]
