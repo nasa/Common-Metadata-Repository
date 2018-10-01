@@ -53,7 +53,7 @@
 
 (def no-matching-service-pattern
   (str "There was a problem creating URLs from granule file data: couldn't "
-       "match default service pattern %s to service %s."))
+       "match any default service patterns (i.e.: %s) to service %s."))
 
 (def granule-metadata
   "There was a problem extracting granule metadata.")
