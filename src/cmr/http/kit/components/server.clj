@@ -10,7 +10,7 @@
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord HTTPD [])
+(defrecord HTTPD [port])
 
 (defn start
   "The `entry-point` in configuration needs to be of the form
@@ -30,11 +30,13 @@
   `cmr.http.kit.components.config`."
   [this]
   (log/info "Starting httpd component ...")
-  (let [port (config/http-port this)
+  (let [port (or (:port this)
+                 (config/http-port this))
         entry-point (config/http-entry-point-fn this)
         server (server/run-server (entry-point this)
                                   {:port port})]
     (log/trace "Entry point:" entry-point)
+    (log/trace "System data:" (into {} this))
     (log/debugf "HTTPD is listening on port %s" port)
     (log/debug "Started httpd component.")
     (assoc this :server server)))
@@ -60,5 +62,7 @@
 
 (defn create-component
   ""
-  []
-  (map->HTTPD {}))
+  ([]
+    (map->HTTPD {}))
+  ([port]
+    (map->HTTPD {:port port})))
