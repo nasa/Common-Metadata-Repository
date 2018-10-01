@@ -78,10 +78,21 @@
 (def platform-ref-short-names
   (ext-gen/string-ascii 1 10))
 
+(def project-ref-short-names
+  (ext-gen/string-ascii 1 40))
+
+(def project-ref-campaign-names
+  (ext-gen/string-ascii 1 40))
+
 (def platform-refs
   (ext-gen/model-gen g/->PlatformRef
                      platform-ref-short-names
                      (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
+
+(def project-refs
+  (ext-gen/model-gen g/->ProjectRef
+                     project-ref-short-names
+                     (ext-gen/nil-if-empty (gen/vector project-ref-campaign-names 0 4))))
 
 (def measured-parameter-names
   (ext-gen/string-ascii 1 10))
@@ -150,7 +161,7 @@
                                           (gen/vector
                                             spatial-gen/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
-      :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10) 0 3))
+      :project-refs (ext-gen/nil-if-empty (gen/vector project-refs 0 4))
       :cloud-cover (ext-gen/optional cloud-cover-values)
       :two-d-coordinate-system (ext-gen/optional two-d-coordinate-system)
       :related-urls (ext-gen/nil-if-empty (gen/vector c/related-url 0 5))
