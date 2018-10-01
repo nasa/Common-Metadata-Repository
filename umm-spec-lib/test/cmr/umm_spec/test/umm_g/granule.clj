@@ -100,5 +100,3 @@
 (deftest parse-granule-test
   (testing "parse granule"
     (is (= expected-granule (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))
-
-(comment (def sample-umm-g-granule #cmr.umm.umm_granule.UmmGranule{:granule-ur "!", :data-provider-timestamps #cmr.umm.umm_granule.DataProviderTimestamps{:insert-time #=(cmr.common.joda-time/date-time 0 "UTC"), :update-time #=(cmr.common.joda-time/date-time 0 "UTC"), :delete-time nil}, :collection-ref #cmr.umm.umm_granule.CollectionRef{:entry-title nil, :short-name "p", :version-id "pAk1f", :entry-id nil}, :data-granule nil, :access-value nil, :temporal #cmr.umm.umm_granule.GranuleTemporal{:range-date-time #cmr.umm.umm_collection.RangeDateTime{:beginning-date-time #=(cmr.common.joda-time/date-time 0 "UTC"), :ending-date-time nil}, :single-date-time nil}, :spatial-coverage nil, :orbit-calculated-spatial-domains nil, :measured-parameters nil, :platform-refs nil, :project-refs [#cmr.umm.umm_granule.ProjectRef{:short-name "!", :campaigns nil}], :related-urls nil, :product-specific-attributes nil, :cloud-cover nil, :two-d-coordinate-system nil}))
