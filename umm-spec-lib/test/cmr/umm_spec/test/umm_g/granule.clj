@@ -26,9 +26,8 @@
 (defn- sanitize-operation-modes
   "Sanitizer for operation-modes, if sequence it removes duplicates, if nil it inserts a not provided."
   [operation-modes]
-  (cond
-    (seq operation-modes) (distinct operation-modes)
-    (nil? operation-modes) nil))
+  (when (seq operation-modes)
+    (distinct operation-modes)))
 
 (defn- sanitize-granule
   "Sanitizes umm-lib generated granule."
