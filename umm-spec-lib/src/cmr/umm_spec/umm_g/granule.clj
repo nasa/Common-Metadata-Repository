@@ -4,6 +4,7 @@
   (:require
    [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
+   [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -57,19 +58,19 @@
      {:granule-ur (:GranuleUR umm-g-json)
       :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
       :collection-ref coll-ref
-      ; :data-granule (xml-elem->DataGranule umm-g-json)
-      ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
       :temporal (umm-g->Temporal umm-g-json)
-      ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
       :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
       :cloud-cover (:CloudCover umm-g-json)
-      ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
+      :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
+                                (:TilingIdentificationSystem umm-g-json))})))
+      ; :data-granule (xml-elem->DataGranule umm-g-json)
+      ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
+      ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       ; :related-urls (ru/xml-elem->related-urls umm-g-json)
       ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
       ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
       ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
-      })))
 
 (defn Granule->umm-g
   "Returns UMM-G JSON from a umm-lib Granule"
@@ -105,4 +106,4 @@
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
-     }))
+     :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system)}))
