@@ -37,22 +37,4 @@
    :color false}
  :mission-control {
    :messaging-type :core-async}
- :plugin {
-   :jarfiles {
-     ;; The reducer factory function must take two args: plugin name and plugin
-     ;; type -- both of type ^String. The default reducer checks for an exact
-     ;; string match.
-     :reducer-factory cmr.plugin.jar.core/create-has-plugin-type-reducer}
-   :registry {
-     :default {
-       :plugin-name "CMR-Plugin"
-       :plugin-type "service-bridge-app"
-       ;; The fowllowing needs to be an in-JAR path to a plugin's config file,
-       ;; which will be read once its plugin has been identifed as a plugin of
-       ;; the desired name/type.
-       :config-file "config/cmr-plugin/config.edn"}
-     :web {
-       :route-keys [:httpd :route-fns]
-       :api-route-key :api
-       :site-route-key :site}}}
  :vendor "cmr-metadata-proxy"}
