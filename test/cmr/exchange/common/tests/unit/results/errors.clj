@@ -8,8 +8,6 @@
   (merge errors/status-map
          {errors/server-error-code #{"Server problem"}}))
 
-;; XXX Some of these tests may need to be moved into
-;;     cmr.exchange.common.tests.unit.results.errors
 (deftest any-client-errors?
   (is (not (errors/any-client-errors? {:errors []})))
   (is (errors/any-client-errors? errors/status-map
