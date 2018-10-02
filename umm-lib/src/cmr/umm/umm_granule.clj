@@ -99,12 +99,6 @@
    instrument-refs
   ])
 
-(defrecord ProjectRef
-  [
-   short-name
-   campaigns
-   ])
-
 (defrecord SpatialCoverage
   [
    ;; Only one of the following two should be present
