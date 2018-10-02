@@ -36,7 +36,9 @@
   "This is a lookup data structure for how HTTP status/error codes map to CMR
   OPeNDAP errors."
   {client-error-code #{not-implemented
-                       unsupported}
+                       unsupported
+                       invalid-parameter
+                       missing-parameters}
    server-error-code #{}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,18 +46,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn any-client-errors?
+  "In arity-1, expections a map of the form `{:errors [...]}`. In arity-2,
+  the first parameter is a status map with keys being error codes and values
+  being the error messages associated with those codes."
   ([errors]
     (any-client-errors? status-map errors))
   ([errors-map errors]
-    (seq (set/intersection (get errors-map client-error-code)
-                           (set (:errors errors))))))
+    (not
+      (nil?
+        (seq (set/intersection (get errors-map client-error-code)
+                               (set (:errors errors))))))))
 
 (defn any-server-errors?
+  "In arity-1, expections a map of the form `{:errors [...]}`. In arity-2,
+  the first parameter is a status map with keys being error codes and values
+  being the error messages associated with those codes."
   ([errors]
     (any-server-errors? status-map errors))
   ([errors-map errors]
-    (seq (set/intersection (get errors-map server-error-code)
-                           (set (:errors errors))))))
+    (not
+      (nil?
+        (seq (set/intersection (get errors-map server-error-code)
+                               (set (:errors errors))))))))
 
 (defn check
   ""
