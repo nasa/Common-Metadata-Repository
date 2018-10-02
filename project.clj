@@ -72,20 +72,6 @@
         [com.google.javascript/closure-compiler-unshaded]
         ;; The following is excluded because it stomps on twig's logger
         [org.slf4j/slf4j-simple]]}
-    :geo {
-      :repositories [
-        ["osgeo" "https://download.osgeo.org/webdav/geotools"]]
-      :source-paths [
-        "geo/src"
-        "geo/test"]
-      :exclusions [
-        [net.sf.geographiclib/GeographicLib-Java]]
-      :dependencies [
-        [com.esri.geometry/esri-geometry-api "2.2.0"]
-        [com.vividsolutions/jts "1.13"]
-        [net.sf.geographiclib/GeographicLib-Java "1.49"]
-        [org.geotools/gt-geometry "19.1"]
-        [org.geotools/gt-referencing "19.1"]]}
     :system {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
@@ -132,19 +118,17 @@
         :default (complement :system)}}}
   :aliases {
     ;; Dev & Testing Aliases
+    ;; Dev & Testing Aliases
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
-    "repl-geo" ["do"
-      ["clean"]
-      ["with-profile" "+local,+system,+geo" "repl"]]
     "version" ["do"
       ["version"]
       ["shell" "echo" "-n" "CMR OUS: "]
       ["project-version"]]
-    "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
-    "uberjar" ["with-profile" "+system,+geo" "uberjar"]
-    "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
+    "ubercompile" ["with-profile" "+system,+local,+ubercompile" "compile"]
+    "uberjar" ["with-profile" "+system" "uberjar"]
+    "uberjar-aot" ["with-profile" "+system,+ubercompile" "uberjar"]
     "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
@@ -161,15 +145,13 @@
       ]
     "ltest" ["with-profile" "+test,+system" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
-    "ltest-with-geo" ["with-profile" "+test,+system,+geo" "ltest"]
-    "junit-with-geo" ["with-profile" "+test,+system,+geo" "test2junit"]
     ;; Security
-    "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
+    "check-sec" ["with-profile" "+system,+local,+security" "do"
       ["clean"]
       ["nvd" "check"]]
     ;; Documentation and static content
-    "codox" ["with-profile" "+docs,+system,+geo" "codox"]
-    "marginalia" ["with-profile" "+docs,+system,+geo"
+    "codox" ["with-profile" "+docs,+system" "codox"]
+    "marginalia" ["with-profile" "+docs,+system"
       "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
@@ -177,16 +159,26 @@
       ["codox"]
       ["marginalia"]]
     ;; Build tasks
+    "build-jar" ["with-profile" "+security" "jar"]
+    "build-uberjar" ["with-profile" "+security" "uberjar"]
     "build-lite" ["do"
       ["ltest" ":unit"]]
     "build" ["do"
       ["clean"]
-      ["ltest-with-geo" ":unit"]
-      ["junit-with-geo" ":unit"]
+      ["check-vers"]
+      ["check-sec"]
+      ["ltest" ":unit"]
+      ["junit" ":unit"]
       ["ubercompile"]
-      ["uberjar"]]
+      ["build-uberjar"]]
     "build-full" ["do"
       ["ltest" ":unit"]
       ["generate-static"]
       ["ubercompile"]
-      ["uberjar"]]})
+      ["build-uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+system,+security" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]})
+
