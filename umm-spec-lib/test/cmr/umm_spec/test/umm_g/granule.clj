@@ -28,7 +28,7 @@
   [operation-modes]
   (cond
     (seq operation-modes) (distinct operation-modes)
-    (nil? operation-modes) [su/not-provided]))
+    (nil? operation-modes) nil))
 
 (defn- sanitize-granule
   "Sanitizes umm-lib generated granule."
