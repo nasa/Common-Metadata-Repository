@@ -62,13 +62,14 @@
       :temporal (umm-g->Temporal umm-g-json)
       ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
-      :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))})))
-      ; :cloud-cover (cx/double-at-path umm-g-json [:CloudCover])
+      :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
+      :cloud-cover (:CloudCover umm-g-json)
       ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
       ; :related-urls (ru/xml-elem->related-urls umm-g-json)
       ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
       ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
       ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
+      })))
 
 (defn Granule->umm-g
   "Returns UMM-G JSON from a umm-lib Granule"
@@ -102,4 +103,5 @@
                            :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
                                              (str ending-date-time))}}))
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
+     :CloudCover cloud-cover
      :Projects (project/ProjectRefs->umm-g-projects project-refs)}))
