@@ -51,7 +51,6 @@
       (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :product-specific-attributes)
-      (dissoc :cloud-cover)
       (dissoc :two-d-coordinate-system)
       (dissoc :measured-parameters)
       umm-lib-g/map->UmmGranule))
@@ -108,6 +107,7 @@
                                            {:name "ChildInstrumentCharacteristicName3",
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
+    :cloud-cover 60
     :project-refs ["Campaign1" "Campaign2" "Campaign3"]
     :spatial-coverage nil
     :related-urls nil}))
