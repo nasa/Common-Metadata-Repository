@@ -8,7 +8,7 @@
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-project->ProjectRef
-  "Returns the umm-lib granule model PlatformRef from the given UMM-G Project."
+  "Returns the umm-lib granule model ProjectRef from the given UMM-G Project."
   [project]
   (:Campaigns project))
 
@@ -18,7 +18,7 @@
   (seq (reduce concat [] (map umm-g-project->ProjectRef projects))))
 
 (defn ProjectRefs->umm-g-projects
-  "Returns the UMM-G Platforms from the given umm-lib granule model ProjectRefs."
+  "Returns the UMM-G Projects from the given umm-lib granule model ProjectRefs."
   [project-refs]
   (when (seq project-refs)
     [{:ShortName util/not-provided
