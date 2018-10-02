@@ -62,7 +62,7 @@
       ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
       ; :project-refs (xml-elem->project-refs umm-g-json)
-      ; :cloud-cover (cx/double-at-path umm-g-json [:CloudCover])
+      :cloud-cover (:CloudCover umm-g-json)
       ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
       ; :related-urls (ru/xml-elem->related-urls umm-g-json)
       ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
@@ -102,5 +102,6 @@
                            :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
                                              (str ending-date-time))}}))
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
+     :CloudCover cloud-cover
      }
     ))

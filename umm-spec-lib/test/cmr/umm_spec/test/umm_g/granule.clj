@@ -34,7 +34,6 @@
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :project-refs)
       (dissoc :product-specific-attributes)
-      (dissoc :cloud-cover)
       (dissoc :two-d-coordinate-system)
       (dissoc :measured-parameters)
       umm-lib-g/map->UmmGranule))
@@ -89,6 +88,7 @@
                                            {:name "ChildInstrumentCharacteristicName3",
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
+    :cloud-cover 60
     :spatial-coverage nil
     :related-urls nil}))
 
