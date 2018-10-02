@@ -1,6 +1,6 @@
-# cmr-ous-plugin
+# cmr-metadata-proxy
 
-*A CMR services plugin that performs URL translations for subsetted GIS data*
+*A library that provides convenience functions for accessing and locally caching CMR metadata (granules, collections, variables, services, etc.)*
 
 [![Build Status][travis-badge]][travis]
 [![Security Scan][security-scan-badge]][travis]
@@ -48,12 +48,12 @@ Distributed under the Apache License, Version 2.0.
 <!-- Named page links below: /-->
 
 [logo]: https://avatars2.githubusercontent.com/u/32934967?s=200&v=4
-[travis]: https://travis-ci.org/cmr-exchange/cmr-ous-plugin
-[travis-badge]: https://travis-ci.org/cmr-exchange/cmr-ous-plugin.png?branch=master
+[travis]: https://travis-ci.org/cmr-exchange/cmr-metadata-proxy
+[travis-badge]: https://travis-ci.org/cmr-exchange/cmr-metadata-proxy.png?branch=master
 [deps-badge]: https://img.shields.io/badge/deps%20check-passing-brightgreen.svg
-[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-ous-plugin.svg
-[tag]: https://github.com/cmr-exchange/cmr-ous-plugin/tags
+[tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-metadata-proxy.svg
+[tag]: https://github.com/cmr-exchange/cmr-metadata-proxy/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
-[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-ous-plugin
-[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-ous-plugin.svg
+[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-metadata-proxy
+[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-metadata-proxy.svg
 [security-scan-badge]: https://img.shields.io/badge/nvd%2Fsecurity%20scan-passing-brightgreen.svg

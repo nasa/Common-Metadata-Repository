@@ -1,8 +1,9 @@
 (ns cmr.metadata.proxy.components.config
   (:require
+   [cmr.authz.components.config :as authz-config]
    [cmr.exchange.common.components.config :as config]
    [cmr.http.kit.components.config :as httpd-config]
-   [cmr.ous.config :as config-lib]
+   [cmr.metadata.proxy.config :as config-lib]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import

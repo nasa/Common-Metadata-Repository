@@ -1,9 +1,9 @@
-(ns ^:system cmr.opendap.tests.system.ous.granule
+(ns ^:system cmr.metadata.proxy.tests.system.concepts.granule
   "Note: this namespace is exclusively for system tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.ous.concepts.granule :as granule]
-    [cmr.opendap.testing.config :as test-system]
+    [cmr.metadata.proxy.concepts.granule :as granule]
+    [cmr.metadata.proxy.testing.config :as test-system]
     [ring.util.codec :as codec]))
 
 (use-fixtures :once test-system/with-system)

@@ -1,5 +1,5 @@
-(ns cmr.ous.repl
-  "CMR OUS development namespace."
+(ns cmr.metadata.proxy.repl
+  "CMR metadata-proxy development namespace."
   (:require
    [cheshire.core :as json]
    [clojure.data.xml :as xml]
@@ -15,40 +15,28 @@
    [cmr.exchange.common.util :as common-util]
    [cmr.exchange.query.impl.cmr :as cmr]
    [cmr.exchange.query.impl.wcs :as wcs]
+   [cmr.metadata.proxy.components.caching :as concept-caching]
    [cmr.metadata.proxy.concepts.variable :as variable]
-   [cmr.ous.components.caching :as concept-caching]
-   [cmr.ous.components.config :as config]
-   [cmr.ous.components.core]
-   [cmr.ous.config :as config-lib]
-   ; [cmr.ous.geog :as geog]
-   [cmr.ous.http.request :as request]
-   [cmr.ous.http.response :as response]
-   [cmr.ous.results.errors :as errors]
-   [cmr.plugin.jar.components.registry :as plugin-registry]
-   [cmr.plugin.jar.core :as jar-plugin]
-   [cmr.plugin.jar.jarfile :as jarfile]
+   [cmr.metadata.proxy.components.config :as config]
+   [cmr.metadata.proxy.components.core]
+   [cmr.metadata.proxy.config :as config-lib]
    [com.stuartsierra.component :as component]
-   [debugger.core :as debug]
-   [environ.core :as environ]
    [org.httpkit.client :as httpc]
    [ring.util.codec :as codec]
-   [trifl.java :refer [show-methods]]
-   [xml-in.core :as xml-in])
+   [trifl.java :refer [show-methods]])
   (:import
    (cmr.exchange.query.impl.cmr CollectionCmrStyleParams)
    (cmr.exchange.query.impl.wcs CollectionWcsStyleParams)
    (java.net URI)
-   (java.nio.file Paths)
-   ; (net.sf.geographiclib Geodesic PolygonArea)
-   ))
+   (java.nio.file Paths)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def setup-options {
-  :init 'cmr.ous.components.core/init
-  :after-refresh 'cmr.ous.repl/init-and-startup
+  :init 'cmr.metadata.proxy.components.core/init
+  :after-refresh 'cmr.metadata.proxy.repl/init-and-startup
   :throw-errors false})
 
 (defn init
