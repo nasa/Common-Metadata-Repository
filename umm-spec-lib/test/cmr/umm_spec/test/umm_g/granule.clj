@@ -7,7 +7,9 @@
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.umm-spec-core :as core]
+   [cmr.umm-spec.util :as su]
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
@@ -21,6 +23,22 @@
   "Generator for UMM-G granule in umm-lib Granule model."
   (gen/fmap #(assoc % :collection-ref (gen/generate umm-g-coll-refs)) gran-gen/granules))
 
+(defn- sanitize-operation-modes
+  "Sanitizer for operation-modes, if sequence it removes duplicates, if nil it inserts a not provided."
+  [operation-modes]
+  (when (seq operation-modes)
+    (distinct operation-modes)))
+
+(defn- sanitize-granule
+  "Sanitizes umm-lib generated granule."
+  [umm]
+  (-> umm
+      (update :project-refs (fn [x] (when (seq x) (distinct x))))
+      (update :platform-refs (fn [x] (when (seq x) (distinct x))))
+      (util/update-in-each
+       [:platform-refs]
+       #(util/update-in-each % [:instrument-refs] update :operation-modes sanitize-operation-modes))))
+
 (defn- umm->expected-parsed
   "Modifies the UMM record for testing UMM-G. As the fields are added to UMM-G support for
   parsing and generating in cmr.umm-spec.umm-g.granule, the fields should be taken off the
@@ -32,7 +50,6 @@
       (dissoc :spatial-coverage)
       (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
-      (dissoc :project-refs)
       (dissoc :product-specific-attributes)
       (dissoc :two-d-coordinate-system)
       (dissoc :measured-parameters)
@@ -40,12 +57,14 @@
 
 (defspec generate-granule-is-valid-umm-g-test 100
   (for-all [granule umm-g-granules]
-    (let [metadata (core/generate-metadata {} granule :umm-json)]
+    (let [granule (sanitize-granule granule)
+          metadata (core/generate-metadata {} granule :umm-json)]
       (empty? (core/validate-metadata :granule :umm-json metadata)))))
 
 (defspec generate-and-parse-umm-g-granule-test 100
   (for-all [granule umm-g-granules]
-    (let [umm-g-metadata (core/generate-metadata {} granule :umm-json)
+    (let [granule (sanitize-granule granule)
+          umm-g-metadata (core/generate-metadata {} granule :umm-json)
           parsed (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           expected-parsed (umm->expected-parsed granule)]
       (= parsed expected-parsed))))
@@ -89,6 +108,7 @@
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
     :cloud-cover 60
+    :project-refs ["Campaign1" "Campaign2" "Campaign3"]
     :spatial-coverage nil
     :related-urls nil}))
 

@@ -3,6 +3,7 @@
   and generating UMM-G JSON from umm-lib granule model."
   (:require
    [cmr.umm-spec.umm-g.platform :as platform]
+   [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -61,7 +62,7 @@
       :temporal (umm-g->Temporal umm-g-json)
       ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
-      ; :project-refs (xml-elem->project-refs umm-g-json)
+      :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
       :cloud-cover (:CloudCover umm-g-json)
       ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
       ; :related-urls (ru/xml-elem->related-urls umm-g-json)
@@ -103,5 +104,4 @@
                                              (str ending-date-time))}}))
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
-     }
-    ))
+     :Projects (project/ProjectRefs->umm-g-projects project-refs)}))
