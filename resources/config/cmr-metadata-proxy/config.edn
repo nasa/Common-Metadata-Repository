@@ -55,4 +55,4 @@
        :route-keys [:httpd :route-fns]
        :api-route-key :api
        :site-route-key :site}}}
- :vendor "cmr-opendap"}
+ :vendor "cmr-metadata-proxy"}

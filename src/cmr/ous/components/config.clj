@@ -4,6 +4,7 @@
    [cmr.exchange.common.components.config :as config]
    [cmr.http.kit.components.config :as httpd-config]
    [cmr.metadata.proxy.components.config :as metadata-config]
+   [cmr.metadata.proxy.config :as metadata-config-lib]
    [cmr.ous.config :as config-lib]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
@@ -38,15 +39,32 @@
 
 (defn get-cmr-search-endpoint
   [system]
-  (get-search-url system))
+  (metadata-config/get-search-url system))
 
 (defn get-giovanni-endpoint
   [system]
-  (config-lib/service->url (get-in (get-cfg system) [:giovanni :search])))
+  (metadata-config-lib/service->url
+   (get-in (get-cfg system) [:giovanni :search])))
 
 (defn get-edsc-endpoint
   [system]
-  (config-lib/service->url (get-in (get-cfg system) [:edsc :search])))
+  (metadata-config-lib/service->url
+   (get-in (get-cfg system) [:edsc :search])))
+
+(defn opendap-base-url
+  "This function returns the cmr-opendap URL with a trailing slash, but without
+  the 'opendap' appended."
+  [system]
+  (str
+    (metadata-config-lib/service->base-public-url
+     (metadata-config/get-service system :opendap)) "/"))
+
+(defn opendap-url
+  "This function returns the cmr-opendap URL with a trailing slash."
+  [system]
+  (str
+    (metadata-config-lib/service->public-url
+     (metadata-config/get-service system :opendap)) "/"))
 
 (def authz-cache-dumpfile #'authz-config/cache-dumpfile)
 (def authz-cache-init #'authz-config/cache-init)
@@ -63,8 +81,6 @@
 
 (def get-service #'metadata-config/get-service)
 (def cmr-base-url #'metadata-config/cmr-base-url)
-(def opendap-base-url #'metadata-config/opendap-base-url)
-(def opendap-url #'metadata-config/opendap-url)
 (def get-service-url #'metadata-config/get-service-url)
 
 ;; The URLs returned by these functions have no trailing slash:

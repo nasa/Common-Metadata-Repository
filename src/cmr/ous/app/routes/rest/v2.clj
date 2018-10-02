@@ -38,8 +38,7 @@
       :get {:handler (concept-cache-handler/lookup httpd-component)
             :roles #{:admin}}
       :delete {:handler (concept-cache-handler/evict httpd-component)
-               :roles #{:admin}}}]]
-   (routes-v1/admin-api httpd-component)))
+               :roles #{:admin}}}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Assembled Routes   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,10 +1,10 @@
-(ns cmr.opendap.tests.unit.ous.util.geog
+(ns cmr.ous.tests.unit.util.geog
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
     [clojusc.twig :as logger]
-    [cmr.opendap.const :as const]
-    [cmr.opendap.ous.util.geog :as geog]
+    [cmr.ous.const :as const]
+    [cmr.ous.util.geog :as geog]
     [ring.util.codec :as codec]))
 
 (logger/set-level! '[] :fatal)

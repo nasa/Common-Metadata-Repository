@@ -4,7 +4,7 @@
    [clojure.java.io :as io]
    [clojusc.twig :as twig]
    [cmr.authz.components.caching :as caching]
-   [cmr.ous.http.response :as response]
+   [cmr.ous.util.http.response :as response]
    [taoensso.timbre :as log]))
 
 (defn lookup-all

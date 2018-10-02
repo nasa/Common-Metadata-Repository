@@ -1,13 +1,9 @@
-(ns cmr.ous.query.core
+(ns cmr.ous.util.query
   (:require
    [clojure.string :as string]
    [cmr.exchange.query.core :as query]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [parse]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   High-level API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn parse
   "This is a convenience function for calling code that wants to create a

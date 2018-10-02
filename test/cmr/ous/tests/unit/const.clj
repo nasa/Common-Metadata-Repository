@@ -1,9 +1,9 @@
-(ns cmr.opendap.tests.unit.const
+(ns cmr.ous.tests.unit.const
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.const :as const]))
+    [cmr.ous.const :as const]))
 
 (deftest user-agent
-  (is (= "CMR OPeNDAP Service/1.0 (+https://github.com/cmr-exchange/cmr-opendap)"
+  (is (= "CMR Service-Bridge/1.0 (+https://github.com/cmr-exchange/cmr-ous-plugin)"
          const/user-agent)))

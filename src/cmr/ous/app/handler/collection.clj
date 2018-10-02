@@ -9,10 +9,10 @@
    [cmr.exchange.query.core :as base-query]
    [cmr.ous.components.config :as config]
    [cmr.ous.core :as ous]
-   [cmr.ous.http.request :as request]
-   [cmr.ous.http.response :as response]
-   [cmr.ous.query.core :as query]
    [cmr.ous.results.errors :as errors]
+   [cmr.ous.util.http.request :as request]
+   [cmr.ous.util.http.response :as response]
+   [cmr.ous.util.query :as query]
    [org.httpkit.server :as server]
    [org.httpkit.timer :as timer]
    [taoensso.timbre :as log]))

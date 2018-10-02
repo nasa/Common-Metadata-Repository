@@ -9,7 +9,7 @@
   (:import
     (clojure.lang Keyword)))
 
-(def config-file "config/cmr-ous/config.edn")
+(def config-file "config/cmr-plugin/config.edn")
 
 (defn base-data
   ([]

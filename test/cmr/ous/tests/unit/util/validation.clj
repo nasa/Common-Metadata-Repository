@@ -1,8 +1,8 @@
-(ns cmr.opendap.tests.unit.validation
+(ns cmr.ous.tests.unit.util.validation
   "Note: this namespace is exclusively for unit tests."
   (:require
    [clojure.test :refer :all]
-   [cmr.opendap.validation :as validation]))
+   [cmr.ous.util.validation :as validation]))
 
 (deftest check-latitude
   (is (validation/check-latitude [-90 90]))

@@ -8,7 +8,7 @@
   (:import
     (clojure.lang Keyword)))
 
-(def config-file "config/cmr-metadata.proxy/config.edn")
+(def config-file "config/cmr-metadata-proxy/config.edn")
 
 (defn base-data
   ([]
