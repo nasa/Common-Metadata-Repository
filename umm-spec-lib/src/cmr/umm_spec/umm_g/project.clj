@@ -7,15 +7,10 @@
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
 
-(defn- umm-g-project->ProjectRef
-  "Returns the umm-lib granule model ProjectRef from the given UMM-G Project."
-  [project]
-  (:Campaigns project))
-
 (defn umm-g-projects->ProjectRefs
   "Returns the umm-lib granule model ProjectRefs from the given UMM-G Projects."
   [projects]
-  (seq (reduce concat [] (map umm-g-project->ProjectRef projects))))
+  (seq (distinct (reduce concat [] (map :Campaigns projects)))))
 
 (defn ProjectRefs->umm-g-projects
   "Returns the UMM-G Projects from the given umm-lib granule model ProjectRefs."
