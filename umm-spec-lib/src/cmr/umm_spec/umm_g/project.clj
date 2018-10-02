@@ -10,7 +10,7 @@
 (defn umm-g-projects->ProjectRefs
   "Returns the umm-lib granule model ProjectRefs from the given UMM-G Projects."
   [projects]
-  (seq (distinct (reduce concat [] (map :Campaigns projects)))))
+  (seq (distinct (mapcat :Campaigns projects))))
 
 (defn ProjectRefs->umm-g-projects
   "Returns the UMM-G Projects from the given umm-lib granule model ProjectRefs."
