@@ -1,4 +1,4 @@
-(ns cmr.ous.http.request
+(ns cmr.ous.util.http.request
   (:require
    [cmr.http.kit.request :as request]
    [cmr.ous.components.config :as config]

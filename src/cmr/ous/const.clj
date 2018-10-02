@@ -8,15 +8,15 @@
 ;;     component ...
 (def client-id "cmr-ous")
 (def user-agent
-  "CMR OPeNDAP Service/1.0 (+https://github.com/cmr-exchange/cmr-ous-plugin)")
+  "CMR Service-Bridge/1.0 (+https://github.com/cmr-exchange/cmr-ous-plugin)")
 
 (def default-lon-lo -180.0)
 (def default-lon-hi 180.0)
 (def default-lat-lo -90.0)
 (def default-lat-hi 90.0)
 
-(def default-lon-abs-hi const/default-lon-abs-hi
-(def default-lat-abs-hi const/default-lat-abs-hi
+(def default-lon-abs-hi const/default-lon-abs-hi)
+(def default-lat-abs-hi const/default-lat-abs-hi)
 
 (def default-lon-abs-lo 0.0)
 (def default-lat-abs-lo 0.0)

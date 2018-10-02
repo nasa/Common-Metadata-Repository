@@ -40,17 +40,16 @@
 (def empty-query-string
   "No OPeNDAP query string was generated for the request.")
 
+(def client-errors-set
+  (get metadata-errors/status-map errors/client-error-code))
+
 (def server-errors-set
-  (errors/server-error-code metadata-errors/status-map))
+  (get metadata-errors/status-map errors/server-error-code))
 
 (def status-map
   "This is a lookup data structure for how HTTP status/error codes map to CMR
   OPeNDAP errors."
   (util/deep-merge
     errors/status-map
-    {errors/client-error-code #{empty-svc-pattern
-                                invalid-lat-params
-                                invalid-lon-params
-                                unsupported-processing-level
-                                problem-processing-level}
-     errors/server-error-code server-errors-set}))
+    metadata-errors/status-map
+    {errors/client-error-code #{client-errors-set}}))

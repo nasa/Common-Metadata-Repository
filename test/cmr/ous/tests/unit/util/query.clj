@@ -1,9 +1,9 @@
-(ns cmr.opendap.tests.unit.query.core
+(ns cmr.ous.tests.unit.util.query
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
     [clojure.string :as string]
-    [cmr.opendap.query.core :as query])
+    [cmr.ous.util.query :as query])
   (:refer-clojure :exclude [parse]))
 
 (deftest parse

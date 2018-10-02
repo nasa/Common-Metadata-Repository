@@ -1,4 +1,4 @@
-(ns cmr.ous.http.response
+(ns cmr.ous.util.http.response
   "This namespace defines a default set of transform functions suitable for use
   in presenting results to HTTP clients.
 

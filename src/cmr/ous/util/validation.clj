@@ -1,4 +1,4 @@
-(ns cmr.ous.validation
+(ns cmr.ous.util.validation
   (:require
    [cmr.ous.results.errors :as errors]))
 

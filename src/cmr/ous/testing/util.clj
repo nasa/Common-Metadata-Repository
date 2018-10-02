@@ -4,7 +4,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.http.kit.request :as base-request]
-   [cmr.ous.http.request :as request])
+   [cmr.ous.util.http.request :as request])
   (:import
    (clojure.lang Keyword)))
 

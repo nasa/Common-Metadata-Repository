@@ -1,10 +1,11 @@
-(ns cmr.opendap.tests.unit.ous.common
+(ns cmr.ous.tests.unit.common
   "Note: this namespace is exclusively for unit tests."
   (:require
     [clojure.test :refer :all]
     [clojusc.twig :as logger]
-    [cmr.opendap.ous.common :as common]
-    [cmr.opendap.ous.concepts.variable :as variable]))
+    [cmr.metadata.proxy.concepts.variable :as variable]
+    [cmr.ous.common :as common]
+    [cmr.ous.util.geog :as geog]))
 
 (logger/set-level! '[] :fatal)
 
@@ -29,7 +30,7 @@
             bounding-info [{:name "MyVar"
                             :bounds bounds
                             :dimensions dims
-                            :opendap (variable/create-opendap-bounds
+                            :opendap (geog/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
        (is (= "?MyVar[20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
               (common/bounding-infos->opendap-query bounding-info bounds))))))
@@ -51,7 +52,7 @@
             bounding-info [{:name "MyVar"
                             :bounds bounds
                             :dimensions dims
-                            :opendap (variable/create-opendap-bounds
+                            :opendap (geog/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
        (is (= "?MyVar[20:1:37][152:1:199],lat[20:1:37],lon[152:1:199]"
               (common/bounding-infos->opendap-query bounding-info bounds)))))))

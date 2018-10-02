@@ -12,11 +12,12 @@
    [cmr.metadata.proxy.concepts.granule :as granule]
    [cmr.metadata.proxy.concepts.service :as service]
    [cmr.metadata.proxy.concepts.variable :as variable]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]
    [cmr.ous.components.config :as config]
-   [cmr.ous.geog :as geog]
    [cmr.ous.results.errors :as ous-errors]
    [cmr.ous.results.warnings :as warnings]
-   [cmr.ous.validation :as validation]
+   [cmr.ous.util.geog :as geog]
+   [cmr.ous.util.validation :as validation]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -106,7 +107,7 @@
                             (str "$1" fallback-replacement "$3")))
 
           :else
-          (let [msg (format ous-errors/no-matching-service-pattern
+          (let [msg (format metadata-errors/no-matching-service-pattern
                             fallback-pattern
                             data-url)]
             (log/error msg)

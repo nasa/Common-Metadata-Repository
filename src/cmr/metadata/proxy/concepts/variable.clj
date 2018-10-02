@@ -6,7 +6,6 @@
    [cmr.http.kit.request :as request]
    [cmr.http.kit.response :as response]
    [cmr.metadata.proxy.results.errors :as metadata-errors]
-   [cmr.ous.geog :as geog]
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
@@ -30,59 +29,7 @@
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def lat-type :LATITUDE_DIMENSION)
-(def lon-type :LONGITUDE_DIMENSION)
-(def lat-type? #(= % lat-type))
-(def lon-type? #(= % lon-type))
-(def lat-lon-type? #(or (lat-type? %) (lon-type? %)))
 
-(defn lat-dim
-  [dim]
-  (or ;; This first one is all that will be needed by UMM-Var 1.2+
-      (lat-type dim)
-      ;; The remaining provide backwards compatibility with older Vars
-      (:Latitude dim)
-      (:latitude dim)
-      (:lat dim)
-      (:YDim dim)))
-
-(defn lon-dim
-  [dim]
-  (or ;; This first one is all that will be needed by UMM-Var 1.2+
-      (lon-type dim)
-      ;; The remaining provide backwards compatibility with older Vars
-      (:Longitude dim)
-      (:longitude dim)
-      (:lon dim)
-      (:XDim dim)))
-
-(defn restructure-dim
-  [dim]
-  (let [type (keyword (:Type dim))
-        name (keyword (:Name dim))]
-    [(if (lat-lon-type? type)
-         type
-         name) {:Size (:Size dim)
-                :Name name
-                :Type type}]))
-
-(defn restructure-dims
-  [dims]
-  (->> dims
-       (map restructure-dim)
-       (into {})))
-
-(defn normalize-lat-lon
-  "This function normalizes the names of lat/lon in order to simplify internal,
-  CMR OPeNDAP-only logic. The original dimension names are recorded, and when
-  needed, referenced."
-  [dim]
-  (-> dim
-      (assoc :Latitude (lat-dim dim)
-             :Longitude (lon-dim dim))
-      (dissoc lat-type lon-type)
-      ;; The dissoc here is only applicable to pre-1.2 UMM-Vars
-      (dissoc :latitude :longitude :lat :lon :YDim :XDim)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Core Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -139,8 +86,3 @@
   [search-endpoint user-token variables]
   (let [promise (async-get-metadata search-endpoint user-token variables)]
     (extract-metadata promise)))
-
-(defn extract-dimensions
-  [entry]
-  (restructure-dims
-   (get-in entry [:umm :Dimensions])))
