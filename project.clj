@@ -38,7 +38,6 @@
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]]
-  :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
