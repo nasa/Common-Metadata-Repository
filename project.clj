@@ -22,7 +22,7 @@
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
-    [cheshire "5.8.0"]
+    [cheshire "5.8.1"]
     [clojusc/trifl "0.3.0"]
     [clojusc/twig "0.3.3"]
     [com.stuartsierra/component "0.3.2"]
@@ -32,23 +32,25 @@
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.3-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-ous-plugin "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-sizing-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
-    [markdown-clj "1.0.2"]
-    [metosin/reitit-core "0.1.3"]
-    [metosin/reitit-ring "0.1.3"]
+    [markdown-clj "1.0.3"]
+    [metosin/reitit-core "0.2.3"]
+    [metosin/reitit-ring "0.2.3"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [org.clojure/java.classpath "0.3.0"]
-    [ring/ring-core "1.6.3"]
+    [ring/ring-core "1.7.0"]
     [ring/ring-codec "1.1.1"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.11.8"]
+    [selmer "1.12.1"]
     [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
@@ -81,7 +83,7 @@
       :exclusions [
         [net.sf.geographiclib/GeographicLib-Java]]
       :dependencies [
-        [com.esri.geometry/esri-geometry-api "2.2.0"]
+        [com.esri.geometry/esri-geometry-api "2.2.1"]
         [com.vividsolutions/jts "1.13"]
         [net.sf.geographiclib/GeographicLib-Java "1.49"]
         [org.geotools/gt-geometry "19.1"]
@@ -111,11 +113,11 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.8"]
+        [jonase/eastwood "0.2.9"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}
+        [venantius/yagni "0.1.6"]]}
     :test {
       :dependencies [
         [clojusc/ltest "0.3.0"]]
@@ -198,10 +200,10 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test,+system" "ltest"]
-    "junit" ["with-profile" "+test,+system" "test2junit"]
-    "ltest-with-geo" ["with-profile" "+test,+system,+geo" "ltest"]
-    "junit-with-geo" ["with-profile" "+test,+system,+geo" "test2junit"]
+    "ltest" ["with-profile" "+test,+system,+local" "ltest"]
+    "junit" ["with-profile" "+test,+system,+local" "test2junit"]
+    "ltest-with-geo" ["with-profile" "+test,+system,+geo,+local" "ltest"]
+    "junit-with-geo" ["with-profile" "+test,+system,+geo,+local" "test2junit"]
     ;; Security
     "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
       ["clean"]
@@ -214,15 +216,10 @@
              "--name" "OPeNDAP/CMR Integration"]
     "slate" ["with-profile" "+slate"
       "shell" "resources/scripts/build-slate-docs"]
-    "generate-html" ["with-profile" "+docs"
-      "run" "-m" "cmr.opendap.site.static"]
     "docs" ["do"
       ["codox"]
       ["marginalia"]
       ["slate"]]
-    "generate-static" ["do"
-      ["docs"]
-      ["generate-html"]]
     ;; Build tasks
     "build-lite" ["do"
       ["ltest" ":unit"]]
@@ -237,8 +234,12 @@
       ["generate-static"]
       ["ubercompile"]
       ["uberjar"]]
+    ;; Publishing
+    "publish" ["with-profile" "+system,+security,+geo" "do"
+      ["clean"]
+      ["build-jar"]
+      ["deploy" "clojars"]]
     ;; Application
     "run" ["with-profile" "+system,+security" "run"]
     "trampoline" ["with-profile" "+system,+security" "trampoline"]
-    "start-cmr-opendap"
-      ["trampoline" "run"]})
+    "start-cmr-opendap" ["trampoline" "run"]})
