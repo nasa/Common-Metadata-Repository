@@ -11,8 +11,8 @@
   (java.util.jar JarFile)))
 
 (defn resolve-routes
-  [routes-symbols args]
-  (mapcat #(apply (util/resolve-fully-qualified-fn %) args) routes-symbols))
+  [routes-symbols]
+  (map #(util/resolve-fully-qualified-fn %) routes-symbols))
 
 (defn plugin-routes
   [^JarFile jarfile in-jar-filepath route-keys ^Keyword api-key ^Keyword site-key]
@@ -41,5 +41,5 @@
       {;; Note that the first arg for both below will be the
        ;; system/httpd-component; the API routes take an additional arg: the
        ;; API version.
-        api-key #(resolve-routes (api-key data) %1 %2)
-       site-key #(resolve-routes (site-key data) %)})))
+       api-key #(resolve-routes (api-key data))
+       site-key #(resolve-routes (site-key data))})))

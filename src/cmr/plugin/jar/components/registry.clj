@@ -28,12 +28,12 @@
 
 (defn assembled-routes
   [system]
-  (let [{apis-fn :api sites-fn :site}
+  (let [{apis-fns :api sites-fns :site}
         (get-in system [:plugin :registry :assembled-routes-fns])]
-    (log/trace "sites-fn:" apis-fn)
-    (log/trace "apis-fn:" sites-fn)
-    {:api (apis-fn [system])
-     :site (sites-fn [system])}))
+    (log/trace "sites-fn:" apis-fns)
+    (log/trace "apis-fn:" sites-fns)
+    {:api apis-fns
+     :site sites-fns}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
