@@ -6,6 +6,13 @@
    [cmr.plugin.jar.types.web.routes :as jar-routes]
    [taoensso.timbre :as log]))
 
+(defn site-routes
+  [httpd-component routes-fns]
+  (->> routes-fns
+       (map #(% httpd-component))
+       (remove nil?)
+       vec))
+
 (defn collected-routes
   "This function checks to see if there are any plugins with the configured
   plugin name and plugin type and if there are, combines them with the site
@@ -28,7 +35,7 @@
     ;; the configuration function which extract the routes from the config
     ;; data. The route functions provided in the configuration data will be
     ;; called by a middleware wrapper.
-    {:site-routes (concat (map #(% httpd-component) plugins-site-routes-fns)
+    {:site-routes (concat (site-routes httpd-component plugins-site-routes-fns)
                           (main-site-routes-fn httpd-component))
      :plugins-api-routes-fns plugins-api-routes-fns
      :main-api-routes-fn main-api-routes-fn}))
