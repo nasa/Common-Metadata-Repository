@@ -12,13 +12,8 @@
     business logic"
   (:require
    [clojure.java.io :as io]
-   [cmr.http.kit.app.handler :as base-handler]
    [cmr.opendap.health :as health]
-   [cmr.opendap.http.response :as response]
-   [ring.middleware.file :as file-middleware]
-   [ring.util.codec :as codec]
-   [ring.util.http-response]
-   [ring.util.response :as ring-response]
+   [cmr.http.kit.response :as response]
    [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,11 +34,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def status base-handler/status)
-(def ok base-handler/ok)
-(def dynamic-page base-handler/dynamic-page)
-(def permanent-redirect base-handler/permanent-redirect)
 
 (defn text-file
   [filepath]

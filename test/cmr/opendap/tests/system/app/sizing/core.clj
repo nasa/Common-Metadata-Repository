@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.app.size-estimate.core
+(ns ^:system cmr.opendap.tests.system.app.sizing.core
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 
@@ -6,7 +6,7 @@
   * https://en.wikipedia.org/wiki/Software_testing#System_testing"
   (:require
     [clojure.test :refer :all]
-    [cmr.opendap.http.request :as request]
+    [cmr.http.kit.request :as request]
     [cmr.opendap.testing.system :as test-system]
     [cmr.opendap.testing.util :as util]
     [org.httpkit.client :as httpc]

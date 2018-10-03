@@ -5,5 +5,5 @@
     [cmr.opendap.const :as const]))
 
 (deftest user-agent
-  (is (= "CMR OPeNDAP Service/1.0 (+https://github.com/cmr-exchange/cmr-opendap)"
+  (is (= "CMR Service-Bridge Service/1.0 (+https://github.com/cmr-exchange/cmr-service-bridge)"
          const/user-agent)))

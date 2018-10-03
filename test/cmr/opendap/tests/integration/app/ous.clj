@@ -13,7 +13,7 @@
   * https://en.wikipedia.org/wiki/Software_testing#Integration_testing"
   (:require
    [clojure.test :refer :all]
-   [cmr.opendap.http.response :as response]
+   [cmr.http.kit.response :as response]
    [cmr.opendap.testing.system :as test-system]
    [org.httpkit.client :as httpc]))
 

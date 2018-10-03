@@ -4,12 +4,12 @@
     [cmr.exchange.common.components.config :as base-config]
     [cmr.exchange.common.components.logging :as logging]
     [cmr.http.kit.components.server :as httpd]
+    [cmr.metadata.proxy.components.auth :as auth]
+    [cmr.metadata.proxy.components.caching :as concept-caching]
+    [cmr.metadata.proxy.components.concept :as concept]
     [cmr.mission-control.components.pubsub :as pubsub]
-    [cmr.opendap.components.auth :as auth]
-    [cmr.opendap.components.caching :as concept-caching]
-    [cmr.opendap.components.concept :as concept]
-    [cmr.opendap.components.config :as config]
     [cmr.opendap.config :as config-lib]
+    [cmr.ous.components.config :as config]
     [cmr.plugin.jar.components.registry :as plugin-registry]
     [com.stuartsierra.component :as component]))
 

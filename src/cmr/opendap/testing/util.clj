@@ -3,7 +3,8 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [cmr.opendap.http.request :as request])
+   [cmr.http.kit.request :as request]
+   [cmr.ous.util.http.request :as ous-request])
   (:import
    (clojure.lang Keyword)))
 
@@ -15,7 +16,7 @@
   ([req version]
     (request/add-header req
                         "Accept"
-                        (format request/version-format
+                        (format ous-request/version-format
                                 vendor
                                 version
                                 "json"))))

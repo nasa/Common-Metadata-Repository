@@ -62,7 +62,7 @@
      :heartbeat 200 ; milliseconds
      }}
  :logging {
-   :level :debug
+   :level :trace
    :nss [cmr org.httpkit]
    :color false}
  :mission-control {

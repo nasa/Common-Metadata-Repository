@@ -14,8 +14,8 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
-   [cmr.opendap.http.request :as request]
-   [cmr.opendap.http.response :as response]
+   [cmr.http.kit.request :as request]
+   [cmr.http.kit.response :as response]
    [cmr.opendap.testing.system :as test-system]
    [cmr.opendap.testing.util :as util]
    [org.httpkit.client :as httpc])

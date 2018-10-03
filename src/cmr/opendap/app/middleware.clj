@@ -1,6 +1,7 @@
 (ns cmr.opendap.app.middleware
   "Custom ring middleware for CMR OPeNDAP."
   (:require
+   [clojusc.twig :refer [pprint]]
    [cmr.ous.util.http.request :as request]
    [cmr.http.kit.response :as response]
    [cmr.metadata.proxy.components.auth :as auth]
@@ -36,18 +37,13 @@
       site-routes route-data system (reitit-auth system)))
   ([site-routes {:keys [main-api-routes-fn plugins-api-routes-fns]} system opts]
     (fn [req]
-      (log/trace "Got site-routes:" (vec site-routes))
       (let [api-version (request/accept-api-version system req)
-            plugins-api-routes (mapcat #(% system api-version) plugins-api-routes-fns)
-            api-routes (concat plugins-api-routes
-                               (main-api-routes-fn system api-version))
-            _ (log/trace "Got plugins-api-routes:" (vec plugins-api-routes))
-            _ (log/trace "Got api-routes:" (vec api-routes))
-            routes (concat site-routes plugins-api-routes api-routes)
-            _ (log/trace "Got assembled routes:" (vec routes))
+            plugins-api-routes (vec (mapcat #(% system api-version) plugins-api-routes-fns))
+            api-routes (vec (main-api-routes-fn system api-version))
+            routes (concat (vec site-routes) plugins-api-routes api-routes)
             handler (ring/ring-handler (ring/router routes opts))]
         (log/debug "API version:" api-version)
-        (log/debug "Made routes:" (vec routes))
+        (log/debug "Made routes:" (pprint routes))
         (response/version-media-type
           (handler req)
           (request/accept-media-type-format system req))))))

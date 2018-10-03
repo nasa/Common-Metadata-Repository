@@ -4,6 +4,7 @@
   Upon idnetifying a particular request as matching a given route, work is then
   handed off to the relevant request handler function."
   (:require
+   [cmr.http.kit.app.handler :as base-handler]
    [cmr.http.kit.site.pages :as base-pages]
    [cmr.opendap.app.handler.core :as core-handler]
    [cmr.opendap.components.config :as config]
@@ -19,18 +20,18 @@
 (defn main
   [httpd-component]
   [["/opendap" {
-    :get (core-handler/dynamic-page
+    :get (base-handler/dynamic-page
           httpd-component
           pages/home
           {:base-url (config/opendap-url httpd-component)})
-    :head core-handler/ok}]])
+    :head base-handler/ok}]])
 
 (defn docs
   "Note that these routes only cover part of the docs; the rest are supplied
   via static content from specific directories (done in middleware)."
   [httpd-component]
   [["/opendap/docs" {
-    :get (core-handler/dynamic-page
+    :get (base-handler/dynamic-page
           httpd-component
           pages/opendap-docs
           {:base-url (config/opendap-url httpd-component)})}]])
@@ -42,7 +43,7 @@
 (defn redirects
   [httpd-component]
   [["/opendap/robots.txt" {
-    :get (core-handler/permanent-redirect
+    :get (base-handler/permanent-redirect
           (str (config/get-search-url httpd-component)
                "/robots.txt"))}]])
 
