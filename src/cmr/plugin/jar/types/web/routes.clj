@@ -30,12 +30,16 @@
   ([^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
     (assemble-routes-fns (plugin/jarfiles plugin-name plugin-type)
-                        plugin-name
-                        plugin-type
-                        in-jar-filepath
-                        route-keys))
+                         plugin-name
+                         plugin-type
+                         in-jar-filepath
+                         route-keys))
   ([jarfiles ^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
-    (let [data (plugins-routes jarfiles in-jar-filepath route-keys api-key site-key)]
-      {api-key #(resolve-routes (api-key data) %)
+    (let [data (plugins-routes
+                jarfiles in-jar-filepath route-keys api-key site-key)]
+      {;; Note that the first arg for both below will be the
+       ;; system/httpd-component; the API routes take an additional arg: the
+       ;; API version.
+        api-key #(resolve-routes (api-key data) %1 %2)
        site-key #(resolve-routes (site-key data) %)})))
