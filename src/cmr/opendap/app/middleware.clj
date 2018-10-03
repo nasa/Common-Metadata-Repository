@@ -1,9 +1,9 @@
 (ns cmr.opendap.app.middleware
   "Custom ring middleware for CMR OPeNDAP."
   (:require
+   [cmr.ous.util.http.request :as request]
    [cmr.http.kit.response :as response]
-   [cmr.opendap.components.auth :as auth]
-   [cmr.opendap.http.request :as request]
+   [cmr.metadata.proxy.components.auth :as auth]
    [reitit.ring :as ring]
    [taoensso.timbre :as log]))
 
@@ -34,11 +34,13 @@
   ([site-routes route-data system]
     (wrap-api-version-dispatch
       site-routes route-data system (reitit-auth system)))
-  ([site-routes {:keys [main-api-routes-fn plugins-api-routes]} system opts]
+  ([site-routes {:keys [main-api-routes-fn plugins-api-routes-fns]} system opts]
     (fn [req]
-      (log/debug "Got site-routes:" (vec site-routes))
+      (log/trace "Got site-routes:" (vec site-routes))
       (let [api-version (request/accept-api-version system req)
-            api-routes (main-api-routes-fn system api-version)
+            plugins-api-routes (mapcat #(% system api-version) plugins-api-routes-fns)
+            api-routes (concat plugins-api-routes
+                               (main-api-routes-fn system api-version))
             _ (log/trace "Got plugins-api-routes:" (vec plugins-api-routes))
             _ (log/trace "Got api-routes:" (vec api-routes))
             routes (concat site-routes plugins-api-routes api-routes)
