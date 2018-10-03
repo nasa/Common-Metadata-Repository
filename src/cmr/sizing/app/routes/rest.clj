@@ -25,5 +25,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn all
-  [httpd-component]
-  (size-estimate-api httpd-component))
+  ([httpd-component]
+    (all httpd-component :default))
+  ([httpd-component version]
+    (size-estimate-api httpd-component)))

@@ -46,6 +46,9 @@
         ;; The following are excluded due to their being flagged as a CVE
         [com.google.protobuf/protobuf-java]
         [com.google.javascript/closure-compiler-unshaded]]}
+    :system {
+      :dependencies [
+        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
