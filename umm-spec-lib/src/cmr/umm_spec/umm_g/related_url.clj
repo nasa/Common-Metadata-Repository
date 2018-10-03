@@ -23,15 +23,43 @@
   [related-urls]
   (seq (map umm-g-related-url->RelatedURL related-urls)))
 
+(def umm-g-related-url-types
+  "Defines the valid UMM-G related url types. This list is based on RelatedUrlTypeEnum in
+  umm-g-json-schema.json, and needs to be updated when the UMM-G schema is updated."
+  #{"DOWNLOAD SOFTWARE" "EXTENDED METADATA" "GET DATA" "GET RELATED VISUALIZATION"
+  "GOTO WEB TOOL" "PROJECT HOME PAGE" "USE SERVICE API" "VIEW RELATED INFORMATION"})
+
+(def umm-g-related-url-sub-types
+  "Defines the valid UMM-G related url sub-types. This list is based on RelatedUrlSubTypeEnum in
+  umm-g-json-schema.json, and needs to be updated when the UMM-G schema is updated."
+  #{"MOBILE APP" "APPEARS" "DATA COLLECTION BUNDLE" "DATA TREE" "DATACAST URL" "DIRECT DOWNLOAD"
+    "EOSDIS DATA POOL" "Earthdata Search" "GIOVANNI" "LAADS" "LANCE" "MIRADOR" "MODAPS" "NOAA CLASS"
+    "NOMADS" "PORTAL" "USGS EARTH EXPLORER" "VERTEX" "VIRTUAL COLLECTION" "MAP" "WORLDVIEW"
+    "LIVE ACCESS SERVER (LAS)" "MAP VIEWER" "SIMPLE SUBSET WIZARD (SSW)" "SUBSETTER"
+    "GRADS DATA SERVER (GDS)" "MAP SERVICE" "OPENDAP DATA" "OpenSearch" "SERVICE CHAINING"
+    "TABULAR DATA STREAM (TDS)" "THREDDS DATA" "WEB COVERAGE SERVICE (WCS)"
+    "WEB FEATURE SERVICE (WFS)" "WEB MAP SERVICE (WMS)" "WEB MAP TILE SERVICE (WMTS)"
+    "ALGORITHM DOCUMENTATION" "ALGORITHM THEORETICAL BASIS DOCUMENT" "ANOMALIES" "CASE STUDY"
+    "DATA CITATION POLICY" "DATA QUALITY" "DATA RECIPE" "DELIVERABLES CHECKLIST"
+    "GENERAL DOCUMENTATION" "HOW-TO" "IMPORTANT NOTICE""INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION"
+    "MICRO ARTICLE" "PI DOCUMENTATION" "PROCESSING HISTORY" "PRODUCT HISTORY"
+    "PRODUCT QUALITY ASSESSMENT" "PRODUCT USAGE" "PRODUCTION HISTORY" "PUBLICATIONS" "READ-ME"
+    "REQUIREMENTS AND DESIGN" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
+    "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK" "USER'S GUIDE"})
+
 (defn RelatedURLs->umm-g-related-urls
   "Returns the UMM-G RelatedUrls from the given umm-lib granule model RelatedURLs."
   [related-urls]
   (when (seq related-urls)
     (for [related-url related-urls]
-      (let [{:keys [type sub-type url description mime-type size]} related-url]
+      (let [{:keys [type sub-type url description mime-type size]} related-url
+            umm-g-related-url-type (if-let [umm-g-type (umm-g-related-url-types type)]
+                                     umm-g-type
+                                     ;; default UMM-G related url type when there is no match
+                                     "VIEW RELATED INFORMATION")]
         {:URL url
-         :Type type
-         :Subtype sub-type
+         :Type umm-g-related-url-type
+         :Subtype (umm-g-related-url-sub-types sub-type)
          :Description description
          :MimeType mime-type
          :Size size
