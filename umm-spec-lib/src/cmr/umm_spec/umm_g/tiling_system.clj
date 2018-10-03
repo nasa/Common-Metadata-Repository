@@ -1,6 +1,7 @@
-(ns cmr.umm-spec.umm-g.platform
-  "Contains functions for parsing UMM-G JSON platforms into umm-lib granule model PlatformRefs
-  and generating UMM-G JSON platforms from umm-lib granule model PlatformRefs."
+(ns cmr.umm-spec.umm-g.tiling-system
+  "Contains functions for parsing UMM-G JSON TilingIdentificationSystem into umm-lib granule model
+   TwoDCoordinateSystem and generating UMM-G JSON TilingIdentificationSystem
+   from umm-lib granule model TwoDCoordinateSystem."
   (:require
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -23,7 +24,7 @@
   [two-d-coordinate-system]
   (when two-d-coordinate-system
     (let [{:keys [name start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]}
-          tiling-identification-system]
+          two-d-coordinate-system]
       {:TilingIdentificationSystemName name
        :Coordinate1 {:MinimumValue start-coordinate-1
                      :MaximumValue end-coordinate-1}
