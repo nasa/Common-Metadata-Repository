@@ -106,4 +106,5 @@
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
-     :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system)}))
+     :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
+                                  two-d-coordinate-system)}))

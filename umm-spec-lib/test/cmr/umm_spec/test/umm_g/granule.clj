@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
    [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.umm-spec.test.umm-g.generators :as generators]
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
@@ -24,7 +25,6 @@
       (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :product-specific-attributes)
-      (dissoc :two-d-coordinate-system)
       (dissoc :measured-parameters)
       umm-lib-g/map->UmmGranule))
 
@@ -82,6 +82,12 @@
                          :operation-modes ["Mode1" "Mode2"]})]})]
     :cloud-cover 60
     :project-refs ["Campaign1" "Campaign2" "Campaign3"]
+    :two-d-coordinate-system (umm-lib-g/map->TwoDCoordinateSystem
+                              {:name "MODIS Tile EASE"
+                               :start-coordinate-1 -100
+                               :end-coordinate-1 -50
+                               :start-coordinate-2 50
+                               :end-coordinate-2 100})
     :spatial-coverage nil
     :related-urls nil}))
 
