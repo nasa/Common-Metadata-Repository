@@ -25,6 +25,8 @@
   (when two-d-coordinate-system
     (let [{:keys [name start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]}
           two-d-coordinate-system]
+      ;; TilingIdentificationSystemName is an enumerated value, we will need to fix this to prevent
+      ;; schema validation issues.
       {:TilingIdentificationSystemName name
        :Coordinate1 {:MinimumValue start-coordinate-1
                      :MaximumValue end-coordinate-1}
