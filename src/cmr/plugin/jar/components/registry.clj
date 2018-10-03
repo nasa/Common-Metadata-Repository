@@ -26,10 +26,10 @@
   [system]
   (get-in system [:plugin :registry :routes]))
 
-(defn assembled-routes
+(defn resolved-routes
   [system]
   (let [{apis-fns :api sites-fns :site}
-        (get-in system [:plugin :registry :assembled-routes-fns])]
+        (get-in system [:plugin :registry :resolved-routes-fns])]
     (log/trace "sites-fn:" apis-fns)
     (log/trace "apis-fn:" sites-fns)
     {:api apis-fns
@@ -76,9 +76,9 @@
                    route-keys
                    api-key
                    site-key)))
-        (assoc-in [:registry :assembled-routes-fns]
+        (assoc-in [:registry :resolved-routes-fns]
                   (trace-pass-thru "assemble-routes-fns"
-                  (routes/assemble-routes-fns
+                  (routes/resolved-routes-fns
                    jarfiles
                    plugin-name
                    plugin-type

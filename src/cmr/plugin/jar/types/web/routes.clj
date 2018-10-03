@@ -26,10 +26,10 @@
     {api-key (vec (remove nil? (map first data)))
      site-key (vec (remove nil? (map second data)))}))
 
-(defn assemble-routes-fns
+(defn resolved-routes-fns
   ([^String plugin-name ^String plugin-type in-jar-filepath route-keys
     ^Keyword api-key ^Keyword site-key]
-    (assemble-routes-fns (plugin/jarfiles plugin-name plugin-type)
+    (resolved-routes-fns (plugin/jarfiles plugin-name plugin-type)
                          plugin-name
                          plugin-type
                          in-jar-filepath
@@ -41,5 +41,5 @@
       {;; Note that the first arg for both below will be the
        ;; system/httpd-component; the API routes take an additional arg: the
        ;; API version.
-       api-key #(resolve-routes (api-key data))
-       site-key #(resolve-routes (site-key data))})))
+       api-key (resolve-routes (api-key data))
+       site-key (resolve-routes (site-key data))})))
