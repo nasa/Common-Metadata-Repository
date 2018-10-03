@@ -12,7 +12,9 @@
 
 (defn resolve-routes
   [routes-symbols]
-  (map #(util/resolve-fully-qualified-fn %) routes-symbols))
+  (->> routes-symbols
+       (map #(util/resolve-fully-qualified-fn %))
+       (remove nil?)))
 
 (defn plugin-routes
   [^JarFile jarfile in-jar-filepath route-keys ^Keyword api-key ^Keyword site-key]
