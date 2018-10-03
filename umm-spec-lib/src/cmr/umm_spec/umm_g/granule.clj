@@ -5,6 +5,7 @@
    [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
+   [cmr.umm-spec.umm-g.related-url :as related-url]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -68,7 +69,7 @@
       :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
                                 (:TilingIdentificationSystem umm-g-json))
       ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
-      ; :related-urls (ru/xml-elem->related-urls umm-g-json)
+      :related-urls (related-url/umm-g-related-urls->RelatedURLs (:RelatedUrls umm-g-json))
       ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
       ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
       ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
@@ -109,4 +110,6 @@
      :CloudCover cloud-cover
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
-                                  two-d-coordinate-system)}))
+                                  two-d-coordinate-system)
+     :RelatedUrls (related-url/RelatedURLs->umm-g-related-urls related-urls)
+     }))

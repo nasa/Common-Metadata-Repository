@@ -2,10 +2,7 @@
   "Contains functions for parsing UMM-G JSON projects into umm-lib granule modelProjectRefs
   and generating UMM-G JSON projects from umm-lib granule model ProjectRefs."
   (:require
-   [cmr.umm-spec.umm-g.instrument :as instrument]
-   [cmr.umm-spec.util :as util]
-   [cmr.umm.umm-granule :as g])
-  (:import cmr.umm.umm_granule.UmmGranule))
+   [cmr.umm-spec.util :as util]))
 
 (defn umm-g-projects->ProjectRefs
   "Returns the umm-lib granule model ProjectRefs from the given UMM-G Projects."

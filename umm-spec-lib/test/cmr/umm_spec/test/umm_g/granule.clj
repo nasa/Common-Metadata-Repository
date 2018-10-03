@@ -22,7 +22,6 @@
       (dissoc :data-granule)
       (dissoc :access-value)
       (dissoc :spatial-coverage)
-      (dissoc :related-urls)
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :product-specific-attributes)
       (dissoc :measured-parameters)
@@ -89,7 +88,27 @@
                                :start-coordinate-2 50
                                :end-coordinate-2 100})
     :spatial-coverage nil
-    :related-urls nil}))
+    :related-urls [(umm-c/map->RelatedURL
+                    {:type "GET DATA"
+                     :url "https://daac.ornl.gov/daacdata/islscp_ii/vegetation/erbe_albedo_monthly_xdeg/data/erbe_albedo_1deg_1986.zip"
+                     :description "This link provides direct download access to the granule."
+                     :mime-type "application/zip"
+                     :title "This link provides direct download access to the granule."
+                     :size 395.673})
+                   (umm-c/map->RelatedURL
+                    {:type "VIEW RELATED INFORMATION"
+                     :sub-type "USER'S GUIDE"
+                     :url "https://daac.ornl.gov/ISLSCP_II/guides/erbe_albedo_monthly_xdeg.html"
+                     :description "ORNL DAAC Data Set Documentation"
+                     :mime-type "text/html"
+                     :title "ORNL DAAC Data Set Documentation"})
+                   (umm-c/map->RelatedURL
+                    {:type "GET RELATED VISUALIZATION"
+                     :url "https://webmap.ornl.gov/sdat/pimg/957_1.png"
+                     :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :mime-type "image/png"
+                     :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :size 10})]}))
 
 (deftest parse-granule-test
   (testing "parse granule"
