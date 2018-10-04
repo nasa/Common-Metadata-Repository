@@ -20,7 +20,6 @@
   [gran]
   (-> gran
       (dissoc :data-granule)
-      (dissoc :access-value)
       (dissoc :spatial-coverage)
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :measured-parameters)
@@ -55,7 +54,7 @@
                       :short-name "CollectionShortName"
                       :version-id "Version"})
     :data-granule nil
-    :access-value nil
+    :access-value 42
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (p/parse-datetime "2018-07-17T00:00:00.000Z")
