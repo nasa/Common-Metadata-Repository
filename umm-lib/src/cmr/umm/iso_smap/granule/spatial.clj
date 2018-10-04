@@ -21,12 +21,9 @@
   spatial coverage map."
   [spatial-map]
   (let [spatial-map-keys (keys spatial-map)]
-    (or (some #{:orbital-mode-name} spatial-map-keys)
-        (some #{:orbit-number} spatial-map-keys)
-        (some #{:start-orbit-number} spatial-map-keys)
-        (some #{:stop-orbit-number} spatial-map-keys)
-        (some #{:equator-crossing-longitude} spatial-map-keys)
-        (some #{:equator-crossing-date-time} spatial-map-keys))))
+    (some #{:orbital-mode-name :orbit-number :start-orbit-number
+            :stop-orbit-number :equator-crossing-longitude :equator-crossing-date-time} 
+          spatial-map-keys)))
 
 (defn xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage from a parsed XML structure"
@@ -35,8 +32,9 @@
         geometries (flatten (map spatial/decode spatial-elems))]
     (when (seq geometries)
       (g/map->SpatialCoverage (util/remove-map-keys empty?
-                                {:geometries (remove orbit-calculated-spatial-domain?
-                                                    (remove orbit? geometries))
+                                {:geometries (->> geometries
+                                                  (remove orbit?)
+                                                  (remove orbit-calculated-spatial-domain?))
                                  :orbit (first (filter orbit? geometries))})))))
 
 (defn xml-elem->OrbitCalculatedSpatialDomains
@@ -45,10 +43,7 @@
   (let [spatial-elems (cx/elements-at-path xml-struct extent-path)
         geometries (flatten (map spatial/decode spatial-elems))]
     (when (seq geometries)
-      (->> geometries
-           (map #(when (orbit-calculated-spatial-domain? %) %))
-           (remove nil?)
-           seq))))
+      (seq (filter orbit-calculated-spatial-domain? geometries)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 

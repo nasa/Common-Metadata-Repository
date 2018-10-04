@@ -65,8 +65,6 @@
       (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
       ;; SMAP ISO related-urls does not have title, description or size
       (update-in [:related-urls] related-urls->expected-parsed)
-      ;; SMAP ISO does not support orbit-calculated-spatial-domains
-      ;;(dissoc :orbit-calculated-spatial-domains)
       ;; SMAP ISO does not support platform-refs
       (dissoc :platform-refs)
       ;; SMAP ISO does not support project-refs
