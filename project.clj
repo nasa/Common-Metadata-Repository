@@ -223,18 +223,22 @@
       ["slate"]]
     ;; Build tasks
     "build-lite" ["do"
-      ["ltest" ":unit"]]
+      ["clean"]
+      ["lint"]
+      ["ltest" ":unit"]
+      ["ubercompile"]]
     "build" ["do"
       ["clean"]
-      ["ltest-with-geo" ":unit"]
-      ["junit-with-geo" ":unit"]
-      ["ubercompile"]
-      ["uberjar"]]
-    "build-full" ["do"
+      ["lint"]
+      ["check-vers"]
+      ["check-sec"]
       ["ltest" ":unit"]
-      ["generate-static"]
+      ["junit" ":unit"]
       ["ubercompile"]
-      ["uberjar"]]
+      ["build-uberjar"]]
+    "build-full" ["do"
+      ["build"]
+      ["docs"]]
     ;; Publishing
     "publish" ["with-profile" "+system,+security,+geo" "do"
       ["clean"]
