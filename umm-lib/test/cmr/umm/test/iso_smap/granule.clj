@@ -66,7 +66,7 @@
       ;; SMAP ISO related-urls does not have title, description or size
       (update-in [:related-urls] related-urls->expected-parsed)
       ;; SMAP ISO does not support orbit-calculated-spatial-domains
-      (dissoc :orbit-calculated-spatial-domains)
+      ;;(dissoc :orbit-calculated-spatial-domains)
       ;; SMAP ISO does not support platform-refs
       (dissoc :platform-refs)
       ;; SMAP ISO does not support project-refs
@@ -136,6 +136,16 @@
        {:geometries
         [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
          (set-geodetic (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)]))]})
+     :orbit-calculated-spatial-domains
+     [(umm-g/map->OrbitCalculatedSpatialDomain
+        {:orbit-number 2855,
+         :equator-crossing-longitude -140.0,
+         :equator-crossing-date-time (p/parse-datetime "2015-10-27T04:43:16.365Z")})
+      (umm-g/map->OrbitCalculatedSpatialDomain
+        {:orbital-model-name "\"testing\"",
+         :orbit-number 2855,
+         :equator-crossing-longitude -140.0,
+         :equator-crossing-date-time (p/parse-datetime "2015-10-27T04:43:16.365Z")})]
      :related-urls [(umm-c/map->RelatedURL
                       {:type "GET DATA"
                        :url "http://example.com/test1.hdf"
@@ -151,7 +161,16 @@
 
 (deftest parse-granule-test
   (testing "parse granule"
+    ;; This tested the related fields, including orbit-calculated-spatial-domain 
+    ;; is correctly translated from xml to umm.
     (is (= expected-granule (g/parse-granule sample-granule-xml))))
+  (testing "round trip"
+    ;; umm-granule to iso-smap-xml, then back to umm-granule. 
+    ;; The orbit-calculated-spatial-domain should remain the same.
+    (let [xml (iso/umm->iso-smap-xml expected-granule)
+          parsed (g/parse-granule xml)]
+      (is (= (:orbit-calculated-spatial-domains expected-granule)
+             (:orbit-calculated-spatial-domains parsed)))))
   (testing "parse temporal"
     (is (= expected-temporal (g/parse-temporal sample-granule-xml))))
   (testing "parse multiple extents, temporal"

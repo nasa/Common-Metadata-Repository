@@ -318,6 +318,40 @@
                       </gmd:polygon>
                     </gmd:EX_BoundingPolygon>
                   </gmd:geographicElement>
+                  <gmd:geographicElement>
+                    <gmd:EX_GeographicDescription id="OrbitCalculatedSpatialDomains0">
+                      <gmd:geographicIdentifier>
+                        <gmd:MD_Identifier>
+                          <gmd:code>
+                            <gco:CharacterString>OrbitNumber: 2855 EquatorCrossingLongitude: -140.0 EquatorCrossingDateTime: 2015-10-27T04:43:16.365365Z</gco:CharacterString>
+                          </gmd:code>
+                          <gmd:codeSpace>
+                            <gco:CharacterString>gov.nasa.esdis.umm.orbitcalculatedspatialdomains</gco:CharacterString>
+                          </gmd:codeSpace>
+                          <gmd:description>
+                            <gco:CharacterString>OrbitCalculatedSpatialDomains</gco:CharacterString>
+                          </gmd:description>
+                        </gmd:MD_Identifier>
+                      </gmd:geographicIdentifier>
+                    </gmd:EX_GeographicDescription>
+                  </gmd:geographicElement>
+                  <gmd:geographicElement>
+                    <gmd:EX_GeographicDescription id="OrbitCalculatedSpatialDomains1">
+                      <gmd:geographicIdentifier>
+                        <gmd:MD_Identifier>
+                          <gmd:code>
+                            <gco:CharacterString>OrbitalModelName: "testing" OrbitNumber: 2855 EquatorCrossingLongitude: -140.0 EquatorCrossingDateTime: 2015-10-27T04:43:16.365365Z</gco:CharacterString>
+                          </gmd:code>
+                          <gmd:codeSpace>
+                            <gco:CharacterString>gov.nasa.esdis.umm.orbitcalculatedspatialdomains</gco:CharacterString>
+                          </gmd:codeSpace>
+                          <gmd:description>
+                            <gco:CharacterString>OrbitCalculatedSpatialDomains</gco:CharacterString>
+                          </gmd:description>
+                        </gmd:MD_Identifier>
+                      </gmd:geographicIdentifier>
+                    </gmd:EX_GeographicDescription>
+                  </gmd:geographicElement>
                   <gmd:temporalElement>
                     <gmd:EX_TemporalExtent>
                       <gmd:extent>

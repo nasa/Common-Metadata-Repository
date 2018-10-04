@@ -3,6 +3,7 @@
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common.log :refer [info debug error]]
+   [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.util :as util]
    [cmr.common.validations.core :as v]
    [cmr.common.xml :as cx]
@@ -50,6 +51,26 @@
             start-lat (convert-direction start-direction)
             end-lat (convert-direction end-direction))))
 
+(defn- build-ocsd-string
+  "Builds ISO SMAP orbit calculated spatial domain string using umm values."
+  [ocsd]
+  (let [{:keys [orbital-model-name orbit-number start-orbit-number stop-orbit-number
+                equator-crossing-longitude equator-crossing-date-time]} ocsd
+        OrbitalModelName (when orbital-model-name
+                           (str "OrbitalModelName: " orbital-model-name))
+        OrbitNumber (when orbit-number
+                      (str "OrbitNumber: " orbit-number))
+        StartOrbitNumber (when start-orbit-number
+                           (str "BeginOrbitNumber: " start-orbit-number))
+        StopOrbitNumber (when stop-orbit-number
+                          (str "EndOrbitNumber: " stop-orbit-number))
+        EquatorCrossingLongitude (when equator-crossing-longitude
+                                   (str "EquatorCrossingLongitude: " equator-crossing-longitude))
+        EquatorCrossingDateTime (when equator-crossing-date-time
+                                  (str "EquatorCrossingDateTime: " equator-crossing-date-time))]
+    (str OrbitalModelName OrbitNumber StartOrbitNumber StopOrbitNumber
+         EquatorCrossingLongitude EquatorCrossingDateTime)))
+
 (defn- parse-float
   "Coerce's string to float, catches exceptions and logs error message and returns nil if
   value is not parseable."
@@ -57,33 +78,68 @@
   (try
     (Float. value)
     (catch Exception e
-      (info (format "For orbit field [%s] the value [%s] is not a number." field value))
+      (info (format "For orbit/orbit-cal-spatial field [%s] the value [%s] is not a number." field value))
       ;; We return nil her instead of value because within-range validation can't handle comparing a
       ;; string to a double.
+      nil)))
+
+(defn- parse-integer
+  "Coerce's string to integer, catches exceptions and logs error message and returns nil if
+  value is not parseable."
+  [field value]
+  (try
+    (Integer. value)
+    (catch Exception e
+      (info (format "For orbit-cal-spatial field [%s] the value [%s] is not an integer." field value))
       nil)))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
   (x/element :gmd:geographicElement {}
              (x/element :gmd:EX_GeographicDescription {}
+                        (x/element :gmd:geographicIdentifier {}
                         (x/element :gmd:MD_Identifier {}
                                    (x/element :gmd:code {}
                                               (x/element :gco:CharacterString {} (build-orbit-string orbit)))
                                    (x/element :gmd:codeSpace {}
                                               (x/element :gco:CharacterString {} "gov.nasa.esdis.umm.orbitparameters"))
                                    (x/element :gmd:description {}
-                                              (x/element :gco:CharacterString {} "OrbitParameters"))))))
+                                              (x/element :gco:CharacterString {} "OrbitParameters")))))))
+
+(defmethod gmd/encode cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
+  [ocsd]
+  (x/element :gmd:geographicElement {}
+             (x/element :gmd:EX_GeographicDescription {}
+                        (x/element :gmd:geographicIdentifier {}
+                        (x/element :gmd:MD_Identifier {}
+                                   (x/element :gmd:code {}
+                                              (x/element :gco:CharacterString {} (build-ocsd-string ocsd)))
+                                   (x/element :gmd:codeSpace {}
+                                              (x/element :gco:CharacterString {}
+                                                         "gov.nasa.esdis.umm.orbitcalculatedspatialdomains"))
+                                   (x/element :gmd:description {}
+                                              (x/element :gco:CharacterString {} "OrbitCalculatedSpatialDomains")))))))
 
 (defmethod gmd/decode-geo-content :EX_GeographicDescription
   [geo-desc]
   (let [orbit-str (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :code :CharacterString])
         description-type (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :description :CharacterString])
+        ;; geo-desc could be Orbit or OrbitCalculatedSpatialDomain or sth else.
+        ;; In Orbit case:
         ascending-crossing (util/get-index-or-nil orbit-str "AscendingCrossing:")
         start-lat (util/get-index-or-nil orbit-str "StartLatitude:")
         start-direction (util/get-index-or-nil orbit-str "StartDirection:")
         end-lat (util/get-index-or-nil orbit-str "EndLatitude:")
-        end-direction (util/get-index-or-nil orbit-str "EndDirection:")]
-    (when (= description-type "OrbitParameters")
+        end-direction (util/get-index-or-nil orbit-str "EndDirection:")
+        ;; In OrbitCalculatedSpatialDomain case:
+        orbital-model-name (util/get-index-or-nil orbit-str "OrbitalModelName:")
+        orbit-number (util/get-index-or-nil orbit-str "OrbitNumber:")
+        start-orbit-number (util/get-index-or-nil orbit-str "BeginOrbitNumber:")
+        stop-orbit-number (util/get-index-or-nil orbit-str "EndOrbitNumber:")
+        equator-crossing-longitude (util/get-index-or-nil orbit-str "EquatorCrossingLongitude:")
+        equator-crossing-date-time (util/get-index-or-nil orbit-str "EquatorCrossingDateTime:")]
+    (case description-type
+      "OrbitParameters"
       (g/->Orbit
        (when ascending-crossing
          (let [asc-c (subs orbit-str
@@ -112,4 +168,39 @@
        (when end-direction
          (let [ed (subs orbit-str
                         end-direction)]
-           (convert-direction (str/trim (subs ed (inc (.indexOf ed ":")))))))))))
+           (convert-direction (str/trim (subs ed (inc (.indexOf ed ":"))))))))
+      "OrbitCalculatedSpatialDomains"
+      (g/->OrbitCalculatedSpatialDomain
+        (when orbital-model-name
+         (let [o-m-name (subs orbit-str
+                          orbital-model-name
+                          (or orbit-number start-orbit-number stop-orbit-number
+                              equator-crossing-longitude equator-crossing-date-time (count orbit-str)))]
+           (str/trim (subs o-m-name (inc (.indexOf o-m-name ":"))))))
+        (when orbit-number
+         (let [o-number (subs orbit-str
+                          orbit-number
+                          (or start-orbit-number stop-orbit-number equator-crossing-longitude
+                              equator-crossing-date-time (count orbit-str)))]
+           (parse-integer :orbit-number (str/trim (subs o-number (inc (.indexOf o-number ":")))))))
+        (when start-orbit-number
+         (let [b-o-number (subs orbit-str
+                            start-orbit-number
+                            (or stop-orbit-number equator-crossing-longitude
+                                equator-crossing-date-time (count orbit-str)))]
+           (parse-integer :start-orbit-number (str/trim (subs b-o-number (inc (.indexOf b-o-number ":")))))))
+        (when stop-orbit-number
+         (let [e-o-number (subs orbit-str
+                            stop-orbit-number
+                            (or equator-crossing-longitude equator-crossing-date-time (count orbit-str)))]
+           (parse-integer :stop-orbit-number (str/trim (subs e-o-number (inc (.indexOf e-o-number ":")))))))
+        (when equator-crossing-longitude
+         (let [e-c-lon (subs orbit-str
+                         equator-crossing-longitude
+                         (or equator-crossing-date-time (count orbit-str)))]
+           (parse-float :equator-crossing-longitude (str/trim (subs e-c-lon (inc (.indexOf e-c-lon ":")))))))
+        (when equator-crossing-date-time
+         (let [e-c-dt (subs orbit-str
+                         equator-crossing-date-time)]
+           (date-time-parser/parse-datetime (str/trim (subs e-c-dt (inc (.indexOf e-c-dt ":"))))))))
+      nil)))
