@@ -184,9 +184,9 @@
       ["version"]
       ["shell" "echo" "-n" "CMR-OPeNDAP: "]
       ["project-version"]]
-    "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
+    "ubercompile" ["with-profile" "+system,+geo,+local,+security" "compile"]
     "uberjar" ["with-profile" "+system,+geo" "uberjar"]
-    "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
+    "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile,+security" "uberjar"]
     "check-vers" ["with-profile" "+lint,+system,+geo,+security" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
@@ -222,6 +222,8 @@
       ["marginalia"]
       ["slate"]]
     ;; Build tasks
+    "build-jar" ["with-profile" "+security" "jar"]
+    "build-uberjar" ["with-profile" "+security" "uberjar"]
     "build-lite" ["do"
       ["clean"]
       ["lint"]
