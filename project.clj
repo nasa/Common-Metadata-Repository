@@ -86,8 +86,8 @@
         [com.esri.geometry/esri-geometry-api "2.2.1"]
         [com.vividsolutions/jts "1.13"]
         [net.sf.geographiclib/GeographicLib-Java "1.49"]
-        [org.geotools/gt-geometry "19.1"]
-        [org.geotools/gt-referencing "19.1"]]}
+        [org.geotools/gt-geometry "20.0"]
+        [org.geotools/gt-referencing "20.0"]]}
     :system {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
@@ -113,7 +113,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.9"]
+        [jonase/eastwood "0.3.1"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
@@ -137,7 +137,7 @@
       :dependencies [
         [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
       :plugins [
-        [lein-codox "0.10.4"]
+        [lein-codox "0.10.5"]
         [lein-marginalia "0.9.1"]]
       :source-paths ["resources/docs/src"]
       :codox {
@@ -187,7 +187,7 @@
     "ubercompile" ["with-profile" "+system,+geo,+local,+ubercompile" "compile"]
     "uberjar" ["with-profile" "+system,+geo" "uberjar"]
     "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile" "uberjar"]
-    "check-vers" ["with-profile" "+lint" "ancient" "check" ":all"]
+    "check-vers" ["with-profile" "+lint,+system,+geo,+security" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"
       ["deps" ":tree"]
       ["deps" ":plugin-tree"]]
