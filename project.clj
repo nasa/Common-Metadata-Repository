@@ -157,18 +157,17 @@
     "build-jar" ["with-profile" "+security" "jar"]
     "build-uberjar" ["with-profile" "+security" "uberjar"]
     "build-lite" ["do"
-      ["ltest" ":unit"]]
+      ["clean"]
+      ["lint"]
+      ["ltest" ":unit"]
+      ["ubercompile"]]
     "build" ["do"
       ["clean"]
+      ["lint"]
       ["check-vers"]
       ["check-sec"]
       ["ltest" ":unit"]
       ["junit" ":unit"]
-      ["ubercompile"]
-      ["build-uberjar"]]
-    "build-full" ["do"
-      ["ltest" ":unit"]
-      ["generate-static"]
       ["ubercompile"]
       ["build-uberjar"]]
     ;; Publishing
