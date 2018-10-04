@@ -60,14 +60,16 @@
   (->> (#'environ/read-system-props)
        (map normalize-prop)
        (remove nil?)
-       (reduce nest-vars {})))
+       (reduce nest-vars {})
+       ((fn [x] (log/trace "props-data:" x) x))))
 
 (defn env-data
   []
   (->> (#'environ/read-system-env)
        (map normalize-env)
        (remove nil?)
-       (reduce nest-vars {})))
+       (reduce nest-vars {})
+       ((fn [x] (log/trace "env-data:" x) x))))
 
 (defn data
   []
