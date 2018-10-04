@@ -4,6 +4,7 @@
   (:require
    [cmr.umm-spec.umm-g.additional-attribute :as aa]
    [cmr.umm-spec.umm-g.platform :as platform]
+   [cmr.umm-spec.umm-g.data-granule :as data-granule]
    [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm-spec.umm-g.related-url :as related-url]
    [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
@@ -60,7 +61,7 @@
      {:granule-ur (:GranuleUR umm-g-json)
       :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
       :collection-ref coll-ref
-      ; :data-granule (xml-elem->DataGranule umm-g-json)
+      :data-granule (data-granule/umm-g-data-granule->DataGranule (:DataGranule umm-g-json))
       :temporal (umm-g->Temporal umm-g-json)
       ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
@@ -110,6 +111,7 @@
      :CloudCover cloud-cover
      :AccessConstraints (when access-value {:Value access-value})
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
+     :DataGranule (data-granule/DataGranule->umm-g-data-granule data-granule)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
                                    two-d-coordinate-system)
      :AdditionalAttributes (aa/ProductSpecificAttributeRefs->umm-g-additional-attributes
