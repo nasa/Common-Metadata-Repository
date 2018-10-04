@@ -5,7 +5,6 @@
    [clojure.test :refer :all]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
    [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.umm-spec.test.umm-g.generators :as generators]
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
@@ -19,7 +18,6 @@
   excluded list below."
   [gran]
   (-> gran
-      (dissoc :data-granule)
       (dissoc :spatial-coverage)
       (dissoc :orbit-calculated-spatial-domains)
       (dissoc :measured-parameters)
@@ -53,8 +51,12 @@
                      {:entry-title nil
                       :short-name "CollectionShortName"
                       :version-id "Version"})
-    :data-granule nil
     :access-value 42
+    :data-granule (umm-lib-g/map->DataGranule
+                   {:day-night "Unspecified"
+                    :producer-granule-id "SMAP_L3_SM_P_20150407_R13080_001.h5"
+                    :production-date-time (p/parse-datetime "2018-07-19T12:01:01.000Z")
+                    :size 23})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (p/parse-datetime "2018-07-17T00:00:00.000Z")

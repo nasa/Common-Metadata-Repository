@@ -26,11 +26,20 @@
                  coords-gen
                  coords-gen))))
 
+(def umm-g-data-granules
+  (ext-gen/model-gen
+    umm-lib-g/map->DataGranule
+    (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 10))
+                  :day-night (gen/elements ["Day" "Night" "Both" "Unspecified"])
+                  :production-date-time ext-gen/date-time
+                  :size (ext-gen/choose-double 0 1024))))
+
 (defn replace-generators
   "Function to replace umm-lib generators with ones that will work for UMM-G elements"
   [granule-model-gen]
   (-> granule-model-gen
       (assoc :collection-ref (gen/generate umm-g-coll-refs))
+      (assoc :data-granule (gen/generate (ext-gen/optional umm-g-data-granules)))
       (assoc :two-d-coordinate-system (gen/generate
                                        (ext-gen/optional
                                         umm-g-tiling-identification-system-gen)))))
