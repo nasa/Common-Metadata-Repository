@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.2.0-SNAPSHOT"
   :description "A CMR services plugin that performs URL translations for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {
