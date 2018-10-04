@@ -2,10 +2,11 @@
   "Contains functions for parsing UMM-G JSON into umm-lib granule model
   and generating UMM-G JSON from umm-lib granule model."
   (:require
+   [cmr.umm-spec.umm-g.additional-attribute :as aa]
    [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
-   [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
    [cmr.umm-spec.umm-g.related-url :as related-url]
+   [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -67,12 +68,13 @@
       :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
       :cloud-cover (:CloudCover umm-g-json)
       :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
-                                (:TilingIdentificationSystem umm-g-json))
+                                 (:TilingIdentificationSystem umm-g-json))
       ; :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem umm-g-json)
       :related-urls (related-url/umm-g-related-urls->RelatedURLs (:RelatedUrls umm-g-json))
       ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
       ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
-      ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs umm-g-json)
+      :product-specific-attributes (aa/umm-g-additional-attributes->ProductSpecificAttributeRefs
+                                     (:AdditionalAttributes umm-g-json))
       })))
 
 (defn Granule->umm-g
@@ -110,6 +112,8 @@
      :CloudCover cloud-cover
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
-                                  two-d-coordinate-system)
+                                   two-d-coordinate-system)
+     :AdditionalAttributes (aa/ProductSpecificAttributeRefs->umm-g-additional-attributes
+                             product-specific-attributes)
      :RelatedUrls (related-url/RelatedURLs->umm-g-related-urls related-urls)
      }))
