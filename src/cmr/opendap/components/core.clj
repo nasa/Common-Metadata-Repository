@@ -109,18 +109,18 @@
     (merge (cfg)
            log)))
 
-(defn initialize-with-web
+(defn initialize
   []
   (let [cfg-data (initialize-bare-bones)]
-  (component/map->SystemMap
-    (merge cfg-data
-           reg
-           pubsub
-           auth-cache
-           authz
-           concept-cache
-           concepts
-           (httpd cfg-data)))))
+    (component/map->SystemMap
+      (merge cfg-data
+             reg
+             pubsub
+             auth-cache
+             authz
+             concept-cache
+             concepts
+             (httpd cfg-data)))))
 
 (defn initialize-without-logging
   []
@@ -139,11 +139,11 @@
   {:basic #'initialize-bare-bones
    :testing-config-only #'initialize-config-only
    :testing #'initialize-without-logging
-   :web #'initialize-with-web})
+   :main #'initialize})
 
 (defn init
   ([]
-    (init :web))
+    (init :main))
   ([mode]
     ((mode init-lookup))))
 
