@@ -65,7 +65,7 @@
       ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
       :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
-      ; :access-value (cx/double-at-path umm-g-json [:RestrictionFlag])
+      :access-value (get-in umm-g-json [:AccessConstraints :Value])
       :cloud-cover (:CloudCover umm-g-json)
       :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
                                  (:TilingIdentificationSystem umm-g-json))
@@ -108,6 +108,7 @@
                                              (str ending-date-time))}}))
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
+     :AccessConstraints (when access-value {:Value access-value})
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
                                    two-d-coordinate-system)
