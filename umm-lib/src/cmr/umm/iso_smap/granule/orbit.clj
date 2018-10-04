@@ -58,19 +58,19 @@
   (let [{:keys [orbital-model-name orbit-number start-orbit-number stop-orbit-number
                 equator-crossing-longitude equator-crossing-date-time]} ocsd
         OrbitalModelName (when orbital-model-name
-                           (str "OrbitalModelName: " orbital-model-name " "))
+                           (str "OrbitalModelName: " orbital-model-name))
         OrbitNumber (when orbit-number
                       (str "OrbitNumber: " orbit-number))
         StartOrbitNumber (when start-orbit-number
-                           (str "BeginOrbitNumber: " start-orbit-number " "))
+                           (str "BeginOrbitNumber: " start-orbit-number))
         StopOrbitNumber (when stop-orbit-number
-                          (str "EndOrbitNumber: " stop-orbit-number " "))
+                          (str "EndOrbitNumber: " stop-orbit-number))
         EquatorCrossingLongitude (when equator-crossing-longitude
-                                   (str "EquatorCrossingLongitude: " equator-crossing-longitude " "))
+                                   (str "EquatorCrossingLongitude: " equator-crossing-longitude))
         EquatorCrossingDateTime (when equator-crossing-date-time
                                   (str "EquatorCrossingDateTime: " equator-crossing-date-time))]
-    (str OrbitalModelName OrbitNumber StartOrbitNumber StopOrbitNumber
-         EquatorCrossingLongitude EquatorCrossingDateTime)))
+    (str OrbitalModelName " " OrbitNumber " " StartOrbitNumber " " StopOrbitNumber " "
+         EquatorCrossingLongitude " " EquatorCrossingDateTime)))
 
 (defn- parse-float
   "Coerce's string to float, catches exceptions and logs error message and returns nil if
