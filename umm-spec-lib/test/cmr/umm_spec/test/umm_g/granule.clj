@@ -23,7 +23,6 @@
       (dissoc :access-value)
       (dissoc :spatial-coverage)
       (dissoc :orbit-calculated-spatial-domains)
-      (dissoc :product-specific-attributes)
       (dissoc :measured-parameters)
       umm-lib-g/map->UmmGranule))
 
@@ -87,6 +86,26 @@
                                :end-coordinate-1 -50
                                :start-coordinate-2 50
                                :end-coordinate-2 100})
+    :product-specific-attributes [(umm-lib-g/map->ProductSpecificAttributeRef
+                                    {:name "AdditionalAttribute1 Name1"
+                                     :values
+                                     ["AdditionalAttribute1 Value3"
+                                      "AdditionalAttribute1 Value4"]})
+                                  (umm-lib-g/map->ProductSpecificAttributeRef
+                                    {:name "EVI1KM16DAYQCLASSPERCENTAGE"
+                                     :values
+                                     ["EVI1KM16DAYQCLASSPERCENTAGE Value5"
+                                      "EVI1KM16DAYQCLASSPERCENTAGE Value6"]})
+                                  (umm-lib-g/map->ProductSpecificAttributeRef
+                                    {:name "QAFRACTIONGOODQUALITY"
+                                     :values
+                                     ["QAFRACTIONGOODQUALITY Value7"
+                                      "QAFRACTIONGOODQUALITY Value8"]})
+                                  (umm-lib-g/map->ProductSpecificAttributeRef
+                                    {:name "QAFRACTIONNOTPRODUCEDCLOUD"
+                                     :values
+                                     ["QAFRACTIONNOTPRODUCEDCLOUD Value9"
+                                      "QAFRACTIONNOTPRODUCEDCLOUD Value10"]})]
     :spatial-coverage nil
     :related-urls [(umm-c/map->RelatedURL
                     {:type "GET DATA"
