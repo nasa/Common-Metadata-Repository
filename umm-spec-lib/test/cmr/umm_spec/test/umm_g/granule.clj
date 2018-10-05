@@ -53,7 +53,7 @@
                       :version-id "Version"})
     :access-value 42
     :data-granule (umm-lib-g/map->DataGranule
-                   {:day-night "Unspecified"
+                   {:day-night "UNSPECIFIED"
                     :producer-gran-id "SMAP_L3_SM_P_20150407_R13080_001.h5"
                     :production-date-time (p/parse-datetime "2018-07-19T12:01:01.000Z")
                     :size 23})

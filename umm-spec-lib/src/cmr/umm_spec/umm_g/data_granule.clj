@@ -2,7 +2,8 @@
   "Contains functions for parsing UMM-G JSON DataGranule into umm-lib granule model
    DataGranule and generating UMM-G JSON DataGranule from umm-lib granule model DataGranule."
   (:require
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.umm-granule :as g]
+   [clojure.string :as string])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn umm-g-data-granule->DataGranule
@@ -12,10 +13,9 @@
     (g/map->DataGranule
       (let [{:keys [Identifiers DayNightFlag ProductionDateTime
                     ArchiveAndDistributionInformation]} data-granule]
-        {:day-night DayNightFlag
+        {:day-night (string/upper-case DayNightFlag)
          :producer-gran-id (->> Identifiers
-                                (filter #(= "ProducerGranuleId" (:IdentifierType %)))
-                                first
+                                (some #(when (= "ProducerGranuleId" (:IdentifierType %)) %))
                                 :Identifier)
          :production-date-time ProductionDateTime
          :size (get (first ArchiveAndDistributionInformation) :Size)}))))
@@ -25,7 +25,7 @@
   [data-granule]
   (when data-granule
     (let [{:keys [producer-gran-id day-night production-date-time size]} data-granule]
-      {:DayNightFlag day-night
+      {:DayNightFlag (string/capitalize day-night)
        :Identifiers (when producer-gran-id
                       [{:Identifier producer-gran-id
                         :IdentifierType "ProducerGranuleId"}])
