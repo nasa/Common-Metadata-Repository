@@ -3,7 +3,8 @@
    DataGranule and generating UMM-G JSON DataGranule from umm-lib granule model DataGranule."
   (:require
    [cmr.umm.umm-granule :as g]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [cmr.umm-spec.util :as util])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn umm-g-data-granule->DataGranule
@@ -30,6 +31,6 @@
                       [{:Identifier producer-gran-id
                         :IdentifierType "ProducerGranuleId"}])
        :ProductionDateTime production-date-time
-       :ArchiveAndDistributionInformation [{:Name "Not provided"
+       :ArchiveAndDistributionInformation [{:Name util/not-provided
                                             :Size size
-                                            :SizeUnit "MB"}]})))
+                                            :SizeUnit "NA"}]})))
