@@ -1,6 +1,7 @@
 (ns cmr.umm.iso-smap.granule.orbit
   (:require
    [clojure.data.xml :as x]
+   [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer [info debug error]]
@@ -75,16 +76,12 @@
 (defn- parse-float
   "Coerce's string to float, catches exceptions and logs error message and returns nil if
   value is not parseable."
-  ([field value]
-   (parse-float field value nil))
-  ([field value field-name]
+  [field value] 
   (try
     (Float. value)
     (catch Exception e
-      (info (format "For [%s] field [%s] the value [%s] is not a number." (or field-name "Orbit") field value))
-      ;; We return nil her instead of value because within-range validation can't handle comparing a
-      ;; string to a double.
-      nil))))
+      (info (format "For Orbit field [%s] the value [%s] is not a number." field value))
+      nil)))
 
 (defn- parse-integer
   "Coerce's string to integer, catches exceptions and logs error message and returns nil if
@@ -95,6 +92,81 @@
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
       nil)))
+
+(defn- parse-double
+  "Coerce's string to double, catches exceptions and logs error message and returns nil if
+  value is not parseable."
+  [field value]
+  (try
+    (Double. value)
+    (catch Exception e
+      (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an double." field value))
+      nil)))
+
+(def orbit-str-field-mapping
+  "Returns mapping of fields in orbit string and fields in UmmGranule."
+  {"AscendingCrossing" :ascending-crossing
+   "StartLatitude" :start-lat
+   "StartDirection" :start-direction
+   "EndLatitude" :end-lat
+   "EndDirection" :end-direction
+   "OrbitalModelName" :orbital-model-name
+   "OrbitNumber" :orbit-number
+   "BeginOrbitNumber" :start-orbit-number
+   "EndOrbitNumber" :stop-orbit-number
+   "EquatorCrossingLongitude" :equator-crossing-longitude
+   "EquatorCrossingDateTime" :equator-crossing-date-time})
+
+(def orbit-str-field-re-pattern
+  "Returns the pattern that matches all the related fields in orbit-str."
+  (let [pstr (str "AscendingCrossing:|StartLatitude:|StartDirection:|"
+                  "EndLatitude:|EndDirection:|OrbitalModelName:|OrbitNumber:|"
+                  "BeginOrbitNumber:|EndOrbitNumber:|EquatorCrossingLongitude:|EquatorCrossingDateTime:")]
+    (re-pattern pstr)))
+
+(defn- convert-orbit-str-to-map
+  "Convert orbit-str to a map. The fields with nil or no values are removed.
+  For orbit-str \"AscendingCrossing: StartLatitude: nil StartDirection: A EndLatitude: 0.0 EndDirection: A\"
+  orbit-str-map is:
+  {\"StartDirection\" \"A\" \"EndLatitude\" \"0.0\" \"EndDirection\" \"A\"}"
+  [orbit-str]
+  (let [;; Add a special string around each field and trim all the spaces around the values.
+        orbit-str (-> orbit-str
+                      (str/replace orbit-str-field-re-pattern #(str "HSTRING" %1 "TSTRING"))
+                      (str/trim)
+                      (str/replace #"\s+HSTRING" "HSTRING")
+                      (str/replace #":TSTRING\s+" ":TSTRING"))
+        ;; split against the special string - now each element in orbit-str-list
+        ;; contains things like "OrbitModelName:TSTRINGModel:Name"
+        orbit-str-list (str/split orbit-str #"HSTRING")]
+    (->> orbit-str-list
+         ;; split each string in the orbit-str-list
+         (map #(str/split % #":TSTRING"))
+         ;; keep the ones with values.
+         (filter #(= 2 (count %)))
+         (into {})
+         ;; remove "nil" valued keys
+         (util/remove-map-keys #(= "nil" %)))))
+
+(defn- parse-values-for-orbit
+  "Update values in the orbit-str-map with the parsed values."
+  [orbit-str-map]
+  (-> orbit-str-map
+      (update :ascending-crossing #(parse-float :ascending-crossing %))
+      (update :start-lat #(parse-float :start-lat %))
+      (update :start-direction #(convert-direction %))
+      (update :end-lat #(parse-float :end-lat %))
+      (update :end-direction #(convert-direction %))))
+
+(defn- parse-values-for-ocsd
+  "Update values in the orbit-str-map with the parsed values."
+  [orbit-str-map]
+  (-> orbit-str-map
+      (update :orbit-number #(parse-integer :orbit-number %))
+      (update :start-orbit-number #(parse-integer :start-orbit-number %))
+      (update :stop-orbit-number #(parse-integer :stop-orbit-number %))
+      (update :equator-crossing-longitude #(parse-double :equator-crossing-longitude %))
+      (update :equator-crossing-date-time #(date-time-parser/parse-datetime %))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
@@ -122,85 +194,14 @@
   [geo-desc]
   (let [orbit-str (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :code :CharacterString])
         description-type (cx/string-at-path geo-desc [:geographicIdentifier :MD_Identifier :description :CharacterString])
-        ;; geo-desc could be Orbit or OrbitCalculatedSpatialDomain or sth else.
-        ;; In Orbit case:
-        ascending-crossing (util/get-index-or-nil orbit-str "AscendingCrossing:")
-        start-lat (util/get-index-or-nil orbit-str "StartLatitude:")
-        start-direction (util/get-index-or-nil orbit-str "StartDirection:")
-        end-lat (util/get-index-or-nil orbit-str "EndLatitude:")
-        end-direction (util/get-index-or-nil orbit-str "EndDirection:")
-        ;; In OrbitCalculatedSpatialDomain case:
-        orbital-model-name (util/get-index-or-nil orbit-str "OrbitalModelName:")
-        orbit-number (util/get-index-or-nil orbit-str "OrbitNumber:")
-        start-orbit-number (util/get-index-or-nil orbit-str "BeginOrbitNumber:")
-        stop-orbit-number (util/get-index-or-nil orbit-str "EndOrbitNumber:")
-        equator-crossing-longitude (util/get-index-or-nil orbit-str "EquatorCrossingLongitude:")
-        equator-crossing-date-time (util/get-index-or-nil orbit-str "EquatorCrossingDateTime:")
-        count-orbit-str (count orbit-str)]
+        orbit-str-map (-> orbit-str
+                          convert-orbit-str-to-map
+                          (set/rename-keys orbit-str-field-mapping))]
     (case description-type
       "OrbitParameters"
-      (g/->Orbit
-       (when ascending-crossing
-         (let [asc-c (subs orbit-str
-                           ascending-crossing
-                           (or start-lat start-direction end-lat end-direction
-                               count-orbit-str))]
-           (parse-float :ascending-crossing (str/trim (subs asc-c (inc (.indexOf asc-c ":")))))))
-       (when start-lat
-         (let [sl (subs orbit-str
-                        start-lat
-                        (or start-direction end-lat end-direction
-                            count-orbit-str))]
-           (parse-float :start-lat (str/trim (subs sl (inc (.indexOf sl ":")))))))
-       (when start-direction
-         (let [sd (subs orbit-str
-                        start-direction
-                        (or end-lat end-direction
-                            count-orbit-str))]
-           (convert-direction (str/trim (subs sd (inc (.indexOf sd ":")))))))
-       (when end-lat
-         (let [el (subs orbit-str
-                        end-lat
-                        (or end-direction
-                            count-orbit-str))]
-           (parse-float :end-lat (str/trim (subs el (inc (.indexOf el ":")))))))
-       (when end-direction
-         (let [ed (subs orbit-str
-                        end-direction)]
-           (convert-direction (str/trim (subs ed (inc (.indexOf ed ":"))))))))
+      (let [orbit-map (parse-values-for-orbit orbit-str-map)]
+        (g/map->Orbit orbit-map))
       "OrbitCalculatedSpatialDomains"
-      (g/->OrbitCalculatedSpatialDomain
-        (when orbital-model-name
-         (let [o-m-name (subs orbit-str
-                          orbital-model-name
-                          (or orbit-number start-orbit-number stop-orbit-number
-                              equator-crossing-longitude equator-crossing-date-time count-orbit-str))]
-           (str/trim (subs o-m-name (inc (.indexOf o-m-name ":"))))))
-        (when orbit-number
-         (let [o-number (subs orbit-str
-                          orbit-number
-                          (or start-orbit-number stop-orbit-number equator-crossing-longitude
-                              equator-crossing-date-time count-orbit-str))]
-           (parse-integer :orbit-number (str/trim (subs o-number (inc (.indexOf o-number ":")))))))
-        (when start-orbit-number
-         (let [b-o-number (subs orbit-str
-                            start-orbit-number
-                            (or stop-orbit-number equator-crossing-longitude
-                                equator-crossing-date-time count-orbit-str))]
-           (parse-integer :start-orbit-number (str/trim (subs b-o-number (inc (.indexOf b-o-number ":")))))))
-        (when stop-orbit-number
-         (let [e-o-number (subs orbit-str
-                            stop-orbit-number
-                            (or equator-crossing-longitude equator-crossing-date-time count-orbit-str))]
-           (parse-integer :stop-orbit-number (str/trim (subs e-o-number (inc (.indexOf e-o-number ":")))))))
-        (when equator-crossing-longitude
-         (let [e-c-lon (subs orbit-str
-                         equator-crossing-longitude
-                         (or equator-crossing-date-time count-orbit-str))]
-           (parse-float :equator-crossing-longitude (str/trim (subs e-c-lon (inc (.indexOf e-c-lon ":"))))
-                        "Orbit calculated spatial domain")))
-        (when equator-crossing-date-time
-         (let [e-c-dt (subs orbit-str
-                         equator-crossing-date-time)]
-           (date-time-parser/parse-datetime (str/trim (subs e-c-dt (inc (.indexOf e-c-dt ":"))))))))
+      (let [ocsd-map (parse-values-for-ocsd orbit-str-map)]
+        (g/map->OrbitCalculatedSpatialDomain ocsd-map))
       nil)))

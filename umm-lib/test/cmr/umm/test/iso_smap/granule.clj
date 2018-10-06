@@ -1,24 +1,23 @@
 (ns cmr.umm.test.iso-smap.granule
   "Tests parsing and generating SMAP ISO Granule XML."
-  (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.java.io :as io]
-            [clojure.string :as s]
-            [cmr.umm.test.generators.granule :as gran-gen]
-            [cmr.common.date-time-parser :as p]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.polygon :as poly]
-            [cmr.umm.umm-spatial :as spatial]
-            [cmr.umm.iso-smap.granule :as g]
-            [cmr.umm.iso-smap.iso-smap-core :as iso]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.umm-granule :as umm-g]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.date-time-parser :as p]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.common.util :as util]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.polygon :as poly]
+   [cmr.umm.iso-smap.granule :as g]
+   [cmr.umm.iso-smap.iso-smap-core :as iso]
+   [cmr.umm.test.generators.granule :as gran-gen]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.umm.umm-spatial :as spatial]))
 
 (defn- data-granule->expected-parsed
   "Returns the expected parsed data-granule for the given data-granule"
@@ -77,6 +76,9 @@
       (dissoc :two-d-coordinate-system)
       ;; SMAP ISO does not support measured-parameters
       (dissoc :measured-parameters)
+      ;; trim :orbital-model-name value in each :orbit-calculated-spatial-domains
+      (util/update-in-each [:orbit-calculated-spatial-domains]
+                           #(assoc % :orbital-model-name (string/trim (:orbital-model-name %))))
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
@@ -113,6 +115,10 @@
   (umm-g/map->SpatialCoverage
    {:orbit
     (umm-g/->Orbit -140.0 1.0 :desc 0.0 :asc)}))
+
+(def generated-granule
+  (umm-g/map->UmmGranule
+{:granule-ur "!", :data-provider-timestamps #cmr.umm.umm_granule.DataProviderTimestamps{:insert-time #=(cmr.common.joda-time/date-time 0 "UTC"), :update-time #=(cmr.common.joda-time/date-time 0 "UTC"), :delete-time nil}, :collection-ref #cmr.umm.umm_granule.CollectionRef{:entry-title "0", :short-name nil, :version-id nil, :entry-id nil}, :data-granule nil, :access-value nil, :temporal #cmr.umm.umm_granule.GranuleTemporal{:range-date-time #cmr.umm.umm_collection.RangeDateTime{:beginning-date-time #=(cmr.common.joda-time/date-time 0 "UTC"), :ending-date-time nil}, :single-date-time nil}, :spatial-coverage nil, :orbit-calculated-spatial-domains [#cmr.umm.umm_granule.OrbitCalculatedSpatialDomain{:orbital-model-name ": !", :orbit-number 0, :start-orbit-number 0, :stop-orbit-number 0, :equator-crossing-longitude -1.33333333, :equator-crossing-date-time #=(cmr.common.joda-time/date-time 0 "UTC")}], :measured-parameters nil, :platform-refs nil, :project-refs nil, :related-urls nil, :product-specific-attributes nil, :cloud-cover nil, :two-d-coordinate-system nil}))
 
 (def expected-granule
   (umm-g/map->UmmGranule
@@ -162,13 +168,33 @@
     ;; This tested the related fields, including orbit-calculated-spatial-domain 
     ;; is correctly translated from xml to umm.
     (is (= expected-granule (g/parse-granule sample-granule-xml))))
-  (testing "round trip"
+  (testing "round trip for granule with spatial-coverage being nil "
     ;; umm-granule to iso-smap-xml, then back to umm-granule. 
+    ;; This generated-granule caused the failure in generate-and-parse-granule test,
+    ;; but succeeded here!??? 
+    (let [xml (iso/umm->iso-smap-xml generated-granule)
+          parsed (g/parse-granule xml)
+          expected-parsed (umm->expected-parsed-smap-iso generated-granule)]
+      (is (= expected-parsed parsed))))
+  (testing "round trip for granule with orbit-calculated-spatial-domains being nil "
+    ;; umm-granule to iso-smap-xml, then back to umm-granule.
+    ;; The orbit-calculated-spatial-domain should remain the same.
+    (let [generated-granule (assoc generated-granule :orbit-calculated-spatial-domains nil)
+          xml (iso/umm->iso-smap-xml generated-granule)
+          parsed (g/parse-granule xml)]
+      (is (= (:orbit-calculated-spatial-domains generated-granule)
+             (:orbit-calculated-spatial-domains parsed)))
+      (is (= (:spatial-coverage generated-granule)
+             (:spatial-coverage parsed)))))
+  (testing "round trip for granule with both spatial-coverage and orbit-calculated-spatial-domains "
+    ;; umm-granule to iso-smap-xml, then back to umm-granule.
     ;; The orbit-calculated-spatial-domain should remain the same.
     (let [xml (iso/umm->iso-smap-xml expected-granule)
           parsed (g/parse-granule xml)]
       (is (= (:orbit-calculated-spatial-domains expected-granule)
-             (:orbit-calculated-spatial-domains parsed)))))
+             (:orbit-calculated-spatial-domains parsed)))
+      (is (= (:spatial-coverage expected-granule)
+             (:spatial-coverage parsed)))))
   (testing "parse temporal"
     (is (= expected-temporal (g/parse-temporal sample-granule-xml))))
   (testing "parse multiple extents, temporal"
@@ -191,4 +217,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
-           (g/validate-xml (s/replace sample-granule-xml "fileIdentifier" "XXXX"))))))
+           (g/validate-xml (string/replace sample-granule-xml "fileIdentifier" "XXXX"))))))

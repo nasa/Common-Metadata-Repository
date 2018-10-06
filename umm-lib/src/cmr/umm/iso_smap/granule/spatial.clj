@@ -29,12 +29,11 @@
   "Returns a UMM SpatialCoverage from a parsed XML structure"
   [xml-struct]
   (let [spatial-elems (cx/elements-at-path xml-struct extent-path)
-        geometries (flatten (map spatial/decode spatial-elems))]
+        geometries (flatten (map spatial/decode spatial-elems))
+        geometries (remove orbit-calculated-spatial-domain? geometries)]
     (when (seq geometries)
       (g/map->SpatialCoverage (util/remove-map-keys empty?
-                                {:geometries (->> geometries
-                                                  (remove orbit?)
-                                                  (remove orbit-calculated-spatial-domain?))
+                                {:geometries (remove orbit? geometries)
                                  :orbit (first (filter orbit? geometries))})))))
 
 (defn xml-elem->OrbitCalculatedSpatialDomains
