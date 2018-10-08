@@ -116,10 +116,6 @@
    {:orbit
     (umm-g/->Orbit -140.0 1.0 :desc 0.0 :asc)}))
 
-(def generated-granule1
-  (umm-g/map->UmmGranule
-    {:granule-ur "!", :data-provider-timestamps #cmr.umm.umm_granule.DataProviderTimestamps{:insert-time #=(cmr.common.joda-time/date-time 0 "UTC"), :update-time #=(cmr.common.joda-time/date-time 0 "UTC"), :delete-time nil}, :collection-ref #cmr.umm.umm_granule.CollectionRef{:entry-title "0", :short-name nil, :version-id nil, :entry-id nil}, :data-granule nil, :access-value nil, :temporal #cmr.umm.umm_granule.GranuleTemporal{:range-date-time #cmr.umm.umm_collection.RangeDateTime{:beginning-date-time #=(cmr.common.joda-time/date-time 0 "UTC"), :ending-date-time nil}, :single-date-time nil}, :spatial-coverage nil, :orbit-calculated-spatial-domains [#cmr.umm.umm_granule.OrbitCalculatedSpatialDomain{:orbital-model-name " !", :orbit-number 0, :start-orbit-number 0, :stop-orbit-number 0, :equator-crossing-longitude 1.0, :equator-crossing-date-time #=(cmr.common.joda-time/date-time 0 "UTC")}], :measured-parameters nil, :platform-refs nil, :project-refs nil, :related-urls nil, :product-specific-attributes nil, :cloud-cover nil, :two-d-coordinate-system nil}))
-
 (def generated-granule
   (umm-g/map->UmmGranule
    {:granule-ur "!", :data-provider-timestamps #cmr.umm.umm_granule.DataProviderTimestamps{:insert-time #=(cmr.common.joda-time/date-time 0 "UTC"), :update-time #=(cmr.common.joda-time/date-time 0 "UTC"), :delete-time nil}, :collection-ref #cmr.umm.umm_granule.CollectionRef{:entry-title "0", :short-name nil, :version-id nil, :entry-id nil}, :data-granule nil, :access-value nil, :temporal #cmr.umm.umm_granule.GranuleTemporal{:range-date-time #cmr.umm.umm_collection.RangeDateTime{:beginning-date-time #=(cmr.common.joda-time/date-time 0 "UTC"), :ending-date-time nil}, :single-date-time nil}, :spatial-coverage nil, :orbit-calculated-spatial-domains [#cmr.umm.umm_granule.OrbitCalculatedSpatialDomain{:orbital-model-name ": !", :orbit-number 0, :start-orbit-number 0, :stop-orbit-number 0, :equator-crossing-longitude -1.0, :equator-crossing-date-time #=(cmr.common.joda-time/date-time 0 "UTC")}], :measured-parameters nil, :platform-refs nil, :project-refs nil, :related-urls nil, :product-specific-attributes nil, :cloud-cover nil, :two-d-coordinate-system nil}))
@@ -175,11 +171,9 @@
   (testing "round trip for granule with spatial-coverage being nil "
     ;; umm-granule to iso-smap-xml, then back to umm-granule.
     ;; The orbit-calculated-spatial-domain should remain the same.
-    (let [generated-granule
-           (util/update-in-each generated-granule [:orbit-calculated-spatial-domains]
-                                #(assoc % :orbital-model-name (string/trim (:orbital-model-name %))))
-          xml (iso/umm->iso-smap-xml generated-granule)
-          parsed (g/parse-granule xml)]
+    (let [xml (iso/umm->iso-smap-xml generated-granule)
+          parsed (g/parse-granule xml)
+          expected-parsed (umm->expected-parsed-smap-iso generated-granule)]
       (is (= (:orbit-calculated-spatial-domains generated-granule)
              (:orbit-calculated-spatial-domains parsed)))
       (is (= (:spatial-coverage generated-granule)

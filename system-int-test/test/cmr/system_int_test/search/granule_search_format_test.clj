@@ -402,8 +402,8 @@
                                 :cloud-cover 50.0
                                 :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
                                                                     :orbit-number 2
-                                                                    :start-orbit-number 3.0
-                                                                    :stop-orbit-number 4.0
+                                                                    :start-orbit-number 3
+                                                                    :stop-orbit-number 4
                                                                     :equator-crossing-longitude -45.0
                                                                     :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]
                                 :related-urls [ru1 ru2]
@@ -442,8 +442,8 @@
                                 :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 :asc 50.0 :asc))
                                 :orbit-calculated-spatial-domains
                                 [{:orbital-model-name "MODEL NAME"
-                                  :start-orbit-number 3.0
-                                  :stop-orbit-number 4.0
+                                  :start-orbit-number 3
+                                  :stop-orbit-number 4
                                   :equator-crossing-longitude -45.0
                                   :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})
         gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"

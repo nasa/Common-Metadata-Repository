@@ -112,6 +112,12 @@
   (when-let [^String s (string-at-path xml-struct path)]
     (Double. s)))
 
+(defn integer-at-path
+  "Extracts a integer number from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (Integer. s)))
+
 (defn bool-at-path
   "Extracts a boolean from the given path in the XML structure."
   [xml-struct path]

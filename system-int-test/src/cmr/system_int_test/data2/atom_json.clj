@@ -62,6 +62,11 @@
   (when (and v (seq v))
     (Double. v)))
 
+(defn parse-integer
+  [^String v]
+  (when (and v (seq v))
+    (Integer. v)))
+
 (defn- parse-orbit-parameters
   "Parse orbit-parameters map"
   [orbit-params]
@@ -89,8 +94,8 @@
   [ocsd]
   (into ocsd (util/remove-nil-keys
                {:orbit-number (parse-long (:orbit-number ocsd))
-                :start-orbit-number (parse-double (:start-orbit-number ocsd))
-                :stop-orbit-number (parse-double (:stop-orbit-number ocsd))
+                :start-orbit-number (parse-integer (:start-orbit-number ocsd))
+                :stop-orbit-number (parse-integer (:stop-orbit-number ocsd))
                 :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))})))
 
 (defmethod json-entry->entry :collection
