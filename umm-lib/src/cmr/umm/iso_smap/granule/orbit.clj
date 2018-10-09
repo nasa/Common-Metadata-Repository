@@ -31,7 +31,7 @@
     (= :desc direction) "D"
     :default direction))
 
-(def validations
+(def orbit-validations
   [{:ascending-crossing [v/required v/number (v/within-range -180.0 180.0)]
     :start-lat [v/required v/number (v/within-range -90.0 90.0)]
     :end-lat [v/required v/number (v/within-range -90.0 90.0)]
@@ -42,7 +42,22 @@
   cmr.umm.umm_granule.Orbit
   (validate
     [record]
-    (v/create-error-messages (v/validate validations record))))
+    (v/create-error-messages (v/validate orbit-validations record))))
+
+(def ocsd-validations
+  [{:orbit-number [v/integer]
+    :start-orbit-number [v/integer]
+    :stop-orbit-number [v/integer]
+    ;; note we don't need to validate that it's a number because
+    ;; it's been checked in the parse-double, and if it's not a number,
+    ;; it will be returned as nil to ensure a string is not passed to within-range.
+    :equator-crossing-longitude [(v/within-range -180.0 180.0)]}])
+
+(extend-protocol sv/SpatialValidation
+  cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
+  (validate
+    [record]
+    (v/create-error-messages (v/validate ocsd-validations record))))
 
 (defn- build-orbit-string
   "Builds ISO SMAP orbit string using umm values."
@@ -81,6 +96,8 @@
     (Float. value)
     (catch Exception e
       (info (format "For Orbit field [%s] the value [%s] is not a number." field value))
+      ;; We return nil here instead of value because within-range validation can't handle comparing a
+      ;; string to a double.
       nil)))
 
 (defn- parse-integer
@@ -91,7 +108,7 @@
     (Integer. value)
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
-      nil)))
+      value)))
 
 (defn- parse-double
   "Coerce's string to double, catches exceptions and logs error message and returns nil if
@@ -101,6 +118,8 @@
     (Double. value)
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an double." field value))
+      ;; We return nil here instead of value because within-range validation can't handle comparing a
+      ;; string to a double.
       nil)))
 
 (def orbit-str-field-mapping
