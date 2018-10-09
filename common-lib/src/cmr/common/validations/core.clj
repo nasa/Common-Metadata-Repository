@@ -7,10 +7,12 @@
   value. It returns either nil or a map of field paths to a list of errors.
   Maps and lists will automatically be converted into record-validation or
   seq-of-validations."
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.validations.messages :as msg]))
+  (:require 
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.messages :as msg]))
 
 (comment
 
@@ -137,6 +139,16 @@
   [field-path value]
   (when (and value (not (integer? value)))
     {field-path [(msg/integer value)]}))
+
+(defn datetime
+  "Validates the value is a datetime."
+  [field-path value]
+  (when value
+    (try
+      (date-time-parser/parse-datetime (str value))
+      nil
+      (catch Exception e
+        {field-path [(msg/datetime value)]}))))
 
 (defn number
   "Validates the value is a number"

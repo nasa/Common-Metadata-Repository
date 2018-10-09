@@ -51,7 +51,8 @@
     ;; note we don't need to validate that it's a number because
     ;; it's been checked in the parse-double, and if it's not a number,
     ;; it will be returned as nil to ensure a string is not passed to within-range.
-    :equator-crossing-longitude [(v/within-range -180.0 180.0)]}])
+    :equator-crossing-longitude [(v/within-range -180.0 180.0)]
+    :equator-crossing-date-time [v/datetime]}])
 
 (extend-protocol sv/SpatialValidation
   cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
@@ -101,13 +102,24 @@
       nil)))
 
 (defn- parse-integer
-  "Coerce's string to integer, catches exceptions and logs error message and returns nil if
-  value is not parseable."
+  "Coerce's string to integer, catches exceptions and logs error message and returns value if
+  value is not parseable so that the validation can catch the error and return to the user."
   [field value]
   (try
     (Integer. value)
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
+      value)))
+
+(defn- parse-datetime
+  "Coerce's string to datetime, catches exceptions and logs error message and returns value if
+  value is not parseable. This wrapper is used so that the error can be returned together 
+  with other validation errors." 
+  [field value]
+  (try
+    (date-time-parser/parse-datetime value)
+    (catch Exception e
+      (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value)
       value)))
 
 (defn- parse-double
@@ -185,7 +197,7 @@
       (update :start-orbit-number #(parse-integer :start-orbit-number %))
       (update :stop-orbit-number #(parse-integer :stop-orbit-number %))
       (update :equator-crossing-longitude #(parse-double :equator-crossing-longitude %))
-      (update :equator-crossing-date-time #(date-time-parser/parse-datetime %))))
+      (update :equator-crossing-date-time #(parse-datetime :equator-crossing-date-time %))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
