@@ -460,6 +460,25 @@
                                (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))))))
 
+(deftest CMR-5216-invalid-iso-smap-ocsd-values-test
+  (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
+        invalid-gran-metadata (-> "iso-samples/5216_IsoSmap_Granule.xml" io/resource slurp)
+        _ (ingest/ingest-concept
+            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        expected-errors 
+         [{:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."
+                    "Spatial validation error: Start Orbit Number must be an integer but was [1.2]."
+                    "Spatial validation error: Equator Crossing Longitude must be within [-180.0] and [180.0] but was [240.0]."
+                    "Spatial validation error: Equator Crossing Date Time must be a datetime but was [Z]."],
+           :path ["OrbitCalculatedSpatialDomains" 0]}
+           {:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."],
+             :path ["OrbitCalculatedSpatialDomains" 1]}]]
+    (testing "Invalid orbit calculated spatial domain"
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                      (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
+         (is (= 422 status))
+         (is (= expected-errors errors))))))
+
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                                                  :ShortName "S1"
