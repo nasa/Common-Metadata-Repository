@@ -66,9 +66,9 @@
            [gran1 gran2 gran3] "1"
            "search by orbit number range"
            [gran1, gran2, gran3, gran4] "1,2"
-           "search by orbit number range with rational numbers"
+           "search by orbit number range with integer numbers"
            [gran4, gran5] "2,3"
-           "search by orbit number range with min and max rational numbers"
+           "search by orbit number range with min and max integer numbers"
            [gran6 gran7] "5,8"
            "search by orbit number range inside"
            [gran7] "8,9"
@@ -121,9 +121,9 @@
            [gran1, gran2, gran3, gran4] [1 2]
            "search by orbit number range2"
            [gran1, gran2, gran3, gran4] ["'1'" "'2'"]
-           "search by orbit number range with rational numbers"
+           "search by orbit number range with integer numbers"
            [gran4, gran5] [2 3]
-           "search by orbit number range with min and max rational numbers"
+           "search by orbit number range with min and max integer numbers"
            [gran6 gran7] [5 8]
            "search by orbit number range inside"
            [gran7] [8 9]
