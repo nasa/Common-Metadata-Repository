@@ -479,6 +479,17 @@
          (is (= 422 status))
          (is (= expected-errors errors))))))
 
+(deftest CMR-5216-valid-iso-smap-ocsd-values-test
+  (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
+        valid-gran-metadata (-> "iso-samples/5216_Valid_IsoSmap_Granule.xml" io/resource slurp)
+        _ (ingest/ingest-concept
+            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+    (testing "Invalid orbit calculated spatial domain"
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                      (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
+         (is (= 201 status))
+         (is (= nil errors))))))
+
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                                                  :ShortName "S1"
