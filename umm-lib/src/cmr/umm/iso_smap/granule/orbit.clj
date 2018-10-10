@@ -32,9 +32,9 @@
     :default direction))
 
 (def orbit-validations
-  [{:ascending-crossing [v/required v/number (v/within-range -180.0 180.0)]
-    :start-lat [v/required v/number (v/within-range -90.0 90.0)]
-    :end-lat [v/required v/number (v/within-range -90.0 90.0)]
+  [{:ascending-crossing [v/required v/validate-number (v/within-range -180.0 180.0)]
+    :start-lat [v/required v/validate-number (v/within-range -90.0 90.0)]
+    :end-lat [v/required v/validate-number (v/within-range -90.0 90.0)]
     :start-direction start-end-direction
     :end-direction start-end-direction}])
 
@@ -45,14 +45,14 @@
     (v/create-error-messages (v/validate orbit-validations record))))
 
 (def ocsd-validations
-  [{:orbit-number [v/integer]
-    :start-orbit-number [v/integer]
-    :stop-orbit-number [v/integer]
+  [{:orbit-number [v/validate-integer]
+    :start-orbit-number [v/validate-integer]
+    :stop-orbit-number [v/validate-integer]
     ;; note we don't need to validate that it's a number because
     ;; it's been checked in the parse-double, and if it's not a number,
     ;; it will be returned as nil to ensure a string is not passed to within-range.
     :equator-crossing-longitude [(v/within-range -180.0 180.0)]
-    :equator-crossing-date-time [v/datetime]}])
+    :equator-crossing-date-time [v/validate-datetime]}])
 
 (extend-protocol sv/SpatialValidation
   cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
@@ -119,7 +119,7 @@
   (try
     (date-time-parser/parse-datetime value)
     (catch Exception e
-      (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value)
+      (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value))
       value)))
 
 (defn- parse-double

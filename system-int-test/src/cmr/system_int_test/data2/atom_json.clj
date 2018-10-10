@@ -54,17 +54,17 @@
 
 (defn parse-long
   [^String v]
-  (when (and v (seq v))
+  (when-not (str/blank? v)
     (Long. v)))
 
 (defn parse-double
   [^String v]
-  (when (and v (seq v))
+  (when-not (str/blank? v)
     (Double. v)))
 
 (defn parse-integer
   [^String v]
-  (when (and v (seq v))
+  (when-not (str/blank? v) 
     (Integer. v)))
 
 (defn- parse-orbit-parameters

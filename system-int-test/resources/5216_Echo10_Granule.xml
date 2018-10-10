@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule>
+            <GranuleUR>SC:ATL04.000:287698</GranuleUR>
+            <InsertTime>2018-09-28T08:21:52.487Z</InsertTime>
+            <LastUpdate>2018-09-28T08:22:40.378Z</LastUpdate>
+            <Collection>
+                <DataSetId>ATLAS/ICESat-2 L2A Normalized Relative Backscatter Profiles V000</DataSetId>
+            </Collection>
+            <DataGranule>
+                <ProducerGranuleId>ATL04_20151027T044311_00810302_000_01.h5</ProducerGranuleId>
+                <DayNightFlag>UNSPECIFIED</DayNightFlag>
+                <ProductionDateTime>2018-08-14T02:32:29.000Z</ProductionDateTime>
+            </DataGranule>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2015-10-27T04:43:16.365Z</BeginningDateTime>
+                    <EndingDateTime>2015-10-27T06:01:20.285Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Spatial>
+                <HorizontalSpatialDomain>
+                    <Orbit>
+                        <AscendingCrossing>-140</AscendingCrossing>
+                        <StartLat>80</StartLat>
+                        <StartDirection>A</StartDirection>
+                        <EndLat>0</EndLat>
+                        <EndDirection>A</EndDirection>
+                    </Orbit>
+                </HorizontalSpatialDomain>
+            </Spatial>
+            <OrbitCalculatedSpatialDomains>
+                <OrbitCalculatedSpatialDomain>
+                    <OrbitNumber>2855</OrbitNumber>
+                    <StartOrbitNumber>1.0</StartOrbitNumber>
+                    <EquatorCrossingLongitude>-140.0</EquatorCrossingLongitude>
+                    <EquatorCrossingDateTime>2015-10-27T04:43:16.365Z</EquatorCrossingDateTime>
+                </OrbitCalculatedSpatialDomain>
+                <OrbitCalculatedSpatialDomain>
+                    <OrbitalModelName>"testing"</OrbitalModelName>
+                    <OrbitNumber>2855</OrbitNumber>
+                    <EquatorCrossingLongitude>-140.0</EquatorCrossingLongitude>
+                    <EquatorCrossingDateTime>2015-10-27T04:43:16.365Z</EquatorCrossingDateTime>
+                </OrbitCalculatedSpatialDomain>
+            </OrbitCalculatedSpatialDomains>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810302_000_01.h5</URL>
+                    <MimeType>application/x-hdfeos</MimeType>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810302_000_01.h5.iso.xml</URL>
+                    <Type>USER SUPPORT</Type>
+                    <MimeType>text/xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Orderable>true</Orderable>
+</Granule>

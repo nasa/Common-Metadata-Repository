@@ -134,14 +134,14 @@
                        (validate validation (conj field-path idx) value))]
       (apply merge-with concat error-maps))))
 
-(defn integer
+(defn validate-integer
   "Validates that the value is an integer"
   [field-path value]
   (when (and value (not (integer? value)))
     {field-path [(msg/integer value)]}))
 
-(defn datetime
-  "Validates the value is a datetime."
+(defn validate-datetime
+  "Validates that the value is a datetime."
   [field-path value]
   (when value
     (try
@@ -150,8 +150,8 @@
       (catch Exception e
         {field-path [(msg/datetime value)]}))))
 
-(defn number
-  "Validates the value is a number"
+(defn validate-number
+  "Validates that the value is a number"
   [field-path value]
   (when (and value (not (number? value)))
     {field-path [(msg/number value)]}))
