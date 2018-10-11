@@ -14,7 +14,7 @@
   "cmr.earthdata.nasa.ous.datafile.replace")
 
 (defn build-query
-  "Returns "
+  "Returns the query string for a CMR collection query."
   [concept-id]
   (str "concept_id=" concept-id
        "&include_tags=" opendap-regex-tag))
