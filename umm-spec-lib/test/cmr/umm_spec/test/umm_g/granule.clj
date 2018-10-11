@@ -24,7 +24,6 @@
   [gran]
   (-> gran
       (dissoc :orbit-calculated-spatial-domains)
-      (dissoc :measured-parameters)
       umm-lib-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-umm-g-test 100
@@ -127,6 +126,20 @@
                            (umm-s/ring
                             [(p/point 0 0) (p/point 5 0) (p/point 5 5) (p/point 0 5) (p/point 0 0)])])
                          (l/line-string [(p/point -100 -70) (p/point -88 -66)])]})
+    :measured-parameters [(umm-lib-g/map->MeasuredParameter
+                           {:parameter-name "Parameter Name"
+                            :qa-stats (umm-lib-g/map->QAStats
+                                       {:qa-percent-missing-data 10
+                                        :qa-percent-out-of-bounds-data 20
+                                        :qa-percent-interpolated-data 30
+                                        :qa-percent-cloud-cover 40})
+                            :qa-flags (umm-lib-g/map->QAFlags
+                                       {:automatic-quality-flag "Passed"
+                                        :automatic-quality-flag-explanation "Automatic Quality Flag Explanation"
+                                        :operational-quality-flag "Passed"
+                                        :operational-quality-flag-explanation "Operational Quality Flag Explanation"
+                                        :science-quality-flag "Passed"
+                                        :science-quality-flag-explanation "Science Quality Flag Explanation"})})]
     :related-urls [(umm-c/map->RelatedURL
                     {:type "GET DATA"
                      :url "https://daac.ornl.gov/daacdata/islscp_ii/vegetation/erbe_albedo_monthly_xdeg/data/erbe_albedo_1deg_1986.zip"
