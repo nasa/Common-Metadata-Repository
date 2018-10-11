@@ -15,7 +15,7 @@
 
 (defn service-bridge-api
   [httpd-component]
-  [["/service-bridge/collection/:concept-id" {
+  [["/service-bridge/crossover/collection/:concept-id" {
     :get {:handler (collection-handler/bridge-services httpd-component)
           :permissions #{:read}}}]])
 

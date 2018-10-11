@@ -18,7 +18,7 @@
 (deftest admin-routes
   (testing "ping routes ..."
     (let [response @(httpc/get (format (str "http://localhost:%s"
-                                            "/opendap/ping")
+                                            "/service-bridge/ping")
                                        (test-system/http-port))
                                (request/add-token-header
                                 {} (util/get-sit-token)))]
@@ -26,7 +26,7 @@
       (is (= {:result "pong"}
              (util/parse-response response))))
     (let [response @(httpc/post (format (str "http://localhost:%s"
-                                             "/opendap/ping")
+                                             "/service-bridge/ping")
                                         (test-system/http-port))
                                 (request/add-token-header
                                  {} (util/get-sit-token)))]

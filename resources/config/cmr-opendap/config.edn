@@ -17,11 +17,12 @@
                  :host "cmr.sit.earthdata.nasa.gov"
                  :context "/legacy-services/rest"}}
    :max-pagesize 2000
-   :opendap {:protocol "https"
-             :host "cmr.sit.earthdata.nasa.gov"
-             :public {:protocol "https"
-                      :host "cmr.sit.earthdata.nasa.gov"}
-             :relative {:root {:url "/opendap"}}}
+   :service {
+     :bridge {:protocol "https"
+              :host "cmr.sit.earthdata.nasa.gov"
+              :public {:protocol "https"
+                       :host "cmr.sit.earthdata.nasa.gov"}
+              :relative {:root {:url "/service-bridge"}}}}
    :search {:protocol "https"
             :host "cmr.sit.earthdata.nasa.gov"
             :relative {:root {:url "/search"}}}}
@@ -40,23 +41,23 @@
      :api cmr.opendap.app.routes.rest.core/all
      :site cmr.opendap.app.routes.site/all}
    :pages {
-     :default-title "CMR OPeNDAP"}
-   :base-url "/opendap"
+     :default-title "CMR Service-Bridge"}
+   :base-url "/service-bridge"
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
      {:base-url-template "%%OPENDAP_BASE_URL%%"
       :source "resources/docs/rest-api/index.md"
       :outdir "resources/public/docs/opendap/docs/current/rest-api"}
-   :skip-static #{"/opendap/docs"}
-   :replace-base-url #{"/opendap/docs/current/rest-api"
-                       "/opendap/docs/current/reference/2000-usage.html"}
-   :index-dirs #{"/opendap/docs/1.0.0/marginalia"
-                 "/opendap/docs/1.0.0/reference"
-                 "/opendap/docs/1.0.0/rest-api"
-                 "/opendap/docs/current/marginalia"
-                 "/opendap/docs/current/reference"
-                 "/opendap/docs/current/rest-api"}
+   :skip-static #{"/service-bridge/docs"}
+   :replace-base-url #{"/service-bridge/docs/current/rest-api"
+                       "/service-bridge/docs/current/reference/2000-usage.html"}
+   :index-dirs #{"/service-bridge/docs/1.0.0/marginalia"
+                 "/service-bridge/docs/1.0.0/reference"
+                 "/service-bridge/docs/1.0.0/rest-api"
+                 "/service-bridge/docs/current/marginalia"
+                 "/service-bridge/docs/current/reference"
+                 "/service-bridge/docs/current/rest-api"}
    :streaming {
      :timeout 20000 ; milliseconds (20 seconds * 1000)
      :heartbeat 200 ; milliseconds
@@ -85,4 +86,4 @@
        :route-keys [:httpd :route-fns]
        :api-route-key :api
        :site-route-key :site}}}
- :vendor "cmr-opendap"}
+ :vendor "cmr-service-bridge"}

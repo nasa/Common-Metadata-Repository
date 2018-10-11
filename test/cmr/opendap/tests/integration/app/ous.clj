@@ -26,7 +26,7 @@
   (testing "Minimal get"
     (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
-                     (format "http://localhost:%s/opendap/ous/collection/%s"
+                     (format "http://localhost:%s/service-bridge/ous/collection/%s"
                              (test-system/http-port)
                              collection-id))]
       (is (= 403 (:status response)))

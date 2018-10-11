@@ -8,7 +8,7 @@
   (:import
    (clojure.lang Keyword)))
 
-(def vendor "cmr-opendap.")
+(def vendor "cmr-service-bridge.")
 
 (defn override-api-version-header
   ([version]

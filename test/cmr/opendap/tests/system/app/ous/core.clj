@@ -22,14 +22,14 @@
                     (util/override-api-version-header "v2.1"))
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?granules=%s")
                            (test-system/http-port)
                            collection-id
                            granule-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-opendap.v2.1; format=json"
+    (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= ["http://e4ftl01.cr.usgs.gov:40510/dir-replaced-by-tags/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"]
            (util/parse-response response)))))
@@ -44,7 +44,7 @@
     (testing "GET without bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s")
                                (test-system/http-port)
@@ -53,14 +53,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
                (util/parse-response response)))))
     (testing "GET without subset ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?coverage=%s"
                                     "&rangesubset=%s")
                                (test-system/http-port)
@@ -69,7 +69,7 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
                (util/parse-response response)))))))
@@ -84,7 +84,7 @@
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&bounding-box="
@@ -95,14 +95,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?dt_1km_data_VarBounds[0:1:0][14610:1:15764][17001:1:19983],lat[14610:1:15764],lon[17001:1:19983]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?coverage=%s"
                                     "&rangesubset=%s"
                                     "&subset=lat(56.109375,67.640625)"
@@ -113,7 +113,7 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.nc?dt_1km_data_VarBounds[0:1:0][14610:1:15764][17001:1:19983],lat[14610:1:15764],lon[17001:1:19983]"]
                (util/parse-response response)))))))
@@ -128,7 +128,7 @@
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&bounding-box="
@@ -139,14 +139,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/MOAA/MOD08_D3.006/2012.01.02/MOD08_D3.A2012002.006.2015056234420.hdf.nc?Solar_Zenith_Mean[22:1:34][169:1:200],YDim[22:1:34],XDim[169:1:200]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?coverage=%s"
                                     "&rangesubset=%s"
                                     "&subset=lat(56.109375,67.640625)"
@@ -157,7 +157,7 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/MOAA/MOD08_D3.006/2012.01.02/MOD08_D3.A2012002.006.2015056234420.hdf.nc?Solar_Zenith_Mean[22:1:34][169:1:200],YDim[22:1:34],XDim[169:1:200]"]
                (util/parse-response response)))))))
@@ -172,7 +172,7 @@
     (testing "GET without bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s")
                                (test-system/http-port)
@@ -181,14 +181,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET without subset ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?coverage=%s"
                                     "&rangesubset=%s")
                                (test-system/http-port)
@@ -197,14 +197,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET with bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&bounding-box="
@@ -215,14 +215,14 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))
     (testing "GET with subset ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/ous/collection/%s"
+                                    "/service-bridge/ous/collection/%s"
                                     "?coverage=%s"
                                     "&rangesubset=%s"
                                     "&subset=lat(56.109375,67.640625)"
@@ -233,7 +233,7 @@
                                variable-id)
                        options)]
         (is (= 200 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?SurfPres_Forecast_A_VarBounds[22:1:34][169:1:200],Latitude[22:1:34],Longitude[169:1:200]"]
                (util/parse-response response)))))))

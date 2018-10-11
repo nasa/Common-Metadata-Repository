@@ -23,7 +23,7 @@
     (testing "GET without bounding box ..."
       (let [response @(httpc/get
                        (format (str "http://localhost:%s"
-                                    "/opendap/size-estimate/collection/%s"
+                                    "/service-bridge/size-estimate/collection/%s"
                                     "?granules=%s"
                                     "&variables=%s")
                                (test-system/http-port)
@@ -32,7 +32,7 @@
                                variable-id)
                        options)]
         (is (= 400 (:status response)))
-        (is (= "cmr-opendap.v2.1; format=json"
+        (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
         (is (= {:errors ["sizing estimate not-implemented"]}
                (util/parse-response response)))))))

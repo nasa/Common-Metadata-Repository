@@ -19,7 +19,7 @@
 
 (defn main
   [httpd-component]
-  [["/opendap" {
+  [["/service-bridge" {
     :get (base-handler/dynamic-page
           httpd-component
           pages/home
@@ -30,7 +30,7 @@
   "Note that these routes only cover part of the docs; the rest are supplied
   via static content from specific directories (done in middleware)."
   [httpd-component]
-  [["/opendap/docs" {
+  [["/service-bridge/docs" {
     :get (base-handler/dynamic-page
           httpd-component
           pages/opendap-docs
@@ -42,7 +42,7 @@
 
 (defn redirects
   [httpd-component]
-  [["/opendap/robots.txt" {
+  [["/service-bridge/robots.txt" {
     :get (base-handler/permanent-redirect
           (str (config/get-search-url httpd-component)
                "/robots.txt"))}]])
@@ -50,7 +50,7 @@
 (defn static
   [httpd-component]
   [;; Google verification files
-   ["/opendap/googled099d52314962514.html" {
+   ["/service-bridge/googled099d52314962514.html" {
     :get (core-handler/text-file
           "public/verifications/googled099d52314962514.html")}]])
 

@@ -23,16 +23,16 @@
 
 (deftest root-route
   (testing "root route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge"
                                        (test-system/http-port)))]
       (is (= 200 (:status response))))
-    (let [response @(httpc/head (format "http://localhost:%s/opendap"
+    (let [response @(httpc/head (format "http://localhost:%s/service-bridge"
                                         (test-system/http-port)))]
       (is (= 200 (:status response)))))
   (testing "root route with trailing slash ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/"
                                        (test-system/http-port)))]
       (is (= 200 (:status response))))
-    (let [response @(httpc/head (format "http://localhost:%s/opendap/"
+    (let [response @(httpc/head (format "http://localhost:%s/service-bridge/"
                                         (test-system/http-port)))]
       (is (= 200 (:status response))))))

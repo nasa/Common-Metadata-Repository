@@ -26,7 +26,7 @@
 
 (deftest admin-routes
   (testing "health route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/health"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/health"
                                        (test-system/http-port)))]
       (is (= 200 (:status response)))
       (is (= {:config {:ok? true}
@@ -34,54 +34,54 @@
               :logging {:ok? false}}
              (json/parse-string (:body response) true)))))
   (testing "protected admin route ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/ping"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/ping"
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
       (is (= {:errors ["An ECHO token is required to access this resource."]}
              (response/parse-json-body (:body response))))))
   (testing "v2 routes that don't exist in v1 ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache"
                                        (test-system/http-port))
                                 (-> {}
                                     (request/add-token-header
                                      (util/get-sit-token))
                                     (request/add-accept
-                                     "application/vnd.cmr-opendap.v1+json")))]
+                                     "application/vnd.cmr-service-bridge.v1+json")))]
       (is (= 404 (:status response)))))
   (testing "v2 routes ..."
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache/auth"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/auth"
                                        (test-system/http-port))
                                 (-> {}
                                     (request/add-token-header
                                      (util/get-sit-token))
                                     (request/add-accept
-                                     "application/vnd.cmr-opendap.v2+json")))]
+                                     "application/vnd.cmr-service-bridge.v2+json")))]
       (is (= 200 (:status response))))
-    (let [response @(httpc/get (format "http://localhost:%s/opendap/cache/concept"
+    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/concept"
                                        (test-system/http-port))
                                 (-> {}
                                     (request/add-token-header
                                      (util/get-sit-token))
                                     (request/add-accept
-                                     "application/vnd.cmr-opendap.v2+json")))]
+                                     "application/vnd.cmr-service-bridge.v2+json")))]
       (is (= 200 (:status response))))))
 
 (deftest testing-routes
   (is 401
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/401"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/401"
                                    (test-system/http-port)))))
   (is 403
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/403"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/403"
                                    (test-system/http-port)))))
   (is 404
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/404"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/404"
                                    (test-system/http-port)))))
   (is 405
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/405"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/405"
                                    (test-system/http-port)))))
   (is 500
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/500"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/500"
                                    (test-system/http-port)))))
   (is 503
-      (:status @(httpc/get (format "http://localhost:%s/opendap/testing/503"
+      (:status @(httpc/get (format "http://localhost:%s/service-bridge/testing/503"
                                    (test-system/http-port))))))

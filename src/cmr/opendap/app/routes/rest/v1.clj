@@ -16,10 +16,10 @@
 
 (defn admin-api
   [httpd-component]
-  [["/opendap/health" {
+  [["/service-bridge/health" {
     :get (core-handler/health httpd-component)
     :options base-handler/ok}]
-   ["/opendap/ping" {
+   ["/service-bridge/ping" {
     :get {:handler core-handler/ping
           :roles #{:admin}}
     :post {:handler core-handler/ping

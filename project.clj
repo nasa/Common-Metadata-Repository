@@ -249,4 +249,4 @@
     ;; Application
     "run" ["with-profile" "+system,+security" "run"]
     "trampoline" ["with-profile" "+system,+security" "trampoline"]
-    "start-cmr-opendap" ["trampoline" "run"]})
+    "start-service-bridge" ["trampoline" "run"]})

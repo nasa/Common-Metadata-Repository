@@ -23,7 +23,7 @@
   (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id)
                            (test-system/http-port)
@@ -39,7 +39,7 @@
   (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id
                                 "&rangesubset=V1200267322-HMR_TME,V1200267323-HMR_TME")
@@ -55,7 +55,7 @@
   (let [collection-id "C1200276794-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=G1200276795-HMR_TME,G1200276796-HMR_TME,"
                                 collection-id
                                 "&subset=lat(56.109375,67.640625)"
@@ -72,7 +72,7 @@
   (let [collection-id "C1200267318-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
                                 collection-id
                                 "&subset=lat(-91,67.640625)"
@@ -93,7 +93,7 @@
     (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/opendap/ous/collection/%s"
+                                  "/service-bridge/ous/collection/%s"
                                   "?timeposition=2000-01-01T00:00:00Z"
                                                ",2000-01-02T00:00:00Z")
                              (test-system/http-port)
@@ -106,7 +106,7 @@
     (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/opendap/ous/collection/%s"
+                                  "/service-bridge/ous/collection/%s"
                                   "?timeposition=2016-07-01T00:00:00Z"
                                                ",2016-07-03T00:00:00Z")
                              (test-system/http-port)
@@ -119,7 +119,7 @@
     (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/opendap/ous/collection/%s"
+                                  "/service-bridge/ous/collection/%s"
                                   "?timeposition=2002-09-01T00:00:00Z"
                                                ",2016-07-03T00:00:00Z")
                              (test-system/http-port)
@@ -133,7 +133,7 @@
     (let [collection-id "C1200267318-HMR_TME"
           response @(httpc/get
                      (format (str "http://localhost:%s"
-                                  "/opendap/ous/collection/%s"
+                                  "/service-bridge/ous/collection/%s"
                                   "?timeposition=2000-01-01T00:00:00Z"
                                                ",2002-10-01T00:00:00Z"
                                   "&timeposition=2010-07-01T00:00:00Z"
@@ -152,7 +152,7 @@
         variable-ids "V1200268970-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=%s,"
                                 "&rangesubset=%s")
                            (test-system/http-port)
@@ -169,7 +169,7 @@
         granule-id "G1200268968-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=%s"
                                 "&subset=lat(41.625,80.71875)"
                                 "&subset=lon(-73.6875,-65.8125)")
@@ -187,7 +187,7 @@
         variable-ids "V1200268970-HMR_TME"
         response @(httpc/get
                    (format (str "http://localhost:%s"
-                                "/opendap/ous/collection/%s"
+                                "/service-bridge/ous/collection/%s"
                                 "?coverage=%s"
                                 "&subset=lat(41.625,80.71875)"
                                 "&subset=lon(-73.6875,-65.8125)"
