@@ -11,5 +11,8 @@
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
    [clojusc.system-manager.core :refer :all]
+   [clojusc.twig :as logger]
    [cmr.opendap.dev :as dev]
    [org.httpkit.client :as httpc]))
+
+(logger/set-level! '[cmr org.httpkit] :trace logger/no-color-log-formatter)

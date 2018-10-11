@@ -12,14 +12,14 @@
 
 (defn override-api-version-header
   ([version]
-    (override-api-version-header {} version))
+   (override-api-version-header {} version))
   ([req version]
-    (request/add-header req
-                        "Accept"
-                        (format ous-request/version-format
-                                vendor
-                                version
-                                "json"))))
+   (request/add-header req
+                       "Accept"
+                       (format ous-request/version-format
+                               vendor
+                               version
+                               "json"))))
 
 (defn parse-response
   [response]

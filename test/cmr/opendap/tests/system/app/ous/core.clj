@@ -14,6 +14,26 @@
 
 (use-fixtures :once test-system/with-system)
 
+(deftest regex-from-tags
+  (let [collection-id "C1000000141-DEMO_PROV"
+        granule-id "G1000003455-DEMO_PROV"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/opendap/ous/collection/%s"
+                                "?granules=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-opendap.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= ["http://e4ftl01.cr.usgs.gov:40510/dir-replaced-by-tags/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"]
+           (util/parse-response response)))))
+
 (deftest gridded-with-ummvar-1-1-api-v2-1
   (let [collection-id "C1200267318-HMR_TME"
         granule-id "G1200267320-HMR_TME"
