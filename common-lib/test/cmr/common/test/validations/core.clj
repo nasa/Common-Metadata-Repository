@@ -141,20 +141,20 @@
 (deftest integer-validation-test
   (testing "non integer"
     (is (= {[:a] ["%s must be an integer but was [5.0]."]}
-           (v/validate {:a v/integer} {:a 5.0}))))
+           (v/validate {:a v/validate-integer} {:a 5.0}))))
   (testing "nil value"
-    (assert-valid {:a v/integer} {:a nil}))
+    (assert-valid {:a v/validate-integer} {:a nil}))
   (testing "valid value"
-    (assert-valid {:a v/integer} {:a 5})))
+    (assert-valid {:a v/validate-integer} {:a 5})))
 
 (deftest number-validation-test
   (testing "non number"
     (is (= {[:a] ["%s must be a number but was [abc]."]}
-           (v/validate {:a v/number} {:a "abc"}))))
+           (v/validate {:a v/validate-number} {:a "abc"}))))
   (testing "nil value"
-    (assert-valid {:a v/number} {:a nil}))
+    (assert-valid {:a v/validate-number} {:a nil}))
   (testing "valid value"
-    (assert-valid {:a v/number} {:a 5})))
+    (assert-valid {:a v/validate-number} {:a 5})))
 
 
 (deftest within-range-test

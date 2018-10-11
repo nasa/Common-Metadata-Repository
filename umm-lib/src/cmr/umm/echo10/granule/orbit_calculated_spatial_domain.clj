@@ -8,8 +8,8 @@
   [ocsd-elem]
   (let [orbital-model-name (cx/string-at-path ocsd-elem [:OrbitalModelName])
         orbit-number (cx/long-at-path ocsd-elem [:OrbitNumber])
-        start-orbit-number (cx/double-at-path ocsd-elem [:StartOrbitNumber])
-        stop-orbit-number (cx/double-at-path ocsd-elem [:StopOrbitNumber])
+        start-orbit-number (cx/integer-at-path ocsd-elem [:StartOrbitNumber])
+        stop-orbit-number (cx/integer-at-path ocsd-elem [:StopOrbitNumber])
         equator-crossing-longitude (cx/double-at-path ocsd-elem [:EquatorCrossingLongitude])
         equator-crossing-date-time (cx/datetime-at-path ocsd-elem [:EquatorCrossingDateTime])]
     (g/->OrbitCalculatedSpatialDomain orbital-model-name

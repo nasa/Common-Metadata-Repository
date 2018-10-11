@@ -22,7 +22,7 @@
 
 (def s-orbit-number
   "start/stop orbit number"
-  (gen/fmap double gen/ratio))
+  gen/int)
 
 (def orbit-calculated-spatial-domains
   (gen/fmap (fn [[omn on son spon ecl ecdt]]

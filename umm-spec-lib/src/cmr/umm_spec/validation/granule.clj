@@ -90,6 +90,10 @@
      {:geometries (v/every sv/spatial-validation)
       :orbit (v/when-present sv/spatial-validation)})])
 
+(def ocsd-validations
+  "Defines orbit calculated spatial domain validations for granules."
+  [(v/every sv/spatial-validation)])
+
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
   min-value and max-value could be nil in which case the bound will not be checked i.e value will
@@ -235,6 +239,7 @@
                      (matches-collection-identifier-validation :short-name [:ShortName])
                      (matches-collection-identifier-validation :version-id [:Version])]
     :spatial-coverage spatial-coverage-validations
+    :orbit-calculated-spatial-domains ocsd-validations 
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
