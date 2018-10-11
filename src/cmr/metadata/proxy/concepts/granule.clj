@@ -110,7 +110,7 @@
   (log/trace "Link data:" link-data)
   (let [rel (:rel link-data)]
     (and (not (:inherited link-data))
-              (= const/datafile-link-rel rel))))
+         (= const/datafile-link-rel rel))))
 
 (defn extract-datafile-link
   [granule-entry]

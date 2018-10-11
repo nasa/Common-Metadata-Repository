@@ -9,9 +9,15 @@
 ;;;   Collection API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def opendap-regex-tag
+  "The tag used for associating collections to a regex to be used to construct the OPeNDAP URL."
+  "cmr.earthdata.nasa.ous.datafile.replace")
+
 (defn build-query
+  "Returns "
   [concept-id]
-  (str "concept_id=" concept-id))
+  (str "concept_id=" concept-id
+       "&include_tags=" opendap-regex-tag))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, get the metadata for the
@@ -48,5 +54,3 @@
 (defn extract-service-ids
   [entry]
   (sort (get-in entry [:associations :services])))
-
-
