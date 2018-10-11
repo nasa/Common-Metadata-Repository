@@ -3,10 +3,11 @@
   and generating UMM-G JSON from umm-lib granule model."
   (:require
    [cmr.umm-spec.umm-g.additional-attribute :as aa]
-   [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.data-granule :as data-granule]
+   [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm-spec.umm-g.related-url :as related-url]
+   [cmr.umm-spec.umm-g.spatial :as spatial]
    [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
@@ -70,7 +71,7 @@
       :cloud-cover (:CloudCover umm-g-json)
       :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
                                  (:TilingIdentificationSystem umm-g-json))
-      ; :spatial-coverage (xml-elem->SpatialCoverage umm-g-json)
+      :spatial-coverage (spatial/umm-g-spatial-extent->SpatialCoverage umm-g-json)
       :related-urls (related-url/umm-g-related-urls->RelatedURLs (:RelatedUrls umm-g-json))
       ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
       :product-specific-attributes (aa/umm-g-additional-attributes->ProductSpecificAttributeRefs
@@ -107,6 +108,7 @@
                           {:BeginningDateTime (str (:beginning-date-time range-date-time))
                            :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
                                              (str ending-date-time))}}))
+     :SpatialExtent (spatial/SpatialCoverage->umm-g-spatial-extent spatial-coverage)
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
      :AccessConstraints (when access-value {:Value access-value})
