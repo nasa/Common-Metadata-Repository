@@ -1,6 +1,7 @@
 # cmr-graph
 
 *A service and API for querying CMR metadata relationships*
+[![Build Status](https://travis-ci.org/cmr-exchange/cmr-graph.svg?branch=master)](https://travis-ci.org/cmr-exchange/cmr-graph)
 
 [![][logo]][logo]
 
