@@ -38,13 +38,15 @@
                    :qa-percent-cloud-cover (ext-gen/optional (ext-gen/choose-double 0 100)))))))
 
 (def qa-auto-flag
-  (gen/elements ["Passed", "Failed", "Suspect"]))
+  (gen/elements ["Passed" "Failed" "Suspect"]))
 
 (def qa-op-flag
-  (gen/elements ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect"]))
+  (gen/elements ["Passed" "Failed" "Being Investigated" "Not Investigated"
+                 "Inferred Passed" "Inferred Failed" "Suspect"]))
 
 (def qa-science-flag
-  (gen/elements ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Hold"]))
+  (gen/elements ["Passed" "Failed" "Being Investigated" "Not Investigated"
+                 "Inferred Passed" "Inferred Failed" "Suspect" "Hold"]))
 
 (def qa-flags
   (ext-gen/non-empty-obj-gen
