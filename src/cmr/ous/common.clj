@@ -133,12 +133,27 @@
                     (re-pattern (:regex match))
                     (str "$1" (:replacement match) "$3"))))
 
+(defn process-tag-datafile-replacement
+  "Takes a data file URL and replaces part of the URL based on the passed in tag data."
+  [data-url tag-data]
+  (log/trace "Attempting Granule URL match/replace using tag data ...")
+  (let [pattern (re-pattern (format "(.*)(%s)(.*)" (:match tag-data)))]
+    (string/replace data-url pattern (str "$1" (:replace tag-data) "$3"))))
+
 (defn data-file->opendap-url
-  [data-file]
+  "Converts a data-file to an OPeNDAP URL."
+  [data-file tag-data]
   (let [data-url (:link-href data-file)
+        data-url-replaced-by-tags (when tag-data
+                                    (process-tag-datafile-replacement data-url tag-data))
         matched-fallbacks (fallback-matches data-url)]
     (log/trace "Data file:" data-file)
-    (cond (has-fallback-replacement? data-url matched-fallbacks)
+    (log/trace "Tag data:" tag-data)
+    (log/trace "Data URL replaced by tags:" data-url-replaced-by-tags)
+    (cond data-url-replaced-by-tags
+          data-url-replaced-by-tags
+
+          (has-fallback-replacement? data-url matched-fallbacks)
           (do
             (log/debug (str "Data file already has the expected OPeNDAP URL; "
                             "skipping replacement ..."))
@@ -159,10 +174,10 @@
   (string/replace url #"(?<!(http:|https:))[//]+" "/"))
 
 (defn data-files->opendap-urls
-  [params data-files query-string]
+  [params data-files tag-data query-string]
   (when data-files
     (let [urls (map (comp replace-double-slashes
-                          data-file->opendap-url)
+                          #(data-file->opendap-url % tag-data))
                     data-files)]
       (if (errors/any-erred? urls)
         (do
@@ -172,22 +187,23 @@
 
 (defn process-results
   ([results start errs]
-    (process-results results start errs {:warnings nil}))
-  ([{:keys [params data-files query]} start errs warns]
-    (log/trace "Got data-files:" (vec data-files))
-    (if errs
-      (do
-        (log/error errs)
-        errs)
-      (let [urls-or-errs (data-files->opendap-urls params data-files query)]
-        ;; Error handling for post-stages processing
-        (if (errors/erred? urls-or-errs)
-          (do
-            (log/error urls-or-errs)
-            urls-or-errs)
-          (do
-            (log/debug "Generated URLs:" (vec urls-or-errs))
-            (results/create urls-or-errs :elapsed (util/timed start)
+   (process-results results start errs {:warnings nil}))
+  ([{:keys [params data-files tag-data query]} start errs warns]
+   (log/trace "Got data-files:" (vec data-files))
+   (log/trace "Process-results tag-data:" tag-data)
+   (if errs
+     (do
+       (log/error errs)
+       errs)
+     (let [urls-or-errs (data-files->opendap-urls params data-files tag-data query)]
+       ;; Error handling for post-stages processing
+       (if (errors/erred? urls-or-errs)
+         (do
+           (log/error urls-or-errs)
+           urls-or-errs)
+         (do
+           (log/debug "Generated URLs:" (vec urls-or-errs))
+           (results/create urls-or-errs :elapsed (util/timed start)
                                          :warnings warns)))))))
 
 (defn apply-bounding-conditions
@@ -309,8 +325,6 @@
                      (query-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
                        component endpoint token params)
-        ; grans-promise (concept/get :granules
-        ;                component search-endpoint user-token params)
         coll-promise (concept/get :collection
                       component endpoint token params)
         errs (errors/collect params valid-lat valid-lon)]

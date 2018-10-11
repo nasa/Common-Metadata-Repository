@@ -31,6 +31,7 @@
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
         coll (collection/extract-metadata coll-promise)
+        tag-data (get-in coll [:tags (keyword collection/opendap-regex-tag) :data])
         data-files (map granule/extract-datafile-link granules)
         service-ids (collection/extract-service-ids coll)
         vars (common/apply-bounding-conditions endpoint token coll params)
@@ -38,9 +39,10 @@
     (when errs
       (log/error "Stage 2 errors:" errs))
     (log/trace "data-files:" (vec data-files))
+    (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params data-files service-ids vars errs]))
+    [params data-files service-ids vars tag-data errs]))
 
 (defn stage3
   [component service-ids vars bounding-box {:keys [endpoint token params]}]
@@ -76,7 +78,7 @@
                         :token user-token
                         :params raw-params})
         ;; Stage 2
-        [params data-files service-ids vars s2-errs]
+        [params data-files service-ids vars tag-data s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
@@ -113,4 +115,5 @@
                         [not data-files metadata-errors/empty-gnl-data-files])})]
     (common/process-results {:params params
                              :data-files data-files
+                             :tag-data tag-data
                              :query query} start errs warns)))
