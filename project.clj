@@ -50,7 +50,7 @@
     [ring/ring-core "1.7.0"]
     [ring/ring-codec "1.1.1"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.12.1"]
+    [selmer "1.12.2"]
     [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
