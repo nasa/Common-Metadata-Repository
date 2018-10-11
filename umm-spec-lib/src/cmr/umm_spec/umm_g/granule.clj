@@ -4,6 +4,7 @@
   (:require
    [cmr.umm-spec.umm-g.additional-attribute :as aa]
    [cmr.umm-spec.umm-g.data-granule :as data-granule]
+   [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
    [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm-spec.umm-g.related-url :as related-url]
@@ -73,7 +74,8 @@
                                  (:TilingIdentificationSystem umm-g-json))
       :spatial-coverage (spatial/umm-g-spatial-extent->SpatialCoverage umm-g-json)
       :related-urls (related-url/umm-g-related-urls->RelatedURLs (:RelatedUrls umm-g-json))
-      ; :measured-parameters (mp/xml-elem->MeasuredParameters umm-g-json)
+      :measured-parameters (measured-parameters/umm-g-measured-parameters->MeasuredParameters
+                            (:MeasuredParameters umm-g-json))
       :product-specific-attributes (aa/umm-g-additional-attributes->ProductSpecificAttributeRefs
                                      (:AdditionalAttributes umm-g-json))})))
 
@@ -115,7 +117,9 @@
      :Projects (project/ProjectRefs->umm-g-projects project-refs)
      :DataGranule (data-granule/DataGranule->umm-g-data-granule data-granule)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
-                                   two-d-coordinate-system)
+                                  two-d-coordinate-system)
      :AdditionalAttributes (aa/ProductSpecificAttributeRefs->umm-g-additional-attributes
-                             product-specific-attributes)
+                            product-specific-attributes)
+     :MeasuredParameters (measured-parameters/MeasuredParameters->umm-g-measured-parameters
+                          measured-parameters)
      :RelatedUrls (related-url/RelatedURLs->umm-g-related-urls related-urls)}))

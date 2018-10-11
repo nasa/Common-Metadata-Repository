@@ -3,6 +3,7 @@
   (:require
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.common.util :as util]
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-granule :as umm-lib-g]))
 
@@ -26,11 +27,60 @@
                  coords-gen
                  coords-gen))))
 
+(def qa-stats
+  (ext-gen/non-empty-obj-gen
+   (ext-gen/model-gen
+    umm-lib-g/map->QAStats
+    (gen/not-empty
+     (gen/hash-map :qa-percent-missing-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                   :qa-percent-out-of-bounds-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                   :qa-percent-interpolated-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                   :qa-percent-cloud-cover (ext-gen/optional (ext-gen/choose-double 0 100)))))))
+
+(def qa-auto-flag
+  (gen/elements ["Passed", "Failed", "Suspect"]))
+
+(def qa-op-flag
+  (gen/elements ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect"]))
+
+(def qa-science-flag
+  (gen/elements ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Hold"]))
+
+(def qa-flags
+  (ext-gen/non-empty-obj-gen
+   (ext-gen/model-gen
+    umm-lib-g/map->QAFlags
+    (gen/fmap
+     (fn [[flag-map explanation-map]]
+       (when (not-empty (util/remove-nil-keys flag-map))
+         (merge flag-map explanation-map)))
+     (gen/tuple
+       (gen/hash-map :automatic-quality-flag (ext-gen/optional qa-auto-flag)
+                     :operational-quality-flag (ext-gen/optional qa-op-flag)
+                     :science-quality-flag (ext-gen/optional qa-science-flag))
+       (gen/hash-map :automatic-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
+                     :operational-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
+                     :science-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))))))))
+
+(def umm-g-measured-parameter-gen
+  "Generator for UMM-G measured-parameter using enum values and required fields in qa-flags AND
+   qa-stats."
+  (ext-gen/model-gen
+   umm-lib-g/->MeasuredParameter
+   gran-gen/measured-parameter-names
+   (ext-gen/optional qa-stats)
+   (ext-gen/optional qa-flags)))
+
 (defn replace-generators
   "Function to replace umm-lib generators with ones that will work for UMM-G elements"
   [granule-model-gen]
   (-> granule-model-gen
       (assoc :collection-ref (gen/generate umm-g-coll-refs))
+      (assoc :measured-parameters (-> umm-g-measured-parameter-gen
+                                      (gen/vector 0 5)
+                                      ext-gen/nil-if-empty
+                                      ext-gen/optional
+                                      gen/generate))
       (assoc :two-d-coordinate-system (gen/generate
                                        (ext-gen/optional
                                         umm-g-tiling-identification-system-gen)))))
