@@ -22,8 +22,8 @@
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
-    [clojusc/trifl "0.3.0"]
-    [clojusc/twig "0.3.3"]
+    [clojusc/trifl "0.4.0"]
+    [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [org.clojure/clojure "1.9.0"]
@@ -35,7 +35,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.4"]]
+        [lein-nvd "0.5.5"]]
         :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
