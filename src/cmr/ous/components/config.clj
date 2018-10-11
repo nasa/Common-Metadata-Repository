@@ -57,14 +57,14 @@
   [system]
   (str
     (metadata-config-lib/service->base-public-url
-     (metadata-config/get-service system :opendap)) "/"))
+     (metadata-config/get-service system :service-bridge)) "/"))
 
 (defn opendap-url
   "This function returns the cmr-opendap URL with a trailing slash."
   [system]
   (str
     (metadata-config-lib/service->public-url
-     (metadata-config/get-service system :opendap)) "/"))
+     (metadata-config/get-service system :service-bridge)) "/"))
 
 (def authz-cache-dumpfile #'authz-config/cache-dumpfile)
 (def authz-cache-init #'authz-config/cache-init)
@@ -87,7 +87,7 @@
 (def get-access-control-url #'authz-config/get-access-control-url)
 (def get-echo-rest-url #'authz-config/get-echo-rest-url)
 (def get-ingest-url #(get-service-url % :ingest))
-(def get-opendap-url #(get-service-url % :opendap))
+(def get-opendap-url #(get-service-url % :service-bridge))
 (def get-search-url #(get-service-url % :search))
 
 ;; From the HTTPD config component
@@ -114,12 +114,12 @@
 ;; Overrides of the HTTPD config component
 (defn http-port
   [system]
-  (or (get-in (get-cfg system) [:cmr :opendap :port])
+  (or (get-in (get-cfg system) [:cmr :service :bridge :port])
       (httpd-config/http-port system)))
 
 (defn http-base-url
   [system]
-  (or (get-in (get-cfg system) [:cmr :opendap :relative :root :url])
+  (or (get-in (get-cfg system) [:cmr :service :bridge :relative :root :url])
       (httpd-config/http-base-url system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -16,16 +16,16 @@
 
 (defn ous-api
   [httpd-component]
-  [["/opendap/ous/collections" {
+  [["/service-bridge/ous/collections" {
     :post {:handler collection-handler/batch-generate}
     :options core-handler/ok}]
-   ["/opendap/ous/collection/:concept-id" {
+   ["/service-bridge/ous/collection/:concept-id" {
     :get {:handler (collection-handler/generate-urls httpd-component)
           :permissions #{:read}}
     :post {:handler (collection-handler/generate-urls httpd-component)
            :permissions #{:read}}
     :options core-handler/ok}]
-   ["/opendap/ous/streaming-collection/:concept-id" {
+   ["/service-bridge/ous/streaming-collection/:concept-id" {
     :get (collection-handler/stream-urls httpd-component)}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

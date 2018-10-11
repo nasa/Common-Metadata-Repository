@@ -18,23 +18,23 @@
   [httpd-component]
   (concat
     [;; Authz cache
-     ["/opendap/cache/auth" {
+     ["/service-bridge/cache/auth" {
       :get {:handler (auth-cache-handler/lookup-all httpd-component)
             :roles #{:admin}}
       :delete {:handler (auth-cache-handler/evict-all httpd-component)
                :roles #{:admin}}}]
-     ["/opendap/cache/auth/:item-key" {
+     ["/service-bridge/cache/auth/:item-key" {
       :get {:handler (auth-cache-handler/lookup httpd-component)
             :roles #{:admin}}
       :delete {:handler (auth-cache-handler/evict httpd-component)
                :roles #{:admin}}}]
      ;; Concept cache
-     ["/opendap/cache/concept" {
+     ["/service-bridge/cache/concept" {
       :get {:handler (concept-cache-handler/lookup-all httpd-component)
             :roles #{:admin}}
       :delete {:handler (concept-cache-handler/evict-all httpd-component)
                :roles #{:admin}}}]
-     ["/opendap/cache/concept/:item-key" {
+     ["/service-bridge/cache/concept/:item-key" {
       :get {:handler (concept-cache-handler/lookup httpd-component)
             :roles #{:admin}}
       :delete {:handler (concept-cache-handler/evict httpd-component)
