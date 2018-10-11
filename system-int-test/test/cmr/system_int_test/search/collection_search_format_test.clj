@@ -704,32 +704,21 @@
                     :concept-type :collection
                     :format-key :dif10
                     :native-id "CMR-5138-DataDates-Provided-test"})
-          concept-5138-3
-                  (d/ingest-concept-with-metadata-file
-                   "CMR-5138-DIF9-DataDates-Not-Exist.xml"
-                   {:provider-id "PROV1"
-                    :concept-type :collection
-                    :format-key :dif
-                    :native-id "CMR-5138-DataDates-NotExist-test"})
           _ (index/wait-until-indexed)
           opendata (search/find-concepts-opendata :collection {:concept_id (:concept-id concept)})
           opendata-coll (first (get-in opendata [:results :dataset]))
           {:keys [references distribution]} opendata-coll
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
-          opendata-5138-3 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-3)})
           opendata-coll-5138-1 (first (get-in opendata-5138-1 [:results :dataset]))
-          opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
-          opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))]
+          opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))]
       (testing "issued modified are correct for DataDates being Not provided."
-        (is (= "1997-10-01T00:00:00Z" (:issued opendata-coll-5138-1)))
-        (is (= "1999-03-31T23:59:59Z" (:modified opendata-coll-5138-1))))
+        ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
+        (is (= "2002-08-31T00:00:00Z" (:issued opendata-coll-5138-1)))
+        (is (= "2016-09-25T23:59:59Z" (:modified opendata-coll-5138-1))))
       (testing "issued modified are correct for DataDates that are provided."
         (is (= "2014-09-24T00:00:00.000Z" (:issued opendata-coll-5138-2)))
         (is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-2))))
-      (testing "issued modified are correct for missing DataDates"
-        (is (= "1997-10-01T00:00:00Z" (:issued opendata-coll-5138-3)))
-        (is (= "1999-03-31T23:59:59Z" (:modified opendata-coll-5138-3))))
       (testing "references are correct"
         (is (= #{"https://doi.org/10.1117/1.JRS.8.084994" "https://doi.org/10.5194/acp-14-399-2014"}
                (set references))))
