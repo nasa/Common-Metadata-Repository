@@ -22,8 +22,8 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.1"]
-    [clojusc/trifl "0.3.0"]
-    [clojusc/twig "0.3.3"]
+    [clojusc/trifl "0.4.0"]
+    [clojusc/twig "0.4.0"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
@@ -31,7 +31,7 @@
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.12.1"]
+    [selmer "1.12.2"]
     [tolitius/xml-in "0.1.0"]]
   :profiles {
     :ubercompile {
@@ -39,7 +39,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.4"]]
+        [lein-nvd "0.5.5"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
