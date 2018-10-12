@@ -185,6 +185,9 @@
           (apply errors/collect urls))
         (map #(str % "." (:format params) query-string) urls)))))
 
+;; XXX This function is nearly identical to one of the same name in
+;;     cmr.sizing.core -- we should put this somewhere both can use,
+;;     after generalizing to take a func and the func's args ...
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
@@ -204,7 +207,7 @@
          (do
            (log/debug "Generated URLs:" (vec urls-or-errs))
            (results/create urls-or-errs :elapsed (util/timed start)
-                                         :warnings warns)))))))
+                                        :warnings warns)))))))
 
 (defn apply-bounding-conditions
   "This function is where variable queries to the CMR are made. There are
