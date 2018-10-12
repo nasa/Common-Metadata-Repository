@@ -93,13 +93,14 @@
            :params params})
         ;; Stage 3
         [services vars params bounding-info s3-errs s3-warns]
-        (stage3 component
-                service-ids
-                vars
-                bounding-box
-                {:endpoint search-endpoint
-                 :token user-token
-                 :params params})
+        (ous/stage3
+          component
+          service-ids
+          vars
+          bounding-box
+          {:endpoint search-endpoint
+           :token user-token
+           :params params})
         warns s3-warns
         ;; Error handling for all stages
         errs (errors/collect
