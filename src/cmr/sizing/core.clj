@@ -66,6 +66,30 @@
     :nc (estimate-binary-size granule-count vars)
     :not-implemented))
 
+;; XXX This function is nearly identical to one of the same name in
+;;     cmr.ous.common -- we should put this somewhere both can use,
+;;     after generalizing to take a func and the func's args ...
+(defn process-results
+  ([results start errs]
+   (process-results results start errs {:warnings nil}))
+  ([{:keys [params data-files tag-data vars format]} start errs warns]
+   (log/trace "Got data-files:" (vec data-files))
+   (log/trace "Process-results tag-data:" tag-data)
+   (if errs
+     (do
+       (log/error errs)
+       errs)
+     (let [estimate-or-errs (-estimate-size format (count data-files) vars)]
+       ;; Error handling for post-stages processing
+       (if (errors/erred? estimate-or-errs)
+         (do
+           (log/error estimate-or-errs)
+           estimate-or-errs)
+         (do
+           (log/debug "Generated URLs:" (vec estimate-or-errs))
+           (results/create estimate-or-errs :elapsed (util/timed start)
+                                            :warnings warns)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,10 +125,11 @@
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
-    (ous-common/process-results
+    (process-results
       {:params params
        :data-files data-files
-       :estimate (-estimate-size fmt (count data-files) vars)}
+       :vars vars
+       :format fmt}
       start
       errs
       warns)))
