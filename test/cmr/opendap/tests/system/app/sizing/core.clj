@@ -14,7 +14,7 @@
 
 (use-fixtures :once test-system/with-system)
 
-(deftest not-implemented
+(deftest binary-size-with-no-sizing-metadata
   (let [collection-id "C1200267318-HMR_TME"
         granule-id "G1200267320-HMR_TME"
         variable-id "V1200267322-HMR_TME"
@@ -31,8 +31,8 @@
                                granule-id
                                variable-id)
                        options)]
-        (is (= 400 (:status response)))
+        (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= {:errors ["sizing estimate not-implemented"]}
+        (is (= [{:value 6220800, :units "bytes"}]
                (util/parse-response response)))))))

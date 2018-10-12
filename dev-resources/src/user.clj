@@ -15,4 +15,4 @@
    [cmr.opendap.dev :as dev]
    [org.httpkit.client :as httpc]))
 
-(logger/set-level! '[cmr org.httpkit] :trace logger/no-color-log-formatter)
+(logger/set-level! '[cmr org.httpkit] :debug logger/no-color-log-formatter)
