@@ -1,5 +1,6 @@
 (ns cmr.sizing.core
   (:require
+    [clojure.string :as string]
     [cmr.exchange.common.results.core :as results]
     [cmr.exchange.common.results.errors :as errors]
     [cmr.exchange.common.results.warnings :as warnings]
@@ -17,54 +18,28 @@
 ;;;   Support & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; XXX Let's move this into cmr-exchange-common ...
-(defn data-type->bytes
-  [data-type]
-  (case data-type
-    :byte 1
-    :float 4
-    :float32 4
-    :float64 8
-    :double 8
-    :ubyte 1
-    :ushort 2
-    :uint 4
-    :uchar 1
-    :string 2
-    :char8 1
-    :uchar8 1
-    :short 2
-    :long 4
-    :int 4
-    :int8 1
-    :int16 2
-    :int32 4
-    :int64 8
-    :uint8 1
-    :uint16 2
-    :uint32 4
-    :uint64 8))
-
 (defn get-measurement
   [variable]
   (let [dims (get-in variable [:umm :Dimensions])
         total-dimensionality (reduce * (map :Size dims))
         data-type (get-in variable [:umm :DataType])]
     (* total-dimensionality
-       (data-type->bytes data-type))))
+       (util/data-type->bytes data-type))))
 
 (defn estimate-binary-size
-  [granules variables]
+  [granule-count variables]
   (let [compression 1
         metadata 0
         measurements (reduce + (map get-measurement variables))]
-    (+ (* (count granules) compression measurements) metadata)))
+    (+ (* granule-count compression measurements) metadata)))
 
 (defn- -estimate-size
   [fmt granule-count vars]
-  (case fmt
+  (case (keyword (string/lower-case fmt))
     :nc (estimate-binary-size granule-count vars)
-    :not-implemented))
+    (do
+      (log/errorf "Cannot estimate size for %s (not implemented)." fmt)
+      {:errors ["not-implemented"]})))
 
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.ous.common -- we should put this somewhere both can use,
@@ -86,9 +61,11 @@
            (log/error estimate-or-errs)
            estimate-or-errs)
          (do
-           (log/debug "Generated URLs:" (vec estimate-or-errs))
-           (results/create estimate-or-errs :elapsed (util/timed start)
-                                            :warnings warns)))))))
+           (log/debug "Generated estimate:" estimate-or-errs)
+           (results/create [{:value estimate-or-errs
+                             :units :bytes}]
+                           :elapsed (util/timed start)
+                           :warnings warns)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,8 +91,16 @@
           {:endpoint search-endpoint
            :token user-token
            :params params})
-        ;; Warnings; in SES, no warnings are defined for the above stages
-        warns nil
+        ;; Stage 3
+        [services vars params bounding-info s3-errs s3-warns]
+        (stage3 component
+                service-ids
+                vars
+                bounding-box
+                {:endpoint search-endpoint
+                 :token user-token
+                 :params params})
+        warns s3-warns
         ;; Error handling for all stages
         errs (errors/collect
               params bounding-box grans-promise coll-promise s1-errs
