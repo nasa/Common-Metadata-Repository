@@ -2,20 +2,20 @@
   "Contains functions for parsing UMM-G JSON SpatialExtent into umm-lib granule model
   SpatialCoverage and generating UMM-G JSON SpatialExtent from umm-lib granule model SpatialCoverage."
   (:require
-   [cmr.spatial.point :as p]
-   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.cartesian-ring]
+   [cmr.spatial.geodetic-ring]
    [cmr.spatial.line-string :as l]
-   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.cartesian-ring :as cr]
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.umm-spatial :as umm-s])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-point->Point
   "Returns the spatial point from the given UMM-G Point."
   [point]
-  (p/point (:Longitude point) (:Latitude point)))
+  (point/point (:Longitude point) (:Latitude point)))
 
 (defn- umm-g-bounding-ractangle->BoundingRectangle
   "Returns the spatial BoundingRectangle from the given UMM-G BoundingRectangle."
