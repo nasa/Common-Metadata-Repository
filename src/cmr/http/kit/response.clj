@@ -23,6 +23,13 @@
     body
     (slurp body)))
 
+(defn maybe-deref
+  [maybe-ref]
+  (try
+    @maybe-ref
+    (catch Exception _
+      maybe-ref)))
+
 (defn soft-reference->json!
   "Given a soft reference object and a Cheshire JSON generator, write the
   data stored in the soft reference to the generator as a JSON string.
@@ -31,9 +38,10 @@
   a raw value from the response. In that case, we need to skip the object
   conversion, and just do the realization."
   [obj json-generator]
-  (let [data @(if (isa? obj SoftReference)
-                (.get obj)
-                obj)
+  (let [data (maybe-deref
+               (if (isa? obj SoftReference)
+                 (.get obj)
+                 obj))
         data-str (json/generate-string data)]
     (log/trace "Encoder got data: " data)
     (.writeString json-generator data-str)))
