@@ -63,7 +63,8 @@
 (defn- -estimate-size
   [fmt granule-count vars]
   (case fmt
-    :binary (estimate-binary-size granule-count vars)))
+    :nc (estimate-binary-size granule-count vars)
+    :not-implemented))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
