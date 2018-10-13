@@ -108,7 +108,11 @@
                             :keyword (conj (flatten-science-keywords collection)
                                            "NGDA"
                                            "National Geospatial Data Asset")
-                            :modified (str (or update-time (odrh/generate-end-date end-date)))
+                            ;; when update-time is nil, we will use the revision-date,
+                            ;; which is hardcoded or frozen somewhere.
+                            ;; Can't access this revision-date from the collection
+                            ;; because it's UmmCollection.  
+                            :modified (str (or update-time "2017-01-01T00:00:00.000Z"))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point
                             :identifier concept-id

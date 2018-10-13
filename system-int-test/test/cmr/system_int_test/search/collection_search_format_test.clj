@@ -729,10 +729,8 @@
         (is (= "2014-09-24T00:00:00.000Z" (:issued opendata-coll-5138-2)))
         (is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-2))))
       (testing "issued modified are correct for no DataDates and no Temporal_Coverage"
-        (is (= nil (:issued opendata-coll-5138-3)))
-        ;; This will be fixed once the revision-date2 could be retrieved. will freeze the time.
-        ;;(is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-3)))
-        )
+        (is (= "2017-01-01T00:00:00.000Z" (:modified opendata-coll-5138-3)))
+        (is (= nil (:issued opendata-coll-5138-3))))
       (testing "references are correct"
         (is (= #{"https://doi.org/10.1117/1.JRS.8.084994" "https://doi.org/10.5194/acp-14-399-2014"}
                (set references))))

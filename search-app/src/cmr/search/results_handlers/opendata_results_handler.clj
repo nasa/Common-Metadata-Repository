@@ -80,6 +80,8 @@
                          "publication-references"
                          "start-date"
                          "end-date"
+                         ;; Both "revision-date" and "revision-date2"
+                         ;; will work. 
                          "revision-date2"
                          "granule-start-date-stored"
                          "granule-end-date-stored"
@@ -132,7 +134,9 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
-          [revision-date2] :revision-date2
+          ;; This has to be revision-date, not revision-date2.
+          ;; I think somewhere revision-date is mapped to revision-date2.
+          [revision-date] :revision-date
           [granule-start-date-stored] :granule-start-date-stored
           [granule-end-date-stored] :granule-end-date-stored
           [archive-center] :archive-center} :fields} elastic-result
@@ -140,9 +144,7 @@
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        ;; revision-date2 is nil here, even though I saw it being indexed with the right value
-        ;; and it's stored the same way as granule-start-date-stored in index_set.clj. 
-        revision-date2 (when revision-date2 (str/replace (str revision-date2) #"\+0000" ".000Z"))
+        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" ".000Z"))
         granule-start-date-stored (when granule-start-date-stored
                                     (str/replace (str granule-start-date-stored) #"\+0000" ".000Z"))
         granule-end-date-stored (when granule-end-date-stored
@@ -161,7 +163,8 @@
             :personnel personnel
             :start-date start-date
             :end-date end-date
-            :revision-date2 revision-date2
+            ;; This has to be :revision-date, not :revision-date2
+            :revision-date revision-date
             :granule-start-date-stored granule-start-date-stored
             :granule-end-date-stored granule-end-date-stored
             :provider-id provider-id
@@ -251,7 +254,7 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                revision-date2 granule-start-date-stored granule-end-date-stored]} item
+                revision-date granule-start-date-stored granule-end-date-stored]} item
         issued-time (get-issued-modified-time insert-time granule-start-date-stored)
         ;; if issued-time is default date, set it to nil.
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
@@ -261,10 +264,7 @@
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
                            :keyword (keywords science-keywords-flat)
-                           ;; It's supposed to be changed to (or modified-time revision-date2)
-                           ;; but for some reason revision-date2 is nil, it is actually in "item" above
-                           ;; with nil value.
-                           :modified (or modified-time (generate-end-date end-date))
+                           :modified (or modified-time revision-date)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id
