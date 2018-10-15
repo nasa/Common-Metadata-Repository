@@ -8,6 +8,10 @@
   [value]
   (format "%%s must be an integer but was [%s]." value))
 
+(defn datetime 
+  [value]
+  (format "%%s must be a datetime but was [%s]." value))
+
 (defn number
   [value]
   (format "%%s must be a number but was [%s]." value))

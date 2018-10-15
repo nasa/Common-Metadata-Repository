@@ -486,7 +486,7 @@
           "type": "string"
         }
       },
-      "required": ["BeginningDateTime","EndingDateTime"]
+      "required": ["BeginningDateTime"]
     },
     "SpatialExtentType": {
       "type": "object",

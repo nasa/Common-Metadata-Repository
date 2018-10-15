@@ -76,13 +76,6 @@
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel publication-references]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
-        ;; DIF9 doesn't support DataDates in umm-spec-lib:
-        ;;  So its insert-time and update-time are nil.
-        update-time (when-not (= :dif format-key)
-                      (get-in collection [:data-provider-timestamps :update-time]))
-        insert-time (when-not (= :dif format-key)
-                      (get-in collection [:data-provider-timestamps :insert-time]))
         temporal (:temporal collection)
         start-date  (if temporal
                       (sed/start-date :collection temporal)
@@ -91,6 +84,17 @@
         end-date (sed/end-date :collection temporal)
         start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
+        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
+        ;; DIF9 doesn't support DataDates in umm-spec-lib:
+        ;;  So its insert-time and update-time are nil.
+        ;;  But we when they are nil, we will use the granule-start/end-date-stored, which
+        ;;  are collection's start-date, end-date when there are no granules.
+        update-time (or (when-not (= :dif format-key)
+                          (get-in collection [:data-provider-timestamps :update-time]))
+                        end-date)
+        insert-time (or (when-not (= :dif format-key)
+                          (get-in collection [:data-provider-timestamps :insert-time]))
+                        start-date)
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         distribution (not-empty (map odrh/related-url->distribution related-urls))

@@ -114,9 +114,9 @@
                            :orbit-number (when orbitNumber
                                            (Integer/parseInt orbitNumber))
                            :start-orbit-number (when startOrbitNumber
-                                                 (Double/parseDouble startOrbitNumber))
+                                                 (Integer/parseInt startOrbitNumber))
                            :stop-orbit-number (when stopOrbitNumber
-                                                (Double/parseDouble stopOrbitNumber))
+                                                (Integer/parseInt stopOrbitNumber))
                            :equator-crossing-longitude (when equatorCrossingLongitude
                                                          (Double/parseDouble
                                                            equatorCrossingLongitude))

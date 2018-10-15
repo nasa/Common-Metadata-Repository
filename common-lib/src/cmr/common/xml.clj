@@ -112,6 +112,18 @@
   (when-let [^String s (string-at-path xml-struct path)]
     (Double. s)))
 
+(defn integer-at-path
+  "Extracts a integer number from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    ;; This is used for Echo10 start-orbit-number and stop-orbit-number.
+    ;; it's possible that they are not integers because xml schema
+    ;; allows them to be double. But we need them to be integers.
+    (try
+      (Integer. s)
+      (catch Exception e
+        s))))
+
 (defn bool-at-path
   "Extracts a boolean from the given path in the XML structure."
   [xml-struct path]

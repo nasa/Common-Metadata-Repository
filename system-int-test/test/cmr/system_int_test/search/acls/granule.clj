@@ -338,3 +338,46 @@
                            :collection {:token user1-token
                                         :has-granules-created-at ["1975-01-01T10:00:00Z,"]})]
           (d/assert-refs-match [coll3 coll4 coll51 coll52 coll53] refs-result))))))
+
+(deftest granule-search-changed-entry-titles-test
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        guest-token (e/login-guest (s/context))
+        user1-token (e/login (s/context) "user1" [group1-concept-id])
+        user2-token (e/login (s/context) "user2")
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                :native-id "coll1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                :native-id "coll2"}))
+        gran1 (make-gran 1 coll1)
+        gran2 (make-gran 2 coll1)
+        gran3 (make-gran 3 coll2)
+        gran4 (make-gran 4 coll2)
+        all-colls [coll1 coll2]]
+
+    (index/wait-until-indexed)
+    (e/grant-group (s/context) group1-concept-id (e/gran-catalog-item-id
+                                                   "PROV1" (e/coll-id ["coll1" "coll2"])))
+    (d/assert-refs-match [gran1 gran2 gran3 gran4] (search/find-refs
+                                                    :granule
+                                                    {:token user1-token
+                                                     :concept-id (map :concept-id all-colls)}))
+    (d/assert-refs-match [] (search/find-refs :granule {:token user2-token
+                                                        :concept-id (map :concept-id all-colls)}))
+    (d/assert-refs-match [] (search/find-refs :granule {:token guest-token
+                                                        :concept-id (map :concept-id all-colls)}))
+    ;; Update entry-title in collection.
+    (d/ingest "PROV1" (dc/collection {:entry-title "coll1-edited"
+                                      :native-id "coll1"}))
+
+    (index/wait-until-indexed)
+    (dev-sys-util/clear-caches)
+
+    ;; Confirm change in entry-title has not affected granule search.
+    (d/assert-refs-match [gran1 gran2 gran3 gran4] (search/find-refs
+                                                    :granule
+                                                    {:token user1-token
+                                                     :concept-id (map :concept-id all-colls)}))
+    (d/assert-refs-match [] (search/find-refs :granule {:token user2-token
+                                                        :concept-id (map :concept-id all-colls)}))
+    (d/assert-refs-match [] (search/find-refs :granule {:token guest-token
+                                                        :concept-id (map :concept-id all-colls)}))))

@@ -4,6 +4,7 @@
     [clojure.test :refer :all]
     [cmr.common-app.services.search.messages :as m]
     [cmr.common.services.messages :as cm]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.search.services.messages.orbit-number-messages :as on-m]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -19,8 +20,8 @@
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [ {:orbit-number  1
-                                                                          :start-orbit-number 1.0
-                                                                          :stop-orbit-number 1.0
+                                                                          :start-orbit-number 1
+                                                                          :stop-orbit-number 1
                                                                           :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran2 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
@@ -28,56 +29,56 @@
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran3 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
-                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 1.0
-                                                                         :stop-orbit-number 1.0
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 1
+                                                                         :stop-orbit-number 1
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran4 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:orbit-number  2
-                                                                         :start-orbit-number 2.0
-                                                                         :stop-orbit-number 3.0
+                                                                         :start-orbit-number 2
+                                                                         :stop-orbit-number 3
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran5 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
-                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 2.7
-                                                                         :stop-orbit-number 3.5
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 3
+                                                                         :stop-orbit-number 4 
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran6 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
-                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 4.0
-                                                                         :stop-orbit-number 5.0
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 4
+                                                                         :stop-orbit-number 5
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran7 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :start-orbit-number 7.0
-                                                                         :stop-orbit-number 10.0
+                                                                         :start-orbit-number 7
+                                                                         :stop-orbit-number 10
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))]
     (index/wait-until-indexed)
 
     (testing "search by exact orbit number"
-      (are [items orbit-range]
-           (d/refs-match? items (search/find-refs :granule {:orbit-number orbit-range}))
+      (are3 [items orbit-range]
+            (d/refs-match? items (search/find-refs :granule {:orbit-number orbit-range}))
 
-           ;; search by exact orbit number
+           "search by exact orbit number"
            [gran1 gran2 gran3] "1"
-           ;; search by orbit number range
+           "search by orbit number range"
            [gran1, gran2, gran3, gran4] "1,2"
-           ;; search by orbit number range with rational numbers
-           [gran4, gran5] "2,2.8"
-           ;; search by orbit number range with min and max rational numbers
-           [gran6 gran7] "4.5,7.7"
-           ;; search by orbit number range inside
+           "search by orbit number range with integer numbers"
+           [gran4, gran5] "2,3"
+           "search by orbit number range with min and max integer numbers"
+           [gran6 gran7] "5,8"
+           "search by orbit number range inside"
            [gran7] "8,9"
-           ;; search by unused orbit number returns nothing
+           "search by unused orbit number returns nothing"
            [] "15"
-           ;; search by unused orbit number range returns nothing
+           "search by unused orbit number range returns nothing"
            [] "17,18"
-           ;; search by min value
-           [gran5 gran6 gran7] "3.5,"
-           ;; search by max value
+           "search by min value"
+           [gran5 gran6 gran7] "4,"
+           "search by max value"
            [gran1 gran2 gran3] ",1"))
 
     (testing "invalid orbit number range"
@@ -107,29 +108,31 @@
         (is (d/refs-match? [gran1 gran2 gran3] references))))
 
     (testing "search by orbit number with aql"
-      (are [items orbit-range]
-           (d/refs-match? items
-                          (search/find-refs-with-aql :granule
-                                                     [{:orbitNumber orbit-range}]))
+      (are3 [items orbit-range]
+            (d/refs-match? items
+                           (search/find-refs-with-aql :granule
+                                                      [{:orbitNumber orbit-range}]))
 
-           ;; search by exact orbit number
+           "search by exact orbit number1"
            [gran1 gran2 gran3] 1
+           "search by exact orbit number2"
            [gran1 gran2 gran3] "'1'"
-           ;; search by orbit number range
+           "search by orbit number range1"
            [gran1, gran2, gran3, gran4] [1 2]
+           "search by orbit number range2"
            [gran1, gran2, gran3, gran4] ["'1'" "'2'"]
-           ;; search by orbit number range with rational numbers
-           [gran4, gran5] [2 2.8]
-           ;; search by orbit number range with min and max rational numbers
-           [gran6 gran7] [4.5 7.7]
-           ;; search by orbit number range inside
+           "search by orbit number range with integer numbers"
+           [gran4, gran5] [2 3]
+           "search by orbit number range with min and max integer numbers"
+           [gran6 gran7] [5 8]
+           "search by orbit number range inside"
            [gran7] [8 9]
-           ;; search by unused orbit number returns nothing
+           "search by unused orbit number returns nothing"
            [] 15
-           ;; search by unused orbit number range returns nothing
+           "search by unused orbit number range returns nothing"
            [] [17 18]
-           ;; search by min value
-           [gran5 gran6 gran7] [3.5 nil]
-           ;; search by max value
+           "search by min value"
+           [gran5 gran6 gran7] [4 nil]
+           "search by max value"
            [gran1 gran2 gran3] [nil 1]))))
 

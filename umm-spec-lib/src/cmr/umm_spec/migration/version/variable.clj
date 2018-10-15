@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.migration.version.variable
   "Contains functions for migrating between versions of the UMM Variable schema."
   (:require
+   [cmr.common.util :as util]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
 (defn sample-1-1->1-2
@@ -40,7 +41,7 @@
   [context v & _]
   (-> v
       (assoc :MeasurementIdentifiers (mapv measurement-1-1->1-2 (:Measurements v))
-             :SamplingIdentifiers (mapv sample-1-1->1-2 (:Characteristics v)))
+             :SamplingIdentifiers [(sample-1-1->1-2 (:Characteristics v))])
       (dissoc :Measurements :Characteristics)))
 
 (defmethod interface/migrate-umm-version [:variable "1.2" "1.1"]
@@ -57,3 +58,15 @@
               :Characteristics
               :SamplingIdentifiers
               :VariableSubType)))
+
+(defmethod interface/migrate-umm-version [:variable "1.3" "1.2"]
+  [context v & _]
+  ;; Migrate down to 1.2
+  (-> v
+      (dissoc :SizeEstimation
+              :Alias)))
+
+(defmethod interface/migrate-umm-version [:variable "1.2" " 1.3"]
+  ;; Migrate up to 1.3
+  [context v & _]
+  v)

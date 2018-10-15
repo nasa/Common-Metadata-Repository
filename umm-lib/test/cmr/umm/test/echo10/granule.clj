@@ -140,16 +140,16 @@
       <OrbitCalculatedSpatialDomain>
         <OrbitalModelName>OrbitalModelName</OrbitalModelName>
         <OrbitNumber>0</OrbitNumber>
-        <StartOrbitNumber>0.0</StartOrbitNumber>
-        <StopOrbitNumber>0.0</StopOrbitNumber>
+        <StartOrbitNumber>0</StartOrbitNumber>
+        <StopOrbitNumber>0</StopOrbitNumber>
         <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
         <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
       </OrbitCalculatedSpatialDomain>
       <OrbitCalculatedSpatialDomain>
         <OrbitalModelName>OrbitalModelName</OrbitalModelName>
         <OrbitNumber>0</OrbitNumber>
-        <StartOrbitNumber>0.0</StartOrbitNumber>
-        <StopOrbitNumber>0.0</StopOrbitNumber>
+        <StartOrbitNumber>0</StartOrbitNumber>
+        <StopOrbitNumber>0</StopOrbitNumber>
         <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
         <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
       </OrbitCalculatedSpatialDomain>
@@ -278,15 +278,15 @@
      :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
                                           {:orbital-model-name "OrbitalModelName"
                                            :orbit-number 0
-                                           :start-orbit-number 0.0
-                                           :stop-orbit-number 0.0
+                                           :start-orbit-number 0
+                                           :stop-orbit-number 0
                                            :equator-crossing-longitude 0.0
                                            :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
                                         (umm-g/map->OrbitCalculatedSpatialDomain
                                           {:orbital-model-name "OrbitalModelName"
                                            :orbit-number 0
-                                           :start-orbit-number 0.0
-                                           :stop-orbit-number 0.0
+                                           :start-orbit-number 0
+                                           :stop-orbit-number 0
                                            :equator-crossing-longitude 0.0
                                            :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
      :two-d-coordinate-system (umm-g/map->TwoDCoordinateSystem

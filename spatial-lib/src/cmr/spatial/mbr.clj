@@ -441,10 +441,10 @@
     {field-path [(msg/br-north-less-than-south north south)]}))
 
 (def validations
-  [{:west [v/required v/number (v/within-range -180.0 180.0)]
-    :north [v/required v/number (v/within-range -90.0 90.0)]
-    :east [v/required v/number (v/within-range -180.0 180.0)]
-    :south [v/required v/number (v/within-range -90.0 90.0)]}
+  [{:west [v/required v/validate-number (v/within-range -180.0 180.0)]
+    :north [v/required v/validate-number (v/within-range -90.0 90.0)]
+    :east [v/required v/validate-number (v/within-range -180.0 180.0)]
+    :south [v/required v/validate-number (v/within-range -90.0 90.0)]}
    north-less-than-south-validation])
 
 (extend-protocol sv/SpatialValidation

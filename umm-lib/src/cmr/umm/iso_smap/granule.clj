@@ -1,17 +1,18 @@
 (ns cmr.umm.iso-smap.granule
   "Contains functions for parsing and generating the SMAP ISO dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [cmr.common.xml :as cx]
-            [clj-time.format :as f]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.iso-smap.iso-smap-collection :as c]
-            [cmr.umm.iso-smap.granule.spatial :as s]
-            [cmr.umm.iso-smap.granule.temporal :as gt]
-            [cmr.umm.iso-smap.granule.related-url :as ru]
-            [cmr.common.xml :as v]
-            [cmr.umm.echo10.echo10-core]
-            [cmr.umm.iso-smap.helper :as h])
+  (:require 
+   [clj-time.format :as f]
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml :as v]
+   [cmr.umm.echo10.echo10-core]
+   [cmr.umm.iso-smap.granule.related-url :as ru]
+   [cmr.umm.iso-smap.granule.spatial :as s]
+   [cmr.umm.iso-smap.granule.temporal :as gt]
+   [cmr.umm.iso-smap.helper :as h]
+   [cmr.umm.iso-smap.iso-smap-collection :as c]
+   [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- xml-elem->CollectionRef
@@ -106,6 +107,7 @@
        :data-granule (xml-elem->DataGranule xml-struct)
        :access-value (xml-elem->access-value id-elems)
        :temporal (gt/xml-elem->Temporal xml-struct)
+       :orbit-calculated-spatial-domains (s/xml-elem->OrbitCalculatedSpatialDomains xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)})))
 
@@ -151,7 +153,7 @@
 
 (defn- generate-identification-info-element
   "Returns the main identification info element that contains most of the SMAP ISO granule fields"
-  [producer-gran-id update-time short-name version-id spatial-coverage temporal]
+  [producer-gran-id update-time short-name version-id spatial-coverage temporal ocsds]
   (x/element
     :gmd:identificationInfo {}
     (x/element
@@ -172,6 +174,7 @@
       (x/element :gmd:extent {}
                  (x/element :gmd:EX_Extent {}
                             (s/generate-spatial spatial-coverage)
+                            (s/generate-orbit-calculated-spatial-domains ocsds)
                             (gt/generate-temporal temporal))))))
 
 (defn- generate-restriction-flag-element
@@ -232,8 +235,8 @@
     ([granule]
      (let [{{:keys [entry-title short-name version-id]} :collection-ref
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [granule-ur data-granule access-value
-                   temporal related-urls spatial-coverage]} granule
+            :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains 
+                   related-urls spatial-coverage]} granule
            {:keys [producer-gran-id production-date-time]} data-granule]
        (x/emit-str
          (x/element
@@ -256,7 +259,8 @@
                               (x/element :gco:Date {} (f/unparse (f/formatters :date) update-time)))
                    (generate-granule-ur-element granule-ur update-time)
                    (generate-identification-info-element
-                     producer-gran-id update-time short-name version-id spatial-coverage temporal)
+                     producer-gran-id update-time short-name version-id 
+                     spatial-coverage temporal orbit-calculated-spatial-domains)
                    (h/generate-dataset-id-element entry-title update-time)
                    (h/generate-datetime-element "InsertTime" "creation" insert-time)
                    (h/generate-datetime-element "UpdateTime" "revision" update-time)
