@@ -127,8 +127,9 @@
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty
                                          (map ru/related-url->encoded-url publication-references))
-                            :issued (when (and insert-time (not= (str date-util/parsed-default-date) 
-                                                                 (str/replace (str insert-time) #"Z" ".000Z")))
+                            :issued (when (and insert-time 
+                                               (not= (str date-util/parsed-default-date) 
+                                                      (str/replace (str insert-time) #"Z" ".000Z")))
                                       (str insert-time))})))
 
 (defn collections->expected-opendata

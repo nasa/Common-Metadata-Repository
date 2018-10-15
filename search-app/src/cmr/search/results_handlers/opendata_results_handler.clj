@@ -80,9 +80,7 @@
                          "publication-references"
                          "start-date"
                          "end-date"
-                         ;; Both "revision-date" and "revision-date2"
-                         ;; will work. 
-                         "revision-date2"
+                         "revision-date"
                          "granule-start-date-stored"
                          "granule-end-date-stored"
                          "ords-info"
@@ -134,8 +132,6 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
-          ;; This has to be revision-date, not revision-date2.
-          ;; I think somewhere revision-date is mapped to revision-date2.
           [revision-date] :revision-date
           [granule-start-date-stored] :granule-start-date-stored
           [granule-end-date-stored] :granule-end-date-stored
@@ -163,7 +159,6 @@
             :personnel personnel
             :start-date start-date
             :end-date end-date
-            ;; This has to be :revision-date, not :revision-date2
             :revision-date revision-date
             :granule-start-date-stored granule-start-date-stored
             :granule-end-date-stored granule-end-date-stored
