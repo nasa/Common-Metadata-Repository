@@ -94,7 +94,6 @@
       ["clean"]
       ["with-profile" "+local" "repl"]]
     "ubercompile" ["with-profile" "+ubercompile,+local,+security" "compile"]
-    "uberjar" ["with-profile" "" "uberjar"]
     "uberjar-aot" ["with-profile" "+ubercompile,+security" "uberjar"]
     "check-vers" ["with-profile" "+lint,+security" "ancient" "check" ":all"]
     "check-jars" ["with-profile" "+lint" "do"

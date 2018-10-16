@@ -65,7 +65,7 @@
   (let [ep (Math/sqrt (/ (- earth-semi-major-axis**2
                             earth-semi-minor-axis**2)
                          earth-semi-minor-axis**2))
-        p (Math/sqrt (+ (Math/pow x 2) (Math/pow y 2)))
+        p (Math/hypot x y)
         theta (Math/atan2 (* earth-semi-major-axis z)
                        (* earth-semi-minor-axis p))
         lon (Math/atan2 y x)
