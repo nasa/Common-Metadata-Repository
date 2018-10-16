@@ -53,6 +53,6 @@ Distributed under the Apache License, Version 2.0.
 [tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-exchange-geo.svg
 [tag]: https://github.com/cmr-exchange/cmr-exchange-geo/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
-[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-opendap
-[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-opendap.svg
+[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-exchange-geo
+[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-exchange-geo.svg
 [security-scan-badge]: https://img.shields.io/badge/nvd%2Fsecurity%20scan-passing-brightgreen.svg
