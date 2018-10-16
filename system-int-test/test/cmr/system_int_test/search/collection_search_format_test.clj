@@ -211,7 +211,7 @@
 (deftest collection-umm-json-metadata-cache-test
   (let [accepted-version (common-config/collection-umm-version)
         _ (side/eval-form `(common-config/set-collection-umm-version!
-                          umm-version/current-collection-version))
+                            umm-version/current-collection-version))
         c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -253,7 +253,7 @@
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]}))
-  (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
+   (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -603,7 +603,7 @@
         umm-json-coll5 (search/find-concepts-umm-json :collection {:concept_id (:concept-id coll5)})
         revision-date-coll5 (-> umm-json-coll5
                                 (get-in [:results :items])
-                                 first
+                                first
                                  (get-in [:meta :revision-date]))
         ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
         ;; to populate modified field, we add it to coll5 so that it can be used for the "expected" in opendata.clj.
@@ -738,7 +738,7 @@
         (is (= "2014-09-24T00:00:00.000Z" (:issued opendata-coll-5138-2)))
         (is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-2))))
       (testing "issued modified are correct for no DataDates and no Temporal_Coverage"
-        (is (= (get-in umm-json-coll-5138-3 [:meta :revision-date]) 
+        (is (= (get-in umm-json-coll-5138-3 [:meta :revision-date])
                (:modified opendata-coll-5138-3)))
         (is (= nil (:issued opendata-coll-5138-3))))
       (testing "references are correct"
@@ -833,7 +833,7 @@
   (testing "the organizations field in JSON response is correctly ordered by archive-center, distribution center, then the rest"
     (let [accepted-version (common-config/collection-umm-version)
           _ (side/eval-form `(common-config/set-collection-umm-version!
-                          umm-version/current-collection-version))
+                              umm-version/current-collection-version))
           distribution-org (dc/org :distribution-center "distribution-org")
           distribution-org-1 (dc/org :distribution-center "distribution-org-1")
           archive-org (dc/org :archive-center "archive-org")
