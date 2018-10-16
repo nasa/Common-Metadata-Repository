@@ -1,13 +1,14 @@
 (ns cmr.umm-spec.umm-g.measured-parameters
   "Contains functions for parsing and generating the UMM-G dialect for measured parameters."
   (:require
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.umm-granule :as g]
+   [cmr.common.util :as util])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-qa-stats->QAStats
   "Returns umm-lib QAStats from given UMM-G QAStats."
   [qa-stats]
-  (when qa-stats
+  (when-not (empty? (util/remove-nil-keys qa-stats))
     (let [{:keys [QAPercentMissingData
                   QAPercentOutOfBoundsData
                   QAPercentInterpolatedData
@@ -21,7 +22,7 @@
 (defn- QAStats->umm-g-qa-stats
   "Returns UMM-G QAStats from given umm-lib QAStats."
   [qa-stats]
-  (when qa-stats
+  (when-not (empty? (util/remove-nil-keys qa-stats))
     (let [{:keys [qa-percent-missing-data
                   qa-percent-out-of-bounds-data
                   qa-percent-interpolated-data
@@ -35,7 +36,7 @@
 (defn- umm-g-qa-flags->QAFlags
   "Returns UMM-G QAFlags from given umm-lib QAFlags."
   [qa-flags]
-  (when qa-flags
+  (when-not (empty? (util/remove-nil-keys qa-flags))
     (let [{:keys [AutomaticQualityFlag
                   AutomaticQualityFlagExplanation
                   OperationalQualityFlag
@@ -83,7 +84,7 @@
 (defn- QAFlags->umm-g-qa-flags
   "Returns umm-lib QAFlags from given UMM-G QAFlags."
   [qa-flags]
-  (when qa-flags
+  (when-not (empty? (util/remove-nil-keys qa-flags))
     (let [{:keys [automatic-quality-flag
                   automatic-quality-flag-explanation
                   operational-quality-flag
