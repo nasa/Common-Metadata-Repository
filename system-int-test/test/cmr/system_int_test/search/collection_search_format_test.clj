@@ -606,7 +606,7 @@
                                  first
                                  (get-in [:meta :revision-date]))
         ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
-        ;; to populate modified field, we add it to coll5 so that the it can be used for the "expected" in opendata.clj.
+        ;; to populate modified field, we add it to coll5 so that it can be used for the "expected" in opendata.clj.
         coll5-opendata (assoc coll5 :revision-date revision-date-coll5)]
 
     (testing "kml"

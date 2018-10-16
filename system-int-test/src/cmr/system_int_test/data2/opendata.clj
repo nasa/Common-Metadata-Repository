@@ -113,9 +113,6 @@
                                            "NGDA"
                                            "National Geospatial Data Asset")
                             ;; when update-time is nil, we will use the revision-date,
-                            ;; which is hardcoded or frozen somewhere.
-                            ;; Can't access this revision-date from the collection
-                            ;; because it's UmmCollection.  
                             :modified (str (or update-time revision-date))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point

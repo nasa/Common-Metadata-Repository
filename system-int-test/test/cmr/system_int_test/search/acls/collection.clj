@@ -304,7 +304,7 @@
                                     first
                                     (get-in [:meta :revision-date]))
             ;; Normally coll8 doesn't contain the :revision-date field. Only when this field is needed
-            ;; to populate modified field, we add it to coll8 so that the it can be used for the "expected" in opendata.clj
+            ;; to populate modified field, we add it to coll8 so that it can be used for the "expected" in opendata.clj
             coll8-opendata (assoc coll8 :revision-date revision-date-coll8)
             guest-permitted-collections-opendata [coll1 coll4 coll6 coll7 coll8-opendata coll9]]
         (testing "all items"
