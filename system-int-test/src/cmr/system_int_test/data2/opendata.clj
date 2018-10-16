@@ -72,7 +72,7 @@
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
-        ;; Normally :revision-date field doesn't exist in collection. Only when 
+        ;; Normally :revision-date field doesn't exist in collection. Only when
         ;; it's needed to populate modified field, this field is manually added
         ;; in the test from umm-json result.
         revision-date (:revision-date collection)
@@ -128,9 +128,9 @@
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty
                                          (map ru/related-url->encoded-url publication-references))
-                            :issued (when (and insert-time 
-                                               (not= (str date-util/parsed-default-date) 
-                                                      (str/replace (str insert-time) #"Z" ".000Z")))
+                            :issued (when (and insert-time
+                                               (not= (str date-util/parsed-default-date)
+                                                     (str/replace (str insert-time) #"Z" ".000Z")))
                                       (str insert-time))})))
 
 (defn collections->expected-opendata

@@ -61,7 +61,9 @@
                           :author :authors
                           :doi :doi-stored
                           :service-name :service-names
-                          :service-concept-id :service-concept-ids}]
+                          :service-concept-id :service-concept-ids
+                          :granule-start-date :granule-start-date-stored
+                          :granule-end-date :granule-end-date-stored}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -129,7 +131,9 @@
    :measurements :measurement
    :authors :author
    :service-names :service-name
-   :service-concept-ids :service-concept-id})
+   :service-concept-ids :service-concept-id
+   :granule-start-date-stored :granule-start-date
+   :granule-end-date-stored :granule-end-date})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
