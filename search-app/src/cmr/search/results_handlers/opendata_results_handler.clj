@@ -80,6 +80,7 @@
                          "publication-references"
                          "start-date"
                          "end-date"
+                         "revision-date"
                          "granule-start-date-stored"
                          "granule-end-date-stored"
                          "ords-info"
@@ -131,6 +132,7 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
+          [revision-date] :revision-date
           [granule-start-date-stored] :granule-start-date-stored
           [granule-end-date-stored] :granule-end-date-stored
           [archive-center] :archive-center} :fields} elastic-result
@@ -138,10 +140,11 @@
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
         granule-start-date-stored (when granule-start-date-stored
-                                    (str/replace (str granule-start-date-stored) #"\+0000" "Z"))
+                                    (str/replace (str granule-start-date-stored) #"\+0000" ".000Z"))
         granule-end-date-stored (when granule-end-date-stored
-                                  (str/replace (str granule-end-date-stored) #"\+0000" "Z"))]
+                                  (str/replace (str granule-end-date-stored) #"\+0000" ".000Z"))]
     (merge {:id concept-id
             :title entry-title
             :short-name short-name
@@ -156,6 +159,7 @@
             :personnel personnel
             :start-date start-date
             :end-date end-date
+            :revision-date revision-date
             :granule-start-date-stored granule-start-date-stored
             :granule-end-date-stored granule-end-date-stored
             :provider-id provider-id
@@ -245,14 +249,17 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                granule-start-date-stored granule-end-date-stored]} item
+                revision-date granule-start-date-stored granule-end-date-stored]} item
         issued-time (get-issued-modified-time insert-time granule-start-date-stored)
+        ;; if issued-time is default date, set it to nil.
+        issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
+                      issued-time)
         modified-time (get-issued-modified-time update-time granule-end-date-stored)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
                            :keyword (keywords science-keywords-flat)
-                           :modified (or modified-time (generate-end-date end-date))
+                           :modified (or modified-time revision-date)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id
