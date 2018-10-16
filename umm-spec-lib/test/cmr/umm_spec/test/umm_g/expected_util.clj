@@ -14,6 +14,7 @@
    [cmr.umm.umm-granule :as umm-lib-g]))
 
 (defn- expected-qa-flags
+  "Converts generated qa-flags to what is expected by using the sanitized flag values."
   [qa-flags]
   (when-not (empty? (util/remove-nil-keys qa-flags))
     (umm-lib-g/map->QAFlags
@@ -38,6 +39,7 @@
         :science-quality-flag-explanation science-quality-flag-explanation}))))
 
 (defn- expected-measured-parameter
+  "Updates qa-flags for given measured paramater map."
   [measured-parameter]
   (umm-lib-g/map->MeasuredParameter
    (update measured-parameter :qa-flags expected-qa-flags)))
