@@ -4,21 +4,11 @@
    [clojure.java.io :as io]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
-   [clojure.test.check.properties :refer [for-all]]
-   [cmr.common.date-time-parser :as dtp]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
-   [cmr.common.util :as util]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as mbr]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
    [cmr.umm-spec.test.umm-g.generators :as generators]
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
-   [cmr.umm-spec.umm-spec-core :as core]
-   [cmr.umm.umm-collection :as umm-c]
-   [cmr.umm.umm-granule :as umm-lib-g]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm-spec.umm-spec-core :as core]))
 
 (deftest generate-granule-is-valid-umm-g-test
   (checking "umm-g validate metadata" 100
@@ -34,7 +24,7 @@
           umm-g-metadata (core/generate-metadata {} granule :umm-json)
           actual (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           expected (expected-util/umm->expected-parsed granule)
-          actual (update-in parsed [:spatial-coverage :geometries] set)
+          actual (update-in actual [:spatial-coverage :geometries] set)
           expected (update-in expected [:spatial-coverage :geometries] set)]
       (is (= expected actual)))))
 
