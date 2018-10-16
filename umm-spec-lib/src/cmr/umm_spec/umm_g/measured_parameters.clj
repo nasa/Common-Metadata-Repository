@@ -74,10 +74,11 @@
 
 (defn sanitize-quality-flag
   [flag-type flag-value]
-  (if (some #(= % flag-value)
-            (flag-enum flag-type))
-    flag-value
-    enum-default-value))
+  (when flag-value
+    (if (some #(= % flag-value)
+              (flag-enum flag-type))
+      flag-value
+      enum-default-value)))
 
 (defn- QAFlags->umm-g-qa-flags
   "Returns umm-lib QAFlags from given UMM-G QAFlags."
