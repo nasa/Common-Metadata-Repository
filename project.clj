@@ -38,7 +38,7 @@
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-sizing-plugin "0.1.0-SNAPSHOT"]
     [http-kit "2.3.0"]
-    [markdown-clj "1.0.3"]
+    [markdown-clj "1.0.4"]
     [metosin/reitit-core "0.2.3"]
     [metosin/reitit-ring "0.2.3"]
     [metosin/ring-http-response "0.9.0"]
