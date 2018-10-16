@@ -140,7 +140,7 @@
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" ".000Z"))
+        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
         granule-start-date-stored (when granule-start-date-stored
                                     (str/replace (str granule-start-date-stored) #"\+0000" ".000Z"))
         granule-end-date-stored (when granule-end-date-stored

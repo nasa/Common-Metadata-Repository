@@ -718,9 +718,11 @@
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
           opendata-5138-3 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-3)})
+          umm-json-5138-3 (search/find-concepts-umm-json :collection {:concept_id (:concept-id concept-5138-3)})
           opendata-coll-5138-1 (first (get-in opendata-5138-1 [:results :dataset]))
           opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
-          opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))]
+          opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))
+          umm-json-coll-5138-3 (first (get-in umm-json-5138-3 [:results :items]))]
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
         (is (= "2002-08-31T00:00:00.000Z" (:issued opendata-coll-5138-1)))
@@ -729,7 +731,8 @@
         (is (= "2014-09-24T00:00:00.000Z" (:issued opendata-coll-5138-2)))
         (is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-2))))
       (testing "issued modified are correct for no DataDates and no Temporal_Coverage"
-        (is (= "2017-01-01T00:00:00.000Z" (:modified opendata-coll-5138-3)))
+        (is (= (get-in umm-json-coll-5138-3 [:meta :revision-date]) 
+               (:modified opendata-coll-5138-3)))
         (is (= nil (:issued opendata-coll-5138-3))))
       (testing "references are correct"
         (is (= #{"https://doi.org/10.1117/1.JRS.8.084994" "https://doi.org/10.5194/acp-14-399-2014"}

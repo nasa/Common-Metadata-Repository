@@ -112,7 +112,7 @@
                             ;; which is hardcoded or frozen somewhere.
                             ;; Can't access this revision-date from the collection
                             ;; because it's UmmCollection.  
-                            :modified (str (or update-time "2017-01-01T00:00:00.000Z"))
+                            :modified (str (or update-time "2017-01-01T00:00:00Z"))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point
                             :identifier concept-id
