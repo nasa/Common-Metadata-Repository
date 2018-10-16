@@ -74,6 +74,9 @@
    "Inferred Passed" "Inferred Failed" "Suspect" "Hold" enum-default-value])
 
 (defn sanitize-quality-flag
+  "Sanitizes quality flag based on quality type.  Maps to enum values in json schema.  If
+   those enum values change, we need to have it reflected here as well.  If the flag value is nil,
+   we do not use the default value, otherwise non enum values are mapped to the default."
   [flag-type flag-value]
   (when flag-value
     (if (some #(= % flag-value)
