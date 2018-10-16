@@ -2,8 +2,13 @@
   "Namespace containing functions for determining expected umm-lib granule records
    used in testing."
   (:require
-   [cmr.common.date-time-parser :as p]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
@@ -41,9 +46,9 @@
   (umm-lib-g/map->UmmGranule
    {:granule-ur "Unique_Granule_UR"
     :data-provider-timestamps (umm-lib-g/map->DataProviderTimestamps
-                               {:insert-time (p/parse-datetime "2018-08-19T01:00:00Z")
-                                :update-time (p/parse-datetime "2018-09-19T02:00:00Z")
-                                :delete-time (p/parse-datetime "2030-08-19T03:00:00Z")})
+                               {:insert-time (dtp/parse-datetime "2018-08-19T01:00:00Z")
+                                :update-time (dtp/parse-datetime "2018-09-19T02:00:00Z")
+                                :delete-time (dtp/parse-datetime "2030-08-19T03:00:00Z")})
     :collection-ref (umm-lib-g/map->CollectionRef
                      {:entry-title nil
                       :short-name "CollectionShortName"
@@ -52,12 +57,12 @@
     :data-granule (umm-lib-g/map->DataGranule
                    {:day-night "UNSPECIFIED"
                     :producer-gran-id "SMAP_L3_SM_P_20150407_R13080_001.h5"
-                    :production-date-time (p/parse-datetime "2018-07-19T12:01:01.000Z")
+                    :production-date-time (dtp/parse-datetime "2018-07-19T12:01:01.000Z")
                     :size 23})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
-                                  {:beginning-date-time (p/parse-datetime "2018-07-17T00:00:00.000Z")
-                                   :ending-date-time (p/parse-datetime "2018-07-17T23:59:59.999Z")})})
+                                  {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")
+                                   :ending-date-time (dtp/parse-datetime "2018-07-17T23:59:59.999Z")})})
     :platform-refs [(umm-lib-g/map->PlatformRef
                      {:short-name "Aqua"
                       :instrument-refs
@@ -104,7 +109,18 @@
                                      :values
                                      ["QAFRACTIONNOTPRODUCEDCLOUD Value9"
                                       "QAFRACTIONNOTPRODUCEDCLOUD Value10"]})]
-    :spatial-coverage nil
+    :spatial-coverage (umm-lib-g/map->SpatialCoverage
+                       {:geometries
+                        [(p/point -77 88) (p/point 10 10)
+                         (mbr/mbr -180 85.04450225830078 180 -85.04450225830078)
+                         (poly/polygon
+                          [(umm-s/ring
+                            [(p/point -10 -10) (p/point 10 -10) (p/point 10 10) (p/point -10 10) (p/point -10 -10)])
+                           (umm-s/ring
+                            [(p/point -5 -5) (p/point -1 -5) (p/point -1 -1) (p/point -5 -1) (p/point -5 -5)])
+                           (umm-s/ring
+                            [(p/point 0 0) (p/point 5 0) (p/point 5 5) (p/point 0 5) (p/point 0 0)])])
+                         (l/line-string [(p/point -100 -70) (p/point -88 -66)])]})
     :measured-parameters [(umm-lib-g/map->MeasuredParameter
                            {:parameter-name "Parameter Name"
                             :qa-stats (umm-lib-g/map->QAStats
@@ -147,7 +163,6 @@
   excluded list below."
   [gran]
   (-> gran
-      (dissoc :spatial-coverage)
       (dissoc :orbit-calculated-spatial-domains)
       (util/update-in-each [:measured-parameters] expected-measured-parameter)
       umm-lib-g/map->UmmGranule))
