@@ -38,15 +38,15 @@
                    :qa-percent-cloud-cover (ext-gen/optional (ext-gen/choose-double 0 100)))))))
 
 (def qa-auto-flag
-  (gen/elements ["Passed" "Failed" "Suspect"]))
+  (gen/elements ["Passed" "Failed" "Suspect" "Undetermined"]))
 
 (def qa-op-flag
   (gen/elements ["Passed" "Failed" "Being Investigated" "Not Investigated"
-                 "Inferred Passed" "Inferred Failed" "Suspect"]))
+                 "Inferred Passed" "Inferred Failed" "Suspect" "Undetermined"]))
 
 (def qa-science-flag
   (gen/elements ["Passed" "Failed" "Being Investigated" "Not Investigated"
-                 "Inferred Passed" "Inferred Failed" "Suspect" "Hold"]))
+                 "Inferred Passed" "Inferred Failed" "Suspect" "Hold" "Undetermined"]))
 
 (def qa-flags
   (ext-gen/non-empty-obj-gen
@@ -57,9 +57,15 @@
        (when (not-empty (util/remove-nil-keys flag-map))
          (merge flag-map explanation-map)))
      (gen/tuple
-       (gen/hash-map :automatic-quality-flag (ext-gen/optional qa-auto-flag)
-                     :operational-quality-flag (ext-gen/optional qa-op-flag)
-                     :science-quality-flag (ext-gen/optional qa-science-flag))
+       (gen/hash-map :automatic-quality-flag (ext-gen/optional (gen/one-of
+                                                                [(ext-gen/string-ascii 1 10)
+                                                                 qa-auto-flag]))
+                     :operational-quality-flag (ext-gen/optional (gen/one-of
+                                                                  [(ext-gen/string-ascii 1 10)
+                                                                   qa-op-flag]))
+                     :science-quality-flag (ext-gen/optional (gen/one-of
+                                                              [(ext-gen/string-ascii 1 10)
+                                                               qa-science-flag])))
        (gen/hash-map :automatic-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
                      :operational-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
                      :science-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))))))))
