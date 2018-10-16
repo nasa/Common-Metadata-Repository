@@ -5,6 +5,7 @@
    [cmr.umm-spec.umm-g.additional-attribute :as aa]
    [cmr.umm-spec.umm-g.data-granule :as data-granule]
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
+   [cmr.umm-spec.umm-g.orbit-calculated-spatial-domain :as ocsd]
    [cmr.umm-spec.umm-g.platform :as platform]
    [cmr.umm-spec.umm-g.project :as project]
    [cmr.umm-spec.umm-g.related-url :as related-url]
@@ -65,7 +66,8 @@
       :collection-ref coll-ref
       :data-granule (data-granule/umm-g-data-granule->DataGranule (:DataGranule umm-g-json))
       :temporal (umm-g->Temporal umm-g-json)
-      ; :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains umm-g-json)
+      :orbit-calculated-spatial-domains (ocsd/umm-g-orbit-calculated-spatial-domains->OrbitCalculatedSpatialDomains
+                                         (:OrbitCalculatedSpatialDomains umm-g-json))
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
       :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
       :access-value (get-in umm-g-json [:AccessConstraints :Value])
@@ -111,6 +113,8 @@
                            :EndingDateTime (when-let [ending-date-time (:ending-date-time range-date-time)]
                                              (str ending-date-time))}}))
      :SpatialExtent (spatial/SpatialCoverage->umm-g-spatial-extent spatial-coverage)
+     :OrbitCalculatedSpatialDomains (ocsd/OrbitCalculatedSpatialDomains->umm-g-orbit-calculated-spatial-domains
+                                     orbit-calculated-spatial-domains)
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
      :AccessConstraints (when access-value {:Value access-value})

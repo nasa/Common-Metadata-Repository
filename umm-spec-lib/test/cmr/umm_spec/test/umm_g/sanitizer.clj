@@ -17,4 +17,5 @@
       (update :platform-refs (fn [x] (when (seq x) (distinct x))))
       (util/update-in-each
        [:platform-refs]
-       #(util/update-in-each % [:instrument-refs] update :operation-modes sanitize-operation-modes))))
+       #(util/update-in-each % [:instrument-refs] update :operation-modes sanitize-operation-modes))
+      (util/update-in-each [:orbit-calculated-spatial-domains] #(assoc % :orbit-number nil))))
