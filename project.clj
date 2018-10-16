@@ -75,19 +75,8 @@
         ;; The following is excluded because it stomps on twig's logger
         [org.slf4j/slf4j-simple]]}
     :geo {
-      :repositories [
-        ["osgeo" "https://download.osgeo.org/webdav/geotools"]]
-      :source-paths [
-        "geo/src"
-        "geo/test"]
-      :exclusions [
-        [net.sf.geographiclib/GeographicLib-Java]]
       :dependencies [
-        [com.esri.geometry/esri-geometry-api "2.2.1"]
-        [com.vividsolutions/jts "1.13"]
-        [net.sf.geographiclib/GeographicLib-Java "1.49"]
-        [org.geotools/gt-geometry "20.0"]
-        [org.geotools/gt-referencing "20.0"]]}
+        [gov.nasa.earthdata/cmr-exchange-geo "0.1.0-SNAPSHOT"]]}
     :system {
       :dependencies [
         [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
