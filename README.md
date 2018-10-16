@@ -1,6 +1,6 @@
 # cmr-exchange-geo
 
-*TBD*
+*A general geographic library that unifies separate libs under a common interface*
 
 [![Build Status][travis-badge]][travis]
 [![Security Scan][security-scan-badge]][travis]
