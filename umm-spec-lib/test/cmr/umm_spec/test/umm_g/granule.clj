@@ -3,8 +3,10 @@
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as dtp]
+   [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
    [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as mbr]
@@ -26,14 +28,16 @@
       (dissoc :orbit-calculated-spatial-domains)
       umm-lib-g/map->UmmGranule))
 
-(defspec generate-granule-is-valid-umm-g-test 100
-  (for-all [granule generators/umm-g-granules]
+(deftest generate-granule-is-valid-umm-g-test
+  (checking "umm-g validate metadata" 100
+    [granule (gen/no-shrink generators/umm-g-granules)]
     (let [granule (sanitizer/sanitize-granule granule)
           metadata (core/generate-metadata {} granule :umm-json)]
       (empty? (core/validate-metadata :granule :umm-json metadata)))))
 
-(defspec generate-and-parse-umm-g-granule-test 100
-  (for-all [granule generators/umm-g-granules]
+(deftest generate-and-parse-umm-g-granule-test
+  (checking "umm-g round tripping" 100
+    [granule (gen/no-shrink generators/umm-g-granules)]
     (let [granule (sanitizer/sanitize-granule granule)
           umm-g-metadata (core/generate-metadata {} granule :umm-json)
           parsed (core/parse-metadata {} :granule :umm-json umm-g-metadata)
