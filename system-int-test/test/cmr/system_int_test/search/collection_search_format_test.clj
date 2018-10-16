@@ -597,9 +597,17 @@
                                                                               (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
                         (dc/collection-dif10 {:entry-title "Dataset9"})
-                        {:format :dif10})]
-
-    (index/wait-until-indexed)
+                        {:format :dif10})
+        _ (index/wait-until-indexed)
+        ;; coll5's revision-date is needed to populate "modified" field in opendata.
+        umm-json-coll5 (search/find-concepts-umm-json :collection {:concept_id (:concept-id coll5)})
+        revision-date-coll5 (-> umm-json-coll5
+                                (get-in [:results :items])
+                                 first
+                                 (get-in [:meta :revision-date]))
+        ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
+        ;; to populate modified field, we add it to coll5 so that the it can be used for the "expected" in opendata.clj.
+        coll5-opendata (assoc coll5 :revision-date revision-date-coll5)]
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
@@ -620,11 +628,10 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5-opendata coll6 coll7 coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                        coll8 coll9] results)))
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5-opendata coll6 coll7 coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}

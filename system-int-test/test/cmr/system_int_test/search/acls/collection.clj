@@ -179,6 +179,7 @@
         user4-token (e/login (s/context) "user4" [group3-concept-id])]
 
     (index/wait-until-indexed)
+
     ;; Grant guests permission to coll1
     (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
     (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["notexist"])))
@@ -295,17 +296,28 @@
                                                    :concept-id concept-ids})))))))
 
     (testing "opendata ACL enforcement"
-      (testing "all items"
-        (let [actual-od (search/find-concepts-opendata :collection {:token guest-token
-                                                                    :page-size 100})]
-          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od)))
+      (let [;; coll8's revision-date is needed to populate "modified" field in opendata.
+            umm-json-coll8 (search/find-concepts-umm-json :collection {:token guest-token
+                                                                       :concept_id (:concept-id coll8)})
+            revision-date-coll8 (-> umm-json-coll8
+                                    (get-in [:results :items])
+                                    first
+                                    (get-in [:meta :revision-date]))
+            ;; Normally coll8 doesn't contain the :revision-date field. Only when this field is needed
+            ;; to populate modified field, we add it to coll8 so that the it can be used for the "expected" in opendata.clj
+            coll8-opendata (assoc coll8 :revision-date revision-date-coll8)
+            guest-permitted-collections-opendata [coll1 coll4 coll6 coll7 coll8-opendata coll9]]
+        (testing "all items"
+          (let [actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                      :page-size 100})]
+            (od/assert-collection-opendata-results-match guest-permitted-collections-opendata actual-od)))
 
-      (testing "by concept id"
-        (let [concept-ids (map :concept-id all-colls)
-              actual-od (search/find-concepts-opendata :collection {:token guest-token
-                                                                    :page-size 100
-                                                                    :concept-id concept-ids})]
-          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))
+        (testing "by concept id"
+          (let [concept-ids (map :concept-id all-colls)
+                actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                      :page-size 100
+                                                                      :concept-id concept-ids})]
+            (od/assert-collection-opendata-results-match guest-permitted-collections-opendata actual-od)))))
 
     (testing "all_revisions"
       (util/are3 [collections params]

@@ -72,6 +72,10 @@
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
+        ;; Normally :revision-date field doesn't exist in collection. Only when 
+        ;; it's needed to populate modified field, this field is manually added
+        ;; in the test from umm-json result.
+        revision-date (:revision-date collection)
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel publication-references]} collection
@@ -112,7 +116,7 @@
                             ;; which is hardcoded or frozen somewhere.
                             ;; Can't access this revision-date from the collection
                             ;; because it's UmmCollection.  
-                            :modified (str (or update-time "2017-01-01T00:00:00Z"))
+                            :modified (str (or update-time revision-date))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point
                             :identifier concept-id
