@@ -10,9 +10,7 @@
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.repl :as repl]
-   [clojusc.system-manager.core :refer :all]
    [clojusc.twig :as logger]
-   [cmr.opendap.dev :as dev]
-   [org.httpkit.client :as httpc]))
+   [cmr.exchange.geo.dev :as dev]))
 
-(logger/set-level! '[cmr org.httpkit] :debug logger/no-color-log-formatter)
+(logger/set-level! '[cmr] :debug logger/no-color-log-formatter)
