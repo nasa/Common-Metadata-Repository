@@ -42,7 +42,6 @@
                   OperationalQualityFlagExplanation
                   ScienceQualityFlag
                   ScienceQualityFlagExplanation]}
-
           qa-flags]
       (g/map->QAFlags
        {:automatic-quality-flag AutomaticQualityFlag
@@ -51,6 +50,34 @@
         :operational-quality-flag-explanation OperationalQualityFlagExplanation
         :science-quality-flag ScienceQualityFlag
         :science-quality-flag-explanation ScienceQualityFlagExplanation}))))
+
+(def enum-default-value
+  "Undetermined")
+
+(defmulti flag-enum
+  (fn [flag-type]
+    flag-type))
+
+(defmethod flag-enum :automatic-quality-flag
+  [flag-type]
+  ["Passed" "Failed" "Suspect" enum-default-value])
+
+(defmethod flag-enum :operational-quality-flag
+  [flag-type]
+  ["Passed" "Failed" "Being Investigated" "Not Investigated"
+   "Inferred Passed" "Inferred Failed" "Suspect" enum-default-value])
+
+(defmethod flag-enum :science-quality-flag
+  [flag-type]
+  ["Passed" "Failed" "Being Investigated" "Not Investigated"
+   "Inferred Passed" "Inferred Failed" "Suspect" "Hold" enum-default-value])
+
+(defn sanitize-quality-flag
+  [flag-type flag-value]
+  (if (some #(= % flag-value)
+            (flag-enum flag-type))
+    flag-value
+    enum-default-value))
 
 (defn- QAFlags->umm-g-qa-flags
   "Returns umm-lib QAFlags from given UMM-G QAFlags."
@@ -63,11 +90,14 @@
                   science-quality-flag
                   science-quality-flag-explanation]}
           qa-flags]
-      {:AutomaticQualityFlag automatic-quality-flag
+      {:AutomaticQualityFlag (sanitize-quality-flag :automatic-quality-flag
+                                                    automatic-quality-flag)
        :AutomaticQualityFlagExplanation automatic-quality-flag-explanation
-       :OperationalQualityFlag operational-quality-flag
+       :OperationalQualityFlag (sanitize-quality-flag :operational-quality-flag
+                                                      operational-quality-flag)
        :OperationalQualityFlagExplanation operational-quality-flag-explanation
-       :ScienceQualityFlag science-quality-flag
+       :ScienceQualityFlag (sanitize-quality-flag :science-quality-flag
+                                                  science-quality-flag)
        :ScienceQualityFlagExplanation science-quality-flag-explanation})))
 
 (defn- umm-g-measured-parameter->MeasuredParmeter
