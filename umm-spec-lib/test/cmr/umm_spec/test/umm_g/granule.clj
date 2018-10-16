@@ -7,11 +7,12 @@
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
-   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.common.util :as util]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
+   [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
    [cmr.umm-spec.test.umm-g.generators :as generators]
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
    [cmr.umm-spec.umm-spec-core :as core]
@@ -19,21 +20,12 @@
    [cmr.umm.umm-granule :as umm-lib-g]
    [cmr.umm.umm-spatial :as umm-s]))
 
-(defn- umm->expected-parsed
-  "Modifies the UMM record for testing UMM-G. As the fields are added to UMM-G support for
-  parsing and generating in cmr.umm-spec.umm-g.granule, the fields should be taken off the
-  excluded list below."
-  [gran]
-  (-> gran
-      (dissoc :orbit-calculated-spatial-domains)
-      umm-lib-g/map->UmmGranule))
-
 (deftest generate-granule-is-valid-umm-g-test
   (checking "umm-g validate metadata" 100
     [granule (gen/no-shrink generators/umm-g-granules)]
     (let [granule (sanitizer/sanitize-granule granule)
           metadata (core/generate-metadata {} granule :umm-json)]
-      (empty? (core/validate-metadata :granule :umm-json metadata)))))
+      (is (empty? (core/validate-metadata :granule :umm-json metadata))))))
 
 (deftest generate-and-parse-umm-g-granule-test
   (checking "umm-g round tripping" 100
@@ -43,10 +35,10 @@
           parsed (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           ;; change the geometries to a set for comparison
           parsed (update-in parsed [:spatial-coverage :geometries] set)
-          expected-parsed (umm->expected-parsed granule)
           ;; change the geometries to a set for comparison
-          expected-parsed (update-in expected-parsed [:spatial-coverage :geometries] set)]
-      (= parsed expected-parsed))))
+          expected-parsed (update-in expected-parsed [:spatial-coverage :geometries] set)
+          expected-parsed (expected-util/umm->expected-parsed granule)]
+      (is (= parsed expected-parsed)))))
 
 (def sample-umm-g-granule
   (slurp (io/file (io/resource "example-data/umm-json/granule/v1.4/GranuleExample.json"))))
