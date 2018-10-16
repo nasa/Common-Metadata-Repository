@@ -888,7 +888,7 @@
         "AutomaticQualityFlag": {
           "description": "The granule level flag applying generally to the granule and specifically to parameters the granule level. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developer and documented in the Quality Flag Explanation.",
           "type": "string",
-          "enum": ["Passed", "Failed", "Suspect"]
+          "enum": ["Passed", "Failed", "Suspect", "Undetermined"]
         },
         "AutomaticQualityFlagExplanation": {
           "description": "A text explanation of the criteria used to set automatic quality flag; including thresholds or other criteria.",
@@ -899,7 +899,7 @@
         "OperationalQualityFlag": {
           "description": "The granule level flag applying both generally to a granule and specifically to parameters at the granule level. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developers and documented in the QualityFlagExplanation.",
           "type": "string",
-          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect"]
+          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Undetermined"]
         },
         "OperationalQualityFlagExplanation": {
           "description": "A text explanation of the criteria used to set operational quality flag; including thresholds or other criteria.",
@@ -910,7 +910,7 @@
         "ScienceQualityFlag": {
           "description": "Granule level flag applying to a granule, and specifically to parameters. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developers and documented in the Quality Flag Explanation.",
           "type": "string",
-          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Hold"]
+          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Hold", "Undetermined"]
         },
         "ScienceQualityFlagExplanation": {
           "description": "A text explanation of the criteria used to set science quality flag; including thresholds or other criteria.",
