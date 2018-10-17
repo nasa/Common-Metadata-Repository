@@ -35,7 +35,9 @@
                     equator-crossing-longitude equator-crossing-date-time]} ocsd]
         {:OrbitalModelName orbital-model-name
          :OrbitNumber orbit-number
-         :BeginOrbitNumber start-orbit-number
-         :EndOrbitNumber stop-orbit-number
+         ;; Added conversion to int to deal with potential invalid data from other formats,
+         ;; the start-orbit-number and stop-orbit-number were used to be double before.
+         :BeginOrbitNumber (when start-orbit-number (int start-orbit-number))
+         :EndOrbitNumber (when stop-orbit-number (int stop-orbit-number))
          :EquatorCrossingLongitude equator-crossing-longitude
          :EquatorCrossingDateTime equator-crossing-date-time}))))
