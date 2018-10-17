@@ -65,6 +65,12 @@
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")
                                    :ending-date-time (dtp/parse-datetime "2018-07-17T23:59:59.999Z")})})
+    :orbit-calculated-spatial-domains [(umm-lib-g/map->OrbitCalculatedSpatialDomain
+                                        {:orbital-model-name "OrbitalModelName"
+                                         :start-orbit-number 99263
+                                         :stop-orbit-number 99263
+                                         :equator-crossing-longitude 88.92
+                                         :equator-crossing-date-time (dtp/parse-datetime "2018-08-16T16:22:21.000Z")})]
     :platform-refs [(umm-lib-g/map->PlatformRef
                      {:short-name "Aqua"
                       :instrument-refs
@@ -165,6 +171,5 @@
   excluded list below."
   [gran]
   (-> gran
-      (dissoc :orbit-calculated-spatial-domains)
       (util/update-in-each [:measured-parameters] expected-measured-parameter)
       umm-lib-g/map->UmmGranule))
