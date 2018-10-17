@@ -79,6 +79,34 @@
    (ext-gen/optional qa-stats)
    (ext-gen/optional qa-flags)))
 
+(def longitude
+  (ext-gen/choose-double -180 180))
+
+(def orbital-model-name
+  (ext-gen/string-ascii 1 10))
+
+(def orbit-numbers
+  (gen/fmap sort (gen/vector gen/int 1 2)))
+
+(def orbit-calculated-spatial-domain
+  (gen/fmap (fn [[omn ecl ecdt [start-orbit-number stop-orbit-number]]]
+              (if stop-orbit-number
+                (umm-lib-g/map->OrbitCalculatedSpatialDomain
+                 {:orbital-model-name omn
+                  :start-orbit-number start-orbit-number
+                  :stop-orbit-number stop-orbit-number
+                  :equator-crossing-longitude ecl
+                  :equator-crossing-date-time ecdt})
+                (umm-lib-g/map->OrbitCalculatedSpatialDomain
+                 {:orbital-model-name omn
+                  :orbit-number start-orbit-number
+                  :equator-crossing-longitude ecl
+                  :equator-crossing-date-time ecdt})))
+            (gen/tuple orbital-model-name
+                       longitude
+                       ext-gen/date-time
+                       orbit-numbers)))
+
 (defn replace-generators
   "Function to replace umm-lib generators with ones that will work for UMM-G elements"
   [granule-model-gen]
@@ -89,6 +117,10 @@
                                       ext-gen/nil-if-empty
                                       ext-gen/optional
                                       gen/generate))
+      (assoc :orbit-calculated-spatial-domains (-> orbit-calculated-spatial-domain
+                                                   (gen/vector 0 5)
+                                                   ext-gen/nil-if-empty
+                                                   gen/generate))
       (assoc :two-d-coordinate-system (gen/generate
                                        (ext-gen/optional
                                         umm-g-tiling-identification-system-gen)))))
