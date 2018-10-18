@@ -72,6 +72,10 @@
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
+        ;; Normally :revision-date field doesn't exist in collection. Only when
+        ;; it's needed to populate modified field, this field is manually added
+        ;; in the test from umm-json result.
+        revision-date (:revision-date collection)
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel publication-references]} collection
@@ -108,7 +112,8 @@
                             :keyword (conj (flatten-science-keywords collection)
                                            "NGDA"
                                            "National Geospatial Data Asset")
-                            :modified (str (or update-time (odrh/generate-end-date end-date)))
+                            ;; when update-time is nil, we will use the revision-date,
+                            :modified (str (or update-time revision-date))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point
                             :identifier concept-id
@@ -123,7 +128,10 @@
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty
                                          (map ru/related-url->encoded-url publication-references))
-                            :issued (when insert-time (str insert-time))})))
+                            :issued (when (and insert-time
+                                               (not= (str date-util/parsed-default-date)
+                                                     (str/replace (str insert-time) #"Z" ".000Z")))
+                                      (str insert-time))})))
 
 (defn collections->expected-opendata
   [collections]

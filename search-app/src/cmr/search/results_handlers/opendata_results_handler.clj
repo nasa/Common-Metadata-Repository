@@ -5,7 +5,7 @@
    [clj-time.core :as time]
    [clj-time.format :as f]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
@@ -80,8 +80,9 @@
                          "publication-references"
                          "start-date"
                          "end-date"
-                         "granule-start-date-stored"
-                         "granule-end-date-stored"
+                         "revision-date"
+                         "granule-start-date"
+                         "granule-end-date"
                          "ords-info"
                          "ords"
                          "personnel"
@@ -131,17 +132,19 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
-          [granule-start-date-stored] :granule-start-date-stored
-          [granule-end-date-stored] :granule-end-date-stored
+          [revision-date] :revision-date
+          [granule-start-date] :granule-start-date
+          [granule-end-date] :granule-end-date
           [archive-center] :archive-center} :fields} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        granule-start-date-stored (when granule-start-date-stored
-                                    (str/replace (str granule-start-date-stored) #"\+0000" "Z"))
-        granule-end-date-stored (when granule-end-date-stored
-                                  (str/replace (str granule-end-date-stored) #"\+0000" "Z"))]
+        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
+        revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
+        granule-start-date (when granule-start-date
+                             (string/replace (str granule-start-date) #"\+0000" ".000Z"))
+        granule-end-date (when granule-end-date
+                           (string/replace (str granule-end-date) #"\+0000" ".000Z"))]
     (merge {:id concept-id
             :title entry-title
             :short-name short-name
@@ -156,8 +159,9 @@
             :personnel personnel
             :start-date start-date
             :end-date end-date
-            :granule-start-date-stored granule-start-date-stored
-            :granule-end-date-stored granule-end-date-stored
+            :revision-date revision-date
+            :granule-start-date granule-start-date
+            :granule-end-date granule-end-date
             :provider-id provider-id
             :science-keywords-flat science-keywords-flat
             :entry-title entry-title
@@ -231,7 +235,7 @@
 (defn- get-issued-modified-time
   "Get collection's issued/modified time. Parameter time could be either
   the collection's insert-time or update-time. Parameter gran-time could be either
-  granule-start-date-stored or granule-end-date-stored.
+  granule-start-date or granule-end-date.
   when insert-time/update-time is nil or default value, get issued/modified time
   from collection's earliest granule's start-date, and latest granule's end-date."
   [time gran-time]
@@ -245,14 +249,17 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                granule-start-date-stored granule-end-date-stored]} item
-        issued-time (get-issued-modified-time insert-time granule-start-date-stored)
-        modified-time (get-issued-modified-time update-time granule-end-date-stored)]
+                revision-date granule-start-date granule-end-date]} item
+        issued-time (get-issued-modified-time insert-time granule-start-date)
+        ;; if issued-time is default date, set it to nil.
+        issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
+                      issued-time)
+        modified-time (get-issued-modified-time update-time granule-end-date)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
                            :keyword (keywords science-keywords-flat)
-                           :modified (or modified-time (generate-end-date end-date))
+                           :modified (or modified-time revision-date)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id

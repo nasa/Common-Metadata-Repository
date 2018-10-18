@@ -79,24 +79,23 @@
   [context concept-id collection]
   (let [start-date (spec-time/collection-start-date collection)
         end-date (spec-time/normalized-end-date collection)
-        {:keys [granule-start-date-stored granule-end-date-stored]} 
+        {:keys [granule-start-date granule-end-date]}
                (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
-        granule-end-date-stored (if (and granule-end-date-stored 
-                                         (t/within? last-3-days granule-end-date-stored))
-                                  ;; If the granule end date is within the last 3 days we indicate that
-                                  ;; the collection has no end date. This allows NRT collections to be
-                                  ;; found even if the collection has been reindexed recently.
-                                  nil
-                                  granule-end-date-stored)
+        granule-end-date (when-not (and granule-end-date
+                                        (t/within? last-3-days granule-end-date))
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                           granule-end-date)
         coll-start (index-util/date->elastic start-date)
         coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
             :end-date coll-end
             :ongoing (determine-ongoing-date end-date)}
-           (or (when granule-start-date-stored
-                 {:granule-start-date-stored (index-util/date->elastic granule-start-date-stored)
-                  :granule-end-date-stored (index-util/date->elastic granule-end-date-stored)})
+           (or (when granule-start-date
+                 {:granule-start-date-stored (index-util/date->elastic granule-start-date)
+                  :granule-end-date-stored (index-util/date->elastic granule-end-date)})
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date-stored coll-start
                 :granule-end-date-stored coll-end}))))
@@ -257,16 +256,16 @@
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                               :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
-        {:keys [granule-start-date-stored granule-end-date-stored]} 
+        {:keys [granule-start-date granule-end-date]}
                (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
-        granule-end-date-stored (when-not (and granule-end-date-stored 
-                                               (t/within? last-3-days granule-end-date-stored))
+        granule-end-date (when-not (and granule-end-date
+                                        (t/within? last-3-days granule-end-date))
                                   ;; If the granule end date is within the last 3 days we indicate that
                                   ;; the collection has no end date. This allows NRT collections to be
                                   ;; found even if the collection has been reindexed recently.
-                                  ;; otherwise, use granule-end-date-stored
-                                  granule-end-date-stored)
+                                  ;; otherwise, use granule-end-date
+                                  granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))]
@@ -323,9 +322,9 @@
             ;; added so that we can respect all collection temporal ranges in search
             ;; when limit_to_granules is set and there are no granules for the collection.
             :limit-to-granules-temporals
-            (if granule-start-date-stored
-              [{:start-date (index-util/date->elastic granule-start-date-stored)
-                :end-date (index-util/date->elastic granule-end-date-stored)}]
+            (if granule-start-date
+              [{:start-date (index-util/date->elastic granule-start-date)
+                :end-date (index-util/date->elastic granule-end-date)}]
               temporal-extents)
             :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))

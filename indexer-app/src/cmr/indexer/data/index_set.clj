@@ -319,8 +319,8 @@
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping
           :granule-end-date               m/date-field-mapping
-          :granule-start-date-stored             (m/stored m/date-field-mapping)
-          :granule-end-date-stored               (m/stored m/date-field-mapping)
+          :granule-start-date-stored      (m/stored m/date-field-mapping)
+          :granule-end-date-stored        (m/stored m/date-field-mapping)
 
           :has-granules (m/stored m/bool-field-mapping)
           :has-granules-or-cwic (m/stored m/bool-field-mapping)
