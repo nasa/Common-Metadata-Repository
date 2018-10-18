@@ -184,7 +184,6 @@
                     (two-d/generate-two-d-coordinate-system two-d-coordinate-system)
                     (ru/generate-access-urls related-urls)
                     (ru/generate-resource-urls related-urls)
-                    (x/element :Orderable {} "true")
                     (when cloud-cover
                       (x/element :CloudCover {} cloud-cover))
                     (ru/generate-browse-urls related-urls)))))))
@@ -193,5 +192,3 @@
   "Validates the XML against the Granule ECHO10 schema."
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
-
-
