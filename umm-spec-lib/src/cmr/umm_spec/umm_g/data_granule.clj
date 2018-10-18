@@ -21,12 +21,10 @@
          :crid-ids (->> Identifiers
                         (filter #(= "CRID" (:IdentifierType %)))
                         (map :Identifier)
-                        distinct
                         seq) 
          :feature-ids (->> Identifiers
                         (filter #(= "FeatureId" (:IdentifierType %)))    
                         (map :Identifier)
-                        distinct
                         seq)
          :production-date-time ProductionDateTime
          :size (get (first ArchiveAndDistributionInformation) :Size)}))))
