@@ -182,8 +182,6 @@
                     (x/element :Description {} summary)
                     (when collection-data-type
                       (x/element :CollectionDataType {} collection-data-type))
-                    (x/element :Orderable {} "true")
-                    (x/element :Visible {} "true")
                     (when revision-date-time
                       (x/element :RevisionDate {} (str revision-date-time)))
                     ;; archive center to follow processing center

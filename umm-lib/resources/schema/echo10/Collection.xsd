@@ -264,13 +264,13 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
-      <xs:element name="Orderable" type="xs:boolean">
+      <xs:element name="Orderable" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation>The indication of whether this
           collection is orderable.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="Visible" type="xs:boolean">
+      <xs:element name="Visible" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             <p>Indication of whether the collection is visible or
