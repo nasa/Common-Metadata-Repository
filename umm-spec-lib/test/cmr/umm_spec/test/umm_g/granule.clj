@@ -10,6 +10,20 @@
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
    [cmr.umm-spec.umm-spec-core :as core]))
 
+(defn- apply-updates-to-expected 
+  "Apply updates to the expected umm-lib granule."
+  [expected-umm]
+  (-> expected-umm
+      (update-in [:spatial-coverage :geometries] set)
+      ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
+      ;; because Identifiers in UMM-G can't contain any duplicates.
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :crid-ids])
+                          (update-in updated-umm [:data-granule :crid-ids] distinct)
+                          updated-umm))
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
+                          (update-in updated-umm [:data-granule :feature-ids] distinct)
+                          updated-umm))))
+
 (deftest generate-granule-is-valid-umm-g-test
   (checking "umm-g validate metadata" 100
     [granule (gen/no-shrink generators/umm-g-granules)]
@@ -25,15 +39,7 @@
           actual (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           expected (expected-util/umm->expected-parsed granule)
           actual (update-in actual [:spatial-coverage :geometries] set)
-          expected (update-in expected [:spatial-coverage :geometries] set)
-          ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
-          ;; because Identifiers in UMM-G can't contain any duplicates.
-          expected (if (get-in expected [:data-granule :crid-ids]) 
-                     (update-in expected [:data-granule :crid-ids] distinct)
-                     expected)
-          expected (if (get-in expected [:data-granule :feature-ids])
-                     (update-in expected [:data-granule :feature-ids] distinct)
-                     expected)]
+          expected (apply-updates-to-expected expected)]
       (is (= expected actual)))))
 
 (def sample-umm-g-granule

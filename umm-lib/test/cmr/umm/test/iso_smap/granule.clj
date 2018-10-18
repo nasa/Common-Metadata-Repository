@@ -14,6 +14,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.umm.iso-smap.granule :as g]
    [cmr.umm.iso-smap.iso-smap-core :as iso]
+   [cmr.umm.test.echo10.granule :as umm-test-echo10]
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
@@ -94,8 +95,8 @@
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-smap-iso granule)]
       ;; Remove crid-ids and feature-ids because they are not supported in iso-smap.
-      (= (update-in parsed [:data-granule] dissoc :crid-ids :feature-ids)
-         (update-in expected-parsed [:data-granule] dissoc :crid-ids :feature-ids)))))
+      (= (umm-test-echo10/remove-crid-ids-and-feature-ids parsed)
+         (umm-test-echo10/remove-crid-ids-and-feature-ids expected-parsed)))))
 
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))

@@ -26,6 +26,11 @@
       (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
       umm-g/map->UmmGranule))
 
+(defn remove-crid-ids-and-feature-ids
+  "Remove crid-ids and feature-ids from umm-lib granule."
+  [umm-g]
+  (update-in umm-g [:data-granule] dissoc :crid-ids :feature-ids))
+
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)]
@@ -39,8 +44,8 @@
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-echo10 granule)]
       ;; Remove crid-ids and feature-ids because they are not supported in echo10 
-      (= (update-in parsed [:data-granule] dissoc :crid-ids :feature-ids)
-         (update-in expected-parsed [:data-granule] dissoc :crid-ids :feature-ids)))))
+      (= (remove-crid-ids-and-feature-ids parsed)
+         (remove-crid-ids-and-feature-ids expected-parsed)))))
 
 (def all-fields-granule-xml
   "<Granule>
