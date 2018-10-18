@@ -46,15 +46,15 @@
 (defn umm-g->Temporal
   "Returns a UMM Temporal from a parsed UMM-G JSON"
   [umm-g-json]
-  (let [temporal (:TemporalExtent umm-g-json)
-        range-date-time (when-let [range-date-time (:RangeDateTime temporal)]
-                          (umm-c/map->RangeDateTime
-                           {:beginning-date-time (:BeginningDateTime range-date-time)
-                            :ending-date-time (:EndingDateTime range-date-time)}))
-        single-date-time (:SingleDateTime temporal)]
-    (g/map->GranuleTemporal
-     {:range-date-time range-date-time
-      :single-date-time single-date-time})))
+  (when-let [temporal (:TemporalExtent umm-g-json)]
+    (let [range-date-time (when-let [range-date-time (:RangeDateTime temporal)]
+                            (umm-c/map->RangeDateTime
+                             {:beginning-date-time (:BeginningDateTime range-date-time)
+                              :ending-date-time (:EndingDateTime range-date-time)}))
+          single-date-time (:SingleDateTime temporal)]
+      (g/map->GranuleTemporal
+       {:range-date-time range-date-time
+        :single-date-time single-date-time}))))
 
 (defn umm-g->Granule
   "Returns a UMM Granule from a parsed UMM-G JSON"

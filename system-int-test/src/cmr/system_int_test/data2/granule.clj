@@ -108,6 +108,11 @@
                                                      (p/parse-datetime "2010-01-01T12:00:00Z"))
                            :size size}))))
 
+(defn orbit-calculated-spatial-domain
+  "Returns an orbit-calculated-spatial-domain with the given attributes"
+  [attribs]
+  (g/map->OrbitCalculatedSpatialDomain attribs))
+
 (defn orbit
   [asc-crossing start-lat start-dir end-lat end-dir]
   (g/->Orbit asc-crossing start-lat start-dir end-lat end-dir))

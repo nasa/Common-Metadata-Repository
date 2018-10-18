@@ -70,11 +70,8 @@
           umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     ;; CMR-5211 (Leo): skip the UMM validation temporarily, need to remove this check once UMM-G
-     ;; support is added for the fields involved in validations
-     (when-not (mt/umm-json? (:format concept))
-       (v/validate-granule-umm-spec context umm-spec-collection granule))
-
+     (v/validate-granule-umm-spec context umm-spec-collection granule)
+     
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
                          context concept granule parent-collection-concept)]
