@@ -18,6 +18,16 @@
          :producer-gran-id (->> Identifiers
                                 (some #(when (= "ProducerGranuleId" (:IdentifierType %)) %))
                                 :Identifier)
+         :crid-ids (->> Identifiers
+                        (filter #(= "CRID" (:IdentifierType %)))
+                        (map :Identifier)
+                        distinct
+                        seq) 
+         :feature-ids (->> Identifiers
+                        (filter #(= "FeatureId" (:IdentifierType %)))    
+                        (map :Identifier)
+                        distinct
+                        seq)
          :production-date-time ProductionDateTime
          :size (get (first ArchiveAndDistributionInformation) :Size)}))))
 
@@ -25,11 +35,20 @@
   "Returns the UMM-G DataGranule from the given umm-lib granule model DataGranule."
   [data-granule]
   (when data-granule
-    (let [{:keys [producer-gran-id day-night production-date-time size]} data-granule]
+    (let [{:keys [producer-gran-id crid-ids feature-ids
+                  day-night production-date-time size]} data-granule]
       {:DayNightFlag (string/capitalize day-night)
-       :Identifiers (when producer-gran-id
-                      [{:Identifier producer-gran-id
-                        :IdentifierType "ProducerGranuleId"}])
+       :Identifiers (let [producer-gran-id (when producer-gran-id
+                                             [{:Identifier producer-gran-id
+                                               :IdentifierType "ProducerGranuleId"}])
+                          crid-ids (when (seq crid-ids)
+                                     (map #(assoc {:IdentifierType "CRID"} :Identifier %) 
+                                          (distinct crid-ids)))
+                          feature-ids (when (seq feature-ids)
+                                        (map #(assoc {:IdentifierType "FeatureId"} :Identifier %) 
+                                             (distinct feature-ids)))]
+                      (when (or (seq producer-gran-id) (seq crid-ids) (seq feature-ids))
+                        (concat producer-gran-id crid-ids feature-ids)))
        :ProductionDateTime production-date-time
        :ArchiveAndDistributionInformation [{:Name util/not-provided
                                             :Size size

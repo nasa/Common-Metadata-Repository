@@ -38,7 +38,9 @@
     (let [xml (echo10/umm->echo10-xml granule)
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-echo10 granule)]
-      (= parsed expected-parsed))))
+      ;; Remove crid-ids and feature-ids because they are not supported in echo10 
+      (= (update-in parsed [:data-granule] dissoc :crid-ids :feature-ids)
+         (update-in expected-parsed [:data-granule] dissoc :crid-ids :feature-ids)))))
 
 (def all-fields-granule-xml
   "<Granule>

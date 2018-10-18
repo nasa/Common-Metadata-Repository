@@ -93,7 +93,9 @@
     (let [xml (iso/umm->iso-smap-xml granule)
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-smap-iso granule)]
-      (= parsed expected-parsed))))
+      ;; Remove crid-ids and feature-ids because they are not supported in iso-smap.
+      (= (update-in parsed [:data-granule] dissoc :crid-ids :feature-ids)
+         (update-in expected-parsed [:data-granule] dissoc :crid-ids :feature-ids)))))
 
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))

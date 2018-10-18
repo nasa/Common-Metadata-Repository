@@ -38,6 +38,8 @@
   (ext-gen/model-gen
     g/map->DataGranule
     (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 10))
+                  :crid-ids (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10)))
+                  :feature-ids (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10)))
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time
                   :size (ext-gen/choose-double 0 1024))))
