@@ -56,3 +56,15 @@
   [publication-reference]
   (when-let [doi (-> publication-reference :DOI :DOI)]
     (doi->url doi)))
+
+(defn collection-citation->opendata-citation
+  "Returns subset of collection-citation needed for opendata response."
+  [collection-citation]
+  (let [citation-keys [:Creator
+                       :Editor
+                       :SeriesName
+                       :ReleasePlace
+                       :IssueIdentification
+                       :DataPresentationForm
+                       :OtherCitationDetails]]
+    (not-empty (select-keys collection-citation citation-keys))))

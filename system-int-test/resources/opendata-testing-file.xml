@@ -8,13 +8,16 @@
     <Entry_Title>AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006 (AIRX3STD) at GES DISC</Entry_Title>
     <Dataset_Citation>
         <Dataset_Creator>AIRS Science Team/Joao Texeira</Dataset_Creator>
+        <Dataset_Editor>Test Editor</Dataset_Editor>
         <Dataset_Title>AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006</Dataset_Title>
         <Dataset_Series_Name>AIRX3STD</Dataset_Series_Name>
         <Dataset_Release_Date>2013-03-12</Dataset_Release_Date>
         <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
         <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
         <Version>006</Version>
+        <Issue_Identification>Test Issue Identification</Issue_Identification>
         <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Other_Citation_Details>Test Citation Details</Other_Citation_Details>
         <Persistent_Identifier>
             <Type>DOI</Type>
             <Identifier>doi:10.5067/Aqua/AIRS/DATA301</Identifier>

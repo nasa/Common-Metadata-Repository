@@ -78,6 +78,7 @@
                          "project-sn"
                          "related-urls"
                          "publication-references"
+                         "collection-citations"
                          "start-date"
                          "end-date"
                          "revision-date"
@@ -126,6 +127,7 @@
           [opendata-format] :opendata-format
           related-urls :related-urls
           publication-references :publication-references
+          collection-citations :collection-citations
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
@@ -138,6 +140,7 @@
           [archive-center] :archive-center} :fields} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
+        collection-citations (map #(json/decode % true) collection-citations)
         start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
@@ -154,6 +157,7 @@
             :concept-type :collection
             :related-urls related-urls
             :publication-references publication-references
+            :collection-citations collection-citations
             :project-sn project-sn
             :shapes (srl/ords-info->shapes ords-info ords)
             :personnel personnel
@@ -249,7 +253,7 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                revision-date granule-start-date granule-end-date]} item
+                revision-date granule-start-date granule-end-date collection-citations]} item
         issued-time (get-issued-modified-time insert-time granule-start-date)
         ;; if issued-time is default date, set it to nil.
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
@@ -272,6 +276,13 @@
                            :distribution (not-empty (map related-url->distribution related-urls))
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
+                           :creator (not-empty (keep :Creator collection-citations))
+                           :editor (not-empty (keep :Editor collection-citations))
+                           :series-name (not-empty (keep :SeriesName collection-citations))
+                           :release-place (not-empty (keep :ReleasePlace collection-citations))
+                           :issue-identification (not-empty (keep :IssueIdentification collection-citations))
+                           :data-presentation-form (not-empty (keep :DataPresentationForm collection-citations))
+                           :citation-details (not-empty (keep :OtherCitationDetails collection-citations))
                            :references (not-empty
                                         (map ru/related-url->encoded-url publication-references))
                            :issued (not-empty issued-time)})))

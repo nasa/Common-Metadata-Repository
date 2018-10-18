@@ -692,11 +692,11 @@
 (deftest opendata-search-result
   (testing "Opendata search response"
     (let [concept (d/ingest-concept-with-metadata-file
-                   "cmr-5136-opendata-related-urls.xml"
+                   "opendata-testing-file.xml"
                    {:provider-id "PROV1"
                     :concept-type :collection
                     :format-key :dif10
-                    :native-id "cmr-5136-related-url-test"})
+                    :native-id "opendata-test"})
           concept-5138-1
                   (d/ingest-concept-with-metadata-file
                    "CMR-5138-DIF10-DataDates-Equal-NotProvided.xml"
@@ -730,6 +730,30 @@
           opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
           opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))
           umm-json-coll-5138-3 (first (get-in umm-json-5138-3 [:results :items]))]
+      (testing "collection citation fields in opendata response."
+        (are3 [expected-result field-key opendata-test-collection]
+          (is (= expected-result (field-key opendata-test-collection)))
+
+          "Creator in response"
+          ["AIRS Science Team/Joao Texeira"] :creator opendata-coll
+
+          "Editor in response"
+          ["Test Editor"] :editor opendata-coll
+
+          "SeriesName in response"
+          ["AIRX3STD"] :series-name opendata-coll
+
+          "Release place in response"
+          ["Greenbelt, MD, USA"] :release-place opendata-coll
+
+          "IssueIdentification in response"
+          ["Test Issue Identification"] :issue-identification opendata-coll
+
+          "DataPresentationFrom in response"
+          ["Digital Science Data"] :data-presentation-form opendata-coll
+
+          "OtherCitationDetails in response"
+          ["Test Citation Details"] :citation-details opendata-coll))
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
         (is (= "2002-08-31T00:00:00.000Z" (:issued opendata-coll-5138-1)))

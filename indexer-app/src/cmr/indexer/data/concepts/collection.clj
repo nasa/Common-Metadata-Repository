@@ -170,7 +170,8 @@
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls collection-temporal-extents :TemporalExtents
-         publication-references :PublicationReferences} collection
+         publication-references :PublicationReferences
+         collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
@@ -186,6 +187,7 @@
         opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
         opendata-references (keep opendata/publication-reference->opendata-reference
                                   publication-references)
+        opendata-citations (keep opendata/collection-citation->opendata-citation collection-citations)
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
@@ -357,6 +359,7 @@
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
             :publication-references opendata-references
+            :collection-citations  (map json/generate-string opendata-citations)
             :update-time update-time
             :insert-time insert-time
             :created-at created-at

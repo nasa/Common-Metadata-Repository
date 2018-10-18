@@ -413,6 +413,7 @@
           :science-keywords-flat (m/stored m/string-field-mapping)
           :related-urls (m/stored m/string-field-mapping)
           :publication-references (m/stored m/string-field-mapping)
+          :collection-citations (m/stored m/string-field-mapping)
           :contact-email (m/stored m/string-field-mapping)
           :personnel (m/stored m/string-field-mapping)
 
