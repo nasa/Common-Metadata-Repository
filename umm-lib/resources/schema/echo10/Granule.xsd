@@ -276,7 +276,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           ordering site etc.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="Orderable" type="xs:boolean">
+      <xs:element name="Orderable" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation>Indication of whether the granule is
           orderable.</xs:documentation>

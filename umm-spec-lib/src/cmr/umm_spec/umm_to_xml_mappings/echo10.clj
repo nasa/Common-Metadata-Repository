@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require 
+  (:require
    [clj-time.format :as f]
    [clojure.string :as string]
    [cmr.common.util :as util]
@@ -157,8 +157,6 @@
         [:DOI (:DOI doi)]
         [:Authority (:Authority doi)]])
      [:CollectionDataType (:CollectionDataType c)]
-     [:Orderable "false"]
-     [:Visible "true"]
      (when-let [revision-date (dates/metadata-update-date c)]
        [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
@@ -169,7 +167,7 @@
      [:VersionDescription (:VersionDescription c)]
      (generate-collection-citations c)
    (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                           (get coll-progress-mapping (string/upper-case coll-progress)))] 
+                           (get coll-progress-mapping (string/upper-case coll-progress)))]
      [:CollectionState c-progress])
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]

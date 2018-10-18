@@ -17,14 +17,14 @@
   "Converts generated qa-flags to what is expected by using the sanitized flag values."
   [qa-flags]
   (when-not (empty? (util/remove-nil-keys qa-flags))
-    (umm-lib-g/map->QAFlags
-     (let [{:keys [automatic-quality-flag
-                   automatic-quality-flag-explanation
-                   operational-quality-flag
-                   operational-quality-flag-explanation
-                   science-quality-flag
-                   science-quality-flag-explanation]}
-           qa-flags]
+    (let [{:keys [automatic-quality-flag
+                  automatic-quality-flag-explanation
+                  operational-quality-flag
+                  operational-quality-flag-explanation
+                  science-quality-flag
+                  science-quality-flag-explanation]}
+          qa-flags]
+      (umm-lib-g/map->QAFlags
        {:automatic-quality-flag (measured-parameters/sanitize-quality-flag
                                  :automatic-quality-flag
                                  automatic-quality-flag)
@@ -43,6 +43,15 @@
   [measured-parameter]
   (umm-lib-g/map->MeasuredParameter
    (update measured-parameter :qa-flags expected-qa-flags)))
+
+(defn umm->expected-parsed
+  "Modifies the UMM record for testing UMM-G. As the fields are added to UMM-G support for
+  parsing and generating in cmr.umm-spec.umm-g.granule, the fields should be taken off the
+  excluded list below."
+  [gran]
+  (-> gran
+      (util/update-in-each [:measured-parameters] expected-measured-parameter)
+      umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
   (umm-lib-g/map->UmmGranule
@@ -65,6 +74,12 @@
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")
                                    :ending-date-time (dtp/parse-datetime "2018-07-17T23:59:59.999Z")})})
+    :orbit-calculated-spatial-domains [(umm-lib-g/map->OrbitCalculatedSpatialDomain
+                                        {:orbital-model-name "OrbitalModelName"
+                                         :start-orbit-number 99263
+                                         :stop-orbit-number 99263
+                                         :equator-crossing-longitude 88.92
+                                         :equator-crossing-date-time (dtp/parse-datetime "2018-08-16T16:22:21.000Z")})]
     :platform-refs [(umm-lib-g/map->PlatformRef
                      {:short-name "Aqua"
                       :instrument-refs
@@ -158,13 +173,3 @@
                      :mime-type "image/png"
                      :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
                      :size 10})]}))
-
-(defn umm->expected-parsed
-  "Modifies the UMM record for testing UMM-G. As the fields are added to UMM-G support for
-  parsing and generating in cmr.umm-spec.umm-g.granule, the fields should be taken off the
-  excluded list below."
-  [gran]
-  (-> gran
-      (dissoc :orbit-calculated-spatial-domains)
-      (util/update-in-each [:measured-parameters] expected-measured-parameter)
-      umm-lib-g/map->UmmGranule))
