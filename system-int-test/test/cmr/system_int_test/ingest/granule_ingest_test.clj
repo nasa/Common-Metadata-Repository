@@ -333,28 +333,31 @@
     (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
 
 (deftest granule-schema-validation-test
-  (are [concept-format validation-errors]
-       (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
-             umm-granule (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:native-id "Name/With/Slashes"})
-             concept (d/item->concept
-                       (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:beginning-date-time "2010-12-12T12:00:00Z"})
-                       concept-format)
-             {:keys [status errors]}
-             (ingest/ingest-concept
-               (assoc concept
-                      :format (mt/format->mime-type concept-format)
-                      :metadata (-> concept
-                                    :metadata
-                                    (str/replace "2010-12-12T12:00:00" "A")
-                                    ;; this is to cause validation error for iso-smap format
-                                    (str/replace "gmd:DS_Series" "XXXX"))))]
-         (index/wait-until-indexed)
-         (= [400 validation-errors] [status errors]))
+  (are3 [concept-format validation-errors]
+    (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+          concept (d/item->concept
+                   (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:beginning-date-time "2010-12-12T12:00:00Z"})
+                   concept-format)
+          invalid-granule (update concept :metadata
+                                  #(-> %
+                                       (str/replace "2010-12-12T12:00:00" "A")
+                                       ;; this is to cause validation error for iso-smap format
+                                       (str/replace "gmd:DS_Series" "XXXX")))
+          {:keys [status errors]} (ingest/ingest-concept invalid-granule)]
+      (is (= [400 validation-errors] [status errors])))
 
-       :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
-                "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
+    "ECHO10 invalid datetime format"
+    :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
+             "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
-       :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+    "ISO SMAP invalid datetime format"
+    :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]
+
+    "UMM-G invalid datetime format"
+    :umm-json ["/TemporalExtent instance failed to match exactly one schema (matched 0 out of 2)"
+               "/TemporalExtent/RangeDateTime/BeginningDateTime string \"A.000Z\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"
+               "/TemporalExtent object instance has properties which are not allowed by the schema: [\"RangeDateTime\"]"
+               "/TemporalExtent object has missing required properties ([\"SingleDateTime\"])"]))
 
 (deftest ingest-smap-iso-granule-test
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
@@ -465,7 +468,7 @@
         invalid-gran-metadata (-> "iso-samples/5216_IsoSmap_Granule.xml" io/resource slurp)
         _ (ingest/ingest-concept
             (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
-        expected-errors 
+        expected-errors
          [{:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."
                     "Spatial validation error: Start Orbit Number must be an integer but was [1.2]."
                     "Spatial validation error: Equator Crossing Longitude must be within [-180.0] and [180.0] but was [240.0]."
@@ -504,7 +507,7 @@
     (testing "Invalid orbit calculated spatial domain"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
-         (is (= 422 status))     
+         (is (= 422 status))
          (is (= expected-errors errors))))))
 
 (deftest CMR-5216-valid-echo10-ocsd-values-test
@@ -515,13 +518,14 @@
     (testing "Invalid orbit calculated spatial domain"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
-         (is (= 201 status))     
+         (is (= 201 status))
          (is (= nil errors))))))
 
 (deftest ingest-umm-g-granule-test
-  (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
-                                                                                 :ShortName "S1"
-                                                                                 :Version "V1"}))]
+  (let [collection (d/ingest-umm-spec-collection
+                    "PROV1" (data-umm-c/collection {:EntryTitle "correct"
+                                                    :ShortName "S1"
+                                                    :Version "V1"}))]
     (testing "Valid UMM-G granule with collection-ref attributes, default UMM-G version"
       (are3 [attrs]
         (let [granule (-> (dg/granule-with-umm-spec-collection collection
@@ -543,6 +547,55 @@
         {:entry-title "correct" :version-id "V1"}
         "EntryTitle ShortName Version"
         {:entry-title "correct" :short-name "S1" :version-id "V1"}))
+
+    (testing "Invalid UMM-G granule with collection-ref attributes"
+      (are3 [attrs expected-status expected-errors]
+        (let [collection-ref (umm-g/map->CollectionRef attrs)
+              granule (-> (dg/granule-with-umm-spec-collection
+                           collection (:concept-id collection) {:granule-ur "Gran1"})
+                          (assoc :collection-ref collection-ref)
+                          (d/item->concept :umm-json))
+              {:keys [status errors]} (ingest/ingest-concept granule)]
+          (is (= expected-status status))
+          (is (= expected-errors errors)))
+
+        "Wrong Entry Title"
+        {:entry-title "wrong"}
+        422
+        ["Collection with Entry Title [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
+
+        "Wrong ShortName Version"
+        {:short-name "S2" :version-id "V1"}
+        422
+        ["Collection with Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
+
+        "Wrong EntryTitle ShortName Version"
+        {:entry-title "incorrect" :short-name "S2" :version-id "V1"}
+        422
+        ["Collection with Entry Title [incorrect] referenced in granule [Gran1] provider [PROV1] does not exist."]
+
+        "Only ShortName"
+        {:short-name "S2"}
+        400
+        ["/CollectionReference instance failed to match exactly one schema (matched 0 out of 2)"
+         "/CollectionReference object has missing required properties ([\"Version\"])"
+         "/CollectionReference object instance has properties which are not allowed by the schema: [\"ShortName\"]"
+         "/CollectionReference object has missing required properties ([\"EntryTitle\"])"]
+
+        "Only Version"
+        {:version-id "V2"}
+        400
+        ["/CollectionReference instance failed to match exactly one schema (matched 0 out of 2)"
+         "/CollectionReference object has missing required properties ([\"ShortName\"])"
+         "/CollectionReference object instance has properties which are not allowed by the schema: [\"Version\"]"
+         "/CollectionReference object has missing required properties ([\"EntryTitle\"])"]
+
+        "Missing everything"
+        {}
+        400
+        ["/CollectionReference instance failed to match exactly one schema (matched 0 out of 2)"
+         "/CollectionReference object has missing required properties ([\"ShortName\",\"Version\"])"
+         "/CollectionReference object has missing required properties ([\"EntryTitle\"])"]))
 
     (testing "Valid UMM-G granule with specific valid UMM-G version"
       (let [granule (-> (dg/granule-with-umm-spec-collection collection
@@ -586,4 +639,47 @@
                         (d/item->concept :umm-json))
             {:keys [status errors]} (ingest/ingest-concept granule)]
         (is (= 400 status))
-        (is (= ["/GranuleUR string \"\" is too short (length: 0, required minimum: 1)"] errors))))))
+        (is (= ["/GranuleUR string \"\" is too short (length: 0, required minimum: 1)"] errors))))
+
+    (testing "Ingest UMM-G granule with invalid OrbitCalculatedSpatialDomains"
+      (are3 [attrs expected-errors]
+        (let [granule (-> (dg/granule-with-umm-spec-collection
+                           collection
+                           (:concept-id collection)
+                           {:granule-ur "Gran1"
+                            :orbit-calculated-spatial-domains [(dg/orbit-calculated-spatial-domain
+                                                                attrs)]})
+                          (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                          (d/item->concept :umm-json))
+              {:keys [status errors]} (ingest/ingest-concept granule)]
+          (is (= 400 status))
+          (is (= expected-errors errors)))
+
+        "OrbitNumber not integer"
+        {:orbital-model-name "Orbit1"
+         :orbit-number 1.0}
+        [(str "/OrbitCalculatedSpatialDomains/0/OrbitNumber instance type (number) does not match "
+              "any allowed primitive type (allowed: [\"integer\"])")]
+
+        "both OrbitNumber and BeginOrbitNumber"
+        {:orbital-model-name "Orbit1"
+         :orbit-number 1
+         :start-orbit-number 1}
+        [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
+              "(matched only 1 out of 2)")]
+
+        "both OrbitNumber and EndOrbitNumber"
+        {:orbital-model-name "Orbit1"
+         :orbit-number 1
+         :stop-orbit-number 1}
+        [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
+              "(matched only 1 out of 2)")]
+
+        ;; ECSE-503: The following test should be enabled once ECSE-503 is fixed.
+        ;; Currently, the UMM-G schema does not define the validation rules correctly for OrbitCalculatedSpatialDomain
+        ; "BeginOrbitNumber without EndOrbitNumber"
+        ; {:orbital-model-name "Orbit1"
+        ;  :stop-orbit-number 1}
+        ; [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
+        ;       "(matched only 1 out of 2)")]
+        ))))
