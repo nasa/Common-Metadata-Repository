@@ -24,6 +24,8 @@
   (-> gran
       ;; Update the related-urls as ECHO10 OnlineResources' title is built as description plus resource-type
       (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
+      ;; Set crid-ids and feature-ids to nil when data-granule exists since they are not supported in echo10.
+      (update-in [:data-granule] #(if % (assoc % :crid-ids nil :feature-ids nil) %))
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100

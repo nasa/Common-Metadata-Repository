@@ -37,6 +37,12 @@
 
    ;; maps to Granule/DataGranule/SizeMBDataGranule
    size
+
+   ;; currently not mapped to any echo10/iso-smap granule schema.
+   crid-ids
+
+   ;; currently not mapped to any echo10/iso-smap granule schema.
+   feature-ids
    ])
 
 (defrecord GranuleTemporal

@@ -51,6 +51,15 @@
   [gran]
   (-> gran
       (util/update-in-each [:measured-parameters] expected-measured-parameter)
+      (update-in [:spatial-coverage :geometries] set)
+      ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
+      ;; because Identifiers in UMM-G v1.4 can't contain any duplicates.
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :crid-ids])
+                          (update-in updated-umm [:data-granule :crid-ids] distinct)
+                          updated-umm))
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
+                          (update-in updated-umm [:data-granule :feature-ids] distinct)
+                          updated-umm))
       umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
@@ -68,6 +77,8 @@
     :data-granule (umm-lib-g/map->DataGranule
                    {:day-night "UNSPECIFIED"
                     :producer-gran-id "SMAP_L3_SM_P_20150407_R13080_001.h5"
+                    :crid-ids ["CRIDValue"]
+                    :feature-ids ["FeatureIdValue1" "FeatureIdValue2"]
                     :production-date-time (dtp/parse-datetime "2018-07-19T12:01:01.000Z")
                     :size 23})
     :temporal (umm-lib-g/map->GranuleTemporal
