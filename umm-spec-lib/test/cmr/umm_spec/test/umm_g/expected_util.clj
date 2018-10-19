@@ -169,4 +169,13 @@
   (-> gran
       (dissoc :orbit-calculated-spatial-domains)
       (util/update-in-each [:measured-parameters] expected-measured-parameter)
+      (update-in [:spatial-coverage :geometries] set)
+      ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
+      ;; because Identifiers in UMM-G v1.4 can't contain any duplicates.
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :crid-ids])
+                          (update-in updated-umm [:data-granule :crid-ids] distinct)
+                          updated-umm))
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
+                          (update-in updated-umm [:data-granule :feature-ids] distinct)
+                          updated-umm))
       umm-lib-g/map->UmmGranule))
