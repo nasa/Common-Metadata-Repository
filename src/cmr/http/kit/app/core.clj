@@ -15,14 +15,19 @@
 
 (defn collected-routes
   "This function checks to see if there are any plugins with the configured
-  plugin name and plugin type and if there are, combines them with the site
-  and API routes defined in configuration.
+  plugin name (e.g. 'CMR-Plugin') and plugin type (e.g. 'service-bridge-app')
+  and if there are, performs some initials steps, if possible. Note that the
+  plugin name and plugin type are respectively the key and value entries in a
+  JAR file's MANIFEST.mf for a dep that has declared itself as a plugin. They
+  are supplied in configuration and determine which routes are returned by this
+  function.
 
-  An example of the plugin routes would be `CMR-Plugin` and
-  `service-bridge-app`. These are, respectively, the key and value
-  entries in a JAR file's MANIFEST.mf for a dep that has declared itself as
-  a plugin. They are supplied in configuration, but determine which routes
-  are returned by this function.
+  In particular, anything that can be built with just the system/component data
+  is fair game right now; anything that requires request data will have to wait
+  until request time (e.g. inside middleware). The routes for app webpages fall
+  into the first category, so we assemble those in full. Since our REST APIs are
+  versioned based upon the 'Accept' header in requests, we have to wait to
+  finish plugin route assembly until later.
 
   For more information about JAR-file-based plugins, see:
   * https://github.com/cmr-exchange/cmr-jar-plugin"
