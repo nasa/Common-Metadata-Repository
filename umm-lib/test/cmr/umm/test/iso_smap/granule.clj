@@ -14,6 +14,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.umm.iso-smap.granule :as g]
    [cmr.umm.iso-smap.iso-smap-core :as iso]
+   [cmr.umm.test.echo10.granule :as umm-test-echo10]
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
@@ -79,6 +80,8 @@
       ;; trim :orbital-model-name in each :orbit-calculated-spatial-domains
       (util/update-in-each [:orbit-calculated-spatial-domains]
                            #(assoc % :orbital-model-name (string/trim (:orbital-model-name %))))
+      ;; Remove crid-ids and feature-ids from umm-lib granule since they are not supported in echo10.
+      (update-in [:data-granule] dissoc :crid-ids :feature-ids)
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
@@ -93,7 +96,9 @@
     (let [xml (iso/umm->iso-smap-xml granule)
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-smap-iso granule)]
-      (= parsed expected-parsed))))
+      ;; Remove crid-ids and feature-ids because they are not supported in iso-smap.
+      (= (umm-test-echo10/remove-crid-ids-and-feature-ids parsed)
+         expected-parsed))))
 
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))
