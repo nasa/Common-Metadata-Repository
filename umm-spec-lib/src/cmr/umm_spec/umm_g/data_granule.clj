@@ -39,14 +39,11 @@
        :Identifiers (let [producer-gran-id (when producer-gran-id
                                              [{:Identifier producer-gran-id
                                                :IdentifierType "ProducerGranuleId"}])
-                          crid-ids (when (seq crid-ids)
-                                     (map #(assoc {:IdentifierType "CRID"} :Identifier %)
-                                          (distinct crid-ids)))
-                          feature-ids (when (seq feature-ids)
-                                        (map #(assoc {:IdentifierType "FeatureId"} :Identifier %)
-                                             (distinct feature-ids)))]
-                      (when (or (seq producer-gran-id) crid-ids feature-ids)
-                        (concat producer-gran-id crid-ids feature-ids)))
+                          crid-ids (map #(assoc {:IdentifierType "CRID"} :Identifier %)
+                                        (distinct crid-ids))
+                          feature-ids (map #(assoc {:IdentifierType "FeatureId"} :Identifier %)
+                                           (distinct feature-ids))]
+                       (seq (concat producer-gran-id crid-ids feature-ids)))
        :ProductionDateTime production-date-time
        :ArchiveAndDistributionInformation [{:Name util/not-provided
                                             :Size size
