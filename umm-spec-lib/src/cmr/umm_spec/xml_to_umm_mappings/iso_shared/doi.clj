@@ -19,7 +19,9 @@
   "Returns true if the given gmd-id is for a DOI field."
   [gmd-id]
   (or (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString") doi-namespace)
-      (if-some [x (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString")] (str/includes? x doi-in-description) false)))
+      (if-some [x (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString")]
+        (str/includes? x doi-in-description)
+        false)))
 
 (defn- parse-explanation
   "Parses explanation for missing reason out of description."
