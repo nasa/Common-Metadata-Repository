@@ -11,10 +11,17 @@
   "DOI namespace."
   "gov.nasa.esdis.umm.doi")
 
+(def doi-in-description
+  "This is used to check if the constant DOI is contained in the identification description element."
+  "DOI")
+
 (defn- is-doi-field?
   "Returns true if the given gmd-id is for a DOI field."
   [gmd-id]
-  (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString") doi-namespace))
+  (or (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString") doi-namespace)
+      (if-some [x (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString")]
+        (str/includes? x doi-in-description)
+        false)))
 
 (defn- parse-explanation
   "Parses explanation for missing reason out of description."
@@ -39,8 +46,10 @@
         doi-list (for [ci-ct (select doc citation-base-xpath)
                        gmd-id (select ci-ct "gmd:identifier")
                        :when (is-doi-field? gmd-id)
-                       :let [doi-value (value-of
-                                        gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
+                       :let [doi-value (or (value-of
+                                            gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
+                                           (value-of
+                                            gmd-id "gmd:MD_Identifier/gmd:code/gmx:Anchor"))
                              explanation (parse-explanation
                                           (value-of gmd-id
                                                     "gmd:MD_Identifier/gmd:description/gco:CharacterString"))]]
