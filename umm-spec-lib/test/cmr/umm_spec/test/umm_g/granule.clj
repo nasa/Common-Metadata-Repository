@@ -24,8 +24,7 @@
           umm-g-metadata (core/generate-metadata {} granule :umm-json)
           actual (core/parse-metadata {} :granule :umm-json umm-g-metadata)
           expected (expected-util/umm->expected-parsed granule)
-          actual (update-in actual [:spatial-coverage :geometries] set)
-          expected (update-in expected [:spatial-coverage :geometries] set)]
+          actual (update-in actual [:spatial-coverage :geometries] set)]
       (is (= expected actual)))))
 
 (def sample-umm-g-granule
