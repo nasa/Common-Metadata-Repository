@@ -16,6 +16,7 @@
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
+   [cmr.common.doi :as doi]
    [cmr.common.log :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [defn-timed]]
@@ -84,7 +85,7 @@
                                   :page-size :unlimited
                                   :result-format :query-specified
                                   :result-fields [:concept-id
-                                                  :doi-stored
+                                                  :doi
                                                   :entry-title
                                                   :short-name
                                                   :version-id]})
@@ -120,29 +121,11 @@
        (remove #(zero? (get % :collections-count 0)))
        (sort-by :id)))
 
-(defn has-doi?
-  "Determine whether a collection item has a DOI entry."
-  [item]
-  (some? (:doi-stored item)))
-
-(defn cmr-link
-  "Given a CMR host and a concept ID, return the collection landing page for
-  the given id."
-  [cmr-base-url concept-id]
-  (format "%sconcepts/%s.html" cmr-base-url concept-id))
-
-(defn make-href
-  "Create the `href` part of a landing page link."
-  [cmr-base-url item]
-  (if (has-doi? item)
-    (format "http://dx.doi.org/%s" (:doi-stored item))
-    (cmr-link cmr-base-url (:concept-id item))))
-
 (defn make-holding-data
   "Given a single item from a query's collections, update the item with data
   for linking to its landing page."
   [cmr-base-url item]
-  (assoc item :link-href (make-href cmr-base-url item)))
+  (assoc item :link-href (doi/get-landing-page cmr-base-url item)))
 
 (defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page
