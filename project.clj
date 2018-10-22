@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.2.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.0-SNAPSHOT"
   :description "A CMR services plugin that performs URL translations for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {
@@ -144,15 +144,6 @@
     "check-sec" ["with-profile" "+system,+local,+security" "do"
       ["clean"]
       ["nvd" "check"]]
-    ;; Documentation and static content
-    "codox" ["with-profile" "+docs,+system" "codox"]
-    "marginalia" ["with-profile" "+docs,+system"
-      "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
-             "--file" "index.html"
-             "--name" "OPeNDAP/CMR Integration"]
-    "docs" ["do"
-      ["codox"]
-      ["marginalia"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+security" "jar"]
     "build-uberjar" ["with-profile" "+security" "uberjar"]
