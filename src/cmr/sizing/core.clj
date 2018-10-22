@@ -62,8 +62,9 @@
            estimate-or-errs)
          (do
            (log/debug "Generated estimate:" estimate-or-errs)
-           (results/create [{:value estimate-or-errs
-                             :units :bytes}]
+           (results/create [{:bytes estimate-or-errs
+                             :mb (/ estimate-or-errs (Math/pow 2 20))
+                             :gb (/ estimate-or-errs (Math/pow 2 30))}]
                            :elapsed (util/timed start)
                            :warnings warns)))))))
 
