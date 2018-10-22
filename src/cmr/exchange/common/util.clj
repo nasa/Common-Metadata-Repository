@@ -93,3 +93,30 @@
         (var-get (ns-resolve name-sp fun)))
       (catch  Exception _
         (log/warn "Couldn't resolve one or more of" fqfn)))))
+
+(defn data-type->bytes
+  [data-type]
+  (case (keyword (string/lower-case data-type))
+    :byte 1
+    :float 4
+    :float32 4
+    :float64 8
+    :double 8
+    :ubyte 1
+    :ushort 2
+    :uint 4
+    :uchar 1
+    :string 2
+    :char8 1
+    :uchar8 1
+    :short 2
+    :long 4
+    :int 4
+    :int8 1
+    :int16 2
+    :int32 4
+    :int64 8
+    :uint8 1
+    :uint16 2
+    :uint32 4
+    :uint64 8))
