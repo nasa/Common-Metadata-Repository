@@ -15,10 +15,6 @@
         <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
         <Version>003</Version>
         <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
-        <Persistent_Identifier>
-            <Type>DOI</Type>
-            <Identifier>10.5067/Aura/OMI/DATA2022</Identifier>
-        </Persistent_Identifier>
         <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OMSO2_003.html</Online_Resource>
     </Dataset_Citation>
     <Personnel>
