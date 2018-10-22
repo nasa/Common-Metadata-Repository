@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.opendata
   "Contains functions to convert collection into opendata related elasticsearch documents"
-  (require
+  (:require
+   [cmr.common.doi :as doi]
    [cmr.indexer.data.concepts.collection.data-center :as data-center]))
 
 (defn- email-contact?
@@ -39,20 +40,9 @@
      :mime-type MimeType
      :size size}))
 
-(def doi-base-url
-  "The base DOI URL."
-  "https://doi.org")
-
-(defn- doi->url
-  "Converts a DOI into a URL if it is not already a URL."
-  [doi]
-  (if (re-matches #"http.*" doi)
-    doi
-    (format "%s/%s" doi-base-url doi)))
-
 (defn publication-reference->opendata-reference
   "Returns an opendata reference for the given collection publication reference. Opendata only
   allows a string for a publication reference, so we'll use the DOI of the publication reference."
   [publication-reference]
   (when-let [doi (-> publication-reference :DOI :DOI)]
-    (doi->url doi)))
+    (doi/doi->url doi)))

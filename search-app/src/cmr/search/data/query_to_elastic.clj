@@ -39,31 +39,31 @@
 
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
-  (let [default-mappings {:provider :provider-id
-                          :version :version-id
-                          :project :project-sn2
-                          :project-sn :project-sn2
-                          :project-h :project-sn.humanized2
-                          :updated-since :revision-date2
-                          :two-d-coordinate-system-name :two-d-coord-name
-                          :platform :platform-sn
-                          :platform-h :platform-sn.humanized2
+  (let [default-mappings {:author :authors
+                          :data-center-h :organization.humanized2
+                          :doi :doi-stored
+                          :granule-end-date :granule-end-date-stored
+                          :granule-start-date :granule-start-date-stored
                           :instrument :instrument-sn
                           :instrument-h :instrument-sn.humanized2
-                          :sensor :sensor-sn
-                          :data-center-h :organization.humanized2
-                          :processing-level-id-h :processing-level-id.humanized2
-                          :revision-date :revision-date2
-                          :variable-name :variable-names
-                          :variable-concept-id :variable-concept-ids
-                          :variable-native-id :variable-native-ids
                           :measurement :measurements
-                          :author :authors
-                          :doi :doi-stored
-                          :service-name :service-names
+                          :platform :platform-sn
+                          :platform-h :platform-sn.humanized2
+                          :processing-level-id-h :processing-level-id.humanized2
+                          :project :project-sn2
+                          :project-h :project-sn.humanized2
+                          :project-sn :project-sn2
+                          :provider :provider-id
+                          :revision-date :revision-date2
+                          :sensor :sensor-sn
                           :service-concept-id :service-concept-ids
-                          :granule-start-date :granule-start-date-stored
-                          :granule-end-date :granule-end-date-stored}]
+                          :service-name :service-names
+                          :two-d-coordinate-system-name :two-d-coord-name
+                          :updated-since :revision-date2
+                          :variable-concept-id :variable-concept-ids
+                          :variable-name :variable-names
+                          :variable-native-id :variable-native-ids
+                          :version :version-id}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -114,26 +114,27 @@
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
-  {:project-sn2 :project-sn
-   :project-sn.humanized2 :project-h
-   :two-d-coord-name :two-d-coordinate-system-name
-   :platform-sn :platform
-   :platform-sn.humanized2 :platform-h
+  {:authors :author
+   :doi-stored :doi
+   :granule-end-date-stored :granule-end-date
+   :granule-start-date-stored :granule-start-date
    :instrument-sn :instrument
    :instrument-sn.humanized2 :instrument-h
-   :sensor-sn :sensor
-   :organization.humanized2 :data-center-h
-   :processing-level-id.humanized2 :processing-level-id-h
-   :revision-date2 :revision-date
-   :variable-names :variable-name
-   :variable-concept-ids :variable-concept-id
-   :variable-native-ids :variable-native-id
    :measurements :measurement
-   :authors :author
-   :service-names :service-name
+   :organization.humanized2 :data-center-h
+   :platform-sn :platform
+   :platform-sn.humanized2 :platform-h
+   :processing-level-id.humanized2 :processing-level-id-h
+   :project-sn.humanized2 :project-h
+   :project-sn2 :project-sn
+   :revision-date2 :revision-date
+   :sensor-sn :sensor
    :service-concept-ids :service-concept-id
-   :granule-start-date-stored :granule-start-date
-   :granule-end-date-stored :granule-end-date})
+   :service-names :service-name
+   :two-d-coord-name :two-d-coordinate-system-name
+   :variable-concept-ids :variable-concept-id
+   :variable-names :variable-name
+   :variable-native-ids :variable-native-id})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
