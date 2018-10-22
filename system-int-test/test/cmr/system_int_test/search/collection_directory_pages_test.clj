@@ -82,7 +82,7 @@
 (defn expected-provider3-level-links?
   [body]
   (string/includes? body "EOSDIS holdings for the PROV3 provider")
-  (let [url "http://dx.doi.org"]
+  (let [url "https://doi.org"]
     (and
       (string/includes? body (format "%s/%s" url "doi102"))
       (string/includes? body (format "%s/%s" url "doi103"))
@@ -169,27 +169,27 @@
                                      {:format :umm-json
                                       :accept-format :json})))
          someadmin-guest-colls (doall (for [n (range 120 123)]
-                                    (d/ingest-umm-spec-collection
-                                     "SOMEADMIN"
-                                     (assoc exp-conv/curr-ingest-ver-example-collection-record
-                                            :ShortName (str "s" n)
-                                            :EntryTitle (str "Collection Item " n)
-                                            :DOI (cm/map->DoiType
-                                                  {:DOI (str "doi" n)
-                                                   :Authority (str "auth" n)}))
-                                     {:format :umm-json
-                                      :accept-format :json})))
+                                       (d/ingest-umm-spec-collection
+                                        "SOMEADMIN"
+                                        (assoc exp-conv/curr-ingest-ver-example-collection-record
+                                               :ShortName (str "s" n)
+                                               :EntryTitle (str "Collection Item " n)
+                                               :DOI (cm/map->DoiType
+                                                     {:DOI (str "doi" n)
+                                                      :Authority (str "auth" n)}))
+                                        {:format :umm-json
+                                         :accept-format :json})))
          someadmin-invisible-colls (doall (for [n (range 130 133)]
-                                    (d/ingest-umm-spec-collection
-                                     "SOMEADMIN"
-                                     (assoc exp-conv/curr-ingest-ver-example-collection-record
-                                            :ShortName (str "s" n)
-                                            :EntryTitle (str "Collection Item " n)
-                                            :DOI (cm/map->DoiType
-                                                  {:DOI (str "doi" n)
-                                                   :Authority (str "auth" n)}))
-                                     {:format :umm-json
-                                      :accept-format :json})))]
+                                           (d/ingest-umm-spec-collection
+                                            "SOMEADMIN"
+                                            (assoc exp-conv/curr-ingest-ver-example-collection-record
+                                                   :ShortName (str "s" n)
+                                                   :EntryTitle (str "Collection Item " n)
+                                                   :DOI (cm/map->DoiType
+                                                         {:DOI (str "doi" n)
+                                                          :Authority (str "auth" n)}))
+                                            {:format :umm-json
+                                             :accept-format :json})))]
 
     (reset! test-collections
             {"PROV1" (sort (map :concept-id [c1-p1 c2-p1 c3-p1]))
