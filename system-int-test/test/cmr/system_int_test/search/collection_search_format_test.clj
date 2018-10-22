@@ -691,13 +691,7 @@
 
 (deftest opendata-search-result
   (testing "Opendata search response"
-    (let [concept (d/ingest-concept-with-metadata-file
-                   "cmr-5136-opendata-related-urls.xml"
-                   {:provider-id "PROV1"
-                    :concept-type :collection
-                    :format-key :dif10
-                    :native-id "cmr-5136-related-url-test"})
-          concept-5138-1
+    (let [concept-5138-1
                   (d/ingest-concept-with-metadata-file
                    "CMR-5138-DIF10-DataDates-Equal-NotProvided.xml"
                    {:provider-id "PROV1"
@@ -719,9 +713,6 @@
                     :format-key :dif10
                     :native-id "CMR-5138-No-DataDates-No-Temporal"})
           _ (index/wait-until-indexed)
-          opendata (search/find-concepts-opendata :collection {:concept_id (:concept-id concept)})
-          opendata-coll (first (get-in opendata [:results :dataset]))
-          {:keys [references distribution]} opendata-coll
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
           opendata-5138-3 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-3)})
@@ -729,7 +720,12 @@
           opendata-coll-5138-1 (first (get-in opendata-5138-1 [:results :dataset]))
           opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
           opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))
-          umm-json-coll-5138-3 (first (get-in umm-json-5138-3 [:results :items]))]
+          umm-json-coll-5138-3 (first (get-in umm-json-5138-3 [:results :items]))
+          {:keys [references distribution]} opendata-coll-5138-1]
+      ;; Sanity checks that collections ingested
+      (is (= 201 (:status concept-5138-1)))
+      (is (= 201 (:status concept-5138-2)))
+      (is (= 201 (:status concept-5138-3)))
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
         (is (= "2002-08-31T00:00:00.000Z" (:issued opendata-coll-5138-1)))
@@ -765,7 +761,14 @@
                             "https://disc.gsfc.nasa.gov/information/documents?title=AIRS+Documentation"
                             "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
                             "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_Files_Description.pdf"]))
-                 (set (map url-util/url->comparable-url (map :accessURL distribution))))))))))
+                 (set (map url-util/url->comparable-url (map :accessURL distribution)))))))
+      (testing "landing page field"
+        (testing "when DOI exists, use the DOI"
+          (is (= (format "https://doi.org/doi:10.5067/Aqua/AIRS/DATA301" (:concept-id concept-5138-1))
+                 (:landingPage opendata-coll-5138-1))))
+        (testing "when there is no DOI, use the collection HTML page"
+          (is (= (format "http://localhost:3003/concepts/%s.html" (:concept-id concept-5138-2))
+                 (:landingPage opendata-coll-5138-2))))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]

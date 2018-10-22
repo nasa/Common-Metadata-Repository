@@ -11,6 +11,7 @@
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.doi :as doi]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
@@ -18,6 +19,7 @@
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.date-util :as umm-spec-date-util]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.related-url-helper :as ru]))
@@ -68,25 +70,26 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
-  (let [opendata-fields ["entry-title"
-                         "summary"
-                         "science-keywords-flat"
-                         "update-time"
-                         "insert-time"
+  (let [opendata-fields ["archive-center"
                          "concept-id"
-                         "short-name"
-                         "project-sn"
-                         "related-urls"
-                         "publication-references"
-                         "start-date"
+                         "doi"
                          "end-date"
-                         "revision-date"
-                         "granule-start-date"
+                         "entry-title"
                          "granule-end-date"
-                         "ords-info"
+                         "granule-start-date"
+                         "insert-time"
                          "ords"
+                         "ords-info"
                          "personnel"
-                         "archive-center"]]
+                         "project-sn"
+                         "publication-references"
+                         "related-urls"
+                         "revision-date"
+                         "science-keywords-flat"
+                         "short-name"
+                         "start-date"
+                         "summary"
+                         "update-time"]]
     (distinct (concat opendata-fields acl-rhh/collection-elastic-fields))))
 
 (defn personnel->contact-name
@@ -129,6 +132,7 @@
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
+          [doi] :doi
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date
@@ -146,6 +150,7 @@
         granule-end-date (when granule-end-date
                            (string/replace (str granule-end-date) #"\+0000" ".000Z"))]
     (merge {:id concept-id
+            :concept-id concept-id
             :title entry-title
             :short-name short-name
             :summary summary
@@ -156,6 +161,7 @@
             :publication-references publication-references
             :project-sn project-sn
             :shapes (srl/ords-info->shapes ords-info ords)
+            :doi doi
             :personnel personnel
             :start-date start-date
             :end-date end-date
@@ -199,17 +205,11 @@
                            :description description})))
 
 (defn landing-page
-  "Creates the landingPage field for the collection with the given related-urls.
-  Returns umm-spec-lib default if none is present."
-  [related-urls]
-  (if (empty? related-urls)
-    umm-spec-util/not-provided-url
-    (some (fn [related-url]
-            (let [{:keys [url type]} related-url]
-              (when (or (= "PROJECT HOME PAGE" type) ; UMM-C terminology
-                        (= "VIEW PROJECT HOME PAGE" type)) ; ECHO-10 terminology
-                url)))
-          related-urls)))
+  "Creates the landingPage field for the collection either based on the DOI or using the CMR
+  HTML collection page."
+  [context item]
+  (let [base-url (transmit-config/application-public-root-url context)]
+    (doi/get-landing-page base-url item)))
 
 (defn publisher
   "Creates the publisher field for the collection based on the archive-center.  Note for the
@@ -270,7 +270,7 @@
                            :temporal (temporal start-date end-date) ;; required if applicable
                            :theme (theme project-sn) ;; not required
                            :distribution (not-empty (map related-url->distribution related-urls))
-                           :landingPage (landing-page related-urls)
+                           :landingPage (landing-page context item)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty
                                         (map ru/related-url->encoded-url publication-references))

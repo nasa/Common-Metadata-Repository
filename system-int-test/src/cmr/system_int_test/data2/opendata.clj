@@ -124,7 +124,7 @@
                             :temporal (odrh/temporal start-date end-date)
                             :theme (conj project-sn "geospatial")
                             :distribution distribution
-                            :landingPage (odrh/landing-page related-urls)
+                            :landingPage (format "http://localhost:3003/concepts/%s.html" concept-id)
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty
                                          (map ru/related-url->encoded-url publication-references))
