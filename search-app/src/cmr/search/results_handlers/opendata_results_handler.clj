@@ -331,6 +331,18 @@
                                     not-empty)]
      (str (string/join ". " citation-details) "."))))
 
+(defn- nil-if-not-provided
+  "nil if not provided."
+  [s]
+  (when-not (= umm-spec-util/not-provided s)
+    s))
+
+(defn graphic-preview-type
+  "Use format or mime type if provided."
+  [related-url]
+  (or (nil-if-not-provided (:format related-url))
+      (nil-if-not-provided (:get-data-mime-type related-url))))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
@@ -343,7 +355,8 @@
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
                       issued-time)
         modified-time (get-issued-modified-time update-time granule-end-date)
-        collection-citation (first collection-citations)]
+        collection-citation (first collection-citations)
+        browse-image-related-url (first (ru/browse-urls related-urls))]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
@@ -359,6 +372,9 @@
                            :temporal (temporal start-date end-date) ;; required if applicable
                            :theme (theme project-sn) ;; not required
                            :distribution (not-empty (map related-url->distribution related-urls))
+                           :graphic-preview-file (:url browse-image-related-url)
+                           :graphic-preview-description (:description browse-image-related-url)
+                           :graphic-preview-type (graphic-preview-type browse-image-related-url)
                            :landingPage (landing-page context item)
                            :language  [LANGUAGE_CODE]
                            :citation (citation collection-citation (select-keys item [:archive-center :doi :provider]))

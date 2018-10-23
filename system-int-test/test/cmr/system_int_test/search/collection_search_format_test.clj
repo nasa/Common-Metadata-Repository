@@ -729,9 +729,15 @@
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
-      (testing "collection citation fields in opendata response."
+      (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))
+
+          "graphic-preview-file in response"
+          "https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png" :graphic-preview-file opendata-coll-5138-1
+
+          "graphic-preview-description in response"
+          "Sample data of the \"AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB)\"." :graphic-preview-description opendata-coll-5138-1
 
           "Creator in response"
           "AIRS Science Team/Joao Texeira" :creator opendata-coll-5138-1

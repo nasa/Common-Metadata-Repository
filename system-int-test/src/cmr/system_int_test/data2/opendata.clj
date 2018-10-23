@@ -107,6 +107,7 @@
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         collection-citation (first collection-citations)
+        browse-image-related-url (first (ru/browse-urls related-urls))
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
@@ -125,6 +126,9 @@
                            :temporal (odrh/temporal start-date end-date)
                            :theme (conj project-sn "geospatial")
                            :distribution distribution
+                           :graphic-preview-file (:url browse-image-related-url)
+                           :graphic-preview-description (:description browse-image-related-url)
+                           :graphic-preview-type (odrh/graphic-preview-type browse-image-related-url)
                            :landingPage (format "http://localhost:3003/concepts/%s.html" concept-id)
                            :language [odrh/LANGUAGE_CODE]
                            :citation (odrh/citation collection-citation {:provider provider-id
