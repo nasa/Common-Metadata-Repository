@@ -76,6 +76,7 @@
         ;; it's needed to populate modified field, this field is manually added
         ;; in the test from umm-json result.
         revision-date (:revision-date collection)
+        collection-citations (:collection-citations collection)
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel publication-references]} collection
@@ -105,33 +106,35 @@
         project-sn (not-empty (map :short-name projects))
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
+        collection-citation (first collection-citations)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
-
     (util/remove-nil-keys {:title entry-title
-                            :description summary
-                            :keyword (conj (flatten-science-keywords collection)
-                                           "NGDA"
-                                           "National Geospatial Data Asset")
-                            ;; when update-time is nil, we will use the revision-date,
-                            :modified (str (or update-time revision-date))
-                            :publisher (odrh/publisher provider-id archive-center)
-                            :contactPoint contact-point
-                            :identifier concept-id
-                            :accessLevel "public"
-                            :bureauCode [odrh/BUREAU_CODE]
-                            :programCode [odrh/PROGRAM_CODE]
-                            :spatial (odrh/spatial shapes)
-                            :temporal (odrh/temporal start-date end-date)
-                            :theme (conj project-sn "geospatial")
-                            :distribution distribution
-                            :landingPage (format "http://localhost:3003/concepts/%s.html" concept-id)
-                            :language [odrh/LANGUAGE_CODE]
-                            :references (not-empty
-                                         (map ru/related-url->encoded-url publication-references))
-                            :issued (when (and insert-time
-                                               (not= (str date-util/parsed-default-date)
-                                                     (str/replace (str insert-time) #"Z" ".000Z")))
-                                      (str insert-time))})))
+                           :description summary
+                           :keyword (conj (flatten-science-keywords collection)
+                                          "NGDA"
+                                          "National Geospatial Data Asset")
+                           ;; when update-time is nil, we will use the revision-date,
+                           :modified (str (or update-time revision-date))
+                           :publisher (odrh/publisher provider-id archive-center)
+                           :contactPoint contact-point
+                           :identifier concept-id
+                           :accessLevel "public"
+                           :bureauCode [odrh/BUREAU_CODE]
+                           :programCode [odrh/PROGRAM_CODE]
+                           :spatial (odrh/spatial shapes)
+                           :temporal (odrh/temporal start-date end-date)
+                           :theme (conj project-sn "geospatial")
+                           :distribution distribution
+                           :landingPage (format "http://localhost:3003/concepts/%s.html" concept-id)
+                           :language [odrh/LANGUAGE_CODE]
+                           :citation (odrh/citation collection-citation {:provider provider-id
+                                                                         :archive-center archive-center})
+                           :references (not-empty
+                                        (map ru/related-url->encoded-url publication-references))
+                           :issued (when (and insert-time
+                                              (not= (str date-util/parsed-default-date)
+                                                    (str/replace (str insert-time) #"Z" ".000Z")))
+                                     (str insert-time))})))
 
 (defn collections->expected-opendata
   [collections]

@@ -49,6 +49,14 @@
               :subOrganizationOf {:name "U.S. Department of the Interior",
                                   :subOrganizationOf {:name "U.S. Government"}}))
 
+(def NASA_PUBLICATION_NAME
+  "Full NASA publication name."
+  "National Aeronautics and Space Administration, U.S. Government")
+
+(def USGS_PUBLICATION_NAME
+  "Full USGS publication name."
+  "U.S. Geological Survey, U.S. Department of the Interior, U.S. Government")
+
 (def LANGUAGE_CODE
   "opendata language code for NASA data"
   "en-US")
@@ -83,6 +91,7 @@
                          "personnel"
                          "project-sn"
                          "publication-references"
+                         "collection-citations"
                          "related-urls"
                          "revision-date"
                          "science-keywords-flat"
@@ -129,6 +138,7 @@
           [opendata-format] :opendata-format
           related-urls :related-urls
           publication-references :publication-references
+          collection-citations :collection-citations
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
@@ -142,6 +152,7 @@
           [archive-center] :archive-center} :fields} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
+        collection-citations (map #(json/decode % true) collection-citations)
         start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
@@ -159,6 +170,7 @@
             :concept-type :collection
             :related-urls related-urls
             :publication-references publication-references
+            :collection-citations collection-citations
             :project-sn project-sn
             :shapes (srl/ords-info->shapes ords-info ords)
             :doi doi
@@ -243,18 +255,80 @@
     time
     gran-time))
 
+(defn- title->citation-title
+  "Format citation name."
+  [title version]
+  (when title
+    (str title
+         (when version
+           (str ". Version " version)))))
+
+(defn- publisher->citation-publisher
+  "Format publisher for citation."
+  [archive-center provider-id]
+  (when archive-center
+    (str "Archived by "
+         (if (= provider-id "USGS_EROS")
+           USGS_PUBLICATION_NAME
+           NASA_PUBLICATION_NAME)
+         ", "
+         archive-center)))
+
+(defn- doi->citation-doi
+  "Format DOI for citation."
+  [doi]
+  (when doi
+    (doi/doi->url doi)))
+
+(defn- release-date->citation-release-date
+  "Format release-date for citation"
+  [release-date]
+  (when release-date
+    (first (string/split release-date #"T"))))
+
+(def ^:private citation-order
+  "Citation get functions in the order necessary to create the citation field."
+  [:creator
+   :editor
+   #(release-date->citation-release-date (:release-date %)) ; The ReleaseDate
+   #(title->citation-title (or (:series-name %) (:title %)) (:version %)) ; The SeriesName or Title and Version
+   :release-place
+   :issue-identification
+   #(publisher->citation-publisher (or (:publisher %) (:archive-center %)) (:provider-id %)) ; The Publisher
+   #(or (doi->citation-doi (:doi %)) (:online-resource %)) ; The DOI or OnlineResource/Linkage
+   :data-presentation-form
+   :other-citation-details])
+
+(defn- evaluate-citation
+  "Evaluate citation against citation-order."
+  [citation-information]
+  (map #(% citation-information) citation-order))
+
+(defn citation
+  "Create the citation field for the opendata response. extra-fields contain
+   information outside of CollectionCitations to create the full citation field."
+  ([collection-citation]
+   (citation collection-citation {}))
+  ([collection-citation extra-fields]
+   (when-let [citation-details (->> (merge collection-citation extra-fields)
+                                    evaluate-citation
+                                    (remove nil?)
+                                    not-empty)]
+     (str (string/join ". " citation-details) "."))))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                revision-date granule-start-date granule-end-date]} item
+                revision-date granule-start-date granule-end-date collection-citations]} item
         issued-time (get-issued-modified-time insert-time granule-start-date)
         ;; if issued-time is default date, set it to nil.
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
                       issued-time)
-        modified-time (get-issued-modified-time update-time granule-end-date)]
+        modified-time (get-issued-modified-time update-time granule-end-date)
+        collection-citation (first collection-citations)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
@@ -272,6 +346,13 @@
                            :distribution (not-empty (map related-url->distribution related-urls))
                            :landingPage (landing-page context item)
                            :language  [LANGUAGE_CODE]
+                           :citation (citation collection-citation (select-keys item [:archive-center :doi :provider]))
+                           :creator (:creator collection-citation)
+                           :editor (:editor collection-citation)
+                           :series-name (:series-name collection-citation)
+                           :release-place (:release-place collection-citation)
+                           :issue-identification (:issue-identification collection-citation)
+                           :data-presentation-form (:data-presentation-form collection-citation)
                            :references (not-empty
                                         (map ru/related-url->encoded-url publication-references))
                            :issued (not-empty issued-time)})))

@@ -605,6 +605,9 @@
                                 (get-in [:results :items])
                                 first
                                  (get-in [:meta :revision-date]))
+        ;; iso-smap LongName and CollectionCitation/Title have the same mapping.
+        ;; Need to add it to coll4 collection-citations to be exposed to citation creation.
+        coll4-opendata (assoc coll4 :collection-citations [{:title (get-in coll4 [:product :long-name])}])
         ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
         ;; to populate modified field, we add it to coll5 so that it can be used for the "expected" in opendata.clj.
         coll5-opendata (assoc coll5 :revision-date revision-date-coll5)]
@@ -628,10 +631,10 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5-opendata coll6 coll7 coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5-opendata coll6 coll7 coll8 coll9] results)))
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
@@ -726,6 +729,38 @@
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
+      (testing "collection citation fields in opendata response."
+        (are3 [expected-result field-key opendata-test-collection]
+          (is (= expected-result (field-key opendata-test-collection)))
+
+          "Creator in response"
+          "AIRS Science Team/Joao Texeira" :creator opendata-coll-5138-1
+
+          "Editor in response"
+          "Test Editor" :editor opendata-coll-5138-1
+
+          "SeriesName in response"
+          "AIRX3STD" :series-name opendata-coll-5138-1
+
+          "Release place in response"
+          "Greenbelt, MD, USA" :release-place opendata-coll-5138-1
+
+          "IssueIdentification in response"
+          "Test Issue Identification" :issue-identification opendata-coll-5138-1
+
+          "DataPresentationFrom in response"
+          "Digital Science Data" :data-presentation-form opendata-coll-5138-1
+
+          "Citation in response with OnlineResource/Linkage, Title, and archive-center chosen due to missing DOI, SeriesName, Publisher respectively"
+          (str "Can Li, Nickolay A. Krotkov, and Joanna Joiner. 2006-12-20. OMI/Aura Sulphur Dioxide (SO2) Total Column 1-orbit L2 Swath 13x24 km V003."
+               " Version 003. Greenbelt, MD, USA. Archived by National Aeronautics and Space Administration, U.S. Government,"
+               " NASA/GSFC/SED/ESD/GCDC/GESDISC. https://disc.gsfc.nasa.gov/datacollection/OMSO2_003.html. Digital Science Data.") :citation opendata-coll-5138-2
+
+          "Citation in response with DOI, SeriesName, and Publisher chosen over OnlineResource/Linkage, Title, and archive-center respectively"
+          (str "AIRS Science Team/Joao Texeira. Test Editor. 2013-03-12. AIRX3STD. Version 006. Greenbelt, MD, USA."
+               " Test Issue Identification. Archived by National Aeronautics and Space Administration, U.S. Government"
+               ", Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/doi:10.5067/Aqua/AIRS/DATA301."
+               " Digital Science Data. Test Citation Details.") :citation opendata-coll-5138-1))
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
         (is (= "2002-08-31T00:00:00.000Z" (:issued opendata-coll-5138-1)))
