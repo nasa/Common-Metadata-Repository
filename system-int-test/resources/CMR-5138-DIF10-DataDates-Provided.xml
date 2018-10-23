@@ -9,10 +9,8 @@
     <Dataset_Citation>
         <Dataset_Creator>Can Li, Nickolay A. Krotkov, and Joanna Joiner</Dataset_Creator>
         <Dataset_Title>OMI/Aura Sulphur Dioxide (SO2) Total Column 1-orbit L2 Swath 13x24 km V003</Dataset_Title>
-        <Dataset_Series_Name>OMSO2</Dataset_Series_Name>
-        <Dataset_Release_Date>2006-12-20</Dataset_Release_Date>
+        <Dataset_Release_Date>2006-12-20T00:00:00Z</Dataset_Release_Date>
         <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
-        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
         <Version>003</Version>
         <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
         <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OMSO2_003.html</Online_Resource>

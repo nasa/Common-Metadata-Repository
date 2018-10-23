@@ -2,6 +2,7 @@
   "Contains functions to convert collection into opendata related elasticsearch documents"
   (:require
    [cmr.common.doi :as doi]
+   [cmr.common.util :as util]
    [cmr.indexer.data.concepts.collection.data-center :as data-center]))
 
 (defn- email-contact?
@@ -46,3 +47,12 @@
   [publication-reference]
   (when-let [doi (-> publication-reference :DOI :DOI)]
     (doi/doi->url doi)))
+
+(defn collection-citation->opendata-citation
+  "Returns collection-citation needed for opendata response."
+  [collection-citation]
+  (let [linkage (get-in collection-citation [:OnlineResource :Linkage])]
+    (-> (assoc collection-citation :OnlineResource linkage)
+        util/remove-nil-keys
+        util/map-keys->kebab-case
+        not-empty)))
