@@ -751,15 +751,24 @@
           "DataPresentationFrom in response"
           "Digital Science Data" :data-presentation-form opendata-coll-5138-1
 
-          "Citation in response with OnlineResource/Linkage, Title, and archive-center chosen due to missing DOI, SeriesName, Publisher respectively"
+          "Citation in response with missing version"
+          (str "AIRS Science Team/Joao Texeira. 2013-03-12. AIRX3STD."
+               " AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006."
+               " Archived by National Aeronautics and Space Administration, U.S. Government,"
+               " Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/doi:10.5067/Aqua/AIRS/DATA301."
+               " https://disc.gsfc.nasa.gov/datacollection/AIRX3STD_006.html.") :citation opendata-coll-5138-3
+
+          "Citation in response with Title and archive-center chosen due to missing SeriesName and Publisher respectively. Release-date formatted properly"
           (str "Can Li, Nickolay A. Krotkov, and Joanna Joiner. 2006-12-20. OMI/Aura Sulphur Dioxide (SO2) Total Column 1-orbit L2 Swath 13x24 km V003."
                " Version 003. Greenbelt, MD, USA. Archived by National Aeronautics and Space Administration, U.S. Government,"
                " NASA/GSFC/SED/ESD/GCDC/GESDISC. https://disc.gsfc.nasa.gov/datacollection/OMSO2_003.html. Digital Science Data.") :citation opendata-coll-5138-2
 
-          "Citation in response with DOI, SeriesName, and Publisher chosen over OnlineResource/Linkage, Title, and archive-center respectively"
-          (str "AIRS Science Team/Joao Texeira. Test Editor. 2013-03-12. AIRX3STD. Version 006. Greenbelt, MD, USA."
-               " Test Issue Identification. Archived by National Aeronautics and Space Administration, U.S. Government"
-               ", Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/doi:10.5067/Aqua/AIRS/DATA301."
+          "Full citation with all fields present"
+          (str "AIRS Science Team/Joao Texeira. Test Editor. 2013-03-12. AIRX3STD. Version 006."
+               " AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006. Greenbelt, MD, USA."
+               " Test Issue Identification. Archived by National Aeronautics and Space Administration, U.S. Government,"
+               " Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/doi:10.5067/Aqua/AIRS/DATA301."
+               " https://disc.gsfc.nasa.gov/datacollection/AIRX3STD_006.html."
                " Digital Science Data. Test Citation Details.") :citation opendata-coll-5138-1))
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.

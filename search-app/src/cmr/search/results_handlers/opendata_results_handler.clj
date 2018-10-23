@@ -36,14 +36,18 @@
   "opendata programCode for NASA : Earth Science Research"
   "026:001")
 
+(def USGS_PROVIDER
+  "The USGS provider ID."
+  "USGS_EROS")
+
 (def NASA_PUBLISHER_HIERARCHY
-  "opendata publisher hierarchy for NASA providers"
+  "opendata publisher hierarchy for NASA providers."
   ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
   (sorted-map :name "National Aeronautics and Space Administration",
               :subOrganizationOf {:name "U.S. Government"}))
 
 (def USGS_EROS_PUBLISHER_HIERARCHY
-  "opendata publisher hierarchy for the USGS_EROS provider"
+  "opendata publisher hierarchy for the USGS_EROS provider."
   ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
   (sorted-map :name "U.S. Geological Survey",
               :subOrganizationOf {:name "U.S. Department of the Interior",
@@ -227,7 +231,7 @@
   "Creates the publisher field for the collection based on the archive-center.  Note for the
   USGS_EROS provider the hierarchy is different than for the other providers."
   [provider-id archive-center]
-  (let [hierarchy (if (= provider-id "USGS_EROS")
+  (let [hierarchy (if (= provider-id USGS_PROVIDER)
                     USGS_EROS_PUBLISHER_HIERARCHY
                     NASA_PUBLISHER_HIERARCHY)]
     {:name (or archive-center umm-spec-util/not-provided)
@@ -256,23 +260,33 @@
     gran-time))
 
 (defn- title->citation-title
-  "Format citation name."
+  "Format citation title and version."
   [title version]
   (when title
-    (str title
-         (when version
-           (str ". Version " version)))))
+    (let [version-string (if version (str ". Version " version) "")]
+      (str title version-string))))
+
+(defn- name->citation-name
+  "Format citation series-name, title, and version. Acceptable formats:
+  series-name. Version version. title
+  series-name. Version version
+  series-name. title
+  series-name
+  title. Version version
+  title"
+  [series-name title version]
+  (if (and series-name title)
+    (str (title->citation-title series-name version) ". " title)
+    (title->citation-title (or series-name title) version)))
 
 (defn- publisher->citation-publisher
   "Format publisher for citation."
   [archive-center provider-id]
   (when archive-center
-    (str "Archived by "
-         (if (= provider-id "USGS_EROS")
-           USGS_PUBLICATION_NAME
-           NASA_PUBLICATION_NAME)
-         ", "
-         archive-center)))
+    (let [publication-name (if (= USGS_PROVIDER provider-id)
+                             USGS_PUBLICATION_NAME
+                             NASA_PUBLICATION_NAME)]
+      (format "Archived by %s, %s" publication-name archive-center))))
 
 (defn- doi->citation-doi
   "Format DOI for citation."
@@ -281,7 +295,7 @@
     (doi/doi->url doi)))
 
 (defn- release-date->citation-release-date
-  "Format release-date for citation"
+  "Format release-date for citation."
   [release-date]
   (when release-date
     (first (string/split release-date #"T"))))
@@ -291,11 +305,12 @@
   [:creator
    :editor
    #(release-date->citation-release-date (:release-date %)) ; The ReleaseDate
-   #(title->citation-title (or (:series-name %) (:title %)) (:version %)) ; The SeriesName or Title and Version
+   #(name->citation-name (:series-name %) (:title %) (:version %)) ; The SeriesName, Title and Version
    :release-place
    :issue-identification
    #(publisher->citation-publisher (or (:publisher %) (:archive-center %)) (:provider-id %)) ; The Publisher
-   #(or (doi->citation-doi (:doi %)) (:online-resource %)) ; The DOI or OnlineResource/Linkage
+   #(doi->citation-doi (:doi %)) ; The DOI
+   :online-resource
    :data-presentation-form
    :other-citation-details])
 
