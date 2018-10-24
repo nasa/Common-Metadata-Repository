@@ -15,37 +15,20 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.0-SNAPSHOT"
-  :description "A CMR services plugin that performs URL translations for subsetted GIS data"
-  :url "https://github.com/cmr-exchange/cmr-ous-plugin"
+(defproject gov.nasa.earthdata/cmr-api-versioning "0.1.0-SNAPSHOT"
+  :description "A CMR utility library allowing services to provide versioned REST APIs"
+  :url "https://github.com/cmr-exchange/cmr-api-versioning"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
-    [cheshire "5.8.1"]
     [clojusc/trifl "0.4.0"]
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
-    [environ "1.1.0"]
-    [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.3-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-sizing-plugin "0.1.0-SNAPSHOT"]
-    [metosin/ring-http-response "0.9.0"]
-    [org.clojure/clojure "1.9.0"]
-    [org.clojure/core.async "0.4.474"]
-    [org.clojure/core.cache "0.7.1"]
-    [org.clojure/data.xml "0.2.0-alpha5"]
-    [org.clojure/java.classpath "0.3.0"]
-    [ring/ring-core "1.7.0"]
-    [ring/ring-codec "1.1.1"]
-    [ring/ring-defaults "0.3.2"]
-    [tolitius/xml-in "0.1.0"]]
+    [metosin/reitit-ring "0.2.4"]
+    [org.clojure/clojure "1.9.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
@@ -103,8 +86,6 @@
       :plugins [
         [lein-ltest "0.3.0"]
         [test2junit "1.4.2"]]
-      :jvm-opts [
-        "-Dcmr.testing.config.data=testing-value"]
       :test2junit-output-dir "junit-test-results"
       :test-selectors {
         :unit #(not (or (:integration %) (:system %)))
@@ -112,7 +93,6 @@
         :system :system
         :default (complement :system)}}}
   :aliases {
-    ;; Dev & Testing Aliases
     ;; Dev & Testing Aliases
     "repl" ["do"
       ["clean"]
@@ -150,15 +130,15 @@
     "build-lite" ["do"
       ["clean"]
       ["lint"]
-      ["ltest" ":unit"]
+      ["ltest" ":all"]
       ["ubercompile"]]
     "build" ["do"
       ["clean"]
       ["lint"]
       ["check-vers"]
       ["check-sec"]
-      ["ltest" ":unit"]
-      ["junit" ":unit"]
+      ["ltest" ":all"]
+      ["junit" ":all"]
       ["ubercompile"]
       ["build-uberjar"]]
     ;; Publishing
