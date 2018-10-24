@@ -32,17 +32,15 @@
   "Returns the opendata related url for the given collection related url"
   [related-url]
   (let [{:keys [Description Type Subtype URL]} related-url
-        Format (get-in related-url [:GetData :Format])
         get-data-mime-type (get-in related-url [:GetData :MimeType])
-        MimeType (get-in related-url [:GetService :MimeType])
+        get-service-mime-type (get-in related-url [:GetService :MimeType])
         size (get-in related-url [:GetData :Size])]
     {:type Type
      :sub-type Subtype
      :url URL
-     :format Format
      :get-data-mime-type get-data-mime-type
      :description Description
-     :mime-type MimeType
+     :get-service-mime-type get-service-mime-type
      :size size}))
 
 (defn publication-reference->opendata-reference

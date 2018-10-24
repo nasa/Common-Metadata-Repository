@@ -28,6 +28,7 @@
    [cmr.system-int-test.data2.kml :as dk]
    [cmr.system-int-test.data2.opendata :as od]
    [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.fast-xml :as fx]
@@ -715,17 +716,32 @@
                     :concept-type :collection
                     :format-key :dif10
                     :native-id "CMR-5138-No-DataDates-No-Temporal"})
+          related-urls {:RelatedUrls [{:Description "A test related url description."
+                                       :URL "http://example.com/browse-image"
+                                       :Type "GET RELATED VISUALIZATION"
+                                       :URLContentType "VisualizationURL"
+                                       :GetData {:MimeType "image/png"
+                                                 :Format "png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}]}
+          concept-umm (-> (umm-spec-collection/collection 1 related-urls)
+                          (umm-spec-collection/collection-concept :umm-json)
+                          ingest/ingest-concept)
+
           _ (index/wait-until-indexed)
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
           opendata-5138-3 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-3)})
+          opendata-umm (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-umm)})
           umm-json-5138-3 (search/find-concepts-umm-json :collection {:concept_id (:concept-id concept-5138-3)})
           opendata-coll-5138-1 (first (get-in opendata-5138-1 [:results :dataset]))
           opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
           opendata-coll-5138-3 (first (get-in opendata-5138-3 [:results :dataset]))
+          opendata-coll-umm (first (get-in opendata-umm [:results :dataset]))
           umm-json-coll-5138-3 (first (get-in umm-json-5138-3 [:results :items]))
           {:keys [references distribution]} opendata-coll-5138-1]
       ;; Sanity checks that collections ingested
+      (is (= 201 (:status concept-umm)))
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
@@ -734,10 +750,13 @@
           (is (= expected-result (field-key opendata-test-collection)))
 
           "graphic-preview-file in response"
-          "https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png" :graphic-preview-file opendata-coll-5138-1
+          "http://example.com/browse-image" :graphic-preview-file opendata-coll-umm
+
+          "graphic-preview-type in response"
+          "image/png" :graphic-preview-type opendata-coll-umm
 
           "graphic-preview-description in response"
-          "Sample data of the \"AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB)\"." :graphic-preview-description opendata-coll-5138-1
+          "A test related url description." :graphic-preview-description opendata-coll-umm
 
           "Creator in response"
           "AIRS Science Team/Joao Texeira" :creator opendata-coll-5138-1

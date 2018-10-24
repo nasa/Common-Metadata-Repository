@@ -107,7 +107,7 @@
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         collection-citation (first collection-citations)
-        browse-image-related-url (first (ru/browse-urls related-urls))
+        browse-image-related-url (odrh/get-best-browse-image-related-url related-urls)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary

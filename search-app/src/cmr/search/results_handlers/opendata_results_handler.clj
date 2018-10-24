@@ -331,17 +331,25 @@
                                     not-empty)]
      (str (string/join ". " citation-details) "."))))
 
-(defn- nil-if-not-provided
-  "nil if not provided."
-  [s]
-  (when-not (= umm-spec-util/not-provided s)
-    s))
+(defn- score-browse-image-related-url
+  "Score the related-url based off number of browse-image fields."
+  [related-url]
+  (->> (select-keys related-url [:get-data-mime-type :description])
+       vals
+       (remove #(= umm-spec-util/not-provided %))
+       count))
+
+(defn get-best-browse-image-related-url
+  "Get the related-url that is a browse image with the most graphic-preview fields."
+  [related-urls]
+  (->> (ru/browse-urls related-urls)
+       (sort-by score-browse-image-related-url)
+       last))
 
 (defn graphic-preview-type
-  "Use format or mime type if provided."
-  [related-url]
-  (or (nil-if-not-provided (:format related-url))
-      (nil-if-not-provided (:get-data-mime-type related-url))))
+  "Nil if browse image mime type is Not provided."
+  [browse-image-related-url]
+  (util/nil-if-value umm-spec-util/not-provided (:get-data-mime-type browse-image-related-url)))
 
 (defn- result->opendata
   "Converts a search result item to opendata."
@@ -356,7 +364,7 @@
                       issued-time)
         modified-time (get-issued-modified-time update-time granule-end-date)
         collection-citation (first collection-citations)
-        browse-image-related-url (first (ru/browse-urls related-urls))]
+        browse-image-related-url (get-best-browse-image-related-url related-urls)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
