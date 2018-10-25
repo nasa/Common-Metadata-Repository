@@ -30,9 +30,8 @@
                                        (test-system/http-port)))]
       (is (= 200 (:status response)))
       (is (= {:config {:ok? true}
-              :httpd {:ok? true}
-              :logging {:ok? true}}
-             (json/parse-string (:body response) true)))))
+              :httpd {:ok? true}}
+             (dissoc (json/parse-string (:body response) true) :logging)))))
   (testing "protected admin route ..."
     (let [response @(httpc/get (format "http://localhost:%s/service-bridge/ping"
                                        (test-system/http-port)))]

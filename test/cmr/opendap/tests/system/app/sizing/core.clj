@@ -34,5 +34,5 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:value 6220800, :units "bytes"}]
+        (is (= [{:bytes 6220800, :gb 0.005793571472167969, :mb 5.9326171875}]
                (util/parse-response response)))))))
