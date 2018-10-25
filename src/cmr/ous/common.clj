@@ -78,61 +78,6 @@
   [params]
   (assoc params :bounding-box [] :subset []))
 
-
-;; XXX The 'fallback' values are left-overs from previous work done in the
-;;     Node.js prorotype. For more context, see CMR-4901 abd CMR-4912.
-;; XXX Note that CMR-4912 has been moved to DURT-153.
-;; XXX Note that CMR-5131 was created to keep using regex's in the
-;;     short-term :-(
-;; XXX The continued use of the fallbacks is a special case that needs to be
-;;     addressed before CMR OPeNDAP can be used in general, for all granules.
-;;     As such. the work in CMR-4912 will need to be finished before we can
-;;     remove/update the following:
-
-(def fallback-datafile-support
-  "Note that the keys are the regex's and the values are what to replace with."
-  {;; Initial testing for prorotype used the following replacement
-   "(.*)(/datapool/DEV01)(.*)" "/opendap/DEV01/user"
-   ;; First-pass at GES-DESC rollout used the following replacement
-   "(.*)(/data/)(.*)" "/opendap/"})
-
-(def fallback-patterns
-  "This is for use in error messages."
-  (format "'%s'" (string/join "','" (keys fallback-datafile-support))))
-
-(defn match-data
-  [match regex]
-  {:match match
-   :regex regex
-   :replacement (get fallback-datafile-support regex)})
-
-(defn fallback-matches
-  [data-url]
-  (->> fallback-datafile-support
-       keys
-       (map (fn [x] (match-data (re-matches (re-pattern x) data-url) x)))
-       (remove #(nil? (:match %)))))
-
-(defn matches-fallback?
-  [matched-data]
-  (->> matched-data
-       (map :match)
-       (some #(not (nil? %)))))
-
-(defn has-fallback-replacement?
-  [data-url matched-data]
-  (->> matched-data
-       (map (comp #(string/includes? data-url %) :replacement))
-       (some true?)))
-
-(defn replace-with-first-matching-fallback
-  [data-url matched-data]
-  (log/trace "Attempting Granule URL match/replace ...")
-  (let [match (first matched-data)]
-    (string/replace data-url
-                    (re-pattern (:regex match))
-                    (str "$1" (:replacement match) "$3"))))
-
 (defn process-tag-datafile-replacement
   "Takes a data file URL and replaces part of the URL based on the passed in tag data."
   [data-url tag-data]
@@ -145,29 +90,11 @@
   [data-file tag-data]
   (let [data-url (:link-href data-file)
         data-url-replaced-by-tags (when tag-data
-                                    (process-tag-datafile-replacement data-url tag-data))
-        matched-fallbacks (fallback-matches data-url)]
+                                    (process-tag-datafile-replacement data-url tag-data))]
     (log/trace "Data file:" data-file)
     (log/trace "Tag data:" tag-data)
     (log/trace "Data URL replaced by tags:" data-url-replaced-by-tags)
-    (cond data-url-replaced-by-tags
-          data-url-replaced-by-tags
-
-          (has-fallback-replacement? data-url matched-fallbacks)
-          (do
-            (log/debug (str "Data file already has the expected OPeNDAP URL; "
-                            "skipping replacement ..."))
-            data-url)
-
-          (matches-fallback? matched-fallbacks)
-          (replace-with-first-matching-fallback data-url matched-fallbacks)
-
-          :else
-          (let [msg (format metadata-errors/no-matching-service-pattern
-                            (fallback-patterns)
-                            data-url)]
-            (log/error msg)
-            {:errors [msg]}))))
+    (or data-url-replaced-by-tags data-url)))
 
 (defn replace-double-slashes
   [url]
