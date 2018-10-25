@@ -605,7 +605,7 @@
         revision-date-coll5 (-> umm-json-coll5
                                 (get-in [:results :items])
                                 first
-                                 (get-in [:meta :revision-date]))
+                                (get-in [:meta :revision-date]))
         ;; iso-smap LongName and CollectionCitation/Title have the same mapping.
         ;; Need to add it to coll4 collection-citations to be exposed to citation creation.
         coll4-opendata (assoc coll4 :collection-citations [{:title (get-in coll4 [:product :long-name])}])
@@ -810,14 +810,15 @@
         (is (= #{"https://doi.org/10.1117/1.JRS.8.084994" "https://doi.org/10.5194/acp-14-399-2014"}
                (set references))))
       (testing "correct distribution field"
-        (is (= 13 (count distribution)))
+        (is (= 14 (count distribution)))
         (testing "every distribution has an access URL."
           (is (every? #(some? (:accessURL %)) distribution)))
         (testing "every distribution has a description."
           (is (every? #(not (string/blank? (:description %))) distribution)))
         (testing "distribution URLs are correctly URL encoded."
           (is (= (set (map url-util/url->comparable-url
-                           ["https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
+                           ["https://scholar.google.com/scholar?q=10.5067/Aqua/AIRS/DATA301"
+                            "https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
                             "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
                             "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"
                             "https://disc.gsfc.nasa.gov/SSW/#keywords=AIRX3STD%20006"

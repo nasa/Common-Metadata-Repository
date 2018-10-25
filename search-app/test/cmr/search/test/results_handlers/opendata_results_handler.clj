@@ -53,3 +53,55 @@
 
        "nil urls"
        nil nil))))
+
+(deftest distribution-test
+  (let [make-distributions #'opendata-results-handler/make-distributions]
+    (are3 [expected related-urls doi]
+      (is (= (set expected)
+             (set (make-distributions related-urls doi))))
+
+      "Related URLs present with doi in doi: format"
+      [{:accessURL "https://foo.bar/baz"
+        :description "test description"}
+       {:accessURL "https://scholar.google.com/scholar?q=10.0000/Test/TEST/DATA301"
+        :title "Google Scholar search results",
+        :description "Search results for publications that cite this dataset by its DOI."}]
+      [{:description "test description"
+        :url "https://foo.bar/baz"}]
+      "doi:10.0000/Test/TEST/DATA301"
+
+      "Related URLs present with doi not in doi: format"
+      [{:accessURL "https://foo.bar/baz"
+        :description "test description"}
+       {:accessURL "https://scholar.google.com/scholar?q=This is a test string"
+        :title "Google Scholar search results",
+        :description "Search results for publications that cite this dataset by its DOI."}]
+      [{:description "test description"
+        :url "https://foo.bar/baz"}]
+      "This is a test string"
+
+      "Related URLs present with doi nil"
+      [{:accessURL "https://foo.bar/baz"
+        :description "test description"}]
+      [{:description "test description"
+        :url "https://foo.bar/baz"}]
+      nil
+
+      "Related URLs nil with doi in doi: format"
+      [{:accessURL "https://scholar.google.com/scholar?q=10.0000/Test/TEST/DATA301"
+        :title "Google Scholar search results",
+        :description "Search results for publications that cite this dataset by its DOI."}]
+      nil
+      "doi:10.0000/Test/TEST/DATA301"
+
+      "Related URLs nil with doi not in doi: format"
+      [{:accessURL "https://scholar.google.com/scholar?q=This is a test string",
+        :title "Google Scholar search results",
+        :description "Search results for publications that cite this dataset by its DOI."}]
+      nil
+      "This is a test string"
+
+      "Related URLs nil with doi nil"
+      nil
+      nil
+      nil)))

@@ -351,13 +351,33 @@
   [browse-image-related-url]
   (util/nil-if-value umm-spec-util/not-provided (:get-data-mime-type browse-image-related-url)))
 
+(defn- doi->distribution
+  "Returns a distribution open data field for the provided DOI.
+  See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
+  [doi]
+  (when doi
+    {:accessURL (str "https://scholar.google.com/scholar?q=" (or (second
+                                                                  (re-find #"^doi:(.*)$" doi))
+                                                                 doi))
+     :title "Google Scholar search results",
+     :description "Search results for publications that cite this dataset by its DOI."}))
+
+(defn- make-distributions
+  "Using given related-urls and doi make list of distributions"
+  [related-urls doi]
+  (->> related-urls
+       (map related-url->distribution)
+       (into [(doi->distribution doi)])
+       (remove nil?)
+       not-empty))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls publication-references personnel shapes archive-center
-                revision-date granule-start-date granule-end-date collection-citations]} item
+                revision-date granule-start-date granule-end-date collection-citations doi]} item
         issued-time (get-issued-modified-time insert-time granule-start-date)
         ;; if issued-time is default date, set it to nil.
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
@@ -379,11 +399,11 @@
                            :spatial (spatial shapes) ;; required if applicable
                            :temporal (temporal start-date end-date) ;; required if applicable
                            :theme (theme project-sn) ;; not required
-                           :distribution (not-empty (map related-url->distribution related-urls))
                            :graphic-preview-file (:url browse-image-related-url)
                            :graphic-preview-description (:description browse-image-related-url)
                            :graphic-preview-type (graphic-preview-type browse-image-related-url)
                            :landingPage (landing-page context item)
+                           :distribution (make-distributions related-urls doi)
                            :language  [LANGUAGE_CODE]
                            :citation (citation collection-citation (select-keys item [:archive-center :doi :provider]))
                            :creator (:creator collection-citation)
