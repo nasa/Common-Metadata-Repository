@@ -281,6 +281,12 @@
   [m filler]
   (w/postwalk-replace {nil filler} m))
 
+(defn nil-if-value
+  "Treat value as nil if matches key."
+  [key value]
+  (when-not (= key value)
+    value))
+
 (defn remove-empty-maps
   "Recursively removes maps with only nil values."
   [x]

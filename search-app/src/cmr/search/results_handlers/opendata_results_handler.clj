@@ -331,6 +331,26 @@
                                     not-empty)]
      (str (string/join ". " citation-details) "."))))
 
+(defn- score-browse-image-related-url
+  "Score the related-url based off number of browse-image fields."
+  [related-url]
+  (->> (select-keys related-url [:get-data-mime-type :description])
+       vals
+       (remove #(= umm-spec-util/not-provided %))
+       count))
+
+(defn get-best-browse-image-related-url
+  "Get the related-url that is a browse image with the most graphic-preview fields."
+  [related-urls]
+  (->> (ru/browse-urls related-urls)
+       (sort-by score-browse-image-related-url)
+       last))
+
+(defn graphic-preview-type
+  "Nil if browse image mime type is Not provided."
+  [browse-image-related-url]
+  (util/nil-if-value umm-spec-util/not-provided (:get-data-mime-type browse-image-related-url)))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
@@ -343,7 +363,8 @@
         issued-time (when-not (= issued-time (str umm-spec-date-util/parsed-default-date))
                       issued-time)
         modified-time (get-issued-modified-time update-time granule-end-date)
-        collection-citation (first collection-citations)]
+        collection-citation (first collection-citations)
+        browse-image-related-url (get-best-browse-image-related-url related-urls)]
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
@@ -359,6 +380,9 @@
                            :temporal (temporal start-date end-date) ;; required if applicable
                            :theme (theme project-sn) ;; not required
                            :distribution (not-empty (map related-url->distribution related-urls))
+                           :graphic-preview-file (:url browse-image-related-url)
+                           :graphic-preview-description (:description browse-image-related-url)
+                           :graphic-preview-type (graphic-preview-type browse-image-related-url)
                            :landingPage (landing-page context item)
                            :language  [LANGUAGE_CODE]
                            :citation (citation collection-citation (select-keys item [:archive-center :doi :provider]))
