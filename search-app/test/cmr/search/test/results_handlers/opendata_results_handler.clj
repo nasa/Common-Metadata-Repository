@@ -63,7 +63,7 @@
       "Related URLs present with doi in doi: format"
       [{:accessURL "https://foo.bar/baz"
         :description "test description"}
-       {:accessURL "https://scholar.google.com/scholar?q=10.0000/Test/TEST/DATA301"
+       {:accessURL "https://scholar.google.com/scholar?q=10.0000%2FTest%2FTEST%2FDATA301"
         :title "Google Scholar search results",
         :description "Search results for publications that cite this dataset by its DOI."}]
       [{:description "test description"
@@ -73,7 +73,7 @@
       "Related URLs present with doi not in doi: format"
       [{:accessURL "https://foo.bar/baz"
         :description "test description"}
-       {:accessURL "https://scholar.google.com/scholar?q=This is a test string"
+       {:accessURL "https://scholar.google.com/scholar?q=This+is+a+test+string"
         :title "Google Scholar search results",
         :description "Search results for publications that cite this dataset by its DOI."}]
       [{:description "test description"
@@ -88,14 +88,14 @@
       nil
 
       "Related URLs nil with doi in doi: format"
-      [{:accessURL "https://scholar.google.com/scholar?q=10.0000/Test/TEST/DATA301"
+      [{:accessURL "https://scholar.google.com/scholar?q=10.0000%2FTest%2FTEST%2FDATA301"
         :title "Google Scholar search results",
         :description "Search results for publications that cite this dataset by its DOI."}]
       nil
       "doi:10.0000/Test/TEST/DATA301"
 
       "Related URLs nil with doi not in doi: format"
-      [{:accessURL "https://scholar.google.com/scholar?q=This is a test string",
+      [{:accessURL "https://scholar.google.com/scholar?q=This+is+a+test+string"
         :title "Google Scholar search results",
         :description "Search results for publications that cite this dataset by its DOI."}]
       nil

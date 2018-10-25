@@ -817,7 +817,7 @@
           (is (every? #(not (string/blank? (:description %))) distribution)))
         (testing "distribution URLs are correctly URL encoded."
           (is (= (set (map url-util/url->comparable-url
-                           ["https://scholar.google.com/scholar?q=10.5067/Aqua/AIRS/DATA301"
+                           ["https://scholar.google.com/scholar?q=10.5067%2FAqua%2FAIRS%2FDATA301"
                             "https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/AIRX3STD_006.png"
                             "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
                             "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"

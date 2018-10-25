@@ -356,9 +356,10 @@
   See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
   [doi]
   (when doi
-    {:accessURL (str "https://scholar.google.com/scholar?q=" (or (second
-                                                                  (re-find #"^doi:(.*)$" doi))
-                                                                 doi))
+    {:accessURL (ru/related-url->encoded-url
+                 (str "https://scholar.google.com/scholar?q=" (or (second
+                                                                   (re-find #"^doi:(.*)$" doi))
+                                                                  doi)))
      :title "Google Scholar search results",
      :description "Search results for publications that cite this dataset by its DOI."}))
 
