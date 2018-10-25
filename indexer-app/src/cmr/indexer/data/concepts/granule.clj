@@ -121,7 +121,7 @@
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
                 access-value two-d-coordinate-system]} umm-granule
-        {:keys [size producer-gran-id day-night]} data-granule
+        {:keys [size producer-gran-id day-night feature-ids crid-ids]} data-granule
         {:keys [start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]
          two-d-coord-name :name} two-d-coordinate-system
         platform-short-names (map :short-name platform-refs)
@@ -197,6 +197,10 @@
             :project-refs project-refs
             :project-refs.lowercase (map s/lower-case project-refs)
             :project-refs.lowercase-doc-values (map s/lower-case project-refs)
+            :feature-id feature-ids
+            :feature-id.lowercase (map s/lower-case feature-ids)
+            :crid-id crid-ids
+            :crid-id.lowercase (map s/lower-case crid-ids)
             :size size
             :size-doc-values size
             :cloud-cover cloud-cover

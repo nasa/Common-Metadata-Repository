@@ -53,7 +53,7 @@
     {:single-value #{:echo-compatible :include-facets}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
-                       :platform :sensor}
+                       :platform :sensor :feature-id :crid-id}
      :always-case-sensitive #{:echo-granule-id}
      :disallow-pattern #{:echo-granule-id}}))
 
@@ -167,6 +167,8 @@
    :grid cpv/string-param-options
    :science-keywords cpv/string-plus-or-options
    :spatial-keyword cpv/string-plus-and-options
+   :feature-id cpv/string-plus-and-options
+   :crid-id cpv/string-plus-and-options
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option

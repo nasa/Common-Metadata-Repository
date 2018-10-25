@@ -564,6 +564,12 @@
      :sensor-sn.lowercase   m/string-field-mapping
      :sensor-sn.lowercase-doc-values     (m/doc-values m/string-field-mapping)
 
+     :feature-id             m/string-field-mapping
+     :feature-id.lowercase   m/string-field-mapping
+
+     :crid-id             m/string-field-mapping
+     :crid-id.lowercase   m/string-field-mapping
+
      :start-date (m/stored m/date-field-mapping)
      :start-date-doc-values              (-> m/date-field-mapping m/stored m/doc-values)
 
