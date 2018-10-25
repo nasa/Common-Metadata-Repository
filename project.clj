@@ -131,6 +131,12 @@
       ["ltest" ":unit"]
       ["ubercompile"]
       ["build-uberjar"]]
+    ;; Installing
+    "install" ["do"
+      ["clean"]
+      ["ubercompile"]
+      ["clean"]
+      ["install"]]
     ;; Publishing
     "publish" ["with-profile" "+security" "do"
       ["clean"]

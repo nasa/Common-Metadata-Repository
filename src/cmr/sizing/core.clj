@@ -106,12 +106,15 @@
         ;; Error handling for all stages
         errs (errors/collect
               params bounding-box grans-promise coll-promise s1-errs
-              data-files service-ids vars s2-errs
+              data-files service-ids vars s2-errs s3-errs
               {:errors (errors/check
                         [not data-files metadata-errors/empty-gnl-data-files])})
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
+    (log/debug "Got data-files:" (vec data-files))
+    (log/debug "Got services:" services)
+    (log/debug "Got vars:" vars)
     (process-results
       {:params params
        :data-files data-files
