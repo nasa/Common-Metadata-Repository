@@ -34,6 +34,26 @@
     (is (= ["http://e4ftl01.cr.usgs.gov:40510/dir-replaced-by-tags/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"]
            (util/parse-response response)))))
 
+(deftest no-tag-replacement
+  (let [collection-id "C1200241219-DEMO_PROV"
+        granule-id "G1200241220-DEMO_PROV"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/ous/collection/%s"
+                                "?granules=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= ["https://e4ftl01.cr.usgs.gov/DP106/MOLT/MOD13Q1.006/2000.02.18/MOD13Q1.A2000049.h23v09.006.2015136104649.hdf.nc"]
+           (util/parse-response response)))))
+
 (deftest gridded-with-ummvar-1-1-api-v2-1
   (let [collection-id "C1200267318-HMR_TME"
         granule-id "G1200267320-HMR_TME"
