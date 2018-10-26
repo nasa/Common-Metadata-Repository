@@ -1693,7 +1693,6 @@
                                      :Type "GET DATA",
                                      :Subtype "REVERB"}]}
         result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls)]
-    (println result)
     (is (= (:RelatedUrls result)
            [{:Subtype "DATA TREE",
              :URLContentType "DistributionURL",
@@ -1719,7 +1718,6 @@
                                      :URLContentType "DistributionURL",
                                      :Type "GET DATA"}]}
         result (vm/migrate-umm {} :collection "1.11" "1.10" related-urls)]
-    (println result)
     (is (= (:RelatedUrls result)
            [{:URLContentType "DistributionURL",
              :Type "GET DATA",
