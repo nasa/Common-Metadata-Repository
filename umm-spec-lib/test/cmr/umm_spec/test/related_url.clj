@@ -9,8 +9,8 @@
    [cmr.umm-spec.util :as su]))
 
 (deftest related-url-key-value-mapping
-  (is (= {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GDS"}
-         (get dif-util/dif-url-content-type->umm-url-types ["GET DATA" "GDS"] su/default-url-type))))
+  (is (= {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Earthdata Search"}
+         (get dif-util/dif-url-content-type->umm-url-types ["GET DATA" "Earthdata Search"] su/default-url-type))))
 
 (deftest related-url-types
   (let [r1 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
@@ -27,13 +27,13 @@
                                      :MimeType "application/json"})
         r4 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
                                      :URLContentType "DistributionURL"
-                                     :Type "GET SERVICE"
-                                     :Subtype "OPENDAP DATA ACCESS"
+                                     :Type "USE SERVICE API"
+                                     :Subtype "OPENDAP DATA"
                                      :MimeType "Text/csv"})
         r5 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
                                      :URLContentType "VisualizationURL"
                                      :Type "GET RELATED VISUALIZATION"
-                                     :Subtype "GIBS"
+                                     :Subtype "MAP"
                                      :MimeType "Text/csv"})
         urls [r1 r2 r3 r4 r5]]
 

@@ -45,7 +45,7 @@
               [(:URL related-url)]
               (get-in related-url [:GetService :URI]))]
       (if (and (= "DistributionURL" (:URLContentType related-url))
-               (= "GET SERVICE" (:Type related-url)))
+               (= "USE SERVICE API" (:Type related-url)))
           (if (nil? (:GetService related-url))
             (assoc related-url :GetService (cmn/map->GetServiceType
                                               {:MimeType su/not-provided

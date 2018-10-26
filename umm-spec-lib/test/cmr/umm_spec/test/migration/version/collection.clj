@@ -1542,7 +1542,7 @@
             (get (vm/migrate-umm {} :collection "1.9" "1.10"
                                  {:DOI nil})
                  :DOI))))
-   
+
    (testing "CollectionCitation's OnlineResource migration from version 1.9 to 1.10"
     (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
                    {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
@@ -1560,7 +1560,7 @@
               (:OnlineResource (first (:CollectionCitations result)))))
 
        (is (= {:Linkage "www.google.com"}
-              (:OnlineResource (first (:PublicationReferences result)))))))  
+              (:OnlineResource (first (:PublicationReferences result)))))))
 
    (testing "UseConstraints migration from 1.9.0 to 1.10.0"
     (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
@@ -1623,15 +1623,15 @@
                                                             :Description "URL Description"
                                                             :MimeType "application/json"}}]
                     :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
-       (is (= {:Linkage "www.google.com" 
+       (is (= {:Linkage "www.google.com"
                :Name "URL Title"
                :Description "URL Description"}
               (:OnlineResource (first (:CollectionCitations result)))))
 
-       (is (= {:Linkage "www.google.com" 
-               :Name "Not provided" 
+       (is (= {:Linkage "www.google.com"
+               :Name "Not provided"
                :Description "Not provided"}
-              (:OnlineResource (first (:PublicationReferences result)))))))  
+              (:OnlineResource (first (:PublicationReferences result)))))))
 
   (testing "UseConstraints migration from version 1.10 to 1.9"
     (is (= "description"
@@ -1645,7 +1645,7 @@
         (:UseConstraints
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:UseConstraints (umm-c/map->UseConstraintsType
-                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType 
+                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType
                                                            {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
@@ -1680,3 +1680,55 @@
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
             {:TilingIdentificationSystemName "WRS-1",
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))
+
+(deftest migrate-1-10-to-1-11
+  (let [related-urls {:Tiling {:Ok "somevalue"}
+                      :RelatedUrls [{:URLContentType "DistributionURL",
+                                     :Type "GET DATA",
+                                     :Subtype "ON-LINE ARCHIVE"},
+                                    {:URLContentType "PublicationURL",
+                                     :Type "VIEW RELATED INFORMATION",
+                                     :Subtype "GENERAL DOCUMENTATION"},
+                                    {:URLContentType "DistributionURL",
+                                     :Type "GET DATA",
+                                     :Subtype "REVERB"}]}
+        result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls)]
+    (println result)
+    (is (= (:RelatedUrls result)
+           [{:Subtype "DATA TREE",
+             :URLContentType "DistributionURL",
+             :Type "GET DATA"}
+            {:Subtype "GENERAL DOCUMENTATION",
+             :URLContentType "PublicationURL",
+             :Type "VIEW RELATED INFORMATION"}
+            {:Subtype "Earthdata Search",
+             :URLContentType "DistributionURL",
+             :Type "GET DATA"}]))
+    (is (= (:Tiling result)
+           {:Ok "somevalue"}))))
+
+(deftest migrate-1-11-down-to-1-10
+  (let [related-urls {:Tiling {:Ok "somevalue"}
+                      :RelatedUrls [{:Subtype "DATA TREE",
+                                     :URLContentType "DistributionURL",
+                                     :Type "GET DATA"},
+                                    {:Subtype "GENERAL DOCUMENTATION",
+                                     :URLContentType "PublicationURL",
+                                     :Type "VIEW RELATED INFORMATION"},
+                                    {:Subtype "Earthdata Search",
+                                     :URLContentType "DistributionURL",
+                                     :Type "GET DATA"}]}
+        result (vm/migrate-umm {} :collection "1.11" "1.10" related-urls)]
+    (println result)
+    (is (= (:RelatedUrls result)
+           [{:URLContentType "DistributionURL",
+             :Type "GET DATA",
+             :Subtype "ON-LINE ARCHIVE"},
+            {:URLContentType "PublicationURL",
+             :Type "VIEW RELATED INFORMATION",
+             :Subtype "GENERAL DOCUMENTATION"},
+            {:URLContentType "DistributionURL",
+             :Type "GET DATA",
+             :Subtype "EARTHDATA SEARCH"}]))
+    (is (= (:Tiling result)
+           {:Ok "somevalue"}))))

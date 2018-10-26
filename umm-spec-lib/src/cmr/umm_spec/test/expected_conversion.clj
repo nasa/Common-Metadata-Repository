@@ -154,7 +154,7 @@
                    :URL "http://www.foo.com?a=1&ver=5"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
-                   :Subtype "ECHO"
+                   :Subtype "Earthdata Search"
                    :GetData {:Format "ascii"
                              :MimeType "application/json"
                              :Checksum "checksum"
@@ -164,7 +164,7 @@
                   {:Description "Related url 3 description "
                    :URL "http://www.foo.com"
                    :URLContentType "DistributionURL"
-                   :Type "GET SERVICE"
+                   :Type "USE SERVICE API"
                    :GetService {:MimeType "application/json"
                                 :DataID "dataid"
                                 :DataType "datatype"
@@ -176,7 +176,7 @@
                    :URL "http://www.foo.com"
                    :URLContentType "VisualizationURL"
                    :Type "GET RELATED VISUALIZATION"
-                   :Subtype "GIBS"}]
+                   :Subtype "WORLDVIEW"}]
     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                             :Description "Associated with a collection"
                             :EntryId "AssocEntryId"

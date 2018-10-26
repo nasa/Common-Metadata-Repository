@@ -20,7 +20,7 @@
                                      :URLContentType "DistributionURL"
                                      :Description "Description"
                                      :Type "GET DATA"
-                                     :Subtype "ECHO"}
+                                     :Subtype "Earthdata Search"}
                                     {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
                                      :URLContentType "PublicationURL"
                                      :Description "Description"
@@ -39,7 +39,7 @@
                       :URLContentType "DistributionURL"
                       :Description "Description"
                       :Type "GET DATA"
-                      :Subtype "ECHO"}
+                      :Subtype "Earthdata Search"}
                      {:URL "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"
                       :URLContentType "PublicationURL"
                       :Type "VIEW RELATED INFORMATION"

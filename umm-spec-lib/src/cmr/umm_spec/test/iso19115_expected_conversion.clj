@@ -107,7 +107,7 @@
               [(:URL related-url)]
               (get-in related-url [:GetService :URI]))]
       (if (and (= "DistributionURL" (:URLContentType related-url))
-               (= "GET SERVICE" (:Type related-url)))
+               (= "USE SERVICE API" (:Type related-url)))
           (if (nil? (:GetService related-url))
             (assoc related-url :GetService (cmn/map->GetServiceType
                                               {:MimeType su/not-provided
@@ -349,7 +349,7 @@
                    iso-shared/trim-collection-citation
                    (as-> cc (if (:OnlineResource cc)
                               (update cc :OnlineResource #(assoc % :MimeType nil))
-                              cc))))) 
+                              cc)))))
     [{}]))
 
 (defn umm-expected-conversion-iso19115
@@ -391,5 +391,5 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
-      (update :UseConstraints iso-shared/expected-use-constraints)  
+      (update :UseConstraints iso-shared/expected-use-constraints)
       js/parse-umm-c))

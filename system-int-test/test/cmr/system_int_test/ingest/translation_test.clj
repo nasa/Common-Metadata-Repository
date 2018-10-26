@@ -92,8 +92,8 @@
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                          output-format options)
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
-        (is (= (umm-c/map->UseConstraintsType 
-                 {:Description (umm-c/map->UseConstraintsDescriptionType 
+        (is (= (umm-c/map->UseConstraintsType
+                 {:Description (umm-c/map->UseConstraintsDescriptionType
                                  {:Description "First Description"})
                   :LicenseUrl (umm-cmn/map->OnlineResourceType
                                 {:Linkage " https://www.nasa.examplelicenseurl1.gov"})})
@@ -220,32 +220,3 @@
                                            :collection :dif dif9-xml :umm-json
                                            {:query-params {"skip_umm_validation" "true"}})]
       (is (= 200 status)))))
-
-(comment
-
-  (do
-    (def input :dif)
-    (def output :dif)
-
-
-    (def metadata (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input))
-
-    (def parsed-from-metadata (umm-spec/parse-metadata test-context :collection input metadata))
-
-    (def metadata-regen (umm-spec/generate-metadata test-context parsed-from-metadata output))
-
-    (def parsed-from-metadata-regen (umm-spec/parse-metadata test-context :collection output metadata-regen)))
-
-
-  (println metadata)
-
-  (println metadata-regen)
-
-  (= metadata-regen metadata)
-
-
-  (println (:body (ingest/translate-metadata :collection :echo10 metadata :echo10)))
-
-  (def expected (-> expected-conversion/example-collection-record
-                    (expected-conversion/convert input)
-                    (expected-conversion/convert output))))

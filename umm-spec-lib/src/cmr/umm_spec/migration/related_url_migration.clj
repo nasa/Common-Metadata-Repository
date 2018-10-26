@@ -2,7 +2,8 @@
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
    [cmr.common.util :refer [update-in-each]]
-   [cmr.umm-spec.util :as util]))
+   [cmr.umm-spec.util :as util]
+   [cmr.umm-spec.migration.related-url-migration-maps :as ru-maps]))
 
 (defn- migrate-to-get-data
   "migrate from 1.8 to 1.9 GetData"
@@ -87,7 +88,7 @@
       (dissoc :URLContentType :Type :Subtype :GetData :GetService))))
 
 (defn migrate-online-resource-down
-  "Migrate online-resource from version 1.10 to 1.9. 
+  "Migrate online-resource from version 1.10 to 1.9.
    Need to remove MimeType, add default for Name and Description if they don't exist."
   [element]
   (if-let [ol-resource (:OnlineResource element)]
@@ -101,7 +102,7 @@
   [online-resource]
   (apply dissoc online-resource (for [[k v] (select-keys online-resource [:Name :Description])
                                       :when (= util/not-provided v)]
-                                  k))) 
+                                  k)))
 
 (defn migrate-online-resource-up
   "Migrate online-resource from version 1.9 to 1.10.
@@ -251,3 +252,35 @@
    (update :ContactGroups migrate-contacts-down)
    (update :ContactPersons migrate-contacts-down)
    (update :DataCenters migrate-data-centers-down)))
+
+(defn get-version-8-5-keywords
+  "Pass in the 8.6 version of the RelatedURL keywords of URLContentType, Type, and Subtype
+   to get back the 8.5 version keyword values."
+  [keywords]
+  (ru-maps/umm-1-11-umm-url-types->umm-1-10-umm-url-types keywords))
+
+(defn get-version-8-6-keywords
+  "Pass in the 8.5 version of the RelatedURL keywords of URLContentType, Type, and Subtype
+   to get back the 8.6 version keyword values."
+  [keywords]
+  (ru-maps/umm-1-10-umm-url-types->umm-1-11-umm-url-types keywords))
+
+(defn migrate-up-to-1_11
+  ":RelatedUrl Type and Subtypes have changed in collection version 1.11 to correspond
+   to GCMD Keyword updates 8.6"
+  [collection]
+  (assoc collection :RelatedUrls
+    (into []
+     (:RelatedUrls
+      (-> collection
+        (update-in-each [:RelatedUrls] get-version-8-6-keywords))))))
+
+(defn migrate-down-from-1_11
+  ":RelatedUrl Type and Subtypes have changed in collection version 1.11 to correspond
+   to GCMD Keyword updates 8.6 so we need to translate them back to the old keywords version 8.5."
+  [collection]
+  (assoc collection :RelatedUrls
+    (into []
+     (:RelatedUrls
+      (-> collection
+        (update-in-each [:RelatedUrls] get-version-8-5-keywords))))))

@@ -225,7 +225,7 @@
       ;; Can't do (assoc :UseConstraints (when-let [description (:UseConstraints c)]... because when :UseConstraints
       ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
       (as-> coll (if-let [description (:UseConstraints c)]
-                   (assoc coll :UseConstraints 
+                   (assoc coll :UseConstraints
                                {:Description (umm-coll-models/map->UseConstraintsDescriptionType
                                                {:Description description})})
                    coll))))
@@ -238,8 +238,18 @@
       (util/update-in-all [:RelatedUrls :GetService] dissoc :Format)
       doi/migrate-missing-reason-down
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-down)
-      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-down) 
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-down)
       (assoc :UseConstraints (when-let [description (get-in c [:UseConstraints :Description])]
                                ;; Description in 1.10 is object/record.
                                ;; It needs to be converted to string when becoming UseConstraints in 1.9.i
                                (:Description description)))))
+
+(defmethod interface/migrate-umm-version [:collection "1.10" "1.11"]
+  [context c & _]
+  (-> c
+    (related-url/migrate-up-to-1_11)))
+
+(defmethod interface/migrate-umm-version [:collection "1.11" "1.10"]
+  [context c & _]
+  (-> c
+    (related-url/migrate-down-from-1_11)))

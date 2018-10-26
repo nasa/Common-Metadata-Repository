@@ -263,7 +263,7 @@
   "Returns related-url with the expected values"
   [related-url]
   (case (:Type related-url)
-    "GET SERVICE" (expected-related-url-get-service related-url)
+    "USE SERVICE API" (expected-related-url-get-service related-url)
     "GET DATA" (expected-related-url-get-data related-url)
     related-url))
 
