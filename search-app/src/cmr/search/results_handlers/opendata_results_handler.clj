@@ -219,8 +219,9 @@
   (let [{:keys [description url get-data-mime-type]} related-url
         get-data-mime-type (or (util/nil-if-value umm-spec-util/not-provided get-data-mime-type)
                                (ru/infer-url-mime-type url))
-        downloadable? (and (ru/downloadable-url? related-url) get-data-mime-type)]
-    (util/remove-nil-keys {(if downloadable? :downloadURL :accessURL) (ru/related-url->encoded-url url)
+        downloadable? (and (ru/downloadable-url? related-url) get-data-mime-type)
+        url-type (if downloadable? :downloadURL :accessURL)]
+    (util/remove-nil-keys {url-type (ru/related-url->encoded-url url)
                            :mediaType (when downloadable? get-data-mime-type)
                            :description description})))
 
