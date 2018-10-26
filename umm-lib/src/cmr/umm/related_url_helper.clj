@@ -2,13 +2,32 @@
   "Contains functions for categorizing UMM related urls."
   (:require
    [clojure.string :as string]
-   [ring.util.codec :as codec]))
+   [ring.util.codec :as codec]
+   [ring.util.mime-type :as mime-type]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
   ["text/rtf" "text/richtext" "text/plain" "text/html" "text/example" "text/enriched"
    "text/directory" "text/csv" "text/css" "text/calendar" "application/http" "application/msword"
    "application/rtf" "application/wordperfect5.1"])
+
+(def ^:private ADDITIONAL_MIME_TYPES
+  "Mime types outside the scope of ring/mime-types defaults."
+  {"nc" "application/x-netcdf"
+   "gml" "application/gml+xml"
+   "kml" "application/vnd.google-earth.kml+xml"
+   "hdf" "application/x-hdf"
+   "he5" "application/xhdf5"
+   "hdf5" "application/xhdf5"
+   "h5" "application/xhdf5"
+   "kmz" "application/vnd.google-earth.kmz"
+   "dae" "image/vnd.collada+xml"})
+
+(defn infer-url-mime-type
+  "Attempt to figure out mime type based off file extension."
+  [url]
+  (when url
+    (mime-type/ext-mime-type url ADDITIONAL_MIME_TYPES)))
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"

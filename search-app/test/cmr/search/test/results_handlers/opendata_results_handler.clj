@@ -5,6 +5,71 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.search.results-handlers.opendata-results-handler :as opendata-results-handler]))
 
+
+(deftest distribution-is-downloadable
+  (testing "Mime type distribution urls"
+    (are3 [expected-mime-type related-url]
+      (is (= expected-mime-type (:mediaType (opendata-results-handler/related-url->distribution related-url))))
+
+      "downloadable url guesses correct mime type."
+      "image/png" {:url "http://example.com/mime-type.png"
+                   :type "GET DATA"}
+
+      "downloadable url uses mime type when specified"
+      "image/jpeg" {:url "http://example.com/mime-type.jar"
+                    :get-data-mime-type "image/jpeg"
+                    :type "GET DATA"}
+
+      "downloadable url guesses mime type when get-data-mime-type is nil"
+      "application/json" {:url "http://example.com/mime/type.json"
+                          :get-data-mime-type "Not provided"
+                          :type "GET DATA"}))
+
+  (testing "downloadable url vs not downloadable url"
+    (are3 [expected-distribution related-url]
+      (is (= expected-distribution (opendata-results-handler/related-url->distribution related-url)))
+
+      "url is downloadable without guessing mime type"
+      {:downloadURL "http://example.com/mime-type"
+       :mediaType "image/jpeg"}
+      {:url "http://example.com/mime-type"
+       :get-data-mime-type "image/jpeg"
+       :type "GET DATA"}
+
+      "url is downloadable by guessing mime type"
+      {:downloadURL "http://example.com/mime-type.jpeg"
+       :mediaType "image/jpeg"}
+      {:url "http://example.com/mime-type.jpeg"
+       :type "GET DATA"}
+
+      "url is downloadable by guessing mime type due to Not provided mime-type"
+      {:downloadURL "http://example.com/mime-type.jpeg"
+       :mediaType "image/jpeg"
+       :description "test description."}
+      {:url "http://example.com/mime-type.jpeg"
+       :get-data-mime-type "Not provided"
+       :description "test description."
+       :type "GET DATA"}
+
+      "url is not downloadable from un-guessable mime type and mime-type specified as Not provided"
+      {:accessURL "http://example.com/un-guessable-mime-type"
+       :description "test description."}
+      {:url "http://example.com/un-guessable-mime-type"
+       :type "GET DATA"
+       :description "test description."
+       :get-data-mime-type "Not provided"}
+
+      "url type is not GET DATA so it is not downloadable"
+      {:accessURL "http://example.com/mime-type.jpeg"}
+      {:url "http://example.com/mime-type.jpeg"
+       :get-data-mime-type "image/jpeg"
+       :type "GET RELATED VISUALIZATION"}
+
+      "url is GET DATA but missing mime type makes it not downloadable"
+      {:accessURL "http://example.com/missing-mime-type"}
+      {:url "http://example.com/missing-mime-type"
+       :type "GET DATA"})))
+
 (deftest graphic-preview-type
   (testing "Not provided results in the field not being displayed"
     (is (nil? (opendata-results-handler/graphic-preview-type {:get-data-mime-type "Not provided"}))))
