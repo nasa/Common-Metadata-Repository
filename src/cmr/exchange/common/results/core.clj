@@ -1,4 +1,6 @@
-(ns cmr.exchange.common.results.core)
+(ns cmr.exchange.common.results.core
+  (:require
+    [clojusc.results.core :as core]))
 
 (defrecord CollectionResults
   [;; The number of results returned
@@ -20,12 +22,5 @@
             :items results}
            warnings)))
 
-(defn elided
-  [results]
-  (when (seq results)
-    (assoc results :items [(first (:items results) )"..."])))
-
-(defn remaining-items
-  [results]
-  (when (seq results)
-    (rest (:items results))))
+(def elided #'core/elided)
+(def remaining-items #'core/remaining-items)

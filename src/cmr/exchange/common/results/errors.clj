@@ -1,15 +1,15 @@
 (ns cmr.exchange.common.results.errors
   (:require
-   [clojure.set :as set]
-   [cmr.exchange.common.results.util :as util]))
+   [clojusc.results.errors :as errors]
+   [clojusc.results.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-error-code 400)
-(def client-error-code 400)
-(def server-error-code 500)
+(def default-error-code errors/default-error-code)
+(def client-error-code errors/client-error-code)
+(def server-error-code errors/server-error-code)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Error Messages   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,55 +45,11 @@
 ;;;   Error Handling API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn any-client-errors?
-  "In arity-1, expections a map of the form `{:errors [...]}`. In arity-2,
-  the first parameter is a status map with keys being error codes and values
-  being the error messages associated with those codes."
-  ([errors]
-    (any-client-errors? status-map errors))
-  ([errors-map errors]
-    (not
-      (nil?
-        (seq (set/intersection (get errors-map client-error-code)
-                               (set (:errors errors))))))))
-
-(defn any-server-errors?
-  "In arity-1, expections a map of the form `{:errors [...]}`. In arity-2,
-  the first parameter is a status map with keys being error codes and values
-  being the error messages associated with those codes."
-  ([errors]
-    (any-server-errors? status-map errors))
-  ([errors-map errors]
-    (not
-      (nil?
-        (seq (set/intersection (get errors-map server-error-code)
-                               (set (:errors errors))))))))
-
-(defn check
-  ""
-  [& msgs]
-  (remove nil? (map (fn [[check-fn value msg]] (when (check-fn value) msg))
-                    msgs)))
-
-(defn exception-data
-  [exception]
-  [(or (.getMessage exception)
-       (ex-data exception))])
-
-(defn get-errors
-  [data]
-  (util/get-results data :errors :error))
-
-(defn erred?
-  ""
-  [data]
-  (seq (get-errors data)))
-
-(defn any-erred?
-  [coll]
-  (some erred? coll))
-
-
-(defn collect
-  [& coll]
-  (util/collect-results coll :errors :error))
+(def any-client-errors? #'errors/any-client-errors?)
+(def any-server-errors? #'errors/any-server-errors?)
+(def check #'errors/check)
+(def exception-data #'errors/exception-data)
+(def get-errors #'errors/get-errors)
+(def erred? #'errors/erred?)
+(def any-erred? #'errors/any-erred?)
+(def collect #'errors/collect)
