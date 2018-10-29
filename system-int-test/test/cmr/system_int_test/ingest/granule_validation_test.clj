@@ -3,6 +3,8 @@
   (:require
     [clj-time.core :as t]
     [clj-time.format :as tf ]
+    [clojure.java.io :as io]
+    [clojure.java.shell :as shell]
     [clojure.test :refer :all]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are2]]
@@ -431,3 +433,74 @@
   ;; Turn it back on after the test
   (dev-sys-util/eval-in-dev-sys
    `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! true)))
+
+(def ^:private coll-file
+  "temp file for collection metadata"
+  "collection.xml")
+
+(def ^:private granule-file
+  "temp file for granule metadata"
+  "granule.json")
+
+(defn- validate-granule-multipart
+  "Returns the validation result of the granule with the given collection and granule
+  through multiparts request."
+  [granule-concept coll-concept]
+  ;; clj-http does not work with content-type that contains semicolons
+  ;; (e.g. application/vnd.nasa.cmr.umm+json; version=1.4)
+  ;; So we execute curl command directly from shell for UMM-G granule validation requests
+  (let [coll-fiile ""])
+  (try
+    (spit coll-file (:metadata coll-concept))
+    (spit granule-file (:metadata granule-concept))
+    (let [{:keys [provider-id native-id]} granule-concept
+          validate-url (url/validate-url provider-id :granule native-id)
+          coll-form (format "collection=<%s;type=%s" coll-file (:format coll-concept))
+          granule-form (format "granule=<%s;type=%s" granule-file (:format granule-concept))]
+      (let [{:keys [out]} (shell/sh "curl" "-i" "-F" granule-form "-F" coll-form validate-url)]
+        out))
+    (finally
+      (io/delete-file coll-file)
+      (io/delete-file granule-file))))
+
+(defn- validate-granule-multipart-ok?
+  "Validate the granule multipart request returns 200 OK"
+  [granule-concept coll-concept]
+  (is (re-find
+       #"200 OK"
+       (validate-granule-multipart granule-concept coll-concept))))
+
+(defn- validate-granule-multipart-failed?
+  "Validate the granule multipart request returns the expected status code and error message."
+  [granule-concept coll-concept status-code error-msg]
+  (is (re-find
+       (re-pattern (str "(?s)" status-code ".*" error-msg))
+       (validate-granule-multipart granule-concept coll-concept))))
+
+(deftest validation-umm-g-granule-test
+  (testing "with collection as additional parameter"
+    (let [collection-attrs {:EntryTitle "correct"
+                            :ShortName "S1"
+                            :Version "V1"}
+          collection-ref-attrs {:entry-title "correct"
+                                :short-name "S1"
+                                :version-id "V1"}
+          collection (data-umm-c/collection collection-attrs)
+          coll-concept (d/umm-c-collection->concept collection :iso-smap)
+          coll-concept-id (:concept-id collection)]
+      (testing "valid UMM-G granule"
+        (let [granule (assoc (dg/granule-with-umm-spec-collection collection nil)
+                             :collection-ref
+                             (umm-g/map->CollectionRef collection-ref-attrs))
+              granule-concept (d/item->concept granule :umm-json)]
+          (validate-granule-multipart-ok? granule-concept coll-concept)))
+
+      (testing "invalid UMM-G granule"
+        (let [granule (assoc (dg/granule-with-umm-spec-collection collection nil)
+                             :collection-ref
+                             (umm-g/map->CollectionRef (merge collection-ref-attrs {:entry-title "wrong"})))
+              granule-concept (d/item->concept granule :umm-json)
+              expected-err-msg (str "Collection Reference Entry Title \\[wrong\\] does not match "
+                                    "the Entry Title of the parent collection \\[correct\\]")]
+          (validate-granule-multipart-failed?
+           granule-concept coll-concept 422 expected-err-msg))))))
