@@ -5,6 +5,7 @@
 [![Build Status][travis-badge]][travis]
 [![Security Scan][security-scan-badge]][travis]
 [![Dependencies Status][deps-badge]][travis]
+[![Open Pull Requests][prs-badge]][prs]
 
 [![Clojars Project][clojars-badge]][clojars]
 [![Tag][tag-badge]][tag]
@@ -75,3 +76,5 @@ Distributed under the Apache License, Version 2.0.
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-service-bridge
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-service-bridge.svg
 [security-scan-badge]: https://img.shields.io/badge/nvd%2Fsecurity%20scan-passing-brightgreen.svg
+[prs]: https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+org%3Acmr-exchange+archived%3Afalse+
+[prs-badge]: https://img.shields.io/badge/Open%20PRs-org-yellow.svg
