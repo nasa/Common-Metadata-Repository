@@ -23,8 +23,8 @@
   :exclusions [org.clojure/clojure]
   :dependencies [
     [cheshire "5.8.1"]
-    [clojusc/trifl "0.3.0"]
-    [clojusc/twig "0.3.3"]
+    [clojusc/trifl "0.4.0"]
+    [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [me.raynes/conch "0.8.0"]
@@ -36,7 +36,7 @@
       :aot :all}
     :security {
       :plugins [
-        [lein-nvd "0.5.4"]]
+        [lein-nvd "0.5.5"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -65,7 +65,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.9"]
+        [jonase/eastwood "0.3.3"]
         [lein-ancient "0.6.15"]
         [lein-kibit "0.1.6"]]}
     :test {
@@ -82,7 +82,7 @@
       :dependencies [
         [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
       :plugins [
-        [lein-codox "0.10.4"]
+        [lein-codox "0.10.5"]
         [lein-simpleton "1.3.0"]]
       :codox {
         :project {:name "CMR Process Management"}
