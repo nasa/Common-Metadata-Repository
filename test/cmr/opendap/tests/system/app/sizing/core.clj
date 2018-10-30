@@ -25,7 +25,8 @@
                        (format (str "http://localhost:%s"
                                     "/service-bridge/size-estimate/collection/%s"
                                     "?granules=%s"
-                                    "&variables=%s")
+                                    "&variables=%s"
+                                    "&format=dods")
                                (test-system/http-port)
                                collection-id
                                granule-id
