@@ -15,18 +15,19 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.1.1-SNAPSHOT"
   :description "A size estimation service for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
+  :exclusions [gov.nasa.earthdata/cmr-http-kit]
   :dependencies [
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.2-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-ous-plugin "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.9.0"]]
