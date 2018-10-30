@@ -72,8 +72,8 @@
    :stop stop})
 
 (extend DockerRunner
-  component/Lifecycle
-  lifecycle-behaviour)
+        component/Lifecycle
+        lifecycle-behaviour)
 
 (defn create-component
   ""

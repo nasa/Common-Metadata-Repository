@@ -89,8 +89,8 @@
    :stop stop})
 
 (extend ProcessRunner
-  component/Lifecycle
-  lifecycle-behaviour)
+        component/Lifecycle
+        lifecycle-behaviour)
 
 (defn create-component
   ""
