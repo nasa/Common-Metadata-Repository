@@ -32,7 +32,7 @@
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.3-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
@@ -90,7 +90,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.3.1"]
+        [jonase/eastwood "0.3.3"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
