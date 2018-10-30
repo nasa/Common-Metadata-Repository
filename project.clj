@@ -31,7 +31,7 @@
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.12.2"]
+    [selmer "1.12.3"]
     [tolitius/xml-in "0.1.0"]]
   :profiles {
     :ubercompile {
@@ -71,7 +71,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.3.1"]
+        [jonase/eastwood "0.3.3"]
         [lein-ancient "0.6.15"]
         [lein-kibit "0.1.6"]]}
     :test {
