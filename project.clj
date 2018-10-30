@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-http-kit "0.1.3-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"
   :description "Utilities, wrappers, middleware, and components for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
   :license {
@@ -125,6 +125,12 @@
       ["ltest" ":unit"]
       ["ubercompile"]
       ["build-uberjar"]]
+    ;; Installing
+    "install" ["do"
+      ["clean"]
+      ["ubercompile"]
+      ["clean"]
+      ["install"]]
     ;; Publishing
     "publish" ["with-profile" "+security" "do"
       ["clean"]

@@ -172,6 +172,7 @@
                        (log/trace "body:" x) x))
               parse-fn))))
 
+(def identity-handler #(client-handler % error-handler identity))
 (def json-handler #(client-handler % error-handler parse-json-body))
 (def xml-handler #(client-handler % error-handler parse-xml-body))
 
