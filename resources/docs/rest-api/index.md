@@ -233,6 +233,33 @@ query URLs (intended to be sent to a deployed OPeNDAP service). The name
 that name has carried through here.
 
 
+## Tag association for OUS to return the appropriate OPeNDAP URLS
+As a workable, short-term solution, OUS makes use of CMR tagging functionality
+to convert a granule's archive location to an OPeNDAP location.
+
+To achieve this, we fist need to create a tag cmr.earthdata.nasa.ous.datafile.replace:
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: $MY_TOKEN"
+     https://cmr.uat.earthdata.nasa.gov/search/tags
+     -d {"tag_key" "cmr.earthdata.nasa.ous.datafile.replace",
+         "description" "This tag will provide a mapping from archive location to OPeNDAP location for one or more collections"}
+```
+
+Then, associate the tag with the collection, using a regex that replaces the achive 
+location with the OPeNDAP location based on the archive to OPeNDAP location mapping:
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: $MY_TOKEN"
+     https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations
+     -d '[{"concept_id": "C1224308603-EEDTEST", "data": {"match": "/TEST1_Co/", "replace": "/dir-replaced-by-tags/"}}]'
+```
+
+The following returns the appropriate OPeNDAP URLS for the granule's archive location: 
+```
+curl -H "Echo-Token: $MY_TOKEN"
+     https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224308603-EEDTEST?granules=G1224308604-EEDTEST
+```
+
+
 ## Collection Resources
 
 The CMR OPeNDAP REST API supports two different means of creating a subsetted
