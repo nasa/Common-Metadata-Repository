@@ -355,12 +355,12 @@
                         <gco:CharacterString>Calibrated normalized synthetic aperture radar cross section measures multilooked onto a 1 km grid that conforms to the SMAP spacecraft path.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:purpose>
-                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil 
+                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil
                             moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users</gco:CharacterString>
                     </gmd:purpose>
                     <gmd:credit>
                         <!-- This field can name individuals or organizations for credit. For now, it specifies NASA. -->
-                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented 
+                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented
                             at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
                     </gmd:credit>
                     <!-- Put the UMM CollectionProgress here -->
@@ -676,9 +676,9 @@
                                 <gco:CharacterString>https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/110px-SNice.svg.png</gco:CharacterString>
                                 -->
                             </gmd:fileName>
-                            <!-- If URLContentType does not exist the default is VisualizationURL 
+                            <!-- If URLContentType does not exist the default is VisualizationURL
                                  If Type: doesn't exist the default is GET RELATED VISUALIZATION
-                                 if Subtype: doesn't exist the default is nothing 
+                                 if Subtype: doesn't exist the default is nothing
                                  Currently Order is important. -->
                             <gmd:fileDescription>
                                 <gco:CharacterString>Description: SMAP ICON Test.</gco:CharacterString>
@@ -1128,8 +1128,8 @@
                     <gmd:extent>
                         <gmd:EX_Extent>
                             <gmd:description>
-                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on. 
-                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.  
+                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on.
+                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.
                                     High resolution radar data are voluminous.  Thus, the SMAP spacecraft downlinks high resolution data when the spacecaft antenna boresight is:
                                     1) Looking forward or looking aft over all land surfaces except Antarctica when the satellite is viewing the Earth at approximately 6:00 AM local time
                                     2) Looking forward over all land surfaces North of 45 degrees North latitude when the satellite is viewing the Earth at approximately 6:00 PM local time, and
@@ -1162,7 +1162,7 @@
                                     <!-- Mimics use in GHRSST. See no evidence of conformance to standard -->
                                     <gmd:extent>
                                         <gml:TimePeriod gml:id="swathTemporalExtent">
-                                            <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products. 
+                                            <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products.
                                             ECS indicates that they will automatically extend the final time based on receipt of data products. -->
                                             <gml:beginPosition>2013-09-01T00:00:00.000Z</gml:beginPosition>
                                             <gml:endPosition>2020-12-31T23:59:59.999Z</gml:endPosition>
@@ -1340,7 +1340,7 @@
                     <gmd:citation/>
                     <gmd:abstract/>
                     <srv:serviceType>
-                        <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:LocalName>
+                        <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: USE SERVICE API Subtype: OPENDAP DATA</gco:LocalName>
                     </srv:serviceType>
                     <srv:couplingType>
                         <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
@@ -1559,7 +1559,7 @@
                                         <gco:CharacterString>Documentation</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>DistributionURL GET SERVICE </gco:CharacterString>
+                                        <gco:CharacterString>DistributionURL USE SERVICE API</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>

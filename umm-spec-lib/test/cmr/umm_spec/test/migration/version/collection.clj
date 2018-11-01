@@ -4,9 +4,12 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+   [cmr.common.util :refer [remove-empty-maps]]
+   [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-spec-core :as core]
@@ -1681,52 +1684,51 @@
             {:TilingIdentificationSystemName "WRS-1",
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))
 
-(deftest migrate-1-10-to-1-11
-  (let [related-urls {:Tiling {:Ok "somevalue"}
-                      :RelatedUrls [{:URLContentType "DistributionURL",
-                                     :Type "GET DATA",
-                                     :Subtype "ON-LINE ARCHIVE"},
-                                    {:URLContentType "PublicationURL",
-                                     :Type "VIEW RELATED INFORMATION",
-                                     :Subtype "GENERAL DOCUMENTATION"},
-                                    {:URLContentType "DistributionURL",
-                                     :Type "GET DATA",
-                                     :Subtype "REVERB"}]}
-        result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls)]
-    (is (= (:RelatedUrls result)
-           [{:Subtype "DATA TREE",
-             :URLContentType "DistributionURL",
-             :Type "GET DATA"}
-            {:Subtype "GENERAL DOCUMENTATION",
-             :URLContentType "PublicationURL",
-             :Type "VIEW RELATED INFORMATION"}
-            {:Subtype "Earthdata Search",
-             :URLContentType "DistributionURL",
-             :Type "GET DATA"}]))
-    (is (= (:Tiling result)
-           {:Ok "somevalue"}))))
+(def related-urls-UMM-1-10-example
+  (remove-empty-maps
+    (js/parse-umm-c
+      (assoc exp-conv/example-collection-record-edn
+             :RelatedUrls [{:Description "Related url description"
+                            :URL "http://www.foo.com?a=1&ver=5"
+                            :URLContentType "DistributionURL"
+                            :Type "GET DATA"
+                            :Subtype "EARTHDATA SEARCH"
+                            :GetData {:Format "ascii"
+                                      :MimeType "application/json"
+                                      :Checksum "checksum"
+                                      :Size 10.0
+                                      :Unit "MB"
+                                      :Fees "fees"}}
+                           {:Description "Related url 3 description "
+                            :URL "http://www.foo.com"
+                            :URLContentType "DistributionURL"
+                            :Type "GET SERVICE"
+                            :GetService {:MimeType "application/json"
+                                         :DataID "dataid"
+                                         :DataType "datatype"
+                                         :Protocol "HTTP"
+                                         :FullName "fullname"
+                                         :Format "ascii"
+                                         :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                           {:Description "Related url 2 description"
+                            :URL "http://www.foo.com"
+                            :URLContentType "VisualizationURL"
+                            :Type "GET RELATED VISUALIZATION"
+                            :Subtype "GIBS"}]))))
 
-(deftest migrate-1-11-down-to-1-10
-  (let [related-urls {:Tiling {:Ok "somevalue"}
-                      :RelatedUrls [{:Subtype "DATA TREE",
-                                     :URLContentType "DistributionURL",
-                                     :Type "GET DATA"},
-                                    {:Subtype "GENERAL DOCUMENTATION",
-                                     :URLContentType "PublicationURL",
-                                     :Type "VIEW RELATED INFORMATION"},
-                                    {:Subtype "Earthdata Search",
-                                     :URLContentType "DistributionURL",
-                                     :Type "GET DATA"}]}
-        result (vm/migrate-umm {} :collection "1.11" "1.10" related-urls)]
-    (is (= (:RelatedUrls result)
-           [{:URLContentType "DistributionURL",
-             :Type "GET DATA",
-             :Subtype "ON-LINE ARCHIVE"},
-            {:URLContentType "PublicationURL",
-             :Type "VIEW RELATED INFORMATION",
-             :Subtype "GENERAL DOCUMENTATION"},
-            {:URLContentType "DistributionURL",
-             :Type "GET DATA",
-             :Subtype "EARTHDATA SEARCH"}]))
-    (is (= (:Tiling result)
-           {:Ok "somevalue"}))))
+(deftest migrate-1-10-to-1-11
+  (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
+    (is (= (remove-empty-maps exp-conv/example-collection-record)
+           (remove-empty-maps result)))))
+
+(deftest migrate-1-10-to-1-11-no-related-urls
+  (let [collection (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.10" "1.11" collection)]
+    (is (= (remove-empty-maps (dissoc exp-conv/example-collection-record :RelatedUrls))
+           (remove-empty-maps result)))))
+
+(deftest migrate-1-11-down-to-1-10-no-related-urls
+  (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
+    (is (= (remove-empty-maps (dissoc related-urls-UMM-1-10-example :RelatedUrls))
+           (remove-empty-maps result)))))

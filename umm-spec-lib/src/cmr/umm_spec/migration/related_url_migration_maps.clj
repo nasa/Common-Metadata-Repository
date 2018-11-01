@@ -29,6 +29,7 @@
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "NOAA CLASS"} {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "NOAA CLASS"}
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ON-LINE ARCHIVE"} {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA TREE"}
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "REVERB"} {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Earthdata Search"}
+  {:URLContentType "DistributionURL" :Type "GET SERVICE"} {:URLContentType "DistributionURL" :Type "USE SERVICE API"}
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MAP VIEWER"} {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "MAP VIEWER"}
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MOBILE APP"} {:URLContentType "DistributionURL" :Type "DOWNLOAD SOFTWARE" :Subtype "MOBILE APP"}
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS WEB SERVICE"} {:URLContentType "DistributionURL" :Type "USE SERVICE API"}
@@ -116,6 +117,7 @@
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "MAP VIEWER"} {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MAP VIEWER"}
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SIMPLE SUBSET WIZARD (SSW)"} {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SSW"}
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SUBSETTER"} {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SUBSETTER"}
+  {:URLContentType "DistributionURL" :Type "USE SERVICE API"} {:URLContentType "DistributionURL" :Type "GET SERVICE"}
   {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "GRADS DATA SERVER (GDS)"} {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GDS"}
   {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "MAP SERVICE"} {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "MAP SERVICE"}
   {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "OPENDAP DATA"} {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DATA"}

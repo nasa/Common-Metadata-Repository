@@ -616,7 +616,7 @@ Main NCEI website providing links to access data and data services.
             <gmd:citation gco:nilReason="missing"/>
             <gmd:abstract gco:nilReason="missing"/>
             <srv:serviceType>
-                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:LocalName>
+                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: USE SERVICE API Subtype: OPENDAP DATA</gco:LocalName>
             </srv:serviceType>
             <srv:couplingType>
                 <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
@@ -673,7 +673,7 @@ Main NCEI website providing links to access data and data services.
                                     <gco:CharacterString>http</gco:CharacterString>
                                     </gmd:protocol>
                                     <gmd:description>
-                                    <gco:CharacterString>URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:CharacterString>
+                                    <gco:CharacterString>URLContentType: DistributionURL Type: GOTO WEB TOOL Subtype: SIMPLE SUBSET WIZARD (SSW)</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                     <gmd:CI_OnLineFunctionCode

@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.migration.related-url-migration
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
-   [cmr.common.util :refer [update-in-each]]
+   [cmr.common.util :refer [update-in-each remove-nil-keys]]
    [cmr.umm-spec.util :as util]
    [cmr.umm-spec.migration.related-url-migration-maps :as ru-maps]))
 
@@ -139,12 +139,96 @@
         (dissoc :OnlineResource))
     element))
 
+(def valid-url-content-types-map-version-to-1-9
+  {"DistributionURL" {"GET DATA" ["DATACAST URL"
+                                  "EARTHDATA SEARCH"
+                                  "ECHO"
+                                  "EDG"
+                                  "EOSDIS DATA POOL"
+                                  "GDS"
+                                  "GIOVANNI"
+                                  "KML"
+                                  "LAADS"
+                                  "LANCE"
+                                  "LAS"
+                                  "MIRADOR"
+                                  "MODAPS"
+                                  "NOAA CLASS"
+                                  "ON-LINE ARCHIVE"
+                                  "REVERB"]
+                      "GET SERVICE" ["ACCESS MAP VIEWER"
+                                     "ACCESS MOBILE APP"
+                                     "ACCESS WEB SERVICE"
+                                     "DIF"
+                                     "MAP SERVICE"
+                                     "NOMADS"
+                                     "OPENDAP DATA"
+                                     "OPENDAP DATA (DODS)"
+                                     "OPENDAP DIRECTORY (DODS)"
+                                     "OpenSearch"
+                                     "SERF"
+                                     "SOFTWARE PACKAGE"
+                                     "SSW"
+                                     "SUBSETTER"
+                                     "THREDDS CATALOG"
+                                     "THREDDS DATA"
+                                     "THREDDS DIRECTORY"
+                                     "WEB COVERAGE SERVICE (WCS)"
+                                     "WEB FEATURE SERVICE (WFS)"
+                                     "WEB MAP FOR TIME SERIES"
+                                     "WEB MAP SERVICE (WMS)"
+                                     "WORKFLOW (SERVICE CHAIN)"]}
+   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI" "MAP"]}
+   "CollectionURL" {"DATA SET LANDING PAGE" []
+                    "DOI" []
+                    "EXTENDED METADATA" []
+                    "PROFESSIONAL HOME PAGE" []
+                    "PROJECT HOME PAGE" []}
+   "PublicationURL" {"VIEW RELATED INFORMATION" ["ALGORITHM THEORETICAL BASIS DOCUMENT"
+                                                 "CALIBRATION DATA DOCUMENTATION"
+                                                 "CASE STUDY"
+                                                 "DATA QUALITY"
+                                                 "DATA USAGE"
+                                                 "DELIVERABLES CHECKLIST"
+                                                 "GENERAL DOCUMENTATION"
+                                                 "HOW-TO"
+                                                 "PI DOCUMENTATION"
+                                                 "PROCESSING HISTORY"
+                                                 "PRODUCTION VERSION HISTORY"
+                                                 "PRODUCT QUALITY ASSESSMENT"
+                                                 "PRODUCT USAGE"
+                                                 "PRODUCT HISTORY"
+                                                 "PUBLICATIONS"
+                                                 "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS"
+                                                 "READ-ME"
+                                                 "RECIPE"
+                                                 "REQUIREMENTS AND DESIGN"
+                                                 "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
+                                                 "SCIENCE DATA PRODUCT VALIDATION"
+                                                 "USER FEEDBACK"
+                                                 "USER'S GUIDE"]}
+   "DataCenterURL" {"HOME PAGE" []}
+   "DataContactURL" {"HOME PAGE" []}})
+
+(defn valid-types-for-url-content-type
+  "Returns all valid Types for URLContentType"
+  [url-content-type]
+  (keys (get valid-url-content-types-map-version-to-1-9 url-content-type)))
+
+(defn type->url-content-type
+  "Get the URLContentType from the type"
+  [type]
+  (first
+    (for [url-content-type (keys valid-url-content-types-map-version-to-1-9)
+          :when (some #(= type %) (valid-types-for-url-content-type url-content-type))]
+      url-content-type)))
+
 (defn relation->url-content-type
  "Get the URLContentType from relation or use default if a conversion is not
  possible"
  [related-url]
  (let [[type subtype] (:Relation related-url)
-       url-content-type (util/type->url-content-type type)
+       url-content-type (type->url-content-type type)
        url-content-type (if url-content-type
                          {:URLContentType url-content-type
                           :Type type
@@ -253,34 +337,45 @@
    (update :ContactPersons migrate-contacts-down)
    (update :DataCenters migrate-data-centers-down)))
 
-(defn get-version-8-5-keywords
-  "Pass in the 8.6 version of the RelatedURL keywords of URLContentType, Type, and Subtype
-   to get back the 8.5 version keyword values."
-  [keywords]
-  (ru-maps/umm-1-11-umm-url-types->umm-1-10-umm-url-types keywords))
-
-(defn get-version-8-6-keywords
-  "Pass in the 8.5 version of the RelatedURL keywords of URLContentType, Type, and Subtype
-   to get back the 8.6 version keyword values."
-  [keywords]
-  (ru-maps/umm-1-10-umm-url-types->umm-1-11-umm-url-types keywords))
+(defn replace-existing-related-url-keywords
+  "Pass in a related url and UMM version 1.10 or 1.11. Replace the existing UMMM-C version 1.11/1.10
+   with 1.10/1.11 keywords. If a bad version is given just use the original keywords."
+  [related-url toVersion]
+  (let [{:keys [URLContentType Type Subtype]} related-url
+        keywords (remove-nil-keys {:URLContentType URLContentType
+                                   :Type Type
+                                   :Subtype Subtype})
+        result (case toVersion
+                     "1.10" (ru-maps/umm-1-11-umm-url-types->umm-1-10-umm-url-types keywords)
+                     "1.11" (ru-maps/umm-1-10-umm-url-types->umm-1-11-umm-url-types keywords)
+                     keywords)]
+    (remove-nil-keys
+     (assoc related-url :URLContentType (:URLContentType result)
+                        :Type (:Type result)
+                        :Subtype (:Subtype result)))))
 
 (defn migrate-up-to-1_11
-  ":RelatedUrl Type and Subtypes have changed in collection version 1.11 to correspond
-   to GCMD Keyword updates 8.6"
+  ":RelatedUrl Type and Subtypes have changed in UMM-C version 1.11 to correspond
+   to GCMD Related URL Keyword updates 8.6."
   [collection]
-  (assoc collection :RelatedUrls
-    (into []
-     (:RelatedUrls
-      (-> collection
-        (update-in-each [:RelatedUrls] get-version-8-6-keywords))))))
+  (def cc collection)
+  (if (nil? (:RelatedUrls collection))
+    collection
+    (assoc collection :RelatedUrls
+      (into []
+       (:RelatedUrls
+        (-> collection
+          (update-in-each [:RelatedUrls] replace-existing-related-url-keywords "1.11")))))))
 
 (defn migrate-down-from-1_11
-  ":RelatedUrl Type and Subtypes have changed in collection version 1.11 to correspond
-   to GCMD Keyword updates 8.6 so we need to translate them back to the old keywords version 8.5."
+  ":RelatedUrl Type and Subtypes have changed in UMM-C version 1.11 to correspond
+   to GCMD Related URL Keyword updates 8.6, so we need to translate the values back to the old
+   8.5 keyword version"
   [collection]
-  (assoc collection :RelatedUrls
-    (into []
-     (:RelatedUrls
-      (-> collection
-        (update-in-each [:RelatedUrls] get-version-8-5-keywords))))))
+  (if (nil? (:RelatedUrls collection))
+    collection
+    (assoc collection :RelatedUrls
+      (into []
+       (:RelatedUrls
+        (-> collection
+          (update-in-each [:RelatedUrls] replace-existing-related-url-keywords "1.10")))))))
