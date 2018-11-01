@@ -31,15 +31,17 @@
        (util/data-type->bytes data-type))))
 
 (defn- get-avg-gran-size
+  "Gets SizeEstimation value for AverageSizeOfGranulesSampled and parses it to a number."
   [vars]
-  (let [value (get-in (first vars) [:umm :SizeEstimation :AvgCompressionRateASCII])]
+  (let [value (get-in (first vars) [:umm :SizeEstimation :AverageSizeOfGranulesSampled])]
     (if (string? value)
       (read-string value)
       value)))
 
 (defn- get-avg-compression-rate
+  "Gets SizeEstimation value for AvgCompressionRateASCII and parses it to a number."
   [vars]
-  (let [value (get-in (first vars) [:umm :SizeEstimation :AverageSizeOfGranulesSampled])]
+  (let [value (get-in (first vars) [:umm :SizeEstimation :AvgCompressionRateASCII])]
     (if (string? value)
       (read-string value)
       value)))
@@ -58,6 +60,7 @@
     (+ (* granule-count compression measurements) metadata)))
 
 (defn- estimate-ascii-size
+  "Calculates the estimated size for ASCII format."
   [granule-count variables params]
   (let [metadata 0
         avg-gran-size (get-avg-gran-size variables)
