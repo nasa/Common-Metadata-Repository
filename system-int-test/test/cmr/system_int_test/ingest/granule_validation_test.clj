@@ -3,6 +3,8 @@
   (:require
     [clj-time.core :as t]
     [clj-time.format :as tf ]
+    [clojure.java.io :as io]
+    [clojure.java.shell :as shell]
     [clojure.test :refer :all]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are2]]
@@ -326,55 +328,50 @@
             :errors errors}
            (select-keys response [:status :errors])))))
 
-;; This tests that UMM type validations are applied during collection ingest.
-;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
-;; namespaces.
-(deftest granule-umm-validation-test
-  (testing "Spatial validation"
-    (testing "geodetic polygon"
-      ;; Invalid points are caught in the schema validation
-      (assert-invalid-spatial
-        :geodetic
-        "GEODETIC"
-        [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
-        ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
-         "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
-         "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
-         "Spatial validation error: The shape contained consecutive antipodal points. Points 4 [lon=180 lat=-90] and 5 [lon=180 lat=90] are antipodal."]))
-    (testing "geodetic polygon with holes"
-      ;; Hole validation is not supported yet. See CMR-1173.
-      ;; Holes are ignored during validation for now.
-      (assert-valid-spatial
-        :geodetic
-        "GEODETIC"
-        [(poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
-                        (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])]))
-    (testing "cartesian polygon"
-      ;; The same shape from geodetic is valid as a cartesian.
-      ;; Cartesian validation is not supported yet. See CMR-1172
-      (assert-valid-spatial :cartesian "CARTESIAN"
-                            [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]))
+(deftest granule-geodetic-spatial-validation-test
+  (testing "geodetic polygon"
+    ;; Invalid points are caught in the schema validation
+    (assert-invalid-spatial
+     :geodetic
+     "GEODETIC"
+     [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
+     ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
+      "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
+      "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
+      "Spatial validation error: The shape contained consecutive antipodal points. Points 4 [lon=180 lat=-90] and 5 [lon=180 lat=90] are antipodal."]))
 
-    (testing "geodetic line"
-      (assert-invalid-spatial
-        :geodetic
-        "GEODETIC"
-        [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
-        ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
+  (testing "geodetic polygon with holes"
+    (assert-valid-spatial
+     :geodetic
+     "GEODETIC"
+     [(poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
+                     (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])]))
 
-    (testing "cartesian line"
-      ;; Cartesian line validation isn't supported yet. See CMR-1172
-      (assert-valid-spatial
-        :cartesian
-        "CARTESIAN"
-        [(l/ords->line-string :cartesian [180 0, -180 0])]))
+  (testing "geodetic line"
+    (assert-invalid-spatial
+     :geodetic
+     "GEODETIC"
+     [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
+     ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
-    (testing "bounding box"
-      (assert-invalid-spatial
-        :geodetic
-        "GEODETIC"
-        [(m/mbr -180 45 180 46)]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
+  (testing "bounding box"
+    (assert-invalid-spatial
+     :geodetic
+     "GEODETIC"
+     [(m/mbr -180 45 180 46)]
+     ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"])))
+
+(deftest granule-cartesian-spatial-validation-test
+  (testing "cartesian polygon"
+    ;; The same shape from geodetic is valid as a cartesian.
+    (assert-valid-spatial :cartesian "CARTESIAN"
+                          [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]))
+
+  (testing "cartesian line"
+    (assert-valid-spatial
+     :cartesian
+     "CARTESIAN"
+     [(l/ords->line-string :cartesian [180 0, -180 0])])))
 
 (deftest inappropriate-spatial-coverage-test
   (testing "granule with spatial but parent collection does not"
@@ -431,3 +428,72 @@
   ;; Turn it back on after the test
   (dev-sys-util/eval-in-dev-sys
    `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! true)))
+
+(def ^:private coll-file
+  "temp file for collection metadata in multipart request"
+  "cmr_5260_collection.xml")
+
+(def ^:private granule-file
+  "temp file for granule metadata in multipart request"
+  "cmr_5260_granule.json")
+
+(defn- validate-granule-multipart
+  "Returns the granule validataion result for the given collection and granule
+  via multipart granule validation request."
+  [granule-concept coll-concept]
+  ;; clj-http does not work with content-type that contains semicolons
+  ;; (e.g. application/vnd.nasa.cmr.umm+json; version=1.4)
+  ;; So we execute curl command directly from shell for UMM-G granule validation requests
+  (try
+    (spit coll-file (:metadata coll-concept))
+    (spit granule-file (:metadata granule-concept))
+    (let [{:keys [provider-id native-id]} granule-concept
+          validate-url (url/validate-url provider-id :granule native-id)
+          coll-form (format "collection=<%s;type=%s" coll-file (:format coll-concept))
+          granule-form (format "granule=<%s;type=%s" granule-file (:format granule-concept))
+          {:keys [out]} (shell/sh "curl" "-i" "-F" granule-form "-F" coll-form validate-url)]
+      out)
+    (finally
+      (io/delete-file coll-file)
+      (io/delete-file granule-file))))
+
+(defn- validate-granule-multipart-ok?
+  "Validate the granule multipart request returns 200 OK"
+  [granule-concept coll-concept]
+  (is (re-find
+       #"200 OK"
+       (validate-granule-multipart granule-concept coll-concept))))
+
+(defn- validate-granule-multipart-failed?
+  "Validate the granule multipart request returns the expected status code and error message."
+  [granule-concept coll-concept status-code error-msg]
+  (is (re-find
+       (re-pattern (str "(?s)" status-code ".*" error-msg))
+       (validate-granule-multipart granule-concept coll-concept))))
+
+(deftest validation-umm-g-granule-test
+  (let [collection-attrs {:EntryTitle "correct"
+                          :ShortName "S1"
+                          :Version "V1"}
+        collection-ref-attrs {:entry-title "correct"
+                              :short-name "S1"
+                              :version-id "V1"}
+        collection (data-umm-c/collection collection-attrs)
+        coll-concept (d/umm-c-collection->concept collection :iso-smap)]
+    (testing "valid UMM-G granule"
+      (let [granule (assoc (dg/granule-with-umm-spec-collection collection nil)
+                           :collection-ref
+                           (umm-g/map->CollectionRef collection-ref-attrs))
+            granule-concept (d/item->concept granule :umm-json)]
+        (validate-granule-multipart-ok? granule-concept coll-concept)))
+
+    (testing "invalid UMM-G granule"
+      (let [granule (assoc (dg/granule-with-umm-spec-collection collection nil)
+                           :collection-ref
+                           (umm-g/map->CollectionRef
+                            (merge collection-ref-attrs {:entry-title "wrong"})))
+            granule-concept (d/item->concept granule :umm-json)
+            expected-err-msg (str "Collection Reference Entry Title \\[wrong\\] does not match "
+                                  "the Entry Title of the parent collection \\[correct\\]")]
+        (validate-granule-multipart-failed?
+         granule-concept coll-concept 422 expected-err-msg)))))

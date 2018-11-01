@@ -723,6 +723,21 @@
                                        :GetData {:MimeType "image/png"
                                                  :Format "png"
                                                  :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "Download url description"
+                                       :URL "http://example.com/download.png"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "no mime type specified"
+                                       :URL "http://example2.com/download.json"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :GetData {:Format "png"
+                                                 :Size 10.0
                                                  :Unit "KB"}}]}
           concept-umm (-> (umm-spec-collection/collection 1 related-urls)
                           (umm-spec-collection/collection-concept :umm-json)
@@ -745,6 +760,23 @@
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
+      (testing "accessURL and downloadURL in response"
+        (are3 [expected-distribution opendata-collection]
+          (is (contains? (set (:distribution opendata-collection)) expected-distribution))
+
+          "accessURL in distribution"
+          {:accessURL "http://example.com/browse-image"
+           :description "A test related url description."} opendata-coll-umm
+
+          "downloadURL in distribution"
+          {:downloadURL "http://example.com/download.png"
+           :description "Download url description"
+           :mediaType "image/png"} opendata-coll-umm
+
+          "downloadURL in distribution with no specified mime type"
+          {:downloadURL "http://example2.com/download.json"
+           :description "no mime type specified"
+           :mediaType "application/json"} opendata-coll-umm))
       (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))

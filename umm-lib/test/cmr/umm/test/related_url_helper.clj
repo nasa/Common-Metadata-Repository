@@ -7,6 +7,23 @@
    [cmr.umm.related-url-helper :as related-url-helper]
    [cmr.umm.umm-collection :as umm-c]))
 
+(deftest guess-url-mime-type
+  (testing "guess mime type based on url"
+    (are3 [expected-mime-type url]
+      (is (= expected-mime-type (related-url-helper/infer-url-mime-type url)))
+
+      "test mime type in default list is properly guessed"
+      "image/jpeg" "http://example.com/test/mime/type.jpeg"
+
+      "test mime type not in default list is properly guessed"
+      "application/x-netcdf" "http://example.com/test/mime/type.nc"
+
+      "Test mime type not found returns nil"
+      nil "http://example.com/test/mime/type.fake_mime_type"
+
+      "test nil"
+      nil nil)))
+
 (deftest categorize-related-urls
   (testing "categorize related urls"
     (let [downloadable-url (umm-c/map->RelatedURL

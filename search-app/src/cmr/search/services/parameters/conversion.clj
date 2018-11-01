@@ -105,6 +105,8 @@
    :polygon :polygon
    :producer-granule-id :string
    :project :string
+   :feature-id :string
+   :crid-id :string
    :provider :collection-query
    :readable-granule-name :readable-granule-name
    :revision-date :multi-date-range
