@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.app.sizing.ascii
+(ns ^:system cmr.opendap.tests.system.app.sizing.netcdf4
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 
@@ -28,7 +28,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
+                                "&format=nc4"
                                 "&total-granule-input-bytes=1024")
                            (test-system/http-port)
                            collection-id
@@ -49,7 +49,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
+                                "&format=nc4"
                                 "&total-granule-input-bytes=1024")
                            (test-system/http-port)
                            collection-id
@@ -70,7 +70,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s,%s"
-                                "&format=ascii"
+                                "&format=nc4"
                                 "&total-granule-input-bytes=1024")
                            (test-system/http-port)
                            collection-id
@@ -92,7 +92,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s,%s"
-                                "&format=ascii"
+                                "&format=nc4"
                                 "&total-granule-input-bytes=1024")
                            (test-system/http-port)
                            collection-id
@@ -115,7 +115,7 @@
                                   "/service-bridge/size-estimate/collection/%s"
                                   "?granules=%s,%s"
                                   "&variables=%s"
-                                  "&format=ascii"
+                                  "&format=nc4"
                                   "&total-granule-input-bytes=1024")
                              (test-system/http-port)
                              collection-id
@@ -141,7 +141,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
+                                "&format=nc4"
                                 "&total-granule-input-bytes=1024")
                            (test-system/http-port)
                            collection-id
