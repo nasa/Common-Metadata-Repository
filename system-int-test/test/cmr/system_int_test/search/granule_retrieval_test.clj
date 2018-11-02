@@ -80,9 +80,12 @@
                      {:granule-ur "Gran1"
                       :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})}))
         echo10-gran (d/item->concept granule :echo10)
+        smap-gran (d/item->concept granule :iso-smap)
         umm-g-gran (d/item->concept granule :umm-json)
         {echo10-gran-concept-id :concept-id
          echo10-gran-revision-id :revision-id} (ingest/ingest-concept echo10-gran)
+        {smap-gran-concept-id :concept-id
+         smap-gran-revision-id :revision-id} (ingest/ingest-concept smap-gran)
         {umm-g-gran-concept-id :concept-id
          umm-g-gran-revision-id :revision-id} (ingest/ingest-concept umm-g-gran)]
     (index/wait-until-indexed)
@@ -107,7 +110,7 @@
         "specifying umm json accept format with version"
         "application/vnd.nasa.cmr.umm+json;version=1.4"))
 
-    (testing "retrieve UMM-G granule in non UMM JSON format"
+    (testing "retrieve UMM-G granule in ECHO10 format"
       (let [response (search/retrieve-concept
                       umm-g-gran-concept-id umm-g-gran-revision-id {:accept mt/echo10})
             response-format (-> response
@@ -116,10 +119,32 @@
         (is (= :echo10 response-format))
         (is (= (:metadata echo10-gran) (:body response)))))
 
+    (testing "retrieve UMM-G granule in ISO MENS format"
+      (let [response (search/retrieve-concept
+                      umm-g-gran-concept-id umm-g-gran-revision-id {:accept mt/iso19115})
+            response-format (-> response
+                                (get-in [:headers :Content-Type])
+                                mt/mime-type->format)]
+        (is (= :iso19115 response-format))
+        ;; Just verify that the ISO granule element name exists in the response
+        (is (re-matches #"(?s).*<gmi:MI_Metadata.*" (:body response)))))
+
     (testing "retrieve ECHO10 granule in UMM JSON format"
       (let [response (search/retrieve-concept
                       echo10-gran-concept-id
                       echo10-gran-revision-id
+                      {:accept "application/vnd.nasa.cmr.umm+json"})
+            response-format (-> response
+                                (get-in [:headers :Content-Type])
+                                mt/mime-type->format)]
+        (is (= {:format :umm-json :version "1.4"}
+               response-format))
+        (is (= (:metadata umm-g-gran) (:body response)))))
+
+    (testing "retrieve ECHO10 granule in UMM JSON format"
+      (let [response (search/retrieve-concept
+                      smap-gran-concept-id
+                      smap-gran-revision-id
                       {:accept "application/vnd.nasa.cmr.umm+json"})
             response-format (-> response
                                 (get-in [:headers :Content-Type])
