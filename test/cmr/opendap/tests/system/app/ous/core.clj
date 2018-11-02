@@ -75,7 +75,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
                (util/parse-response response)))))
     (testing "GET without subset ..."
       (let [response @(httpc/get
@@ -91,7 +91,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"]
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,Latitude,Longitude"]
                (util/parse-response response)))))))
 
 (deftest gridded-with-ummvar-1-1-api-v2-1-bounds
