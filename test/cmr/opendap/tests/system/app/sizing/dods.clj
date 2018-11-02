@@ -19,8 +19,7 @@
 (def granule2-id "G1200301322-HMR_TME")
 (def variable2-id "V1200301323-HMR_TME")
 (def variable3-id "V1200297236-HMR_TME")
-(def options (-> {}
-                 (request/add-token-header (util/get-sit-token))))
+(def options (request/add-token-header {} (util/get-sit-token)))
 
 (deftest one-var-size-test
   (let [response @(httpc/get
