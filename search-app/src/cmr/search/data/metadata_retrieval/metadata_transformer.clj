@@ -72,6 +72,11 @@
       (= :html target-format)
       :html
 
+      (and (= :granule (:concept-type concept))
+           (= :umm-json (mt/format-key concept-mime-type))
+           (= :iso19115 target-format))
+      :granule-umm-g-to-iso
+
       ;; only granule uses umm-lib
       (= :granule (:concept-type concept))
       :umm-lib
@@ -127,6 +132,19 @@
     (reduce (fn [translated-map target-format]
               (assoc translated-map target-format
                      (legacy/generate-metadata context umm target-format)))
+            {}
+            target-formats)))
+
+(defmethod transform-with-strategy :granule-umm-g-to-iso
+  [context concept _ target-formats]
+  (let [umm (legacy/parse-concept context concept)
+        echo10-metadata (legacy/generate-metadata context umm :echo10)]
+    (assert (= [:iso19115] target-formats))
+    (reduce (fn [translated-map target-format]
+              (let [xsl (types->xsl [:echo10 target-format])]
+                (assoc translated-map target-format
+                       (cx/remove-xml-processing-instructions
+                        (xslt/transform echo10-metadata (get-template context xsl))))))
             {}
             target-formats)))
 
