@@ -39,6 +39,6 @@
 
 (defmethod generate-metadata :default
   [context umm format-key]
-  (if (= :umm-json format-key)
+  (if (= :umm-json (mt/format-key format-key))
     (umm-spec/generate-metadata context umm format-key)
     (umm/umm->xml umm format-key)))
