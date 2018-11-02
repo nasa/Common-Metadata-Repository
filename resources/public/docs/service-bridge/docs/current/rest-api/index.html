@@ -548,27 +548,23 @@ that name has carried through here.</p>
 <p>As a workable, short-term solution, OUS makes use of CMR tagging functionality
 to convert a granule&#39;s archive location to an OPeNDAP location.</p>
 
-<p>To achieve this, we fist need to create a tag cmr.earthdata.nasa.ous.datafile.replace:
-<code>
-curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot;
-     https://cmr.uat.earthdata.nasa.gov/search/tags
-     -d {&quot;tag_key&quot; &quot;cmr.earthdata.nasa.ous.datafile.replace&quot;,
-         &quot;description&quot; &quot;This tag will provide a mapping from archive location to OPeNDAP location for one or more collections&quot;}
+<p>To achieve this, we first need to create a tag <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
+
+<p><code>curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/search/tags -d {&quot;tag_key&quot; &quot;cmr.earthdata.nasa.ous.datafile.replace&quot;, &quot;description&quot; &quot;This tag will provide a mapping from archive location to OPeNDAP location for one or more collections&quot;}
 </code></p>
 
 <p>Then, associate the tag with the collection, using a regex that replaces the achive 
-location with the OPeNDAP location based on the archive to OPeNDAP location mapping:
-<code>
-curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot;
-     https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations
-     -d &#39;[{&quot;concept_id&quot;: &quot;C1224308603-EEDTEST&quot;, &quot;data&quot;: {&quot;match&quot;: &quot;/TEST1_Co/&quot;, &quot;replace&quot;: &quot;/dir-replaced-by-tags/&quot;}}]&#39;
+location with the OPeNDAP location based on the archive to OPeNDAP location mapping:</p>
+
+<p><code>curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations -d &#39;[{&quot;concept_id&quot;: &quot;C1224363486-EEDTEST&quot;, &quot;data&quot;: {&quot;match&quot;: &quot;/data//&quot;, &quot;replace&quot;: &quot;/opendap/&quot;}}]&#39;
 </code></p>
 
-<p>The following returns the appropriate OPeNDAP URLS for the granule&#39;s archive location: 
-<code>
-curl -H &quot;Echo-Token: $MY_TOKEN&quot;
-     https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224308603-EEDTEST?granules=G1224308604-EEDTEST
+<p>The following returns the appropriate OPeNDAP URLS for the granule&#39;s archive location: </p>
+
+<p><code>curl -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224363486-EEDTEST?granules=G1224363487-EEDTEST
 </code></p>
+
+<p>{&quot;hits&quot;:1,&quot;took&quot;:0.244,&quot;items&quot;:[&quot;http://e4ftl01.cr.usgs.gov:40510/opendap/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc&quot;],&quot;warnings&quot;:null}</p>
 <h2 id='collection-resources'>Collection Resources</h2>
 <p>The CMR OPeNDAP REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
