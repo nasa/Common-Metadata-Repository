@@ -22,6 +22,13 @@
 ;;; Note that all internal operations for estimating size are performed
 ;;; assuming bytes as the units.
 
+(defn- read-number
+  "If value is string, read-string.  Otherwise ignore."
+  [value]
+  (if (string? value)
+    (read-string value)
+    value))
+
 (defn- get-measurement
   [variable]
   (let [dims (get-in variable [:umm :Dimensions])
@@ -32,21 +39,27 @@
 
 (defn- get-avg-gran-size
   "Gets SizeEstimation value for AverageSizeOfGranulesSampled and parses it to a number."
-  [vars]
-  (let [value (get-in (first vars) [:umm :SizeEstimation :AverageSizeOfGranulesSampled])]
-    (if (string? value)
-      (read-string value)
-      value)))
+  [variable]
+  (-> variable
+      (get-in [:umm :SizeEstimation :AverageSizeOfGranulesSampled])
+      read-number))
 
-(defn- get-avg-compression-rate
+(defn- get-avg-compression-rate-ascii
   "Gets SizeEstimation value for AvgCompressionRateASCII and parses it to a number."
-  [vars]
-  (let [value (get-in (first vars) [:umm :SizeEstimation :AvgCompressionRateASCII])]
-    (if (string? value)
-      (read-string value)
-      value)))
+  [variable]
+  (-> variable
+      (get-in [:umm :SizeEstimation :AvgCompressionRateASCII])
+      read-number))
+
+(defn- get-avg-compression-rate-netcdf4
+  "Gets SizeEstimation value for AvgCompressionRateNetCDF4 and parses it to a number."
+  [variable]
+  (-> variable
+      (get-in [:umm :SizeEstimation :AvgCompressionRateNetCDF4])
+      read-number))
 
 (defn estimate-dods-size
+  "Calculates the estimated size for DODS format."
   [granule-count variables]
   (let [compression 1
         metadata 0 ; included here for symmetry
@@ -54,27 +67,36 @@
     (+ (* granule-count compression measurements) metadata)))
 
 (defn- estimate-netcdf3-size
+  "Calculates the estimated size for NETCDF3 format."
   [granule-count variables metadata]
   (let [compression 1
         measurements (reduce + (map get-measurement variables))]
     (+ (* granule-count compression measurements) metadata)))
 
-(defn- estimate-ascii-size
-  "Calculates the estimated size for ASCII format."
-  [granule-count variables params]
-  (let [metadata 0
-        avg-gran-size (get-avg-gran-size variables)
-        edsc-size-estimate (read-string (:edsc-size-estimate params))
-        avg-compression-rate (get-avg-compression-rate variables)
-        measurements (reduce + (map get-measurement variables))]
-    (* edsc-size-estimate (+ (* (/ (/ edsc-size-estimate granule-count) avg-gran-size) avg-compression-rate) metadata))))
+(defn- estimate-netcdf4-or-ascii-size
+  "Calculates the estimated size for ASCII or NETCDF4 format.
+   total-granule-input-bytes is a value given by the client in the size estimate request."
+  [granule-count variables params fmt]
+  (reduce (fn [total-estimate variable]
+            (let [avg-gran-size (get-avg-gran-size variable)
+                  total-granule-input-bytes (read-string (:total-granule-input-bytes params))
+                  avg-compression-rate (if (= fmt :nc4)
+                                         (get-avg-compression-rate-netcdf4 variable)
+                                         (get-avg-compression-rate-ascii variable))]
+              (+ total-estimate
+                 (* total-granule-input-bytes
+                    (* (/ (/ total-granule-input-bytes granule-count) avg-gran-size
+                          avg-compression-rate))))))
+          0
+          variables))
 
 (defn- -estimate-size
   [fmt granule-count vars granule-metadata-size params]
   (case (keyword (string/lower-case fmt))
     :dods (estimate-dods-size granule-count vars)
     :nc (estimate-netcdf3-size granule-count vars granule-metadata-size)
-    :ascii (estimate-ascii-size granule-count vars params)
+    :nc4 (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
+    :ascii (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
     (do
       (log/errorf "Cannot estimate size for %s (not implemented)." fmt)
       {:errors ["not-implemented"]})))
@@ -165,14 +187,14 @@
               {:errors (errors/check
                         [not data-files metadata-errors/empty-gnl-data-files])})
 
-        params (assoc params :edsc-size-estimate (:edsc-size-estimate raw-params))
+        params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params))
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
     (log/debug "Got data-files:" (vec data-files))
     (log/debug "Got services:" services)
     (log/debug "Got vars:" vars)
-    (log/debug "Got edsc-size-estimate:" (:edsc-size-estimate raw-params))
+    (log/debug "Got total-granule-input-bytes:" (:total-granule-input-bytes raw-params))
     (process-results
       {:params params
        :data-files data-files
