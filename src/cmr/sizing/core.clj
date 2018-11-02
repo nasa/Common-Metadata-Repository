@@ -85,8 +85,8 @@
                                          (get-avg-compression-rate-ascii variable))]
               (+ total-estimate
                  (* total-granule-input-bytes
-                    (* (/ (/ total-granule-input-bytes granule-count) avg-gran-size
-                          avg-compression-rate))))))
+                    avg-compression-rate
+                    (/ (/ total-granule-input-bytes granule-count) avg-gran-size)))))
           0
           variables))
 
