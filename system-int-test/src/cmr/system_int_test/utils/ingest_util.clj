@@ -187,12 +187,6 @@
                v)))
          (str/split path #"/"))))
 
-(comment
-
-  (parse-error-path "SpatialCoverage/Geometries/0")
-  (parse-error-path "SpatialCoverage/1/Geometries"))
-
-
 (defn- parse-xml-error-elem
   "Parse an xml error entry. If this contains a path then we need to return map with a :path
   and an :errors tag. Otherwise, just return the list of error messages."

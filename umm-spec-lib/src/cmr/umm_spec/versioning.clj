@@ -9,7 +9,7 @@
 (def ^:dynamic versions
   "A map of concept type to a sequence of valid UMM Schema versions, with the newest one last.
   The sequence must be updated when new schema versions are added for the concept type."
-  {:collection ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.9" "1.10"]
+  {:collection ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.9" "1.10" "1.11"]
    :granule ["1.4"]
    :variable ["1.0" "1.1" "1.2" "1.3"]
    :service ["1.0" "1.1" "1.2"]})

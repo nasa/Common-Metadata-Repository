@@ -29,7 +29,7 @@
              :Description "Interface to search, discover, and access EOS data products, and invoke available data services."
              :URLContentType "DistributionURL"
              :Type "GET DATA"
-             :Subtype "REVERB"
+             :Subtype "Earthdata Search"
              :GetData nil}]
            (ru/parse-related-urls
              "<DIF>

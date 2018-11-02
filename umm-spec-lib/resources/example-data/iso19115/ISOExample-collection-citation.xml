@@ -1,15 +1,15 @@
 <gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
-    xmlns:gco="http://www.isotc211.org/2005/gco" 
+    xmlns:gco="http://www.isotc211.org/2005/gco"
     xmlns:gmd="http://www.isotc211.org/2005/gmd"
     xmlns:gmi="http://www.isotc211.org/2005/gmi"
     xmlns:gml="http://www.opengis.net/gml/3.2"
-    xmlns:gmx="http://www.isotc211.org/2005/gmx" 
+    xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:gsr="http://www.isotc211.org/2005/gsr"
-    xmlns:gss="http://www.isotc211.org/2005/gss" 
+    xmlns:gss="http://www.isotc211.org/2005/gss"
     xmlns:gts="http://www.isotc211.org/2005/gts"
     xmlns:srv="http://www.isotc211.org/2005/srv"
-    xmlns:xlink="http://www.w3.org/1999/xlink" 
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd
                         http://www.isotc211.org/2005/gco https://cdn.earthdata.nasa.gov/iso/gco/1.0/gco.xsd
@@ -1238,9 +1238,9 @@
                         <gco:CharacterString>https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/110px-SNice.svg.png</gco:CharacterString>
                         -->
                    </gmd:fileName>
-                    <!-- If URLContentType does not exist the default is VisualizationURL 
+                    <!-- If URLContentType does not exist the default is VisualizationURL
                          If Type: doesn't exist the default is GET RELATED VISUALIZATION
-                         if Subtype: doesn't exist the default is nothing 
+                         if Subtype: doesn't exist the default is nothing
                          Currently Order is important. -->
                     <gmd:fileDescription>
                         <gco:CharacterString>Description: This is a test url to demonstrate how to get a collection ICON on to EDSC URLContentType: VisualizationURL Type: GET RELATED VISUALIZATION</gco:CharacterString>
@@ -1494,7 +1494,7 @@
                     <!-- Points For each set of points add a new geographical element.-->
                     <gmd:geographicElement>
                         <gmd:EX_BoundingPolygon id="Points">
-                           <gmd:polygon> 
+                           <gmd:polygon>
                                 <!-- The id needs to be unqiue for this record.-->
                                 <gml:Point gml:id="Point1">
                                     <!-- The values are Latitude Longitude -->
@@ -1663,7 +1663,7 @@
             <gmd:citation/>
             <gmd:abstract/>
             <srv:serviceType>
-                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:LocalName>
+                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: USE SERVICE API Subtype: OPENDAP DATA</gco:LocalName>
             </srv:serviceType>
             <srv:couplingType>
                 <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
@@ -1882,7 +1882,7 @@
                                 <gco:CharacterString>Documentation</gco:CharacterString>
                             </gmd:name>
                             <gmd:description>
-                                <gco:CharacterString>DistributionURL GET SERVICE </gco:CharacterString>
+                                <gco:CharacterString>DistributionURL USE SERVICE API </gco:CharacterString>
                             </gmd:description>
                             <gmd:function>
                                 <gmd:CI_OnLineFunctionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
@@ -2574,7 +2574,7 @@
                                     <eos:reference>
                                         <eos:EOS_AdditionalAttributeDescription>
                                             <eos:type>
-                                                
+
                                                 <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
                                             </eos:type>
                                             <eos:name>
@@ -2657,7 +2657,7 @@
                                 </eos:EOS_Sensor>
                             </eos:sensor>
                         </eos:EOS_Instrument>
-                    </gmi:instrument>    
+                    </gmi:instrument>
                     <eos:otherProperty>
                         <gco:Record>
                             <eos:AdditionalAttributes>
@@ -2665,7 +2665,7 @@
                                     <eos:reference>
                                         <eos:EOS_AdditionalAttributeDescription>
                                             <eos:type>
-                                                
+
                                                 <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
                                             </eos:type>
                                             <eos:name>

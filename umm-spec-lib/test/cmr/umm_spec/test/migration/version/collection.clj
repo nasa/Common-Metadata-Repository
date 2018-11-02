@@ -4,9 +4,12 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+   [cmr.common.util :refer [remove-empty-maps]]
+   [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-spec-core :as core]
@@ -1542,7 +1545,7 @@
             (get (vm/migrate-umm {} :collection "1.9" "1.10"
                                  {:DOI nil})
                  :DOI))))
-   
+
    (testing "CollectionCitation's OnlineResource migration from version 1.9 to 1.10"
     (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
                    {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
@@ -1560,7 +1563,7 @@
               (:OnlineResource (first (:CollectionCitations result)))))
 
        (is (= {:Linkage "www.google.com"}
-              (:OnlineResource (first (:PublicationReferences result)))))))  
+              (:OnlineResource (first (:PublicationReferences result)))))))
 
    (testing "UseConstraints migration from 1.9.0 to 1.10.0"
     (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
@@ -1623,15 +1626,15 @@
                                                             :Description "URL Description"
                                                             :MimeType "application/json"}}]
                     :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
-       (is (= {:Linkage "www.google.com" 
+       (is (= {:Linkage "www.google.com"
                :Name "URL Title"
                :Description "URL Description"}
               (:OnlineResource (first (:CollectionCitations result)))))
 
-       (is (= {:Linkage "www.google.com" 
-               :Name "Not provided" 
+       (is (= {:Linkage "www.google.com"
+               :Name "Not provided"
                :Description "Not provided"}
-              (:OnlineResource (first (:PublicationReferences result)))))))  
+              (:OnlineResource (first (:PublicationReferences result)))))))
 
   (testing "UseConstraints migration from version 1.10 to 1.9"
     (is (= "description"
@@ -1645,7 +1648,7 @@
         (:UseConstraints
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:UseConstraints (umm-c/map->UseConstraintsType
-                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType 
+                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType
                                                            {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
@@ -1680,3 +1683,56 @@
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
             {:TilingIdentificationSystemName "WRS-1",
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))
+
+(def related-urls-UMM-1-10-example
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :RelatedUrls [{:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "EARTHDATA SEARCH"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url 3 description "
+                          :URL "http://www.foo.com"
+                          :URLContentType "DistributionURL"
+                          :Type "GET SERVICE"
+                          :GetService {:MimeType "application/json"
+                                       :DataID "dataid"
+                                       :DataType "datatype"
+                                       :Protocol "HTTP"
+                                       :FullName "fullname"
+                                       :Format "ascii"
+                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                         {:Description "Related url 2 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "VisualizationURL"
+                          :Type "GET RELATED VISUALIZATION"
+                          :Subtype "GIBS"}])))
+
+(deftest migrate-1-10-to-1-11
+  (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
+    (is (= exp-conv/example-collection-record
+           result))))
+
+(deftest migrate-1-10-to-1-11-no-related-urls
+  (let [collection (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.10" "1.11" collection)]
+    (is (= (dissoc exp-conv/example-collection-record :RelatedUrls)
+           result))))
+
+(deftest migrate-1-11-to-1-10
+  (let [result (vm/migrate-umm {} :collection "1.11" "1.10" exp-conv/example-collection-record)]
+    (is (= related-urls-UMM-1-10-example
+           result))))
+
+(deftest migrate-1-11-down-to-1-10-no-related-urls
+  (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
+    (is (= (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+           result))))

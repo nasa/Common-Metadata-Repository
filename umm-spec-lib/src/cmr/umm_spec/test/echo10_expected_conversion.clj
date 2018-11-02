@@ -76,7 +76,7 @@
   [related-url]
   (if (and (:GetService related-url)
            (= "DistributionURL" (:URLContentType related-url))
-           (= "GET SERVICE" (:Type related-url))
+           (= "USE SERVICE API" (:Type related-url))
            ;;MimeType is the only value that maps from echo10, so we can assume the GetService
            ;;map should be empty if MimeType is not provided.
            (not (= "Not provided" (get-in related-url [:GetService :MimeType]))))

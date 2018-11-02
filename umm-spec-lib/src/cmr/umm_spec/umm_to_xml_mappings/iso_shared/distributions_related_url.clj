@@ -106,7 +106,7 @@
          format (:Format GetData)
          mime-type (:MimeType GetData)
          code (if (= "GET DATA" Type) "download" "information")]
-     (when-not (= "GET SERVICE" Type)
+     (when-not (= "USE SERVICE API" Type)
        [:gmd:distributor
         [:gmd:MD_Distributor
          [:gmd:distributorContact {:gco:nilReason "missing"}]
@@ -159,10 +159,10 @@
     (str/trim operation-description)))
 
 (defn generate-service-related-url
- "Write 'GET SERVICE' related urls to an additional area of ISO"
+ "Write 'USE SERVICE API' related urls to an additional area of ISO"
  [related-urls]
  (for [service-url (filter #(and (= "DistributionURL" (:URLContentType %))
-                                 (= "GET SERVICE" (:Type %)))
+                                 (= "USE SERVICE API" (:Type %)))
                            related-urls)
        :let [{URL :URL Description :Description} service-url
              {:keys [MimeType Protocol FullName DataID DataType URI Format]}  (:GetService service-url)

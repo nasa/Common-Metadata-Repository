@@ -289,7 +289,7 @@
                         <gmx:FileName src="http://www.foo.com"/>
                     </gmd:fileName>
                     <gmd:fileDescription>
-                        <gco:CharacterString>Description: Related url 2 description URLContentType: VisualizationURL Type: GET RELATED VISUALIZATION Subtype: GIBS</gco:CharacterString>
+                        <gco:CharacterString>Description: Related url 2 description URLContentType: VisualizationURL Type: GET RELATED VISUALIZATION Subtype: WORLDVIEW</gco:CharacterString>
                     </gmd:fileDescription>
                     <gmd:fileType>
                         <gco:CharacterString>Browse</gco:CharacterString>
@@ -409,7 +409,7 @@
             <gmd:citation gco:nilReason="missing"/>
             <gmd:abstract gco:nilReason="missing"/>
             <srv:serviceType>
-                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE</gco:LocalName>
+                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: USE SERVICE API</gco:LocalName>
             </srv:serviceType>
             <srv:couplingType>
                 <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
@@ -511,7 +511,7 @@
                                     <gco:CharacterString>DATA ACCESS</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                    <gco:CharacterString>Description: Related url description URLContentType: DistributionURL Type: GET DATA Subtype: ECHO Checksum: checksum</gco:CharacterString>
+                                    <gco:CharacterString>Description: Related url description URLContentType: DistributionURL Type: GET DATA Subtype: Earthdata Search Checksum: checksum</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                     <gmd:CI_OnLineFunctionCode

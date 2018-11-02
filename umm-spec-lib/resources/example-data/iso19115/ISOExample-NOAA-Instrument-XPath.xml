@@ -1339,7 +1339,7 @@
             <gmd:citation/>
             <gmd:abstract/>
             <srv:serviceType>
-                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:LocalName>
+                <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: USE SERVICE API Subtype: OPENDAP DATA</gco:LocalName>
             </srv:serviceType>
             <srv:couplingType>
                 <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
@@ -1539,7 +1539,7 @@
                                 <gco:CharacterString>Documentation</gco:CharacterString>
                             </gmd:name>
                             <gmd:description>
-                                <gco:CharacterString>DistributionURL GET SERVICE </gco:CharacterString>
+                                <gco:CharacterString>DistributionURL USE SERVICE API </gco:CharacterString>
                             </gmd:description>
                             <gmd:function>
                                 <gmd:CI_OnLineFunctionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>

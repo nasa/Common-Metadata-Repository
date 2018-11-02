@@ -153,7 +153,7 @@
               url-link (value-of distributor (str url "gmd:linkage/gmd:URL"))
               url-link (when url-link (url/format-url url-link sanitize?))
               opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
-                            "GET SERVICE")
+                            "USE SERVICE API")
               types-and-desc (parse-url-types-from-description
                               (char-string-value distributor (str url "gmd:description")))
               service-url (first (filter #(= url-link (:URL %)) service-urls))

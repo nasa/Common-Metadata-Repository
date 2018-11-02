@@ -130,7 +130,7 @@
                   :URL "www.foobarbazquxquux.com"
                   :URLContentType "DistributionURL"
                   :Type "GET DATA"
-                  :Subtype "ECHO"
+                  :Subtype "Earthdata Search"
                   :GetData {:Format "ascii"
                             :Size 10.0
                             :Unit "MB"
@@ -139,7 +139,7 @@
                   :URL "www.foobarbazquxquux.com"
                   :URLContentType "DistributionURL"
                   :Type "GET DATA"
-                  :Subtype "ECHO"
+                  :Subtype "Earthdata Search"
                   :GetData {:Format "ascii"
                             :Size 10.0
                             :Unit "MB"
@@ -148,7 +148,7 @@
                   :URL "www.foobarbazquxquux.com"
                   :URLContentType "DistributionURL"
                   :Type "GET DATA"
-                  :Subtype "ECHO"
+                  :Subtype "Earthdata Search"
                   :GetData {:Format "ascii"
                             :Size 10.0
                             :Unit "MB"

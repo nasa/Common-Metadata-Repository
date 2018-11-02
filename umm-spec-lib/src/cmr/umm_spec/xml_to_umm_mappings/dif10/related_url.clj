@@ -42,13 +42,13 @@
                                                     :Size 0.0
                                                     :Unit "KB"
                                                     :MimeType mime-type})}
-                            "GET SERVICE" {:GetService (when (or mime-type protocol)
-                                                         {:MimeType mime-type
-                                                          :FullName (su/with-default nil sanitize?)
-                                                          :Format (su/with-default nil sanitize?)
-                                                          :DataID (su/with-default nil sanitize?)
-                                                          :DataType (su/with-default nil sanitize?)
-                                                          :Protocol protocol})}
+                            "USE SERVICE API" {:GetService (when (or mime-type protocol)
+                                                             {:MimeType mime-type
+                                                              :FullName (su/with-default nil sanitize?)
+                                                              :Format (su/with-default nil sanitize?)
+                                                              :DataID (su/with-default nil sanitize?)
+                                                              :DataType (su/with-default nil sanitize?)
+                                                              :Protocol protocol})}
                            nil))))
         related-urls (when-not (= su/not-provided-url (:URL (first related-urls)))
                          related-urls)]
