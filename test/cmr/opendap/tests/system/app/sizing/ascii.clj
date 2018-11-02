@@ -29,7 +29,7 @@
                                 "?granules=%s"
                                 "&variables=%s"
                                 "&format=ascii"
-                                "&total-granule-input-bytes=1024")
+                                "&total-granule-input-bytes=1000000")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -38,9 +38,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 10877.943362275593
-             :mb 0.010374015199924081
-             :gb 1.013087421867586E-5}]
+    (is (= [{:bytes 2.998090392778058
+             :mb 2.85920180585676E-6
+             :gb 2.7921892635319922E-9}]
            (util/parse-response response)))))
 
 (deftest one-var-different-gran-size-test
@@ -50,7 +50,7 @@
                                 "?granules=%s"
                                 "&variables=%s"
                                 "&format=ascii"
-                                "&total-granule-input-bytes=1024")
+                                "&total-granule-input-bytes=1000000")
                            (test-system/http-port)
                            collection-id
                            granule2-id
@@ -59,9 +59,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 0.04020109503449676
-             :mb 3.833875182580639E-8
-             :gb 3.744018732988905E-11}]
+    (is (= [{:bytes 811247.9886340628
+             :mb 0.7736663709965351
+             :gb 7.555335654263038E-4}]
            (util/parse-response response)))))
 
 (deftest multi-var-size-test
@@ -71,7 +71,7 @@
                                 "?granules=%s"
                                 "&variables=%s,%s"
                                 "&format=ascii"
-                                "&total-granule-input-bytes=1024")
+                                "&total-granule-input-bytes=100000000")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -81,9 +81,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 10878.082709775228
-             :mb 0.010374148092055538
-             :gb 1.0131003996147987E-5}]
+    (is (= [{:bytes 8.305788196959955E9
+             :mb 7921.016880950885
+             :gb 7.735368047803599}]
            (util/parse-response response)))))
 
 (deftest multi-var-different-gran-size-test
@@ -93,7 +93,7 @@
                                 "?granules=%s"
                                 "&variables=%s,%s"
                                 "&format=ascii"
-                                "&total-granule-input-bytes=1024")
+                                "&total-granule-input-bytes=1000000")
                            (test-system/http-port)
                            collection-id
                            granule2-id
@@ -103,9 +103,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 0.1795485946690434
-             :mb 1.7123088328270284E-7
-             :gb 1.672176594557645E-10}]
+    (is (= [{:bytes 1641823.8102396657
+             :mb 1.5657651998898179
+             :gb 0.0015290675780174003}]
            (util/parse-response response)))))
 
 ;; XXX Currently not working; see CMR-5268
@@ -116,7 +116,7 @@
                                   "?granules=%s,%s"
                                   "&variables=%s"
                                   "&format=ascii"
-                                  "&total-granule-input-bytes=1024")
+                                  "&total-granule-input-bytes=1000000")
                              (test-system/http-port)
                              collection-id
                              granule-id
@@ -142,7 +142,7 @@
                                 "?granules=%s"
                                 "&variables=%s"
                                 "&format=ascii"
-                                "&total-granule-input-bytes=1024")
+                                "&total-granule-input-bytes=1000000")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -151,7 +151,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 0.13934749963454665
-             :mb 1.3289213145689645E-7
-             :gb 1.2977747212587544E-10}]
+    (is (= [{:bytes 830575.8216056027
+             :mb 0.7920988288932826
+             :gb 7.735340125910963E-4}]
            (util/parse-response response)))))
