@@ -1685,50 +1685,54 @@
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))
 
 (def related-urls-UMM-1-10-example
-  (remove-empty-maps
-    (js/parse-umm-c
-      (assoc exp-conv/example-collection-record-edn
-             :RelatedUrls [{:Description "Related url description"
-                            :URL "http://www.foo.com?a=1&ver=5"
-                            :URLContentType "DistributionURL"
-                            :Type "GET DATA"
-                            :Subtype "EARTHDATA SEARCH"
-                            :GetData {:Format "ascii"
-                                      :MimeType "application/json"
-                                      :Checksum "checksum"
-                                      :Size 10.0
-                                      :Unit "MB"
-                                      :Fees "fees"}}
-                           {:Description "Related url 3 description "
-                            :URL "http://www.foo.com"
-                            :URLContentType "DistributionURL"
-                            :Type "GET SERVICE"
-                            :GetService {:MimeType "application/json"
-                                         :DataID "dataid"
-                                         :DataType "datatype"
-                                         :Protocol "HTTP"
-                                         :FullName "fullname"
-                                         :Format "ascii"
-                                         :URI ["http://www.foo.com", "http://www.bar.com"]}}
-                           {:Description "Related url 2 description"
-                            :URL "http://www.foo.com"
-                            :URLContentType "VisualizationURL"
-                            :Type "GET RELATED VISUALIZATION"
-                            :Subtype "GIBS"}]))))
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :RelatedUrls [{:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "EARTHDATA SEARCH"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url 3 description "
+                          :URL "http://www.foo.com"
+                          :URLContentType "DistributionURL"
+                          :Type "GET SERVICE"
+                          :GetService {:MimeType "application/json"
+                                       :DataID "dataid"
+                                       :DataType "datatype"
+                                       :Protocol "HTTP"
+                                       :FullName "fullname"
+                                       :Format "ascii"
+                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                         {:Description "Related url 2 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "VisualizationURL"
+                          :Type "GET RELATED VISUALIZATION"
+                          :Subtype "GIBS"}])))
 
 (deftest migrate-1-10-to-1-11
   (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
-    (is (= (remove-empty-maps exp-conv/example-collection-record)
-           (remove-empty-maps result)))))
+    (is (= exp-conv/example-collection-record
+           result))))
 
 (deftest migrate-1-10-to-1-11-no-related-urls
   (let [collection (dissoc related-urls-UMM-1-10-example :RelatedUrls)
         result (vm/migrate-umm {} :collection "1.10" "1.11" collection)]
-    (is (= (remove-empty-maps (dissoc exp-conv/example-collection-record :RelatedUrls))
-           (remove-empty-maps result)))))
+    (is (= (dissoc exp-conv/example-collection-record :RelatedUrls)
+           result))))
+
+(deftest migrate-1-11-to-1-10
+  (let [result (vm/migrate-umm {} :collection "1.11" "1.10" exp-conv/example-collection-record)]
+    (is (= related-urls-UMM-1-10-example
+           result))))
 
 (deftest migrate-1-11-down-to-1-10-no-related-urls
   (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
         result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
-    (is (= (remove-empty-maps (dissoc related-urls-UMM-1-10-example :RelatedUrls))
-           (remove-empty-maps result)))))
+    (is (= (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+           result))))

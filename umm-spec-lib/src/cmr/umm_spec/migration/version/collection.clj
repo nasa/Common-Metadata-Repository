@@ -136,9 +136,9 @@
 (defmethod interface/migrate-umm-version [:collection "1.4" "1.5"]
   [context c & _]
   (-> c
-    ;; If an Additional Attribute has no description, set the description
-    ;; to the default "Not provided"
-    (update-in [:AdditionalAttributes] #(mapv update-attribute-description %))))
+      ;; If an Additional Attribute has no description, set the description
+      ;; to the default "Not provided"
+      (update-in [:AdditionalAttributes] #(mapv update-attribute-description %))))
 
 (defmethod interface/migrate-umm-version [:collection "1.5" "1.4"]
   [context c & _]
@@ -148,9 +148,9 @@
 (defmethod interface/migrate-umm-version [:collection "1.5" "1.6"]
   [context c & _]
   (-> c
-    (update-in [:DataCenters] #(mapv ci/update-data-center-contact-info %))
-    (update-in [:ContactPersons] #(mapv ci/first-contact-info %))
-    (update-in [:ContactGroups] #(mapv ci/first-contact-info %))))
+      (update-in [:DataCenters] #(mapv ci/update-data-center-contact-info %))
+      (update-in [:ContactPersons] #(mapv ci/first-contact-info %))
+      (update-in [:ContactGroups] #(mapv ci/first-contact-info %))))
 
 (defmethod interface/migrate-umm-version [:collection "1.6" "1.5"]
   [context c & _]
@@ -172,12 +172,12 @@
 (defmethod interface/migrate-umm-version [:collection "1.7" "1.8"]
   [context c & _]
   (-> c
-     (update :CollectionProgress u/with-default)))
+      (update :CollectionProgress u/with-default)))
 
 (defmethod interface/migrate-umm-version [:collection "1.8" "1.7"]
   [context c & _]
   (-> c
-    (dissoc :VersionDescription)))
+      (dissoc :VersionDescription)))
 
 (defmethod interface/migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
@@ -246,10 +246,8 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.11"]
   [context c & _]
-  (-> c
-    (related-url/migrate-up-to-1_11)))
+  (related-url/migrate-up-to-1_11 c))
 
 (defmethod interface/migrate-umm-version [:collection "1.11" "1.10"]
   [context c & _]
-  (-> c
-    (related-url/migrate-down-from-1_11)))
+  (related-url/migrate-down-from-1_11 c))

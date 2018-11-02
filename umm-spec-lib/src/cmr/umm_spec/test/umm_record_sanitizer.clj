@@ -106,30 +106,30 @@
    "DataCenterURL" {"HOME PAGE" []}
    "DataContactURL" {"HOME PAGE" []}})
 
-(defn valid-types-for-url-content-type
+(defn- valid-types-for-url-content-type
   "Returns all valid Types for URLContentType"
-  [url-content-type concept]
-  (case concept
+  [url-content-type concept-type]
+  (case concept-type
     :collection (keys (get spec-util/valid-url-content-types-map url-content-type))
     :service (keys (get valid-url-content-types-map-service-version-1-3 url-content-type))
     (assert nil (str "The RelatedUrl URLContentType, Type, and Subtype valid values are not
-                      defined for the " concept " concept."))))
+                      defined for the " concept-type " concept-type."))))
 
-(defn valid-subtypes-for-type
+(defn- valid-subtypes-for-type
   "Returns all Subtypes for URLContentType/Type combination"
-  [url-content-type type concept]
-  (case concept
+  [url-content-type type concept-type]
+  (case concept-type
     :collection (get-in spec-util/valid-url-content-types-map [url-content-type type])
     :service (get-in valid-url-content-types-map-service-version-1-3 [url-content-type type])
     (assert nil (str "The RelatedUrl URLContentType, Type, and Subtype valid values are not
-                      defined for the " concept " concept."))))
+                      defined for the " concept-type " concept-type."))))
 
 (defn- generate-valid-type-and-subtype-for-url-content-type
  "Generate a valid URLContentType, Type, and Subtype combo given the URLContentType"
- [url-content-type concept]
- (let [valid-types (gen/elements (valid-types-for-url-content-type url-content-type concept))
+ [url-content-type concept-type]
+ (let [valid-types (gen/elements (valid-types-for-url-content-type url-content-type concept-type))
        types (gen/sample valid-types 1)
-       valid-subtypes (valid-subtypes-for-type url-content-type type concept)
+       valid-subtypes (valid-subtypes-for-type url-content-type type concept-type)
        subtypes (when valid-subtypes (gen/sample (gen/elements valid-subtypes) 1))]
   {:Type (first types)
    :Subtype (first subtypes)}))
@@ -160,10 +160,10 @@
 
 (defn- sanitize-related-url
   "Returns a single sanitized RelatedUrl"
-  [entry concept]
+  [entry concept-type]
   (if-let [urls (get-in entry [:RelatedUrl :URL])]
     (let [url-content-type (get-in entry [:RelatedUrl :URLContentType])
-          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type concept)]
+          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type concept-type)]
       (-> entry
           (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
           (assoc-in [:RelatedUrl :Type] Type)
@@ -176,11 +176,11 @@
 
 (defn- sanitize-related-urls
   "Returns a list of sanitized related urls"
-  [related-urls concept]
+  [related-urls concept-type]
   (when related-urls
    (for [ru related-urls
          :let [type-subtype
-               (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru) concept)]]
+               (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru) concept-type)]]
     (merge
      (-> ru
          sanitize-get-service-and-get-data
@@ -189,49 +189,49 @@
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"
-  [records concept]
+  [records concept-type]
   (seq (for [record records]
          (if-let [contact-info (:ContactInformation record)]
            (update-in record
                       [:ContactInformation :RelatedUrls]
-                      #(sanitize-related-urls % concept))
+                      #(sanitize-related-urls % concept-type))
            record))))
 
 (defn- sanitize-data-centers
   "Sanitize data center contact information and the contact information on contact
   persons and groups associated with the data center"
-  [data-centers concept]
-  (seq (for [dc (sanitize-contact-informations data-centers concept)]
+  [data-centers concept-type]
+  (seq (for [dc (sanitize-contact-informations data-centers concept-type)]
          (-> dc
-             (update :ContactPersons #(sanitize-contact-informations % concept))
-             (update :ContactGroups #(sanitize-contact-informations % concept))))))
+             (update :ContactPersons #(sanitize-contact-informations % concept-type))
+             (update :ContactGroups #(sanitize-contact-informations % concept-type))))))
 
 (defn- sanitize-umm-record-related-urls
   "Sanitize the RelatedUrls on the collection if any exist"
-  [record concept]
+  [record concept-type]
   (if (seq (:RelatedUrls record))
-    (update record :RelatedUrls #(sanitize-related-urls % concept))
+    (update record :RelatedUrls #(sanitize-related-urls % concept-type))
     record))
 
 (defn- sanitize-umm-record-data-centers
   "Sanitize data centers if there are any data centers in the record"
-  [record concept]
+  [record concept-type]
   (if (seq (:DataCenters record))
-    (update record :DataCenters #(sanitize-data-centers % concept))
+    (update record :DataCenters #(sanitize-data-centers % concept-type))
     record))
 
 (defn- sanitize-umm-record-contacts
   "Sanitize RelatedUrls if they key exists."
-  [record key concept]
+  [record key concept-type]
   (if (seq (get record key))
-    (update record key #(sanitize-contact-informations % concept))
+    (update record key #(sanitize-contact-informations % concept-type))
     record))
 
 (defn- sanitize-umm-record-related-url
   "Sanitize a single RelatedUrl in a collection if they key exists."
-  [collection key concept]
+  [collection key concept-type]
   (if (seq (get collection key))
-    (update-in-each collection [key] #(sanitize-related-url % concept))
+    (update-in-each collection [key] #(sanitize-related-url % concept-type))
     collection))
 
 (defn- sanitize-online-resource
@@ -241,16 +241,17 @@
    (assoc-in c [:OnlineResource :Linkage] (first (gen/sample test/file-url-string 1)))
    c))
 
+;; We should consolidate and simplify this into defmulti for the url-content-type mappings.
 (defn- sanitize-umm-record-urls
   "Sanitize all RelatedUrls throughout the collection by making them url strings."
-  [record concept]
+  [record concept-type]
   (-> record
-      (sanitize-umm-record-related-urls concept)
-      (sanitize-umm-record-data-centers concept)
-      (sanitize-umm-record-contacts :ContactPersons concept)
-      (sanitize-umm-record-contacts :ContactGroups concept)
-      (sanitize-umm-record-related-url :CollectionCitations concept)
-      (sanitize-umm-record-related-url :PublicationReferences concept)))
+      (sanitize-umm-record-related-urls concept-type)
+      (sanitize-umm-record-data-centers concept-type)
+      (sanitize-umm-record-contacts :ContactPersons concept-type)
+      (sanitize-umm-record-contacts :ContactGroups concept-type)
+      (sanitize-umm-record-related-url :CollectionCitations concept-type)
+      (sanitize-umm-record-related-url :PublicationReferences concept-type)))
 
 (defn- sanitize-umm-number-of-instruments
   "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"

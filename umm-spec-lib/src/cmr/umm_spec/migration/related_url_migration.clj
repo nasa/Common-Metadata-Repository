@@ -244,8 +244,8 @@
   (mapv (fn [related-url]
          (if-let [url (:URL related-url)]
           (-> related-url
-           (assoc :URLs [url])
-           (dissoc :URL))
+              (assoc :URLs [url])
+              (dissoc :URL))
           related-url))
         related-urls))
 
@@ -273,13 +273,13 @@
   (mapv (fn [contact]
          (if (seq (:ContactInformation contact))
           (-> contact
-           (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
-           (update-in-each [:ContactInformation :RelatedUrls]
-             (fn [related-url]
-               (-> related-url
-                   (assoc :URLContentType "DataContactURL")
-                   (assoc :Type "HOME PAGE")
-                   (dissoc :Relation :GetData :GetService :FileSize :MimeType)))))
+              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
+              (update-in-each [:ContactInformation :RelatedUrls]
+                (fn [related-url]
+                  (-> related-url
+                      (assoc :URLContentType "DataContactURL")
+                      (assoc :Type "HOME PAGE")
+                      (dissoc :Relation :GetData :GetService :FileSize :MimeType)))))
           contact))
         contacts))
 
@@ -330,12 +330,12 @@
   ":RelatedUrl {:URL url} -> :RelatedUrl {:URLs [url]} for a given collection"
   [collection]
   (-> collection
-   (update :RelatedUrls url->array-of-urls)
-   (update-in-each [:RelatedUrls] migrate-url-content-types-down)
-   (update-in-each [:RelatedUrls] url-content-type->relation)
-   (update :ContactGroups migrate-contacts-down)
-   (update :ContactPersons migrate-contacts-down)
-   (update :DataCenters migrate-data-centers-down)))
+      (update :RelatedUrls url->array-of-urls)
+      (update-in-each [:RelatedUrls] migrate-url-content-types-down)
+      (update-in-each [:RelatedUrls] url-content-type->relation)
+      (update :ContactGroups migrate-contacts-down)
+      (update :ContactPersons migrate-contacts-down)
+      (update :DataCenters migrate-data-centers-down)))
 
 (defn replace-existing-related-url-keywords
   "Pass in a related url and UMM version 1.10 or 1.11. Replace the existing UMMM-C version 1.11/1.10
@@ -349,23 +349,17 @@
                      "1.10" (ru-maps/umm-1-11-umm-url-types->umm-1-10-umm-url-types keywords)
                      "1.11" (ru-maps/umm-1-10-umm-url-types->umm-1-11-umm-url-types keywords)
                      keywords)]
-    (remove-nil-keys
-     (assoc related-url :URLContentType (:URLContentType result)
-                        :Type (:Type result)
-                        :Subtype (:Subtype result)))))
+    (assoc related-url :URLContentType (:URLContentType result)
+                       :Type (:Type result)
+                       :Subtype (:Subtype result))))
 
 (defn migrate-up-to-1_11
   ":RelatedUrl Type and Subtypes have changed in UMM-C version 1.11 to correspond
    to GCMD Related URL Keyword updates 8.6."
   [collection]
-  (def cc collection)
   (if (nil? (:RelatedUrls collection))
     collection
-    (assoc collection :RelatedUrls
-      (into []
-       (:RelatedUrls
-        (-> collection
-          (update-in-each [:RelatedUrls] replace-existing-related-url-keywords "1.11")))))))
+    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords "1.11")))
 
 (defn migrate-down-from-1_11
   ":RelatedUrl Type and Subtypes have changed in UMM-C version 1.11 to correspond
@@ -374,8 +368,4 @@
   [collection]
   (if (nil? (:RelatedUrls collection))
     collection
-    (assoc collection :RelatedUrls
-      (into []
-       (:RelatedUrls
-        (-> collection
-          (update-in-each [:RelatedUrls] replace-existing-related-url-keywords "1.10")))))))
+    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords "1.10")))
