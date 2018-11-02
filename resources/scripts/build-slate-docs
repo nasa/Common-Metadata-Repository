@@ -3,7 +3,7 @@
 SLATE_REPL=https://github.com/cmr-exchange/slate.git
 SLATE_CLONE=resources/docs/rest-api/slate
 SLATE_BUILD=$SLATE_CLONE/build
-REST_API_DIR=resources/public/docs/opendap/docs/current/rest-api
+REST_API_DIR=resources/public/docs/service-bridge/docs/current/rest-api
 
 if [ ! -d "$SLATE_CLONE" ]; then
 	git clone "$SLATE_REPL" "$SLATE_CLONE"

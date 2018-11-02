@@ -48,7 +48,7 @@
    :rest-docs
      {:base-url-template "%%OPENDAP_BASE_URL%%"
       :source "resources/docs/rest-api/index.md"
-      :outdir "resources/public/docs/opendap/docs/current/rest-api"}
+      :outdir "resources/public/docs/service-bridge/docs/current/rest-api"}
    :skip-static #{"/service-bridge/docs"}
    :replace-base-url #{"/service-bridge/docs/current/rest-api"
                        "/service-bridge/docs/current/reference/2000-usage.html"}

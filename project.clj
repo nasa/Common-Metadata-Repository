@@ -16,7 +16,7 @@
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
 (defproject gov.nasa.earthdata/cmr-service-bridge "1.5.0-SNAPSHOT"
-  :description "OPeNDAP Integration in the CMR"
+  :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {
     :name "Apache License, Version 2.0"
@@ -39,8 +39,8 @@
     [gov.nasa.earthdata/cmr-sizing-plugin "0.1.1-SNAPSHOT"]
     [http-kit "2.3.0"]
     [markdown-clj "1.0.5"]
-    [metosin/reitit-core "0.2.5"]
-    [metosin/reitit-ring "0.2.5"]
+    [metosin/reitit-core "0.2.4"]
+    [metosin/reitit-ring "0.2.4"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
@@ -131,8 +131,8 @@
       :source-paths ["resources/docs/src"]
       :codox {
         :project {
-          :name "CMR OPeNDAP"
-          :description "OPeNDAP/CMR Integration"}
+          :name "CMR Service-Bridge"
+          :description "A CMR connector service that provides an inter-service API"}
         :namespaces [#"^cmr\.opendap\.(?!dev)"]
         :metadata {
           :doc/format :markdown
@@ -158,7 +158,7 @@
                            :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
                            :type "text/javascript"}]]]}
         :doc-paths ["resources/docs/markdown"]
-        :output-path "resources/public/docs/opendap/docs/current/reference"}}
+        :output-path "resources/public/docs/service-bridge/docs/current/reference"}}
       :slate {
         :plugins [[lein-shell "0.5.0"]]}}
   :aliases {
@@ -201,7 +201,7 @@
     ;; Documentation and static content
     "codox" ["with-profile" "+docs,+system,+geo" "codox"]
     "marginalia" ["with-profile" "+docs,+system,+geo"
-      "marg" "--dir" "resources/public/docs/opendap/docs/current/marginalia"
+      "marg" "--dir" "resources/public/docs/service-bridge/docs/current/marginalia"
              "--file" "index.html"
              "--name" "OPeNDAP/CMR Integration"]
     "slate" ["with-profile" "+slate"

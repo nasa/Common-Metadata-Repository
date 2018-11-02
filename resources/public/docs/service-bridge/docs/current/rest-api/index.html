@@ -201,9 +201,9 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,300"
           rel="stylesheet"
           type="text/css">
-    <link href="https://cmr.sit.earthdata.nasa.gov/opendap/site/css/eui.css"
+    <link href="https://cmr.sit.earthdata.nasa.gov/service-bridge/site/css/eui.css"
           rel="stylesheet" />
-    <link href="https://cmr.sit.earthdata.nasa.gov/opendap/site/css/cmr.css"
+    <link href="https://cmr.sit.earthdata.nasa.gov/service-bridge/site/css/cmr.css"
           rel="stylesheet" />
     <link href="rest-api/stylesheets/screen.css" rel="stylesheet" media="screen" />
     <link href="rest-api/stylesheets/print.css" rel="stylesheet" media="print" />
@@ -223,12 +223,12 @@
     <header class="doc-mast">
       <div class="container">
         <div class="eui-masthead-logo eui-application-logo">
-          <h1><a href="https://cmr.sit.earthdata.nasa.gov/opendap/">CMR OPeNDAP</a></h1>
+          <h1><a href="https://cmr.sit.earthdata.nasa.gov/service-bridge/">CMR OPeNDAP</a></h1>
         </div>
         <nav class="main-nav" role="navigation">
           <ul class="main-nav-list">
 
-          <li><a href="https://cmr.sit.earthdata.nasa.gov/opendap/docs">Documentation</a></li>
+          <li><a href="https://cmr.sit.earthdata.nasa.gov/service-bridge/docs">Documentation</a></li>
 
 
             <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum">Forum</a></li>
@@ -289,6 +289,9 @@
           <li>
             <a href="#ous-resources" class="toc-h1 toc-link" data-title="ous-resources">OUS Resources</a>
               <ul class="toc-list-h2">
+                  <li>
+                    <a href="#tag-association-for-ous-to-return-the-appropriate-opendap-urls" class="toc-h2 toc-link" data-title="tag-association-for-ous-to-return-the-appropriate-opendap-urls">Tag association for OUS to return the appropriate OPeNDAP URLS</a>
+                  </li>
                   <li>
                     <a href="#collection-resources" class="toc-h2 toc-link" data-title="collection-resources">Collection Resources</a>
                   </li>
@@ -541,6 +544,31 @@ API that will impact users of the default version.</p>
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
 that name has carried through here.</p>
+<h2 id='tag-association-for-ous-to-return-the-appropriate-opendap-urls'>Tag association for OUS to return the appropriate OPeNDAP URLS</h2>
+<p>As a workable, short-term solution, OUS makes use of CMR tagging functionality
+to convert a granule&#39;s archive location to an OPeNDAP location.</p>
+
+<p>To achieve this, we fist need to create a tag cmr.earthdata.nasa.ous.datafile.replace:
+<code>
+curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot;
+     https://cmr.uat.earthdata.nasa.gov/search/tags
+     -d {&quot;tag_key&quot; &quot;cmr.earthdata.nasa.ous.datafile.replace&quot;,
+         &quot;description&quot; &quot;This tag will provide a mapping from archive location to OPeNDAP location for one or more collections&quot;}
+</code></p>
+
+<p>Then, associate the tag with the collection, using a regex that replaces the achive 
+location with the OPeNDAP location based on the archive to OPeNDAP location mapping:
+<code>
+curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot;
+     https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations
+     -d &#39;[{&quot;concept_id&quot;: &quot;C1224308603-EEDTEST&quot;, &quot;data&quot;: {&quot;match&quot;: &quot;/TEST1_Co/&quot;, &quot;replace&quot;: &quot;/dir-replaced-by-tags/&quot;}}]&#39;
+</code></p>
+
+<p>The following returns the appropriate OPeNDAP URLS for the granule&#39;s archive location: 
+<code>
+curl -H &quot;Echo-Token: $MY_TOKEN&quot;
+     https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224308603-EEDTEST?granules=G1224308604-EEDTEST
+</code></p>
 <h2 id='collection-resources'>Collection Resources</h2>
 <p>The CMR OPeNDAP REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
