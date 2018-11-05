@@ -72,7 +72,7 @@
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params data-files service-ids vars tag-data errs]))
+    [params coll data-files service-ids vars tag-data errs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -90,7 +90,7 @@
                         :token user-token
                         :params raw-params})
         ;; Stage 2
-        [params data-files service-ids vars tag-data s2-errs]
+        [params coll data-files service-ids vars tag-data s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
