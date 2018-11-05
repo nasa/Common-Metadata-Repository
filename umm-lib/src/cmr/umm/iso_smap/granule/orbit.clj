@@ -1,4 +1,6 @@
 (ns cmr.umm.iso-smap.granule.orbit
+  "Functions for parsing the orbit information from ISO SMAP granule metadata as well as
+  generating ISO SMAP granule metadata XML from the UMM granule model."
   (:require
    [clojure.data.xml :as x]
    [clojure.set :as set]
@@ -89,18 +91,6 @@
     (str OrbitalModelName " " OrbitNumber " " StartOrbitNumber " " StopOrbitNumber " "
          EquatorCrossingLongitude " " EquatorCrossingDateTime)))
 
-(defn- parse-float
-  "Coerce's string to float, catches exceptions and logs error message and returns nil if
-  value is not parseable."
-  [field value] 
-  (try
-    (Float. value)
-    (catch Exception e
-      (info (format "For Orbit field [%s] the value [%s] is not a number." field value))
-      ;; We return nil here instead of value because within-range validation can't handle comparing a
-      ;; string to a double.
-      nil)))
-
 (defn- parse-integer
   "Coerce's string to integer, catches exceptions and logs error message and returns value if
   value is not parseable so that the validation can catch the error and return to the user."
@@ -113,8 +103,8 @@
 
 (defn- parse-datetime
   "Coerce's string to datetime, catches exceptions and logs error message and returns value if
-  value is not parseable. This wrapper is used so that the error can be returned together 
-  with other validation errors." 
+  value is not parseable. This wrapper is used so that the error can be returned together
+  with other validation errors."
   [field value]
   (try
     (date-time-parser/parse-datetime value)
@@ -183,10 +173,10 @@
   "Update values in the orbit-str-map with the parsed values."
   [orbit-str-map]
   (-> orbit-str-map
-      (update :ascending-crossing #(parse-float :ascending-crossing %))
-      (update :start-lat #(parse-float :start-lat %))
+      (update :ascending-crossing #(parse-double :ascending-crossing %))
+      (update :start-lat #(parse-double :start-lat %))
       (update :start-direction #(convert-direction %))
-      (update :end-lat #(parse-float :end-lat %))
+      (update :end-lat #(parse-double :end-lat %))
       (update :end-direction #(convert-direction %))))
 
 (defn- parse-values-for-ocsd
@@ -206,7 +196,7 @@
                         (x/element :gmd:geographicIdentifier {}
                         (x/element :gmd:MD_Identifier {}
                                    (h/iso-string-element :gmd:code (build-orbit-string orbit))
-                                   (h/iso-string-element :gmd:codeSpace 
+                                   (h/iso-string-element :gmd:codeSpace
                                                          "gov.nasa.esdis.umm.orbitparameters")
                                    (h/iso-string-element :gmd:description "OrbitParameters"))))))
 
@@ -217,7 +207,7 @@
                         (x/element :gmd:geographicIdentifier {}
                         (x/element :gmd:MD_Identifier {}
                                    (h/iso-string-element :gmd:code (build-ocsd-string ocsd))
-                                   (h/iso-string-element :gmd:codeSpace 
+                                   (h/iso-string-element :gmd:codeSpace
                                                          "gov.nasa.esdis.umm.orbitcalculatedspatialdomains")
                                    (h/iso-string-element :gmd:description "OrbitCalculatedSpatialDomains"))))))
 
