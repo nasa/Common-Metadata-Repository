@@ -9,7 +9,7 @@
    [cmr.spatial.kml :as kml]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
+   [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.collection :as dc]
@@ -108,7 +108,7 @@
                   (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                   (println "Actual:" (->> found :refs (map :name) sort pr-str)))
                 matches?)
-        
+
         "CMR-5007: Search north pole with altitude > 86.52 won't throw 500 error."
         [granule] [-30,87 90,87 150,87 -150,87 -90,87 -30,87] nil
 
@@ -286,7 +286,7 @@
 
     (testing "point searches"
       (are [items lon_lat params]
-           (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
+           (let [found (search/find-refs :granule {:point (codec/url-encode (apply point/point lon_lat))
                                                    :provider "PROV1"
                                                    :page-size 50})
                  matches? (d/refs-match? items found)]
@@ -407,7 +407,38 @@
               ; "Broken test"
               ; [] [0 1 6 0] nil
 
-
+(deftest ascending-crossing-precision-test2
+  (let [coll (d/ingest-concept-with-metadata-file "iso-samples/CMR-5269-IsoMendsCollection.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :format-key :iso19115})
+        gran (d/ingest-concept-with-metadata-file "iso-samples/CMR-5269-IsoSmapGranule.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :granule
+                                                   :format-key :iso-smap})
+        _ (index/wait-until-indexed)
+        json-response (search/find-concepts-json :granule {:concept-id (:concept-id gran)})
+        granule-json (-> json-response :results :entries first)
+        expected-points-in-polygons [(point/point 25.235719457640535 -21.19078458692315)
+                                     (point/point 23.13297924763377 -39.771484792279814)
+                                     (point/point 22.646805419273353 -43.610681332179986)
+                                     (point/point 22.199982651743795 -43.5950693405511)
+                                     (point/point 22.711995770988835 -39.7567775481513)
+                                     (point/point 24.8885475222218 -21.178659983890096)
+                                     (point/point 25.235719457640535 -21.19078458692315)]
+        expected-ascending-crossing -140.637396
+        expected-equator-crossings [-140.637396]
+        actual-ascending-crossing (-> granule-json :orbit :ascending-crossing)
+        actual-equator-crossings (->> granule-json
+                                      :orbit-calculated-spatial-domains
+                                      (keep :equator-crossing-longitude))
+        actual-points-in-polygons (->> granule-json
+                                       :shapes
+                                       (mapcat :rings)
+                                       (mapcat :points))]
+    (is (= expected-points-in-polygons actual-points-in-polygons))
+    (is (= expected-ascending-crossing actual-ascending-crossing))
+    (is (= expected-equator-crossings actual-equator-crossings))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -545,7 +576,7 @@
                     distinct
                     reverse)
         points (conj (vec corners) (first corners))]
-    (p/points->ords points)))
+    (point/points->ords points)))
 
 
 (defn- create-polygons
