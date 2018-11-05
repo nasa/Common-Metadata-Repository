@@ -103,28 +103,27 @@
              :mb 16.4794921875}]
            (util/parse-response response)))))
 
-;; XXX Currently not working; see CMR-5268
-#_(deftest multi-gran-multi-var-size-test
-    (let [response @(httpc/get
-                     (format (str "http://localhost:%s"
-                                  "/service-bridge/size-estimate/collection/%s"
-                                  "?granules=%s,%s"
-                                  "&variables=%s"
-                                  "&format=dods")
-                             (test-system/http-port)
-                             collection-id
-                             granule-id
-                             granule2-id
-                             variable-id
-                             variable2-id)
-                     options)]
-      (is (= 200 (:status response)))
-      (is (= "cmr-service-bridge.v2.1; format=json"
-             (get-in response [:headers :cmr-media-type])))
-      (is (= [{:bytes 8158
-               :gb 7.597729563713074E-6
-               :mb 0.0077800750732421875}]
-             (util/parse-response response)))))
+(deftest multi-gran-multi-var-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s,%s"
+                                "&variables=%s,%s"
+                                "&format=dods")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           granule2-id
+                           variable-id
+                           variable2-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 23040002
+             :mb 21.972658157348633
+             :gb 0.021457673981785774}]
+           (util/parse-response response)))))
 
 (deftest size-with-no-sizing-metadata-test
   (let [collection-id "C1200267318-HMR_TME"

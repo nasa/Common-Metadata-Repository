@@ -103,26 +103,26 @@
              :mb 16.486754417419434}]
            (util/parse-response response)))))
 
-;; XXX Currently not working; see CMR-5268
-#_(deftest multi-gran-multi-var-size-test
+(deftest multi-gran-multi-var-size-test
     (let [response @(httpc/get
                      (format (str "http://localhost:%s"
                                   "/service-bridge/size-estimate/collection/%s"
                                   "?granules=%s,%s"
-                                  "&variables=%s"
+                                  "&variables=%s,%s"
                                   "&format=nc")
                              (test-system/http-port)
                              collection-id
                              granule-id
                              granule2-id
-                             variable-id)
+                             variable-id
+                             variable2-id)
                      options)]
       (is (= 200 (:status response)))
       (is (= "cmr-service-bridge.v2.1; format=json"
              (get-in response [:headers :cmr-media-type])))
-      (is (= [{:bytes 8158
-               :gb 7.597729563713074E-6
-               :mb 0.0077800750732421875}]
+      (is (= [{:bytes 23056316
+               :mb 21.988216400146484
+               :gb 0.02147286757826805}]
              (util/parse-response response)))))
 
 (deftest size-with-no-sizing-metadata-implicit-format-test
