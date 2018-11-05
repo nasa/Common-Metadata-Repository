@@ -71,7 +71,8 @@
   [granule-count variables metadata]
   (let [compression 1
         measurements (reduce + (map get-measurement variables))]
-    (+ (* granule-count compression measurements) metadata)))
+    (+ (* granule-count compression measurements)
+       (* granule-count metadata))))
 
 (defn- estimate-netcdf4-or-ascii-size
   "Calculates the estimated size for ASCII or NETCDF4 format.
