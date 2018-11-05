@@ -141,7 +141,7 @@
                response-format))
         (is (= (:metadata umm-g-gran) (:body response)))))
 
-    (testing "retrieve ECHO10 granule in UMM JSON format"
+    (testing "retrieve ISO SMAP granule in UMM JSON format"
       (let [response (search/retrieve-concept
                       smap-gran-concept-id
                       smap-gran-revision-id
