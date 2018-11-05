@@ -27,33 +27,39 @@
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
-  ([{:keys [params data-files tag-data vars format granule-metadata]}
-    start errs warns]
-   (log/trace "Got data-files:" (vec data-files))
-   (log/trace "Process-results tag-data:" tag-data)
+  ([results start errs warns]
+   (log/trace "Got data-files:" (vec (:data-files results)))
+   (log/trace "Process-results tag-data:" (:tag-data results))
    (if errs
      (do
        (log/error errs)
        errs)
-     (let [sample-granule-metadata-size (count (.getBytes granule-metadata))
-           estimate-or-errs (formats/estimate-size
-                             format
-                             (count data-files)
-                             vars
-                             sample-granule-metadata-size
-                             params)]
+     (let [sample-granule-metadata-size (count (.getBytes (:granule-metadata results)))
+           format-estimate (formats/estimate-size
+                            (:format results)
+                            (count (:data-files results))
+                            (:vars results)
+                            sample-granule-metadata-size
+                            (:params results))]
        ;; Error handling for post-stages processing
-       (if-let [errs (errors/erred? estimate-or-errs)]
+       (if-let [errs (errors/erred? format-estimate)]
          (do
            (log/error errs)
            errs)
-         (let [estimate estimate-or-errs]
-           (log/debug "Generated estimate:" estimate)
-           (results/create [{:bytes estimate
-                             :mb (/ estimate (Math/pow 2 20))
-                             :gb (/ estimate (Math/pow 2 30))}]
-                           :elapsed (util/timed start)
-                           :warnings warns)))))))
+         (let [spatial-estimate (spatial/estimate-size
+                                 format-estimate
+                                 results)]
+           (if-let [errs (errors/erred? spatial-estimate)]
+             (do
+               (log/error errs)
+               errs)
+             (let [estimate spatial-estimate]
+               (log/debug "Generated estimate:" estimate)
+               (results/create [{:bytes estimate
+                                 :mb (/ estimate (Math/pow 2 20))
+                                 :gb (/ estimate (Math/pow 2 30))}]
+                               :elapsed (util/timed start)
+                               :warnings warns)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,7 +77,7 @@
           :token user-token
           :params raw-params})
         ;; Stage 2
-        [params data-files service-ids vars s2-errs]
+        [params coll data-files service-ids vars s2-errs]
         (ous/stage2
          component
          coll-promise
@@ -120,6 +126,7 @@
        :data-files data-files
        :vars vars
        :format fmt
+       :collection-metadata coll
        :granule-metadata granule-metadata
        :bounding-info bounding-info}
       start
