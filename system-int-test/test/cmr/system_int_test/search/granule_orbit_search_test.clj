@@ -407,7 +407,7 @@
               ; "Broken test"
               ; [] [0 1 6 0] nil
 
-(deftest ascending-crossing-precision-test2
+(deftest ascending-crossing-precision-test
   (let [coll (d/ingest-concept-with-metadata-file "iso-samples/CMR-5269-IsoMendsCollection.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection

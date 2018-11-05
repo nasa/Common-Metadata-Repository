@@ -1,5 +1,5 @@
 (ns cmr.umm.iso-smap.granule.orbit
-  "Funcations for parsing the orbit information from ISO SMAP granule metadata as well as
+  "Functions for parsing the orbit information from ISO SMAP granule metadata as well as
   generating ISO SMAP granule metadata XML from the UMM granule model."
   (:require
    [clojure.data.xml :as x]
