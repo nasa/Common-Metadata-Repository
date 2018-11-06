@@ -1,29 +1,33 @@
 (ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in csv format"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.atom-json :as dj]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.kml :as dk]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.ring-relations :as rr]
-            [clj-http.client :as client]
-            [cmr.common.concepts :as cu]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-core :as umm]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common.concepts :as cu]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.atom-json :as dj]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm.umm-core :as umm]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -69,6 +73,55 @@
       ;; The retrieved echo10 granule should contain the same SizeMBDataGranule as the umm granule size.
       (is (= 22.2031965255737 umm-granule-size))
       (is (= true (.contains metadata (str "<SizeMBDataGranule>" umm-granule-size "</SizeMBDataGranule>")))))))
+
+(deftest search-umm-g-granule-test
+  (let [collection (d/ingest-umm-spec-collection
+                    "PROV1"
+                    (data-umm-c/collection {:EntryTitle "UMM-G-Test"
+                                            :ShortName "U-G-T"
+                                            :Version "V1"}))
+        granule (dg/granule-with-umm-spec-collection
+                 collection
+                 (:concept-id collection)
+                 {:granule-ur "g1"
+                  :collection-ref (umm-g/map->CollectionRef {:entry-title "UMM-G-Test"})})
+        echo10-gran (d/item->concept granule :echo10)
+        iso19115-gran (d/item->concept granule :iso19115)
+        umm-g-gran (d/item->concept granule :umm-json)
+        umm-g-gran-concept-id (:concept-id (ingest/ingest-concept umm-g-gran))]
+    (index/wait-until-indexed)
+    (testing "Search UMM-G various formats"
+      (util/are3 [format-key granule-concept-id expected-granule accept url-extension]
+        (let [response (search/find-concepts-in-format
+                        format-key
+                        :granule
+                        {:concept-id granule-concept-id}
+                        {:accept accept
+                         :url-extension url-extension})
+              response-format (mt/mime-type->format (get-in response [:headers :Content-Type]))]
+          (is (= 200 (:status response)))
+          (is (= format-key response-format))
+          (if (= :iso19115 format-key) ; iso19115 item->concept doesn't exist, just do a ISO granule element test for now
+            (is (re-matches #"(?s).*<gmi:MI_Metadata.*" (:body response)))
+            (is (string/includes? (:body response) (:metadata expected-granule)))))
+
+        "Search echo10 via accept"
+        :echo10 umm-g-gran-concept-id echo10-gran "application/echo10+xml" nil
+
+        "Search echo10 via extension"
+        :echo10 umm-g-gran-concept-id echo10-gran nil "echo10"
+
+        "Search iso19115 via accept"
+        :iso19115 umm-g-gran-concept-id iso19115-gran "application/iso19115+xml" nil
+
+        "Search iso19115 via extension"
+        :iso19115 umm-g-gran-concept-id iso19115-gran nil "iso19115"
+
+        "Search native via accept"
+        :native umm-g-gran-concept-id umm-g-gran "application/metadata+xml" nil
+
+        "Search native via extension"
+        :native umm-g-gran-concept-id umm-g-gran nil "native"))))
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
