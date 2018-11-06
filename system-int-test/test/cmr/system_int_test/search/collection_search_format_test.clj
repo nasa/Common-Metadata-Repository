@@ -720,8 +720,8 @@
                                        :URL "http://example.com/browse-image"
                                        :Type "GET RELATED VISUALIZATION"
                                        :URLContentType "VisualizationURL"
-                                       :GetData {:MimeType "image/png"
-                                                 :Format "png"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
                                                  :Size 10.0
                                                  :Unit "KB"}}
                                       {:Description "Download url description"
@@ -738,7 +738,17 @@
                                        :Type "GET DATA"
                                        :GetData {:Format "png"
                                                  :Size 10.0
-                                                 :Unit "KB"}}]}
+                                                 :Unit "KB"}}
+                                      {:URL "http://example.com/csv.csv"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"}
+                                      {:URL "http://example.com/html.html"
+                                       :URLContentType "VisualizationURL"
+                                       :Type "GET DATA"}
+                                      {:URL "http://example.com/access-url"
+                                       :Description "Test access URL"
+                                       :URLContentType "VisualizationURL"
+                                       :Type "GET DATA"}]}
           concept-umm (-> (umm-spec-collection/collection 1 related-urls)
                           (umm-spec-collection/collection-concept :umm-json)
                           ingest/ingest-concept)
@@ -765,8 +775,8 @@
           (is (contains? (set (:distribution opendata-collection)) expected-distribution))
 
           "accessURL in distribution"
-          {:accessURL "http://example.com/browse-image"
-           :description "A test related url description."} opendata-coll-umm
+          {:accessURL "http://example.com/access-url"
+           :description "Test access URL"} opendata-coll-umm
 
           "downloadURL in distribution"
           {:downloadURL "http://example.com/download.png"
@@ -776,7 +786,14 @@
           "downloadURL in distribution with no specified mime type"
           {:downloadURL "http://example2.com/download.json"
            :description "no mime type specified"
-           :mediaType "application/json"} opendata-coll-umm))
+           :mediaType "application/json"} opendata-coll-umm
+
+          "downloadURL for csv"
+          {:downloadURL "http://example.com/csv.csv"
+           :mediaType "text/csv"} opendata-coll-umm
+
+          "accessURL for text mime type"
+          {:accessURL "http://example.com/html.html"} opendata-coll-umm))
       (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))
@@ -844,7 +861,7 @@
       (testing "correct distribution field"
         (is (= 14 (count distribution)))
         (testing "every distribution has an access URL."
-          (is (every? #(some? (:accessURL %)) distribution)))
+          (is (every? #(some? (or (:accessURL %) (:downloadURL %))) distribution)))
         (testing "every distribution has a description."
           (is (every? #(not (string/blank? (:description %))) distribution)))
         (testing "distribution URLs are correctly URL encoded."
@@ -863,7 +880,7 @@
                             "https://disc.gsfc.nasa.gov/information/documents?title=AIRS+Documentation"
                             "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
                             "https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_Files_Description.pdf"]))
-                 (set (map url-util/url->comparable-url (map :accessURL distribution)))))))
+                 (set (map url-util/url->comparable-url (map #(or (:downloadURL %) (:accessURL %)) distribution)))))))
       (testing "landing page field"
         (testing "when DOI exists, use the DOI"
           (is (= (format "https://doi.org/doi:10.5067/Aqua/AIRS/DATA301" (:concept-id concept-5138-1))

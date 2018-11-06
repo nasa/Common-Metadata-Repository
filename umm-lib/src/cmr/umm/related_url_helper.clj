@@ -23,11 +23,23 @@
    "kmz" "application/vnd.google-earth.kmz"
    "dae" "image/vnd.collada+xml"})
 
+(def ^:private DOWNLOADABLE_MIME_TYPES
+  "White list of downloadable mime types"
+  #{"text/csv"})
+
 (defn infer-url-mime-type
   "Attempt to figure out mime type based off file extension."
   [url]
   (when url
     (mime-type/ext-mime-type url ADDITIONAL_MIME_TYPES)))
+
+(defn downloadable-mime-type?
+  "Mime type is downloadable if it is either in the list of approved
+   mime types or if it does not match text/*"
+  [mime-type]
+  (when mime-type
+    (or (contains? DOWNLOADABLE_MIME_TYPES mime-type)
+        (not (re-matches #"^(text\/).*" mime-type)))))
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
