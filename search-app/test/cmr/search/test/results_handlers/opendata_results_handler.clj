@@ -33,8 +33,7 @@
       {:downloadURL "http://example.com/mime-type"
        :mediaType "image/jpeg"}
       {:url "http://example.com/mime-type"
-       :get-data-mime-type "image/jpeg"
-       :type "GET DATA"}
+       :get-data-mime-type "image/jpeg"}
 
       "url is downloadable by guessing mime type"
       {:downloadURL "http://example.com/mime-type.jpeg"
@@ -48,8 +47,7 @@
        :description "test description."}
       {:url "http://example.com/mime-type.jpeg"
        :get-data-mime-type "Not provided"
-       :description "test description."
-       :type "GET DATA"}
+       :description "test description."}
 
       "url is not downloadable from un-guessable mime type and mime-type specified as Not provided"
       {:accessURL "http://example.com/un-guessable-mime-type"
@@ -59,16 +57,25 @@
        :description "test description."
        :get-data-mime-type "Not provided"}
 
-      "url type is not GET DATA so it is not downloadable"
-      {:accessURL "http://example.com/mime-type.jpeg"}
-      {:url "http://example.com/mime-type.jpeg"
-       :get-data-mime-type "image/jpeg"
+      "url is not downloadable based on text/html mimetype"
+      {:accessURL "http://example.com/mime-type.html"}
+      {:url "http://example.com/mime-type.html"
+       :get-data-mime-type "text/html"
        :type "GET RELATED VISUALIZATION"}
 
-      "url is GET DATA but missing mime type makes it not downloadable"
+      "url is not downloadable from missing mime type and undeterminable mime type"
       {:accessURL "http://example.com/missing-mime-type"}
       {:url "http://example.com/missing-mime-type"
-       :type "GET DATA"})))
+       :type "GET DATA"}
+
+      "url is not downloadable based on mimetype being guessed as text/html and text/* not downloadable"
+      {:accessURL "http://example.com/not-downloadable-html.html"}
+      {:url "http://example.com/not-downloadable-html.html"}
+
+      "url is downloadable based on mimetype being guessed for whitelisted mime type"
+      {:downloadURL "http://example.com/csv.csv"
+       :mediaType "text/csv"}
+      {:url "http://example.com/csv.csv"})))
 
 (deftest graphic-preview-type
   (testing "Not provided results in the field not being displayed"
