@@ -1,25 +1,21 @@
 (ns cmr.search.data.metadata-retrieval.metadata-transformer
   "Contains functions for converting concept metadata into other formats."
-  (:require [clojure.java.io :as io]
-            [cmr.common.xml.xslt :as xslt]
-            [cmr.common.util :as u]
-            [cmr.common.xml :as cx]
-            [cmr.common.cache :as cache]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.mime-types :as mt]
-            [cmr.common-app.services.search.query-model :as qm]
-
-            ;; UMM library
-            [cmr.umm.umm-core :as umm-lib-core]
-
-            ;; UMM Spec
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.common.services.errors :as errors]
-
-            ;; render collections as html
-            [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
+  (:require
+   [clojure.java.io :as io]
+   [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.xslt :as xslt]
+   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as ver]
+   [cmr.umm.umm-core :as umm-lib-core]))
 
 (def transformer-supported-base-formats
   "The set of formats supported by the transformer."
@@ -76,6 +72,11 @@
       (= :html target-format)
       :html
 
+      (and (= :granule (:concept-type concept))
+           (= :umm-json (mt/format-key concept-mime-type))
+           (= :iso19115 target-format))
+      :granule-umm-g-to-iso
+
       ;; only granule uses umm-lib
       (= :granule (:concept-type concept))
       :umm-lib
@@ -114,7 +115,6 @@
   [context concept _ _]
   {:html (generate-html-response context concept)})
 
-
 (defmethod transform-with-strategy :umm-spec
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata} concept
@@ -128,10 +128,23 @@
 (defmethod transform-with-strategy :umm-lib
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata} concept
-        umm (umm-lib-core/parse-concept concept)]
+        umm (legacy/parse-concept context concept)]
     (reduce (fn [translated-map target-format]
               (assoc translated-map target-format
-                     (umm-lib-core/umm->xml umm target-format)))
+                     (legacy/generate-metadata context umm target-format)))
+            {}
+            target-formats)))
+
+(defmethod transform-with-strategy :granule-umm-g-to-iso
+  [context concept _ target-formats]
+  (let [umm (legacy/parse-concept context concept)
+        echo10-metadata (legacy/generate-metadata context umm :echo10)]
+    (assert (= [:iso19115] target-formats))
+    (reduce (fn [translated-map target-format]
+              (let [xsl (types->xsl [:echo10 target-format])]
+                (assoc translated-map target-format
+                       (cx/remove-xml-processing-instructions
+                        (xslt/transform echo10-metadata (get-template context xsl))))))
             {}
             target-formats)))
 

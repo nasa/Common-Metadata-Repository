@@ -37,7 +37,8 @@
               mt/json
               mt/echo10
               mt/iso19115
-              mt/iso-smap}
+              mt/iso-smap
+              mt/umm-json}
    :service #{mt/any
               mt/xml
               mt/umm-json}

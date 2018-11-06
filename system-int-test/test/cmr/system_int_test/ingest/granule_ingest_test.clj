@@ -528,10 +528,11 @@
                                                     :Version "V1"}))]
     (testing "Valid UMM-G granule with collection-ref attributes, default UMM-G version"
       (are3 [attrs]
-        (let [granule (-> (dg/granule-with-umm-spec-collection collection
-                                                               (:concept-id collection)
-                                                               {:granule-ur "Gran1"})
-                          (assoc :collection-ref (umm-g/map->CollectionRef attrs))
+        (let [granule (-> (dg/granule-with-umm-spec-collection
+                           collection
+                           (:concept-id collection)
+                           {:granule-ur "Gran1"
+                            :collection-ref (umm-g/map->CollectionRef attrs)})
                           (d/item->concept :umm-json))
               {:keys [status] :as response} (ingest/ingest-concept granule)]
           (index/wait-until-indexed)
@@ -552,8 +553,8 @@
       (are3 [attrs expected-status expected-errors]
         (let [collection-ref (umm-g/map->CollectionRef attrs)
               granule (-> (dg/granule-with-umm-spec-collection
-                           collection (:concept-id collection) {:granule-ur "Gran1"})
-                          (assoc :collection-ref collection-ref)
+                           collection (:concept-id collection) {:granule-ur "Gran1"
+                                                                :collection-ref collection-ref})
                           (d/item->concept :umm-json))
               {:keys [status errors]} (ingest/ingest-concept granule)]
           (is (= expected-status status))
@@ -598,20 +599,22 @@
          "/CollectionReference object has missing required properties ([\"EntryTitle\"])"]))
 
     (testing "Valid UMM-G granule with specific valid UMM-G version"
-      (let [granule (-> (dg/granule-with-umm-spec-collection collection
-                                                             (:concept-id collection)
-                                                             {:granule-ur "Gran1"})
-                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+      (let [granule (-> (dg/granule-with-umm-spec-collection
+                         collection
+                         (:concept-id collection)
+                         {:granule-ur "Gran1"
+                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
                         (d/item->concept {:format :umm-json
                                           :version "1.4"}))
             {:keys [status] :as response} (ingest/ingest-concept granule)]
         (is (#{200 201} status) (pr-str response))))
 
     (testing "Ingest UMM-G granule with invalid UMM-G version"
-      (let [granule (-> (dg/granule-with-umm-spec-collection collection
-                                                             (:concept-id collection)
-                                                             {:granule-ur "Gran1"})
-                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+      (let [granule (-> (dg/granule-with-umm-spec-collection
+                         collection
+                         (:concept-id collection)
+                         {:granule-ur "Gran1"
+                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
                         (d/item->concept {:format :umm-json
                                           :version "1.1"}))
             {:keys [status errors]} (ingest/ingest-concept granule)]
@@ -619,23 +622,23 @@
         (is (= ["Unknown UMM JSON schema version: \"1.1\""] errors))))
 
     (testing "Ingest UMM-G granule with empty body"
-      (let [granule (-> (dg/granule-with-umm-spec-collection collection
-                                                             (:concept-id collection)
-                                                             {:granule-ur "Gran1"})
-                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
-                        (d/item->concept {:format :umm-json
-                                          :version "1.1"}))
+      (let [granule (-> (dg/granule-with-umm-spec-collection
+                         collection
+                         (:concept-id collection)
+                         {:granule-ur "Gran1"
+                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
+                        (d/item->concept :umm-json))
             granule-with-empty-body (assoc granule :metadata "")
             {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
         (is (= 400 status))
         (is (= ["Request content is too short."] errors))))
 
     (testing "Ingest invalid UMM-G granule record"
-      (let [granule (-> (dg/granule-with-umm-spec-collection collection
-                                                             (:concept-id collection)
-                                                             {:granule-ur "Gran1"})
-                        (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
-                        (assoc :granule-ur "")
+      (let [granule (-> (dg/granule-with-umm-spec-collection
+                         collection
+                         (:concept-id collection)
+                         {:granule-ur ""
+                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
                         (d/item->concept :umm-json))
             {:keys [status errors]} (ingest/ingest-concept granule)]
         (is (= 400 status))
@@ -648,8 +651,8 @@
                            (:concept-id collection)
                            {:granule-ur "Gran1"
                             :orbit-calculated-spatial-domains [(dg/orbit-calculated-spatial-domain
-                                                                attrs)]})
-                          (assoc :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"}))
+                                                                attrs)]
+                            :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
                           (d/item->concept :umm-json))
               {:keys [status errors]} (ingest/ingest-concept granule)]
           (is (= 400 status))
