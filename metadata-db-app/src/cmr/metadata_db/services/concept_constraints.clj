@@ -157,7 +157,6 @@
                 (unique-field-constraint :entry-id)]
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
    :acl [(unique-field-constraint :acl-identity)]
-   :variable [(partial pfn-constraint :variable-name)]
    :service [(partial pfn-constraint :service-name)]})
 
 (defn perform-post-commit-constraint-checks
