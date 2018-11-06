@@ -34,7 +34,7 @@
    :providers [:short-name]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
    :concepts [:short-name]
-   :iso-topic-categories [:short-name]})
+   :iso-topic-categories [:iso-topic-category]})
 
 (defn- normalize-for-lookup
   "Takes a map (either a UMM-C keyword or a KMS keyword) or string m,

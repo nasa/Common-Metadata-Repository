@@ -91,8 +91,8 @@
     side-api/eval-routes
 
     ;; Retrieve KMS resources
-    (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
-      (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]
+    (GET "/kms/:filename" [filename]
+      (let [resource (io/resource (str "kms_examples/" filename))]
         (if resource
           {:status 200
            :body (slurp resource)

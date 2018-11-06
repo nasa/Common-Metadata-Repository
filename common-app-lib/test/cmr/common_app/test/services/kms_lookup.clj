@@ -25,7 +25,7 @@
                       {:category "SPACE" :uuid "location5-uuid"}
                       {:category "CONTINENT" :type "UNITED STATES" :subregion-1 "GEORGIA"
                        :uuid "location6-uuid"}]
-   :iso-topic-categories [{:short-name "BIOTA" :uuid "itc1-uuid"} {:short-name "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
+   :iso-topic-categories [{:iso-topic-category "BIOTA" :uuid "itc1-uuid"} {:iso-topic-category "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
    :concepts [{:short-name "GOSIC/GTOS" :uuid "dn1-uuid"} {:short-name "GOMMP" :uuid "dn2-uuid"}]
    :science-keywords [{:category "EARTH SCIENCE" :topic "TOPIC1" :term "TERM1"
                        :variable-level-1 "VL1" :variable-level-2 "VL2"
@@ -101,8 +101,8 @@
     "Lookup concepts"
     :concepts {:short-name "GOSIC/GTOS"} "dn1-uuid"
 
-    "Lookup project"
-    :iso-topic-categories {:short-name "BIOTA"} "itc1-uuid"
+    "Lookup iso topic category"
+    :iso-topic-categories {:iso-topic-category "BIOTA"} "itc1-uuid"
 
     "Lookup spatial keyword"
     :spatial-keywords {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
