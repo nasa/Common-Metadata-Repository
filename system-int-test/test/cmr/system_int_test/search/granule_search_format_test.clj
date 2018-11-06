@@ -114,7 +114,13 @@
         :iso19115 umm-g-gran-concept-id iso19115-gran "application/iso19115+xml" nil
 
         "Search iso19115 via extension"
-        :iso19115 umm-g-gran-concept-id iso19115-gran nil "iso19115"))))
+        :iso19115 umm-g-gran-concept-id iso19115-gran nil "iso19115"
+
+        "Search native via accept"
+        :native umm-g-gran-concept-id umm-g-gran "application/metadata+xml" nil
+
+        "Search native via extension"
+        :native umm-g-gran-concept-id umm-g-gran nil "native"))))
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
