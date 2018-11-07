@@ -290,7 +290,7 @@
             <a href="#ous-resources" class="toc-h1 toc-link" data-title="ous-resources">OUS Resources</a>
               <ul class="toc-list-h2">
                   <li>
-                    <a href="#tag-association-for-ous-to-return-the-appropriate-opendap-urls" class="toc-h2 toc-link" data-title="tag-association-for-ous-to-return-the-appropriate-opendap-urls">Tag association for OUS to return the appropriate OPeNDAP URLS</a>
+                    <a href="#tag-associations" class="toc-h2 toc-link" data-title="tag-associations">Tag Associations</a>
                   </li>
                   <li>
                     <a href="#collection-resources" class="toc-h2 toc-link" data-title="collection-resources">Collection Resources</a>
@@ -306,6 +306,14 @@
                   </li>
                   <li>
                     <a href="#forthcoming" class="toc-h2 toc-link" data-title="forthcoming">Forthcoming</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#ses-resources" class="toc-h1 toc-link" data-title="ses-resources">SES Resources</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#forthcoming-2" class="toc-h2 toc-link" data-title="forthcoming">Forthcoming</a>
                   </li>
               </ul>
           </li>
@@ -395,9 +403,14 @@ and the API versions supported in each.</p>
 </tr>
 </thead><tbody>
 <tr>
-<td>1.1.0</td>
+<td>1.5.0</td>
 <td>v1, v2, v2.1</td>
 <td>In development</td>
+</tr>
+<tr>
+<td>1.1.0 through 1.4.0</td>
+<td>v1, v2, v2.1</td>
+<td>Released</td>
 </tr>
 <tr>
 <td>1.0.0</td>
@@ -543,39 +556,64 @@ API that will impact users of the default version.</p>
 <p>This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
-that name has carried through here.</p>
-<h2 id='tag-association-for-ous-to-return-the-appropriate-opendap-urls'>Tag association for OUS to return the appropriate OPeNDAP URLS</h2>
-<p>As a workable, short-term solution, OUS makes use of CMR tagging functionality
-to convert a granule&#39;s archive location to an OPeNDAP location.</p>
+the acronym for that name has carried through.</p>
+<h2 id='tag-associations'>Tag Associations</h2>
+<p>Currenly, OUS depends upon CMR tag associations in order to map from a source file
+(e.g., an HDF granule file) to a URL that represents an OPeNDAP service whichh supports
+subsetting on that file. In other words, this allows OUS to convert a granule&#39;s archive
+location to an OPeNDAP location.</p>
 
-<p>To achieve this, we first need to create a tag <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
-
-<p><code>curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/search/tags -d {&quot;tag_key&quot; &quot;cmr.earthdata.nasa.ous.datafile.replace&quot;, &quot;description&quot; &quot;This tag will provide a mapping from archive location to OPeNDAP location for one or more collections&quot;}
-</code></p>
-
-<p>Then, associate the tag with the collection, using a regex that replaces the achive 
-location with the OPeNDAP location based on the archive to OPeNDAP location mapping:</p>
-
-<p><code>curl -XPOST -i -H &quot;Content-Type: application/json&quot; -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations -d &#39;[{&quot;concept_id&quot;: &quot;C1224363486-EEDTEST&quot;, &quot;data&quot;: {&quot;match&quot;: &quot;/data//&quot;, &quot;replace&quot;: &quot;/opendap/&quot;}}]&#39;
-</code></p>
-
-<p>The following returns the appropriate OPeNDAP URLS for the granule&#39;s archive location: </p>
-
-<p><code>curl -H &quot;Echo-Token: $MY_TOKEN&quot; https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224363486-EEDTEST?granules=G1224363487-EEDTEST
-</code></p>
-
-<p>{&quot;hits&quot;:1,&quot;took&quot;:0.244,&quot;items&quot;:[&quot;http://e4ftl01.cr.usgs.gov:40510/opendap/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc&quot;],&quot;warnings&quot;:null}</p>
+<blockquote>
+<p>To map a granule&#39;s archive location to an OPeNDAP location, we first need to create a
+using the tag key <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
+     -XPOST <span class="se">\</span>
+     -H <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+     -H <span class="s2">"Echo-Token: </span><span class="nv">$MY_TOKEN</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%search/tags </span><span class="se">\</span><span class="s2">
+     -d {"</span>tag_key<span class="s2">" "</span>cmr.earthdata.nasa.ous.datafile.replace<span class="s2">", "</span>description<span class="s2">" "</span>This tag will provide a mapping from archive location to OPeNDAP location <span class="k">for </span>one or more collections<span class="s2">"}
+</span></code></pre>
+<blockquote>
+<p>Then, we can associate the tag with the collection. We do this by using a regex that
+replaces the achive location with the OPeNDAP location:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
+     -XPOST <span class="se">\</span>
+     -H <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+     -H <span class="s2">"Echo-Token: </span><span class="nv">$MY_TOKEN</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations </span><span class="se">\</span><span class="s2">
+     -d '[{"</span>concept_id<span class="s2">": "</span>C1224363486-EEDTEST<span class="s2">",
+           "</span>data<span class="s2">": {"</span>match<span class="s2">": "</span>/data//<span class="s2">", "</span>replace<span class="s2">": "</span>/opendap/<span class="s2">"}}]'
+</span></code></pre>
+<blockquote>
+<p>Then, for any future OUS queries made to that collection and it&#39;s granules, OUS will
+perform the substituion behind the scenes. This is demonstrated by the following query
+to our tagged collection:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl <span class="se">\</span>
+     -H <span class="s2">"Echo-Token: </span><span class="nv">$MY_TOKEN</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1224363486-EEDTEST?granules=G1224363487-EEDTEST
+</span></code></pre><pre class="highlight shell tab-shell"><code><span class="o">{</span><span class="s2">"hits"</span>:1,
+ <span class="s2">"took"</span>:0.244,
+ <span class="s2">"items"</span>:[
+   <span class="s2">"http://e4ftl01.cr.usgs.gov:40510/opendap/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"</span><span class="o">]</span>,
+ ...<span class="o">}</span>
+</code></pre>
+<blockquote>
+<p>The returned results show the appropriate OPeNDAP URLS for the granule&#39;s archive location.</p>
+</blockquote>
 <h2 id='collection-resources'>Collection Resources</h2>
-<p>The CMR OPeNDAP REST API supports two different means of creating a subsetted
+<p>The CMR Service-Bridge REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
-standard JSON document; the other, more effectial means returns a JSON
+standard JSON document; the other (more efficient) means returns a JSON
 document via HTTP streaming.</p>
 
-<p>The resources are as follows:</p>
+<p>The OUS collection-based resources are as follows:</p>
 
 <ul>
-<li><code>GET /opendap/ous/collection/:concept-id</code></li>
-<li><code>GET /opendap/ous/streaming-collection/:concept-id</code></li>
+<li><code>GET /service-bridge/ous/collection/:concept-id</code></li>
+<li><code>GET /service-bridge/ous/streaming-collection/:concept-id</code></li>
 </ul>
 
 <blockquote>
@@ -583,7 +621,7 @@ document via HTTP streaming.</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
      -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/streaming-collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/streaming-collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
      jq .
 </code></pre>
 <blockquote>
@@ -591,7 +629,7 @@ document via HTTP streaming.</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
      -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS"</span> | <span class="se">\</span>
      jq .
 </code></pre>
 <blockquote>
@@ -611,7 +649,7 @@ the second one avoids making blocking calls in the request-processing thread;
 as such, we recommend that this resource be preferred. The only requirement is
 that your HTTP client supports streaming.</p>
 <h2 id='interaction-of-parameters'>Interaction of Parameters</h2>
-<p>In the sections below, the various parameters one can pass to the ous resource
+<p>In each sections below, the various parameters one can pass to the ous resource
 are described. Each parameter is discussed in isolation, simply addressing it
 in its own context. However, common usage will involve more than on parameter
 acting at the same time. As such, here are some points to note:</p>
@@ -666,7 +704,7 @@ note the acceptance of either dash or underscore in the parameter name:</p>
 <p>Use of <code>bounding-box</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      bounding-box=-9.984375,56.109375,19.828125,67.640625"</span>
 </code></pre>
@@ -696,7 +734,7 @@ shown in the <code>granules</code> section below.</p>
 <p>Use of <code>exclude-granules</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      exclude-granules=true&amp;
      granules=G1200187775-EDF_OPS"</span>
 </code></pre><h3 id='format'><code>format</code></h3>
@@ -715,7 +753,7 @@ depend upon the target OPeNDAP server.</p>
 <p>Use of <code>format</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
 </code></pre><h3 id='granules'><code>granules</code></h3>
 <p>This allows the client to select the granules to include (or exclude) in their
 OPeNDAP queries.</p>
@@ -737,7 +775,7 @@ in conjunction with the <code>exclude-granules</code> parameter, then all granul
 <p>Use of <code>granules</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
 </code></pre><h3 id='temporal'><code>temporal</code></h3>
 <p>This provides clients with the ability to select a temporal subset of data to
@@ -759,7 +797,7 @@ for the time of interest.</p>
 <p>Use of <code>temporal</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
 </code></pre><h3 id='variables'><code>variables</code></h3>
@@ -782,7 +820,7 @@ be used.</p>
 <p>Use of <code>variables</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
 </code></pre><h2 id='wcs-style-parameters'>WCS-Style Parameters</h2>
 <p>The original implementation of the OPeNDAP URL translation service was not a
@@ -822,7 +860,7 @@ OPeNDAP queries.</p>
 <p>Use of <code>coverage</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"</span>
 </code></pre><h3 id='format-2'><code>format</code></h3>
 <p>This allows the client to ask OPeNDAP to provide files in the given format.</p>
@@ -840,7 +878,7 @@ depend upon the target OPeNDAP server.</p>
 <p>Use of <code>format</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
 </code></pre><h3 id='rangesubset'><code>rangesubset</code></h3>
 <p>This proivdes clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.</p>
@@ -859,7 +897,7 @@ be used.</p>
 <p>Use of <code>rangesubset</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
 </code></pre><h3 id='subset'><code>subset</code></h3>
 <p>This provides clients with the ability to select the spatial data to include
@@ -880,7 +918,7 @@ in the granule data extracted by the OPeNDAP query to an area of interest.</p>
 <p>Use of <code>subset</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      subset=lat(56.109375,67.640625)&amp;subset=lon(-9.984375,19.828125)"</span>
 </code></pre>
@@ -906,49 +944,195 @@ for the time of interest.</p>
 <p>Use of <code>timeposition</code> in a query:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
-     <span class="s2">"%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
 </code></pre><h2 id='forthcoming'>Forthcoming</h2>
 <p>The following are coming soon:</p>
 
 <ul>
-<li><code>POST /opendap/ous/collection/:concept-id</code></li>
-<li><code>POST /opendap/ous/collections</code></li>
+<li><code>POST /service-bridge/ous/collection/:concept-id</code></li>
+<li><code>POST /service-bridge/ous/collections</code></li>
+</ul>
+<h1 id='ses-resources'>SES Resources</h1>
+<p>The Size Estimation Service offers a REST API for esimating the download sizes of subsetted
+collection-based granule queries. The usage is almost identical to the OUS resources, the
+primary different being the path segment:</p>
+
+<ul>
+<li><code>GET /service-bridge/size-estimate/collection/:concept-id</code></li>
+</ul>
+
+<p>Two parameters are required in a query string to this resource:</p>
+
+<ul>
+<li><code>granules</code> which is comma-separated for two or more granules, or <code>granules[]</code>,
+which is repeated for each granule in the query string</li>
+<li><code>variables</code> which is comma-separated for two or more variables, or <code>variables[]</code>,
+which is repeated for each variable in the query string</li>
+</ul>
+
+<p>A <code>format</code> parameter is optional; if not provided, the format of <code>nc</code> (NetCDF3) is assumed.
+Currently supported <code>format</code> values are:</p>
+
+<ul>
+<li><code>dods</code> (binary)</li>
+<li><code>nc</code></li>
+<li><code>nc4</code></li>
+<li><code>ascii</code></li>
+</ul>
+
+<p>All parameters behave as documented above in the OUS sections on <code>granules</code>, <code>variables</code>, and
+<code>format</code>, so see those sections for more details.</p>
+
+<p>A final parameter that is unique to the size estimation service is <code>total-granule-input-bytes</code>:
+this is required when passing <code>nc4</code> or <code>ascii</code> as the format values. This parameter represents
+the size of the granules when no subsetting operation is being peformed.</p>
+
+<blockquote>
+<p>Get a size estimate for one granule and one variable:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01&amp;
+     variables=V1200296418-EDF_DEV01"</span>
+</code></pre>
+<blockquote>
+<p>Result:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="o">{</span>
+  <span class="s2">"hits"</span>: 1,
+  <span class="s2">"took"</span>: 0.595,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"bytes"</span>: 11526291,
+      <span class="s2">"mb"</span>: 10.992327690124512,
+      <span class="s2">"gb"</span>: 0.010734695009887218
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"warnings"</span>: null
+<span class="o">}</span>
+</code></pre>
+<blockquote>
+<p>Since we didn&#39;t provide a format, the default of <code>nc</code> is assumed.</p>
+
+<p>Get a size estimate for one granule and multiple variables in DODS (binary) format:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01&amp;
+     variables=V1200296418-EDF_DEV01,V1200296176-EDF_DEV01,V1200296424-EDF_DEV01&amp;
+     format=dods"</span>
+</code></pre>
+<blockquote>
+<p>Result:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="o">{</span>
+  <span class="s2">"hits"</span>: 1,
+  <span class="s2">"took"</span>: 0.379,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"bytes"</span>: 40320000,
+      <span class="s2">"mb"</span>: 38.4521484375,
+      <span class="s2">"gb"</span>: 0.037550926208496094
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"warnings"</span>: null
+<span class="o">}</span>
+</code></pre>
+<blockquote>
+<p>Get a size estimate for multiple granules and multiple variables in DODS (binary) format:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01,G1200288508-EDF_DEV01,G1200288512-EDF_DEV01&amp;
+     variables=V1200296418-EDF_DEV01,V1200296176-EDF_DEV01,V1200296424-EDF_DEV01&amp;
+     format=dods"</span>
+</code></pre>
+<blockquote>
+<p>Result:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="o">{</span>
+  <span class="s2">"hits"</span>: 1,
+  <span class="s2">"took"</span>: 0.364,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"bytes"</span>: 120960000,
+      <span class="s2">"mb"</span>: 115.3564453125,
+      <span class="s2">"gb"</span>: 0.11265277862548828
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"warnings"</span>: null
+<span class="o">}</span>
+</code></pre>
+<blockquote>
+<p>And, as stated, if you prefer the array type parameters, you may use those as well
+to the same effect:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules</span><span class="se">\[\]</span><span class="s2">=G1200288503-EDF_DEV01&amp;
+     granules</span><span class="se">\[\]</span><span class="s2">=G1200288508-EDF_DEV01&amp;
+     granules</span><span class="se">\[\]</span><span class="s2">=G1200288512-EDF_DEV01&amp;
+     variables</span><span class="se">\[\]</span><span class="s2">=V1200296418-EDF_DEV01&amp;
+     variables</span><span class="se">\[\]</span><span class="s2">=V1200296176-EDF_DEV01&amp;
+     variables</span><span class="se">\[\]</span><span class="s2">=V1200296424-EDF_DEV01&amp;
+     format=dods"</span>
+</code></pre>
+<blockquote>
+<p>Result:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code><span class="o">{</span>
+  <span class="s2">"hits"</span>: 1,
+  <span class="s2">"took"</span>: 0.364,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"bytes"</span>: 120960000,
+      <span class="s2">"mb"</span>: 115.3564453125,
+      <span class="s2">"gb"</span>: 0.11265277862548828
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"warnings"</span>: null
+<span class="o">}</span>
+</code></pre><h2 id='forthcoming-2'>Forthcoming</h2>
+<p>The following are coming soon:</p>
+
+<ul>
+<li>Example of SES usage with spatial subsetting</li>
 </ul>
 <h1 id='admin-resources'>Admin Resources</h1><h2 id='cache'>Cache</h2>
 <p>Administrative users may use a token to manage the authorization cache:</p>
 
 <ul>
-<li><code>GET    /opendap/cache/auth</code></li>
-<li><code>DELETE /opendap/cache/auth</code></li>
-<li><code>GET    /opendap/cache/auth/:item-key</code></li>
-<li><code>DELETE /opendap/cache/auth/:item-key</code></li>
+<li><code>GET    /service-bridge/cache/auth</code></li>
+<li><code>DELETE /service-bridge/cache/auth</code></li>
+<li><code>GET    /service-bridge/cache/auth/:item-key</code></li>
+<li><code>DELETE /service-bridge/cache/auth/:item-key</code></li>
 </ul>
 
 <p>Likewise, administrators have the ability to manage the concept cache:</p>
 
 <ul>
-<li><code>GET    /opendap/cache/concept</code></li>
-<li><code>DELETE /opendap/cache/concept</code></li>
-<li><code>GET    /opendap/cache/concept/:item-key</code></li>
-<li><code>DELETE /opendap/cache/concept/:item-key</code></li>
+<li><code>GET    /service-bridge/cache/concept</code></li>
+<li><code>DELETE /service-bridge/cache/concept</code></li>
+<li><code>GET    /service-bridge/cache/concept/:item-key</code></li>
+<li><code>DELETE /service-bridge/cache/concept/:item-key</code></li>
 </ul>
 <h2 id='health'>Health</h2>
 <p>Even though the <code>health</code> resources are classified as &quot;admin&quot;, they are
 available for use by anyone.</p>
 
 <ul>
-<li><code>GET     /opendap/health</code></li>
-<li><code>OPTIONS /opendap/health</code></li>
+<li><code>GET     /service-bridge/health</code></li>
+<li><code>OPTIONS /service-bridge/health</code></li>
 </ul>
 <h2 id='ping'>Ping</h2>
 <p>Administrative users may use a token to access the following:</p>
 
 <ul>
-<li><code>GET     /opendap/ping</code></li>
-<li><code>POST    /opendap/ping</code></li>
-<li><code>OPTIONS /opendap/ping</code></li>
+<li><code>GET     /service-bridge/ping</code></li>
+<li><code>POST    /service-bridge/ping</code></li>
+<li><code>OPTIONS /service-bridge/ping</code></li>
 </ul>
 <h1 id='testing-resources'>Testing Resources</h1>
 <p>The following resources are provided for use in various tests:</p>
