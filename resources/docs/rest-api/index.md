@@ -56,11 +56,12 @@ breaks.
 The following table provides a mapping between CMR OPeNDAP releases
 and the API versions supported in each.
 
-Release | REST API Versions | Status
-------- | ----------------- | --------------
-1.1.0   | v1, v2, v2.1      | In development
-1.0.0   | v1, v2            | Released
-0.1.0   | v1                | Released
+Release             | REST API Versions | Status
+------------------- | ----------------- | --------------
+1.5.0               | v1, v2, v2.1      | In development
+1.1.0 through 1.4.0 | v1, v2, v2.1      | Released
+1.0.0               | v1, v2            | Released
+0.1.0               | v1                | Released
 
 Summary of changes in REST API:
 
@@ -294,8 +295,8 @@ document via HTTP streaming.
 
 The OUS collection-based resources are as follows:
 
-* `GET /opendap/ous/collection/:concept-id`
-* `GET /opendap/ous/streaming-collection/:concept-id`
+* `GET /service-bridge/ous/collection/:concept-id`
+* `GET /service-bridge/ous/streaming-collection/:concept-id`
 
 > Example API usage if your client supports streaming:
 
@@ -663,8 +664,158 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 The following are coming soon:
 
-* `POST /opendap/ous/collection/:concept-id`
-* `POST /opendap/ous/collections`
+* `POST /service-bridge/ous/collection/:concept-id`
+* `POST /service-bridge/ous/collections`
+
+
+# SES Resources
+
+The Size Estimation Service offers a REST API for esimating the download sizes of subsetted
+collection-based granule queries. The usage is almost identical to the OUS resources, the
+primary different being the path segment:
+
+* `GET /service-bridge/size-estimate/collection/:concept-id`
+
+Two parameters are required in a query string to this resource:
+
+* `granules` which is comma-separated for two or more granules, or `granules[]`,
+  which is repeated for each granule in the query string
+* `variables` which is comma-separated for two or more variables, or `variables[]`,
+  which is repeated for each variable in the query string
+
+A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed.
+Currently supported `format` values are:
+
+* `dods` (binary)
+* `nc`
+* `nc4`
+* `ascii`
+
+All parameters behave as documented above in the OUS sections on `granules`, `variables`, and
+`format`, so see those sections for more details.
+
+A final parameter that is unique to the size estimation service is `total-granule-input-bytes`:
+this is required when passing `nc4` or `ascii` as the format values. This parameter represents
+the size of the granules when no subsetting operation is being peformed.
+
+> Get a size estimate for one granule and one variable:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01&
+     variables=V1200296418-EDF_DEV01"
+```
+
+> Result:
+
+```shell
+{
+  "hits": 1,
+  "took": 0.595,
+  "items": [
+    {
+      "bytes": 11526291,
+      "mb": 10.992327690124512,
+      "gb": 0.010734695009887218
+    }
+  ],
+  "warnings": null
+}
+```
+
+> Since we didn't provide a format, the default of `nc` is assumed.
+
+> Get a size estimate for one granule and multiple variables in DODS (binary) format:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01&
+     variables=V1200296418-EDF_DEV01,V1200296176-EDF_DEV01,V1200296424-EDF_DEV01&
+     format=dods"
+```
+
+> Result:
+
+```shell
+{
+  "hits": 1,
+  "took": 0.379,
+  "items": [
+    {
+      "bytes": 40320000,
+      "mb": 38.4521484375,
+      "gb": 0.037550926208496094
+    }
+  ],
+  "warnings": null
+}
+```
+> Get a size estimate for multiple granules and multiple variables in DODS (binary) format:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules=G1200288503-EDF_DEV01,G1200288508-EDF_DEV01,G1200288512-EDF_DEV01&
+     variables=V1200296418-EDF_DEV01,V1200296176-EDF_DEV01,V1200296424-EDF_DEV01&
+     format=dods"
+```
+
+> Result:
+
+```shell
+{
+  "hits": 1,
+  "took": 0.364,
+  "items": [
+    {
+      "bytes": 120960000,
+      "mb": 115.3564453125,
+      "gb": 0.11265277862548828
+    }
+  ],
+  "warnings": null
+}
+```
+
+> And, as stated, if you prefer the array type parameters, you may use those as well
+to the same effect:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/size-estimate/collection/C1200288493-EDF_DEV01?
+     granules\[\]=G1200288503-EDF_DEV01&
+     granules\[\]=G1200288508-EDF_DEV01&
+     granules\[\]=G1200288512-EDF_DEV01&
+     variables\[\]=V1200296418-EDF_DEV01&
+     variables\[\]=V1200296176-EDF_DEV01&
+     variables\[\]=V1200296424-EDF_DEV01&
+     format=dods"
+```
+
+> Result:
+
+```shell
+{
+  "hits": 1,
+  "took": 0.364,
+  "items": [
+    {
+      "bytes": 120960000,
+      "mb": 115.3564453125,
+      "gb": 0.11265277862548828
+    }
+  ],
+  "warnings": null
+}
+```
+
+## Forthcoming
+
+The following are coming soon:
+
+* Example of SES usage with spatial subsetting
 
 
 # Admin Resources
@@ -673,17 +824,17 @@ The following are coming soon:
 
 Administrative users may use a token to manage the authorization cache:
 
-* `GET    /opendap/cache/auth`
-* `DELETE /opendap/cache/auth`
-* `GET    /opendap/cache/auth/:item-key`
-* `DELETE /opendap/cache/auth/:item-key`
+* `GET    /service-bridge/cache/auth`
+* `DELETE /service-bridge/cache/auth`
+* `GET    /service-bridge/cache/auth/:item-key`
+* `DELETE /service-bridge/cache/auth/:item-key`
 
 Likewise, administrators have the ability to manage the concept cache:
 
-* `GET    /opendap/cache/concept`
-* `DELETE /opendap/cache/concept`
-* `GET    /opendap/cache/concept/:item-key`
-* `DELETE /opendap/cache/concept/:item-key`
+* `GET    /service-bridge/cache/concept`
+* `DELETE /service-bridge/cache/concept`
+* `GET    /service-bridge/cache/concept/:item-key`
+* `DELETE /service-bridge/cache/concept/:item-key`
 
 
 ## Health
@@ -691,17 +842,17 @@ Likewise, administrators have the ability to manage the concept cache:
 Even though the `health` resources are classified as "admin", they are
 available for use by anyone.
 
-* `GET     /opendap/health`
-* `OPTIONS /opendap/health`
+* `GET     /service-bridge/health`
+* `OPTIONS /service-bridge/health`
 
 
 ## Ping
 
 Administrative users may use a token to access the following:
 
-* `GET     /opendap/ping`
-* `POST    /opendap/ping`
-* `OPTIONS /opendap/ping`
+* `GET     /service-bridge/ping`
+* `POST    /service-bridge/ping`
+* `OPTIONS /service-bridge/ping`
 
 
 # Testing Resources
