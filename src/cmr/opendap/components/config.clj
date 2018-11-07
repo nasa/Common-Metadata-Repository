@@ -83,6 +83,8 @@
   (or (get-in (get-cfg system) [:cmr :opendap :relative :root :url])
       (httpd-config/http-base-url system)))
 
+(def base-url opendap-base-url)
+
 (defn vendor
   [system]
   (:vendor (get-cfg system)))

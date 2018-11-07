@@ -43,10 +43,11 @@
    :pages {
      :default-title "CMR Service-Bridge"}
    :base-url "/service-bridge"
+   :base-url-fn cmr.opendap.components.config/base-url
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
-     {:base-url-template "%%OPENDAP_BASE_URL%%"
+     {:base-url-template "%%BASE_URL%%"
       :source "resources/docs/rest-api/index.md"
       :outdir "resources/public/docs/service-bridge/docs/current/rest-api"}
    :skip-static #{"/service-bridge/docs"}

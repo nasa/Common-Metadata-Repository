@@ -230,40 +230,69 @@ API that will impact users of the default version.
 This is the part of the REST API responsible for creating OPeNDAP-compatible
 query URLs (intended to be sent to a deployed OPeNDAP service). The name
 "OUS" (OPeNDAP URL Service) was used in the prototype for this service, and
-that name has carried through here.
+the acronym for that name has carried through.
 
 
-## Tag association for OUS to return the appropriate OPeNDAP URLS
-As a workable, short-term solution, OUS makes use of CMR tagging functionality
-to convert a granule's archive location to an OPeNDAP location.
+## Tag Associations
 
-To achieve this, we first need to create a tag ```cmr.earthdata.nasa.ous.datafile.replace```:
+Currenly, OUS depends upon CMR tag associations in order to map from a source file
+(e.g., an HDF granule file) to a URL that represents an OPeNDAP service whichh supports
+subsetting on that file. In other words, this allows OUS to convert a granule's archive
+location to an OPeNDAP location.
 
-```curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: $MY_TOKEN" https://cmr.uat.earthdata.nasa.gov/search/tags -d {"tag_key" "cmr.earthdata.nasa.ous.datafile.replace", "description" "This tag will provide a mapping from archive location to OPeNDAP location for one or more collections"}
+> To map a granule's archive location to an OPeNDAP location, we first need to create a
+using the tag key `cmr.earthdata.nasa.ous.datafile.replace`:
+
+```shell
+curl --silent \
+     -XPOST \
+     -H "Content-Type: application/json" \
+     -H "Echo-Token: $MY_TOKEN" \
+     "%%BASE_URL%%search/tags \
+     -d {"tag_key" "cmr.earthdata.nasa.ous.datafile.replace", "description" "This tag will provide a mapping from archive location to OPeNDAP location for one or more collections"}
 ```
 
-Then, associate the tag with the collection, using a regex that replaces the achive 
-location with the OPeNDAP location based on the archive to OPeNDAP location mapping:
+> Then, we can associate the tag with the collection. We do this by using a regex that
+replaces the achive location with the OPeNDAP location:
 
-```curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: $MY_TOKEN" https://cmr.uat.earthdata.nasa.gov/search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations -d '[{"concept_id": "C1224363486-EEDTEST", "data": {"match": "/data//", "replace": "/opendap/"}}]'
+```shell
+curl --silent \
+     -XPOST \
+     -H "Content-Type: application/json" \
+     -H "Echo-Token: $MY_TOKEN" \
+     "%%BASE_URL%%search/tags/cmr.earthdata.nasa.ous.datafile.replace/associations \
+     -d '[{"concept_id": "C1224363486-EEDTEST",
+           "data": {"match": "/data//", "replace": "/opendap/"}}]'
 ```
 
-The following returns the appropriate OPeNDAP URLS for the granule's archive location: 
+> Then, for any future OUS queries made to that collection and it's granules, OUS will
+perform the substituion behind the scenes. This is demonstrated by the following query
+to our tagged collection:
 
-```curl -H "Echo-Token: $MY_TOKEN" https://cmr.uat.earthdata.nasa.gov/service-bridge/ous/collection/C1224363486-EEDTEST?granules=G1224363487-EEDTEST
+```shell
+curl \
+     -H "Echo-Token: $MY_TOKEN" \
+     "%%BASE_URL%%service-bridge/ous/collection/C1224363486-EEDTEST?granules=G1224363487-EEDTEST
+```
+```shell
+{"hits":1,
+ "took":0.244,
+ "items":[
+   "http://e4ftl01.cr.usgs.gov:40510/opendap/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"],
+ ...}
 ```
 
-{"hits":1,"took":0.244,"items":["http://e4ftl01.cr.usgs.gov:40510/opendap/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"],"warnings":null}
+> The returned results show the appropriate OPeNDAP URLS for the granule's archive location.
 
 
 ## Collection Resources
 
-The CMR OPeNDAP REST API supports two different means of creating a subsetted
+The CMR Service-Bridge REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
-standard JSON document; the other, more effectial means returns a JSON
+standard JSON document; the other (more efficient) means returns a JSON
 document via HTTP streaming.
 
-The resources are as follows:
+The OUS collection-based resources are as follows:
 
 * `GET /opendap/ous/collection/:concept-id`
 * `GET /opendap/ous/streaming-collection/:concept-id`
@@ -273,7 +302,7 @@ The resources are as follows:
 ```shell
 curl --silent \
      -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/streaming-collection/C1200187767-EDF_OPS" | \
+     "%%BASE_URL%%service-bridge/ous/streaming-collection/C1200187767-EDF_OPS" | \
      jq .
 ```
 
@@ -282,7 +311,7 @@ curl --silent \
 ```shell
 curl --silent \
      -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS" | \
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS" | \
      jq .
 ```
 
@@ -307,7 +336,7 @@ that your HTTP client supports streaming.
 
 ## Interaction of Parameters
 
-In the sections below, the various parameters one can pass to the ous resource
+In each sections below, the various parameters one can pass to the ous resource
 are described. Each parameter is discussed in isolation, simply addressing it
 in its own context. However, common usage will involve more than on parameter
 acting at the same time. As such, here are some points to note:
@@ -363,7 +392,7 @@ note the acceptance of either dash or underscore in the parameter name:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      bounding-box=-9.984375,56.109375,19.828125,67.640625"
 ```
@@ -395,7 +424,7 @@ shown in the `granules` section below.
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      exclude-granules=true&
      granules=G1200187775-EDF_OPS"
 ```
@@ -416,7 +445,7 @@ The following is an example of accepted `format` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
 
 
@@ -441,7 +470,7 @@ The following are examples of accepted `granules` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      granules=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
@@ -465,7 +494,7 @@ The following are examples of accepted `temporal` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"
 ```
@@ -490,7 +519,7 @@ The following are examples of accepted `variables` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
@@ -533,7 +562,7 @@ The following are examples of accepted `coverage` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      coverage=G1200187775-EDF_OPS,G1200245955-EDF_OPS"
 ```
 
@@ -553,7 +582,7 @@ The following is an example of accepted `format` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?format=nc"
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
 
 
@@ -574,7 +603,7 @@ The following are examples of accepted `rangesubset` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      rangesubset=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
@@ -597,7 +626,7 @@ Note that both are needed in order to define a bounding box.
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      subset=lat(56.109375,67.640625)&subset=lon(-9.984375,19.828125)"
 ```
@@ -625,11 +654,10 @@ The following is an example of accepted `timeposition` parameter usage:
 
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
-     "%%OPENDAP_BASE_URL%%ous/collection/C1200187767-EDF_OPS?
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"
 ```
-
 
 ## Forthcoming
 

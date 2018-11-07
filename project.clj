@@ -30,7 +30,7 @@
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-metadata-proxy "0.1.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
