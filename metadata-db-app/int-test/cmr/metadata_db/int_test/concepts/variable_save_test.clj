@@ -43,11 +43,13 @@
     ;; verify variable is saved and the revision id is 1
     (is (= status 201))
     (is (= 1 revision-id))
+
     (testing "save variable with all the same data, i.e. update the variable"
       (let [{:keys [status concept-id revision-id]} (util/save-concept concept1)]
         (is (= 201 status))
         (is (= concept1-concept-id concept-id))
         (is (= 2 revision-id))))
+
     (testing "save variable with the same data, but a different native id creates a new variable"
       (let [concept2 (assoc concept1 :native-id "different-native-id")
             {:keys [status concept-id revision-id]} (util/save-concept concept2)]
@@ -56,9 +58,31 @@
         (is (= 201 status))
         (is (not= concept1-concept-id concept-id))
         (is (= 1 revision-id))))
+
     (testing "save variable with same data but different provider"
       (let [concept3 (assoc concept1 :provider-id "PROV2")
             {:keys [status concept-id revision-id]} (util/save-concept concept3)]
         (is (= status 201))
         (is (not= concept1-concept-id concept-id))
-        (is (= 1 revision-id))))))
+        (is (= 1 revision-id))))
+
+    (let [concept4-var-name "different-variable-name"
+          concept4 (update concept1 :extra-fields assoc :variable-name concept4-var-name)]
+      (testing (str "save variable with the same native id, but a different variable name "
+                    "on a non-deleted variable is not allowed")
+        (let [{:keys [status errors]} (util/save-concept concept4)
+              expected-error (format
+                              "Variable name [%s] does not match the existing variable name [%s]"
+                              concept4-var-name
+                              (get-in concept1 [:extra-fields :variable-name]))]
+          (is (= 422 status))
+          (is (= [expected-error] errors))))
+
+      (testing (str "save variable with the same native id, but a different variable name "
+                    "on a deleted variable is OK")
+        (let [{delete-status :status
+               delete-revision-id :revision-id} (util/delete-concept concept1-concept-id)
+              {:keys [status concept-id revision-id]} (util/save-concept concept4)]
+          (is (= 201 status))
+          (is (= concept1-concept-id concept-id))
+          (is (= (+ delete-revision-id 1) revision-id)))))))

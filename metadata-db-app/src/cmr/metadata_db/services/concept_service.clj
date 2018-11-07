@@ -228,6 +228,22 @@
                           (:expected result)
                           revision-id))))))
 
+(defn- invalid-variable-name-msg
+  "Returns the message for invalid variable name"
+  [new-name existing-name]
+  (format "Variable name [%s] does not match the existing variable name [%s]"
+          new-name existing-name))
+
+(defn- validate-variable-name-not-changed
+  "Validate that the concept variable name is the same as the previous concept's variable name."
+  [concept previous-concept]
+  (let [new-name (get-in concept [:extra-fields :variable-name])
+        existing-name (get-in previous-concept [:extra-fields :variable-name])]
+    (when (and previous-concept
+               (not (util/is-tombstone? previous-concept))
+               (not= existing-name new-name))
+      (cmsg/data-error :invalid-data invalid-variable-name-msg new-name existing-name))))
+
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
 (defn- set-deleted-flag
@@ -629,12 +645,20 @@
           concept-type (:concept-type concept)
           concept-id (:concept-id concept)
           revision-id (:revision-id concept)]
+      ;; validate variable name
+      (when (and (= :variable concept-type)
+                 (> revision-id 1))
+        (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
+          (validate-variable-name-not-changed concept previous-concept)))
+
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)
                  (> revision-id 1))
         (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
           (when (util/is-tombstone? previous-concept)
-            (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id))))
+            (ingest-events/publish-tombstone-delete-msg
+             context concept-type concept-id revision-id))))
+
       ;; update service associatons if applicable, i.e. when the concept is a service,
       ;; so that the collections can be updated in elasticsearch with the updated service info
       (update-service-associations context concept-type concept-id)
