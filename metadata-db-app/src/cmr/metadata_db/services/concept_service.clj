@@ -636,21 +636,20 @@
         _ (validate-system-level-concept concept provider)
         concept (->> concept
                      (set-or-generate-concept-id db provider)
-                     (set-created-at db provider))]
+                     (set-created-at db provider))
+        {:keys [concept-type concept-id]} concept]
+
     (validate-concept-revision-id db provider concept)
+    ;; validate variable name
+    (when (= :variable concept-type)
+      (let [previous-concept (c/get-concept db concept-type provider concept-id)]
+        (validate-variable-name-not-changed concept previous-concept)))
+
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider))
-          concept-type (:concept-type concept)
-          concept-id (:concept-id concept)
           revision-id (:revision-id concept)]
-      ;; validate variable name
-      (when (and (= :variable concept-type)
-                 (> revision-id 1))
-        (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
-          (validate-variable-name-not-changed concept previous-concept)))
-
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)
                  (> revision-id 1))
