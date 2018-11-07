@@ -11,6 +11,7 @@
      :source nil
      :outdir nil}
    :skip-static #{}
+   :base-url-fn cmr.http.kit.components.config/base-url
    :replace-base-url #{}
    :index-dirs #{}}
    :streaming {

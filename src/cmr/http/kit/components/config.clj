@@ -33,6 +33,10 @@
   [system]
   (get-in (get-cfg system) [:httpd :base-url]))
 
+(defn base-url-fn
+  [system]
+  (get-in (get-cfg system) [:httpd :base-url-fn]))
+
 (defn http-docs
   [system]
   (get-in (get-cfg system) [:httpd :docs]))

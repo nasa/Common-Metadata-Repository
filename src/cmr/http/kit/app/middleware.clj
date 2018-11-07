@@ -2,6 +2,7 @@
   "Custom site and API middleware for new CMR services."
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.util :as util]
    [cmr.http.kit.components.config :as config]
    [cmr.http.kit.response :as response]
    [cmr.http.kit.site.pages :as pages]
@@ -71,7 +72,9 @@
 (defn wrap-base-url-subs
   [handler system]
   (fn [req]
-    (let [response (handler req)]
+    (let [response (handler req)
+          base-url-fn (util/resolve-fully-qualified-fn
+                       (config/base-url-fn system))]
       (if (contains? (config/http-replace-base-url system)
                      (:uri req))
         (assoc response
@@ -79,7 +82,7 @@
                (string/replace
                 (slurp (:body response))
                 (re-pattern (config/http-rest-docs-base-url-template system))
-                (config/http-base-url system)))
+                (base-url-fn system)))
         response))))
 
 (defn wrap-resource
