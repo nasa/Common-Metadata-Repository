@@ -85,4 +85,4 @@
               {:keys [status concept-id revision-id]} (util/save-concept concept4)]
           (is (= 201 status))
           (is (= concept1-concept-id concept-id))
-          (is (= (+ delete-revision-id 1) revision-id)))))))
+          (is (= (inc delete-revision-id) revision-id)))))))
