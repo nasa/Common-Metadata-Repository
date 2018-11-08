@@ -71,27 +71,36 @@
     mt/json
     mt/xml))
 
-(defconfig test-environment? 
+(defconfig test-environment 
    "Flag that indicates if the environment is test environment"
    {:default false :type Boolean})
 
-(def robots-txt-response
-  "Returns the robots.txt response."
-  (if (test-environment?) 
-    {:status 200
-     :body (slurp (io/resource "public/test-environment-robots.txt"))}
-    {:status 200
-     :body (slurp (io/resource "public/robots.txt"))}))
+(def robots-txt-non-test-environment-response
+  "Returns the robots.txt response for a non-test environment."
+  {:status 200
+   :body (slurp (io/resource "public/robots.txt"))})
+
+(def robots-txt-test-environment-response
+  "Returns the robots.txt response for a test environment."
+  {:status 200
+   :body (slurp (io/resource "public/test-environment-robots.txt"))})
+ 
+(defn- get-robots-txt-response
+  "Get the proper robots-txt-response depending on the test-env."
+  [test-env]
+  (if (test-env)
+    robots-txt-test-environment-response
+    robots-txt-non-test-environment-response))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
-      (GET "/robots.txt" req robots-txt-response)
+      (GET "/robots.txt" req (get-robots-txt-response test-environment))
       (context
         relative-root-url []
-        (GET "/robots.txt" req robots-txt-response))
+        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
       (api-routes/build-routes system)
       (site-routes/build-routes system)
       (common-pages/not-found))))

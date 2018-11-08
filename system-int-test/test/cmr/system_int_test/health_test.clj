@@ -8,6 +8,7 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.elastic-utils.connect :as es-util]
+   [cmr.search.routes :as routes]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]))
 
@@ -53,11 +54,22 @@
                   :indexer good-indexer-health}})
 
 (deftest robots-dot-txt-test
-  (let [robots (client/get "http://localhost:3003/robots.txt"
+  (let [_ (side/eval-form `(routes/set-test-environment! false))
+        robots (client/get "http://localhost:3003/robots.txt"
                            {:accept :text
                             :connection-manager (s/conn-mgr)})
         body (str/split-lines (:body robots))]
-   (is (= "User-agent: *" (first body)))))
+   (is (= "User-agent: *" (first body)))
+   (is (= "Disallow: /ingest/health" (second body)))))
+
+(deftest test-env-robots-dot-txt-test
+  (let [_ (side/eval-form `(routes/set-test-environment! true))
+        robots (client/get "http://localhost:3003/robots.txt"
+                           {:accept :text
+                            :connection-manager (s/conn-mgr)})
+        body (str/split-lines (:body robots))]
+   (is (= "User-agent: *" (first body)))
+   (is (= "Disallow: /" (second body)))))
 
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
