@@ -242,6 +242,16 @@
  :revision-date-doc-values {:format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ",
                             :doc_values true,
                             :type "date"},
+ :revision-id {:type "integer", :store "yes"},
+ :native-id-stored {:type "string",
+                    :index "not_analyzed",
+                    :store "yes",
+                    :doc_values true},
+ :revision-date-stored-doc-values {:type "date",
+                                   :format
+                                   "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                                   :store "yes",
+                                   :doc_values true}
  :access-value {:store "yes", :type "float"},
  :platform-sn.lowercase {:index "not_analyzed",
                          :type "string"},
