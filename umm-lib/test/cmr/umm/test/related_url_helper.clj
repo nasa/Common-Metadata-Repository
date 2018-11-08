@@ -24,6 +24,23 @@
       "test nil"
       nil nil)))
 
+(deftest downloadable-mime-type
+  (testing "Mime type is downloadable"
+    (are3 [downloadable? mime-type]
+      (is (= downloadable? (boolean (related-url-helper/downloadable-mime-type? mime-type))))
+
+      "text/* is not downloadable (exclude whitelist)"
+      false "text/html"
+
+      "whitelisted text/* is downloadable (text/csv)"
+      true "text/csv"
+
+      "anything other than text/* is downloadable"
+      true "application/json"
+
+      "nil is not downloadable"
+      false nil)))
+
 (deftest categorize-related-urls
   (testing "categorize related urls"
     (let [downloadable-url (umm-c/map->RelatedURL
