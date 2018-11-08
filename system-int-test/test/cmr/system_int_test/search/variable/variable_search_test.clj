@@ -464,33 +464,39 @@
        (search/find-concepts-umm-json :variable {}))
 
       (testing "update variable not affect the associated collections in search result"
-        (let [updated-variable1-name "Variable1234"
-              updated-variable1-concept (variables/make-variable-concept
-                                         {:native-id "var1"
-                                          :Name updated-variable1-name})
-              updated-variable1 (variables/ingest-variable updated-variable1-concept)
-              expected-variable1 (merge updated-variable1-concept
-                                        updated-variable1
-                                        {:associated-collections variable1-assoc-colls})]
-          (index/wait-until-indexed)
-
+        (let [updated-long-name "Variable1234"]
+          ;; sanity check that no variable is found with the about to be updated long name
           (du/assert-variable-umm-jsons-match
-           umm-version/current-variable-version [expected-variable1]
-           (search/find-concepts-umm-json :variable {:variable_name updated-variable1-name}))
+           umm-version/current-variable-version []
+           (search/find-concepts-umm-json :variable {:keyword updated-long-name}))
 
-          (testing "delete collection affect the associated collections in search result"
-            (let [coll1-concept (mdb/get-concept (:concept-id coll1))
-                  _ (ingest/delete-concept coll1-concept)
-                  ;; Now variable1 is only associated to coll2, as coll1 is deleted
-                  expected-variable1 (assoc expected-variable1
-                                            :associated-collections
-                                            [{:concept-id (:concept-id coll2)}])]
-              (index/wait-until-indexed)
+          (let [updated-variable1-concept (variables/make-variable-concept
+                                           {:native-id "var1"
+                                            :Name "Variable1"
+                                            :LongName updated-long-name})
+                updated-variable1 (variables/ingest-variable updated-variable1-concept)
+                expected-variable1 (merge updated-variable1-concept
+                                          updated-variable1
+                                          {:associated-collections variable1-assoc-colls})]
+            (index/wait-until-indexed)
 
-              (du/assert-variable-umm-jsons-match
-               umm-version/current-variable-version [expected-variable1]
-               (search/find-concepts-umm-json
-                :variable {:variable_name updated-variable1-name})))))))))
+            (du/assert-variable-umm-jsons-match
+             umm-version/current-variable-version [expected-variable1]
+             (search/find-concepts-umm-json :variable {:keyword updated-long-name}))
+
+            (testing "delete collection affect the associated collections in search result"
+              (let [coll1-concept (mdb/get-concept (:concept-id coll1))
+                    _ (ingest/delete-concept coll1-concept)
+                    ;; Now variable1 is only associated to coll2, as coll1 is deleted
+                    expected-variable1 (assoc expected-variable1
+                                              :associated-collections
+                                              [{:concept-id (:concept-id coll2)}])]
+                (index/wait-until-indexed)
+
+                (du/assert-variable-umm-jsons-match
+                 umm-version/current-variable-version [expected-variable1]
+                 (search/find-concepts-umm-json
+                  :variable {:keyword updated-long-name}))))))))))
 
 (deftest variable-search-sort
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
