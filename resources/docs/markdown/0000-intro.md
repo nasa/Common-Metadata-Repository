@@ -8,17 +8,18 @@ associated service metadata records. These metadata records are registered,
 modified, discovered, and accessed through programmatic interfaces leveraging
 standard protocols and APIs.
 
-## CMR OPeNDAP
+## CMR Service-Bridge
 
-CMR OPeNDAP, and in particular the CMR OPeNDAP API, allows client applications
-to integrate core CMR metadata more easily with provider OPeNDAP deployments.
-This is done by utilzing stored metadata to create queries that are capable of
-extracting associated satellite data and related products directly from
-services whose metadata the CMR manages.
+CMR Service-Bridge is an integration service offered by the CMR that allows
+client applications to use CMR metadata to integrate features from other
+services - as if they were interacting with just the CMR. As new service
+integrations are added to CMR Service-Bridge, they will be listed here and
+APIs for the new operations will be included in the documentation.
 
-To facilitate easy integration of the capability in other applications, CMR
-OPeNDAP provides a REST API for generating such queries.
+Currently, the following integrations are supported:
 
-CMR OPeNDAP is deployed here:
-
-* [https://cmr.sit.earthdata.nasa.gov/opendap/](https://cmr.sit.earthdata.nasa.gov/opendap/)
+* OPeNDAP URL Service - converts CMR or EDSC metadata queries into OPeNDAP
+  queries that will actually allow clients to download subsetted data
+  directly from OPeNDAP servers.
+* Sizing Estimation Service - converts CMR or EDSC queries into size estimates
+  for the GIS data that they point to.

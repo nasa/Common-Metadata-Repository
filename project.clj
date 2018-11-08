@@ -171,7 +171,7 @@
       ["with-profile" "+local,+system,+geo" "repl"]]
     "version" ["do"
       ["version"]
-      ["shell" "echo" "-n" "CMR-OPeNDAP: "]
+      ["shell" "echo" "-n" "CMR Service-Bridge: "]
       ["project-version"]]
     "ubercompile" ["with-profile" "+system,+geo,+local,+security" "compile"]
     "uberjar" ["with-profile" "+system,+geo" "uberjar"]
@@ -203,7 +203,7 @@
     "marginalia" ["with-profile" "+docs,+system,+geo"
       "marg" "--dir" "resources/public/docs/service-bridge/docs/current/marginalia"
              "--file" "index.html"
-             "--name" "OPeNDAP/CMR Integration"]
+             "--name" "CMR integration with external services"]
     "slate" ["with-profile" "+slate"
       "shell" "resources/scripts/build-slate-docs"]
     "docs" ["do"

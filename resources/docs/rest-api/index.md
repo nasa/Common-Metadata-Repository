@@ -1,5 +1,5 @@
 ---
-title: CMR OPeNDAP REST API Documentation
+title: CMR Service-Bridge REST API Documentation
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
@@ -14,15 +14,23 @@ search: true
 
 # REST API Overview
 
-The REST API for CMR OPeNDAP aims to accomplish a few core goals:
+The REST API for CMR Service-Bridge aims to accomplish a few core goals:
 
-* Provide a straight forward means of bridging the CMR and OPeNDAP deployments
-* Provide operational insights into the CMR OPeNDAP REST service itself
+* Provide a straight forward means of bridging the CMR and various service
+  deployments
+* Provide operational insights into the CMR Service-Bridge REST service itself
 * Do both of these as simply and in as scalable a manner as possible
 
-The REST API is currently focused on generating OPeNDAP data access URLs,
-allowing users to easily download subsetted files from OPeNDAP servers
+The REST API is currently focused on the following:
+* generating OPeNDAP data access URLs, and
+* providing size esimates for subsetted GIS data
+
+The first allows users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.
+The second provides users with the ability to see what the total estimated size
+of their data request would be. This will give users the necessary feedback
+on whether the total of their subsetted data is too large, too small, or just
+right.
 
 
 # About the Docs
@@ -53,7 +61,7 @@ breaks.
 
 # Releases
 
-The following table provides a mapping between CMR OPeNDAP releases
+The following table provides a mapping between CMR Service-Bridge releases
 and the API versions supported in each.
 
 Release             | REST API Versions | Status
@@ -72,23 +80,23 @@ Summary of changes in REST API:
 
 # Versioned API
 
-The CMR OPeNDAP REST API is versioned. By default, the most recent version of
+The CMR Service-Bridge REST API is versioned. By default, the most recent version of
 the API is accessed when a request is submitted without specificing the
 desired version. Currently, this is `v2.1`.
 
 To request a specific version of the REST API, you must send an additional
-header in your request to CMR OPeNDAP.
+header in your request to CMR Service-Bridge.
 
 > An `Accept` header is required to request a specific version of the API:
 
 ```
-"Accept: application/vnd.cmr-opendap.v2+json"
+"Accept: application/vnd.cmr-service-bridge.v2+json"
 ```
 
 > The following is also valid:
 
 ```
-"Accept: application/vnd.cmr-opendap.v2"
+"Accept: application/vnd.cmr-service-bridge.v2"
 ```
 
 All HTTP responses from the REST API also provide information on the version
@@ -108,17 +116,17 @@ curl -i ...
 > The response headers will include the version used by the service:
 
 ```shell
-Cmr-Media-Type: cmr-opendap.v2; format=json
+Cmr-Media-Type: cmr-service-bridge.v2; format=json
 ```
 
 ```clj
 {...
- :cmr-media-type "cmr-opendap.v2; format=json"
+ :cmr-media-type "cmr-service-bridge.v2; format=json"
  ...}
 ```
 
 <aside class="warning">
-  The most recent release of the CMR OPeNDAP API is always the default;
+  The most recent release of the CMR Service-Bridge API is always the default;
   if you experience unexpected issues and/or errors, this may be a result
   of using a new version of the API by default.
 </aside>
@@ -133,7 +141,7 @@ Cmr-Media-Type: cmr-opendap.v2; format=json
 
 # Authorized Access
 
-CMR OPeNDAP requires the use of tokens in order to provide access to
+CMR Service-Bridge requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.
 
 > A token needs to be included in each request, and this is done by sending
@@ -163,7 +171,7 @@ Echo token.
 
 ## Success
 
-CMR OPeNDAP responses have pareticular formats, inherited from CMR response
+CMR Service-Bridge responses have pareticular formats, inherited from CMR response
 data. A successful request will provide the results, the number of results
 and, the time taken to process the request.
 
@@ -180,12 +188,12 @@ and, the time taken to process the request.
 
 ## Errors
 
-When CMR OPeNDAP returns errors, it does so in a consistent format. In
+When CMR Service-Bridge returns errors, it does so in a consistent format. In
 particular, the body of the HTTP response is a JSON string (or stream)
 representing an object with one key, `errors`, an associated value being
 an array of the errors encountered.
 
-> CMR OPeNDAP error format
+> CMR Service-Bridge error format
 
 ```
 {
@@ -195,7 +203,7 @@ an array of the errors encountered.
 
 ## Warnings
 
-In either a success or error state, CMR OPeNDAP may also return a `warning`
+In either a success or error state, CMR Service-Bridge may also return a `warning`
 key containing one or more messages. This is reserved for future use and
 will be the primary mechanism used to notify clients of coming changes in the
 API that will impact users of the default version.
@@ -228,10 +236,10 @@ API that will impact users of the default version.
 
 # OUS Resources
 
-This is the part of the REST API responsible for creating OPeNDAP-compatible
-query URLs (intended to be sent to a deployed OPeNDAP service). The name
+This is the part of the REST API responsible for creating Service-Bridge-compatible
+query URLs (intended to be sent to a deployed Service-Bridge service). The name
 "OUS" (OPeNDAP URL Service) was used in the prototype for this service, and
-the acronym for that name has carried through.
+that name has carried through here.
 
 
 ## Tag Associations
@@ -290,10 +298,10 @@ curl \
 
 The CMR Service-Bridge REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
-standard JSON document; the other (more efficient) means returns a JSON
+standard JSON document; the other, more effectial means returns a JSON
 document via HTTP streaming.
 
-The OUS collection-based resources are as follows:
+The resources are as follows:
 
 * `GET /service-bridge/ous/collection/:concept-id`
 * `GET /service-bridge/ous/streaming-collection/:concept-id`
@@ -342,7 +350,7 @@ are described. Each parameter is discussed in isolation, simply addressing it
 in its own context. However, common usage will involve more than on parameter
 acting at the same time. As such, here are some points to note:
 
-* Currently CMR OPeNDAP supports only queries with one collection; as such,
+* Currently CMR Service-Bridge supports only queries with one collection; as such,
   the collection query to CMR Search explicitly limits the results to one
   with the `page_size=1` parameter.
 * When multiple variable concept ids are passed, these are sent to CMR Search
@@ -351,7 +359,7 @@ acting at the same time. As such, here are some points to note:
 * Similarly, multiple granules are queried at once with a single query to CMR
   Search.
 * In the granule query to CMR Search, and spatial and temporal parameters that
-  were passed to CMR OPeNDAP will be used to limit the granule results from
+  were passed to CMR Service-Bridge will be used to limit the granule results from
   CMR Search to just those in which the user is interested.
 
 
@@ -670,11 +678,16 @@ The following are coming soon:
 
 # SES Resources
 
+## Collection Resources
+
 The Size Estimation Service offers a REST API for esimating the download sizes of subsetted
 collection-based granule queries. The usage is almost identical to the OUS resources, the
 primary different being the path segment:
 
 * `GET /service-bridge/size-estimate/collection/:concept-id`
+
+
+## Parameters
 
 Two parameters are required in a query string to this resource:
 
@@ -697,6 +710,10 @@ All parameters behave as documented above in the OUS sections on `granules`, `va
 A final parameter that is unique to the size estimation service is `total-granule-input-bytes`:
 this is required when passing `nc4` or `ascii` as the format values. This parameter represents
 the size of the granules when no subsetting operation is being peformed.
+
+## Examples
+
+Some example usage is given in the adjacent panel to the right.
 
 > Get a size estimate for one granule and one variable:
 
@@ -871,11 +888,11 @@ The following resources are provided for use in various tests:
 
 ## Dependent Services
 
-CMR OPeNDAP will not only report its own errors, but errors encountered when
+CMR Service-Bridge will not only report its own errors, but errors encountered when
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.
 
-## CMR OPeNDAP Warnings
+## CMR Service-Bridge Warnings
 
 Warning messages will generally be included in a successful reponse, and thus
 will usually have an HTTP status of 200.
@@ -888,7 +905,7 @@ HTTP Status | Warning Message
 200         | The bounding information for the query has been removed.
 
 
-## CMR OPeNDAP Errors
+## CMR Service-Bridge Errors
 
 ### Authorization
 

@@ -8,7 +8,7 @@
   <li>Data Structure</li>
 </ul>
 <h2><a href="#modes-of-configuration" name="modes-of-configuration"></a>Modes of Configuration</h2>
-<p>cmr-opendap is configured in several ways:</p>
+<p>cmr-service-bridge is configured in several ways:</p>
 <ul>
   <li><strong>Configuration file</strong> (see <code>resources/config/cmr-opendap/config.edn</code>) - this is  generally for providing more-or-less static defaults.</li>
   <li><strong>Java system properties</strong> - provided either with the <code>-Dsome.prop.name=value</code> as  a command line option, or in the <code>project.clj</code> file with  <code>:jvm-opts=["-Dcmr.some.prop.name=value"]</code>. This is the recommended way to set  values for local development environments. Note that only property names  starting with “cmr.” will be recognized. Also: configuration will be nested  under keys created from the property name, so the above example would be  available as <code>{:cmr {:some {:prop {:name "value"}}}}</code>. Values that can be  parsed as integers are converted to integers in the resulting configuration  data structure.</li>

@@ -10,7 +10,7 @@
 
 ## Modes of Configuration
 
-cmr-opendap is configured in several ways:
+cmr-service-bridge is configured in several ways:
 
 * **Configuration file** (see `resources/config/cmr-opendap/config.edn`) - this is
   generally for providing more-or-less static defaults.

@@ -43,7 +43,7 @@
    :pages {
      :default-title "CMR Service-Bridge"}
    :base-url "/service-bridge"
-   :base-url-fn cmr.opendap.components.config/base-url
+   :base-url-fn cmr.opendap.components.config/opendap-base-url
    :docs "resources/public/docs"
    :assets "resources/public/assets"
    :rest-docs
