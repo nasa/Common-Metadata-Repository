@@ -85,22 +85,6 @@
          {:endpoint search-endpoint
           :token user-token
           :params params})
-        ;; Stage 3
-        [services vars params bounding-info s3-errs s3-warns]
-        (ous/stage3
-         component
-         service-ids
-         vars
-         bounding-box
-         {:endpoint search-endpoint
-          :token user-token
-          :params params})
-        warns s3-warns
-        ;; XXX Note that this next `let` assignment will only work when
-        ;;     supporting explicit granule concept ids passed in the request;
-        ;;     as soon as we're supporting implicit granule concept ids in SES
-        ;;     (i.e., granule concept ids obtained from the collection), this
-        ;;     will break.
         sample-granule-id (first (:granules params))
         granule-metadata (concept/get-metadata
                           search-endpoint user-token
@@ -108,7 +92,7 @@
         ;; Error handling for all stages
         errs (errors/collect
               params bounding-box grans-promise coll-promise s1-errs
-              data-files service-ids vars s2-errs s3-errs
+              data-files service-ids vars s2-errs
               granule-metadata
               {:errors (errors/check
                         [not data-files metadata-errors/empty-gnl-data-files])})
@@ -118,7 +102,6 @@
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
     (log/debug "Got data-files:" (vec data-files))
-    (log/debug "Got services:" services)
     (log/debug "Got vars:" vars)
     (log/debug "Got total-granule-input-bytes:" (:total-granule-input-bytes raw-params))
     (process-results
@@ -127,8 +110,6 @@
        :vars vars
        :format fmt
        :collection-metadata coll
-       :granule-metadata granule-metadata
-       :bounding-info bounding-info}
+       :granule-metadata granule-metadata}
       start
-      errs
-      warns)))
+      errs)))
