@@ -119,7 +119,7 @@
                                                            :provider-id "PROV2"})
            var2-1 (variable/ingest-variable var2-1-concept)
            var2-2-concept (variable/make-variable-concept {:native-id "var2"
-                                                           :Name "Variable2-2"
+                                                           :Name "Variable2"
                                                            :LongName "LongName2-2"
                                                            :provider-id "PROV2"})
            var2-2 (variable/ingest-variable var2-2-concept)

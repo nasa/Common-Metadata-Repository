@@ -27,8 +27,8 @@
                                             (data-umm-c/collection 1 {})
                                             {:token token})
         var1-concept (variable/make-variable-concept {:native-id "var1"
-                                                       :Name "Variable1"
-                                                       :provider-id "PROV1"})
+                                                      :Name "Variable1"
+                                                      :provider-id "PROV1"})
         var1-1 (variable/ingest-variable var1-concept)
         var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
                                 var1-concept
@@ -37,23 +37,23 @@
         var1-3 (variable/ingest-variable var1-concept)
 
         var2-1-concept (variable/make-variable-concept {:native-id "var2"
-                                                         :Name "Variable2"
-                                                         :LongName "LongName2"
-                                                         :provider-id "PROV1"})
+                                                        :Name "Variable2"
+                                                        :LongName "LongName2"
+                                                        :provider-id "PROV1"})
         var2-1 (variable/ingest-variable var2-1-concept)
         var2-2-concept (variable/make-variable-concept {:native-id "var2"
-                                                         :Name "Variable2-2"
-                                                         :LongName "LongName2-2"
-                                                         :provider-id "PROV1"})
+                                                        :Name "Variable2"
+                                                        :LongName "LongName2-2"
+                                                        :provider-id "PROV1"})
         var2-2 (variable/ingest-variable var2-2-concept)
         var2-3-tombstone (merge (ingest/delete-concept var2-2-concept {:token token})
                                 var2-2-concept
                                 {:deleted true
                                  :user-id "user1"})
         var3 (variable/ingest-variable-with-attrs {:native-id "var3"
-                                                    :Name "Variable1"
-                                                    :LongName "LongName3"
-                                                    :provider-id "PROV2"})]
+                                                   :Name "Variable1"
+                                                   :LongName "LongName3"
+                                                   :provider-id "PROV2"})]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
       (are3 [variables params]
@@ -100,16 +100,20 @@
         [var1-3 var3]
         {:name "Variable1"}
 
+        "name all-revisions false"
+        [var1-3 var3]
+        {:name "Variable1" :all-revisions false}
+
         "name all-revisions true"
         [var1-1 var1-2-tombstone var1-3 var3]
         {:name "Variable1" :all-revisions true}
 
-        "name is updated on revision -- not found without all-revisions true"
+        "name all-revisions unspecified, latest revision is tombstone"
         []
         {:name "Variable2"}
 
-        "name is updated on revision -- found with all-revisions true"
-        [var2-1]
+        "name with all-revisions true, latest revision is tombstone"
+        [var2-1 var2-2 var2-3-tombstone]
         {:name "Variable2" :all-revisions true}
 
         "all-revisions true"
