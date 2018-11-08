@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.1.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.1.2-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -25,14 +25,14 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.1"]
-    [clojusc/trifl "0.4.0"]
+    [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
     [metosin/ring-http-response "0.9.0"]
     [org.clojure/clojure "1.9.0"]
