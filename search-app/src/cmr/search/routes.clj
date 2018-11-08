@@ -12,6 +12,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as cmr-context]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
@@ -70,10 +71,17 @@
     mt/json
     mt/xml))
 
+(defconfig test-environment? 
+   "Flag that indicates if the environment is test environment"
+   {:default false :type Boolean})
+
 (def robots-txt-response
   "Returns the robots.txt response."
-  {:status 200
-   :body (slurp (io/resource "public/robots.txt"))})
+  (if (test-environment?) 
+    {:status 200
+     :body (slurp (io/resource "public/test-environment-robots.txt"))}
+    {:status 200
+     :body (slurp (io/resource "public/robots.txt"))}))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
