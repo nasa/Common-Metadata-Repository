@@ -480,9 +480,11 @@
   {:_id  {:path "concept-id"}}
   (merge
     {:concept-id (m/stored m/string-field-mapping)
+     :revision-id (m/stored m/int-field-mapping)
 
      :native-id (m/doc-values m/string-field-mapping)
      :native-id.lowercase (m/doc-values m/string-field-mapping)
+     :native-id-stored (-> m/string-field-mapping m/stored m/doc-values)
 
      ;; This is used explicitly for sorting. The values take up less space in the
      ;; fielddata cache.
@@ -592,8 +594,9 @@
      :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
      :created-at (m/doc-values m/date-field-mapping)
-     :revision-date         m/date-field-mapping
-     :revision-date-doc-values           (m/doc-values m/date-field-mapping)
+     :revision-date m/date-field-mapping
+     :revision-date-doc-values (m/doc-values m/date-field-mapping)
+     :revision-date-stored-doc-values (-> m/date-field-mapping m/stored m/doc-values)
 
      :downloadable (m/stored m/bool-field-mapping)
      :browsable (m/stored m/bool-field-mapping)

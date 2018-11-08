@@ -3,7 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -116,7 +116,8 @@
 (defn- granule->elastic-doc
   "Returns elastic json that can be used to insert the given granule concept in elasticsearch."
   [context concept umm-granule]
-  (let [{:keys [concept-id extra-fields native-id provider-id revision-date format created-at]} concept
+  (let [{:keys [concept-id revision-id extra-fields native-id provider-id
+                revision-date format created-at]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
@@ -141,6 +142,7 @@
         {:keys [ShortName Version EntryTitle]} parent-collection
         granule-spatial-representation (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation])]
     (merge {:concept-id concept-id
+            :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
@@ -149,8 +151,8 @@
             :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title EntryTitle
-            :entry-title.lowercase (s/lower-case EntryTitle)
-            :entry-title.lowercase-doc-values (s/lower-case EntryTitle)
+            :entry-title.lowercase (string/lower-case EntryTitle)
+            :entry-title.lowercase-doc-values (string/lower-case EntryTitle)
             :metadata-format (-> format
                                  mt/base-mime-type-of
                                  mt/base-mime-type-to-format
@@ -159,48 +161,49 @@
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
 
-            :short-name.lowercase (when ShortName (s/lower-case ShortName))
-            :short-name.lowercase-doc-values (when ShortName (s/lower-case ShortName))
-            :version-id.lowercase (when Version (s/lower-case Version))
-            :version-id.lowercase-doc-values (when Version (s/lower-case Version))
+            :short-name.lowercase (when ShortName (string/lower-case ShortName))
+            :short-name.lowercase-doc-values (when ShortName (string/lower-case ShortName))
+            :version-id.lowercase (when Version (string/lower-case Version))
+            :version-id.lowercase-doc-values (when Version (string/lower-case Version))
 
             :native-id native-id
-            :native-id.lowercase (s/lower-case native-id)
+            :native-id-stored native-id
+            :native-id.lowercase (string/lower-case native-id)
 
             :provider-id provider-id
             :provider-id-doc-values provider-id
-            :provider-id.lowercase (s/lower-case provider-id)
-            :provider-id.lowercase-doc-values (s/lower-case provider-id)
+            :provider-id.lowercase (string/lower-case provider-id)
+            :provider-id.lowercase-doc-values (string/lower-case provider-id)
 
             :granule-ur granule-ur
-            :granule-ur.lowercase2 (s/lower-case granule-ur)
+            :granule-ur.lowercase2 (string/lower-case granule-ur)
             :producer-gran-id producer-gran-id
-            :producer-gran-id.lowercase2 (when producer-gran-id (s/lower-case producer-gran-id))
+            :producer-gran-id.lowercase2 (when producer-gran-id (string/lower-case producer-gran-id))
             :day-night day-night
             :day-night-doc-values day-night
-            :day-night.lowercase (when day-night (s/lower-case day-night))
+            :day-night.lowercase (when day-night (string/lower-case day-night))
             :access-value access-value
             :access-value-doc-values access-value
 
             ;; Provides sorting on a combination of producer granule id and granule ur
-            :readable-granule-name-sort2 (s/lower-case (or producer-gran-id granule-ur))
+            :readable-granule-name-sort2 (string/lower-case (or producer-gran-id granule-ur))
 
             :platform-sn platform-short-names
-            :platform-sn.lowercase  (map s/lower-case platform-short-names)
-            :platform-sn.lowercase-doc-values  (map s/lower-case platform-short-names)
+            :platform-sn.lowercase  (map string/lower-case platform-short-names)
+            :platform-sn.lowercase-doc-values  (map string/lower-case platform-short-names)
             :instrument-sn instrument-short-names
-            :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
-            :instrument-sn.lowercase-doc-values  (map s/lower-case instrument-short-names)
+            :instrument-sn.lowercase  (map string/lower-case instrument-short-names)
+            :instrument-sn.lowercase-doc-values  (map string/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
-            :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
-            :sensor-sn.lowercase-doc-values  (map s/lower-case sensor-short-names)
+            :sensor-sn.lowercase  (map string/lower-case sensor-short-names)
+            :sensor-sn.lowercase-doc-values  (map string/lower-case sensor-short-names)
             :project-refs project-refs
-            :project-refs.lowercase (map s/lower-case project-refs)
-            :project-refs.lowercase-doc-values (map s/lower-case project-refs)
+            :project-refs.lowercase (map string/lower-case project-refs)
+            :project-refs.lowercase-doc-values (map string/lower-case project-refs)
             :feature-id feature-ids
-            :feature-id.lowercase (map s/lower-case feature-ids)
+            :feature-id.lowercase (map string/lower-case feature-ids)
             :crid-id crid-ids
-            :crid-id.lowercase (map s/lower-case crid-ids)
+            :crid-id.lowercase (map string/lower-case crid-ids)
             :size size
             :size-doc-values size
             :cloud-cover cloud-cover
@@ -209,6 +212,7 @@
             :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
             :revision-date revision-date
             :revision-date-doc-values revision-date
+            :revision-date-stored-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
             :created-at (or created-at revision-date)
@@ -217,7 +221,7 @@
             :end-date (index-util/date->elastic end-date)
             :end-date-doc-values (index-util/date->elastic end-date)
             :two-d-coord-name two-d-coord-name
-            :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
+            :two-d-coord-name.lowercase (when two-d-coord-name (string/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1
             :end-coordinate-1 end-coordinate-1
             :start-coordinate-2 start-coordinate-2
