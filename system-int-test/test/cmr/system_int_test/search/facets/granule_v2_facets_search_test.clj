@@ -3,8 +3,10 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.query-validation :as cqv]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -15,6 +17,16 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(defn- umm-format->extension
+  "Converts a UMM JSON format structure (a keyword or map containing :format and :version) to
+  a url extension. The url extension will contain a version if the format does."
+  [fmt]
+  (if (map? fmt)
+    (if-let [version (:version fmt)]
+      (str "umm_json_v" (string/replace version #"\." "_"))
+      "umm_json")
+    "umm_json"))
 
 (defn- search-and-return-v2-facets
   "Returns only the facets from a v2 granule facets search request."
@@ -107,10 +119,16 @@
               ;; timeline is not supported on the granule search route and json is valid, so we
               ;; do not test those.
               :when (not (#{:timeline :json} fmt))
-              :let [expected-body (if (= :csv fmt) json-error-string xml-error-string)]]
+              :let [format-key (mt/format-key fmt)
+                    expected-body (if (#{:csv :umm-json :umm-json-results} format-key)
+                                    json-error-string
+                                    xml-error-string)]]
         (testing (str "format" fmt)
-          (let [response (search/find-concepts-in-format fmt :granule {:include-facets "v2"}
-                                                         {:url-extension (name fmt)
+          (let [url-extension (if (#{:umm-json :umm-json-results} format-key)
+                                (umm-format->extension fmt)
+                                (name fmt))
+                response (search/find-concepts-in-format fmt :granule {:include-facets "v2"}
+                                                         {:url-extension url-extension
                                                           :throw-exceptions false})]
             (is (= {:status 400
                     :body expected-body}

@@ -281,7 +281,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
     * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
-  * `umm_json`   "application/vnd.nasa.cmr.umm_results+json" (only supported for collections)
+  * `umm_json`   "application/vnd.nasa.cmr.umm_results+json" (supported for collections, granules, variables and services)
     * The UMM JSON extension returns concepts in the latest version of the UMM.
   * `umm_json_vX_Y` "application/vnd.nasa.cmr.umm_results+json; version=X.Y"
     * X and Y should be replaced with a major and minor number of the UMM version requested.
@@ -815,7 +815,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection, variable and service searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable and service searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
