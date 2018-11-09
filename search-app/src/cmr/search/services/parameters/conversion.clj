@@ -170,7 +170,7 @@
   query."
   {:concept-id :collection-concept-id
    :has-granules-created-at :created-at
-   :has-granules-revised-at :revision-date-doc-values})
+   :has-granules-revised-at :revision-date-stored-doc-values})
 
 (defmulti tag-param->condition
   "Convert tag param and value into query condition"

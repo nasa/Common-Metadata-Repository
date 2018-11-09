@@ -9,11 +9,6 @@
    [cmr.common.util :as util]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
-(defn- variable-elastic-result->meta
-  "Returns a map of the meta fields for the given variable elastic result."
-  [elastic-result]
-  (results-helper/elastic-result->meta :variable elastic-result))
-
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :umm-json-results]
   [concept-type query]
   (concat

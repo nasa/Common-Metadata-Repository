@@ -349,7 +349,7 @@
              "order-concepts:" t6)
       ordered-concepts)
 
-    ;; Granule queries won't use the cache
+    ;; Concepts other than collection (e.g. granule, variable, service) won't use the cache
     (fetch-metadata context concept-tuples target-format)))
 
 (defn get-latest-formatted-concepts

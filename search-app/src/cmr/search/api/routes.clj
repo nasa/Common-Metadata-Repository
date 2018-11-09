@@ -28,6 +28,7 @@
    [cmr.search.results-handlers.atom-json-results-handler]
    [cmr.search.results-handlers.atom-results-handler]
    [cmr.search.results-handlers.csv-results-handler]
+   [cmr.search.results-handlers.granules-umm-json-results-handler]
    [cmr.search.results-handlers.kml-results-handler]
    [cmr.search.results-handlers.metadata-results-handler]
    [cmr.search.results-handlers.opendata-results-handler]
