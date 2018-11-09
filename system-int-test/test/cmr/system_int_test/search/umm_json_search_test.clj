@@ -173,12 +173,6 @@
         {:all-revisions true}))))
 
 (deftest search-umm-json-error-cases
-  (testing "granule umm-json search is not supported"
-    (is (= {:status 400
-            :errors [(format "The mime type [%s] with version [%s] is not supported for granules."
-                             (mt/format->mime-type :umm-json-results)
-                             umm-version/current-granule-version)]}
-           (select-keys (search/find-concepts-umm-json :granule {}) [:status :errors]))))
   (testing "Searching with invalid UMM JSON extension"
     (is (= {:status 400
             ;; XML is returned here because we don't specify an accept header and the URL extension is unknown.

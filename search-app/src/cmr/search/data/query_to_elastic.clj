@@ -84,7 +84,9 @@
   (let [default-mappings {:granule-ur.lowercase :granule-ur.lowercase2
                           :producer-gran-id.lowercase :producer-gran-id.lowercase2
                           :provider :provider-id
-                          :updated-since :revision-date
+                          :native-id :native-id-stored
+                          :revision-date :revision-date-stored-doc-values
+                          :updated-since :revision-date-stored-doc-values
                           :producer-granule-id :producer-gran-id
                           :platform :platform-sn
                           :instrument :instrument-sn
@@ -93,8 +95,9 @@
     (if (use-doc-values-fields)
       (merge default-mappings
              {:provider :provider-id-doc-values
-              :updated-since :revision-date-doc-values}
-             query-field->granule-doc-values-fields-map)
+              :updated-since :revision-date-stored-doc-values}
+             query-field->granule-doc-values-fields-map
+             {:revision-date :revision-date-stored-doc-values})
       default-mappings)))
 
 (defmethod q2e/concept-type->field-mappings :tag
@@ -141,7 +144,9 @@
   (merge {:platform-sn :platform
           :instrument-sn :instrument
           :sensor-sn :sensor
-          :project-refs :project}
+          :project-refs :project
+          :native-id-stored :native-id
+          :revision-date-stored-doc-values :revision-date}
          (set/map-invert query-field->granule-doc-values-fields-map)))
 
 (defmethod q2e/elastic-field->query-field-mappings :tag
@@ -339,7 +344,7 @@
                                :project :project-refs.lowercase-doc-values
                                :start-date :start-date-doc-values
                                :end-date :end-date-doc-values
-                               :revision-date :revision-date-doc-values
+                               :revision-date :revision-date-stored-doc-values
                                :entry-title :entry-title.lowercase-doc-values
                                :short-name :short-name.lowercase-doc-values
                                :version :version-id.lowercase-doc-values

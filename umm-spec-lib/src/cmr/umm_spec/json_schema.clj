@@ -25,6 +25,10 @@
   "Defines the name of the search result schema."
   "umm-search-results-json-schema.json")
 
+(def granule-search-result-schema-name
+  "Defines the name of the granule search result schema."
+  "umm-g-search-results-json-schema.json")
+
 (def variable-search-result-schema-name
   "Defines the name of the variable search result schema."
   "umm-var-search-results-json-schema.json")
@@ -255,6 +259,12 @@
   [json-str umm-version]
   (validate-umm-json-search-result
    json-str :collection search-result-schema-name umm-version))
+
+(defn validate-granule-umm-json-search-result
+  "Validates the granule UMM JSON search result and returns a list of errors if invalid."
+  [json-str umm-version]
+  (validate-umm-json-search-result
+   json-str :granule granule-search-result-schema-name umm-version))
 
 (defn validate-variable-umm-json-search-result
   "Validates the variable UMM JSON search result and returns a list of errors if invalid."

@@ -64,7 +64,7 @@
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (is (= (set (map collection->legacy-umm-json collections))
-           (set (map #(update % :meta legacy-meta-for-comparison) 
+           (set (map #(update % :meta legacy-meta-for-comparison)
                      (get-in search-result [:results :items])))))))
 
 (defn- collection->umm-json
@@ -123,6 +123,42 @@
     (if deleted
       meta
       (assoc meta :format mt/umm-json))))
+
+(defn- granule->umm-json-meta
+  "Returns the meta section of granule UMM JSON search result."
+  [granule]
+  (let [{:keys [concept-id revision-id provider-id native-id format]} granule]
+    (util/remove-nil-keys
+     {:concept-type "granule"
+      :concept-id concept-id
+      :revision-id revision-id
+      :native-id native-id
+      :provider-id provider-id
+      :format (mt/format->mime-type format)})))
+
+(defn- granule->umm-json
+  "Returns the UMM JSON search result of the given granule."
+  [version granule]
+  ;; Currently there is no version migration
+  ;; We need to handle version migration later when it is supported for UMM-G
+  (let [{:keys [metadata]} granule]
+    {:meta (granule->umm-json-meta granule)
+     :umm (json/decode metadata true)}))
+
+(defn assert-granule-umm-jsons-match
+  "Returns true if the UMM JSON response returned from the search matches the given granules."
+  [version granules search-result]
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (do
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
+      (is (nil? (util/seqv (umm-json-schema/validate-granule-umm-json-search-result
+                            (:body search-result) version)))
+          "UMM search result JSON was invalid")
+      (is (= (set (map #(granule->umm-json version %) granules))
+             (set (map #(util/dissoc-in % [:meta :revision-date])
+                       (get-in search-result [:results :items]))))))))
 
 (defn- variable->umm-json-meta
   "Returns the meta section of umm-json format."

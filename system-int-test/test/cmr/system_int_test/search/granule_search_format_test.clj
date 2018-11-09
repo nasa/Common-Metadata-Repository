@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.granule-search-format-test
-  "Integration tests for searching granules in csv format"
+  "Integration tests for searching granules in various formats"
   (:require
    [clj-http.client :as client]
    [clojure.string :as string]
