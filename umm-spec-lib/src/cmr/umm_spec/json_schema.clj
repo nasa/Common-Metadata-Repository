@@ -82,9 +82,11 @@
     (update-in object [type-selector]
                (fn [one-ofs]
                  (map (fn [o]
-                        (if (:properties o)
-                          (update-in o [:properties] (partial resolve-ref-deflist schema-name))
-                          o))
+                        (if (:$ref o)
+                          (resolve-ref schema-name o)
+                          (if (:properties o)
+                            (update-in o [:properties] (partial resolve-ref-deflist schema-name))
+                            o)))
                       one-ofs)))
     object))
 
@@ -206,6 +208,18 @@
                  (lookup-ref (get-in schema [:ref-schemas schema-name]) the-ref))]
     (or result
         (throw (Exception. (str "Unable to load ref " (pr-str the-ref)))))))
+
+(defn expand-top-level-refs
+  "Expand top level references inside type-selector (oneOf or anyOf).
+   Ex. \"oneOf\": [{\"$ref\": \"#/definitions/reference\"}] becomes
+       \"oneOf\": [{\"reference\": <reference-type>}]"
+  [schema schema-type type-selector]
+  (assoc schema-type
+         type-selector
+         (mapv #(if (:$ref %)
+                  (second (lookup-ref schema %))
+                  %)
+               (type-selector schema-type))))
 
 (defn- concept-schema*
   ([concept-type]

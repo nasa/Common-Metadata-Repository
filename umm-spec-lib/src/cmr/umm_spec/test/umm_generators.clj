@@ -16,6 +16,7 @@
     (cond
       (:type schema-type) (:type schema-type)
       (:oneOf schema-type) "oneOf"
+      (:anyOf schema-type) "anyOf"
       (:$ref schema-type) :$ref)))
 
 (defmethod schema-type->generator :default
@@ -125,7 +126,13 @@
 
 (defmethod schema-type->generator "oneOf"
   [schema type-name schema-type]
-  (object-one-of->generator schema type-name schema-type))
+  (gen/one-of (mapv #(schema-type->generator schema type-name %)
+                    (:oneOf (js/expand-top-level-refs schema schema-type :oneOf)))))
+
+(defmethod schema-type->generator "anyOf"
+  [schema type-name schema-type]
+  (gen/one-of (mapv #(schema-type->generator schema type-name %)
+                    (:anyOf (js/expand-top-level-refs schema schema-type :anyOf)))))
 
 (def array-min-items 0)
 (def array-max-items 5)
