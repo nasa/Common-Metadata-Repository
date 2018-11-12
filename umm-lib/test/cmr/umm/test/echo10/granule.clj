@@ -17,6 +17,13 @@
             [cmr.umm.umm-granule :as umm-g]
             [cmr.umm.test.echo10.echo10-collection-tests :as tc]))
 
+(defn- data-granule->expected
+  "Returns the expected data-granule for comparison with the parsed record."
+  [data-granule]
+  (some-> data-granule
+          (assoc :crid-ids nil :feature-ids nil)
+          (update :day-night #(if % % "UNSPECIFIED"))))
+
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -25,7 +32,7 @@
       ;; Update the related-urls as ECHO10 OnlineResources' title is built as description plus resource-type
       (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
       ;; Set crid-ids and feature-ids to nil when data-granule exists since they are not supported in echo10.
-      (update-in [:data-granule] #(if % (assoc % :crid-ids nil :feature-ids nil) %))
+      (update-in [:data-granule] data-granule->expected)
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
@@ -403,4 +410,3 @@
             "Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
            (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
-

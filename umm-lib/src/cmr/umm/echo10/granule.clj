@@ -75,7 +75,7 @@
     (when (or size producer-gran-id day-night production-date-time)
       (g/map->DataGranule {:size size
                            :producer-gran-id producer-gran-id
-                           :day-night day-night
+                           :day-night (if day-night day-night "UNSPECIFIED")
                            :production-date-time production-date-time}))))
 
 (defn- xml-elem->SpatialCoverage
