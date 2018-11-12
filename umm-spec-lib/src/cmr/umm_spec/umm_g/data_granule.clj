@@ -2,10 +2,22 @@
   "Contains functions for parsing UMM-G JSON DataGranule into umm-lib granule model
    DataGranule and generating UMM-G JSON DataGranule from umm-lib granule model DataGranule."
   (:require
-   [cmr.umm.umm-granule :as g]
+   [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.umm-spec.util :as util])
+   [cmr.umm-spec.util :as util]
+   [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
+
+(def umm-lib-day-night->umm-g-day-night
+  "Defines the day night flag mapping between umm-lib and UMM-G models."
+  {"DAY" "Day"
+   "NIGHT" "Night"
+   "BOTH" "Both"
+   "UNSPECIFIED" "Unspecified"})
+
+(def umm-g-day-night->umm-lib-day-night
+  "Defines the day night flag mapping between UMM-G and umm-lib models."
+  (set/map-invert umm-lib-day-night->umm-g-day-night))
 
 (defn umm-g-data-granule->DataGranule
   "Returns the umm-lib granule model DataGranule from the given UMM-G DataGranule."
@@ -14,7 +26,7 @@
     (g/map->DataGranule
       (let [{:keys [Identifiers DayNightFlag ProductionDateTime
                     ArchiveAndDistributionInformation]} data-granule]
-        {:day-night (string/upper-case DayNightFlag)
+        {:day-night (get umm-g-day-night->umm-lib-day-night DayNightFlag "UNSPECIFIED")
          :producer-gran-id (->> Identifiers
                                 (some #(when (= "ProducerGranuleId" (:IdentifierType %)) %))
                                 :Identifier)
@@ -35,7 +47,7 @@
   (when data-granule
     (let [{:keys [producer-gran-id day-night crid-ids feature-ids
                   production-date-time size]} data-granule]
-      {:DayNightFlag (string/capitalize day-night)
+      {:DayNightFlag (get umm-lib-day-night->umm-g-day-night day-night "Unspecified")
        :Identifiers (let [producer-gran-id (when producer-gran-id
                                              [{:Identifier producer-gran-id
                                                :IdentifierType "ProducerGranuleId"}])
