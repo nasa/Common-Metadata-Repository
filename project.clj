@@ -4,7 +4,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-mission-control "0.1.0"
   :description "An in-process messaging system for communication, coordination, and control between CMR components"
   :url "https://github.com/cmr-exchange/cmr-mission-control"
   :license {
@@ -19,7 +19,7 @@
       :aot :all}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -29,9 +29,9 @@
         [com.google.javascript/closure-compiler-unshaded]]}
     :dev {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]
-        [clojusc/trifl "0.4.0"]
-        [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
+        [clojusc/system-manager "0.3.0"]
+        [clojusc/trifl "0.4.2"]
+        [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-shell "0.5.0"]
