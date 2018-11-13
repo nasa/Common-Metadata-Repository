@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.1.4-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.1.4"
   :description "A size estimation service for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {
@@ -23,13 +23,13 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [gov.nasa.earthdata/cmr-http-kit]
   :dependencies [
-    [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.2-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-ous-plugin "0.2.2-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-authz "0.1.1"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
+    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.2"]
+    [gov.nasa.earthdata/cmr-ous-plugin "0.2.2"]
+    [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
     [org.clojure/clojure "1.9.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
@@ -42,7 +42,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -52,7 +52,7 @@
         [com.google.javascript/closure-compiler-unshaded]]}
     :system {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
+        [clojusc/system-manager "0.3.0"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]

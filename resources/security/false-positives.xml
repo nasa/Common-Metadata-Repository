@@ -9,9 +9,9 @@
    </suppress>
 	<suppress>
 	   <notes><![CDATA[
-	   file name: cmr-site-templates-0.1.0-SNAPSHOT.jar
+	   file name: cmr-site-templates-0.1.0.jar
 	   ]]></notes>
 	   <gav regex="true">^gov\.nasa\.earthdata:cmr-site-templates:.*$</gav>
-	   <cve>CVE-2015-4370</cve>
+	   <cve>CVE-2017-16111</cve>
 	</suppress>
 </suppressions>
