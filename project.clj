@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-authz "0.1.1"
   :description "An authorization utility library for CMR services"
   :url "https://github.com/cmr-exchange/authz"
   :license {
@@ -6,13 +6,13 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.1"]
-    [clojusc/trifl "0.4.0"]
+    [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.4-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
     [http-kit "2.3.0"]
-    [metosin/reitit-ring "0.2.5"]
+    [metosin/reitit-ring "0.2.7"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
@@ -23,7 +23,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
         :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
