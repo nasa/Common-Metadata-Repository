@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.1.2-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.1.2"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -29,12 +29,12 @@
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
-    [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
-    [metosin/ring-http-response "0.9.0"]
+    [gov.nasa.earthdata/cmr-authz "0.1.1"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
+    [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
+    [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]]
@@ -48,7 +48,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -67,7 +67,7 @@
         [commons-io "2.6"]]}
     :system {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
+        [clojusc/system-manager "0.3.0"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
