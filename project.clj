@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-query "0.2.0"
   :description "Cross-project query and parameter parsing and transformations"
   :url "https://github.com/cmr-exchange/cmr-exchange-query"
   :license {
@@ -22,10 +22,10 @@
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.1"]
-    [clojusc/trifl "0.4.0"]
+    [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
     [org.clojure/clojure "1.9.0"]
     [ring/ring-codec "1.1.1"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
@@ -38,7 +38,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -50,7 +50,7 @@
         [org.slf4j/slf4j-simple]]}
     :system {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
+        [clojusc/system-manager "0.3.0"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
