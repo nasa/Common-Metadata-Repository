@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-site-templates "0.1.0"
   :description "Templates for CMR content"
   :url "https://github.com/cmr-exchange/cmr-site-templates"
   :license {
@@ -11,12 +11,12 @@
       :aot :all}
     :security {
       :plugins [
-        [lein-nvd "0.5.4"]]}
+        [lein-nvd "0.5.6"]]}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.2.9"]
+        [jonase/eastwood "0.3.3"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
