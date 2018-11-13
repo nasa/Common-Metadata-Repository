@@ -66,8 +66,8 @@ and the API versions supported in each.
 
 Release             | REST API Versions | Status
 ------------------- | ----------------- | --------------
-1.5.0               | v1, v2, v2.1      | In development
-1.1.0 through 1.4.0 | v1, v2, v2.1      | Released
+1.6.0-SNAPSHOT      | v1, v2, v2.1      | In development
+1.1.0 through 1.5.0 | v1, v2, v2.1      | Released
 1.0.0               | v1, v2            | Released
 0.1.0               | v1                | Released
 
@@ -713,7 +713,8 @@ the size of the granules when no subsetting operation is being peformed.
 
 ## Examples
 
-Some example usage is given in the adjacent panel to the right.
+Some example usage is given in the adjacent panel to the right; towards the bottom you will see
+examples for spatial subsetting sizing estimates.
 
 > Get a size estimate for one granule and one variable:
 
@@ -828,11 +829,15 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 }
 ```
 
-## Forthcoming
 
-The following are coming soon:
+> For spatial subsetting, simply include the `bounding-box` parameter, per the
+documentation above (see the "bounding-box" subheading in the "OUS Resources"
+section):
 
-* Example of SES usage with spatial subsetting
+```shell
+
+
+```
 
 
 # Admin Resources

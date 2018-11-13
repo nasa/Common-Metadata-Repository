@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.5.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.5.0"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {
@@ -27,21 +27,21 @@
     [clojusc/twig "0.4.0"]
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
-    [gov.nasa.earthdata/cmr-authz "0.1.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-exchange-query "0.2.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.2-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-mission-control "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-ous-plugin "0.2.2-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-sizing-plugin "0.1.4-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-authz "0.1.1"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
+    [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
+    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
+    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.2"]
+    [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
+    [gov.nasa.earthdata/cmr-ous-plugin "0.2.2"]
+    [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
+    [gov.nasa.earthdata/cmr-sizing-plugin "0.1.4"]
     [http-kit "2.3.0"]
     [markdown-clj "1.0.5"]
-    [metosin/reitit-core "0.2.5"]
-    [metosin/reitit-ring "0.2.5"]
-    [metosin/ring-http-response "0.9.0"]
+    [metosin/reitit-core "0.2.7"]
+    [metosin/reitit-ring "0.2.7"]
+    [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.7.1"]
@@ -64,7 +64,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -76,10 +76,10 @@
         [org.slf4j/slf4j-simple]]}
     :geo {
       :dependencies [
-        [gov.nasa.earthdata/cmr-exchange-geo "0.1.0-SNAPSHOT"]]}
+        [gov.nasa.earthdata/cmr-exchange-geo "0.1.0"]]}
     :system {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]]}
+        [clojusc/system-manager "0.3.0"]]}
     :local {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
