@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-geo "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-geo "0.1.0"
   :description "A general geographic library that unifies separate libs under a common interface"
   :url "https://github.com/cmr-exchange/cmr-exchange-geo"
   :license {
@@ -24,15 +24,14 @@
   :exclusions [
     [net.sf.geographiclib/GeographicLib-Java]]
   :dependencies [
-    [clojusc/trifl "0.4.0"]
+    [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [com.esri.geometry/esri-geometry-api "2.2.1"]
     [com.vividsolutions/jts "1.13"]
     [net.sf.geographiclib/GeographicLib-Java "1.49"]
     [org.clojure/clojure "1.9.0"]
     [org.geotools/gt-geometry "20.0"]
-    [org.geotools/gt-referencing "20.0"]
-    [selmer "1.12.2"]]
+    [org.geotools/gt-referencing "20.0"]]
   :repositories [
     ["osgeo" "https://download.osgeo.org/webdav/geotools"]]
   :profiles {
@@ -41,7 +40,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -70,7 +69,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.3.1"]
+        [jonase/eastwood "0.3.3"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
