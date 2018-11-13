@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-http-kit "0.1.5-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-http-kit "0.1.5"
   :description "Utilities, wrappers, middleware, and components for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
   :license {
@@ -24,10 +24,10 @@
     [cheshire "5.8.1"]
     [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"]
-    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
     [http-kit "2.3.0"]
-    [metosin/ring-http-response "0.9.0"]
+    [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-defaults "0.3.2"]
@@ -39,7 +39,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -56,7 +56,7 @@
         [commons-io "2.6"]]}
     :dev {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]
+        [clojusc/system-manager "0.3.0"]
         [org.clojure/java.classpath "0.3.0"]
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
