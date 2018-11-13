@@ -669,6 +669,33 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ArchiveAndDistributionInformationType)
 
+;; This set of elements describes a file package or a file that contains other files.
+;; Normally this is either a tar or a zip file.
+(defrecord FilePackageType
+  [
+   ;; This field describes the name of the actual file.
+   Name
+
+   ;; The size of the file.
+   Size
+
+   ;; The unit of the file size.
+   SizeUnit
+
+   ;; This element defines a single format for a distributable artifact.
+   Format
+
+   ;; The mime type of the resource.
+   MimeType
+
+   ;; Allows the provider to provide the checksum value for the file.
+   Checksum
+
+   ;; Allows the provider to add the list of the files that are included in this one.
+   Files
+   ])
+(record-pretty-printer/enable-record-pretty-printing FilePackageType)
+
 ;; A reference to a collection metadata record's short name and version, or entry title to which
 ;; this granule metadata record belongs.
 (defrecord CollectionReferenceType
