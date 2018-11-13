@@ -60,6 +60,9 @@
       (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
                           (update-in updated-umm [:data-granule :feature-ids] distinct)
                           updated-umm))
+      (as-> updated-umm (if (:data-granule updated-umm)
+                          (update-in updated-umm [:data-granule :day-night] #(if % % "UNSPECIFIED"))
+                          updated-umm))
       umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
