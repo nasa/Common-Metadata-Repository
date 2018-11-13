@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-common "0.2.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-common "0.2.2"
   :description "Cross-project functionality, utilities, and general-use components"
   :url "https://github.com/cmr-exchange/cmr-exchange-common"
   :license {
@@ -32,7 +32,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.5"]]
+        [lein-nvd "0.5.6"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
@@ -42,7 +42,7 @@
         [com.google.javascript/closure-compiler-unshaded]]}
     :dev {
       :dependencies [
-        [clojusc/system-manager "0.3.0-SNAPSHOT"]
+        [clojusc/system-manager "0.3.0"]
         [org.clojure/java.classpath "0.3.0"]
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
