@@ -321,9 +321,6 @@
                   <li>
                     <a href="#examples" class="toc-h2 toc-link" data-title="examples">Examples</a>
                   </li>
-                  <li>
-                    <a href="#forthcoming-2" class="toc-h2 toc-link" data-title="forthcoming">Forthcoming</a>
-                  </li>
               </ul>
           </li>
           <li>
@@ -420,12 +417,12 @@ and the API versions supported in each.</p>
 </tr>
 </thead><tbody>
 <tr>
-<td>1.5.0</td>
+<td>1.6.0-SNAPSHOT</td>
 <td>v1, v2, v2.1</td>
 <td>In development</td>
 </tr>
 <tr>
-<td>1.1.0 through 1.4.0</td>
+<td>1.1.0 through 1.5.0</td>
 <td>v1, v2, v2.1</td>
 <td>Released</td>
 </tr>
@@ -1006,7 +1003,8 @@ Currently supported <code>format</code> values are:</p>
 this is required when passing <code>nc4</code> or <code>ascii</code> as the format values. This parameter represents
 the size of the granules when no subsetting operation is being peformed.</p>
 <h2 id='examples'>Examples</h2>
-<p>Some example usage is given in the adjacent panel to the right.</p>
+<p>Some example usage is given in the adjacent panel to the right; towards the bottom you will see
+examples for spatial subsetting sizing estimates.</p>
 
 <blockquote>
 <p>Get a size estimate for one granule and one variable:</p>
@@ -1113,13 +1111,15 @@ to the same effect:</p>
   <span class="o">]</span>,
   <span class="s2">"warnings"</span>: null
 <span class="o">}</span>
-</code></pre><h2 id='forthcoming-2'>Forthcoming</h2>
-<p>The following are coming soon:</p>
+</code></pre>
+<blockquote>
+<p>For spatial subsetting, simply include the <code>bounding-box</code> parameter, per the
+documentation above (see the &quot;bounding-box&quot; subheading in the &quot;OUS Resources&quot;
+section):</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>
 
-<ul>
-<li>Example of SES usage with spatial subsetting</li>
-</ul>
-<h1 id='admin-resources'>Admin Resources</h1><h2 id='cache'>Cache</h2>
+</code></pre><h1 id='admin-resources'>Admin Resources</h1><h2 id='cache'>Cache</h2>
 <p>Administrative users may use a token to manage the authorization cache:</p>
 
 <ul>
