@@ -56,6 +56,9 @@
    :index-dirs #{"/service-bridge/docs/1.0.0/marginalia"
                  "/service-bridge/docs/1.0.0/reference"
                  "/service-bridge/docs/1.0.0/rest-api"
+                 "/service-bridge/docs/1.5.0/marginalia"
+                 "/service-bridge/docs/1.5.0/reference"
+                 "/service-bridge/docs/1.5.0/rest-api"
                  "/service-bridge/docs/current/marginalia"
                  "/service-bridge/docs/current/reference"
                  "/service-bridge/docs/current/rest-api"}
