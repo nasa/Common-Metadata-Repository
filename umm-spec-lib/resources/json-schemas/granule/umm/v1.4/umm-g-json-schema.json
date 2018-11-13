@@ -252,89 +252,50 @@
       "required": ["DayNightFlag", "ProductionDateTime"]
     },
     "ArchiveAndDistributionInformationType": {
+      "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
+      "anyOf": [{"$ref": "#/definitions/FilePackageType"}, {"$ref": "#/definitions/FileType"}]
+    },
+    "FilePackageType": {
       "type": "object",
-      "anyOf": [{
-        "type": "object",
-        "additionalProperties": false,
-        "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
-        "properties": {
-          "Name": {
-            "description": "This field describes the name of the actual file.",
-            "$ref": "#/definitions/FileNameType"
-          },
-          "Size": {
-            "description": "The size of the file.",
-            "type": "number"
-          },
-          "SizeUnit": {
-            "description": "The unit of the file size.",
-            "$ref": "#/definitions/FileSizeUnitEnum"
-          },
-          "Format": {
-            "description": "This element defines a single format for a distributable artifact.",
-            "$ref": "#/definitions/DataFormatEnum"
-          },
-          "MimeType": {
-            "description": "The mime type of the resource.",
-            "$ref": "#/definitions/MimeTypeEnum"
-          },
-          "Checksum": {
-            "description": "Allows the provider to provide the checksum value for the file.",
-            "$ref": "#/definitions/ChecksumType"
-          },
-          "Files": {
-            "description": "Allows the provider to add the list of the files that are included in this one.",
-            "type": "array",
-            "items": {"$ref": "#/definitions/FileType"},
-            "uniqueItems": true,
-            "minItems": 1
-          }
+      "additionalProperties": false,
+      "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
+      "properties": {
+        "Name": {
+          "description": "This field describes the name of the actual file.",
+          "$ref": "#/definitions/FileNameType"
         },
-        "required": ["Name"],
-        "dependencies": {
-          "Size": ["SizeUnit"]
+        "Size": {
+          "description": "The size of the file.",
+          "type": "number"
+        },
+        "SizeUnit": {
+          "description": "The unit of the file size.",
+          "$ref": "#/definitions/FileSizeUnitEnum"
+        },
+        "Format": {
+          "description": "This element defines a single format for a distributable artifact.",
+          "$ref": "#/definitions/DataFormatEnum"
+        },
+        "MimeType": {
+          "description": "The mime type of the resource.",
+          "$ref": "#/definitions/MimeTypeEnum"
+        },
+        "Checksum": {
+          "description": "Allows the provider to provide the checksum value for the file.",
+          "$ref": "#/definitions/ChecksumType"
+        },
+        "Files": {
+          "description": "Allows the provider to add the list of the files that are included in this one.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/FileType"},
+          "uniqueItems": true,
+          "minItems": 1
         }
       },
-      {
-        "type": "object",
-        "additionalProperties": false,
-        "description": "This set of elements describes a file. The file can be a part of the entire granule or is the granule.",
-        "properties": {
-          "Name": {
-            "description": "This field describes the name of the actual file.",
-            "$ref": "#/definitions/FileNameType"
-          },
-          "Size": {
-            "description": "The size of the file.",
-            "type": "number"
-          },
-          "SizeUnit": {
-            "description": "The unit of the file size.",
-            "$ref": "#/definitions/FileSizeUnitEnum"
-          },
-          "Format": {
-            "description": "This element defines a single format for a distributable artifact.",
-            "$ref": "#/definitions/DataFormatEnum"
-          },
-          "FormatType": {
-            "description": "Allows the provider to state whether the distributable item's format is its native format or another supported format.",
-            "type": "string",
-            "enum": ["Native", "Supported", "NA"]
-          },
-          "MimeType": {
-            "description": "The mime type of the resource.",
-            "$ref": "#/definitions/MimeTypeEnum"
-          },
-          "Checksum": {
-            "description": "Allows the provider to provide the checksum value for the file.",
-            "$ref": "#/definitions/ChecksumType"
-          }
-        },
-        "required": ["Name"],
-        "dependencies": {
-          "Size": ["SizeUnit"]
-        }
-      }]
+      "required": ["Name"],
+      "dependencies": {
+        "Size": ["SizeUnit"]
+      }
     },
     "FileType": {
       "type": "object",
