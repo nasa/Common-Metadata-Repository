@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.5.0"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.0-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {
@@ -32,9 +32,9 @@
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-    [gov.nasa.earthdata/cmr-metadata-proxy "0.1.2"]
+    [gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-    [gov.nasa.earthdata/cmr-ous-plugin "0.2.2"]
+    [gov.nasa.earthdata/cmr-ous-plugin "0.3.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
     [gov.nasa.earthdata/cmr-sizing-plugin "0.1.4"]
     [http-kit "2.3.0"]

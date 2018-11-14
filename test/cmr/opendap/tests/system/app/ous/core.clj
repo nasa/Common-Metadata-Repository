@@ -34,7 +34,7 @@
     (is (= ["http://e4ftl01.cr.usgs.gov:40510/dir-replaced-by-tags/ASTT/AST_L1T.003/2001.11.29/AST_L1T_00311292001175440_20150303161825_63101.hdf.nc"]
            (util/parse-response response)))))
 
-(deftest no-tag-replacement
+(deftest no-tag-replacement-uses-opendap-url
   (let [collection-id "C1200241219-DEMO_PROV"
         granule-id "G1200241220-DEMO_PROV"
         options (-> {}
@@ -51,7 +51,47 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= ["https://e4ftl01.cr.usgs.gov/DP106/MOLT/MOD13Q1.006/2000.02.18/MOD13Q1.A2000049.h23v09.006.2015136104649.hdf.nc"]
+    (is (= ["https://opendap.cr.usgs.gov/opendap/hyrax/DP106/MOLT/MOD13Q1.006/2000.02.18/MOD13Q1.A2000049.h23v09.006.2015136104649.hdf.nc"]
+           (util/parse-response response)))))
+
+(deftest no-tag-replacement-and-no-opendap-url
+  (let [collection-id "C1200237759-DEMO_PROV"
+        granule-id "G1200237760-DEMO_PROV"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/ous/collection/%s"
+                                "?granules=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   options)]
+    (is (= 400 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= {:errors ["Could not determine OPeNDAP URL from tags and datafile URL or base OPeNDAP URL."]}
+           (util/parse-response response)))))
+
+(deftest no-opendap-url-or-data-url
+  (let [collection-id "C1200237759-DEMO_PROV"
+        granule-id "G1200303332-DEMO_PROV"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/ous/collection/%s"
+                                "?granules=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   options)]
+    (is (= 400 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= {:errors ["There was a problem extracting an OPeNDAP URL or data URL from the granule's metadata file." "Problematic granules: [G1200303332-DEMO_PROV]."]}
            (util/parse-response response)))))
 
 (deftest gridded-with-ummvar-1-1-api-v2-1

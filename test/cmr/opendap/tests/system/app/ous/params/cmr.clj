@@ -286,7 +286,7 @@
                      "The values provided for longitude are not within the valid range of -180 degrees through 180 degrees."
                      "West must be within [-180.0] and [180.0] but was [-181.0]."
                      "South must be within [-90.0] and [90.0] but was [-91.0]."
-                     "There was a problem extracting a data URL from the granule's service data file."]}
+                     "There was a problem extracting an OPeNDAP URL or data URL from the granule's metadata file."]}
            (util/parse-response response)))))
 
 (deftest collection-GET-query-temporal
