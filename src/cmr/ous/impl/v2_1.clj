@@ -32,17 +32,17 @@
   (let [granules (granule/extract-metadata grans-promise)
         coll (collection/extract-metadata coll-promise)
         tag-data (get-in coll [:tags (keyword collection/opendap-regex-tag) :data])
-        data-files (map granule/extract-datafile-link granules)
+        granule-links (map granule/extract-granule-links granules)
         service-ids (collection/extract-service-ids coll)
         vars (common/apply-bounding-conditions endpoint token coll params)
-        errs (apply errors/collect (concat [granules coll vars] data-files))]
+        errs (apply errors/collect (concat [granules coll vars] granule-links))]
     (when errs
       (log/error "Stage 2 errors:" errs))
-    (log/trace "data-files:" (vec data-files))
+    (log/trace "granule-links:" (vec granule-links))
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params coll data-files service-ids vars tag-data errs]))
+    [params coll granule-links service-ids vars tag-data errs]))
 
 (defn stage3
   [component service-ids vars bounding-box {:keys [endpoint token params]}]
@@ -78,7 +78,7 @@
                         :token user-token
                         :params raw-params})
         ;; Stage 2
-        [params coll data-files service-ids vars tag-data s2-errs]
+        [params coll granule-links service-ids vars tag-data s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
@@ -108,12 +108,12 @@
         ;; Error handling for all stages
         errs (errors/collect
               start params bounding-box grans-promise coll-promise s1-errs
-              data-files service-ids vars s2-errs
+              granule-links service-ids vars s2-errs
               services bounding-info s3-errs
               query s4-errs
               {:errors (errors/check
-                        [not data-files metadata-errors/empty-gnl-data-files])})]
+                        [not granule-links metadata-errors/empty-gnl-data-files])})]
     (common/process-results {:params params
-                             :data-files data-files
+                             :granule-links granule-links
                              :tag-data tag-data
                              :query query} start errs warns)))

@@ -85,27 +85,36 @@
   (let [pattern (re-pattern (format "(.*)(%s)(.*)" (:match tag-data)))]
     (string/replace data-url pattern (str "$1" (:replace tag-data) "$3"))))
 
-(defn data-file->opendap-url
-  "Converts a data-file to an OPeNDAP URL."
-  [data-file tag-data]
-  (let [data-url (:link-href data-file)
+(defn granule-link->opendap-url
+  "Converts a granule-link to an OPeNDAP URL."
+  [granule-link tag-data]
+  (let [data-url (-> granule-link :datafile-link :href)
         data-url-replaced-by-tags (when tag-data
-                                    (process-tag-datafile-replacement data-url tag-data))]
-    (log/trace "Data file:" data-file)
+                                    (process-tag-datafile-replacement data-url tag-data))
+        opendap-url (-> granule-link :opendap-link :href)]
+    (log/trace "Data file:" granule-link)
     (log/trace "Tag data:" tag-data)
     (log/trace "Data URL replaced by tags:" data-url-replaced-by-tags)
-    (or data-url-replaced-by-tags data-url)))
+    (or data-url-replaced-by-tags
+        opendap-url
+        {:errors ["Could not determine OPeNDAP URL from tags and datafile URL or base OPeNDAP URL."]})))
 
 (defn replace-double-slashes
+  "Replaces double slashes in a URL. Note that this function could be called with an error map
+   instead of a string in which case we do not perform any string replacement."
   [url]
-  (string/replace url #"(?<!(http:|https:))[//]+" "/"))
+  (if (string? url)
+    (string/replace url #"(?<!(http:|https:))[//]+" "/")
+    url))
 
-(defn data-files->opendap-urls
-  [params data-files tag-data query-string]
-  (when data-files
+(defn granule-links->opendap-urls
+  "Takes a collection of granule links maps and converts each one to an OPeNDAP URL. Returns an
+  error if unable to determine any of the OPeNDAP URLs."
+  [params granule-links tag-data query-string]
+  (when granule-links
     (let [urls (map (comp replace-double-slashes
-                          #(data-file->opendap-url % tag-data))
-                    data-files)]
+                          #(granule-link->opendap-url % tag-data))
+                    granule-links)]
       (if (errors/any-erred? urls)
         (do
           (log/error "Some problematic urls:" (vec urls))
@@ -118,14 +127,14 @@
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
-  ([{:keys [params data-files tag-data query]} start errs warns]
-   (log/trace "Got data-files:" (vec data-files))
+  ([{:keys [params granule-links tag-data query]} start errs warns]
+   (log/trace "Got granule-links:" (vec granule-links))
    (log/trace "Process-results tag-data:" tag-data)
    (if errs
      (do
        (log/error errs)
        errs)
-     (let [urls-or-errs (data-files->opendap-urls params data-files tag-data query)]
+     (let [urls-or-errs (granule-links->opendap-urls params granule-links tag-data query)]
        ;; Error handling for post-stages processing
        (if (errors/erred? urls-or-errs)
          (do
