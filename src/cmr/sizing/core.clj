@@ -28,7 +28,7 @@
   ([results start errs]
    (process-results results start errs {:warnings nil}))
   ([results start errs warns]
-   (log/trace "Got data-files:" (vec (:data-files results)))
+   (log/trace "Got granule-links:" (vec (:granule-links results)))
    (log/trace "Process-results tag-data:" (:tag-data results))
    (if errs
      (do
@@ -37,7 +37,7 @@
      (let [sample-granule-metadata-size (count (.getBytes (:granule-metadata results)))
            format-estimate (formats/estimate-size
                             (:format results)
-                            (count (:data-files results))
+                            (count (:granule-links results))
                             (:vars results)
                             sample-granule-metadata-size
                             (:params results))]
@@ -77,7 +77,7 @@
           :token user-token
           :params raw-params})
         ;; Stage 2
-        [params coll data-files service-ids vars s2-errs]
+        [params coll granule-links service-ids vars s2-errs]
         (ous/stage2
          component
          coll-promise
@@ -92,21 +92,21 @@
         ;; Error handling for all stages
         errs (errors/collect
               params bounding-box grans-promise coll-promise s1-errs
-              data-files service-ids vars s2-errs
+              granule-links service-ids vars s2-errs
               granule-metadata
               {:errors (errors/check
-                        [not data-files metadata-errors/empty-gnl-data-files])})
+                        [not granule-links metadata-errors/empty-gnl-data-files])})
 
         params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params))
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
-    (log/debug "Got data-files:" (vec data-files))
+    (log/debug "Got granule-links:" (vec granule-links))
     (log/debug "Got vars:" vars)
     (log/debug "Got total-granule-input-bytes:" (:total-granule-input-bytes raw-params))
     (process-results
       {:params params
-       :data-files data-files
+       :granule-links granule-links
        :vars vars
        :format fmt
        :collection-metadata coll
