@@ -99,7 +99,6 @@
   (let [promise (async-get-metadata component search-endpoint user-token params)]
     (extract-metadata promise)))
 
-;; XXX The following may need to change once CMR-4912 is addressed ...
 (defn match-datafile-link
   "The criteria defined in the prototype was to iterate through the links,
   only examining those links that were not 'inherited', and find the one
@@ -112,17 +111,39 @@
     (and (not (:inherited link-data))
          (= const/datafile-link-rel rel))))
 
-(defn extract-datafile-link
+(def opendap-lowercase
+  "All lowercase OPeNDAP."
+  "opendap")
+
+(defn match-opendap-link
+  "The matching performed is trying to find the case insensitive string opendap
+  anywhere in the title for the URL. Until metadata is standardized for
+  specifying OPeNDAP links (and all providers have updated their metadata we'll
+  have to use this imprecise check)."
+  [link-data]
+  (log/trace "Link data:" link-data)
+  (let [lower-case-title (some-> link-data :title string/lower-case)]
+    (and (not (:inherited link-data))
+         lower-case-title
+         (string/includes? lower-case-title opendap-lowercase))))
+
+(defn extract-granule-links
+  "Returns an OPeNDAP link and a data download link from the granule metadata file.
+  We return the first link of each type from the granule entry if there are
+  multiple matches."
   [granule-entry]
   (log/trace "Granule entry: " granule-entry)
-  (let [link (->> (:links granule-entry)
-                  (filter match-datafile-link)
-                  first)
+  (let [opendap-link (->> (:links granule-entry)
+                          (filter match-opendap-link)
+                          first)
+        datafile-link (->> (:links granule-entry)
+                           (filter match-datafile-link)
+                           first)
         gran-id (:id granule-entry)]
-    (if link
+    (if (or opendap-link datafile-link)
       {:granule-id gran-id
-       :link-rel (:rel link)
-       :link-href (:href link)}
-      {:errors [metadata-errors/empty-gnl-data-file-url
+       :opendap-link opendap-link
+       :datafile-link datafile-link}
+      {:errors [metadata-errors/empty-granule-links
                 (when gran-id
                   (format metadata-errors/problem-granules gran-id))]})))

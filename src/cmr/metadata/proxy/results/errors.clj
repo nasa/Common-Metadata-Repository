@@ -13,8 +13,12 @@
        "values for the pattern fields?"))
 
 (def empty-gnl-data-file-url
-  (str "There was a problem extracting a data URL from the granule's service "
-       "data file."))
+  (str "There was a problem extracting a data URL from the granule's "
+       "metadata file."))
+
+(def empty-granule-links
+  (str "There was a problem extracting an OPeNDAP URL or data URL from the "
+       "granule's metadata file."))
 
 (def empty-gnl-data-files
   "There was a problem extracting a service data file from the granule.")

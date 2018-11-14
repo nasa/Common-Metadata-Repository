@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.1.2"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -179,4 +179,3 @@
       ["clean"]
       ["build-jar"]
       ["deploy" "clojars"]]})
-
