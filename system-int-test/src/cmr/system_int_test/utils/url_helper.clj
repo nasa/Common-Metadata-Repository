@@ -395,6 +395,10 @@
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
 
+(defn bulk-index-all-providers-url
+  []
+  (format "http://localhost:%s/bulk_index/providers/all" (transmit-config/bootstrap-port)))
+
 (defn bulk-index-variables-url
   ([]
    (format "http://localhost:%s/bulk_index/variables" (transmit-config/bootstrap-port)))

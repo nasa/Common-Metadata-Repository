@@ -128,6 +128,22 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn bulk-index-all-providers
+  "Call the bootstrap app to bulk index all providers."
+  ([]
+   (bulk-index-all-providers nil))
+  ([headers]
+   (let [response (client/request
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-all-providers-url)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
 (defn bulk-index-collection
   "Call the bootstrap app to bulk index a collection."
   ([provider-id collection-id]

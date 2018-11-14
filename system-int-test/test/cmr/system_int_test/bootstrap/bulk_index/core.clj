@@ -25,9 +25,9 @@
 
 (defn save-collection
   "Saves a collection concept"
-  ([n]
-   (save-collection n {}))
-  ([n attributes]
+  ([provider-id n]
+   (save-collection provider-id n {}))
+  ([provider-id n attributes]
    (let [unique-str (str "coll" n)
          umm (dc/collection {:short-name unique-str :entry-title unique-str})
          xml (echo10/umm->echo10-xml umm)
@@ -40,7 +40,7 @@
                                                  :entry-id unique-str
                                                  :version-id "v1"}
                                   :revision-date "2000-01-01T10:00:00Z"
-                                  :provider-id "PROV1"
+                                  :provider-id provider-id
                                   :native-id unique-str
                                   :short-name unique-str}
                                  attributes))]
@@ -50,15 +50,15 @@
 
 (defn save-granule
   "Saves a granule concept"
-  ([n collection]
-   (save-granule n collection {}))
-  ([n collection attributes]
+  ([provider-id n collection]
+   (save-granule provider-id n collection {}))
+  ([provider-id n collection attributes]
    (let [unique-str (str "gran" n)
          umm (dg/granule collection {:granule-ur unique-str})
          xml (echo10/umm->echo10-xml umm)
          gran (mdb/save-concept (merge
                                  {:concept-type :granule
-                                  :provider-id "PROV1"
+                                  :provider-id provider-id
                                   :native-id unique-str
                                   :format "application/echo10+xml"
                                   :metadata xml

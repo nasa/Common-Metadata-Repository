@@ -34,15 +34,15 @@
 
 (deftest bulk-delete-by-concept-id
   (s/only-with-real-database
-    (let [coll1 (core/save-collection 1)
-          coll2 (core/save-collection 2)
+    (let [coll1 (core/save-collection "PROV1" 1)
+          coll2 (core/save-collection "PROV1" 2)
           coll2-id (:concept-id coll2)
-          coll3 (core/save-collection 3)
-          gran1 (core/save-granule 1 coll2)
-          gran2 (core/save-granule 2 coll2)
-          gran3 (core/save-granule 3 coll2)
-          gran4 (core/save-granule 4 coll3)
-          gran5 (core/save-granule 5 coll3)
+          coll3 (core/save-collection "PROV1" 3)
+          gran1 (core/save-granule "PROV1" 1 coll2)
+          gran2 (core/save-granule "PROV1" 2 coll2)
+          gran3 (core/save-granule "PROV1" 3 coll2)
+          gran4 (core/save-granule "PROV1" 4 coll3)
+          gran5 (core/save-granule "PROV1" 5 coll3)
           tag1 (core/save-tag 1)
           tag2 (core/save-tag 2 {})
           acl1 (core/save-acl 1

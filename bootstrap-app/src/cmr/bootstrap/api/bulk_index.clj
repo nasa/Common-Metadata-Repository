@@ -19,6 +19,14 @@
      :body {:message (msg/index-provider
                       params result provider-id start-index)}}))
 
+(defn index-all-providers
+  "Index all the collections and granules for all providers."
+  [context params]
+  (let [dispatcher (api-util/get-dispatcher context params :index-provider)]
+    (service/index-all-providers context dispatcher)
+    {:status 202
+     :body {:message "Processing bulk indexing of all providers."}}))
+
 (defn index-collection
   "Index all the granules in a collection"
   [context provider-id-collection-map params]
