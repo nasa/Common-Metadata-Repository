@@ -107,6 +107,12 @@ This should return the granule including the echo-10 xml.
 
 NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
 
+### Bulk index all providers
+
+    curl -i -XPOST http://localhost:3006/bulk_index/providers/all
+
+Bulk indexing all collections and granules for all providers. Similar to the bulk index a provider endpoint, this reindexing of providers will not reindex the collections in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
+
 ### Bulk index a single collection
 
     curl -i -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id":"C123-FIX_PROV1"}' http://localhost:3006/bulk_index/collections

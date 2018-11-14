@@ -17,7 +17,8 @@
    [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures
-                     [(ingest/reset-fixture {"provguid1" "PROV1"}
+                     [(ingest/reset-fixture {"provguid1" "PROV1"
+                                             "provguid2" "PROV2"}
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
@@ -44,6 +45,20 @@
     (e/grant-group-admin (s/context) admin-read-update-group-concept-id :read :update)
     ;; Create and return token
     (e/login (s/context) "admin-read-update" [admin-read-update-group-concept-id])))
+
+(defn- verify-collections-granules-are-indexed
+  "Verify the given collections and granules are indexed through search"
+  ([collections granules]
+   (verify-collections-granules-are-indexed collections granules nil))
+  ([collections granules search-token]
+   (are3 [concept-type expected]
+     (d/refs-match? expected (search/find-refs concept-type {:token search-token}))
+
+     "Collections"
+     :collection collections
+
+     "Granules"
+     :granule granules)))
 
 (deftest index-system-concepts-test-with-update-token
   (s/only-with-real-database
@@ -120,148 +135,162 @@
 
 (deftest bulk-index-by-concept-id
   (s/only-with-real-database
-    ;; Disable message publishing so items are not indexed.
-    (core/disable-automatic-indexing)
-    (let [;; saved but not indexed
-          coll1 (core/save-collection 1)
-          coll2 (core/save-collection 2 {})
-          colls (map :concept-id [coll1 coll2])
-          gran1 (core/save-granule 1 coll1)
-          gran2 (core/save-granule 2 coll2 {})
-          tag1 (core/save-tag 1)
-          tag2 (core/save-tag 2 {})
-          acl1 (core/save-acl 1
-                              {:extra-fields {:acl-identity "system:token"
-                                              :target-provider-id "PROV1"}}
-                              "TOKEN")
-          acl2 (core/save-acl 2
-                              {:extra-fields {:acl-identity "system:group"
-                                              :target-provider-id "PROV1"}}
-                              "GROUP")
-          group1 (core/save-group 1)
-          group2 (core/save-group 2 {})
-          {:keys [status errors]} (bootstrap/bulk-index-concepts "PROV1" :collection colls nil)]
+   ;; Disable message publishing so items are not indexed.
+   (core/disable-automatic-indexing)
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1)
+         coll2 (core/save-collection "PROV1" 2 {})
+         colls (map :concept-id [coll1 coll2])
+         gran1 (core/save-granule "PROV1" 1 coll1)
+         gran2 (core/save-granule "PROV1" 2 coll2 {})
+         tag1 (core/save-tag 1)
+         tag2 (core/save-tag 2 {})
+         acl1 (core/save-acl 1
+                             {:extra-fields {:acl-identity "system:token"
+                                             :target-provider-id "PROV1"}}
+                             "TOKEN")
+         acl2 (core/save-acl 2
+                             {:extra-fields {:acl-identity "system:group"
+                                             :target-provider-id "PROV1"}}
+                             "GROUP")
+         group1 (core/save-group 1)
+         group2 (core/save-group 2 {})
+         {:keys [status errors]} (bootstrap/bulk-index-concepts "PROV1" :collection colls nil)]
 
-      (is (= [401 ["You do not have permission to perform that action."]]
-             [status errors]))
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
 
-      (bootstrap/bulk-index-concepts "PROV1" :collection colls)
-      (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
-      (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
-      ;; Commented out until ACLs and groups are supported in the index by concept-id API
-      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
-      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+     (bootstrap/bulk-index-concepts "PROV1" :collection colls)
+     (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
+     (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
+     ;; Commented out until ACLs and groups are supported in the index by concept-id API
+     ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+     ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
-      (index/wait-until-indexed)
+     (index/wait-until-indexed)
 
-      (testing "Concepts are indexed."
-        ;; Collections and granules
-        (are3 [concept-type expected]
-          (d/refs-match? expected (search/find-refs concept-type {}))
+     (testing "Concepts are indexed."
+       (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
 
-          "Collections"
-          :collection [coll1 coll2]
+       ; ;; ACLs
+       ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+       ;       items (:items response)]
+       ;   (search-results-match? items [acl2]))
 
-          "Granules"
-          :granule [gran2])
+       ;; Groups
+       ; (let [response (ac/search-for-groups (u/conn-context) {})
+       ;       ;; Need to filter out admin group created by fixture
+       ;       items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+       ;   (search-results-match? items [group2]))
 
-        ; ;; ACLs
-        ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-        ;       items (:items response)]
-        ;   (search-results-match? items [acl2]))
+       (are3 [expected-tags]
+         (let [result-tags (update
+                            (tags/search {})
+                            :items
+                            (fn [items]
+                              (map #(select-keys % [:concept-id :revision-id]) items)))]
+           (tags/assert-tag-search expected-tags result-tags))
 
-        ;; Groups
-        ; (let [response (ac/search-for-groups (u/conn-context) {})
-        ;       ;; Need to filter out admin group created by fixture
-        ;       items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-        ;   (search-results-match? items [group2]))
+         "Tags"
+         [tag1])))
 
-        (are3 [expected-tags]
-          (let [result-tags (update
-                              (tags/search {})
-                              :items
-                              (fn [items]
-                                (map #(select-keys % [:concept-id :revision-id]) items)))]
-            (tags/assert-tag-search expected-tags result-tags))
-
-          "Tags"
-          [tag1])))
-
-    ;; Re-enable message publishing.
-    (core/reenable-automatic-indexing)))
+   ;; Re-enable message publishing.
+   (core/reenable-automatic-indexing)))
 
 (deftest bulk-index-after-date-time
   (s/only-with-real-database
-    ;; Disable message publishing so items are not indexed.
-    (core/disable-automatic-indexing)
+   ;; Disable message publishing so items are not indexed.
+   (core/disable-automatic-indexing)
 
-    ;; Remove fixture ACLs
-    (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-          items (:items response)]
-      (doseq [acl items]
-        (e/ungrant (s/context) (:concept_id acl))))
+   ;; Remove fixture ACLs
+   (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+         items (:items response)]
+     (doseq [acl items]
+       (e/ungrant (s/context) (:concept_id acl))))
 
-    (let [;; saved but not indexed
-          coll1 (core/save-collection 1)
-          coll2 (core/save-collection 2 {:revision-date "3016-01-01T10:00:00Z"})
-          gran1 (core/save-granule 1 coll1)
-          gran2 (core/save-granule 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
-          tag1 (core/save-tag 1)
-          tag2 (core/save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
-          acl1 (core/save-acl 1
-                              {:revision-date "2000-01-01T09:59:40Z"
-                               :extra-fields {:acl-identity "system:token"
-                                              :target-provider-id "PROV1"}}
-                              "TOKEN")
-          acl2 (core/save-acl 2
-                              {:revision-date "3016-01-01T09:59:41Z"
-                               :extra-fields {:acl-identity "system:group"
-                                              :target-provider-id "PROV1"}}
-                              "GROUP")
-          group1 (core/save-group 1)
-          group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})
-          {:keys [status errors]} (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z" nil)]
-      
-      (is (= [401 ["You do not have permission to perform that action."]]
-             [status errors]))
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1)
+         coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-01T10:00:00Z"})
+         gran1 (core/save-granule "PROV1" 1 coll1)
+         gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
+         tag1 (core/save-tag 1)
+         tag2 (core/save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
+         acl1 (core/save-acl 1
+                             {:revision-date "2000-01-01T09:59:40Z"
+                              :extra-fields {:acl-identity "system:token"
+                                             :target-provider-id "PROV1"}}
+                             "TOKEN")
+         acl2 (core/save-acl 2
+                             {:revision-date "3016-01-01T09:59:41Z"
+                              :extra-fields {:acl-identity "system:group"
+                                             :target-provider-id "PROV1"}}
+                             "GROUP")
+         group1 (core/save-group 1)
+         group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})
+         {:keys [status errors]} (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z" nil)]
 
-      (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
-      (index/wait-until-indexed)
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
 
-      (testing "Only concepts after date are indexed."
-        (are3 [concept-type expected]
-          (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
+     (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
+     (index/wait-until-indexed)
 
-          "Collections"
-          :collection [coll2]
+     (testing "Only concepts after date are indexed."
+       (verify-collections-granules-are-indexed [coll2] [gran2] (tc/echo-system-token))
 
-          "Granules"
-          :granule [gran2])
+       ;; ACLs
+       (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+             items (:items response)]
+         (search-results-match? items [acl2]))
 
-        ;; ACLs
-        (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-              items (:items response)]
-          (search-results-match? items [acl2]))
+       ;; Groups
+       (let [response (ac/search-for-groups (u/conn-context) {:token (tc/echo-system-token)})
+             ;; Need to filter out admin group created by fixture
+             items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+         (search-results-match? items [group2]))
 
-        ;; Groups
-        (let [response (ac/search-for-groups (u/conn-context) {:token (tc/echo-system-token)})
-              ;; Need to filter out admin group created by fixture
-              items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-          (search-results-match? items [group2]))
+       (are3 [expected-tags]
+         (let [result-tags (update
+                            (tags/search {})
+                            :items
+                            (fn [items]
+                              (map #(select-keys % [:concept-id :revision-id]) items)))]
+           (tags/assert-tag-search expected-tags result-tags))
 
-        (are3 [expected-tags]
-          (let [result-tags (update
-                              (tags/search {})
-                              :items
-                              (fn [items]
-                                (map #(select-keys % [:concept-id :revision-id]) items)))]
-            (tags/assert-tag-search expected-tags result-tags))
+         "Tags"
+         [tag2])))
+   ;; Re-enable message publishing.
+   (core/reenable-automatic-indexing)))
 
-          "Tags"
-          [tag2])))
-    ;; Re-enable message publishing.
-    (core/reenable-automatic-indexing)))
+(deftest bulk-index-all-providers
+  (s/only-with-real-database
+   ;; Disable message publishing so items are not indexed.
+   (core/disable-automatic-indexing)
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1)
+         coll2 (core/save-collection "PROV2" 2)
+         colls (map :concept-id [coll1 coll2])
+         gran1 (core/save-granule "PROV1" 1 coll1)
+         gran2 (core/save-granule "PROV1" 2 coll1)
+         gran3 (core/save-granule "PROV2" 2 coll2)]
 
+     (testing "indexing all providers without permission"
+       (let [{:keys [status errors]} (bootstrap/bulk-index-all-providers)]
+         (is (= [401 ["You do not have permission to perform that action."]]
+                [status errors]))))
 
+     ;; sanity check that no collections or granules are indexed
+     (verify-collections-granules-are-indexed [] [])
 
+     ;; bulk index all providers with permission
+     (let [{:keys [status message]} (bootstrap/bulk-index-all-providers
+                                     {tc/token-header (tc/echo-system-token)})]
+       (is (= [202 "Processing bulk indexing of all providers."]
+              [status message])))
+     (index/wait-until-indexed)
 
+     (testing "all collections and granules are indexed."
+       (verify-collections-granules-are-indexed [coll1 coll2] [gran1 gran2 gran3])))
+
+   ;; Re-enable message publishing.
+   (core/reenable-automatic-indexing)))

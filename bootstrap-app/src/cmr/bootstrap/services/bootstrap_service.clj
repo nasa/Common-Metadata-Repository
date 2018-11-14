@@ -66,6 +66,16 @@
   (get-provider context provider-id)
   (dispatch/index-provider dispatcher context provider-id start-index))
 
+(defn index-all-providers
+  "Bulk index all the collections and granules for all providers."
+  [context dispatcher]
+  (info "Indexing all providers")
+  (doseq [provider (helper/get-providers (:system context))
+          :let [provider-id (:provider-id provider)]]
+    (info (format "Processing provider [%s] for bulk indexing" provider-id))
+    (index-provider context dispatcher provider-id 0))
+  (info "Indexing of all providers scheduled/completed."))
+
 (defn index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
   [context dispatcher date-time]
