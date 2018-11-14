@@ -1,4 +1,6 @@
-(ns cmr.sizing.spatial)
+(ns cmr.sizing.spatial
+  (:require
+    [taoensso.timbre :as log]))
 
 (defn tiling-type->size
   "Convert the tiling type to height and width, with can be used calculating square degrees."
@@ -42,6 +44,10 @@
         tt-sq-degs (tiling-type->square-degrees tiling-type)
         bbox-sq-degs (bbox->square-degrees
                       (get-in results [:params :bounding-box]))]
+    (log/info (format (str "request-id: %s format-estimate: %s tiling-type: %s tt-sq-degs: %s "
+                           "bbox-sq-degs: %s")
+                      (get-in results [:params :request-id]) format-estimate tiling-type
+                      tt-sq-degs bbox-sq-degs))
     (cond (nil? bbox-sq-degs)
           format-estimate
 

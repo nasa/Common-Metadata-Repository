@@ -15,10 +15,12 @@
   (fn [req]
     (log/debug "Estimating download size based on HTTP GET ...")
     (let [user-token (token/extract req)
+          request-id (str (java.util.UUID/randomUUID))
           concept-id (get-in req [:path-params :concept-id])]
       (->> req
            :params
-           (merge {:collection-id concept-id})
+           (merge {:collection-id concept-id
+                   :request-id request-id})
            (sizing/estimate-size component user-token)
            ;; We may need to override this in our own response ns if the base
            ;; error handler in cmr.http.kit isn't sufficient ...

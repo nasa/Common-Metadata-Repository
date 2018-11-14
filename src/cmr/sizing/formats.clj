@@ -45,17 +45,21 @@
 
 (defn estimate-dods-size
   "Calculates the estimated size for DODS format."
-  [granule-count variables]
+  [granule-count variables params]
   (let [compression 1
         metadata 0 ; included here for symmetry
         measurements (reduce + (map get-measurement variables))]
+    (log/info (format "request-id: %s metadata: %s compression: %s measurements: %s"
+                      (:request-id params) metadata compression measurements))
     (+ (* granule-count compression measurements) metadata)))
 
 (defn- estimate-netcdf3-size
   "Calculates the estimated size for NETCDF3 format."
-  [granule-count variables metadata]
+  [granule-count variables metadata params]
   (let [compression 1
         measurements (reduce + (map get-measurement variables))]
+    (log/info (format "request-id: %s compression: %s measurements: %s"
+                      (:request-id params) compression measurements))
     (+ (* granule-count compression measurements)
        (* granule-count metadata))))
 
@@ -69,6 +73,12 @@
                   avg-compression-rate (if (= fmt :nc4)
                                          (get-avg-compression-rate-netcdf4 variable)
                                          (get-avg-compression-rate-ascii variable))]
+              (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
+                                     "avg-gran-size: %s total-granule-input-bytes: %s "
+                                     "avg-compression-rate: %s")
+                                (:request-id params) (get-in variable [:meta :concept-id])
+                                total-estimate avg-gran-size total-granule-input-bytes
+                                avg-compression-rate))
               (+ total-estimate
                  (* total-granule-input-bytes
                     avg-compression-rate
@@ -79,8 +89,8 @@
 (defn estimate-size
   [fmt granule-count vars granule-metadata-size params]
   (case (keyword (string/lower-case fmt))
-    :dods (estimate-dods-size granule-count vars)
-    :nc (estimate-netcdf3-size granule-count vars granule-metadata-size)
+    :dods (estimate-dods-size granule-count vars params)
+    :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
     :nc4 (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
     :ascii (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
     (do

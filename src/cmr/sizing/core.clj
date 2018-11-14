@@ -48,17 +48,23 @@
            errs)
          (let [spatial-estimate (spatial/estimate-size
                                  format-estimate
-                                 results)]
+                                 results)
+               params (:params results)]
            (if-let [errs (errors/erred? spatial-estimate)]
              (do
                (log/error errs)
                errs)
-             (let [estimate spatial-estimate]
-               (log/debug "Generated estimate:" estimate)
+             (let [estimate spatial-estimate
+                   elapsed (util/timed start)]
+               (log/info (format "request-id: %s estimate: %s elapsed: %s"
+                                 (:request-id params)
+                                 estimate
+                                 elapsed))
                (results/create [{:bytes estimate
                                  :mb (/ estimate (Math/pow 2 20))
                                  :gb (/ estimate (Math/pow 2 30))}]
-                               :elapsed (util/timed start)
+                               :request-id (:request-id params)
+                               :elapsed elapsed
                                :warnings warns)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,7 +103,8 @@
               {:errors (errors/check
                         [not granule-links metadata-errors/empty-gnl-data-files])})
 
-        params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params))
+        params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params)
+                             :request-id (:request-id raw-params))
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
