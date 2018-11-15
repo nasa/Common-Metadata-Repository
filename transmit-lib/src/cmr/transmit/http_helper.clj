@@ -60,6 +60,7 @@
   (cond
     (<= 200 status 299) body
     (= 409 status) (errors/throw-service-errors :conflict (:errors body))
+    (= 422 status) (errors/throw-service-errors :invalid-data (:errors body))
     :else (errors/internal-error!
             (format "Received unexpected status code %s with response %s"
                     status (pr-str resp)))))
