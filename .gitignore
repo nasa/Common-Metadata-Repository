@@ -1,0 +1,16 @@
+/target
+/classes
+/checkouts
+build.xml
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+.hgignore
+.hg/
+/third-party
+/data/cache
+/junit-test-results
+/resources/docs/rest-api/slate
