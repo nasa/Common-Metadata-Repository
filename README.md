@@ -19,7 +19,7 @@
 
 * [About](#about-)
 * [Dependencies](#dependencies-)
-* [Documentation](#documentation-)
+* [Usage](#usage-)
 * [License](#license-)
 
 
@@ -39,7 +39,83 @@ WARNING: You will need to run `lein download-models` before attempting to use
 this library!
 
 
-## Documentation [&#x219F;](#contents)
+## Usage [&#x219F;](#contents)
+
+### Library
+
+Start up a repl, do a require, and define a testing query:
+
+```clj
+(require '[cmr.nlp.core :as nlp]')
+(def query "What was the average surface temperature of Lake Superior last week?")
+```
+
+Tokenize:
+
+```clj
+[cmr.nlp.repl] λ=> (def tokens (nlp/tokenize query))
+[cmr.nlp.repl] λ=> tokens
+["What"
+ "was"
+ "the"
+ "average"
+ "surface"
+ "temperature"
+ "of"
+ "Lake"
+ "Superior"
+ "last"
+ "week"
+ "?"]
+```
+
+Tag the parts of speech:
+
+```clj
+[cmr.nlp.repl] λ=> (def pos (nlp/tag-pos tokens))
+[cmr.nlp.repl] λ=> pos
+(["What" "WP"]
+ ["was" "VBD"]
+ ["the" "DT"]
+ ["average" "JJ"]
+ ["surface" "NN"]
+ ["temperature" "NN"]
+ ["of" "IN"]
+ ["Lake" "NNP"]
+ ["Superior" "NNP"]
+ ["last" "JJ"]
+ ["week" "NN"]
+ ["?" "."])
+```
+
+Get chunked phrases:
+
+```clj
+[cmr.nlp.repl] λ=> (nlp/chunk pos)
+({:phrase ["What"] :tag "NP"}
+ {:phrase ["was"] :tag "VP"}
+ {:phrase ["the" "average" "surface" "temperature"] :tag "NP"}
+ {:phrase ["of"] :tag "PP"}
+ {:phrase ["Lake" "Superior"] :tag "NP"}
+ {:phrase ["last" "week"] :tag "NP"})
+```
+
+Find locations:
+
+```clj
+[cmr.nlp.repl] λ=> (nlp/find-locations tokens)
+("Lake Superior")
+```
+
+Find dates:
+
+```clj
+[cmr.nlp.repl] λ=> (nlp/find-dates tokens)
+("last week")
+```
+
+
+### REST API
 
 TBD
 

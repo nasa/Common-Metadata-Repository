@@ -9,6 +9,7 @@
    [clojusc.system-manager.core :as system-api :refer :all]
    [clojusc.twig :as logger]
    [cmr.nlp.components.core]
+   [cmr.nlp.core :as nlp]
    [com.stuartsierra.component :as component])
   (:import
    (java.net URI)
