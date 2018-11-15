@@ -245,3 +245,47 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
+
+(deftest variable-update-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")
+        concept (variable-util/make-variable-concept
+                 {:Name "var1"} {:native-id "var-to-be-updated"})
+        ;; ingest the variable with name var1
+        {var-concept-id :concept-id
+         initial-revision-id :revision-id} (variable-util/ingest-variable
+                                            concept
+                                            (variable-util/token-opts token))]
+    ;; sanity check
+    (is (mdb/concept-exists-in-mdb? var-concept-id initial-revision-id))
+    (is (= 1 initial-revision-id))
+
+    (testing "ingest of a variable with the same name but a different native id is OK"
+      (let [concept (variable-util/make-variable-concept
+                     {:Name "var1"} {:native-id "a-different-native-id"})
+            {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                              concept
+                                              (variable-util/token-opts token))]
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= 1 revision-id))))
+
+    (let [;; variable with a different variable name, but the same native-id
+           concept (variable-util/make-variable-concept
+                    {:Name "new-var-name"} {:native-id "var-to-be-updated"})]
+      (testing "update the variable with a different variable name is not allowed"
+        (let [{:keys [status errors]} (variable-util/ingest-variable
+                                       concept
+                                       (variable-util/token-opts token))]
+          (is (= 422 status))
+          (is (= ["Variable name [new-var-name] does not match the existing variable name [var1]"]
+                 errors))))
+
+      (testing "after the variable is deleted, update the variable with a different name is OK"
+        ;; delete the variable
+        (ingest/delete-concept concept {:token token})
+        (let [{:keys [status concept-id revision-id]} (variable-util/ingest-variable
+                                                       concept
+                                                       (variable-util/token-opts token))]
+          (is (= 200 status))
+          (is (= var-concept-id concept-id))
+          (is (= (+ initial-revision-id 2) revision-id)))))))
