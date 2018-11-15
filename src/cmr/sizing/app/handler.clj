@@ -4,7 +4,9 @@
    [cmr.authz.token :as token]
    [cmr.http.kit.response :as response]
    [cmr.sizing.core :as sizing]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log])
+  (:import
+    (java.util UUID)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Size Estimate Handlers   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,7 +17,7 @@
   (fn [req]
     (log/debug "Estimating download size based on HTTP GET ...")
     (let [user-token (token/extract req)
-          request-id (str (java.util.UUID/randomUUID))
+          request-id (str (UUID/randomUUID))
           concept-id (get-in req [:path-params :concept-id])]
       (->> req
            :params
