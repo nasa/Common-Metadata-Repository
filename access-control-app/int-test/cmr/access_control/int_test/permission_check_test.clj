@@ -158,7 +158,7 @@
                                        :provider_id "PROV1"}})
             (catch Exception e
               (is (= true
-                     (string/includes?  e "{:errors [\"Invalid revision-id [invalid]. Cmr-Revision-id in the header must be a positive integer.\"]}")))))
+                     (string/includes?  e "{:type :invalid-data, :errors [\"Invalid revision-id [invalid]. Cmr-Revision-id in the header must be a positive integer.\"]}")))))
 
           ;; conflict revision-id: The previous test already updates the acl to revision 2,
           (try
