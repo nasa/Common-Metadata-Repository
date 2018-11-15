@@ -88,6 +88,8 @@
         :default (complement :system)}}}
   :aliases {
     ;; Dev & Testing Aliases
+    "download-models" ["with-profile" "+local"
+      "shell" "resources/scripts/download-models"]
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]

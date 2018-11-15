@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# The following are listed/described here:
+#  * http://opennlp.sourceforge.net/models-1.5/
+MODELS=("http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-token.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-chunker.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-ner-date.bin"
+       "http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin")
+
+mkdir -p resources/models
+echo
+echo "Downloading OpenNLP English language models ..."
+echo
+for MODEL in ${MODELS[@]}; do
+	echo " - $MODEL ..."
+	(cd resources/models; curl --silent -O $MODEL)
+done
+echo
+echo "Downloaded models:"
+find resources/models -type f
+echo

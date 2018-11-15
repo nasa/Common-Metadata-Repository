@@ -32,11 +32,17 @@ TBD
 
 * Java
 * `lein`
+* `curl` (used to download English language models)
+* Various language models
+
+WARNING: You will need to run `lein download-models` before attempting to use
+this library!
 
 
 ## Documentation [&#x219F;](#contents)
 
 TBD
+
 
 ## License [&#x219F;](#contents)
 
