@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are3]]
+   [cmr.common.util :as common-util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -240,7 +240,7 @@
                                      {:token provider-admin-update-token
                                       :allow-failure? true})]
         (is (= 401 status))
-        (is (= [(format "Token [%s] has expired" provider-admin-update-token)] errors))))))
+        (is (= [(format "Token [%s] has expired" (common-util/scrub-token provider-admin-update-token))] errors))))))
 
 (deftest variable-ingest-permissions-test
   (testing "Variable ingest permissions:"

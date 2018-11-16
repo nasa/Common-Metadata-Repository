@@ -947,3 +947,13 @@
   (let [index (.indexOf s substring)]
    (when (>= index 0)
     index))))
+
+(defn scrub-token
+  "Cut out the middle of the token, leaving 10 characters on each end.
+  For the token that contains less than 10 characters(like tokens in the test),
+  remove the last character."
+  [token]
+  (let [token-length (.length token)]
+    (if (<= 10 token-length)
+      (str (subs token 0 10) (subs token (- token-length 10) token-length))
+      (subs token 0 (- token-length 1)))))
