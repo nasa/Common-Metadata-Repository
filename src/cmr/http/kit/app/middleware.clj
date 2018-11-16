@@ -13,6 +13,13 @@
    [ring.util.response :as ring-response]
    [taoensso.timbre :as log]))
 
+(defn wrap-request-id
+  [handler]
+  (fn [req]
+    (-> req
+        (assoc-in [:params :request-id] (util/get-uuid))
+        handler)))
+
 (defn wrap-log-request
   [handler]
   (fn [req]
@@ -57,17 +64,17 @@
 
 (defn wrap-directory-resource
   ([handler system]
-    (wrap-directory-resource handler system "text/html"))
+   (wrap-directory-resource handler system "text/html"))
   ([handler system content-type]
-    (fn [req]
-      (let [response (handler req)]
-        (cond
-          (contains? (config/http-index-dirs system)
-                     (:uri req))
-          (ring-response/content-type response content-type)
+   (fn [req]
+     (let [response (handler req)]
+       (cond
+         (contains? (config/http-index-dirs system)
+                    (:uri req))
+         (ring-response/content-type response content-type)
 
-          :else
-          response)))))
+         :else
+         response)))))
 
 (defn wrap-base-url-subs
   [handler system]
@@ -126,6 +133,7 @@
 (defn wrap-ring-middleware
   [handler system]
   (-> handler
+      wrap-request-id
       wrap-log-request
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
       (wrap-resource system)
