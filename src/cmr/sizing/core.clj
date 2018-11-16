@@ -103,8 +103,7 @@
               {:errors (errors/check
                         [not granule-links metadata-errors/empty-gnl-data-files])})
 
-        params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params)
-                             :request-id (:request-id raw-params))
+        params (assoc params :total-granule-input-bytes (:total-granule-input-bytes raw-params))
         fmt (:format params)]
     (log/trace "raw-params:" raw-params)
     (log/debug "Got format:" fmt)
