@@ -4,7 +4,15 @@
    [clojure.string :as string]
    [taoensso.timbre :as log])
   (:import
+   (java.util UUID)
+   (java.util Random)
    (clojure.lang Symbol)))
+
+(defn get-uuid
+  "Creates Java UUID while avoiding expensive call to SecureRandom."
+  []
+  (let [random (Random.)]
+    (str (UUID. (.nextLong random) (.nextLong random)))))
 
 (defn newline?
   ""
