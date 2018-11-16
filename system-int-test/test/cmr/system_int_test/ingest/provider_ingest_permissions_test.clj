@@ -240,7 +240,8 @@
                                      {:token provider-admin-update-token
                                       :allow-failure? true})]
         (is (= 401 status))
-        (is (= [(format "Token [%s] has expired" (common-util/scrub-token provider-admin-update-token))] errors))))))
+        (is (= [(format "Token [%s] has expired. Note the token value has been partially redacted." 
+                        (common-util/scrub-token provider-admin-update-token))] errors))))))
 
 (deftest variable-ingest-permissions-test
   (testing "Variable ingest permissions:"

@@ -58,7 +58,8 @@
                 (get-in parsed [:token_info :user_name])
                 (errors/throw-service-error
                  :unauthorized
-                 (format "Token [%s] has expired" (common-util/scrub-token token)))))
+                 (format "Token [%s] has expired. Note the token value has been partially redacted." 
+                         (common-util/scrub-token token)))))
         401 (errors/throw-service-errors
              :unauthorized
              (:errors (json/decode body true)))
