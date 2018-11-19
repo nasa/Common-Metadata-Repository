@@ -957,9 +957,9 @@
   [token]
   (let [token-length (count token)]
     (cond  
-      (<= 15 token-length) (str (subs token 0 5) 
+      (>= token-length 15) (str (subs token 0 5) 
                                 "XXX" 
                                 (subs token (- token-length 5) token-length))
-      (and (< 5 token-length) 
-           (>= 14 token-length)) (str (subs token 0 (- token-length 5)) "XXX") 
+      (and (> token-length 5) 
+           (<= token-length 14)) (str (subs token 0 (- token-length 5)) "XXX") 
       :else "XXX")))

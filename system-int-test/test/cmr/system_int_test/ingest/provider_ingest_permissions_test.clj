@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.util :as common-util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
