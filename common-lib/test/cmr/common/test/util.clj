@@ -129,6 +129,17 @@
          (util/remove-nil-keys
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
+(deftest scrub-token-test
+  (let [token-with-at-least-15-chars "1234567890abcdefg"
+        token-with-at-least-5-chars "1234567890"
+        token-with-less-than-5-chars "1234"]
+  (is (= "12345XXXcdefg"
+         (util/scrub-token token-with-at-least-15-chars)))
+  (is (= "12345XXX"
+         (util/scrub-token token-with-at-least-5-chars)))
+  (is (= "XXX"
+         (util/scrub-token token-with-less-than-5-chars)))))
+
 (deftest remove-map-keys-test
   (is (= {:a true :c "value" :d false}
          (util/remove-map-keys

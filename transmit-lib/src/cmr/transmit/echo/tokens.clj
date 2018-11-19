@@ -8,6 +8,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.conversion :as c]
    [cmr.transmit.echo.rest :as r]))
@@ -57,7 +58,8 @@
                 (get-in parsed [:token_info :user_name])
                 (errors/throw-service-error
                  :unauthorized
-                 (format "Token [%s] has expired" token))))
+                 (format "Token [%s] has expired. Note the token value has been partially redacted." 
+                         (common-util/scrub-token token)))))
         401 (errors/throw-service-errors
              :unauthorized
              (:errors (json/decode body true)))

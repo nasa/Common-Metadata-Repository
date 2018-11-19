@@ -947,3 +947,19 @@
   (let [index (.indexOf s substring)]
    (when (>= index 0)
     index))))
+
+(defn scrub-token
+  "Scrub token:
+  1. When at least 15 chars long keep the first and the last 5 chars. 
+  2. When at least 5 and no more than 14 chars long, remove last 5. 
+  3. When less than 5 chars long, remove all chars.  
+  4. Replace what's removed with XXX."
+  [token]
+  (let [token-length (count token)]
+    (cond  
+      (>= token-length 15) (str (subs token 0 5) 
+                                "XXX" 
+                                (subs token (- token-length 5) token-length))
+      (and (> token-length 5) 
+           (<= token-length 14)) (str (subs token 0 (- token-length 5)) "XXX") 
+      :else "XXX")))
