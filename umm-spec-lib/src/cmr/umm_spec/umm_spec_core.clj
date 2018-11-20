@@ -6,6 +6,10 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
    [cmr.common.xml.simple-xpath :as xpath]
+   ;; Added this to force the loading of the class, so that in CI build, it won't complain about
+   ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation
+   ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
+   [cmr.spatial.ring-validations]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
@@ -21,13 +25,10 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
-   ;; Added this to force the loading of the class, so that in CI build, it won't complain about
-   ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation
-   ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
-   [cmr.spatial.ring-validations])
+   [cmr.umm.umm-core :as umm-core])
   (:import
    (cmr.umm.umm_granule UmmGranule)
    (cmr.umm_spec.models.umm_collection_models UMM-C)
@@ -68,7 +69,13 @@
 (defn validate-xml
   "Validates the XML against the xml schema for the given concept type and format."
   [concept-type metadata-format xml]
-  (cx/validate-xml (concept-type+metadata-format->schema [concept-type metadata-format]) xml))
+  (case concept-type
+    :collection (cx/validate-xml
+                 (concept-type+metadata-format->schema [concept-type metadata-format])
+                 xml)
+    :granule (umm-core/validate-concept-xml {:concept-type concept-type
+                                             :format (mt/format->mime-type metadata-format)
+                                             :metadata xml})))
 
 (defn validate-metadata
   "Validates the given metadata and returns a list of errors found."

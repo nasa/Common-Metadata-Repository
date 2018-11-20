@@ -4,6 +4,7 @@
     [clojure.test.check.generators :as test-check-gen]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
+    [cmr.umm-spec.legacy :as umm-legacy]
     [cmr.umm-spec.test.umm-generators :as umm-generators]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.util :as u]
@@ -18,7 +19,10 @@
                  mt/iso19115
                  mt/dif
                  mt/dif10
-                 mt/iso-smap}})
+                 mt/iso-smap}
+   :granule #{mt/echo10
+              mt/umm-json
+              mt/iso-smap}})
 
 (defn- umm-errors
   "Returns a seq of errors found by UMM validation."
@@ -28,7 +32,7 @@
                                 :umm-json
                                 (umm-spec/generate-metadata context umm :umm-json))))
 
-(defn translate-response
+(defn- translate-response
   "Returns a translate API response map for the given UMM record and the requested response media type."
   [context umm requested-media-type]
   ;; We are only going to respond with a version parameter if we are returning UMM JSON.
@@ -40,13 +44,42 @@
      :body    body
      :headers {"Content-Type" response-media-type}}))
 
-(defn translate
+(defmulti perform-translation
+  "Perform the collection translation and return the translation response map."
+  (fn [context concept-type content-type accept-header body skip-umm-validation options]
+    concept-type))
+
+(defmethod perform-translation :collection
+  [context concept-type content-type accept-header body skip-umm-validation options]
+  (let [umm (umm-spec/parse-metadata context concept-type content-type body options)]
+    (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
+      (errors/throw-service-errors :invalid-data umm-errors)
+      ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
+      ;; requested format.
+      (translate-response context umm accept-header))))
+
+(defmethod perform-translation :granule
+  [context concept-type content-type accept-header body skip-umm-validation options]
+  (let [umm (umm-legacy/parse-concept
+             context {:concept-type concept-type
+                      :format content-type
+                      :metadata body})
+        output-format (mt/mime-type->format accept-header)]
+    (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
+      (errors/throw-service-errors :invalid-data umm-errors)
+      (let [output-metadata (umm-legacy/generate-metadata context umm output-format)]
+        {:status  200
+         :body    output-metadata
+         :headers {"Content-Type" accept-header}}))))
+
+(defn- translate
   "Fulfills the translate request using the body, content type header, and accept header. Returns
   a ring response with translated metadata."
   [context concept-type headers body skip-umm-validation]
   (let [supported-formats (concept-type->supported-formats concept-type)
         content-type (get headers "content-type")
         accept-header (get headers "accept")
+        ;; always skip sanitize of granules for now as we have not considered sanitizing for granules yet
         skip-sanitize-umm? (= "true" (get headers "cmr-skip-sanitize-umm-c"))
         options (if (and skip-sanitize-umm? (mt/umm-json? accept-header))
                   u/skip-sanitize-parsing-options
@@ -67,20 +100,17 @@
 
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
       ;; validation errors.
-      (let [umm (umm-spec/parse-metadata context concept-type content-type body options)]
-        (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
-          (errors/throw-service-errors :invalid-data umm-errors)
-          ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
-          ;; requested XML format.
-          (translate-response context umm accept-header))))))
+      (perform-translation
+       context concept-type content-type accept-header body skip-umm-validation options))))
 
 (def translation-routes
   (context "/translate" []
     (POST "/collection" {:keys [body headers request-context params]}
-          (translate request-context :collection headers (slurp body)
-                     (= "true" (:skip_umm_validation params))))))
-
-;; NOTE: Granule translation is not supported yet. This will be done when granules are added to the UMM spec.
+      (translate request-context :collection headers (slurp body)
+                 (= "true" (:skip_umm_validation params))))
+    (POST "/granule" {:keys [body headers request-context params]}
+      (translate request-context :granule headers (slurp body)
+                 (= "true" (:skip_umm_validation params))))))
 
 (def random-metadata-routes
   "This defines routes for development purposes that can generate random metadata and return it."

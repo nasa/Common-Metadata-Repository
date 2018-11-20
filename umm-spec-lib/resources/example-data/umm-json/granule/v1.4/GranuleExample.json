@@ -19,12 +19,12 @@
   },
   "AccessConstraints": {
     "Description" : "Public Access",
-    "Value": 42
+    "Value": 42.0
   },
   "DataGranule": {
     "ArchiveAndDistributionInformation": [{
       "Name": "GranuleZipFile",
-      "Size": 23,
+      "Size": 23.0,
       "SizeUnit": "KB",
       "Format": "ZIP",
       "MimeType": "application/zip",
@@ -157,10 +157,10 @@
   "MeasuredParameters": [{
     "ParameterName": "Parameter Name",
     "QAStats": {
-      "QAPercentMissingData": 10,
-      "QAPercentOutOfBoundsData": 20,
-      "QAPercentInterpolatedData": 30,
-      "QAPercentCloudCover": 40
+      "QAPercentMissingData": 10.0,
+      "QAPercentOutOfBoundsData": 20.0,
+      "QAPercentInterpolatedData": 30.0,
+      "QAPercentCloudCover": 40.0
     },
     "QAFlags": {
       "AutomaticQualityFlag": "Passed",
@@ -217,15 +217,15 @@
    "TilingIdentificationSystem": {
     "TilingIdentificationSystemName": "MODIS Tile EASE",
     "Coordinate1": {
-      "MinimumValue": -100,
-      "MaximumValue": -50
+      "MinimumValue": -100.0,
+      "MaximumValue": -50.0
     },
     "Coordinate2": {
-      "MinimumValue": 50,
-      "MaximumValue": 100
+      "MinimumValue": 50.0,
+      "MaximumValue": 100.0
     }
   },
-  "CloudCover": 60,
+  "CloudCover": 60.0,
   "RelatedUrls": [{
     "URL": "https://daac.ornl.gov/daacdata/islscp_ii/vegetation/erbe_albedo_monthly_xdeg/data/erbe_albedo_1deg_1986.zip",
     "Type": "GET DATA",
