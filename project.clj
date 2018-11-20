@@ -29,7 +29,7 @@
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
-    [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
+    [gov.nasa.earthdata/cmr-exchange-query "0.3.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
     [gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"]
@@ -37,7 +37,7 @@
     [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
     [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.9.0"]
-    [org.clojure/core.async "0.4.474"]
+    [org.clojure/core.async "0.4.490"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [org.clojure/java.classpath "0.3.0"]
@@ -46,9 +46,6 @@
     [ring/ring-defaults "0.3.2"]
     [tolitius/xml-in "0.1.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-Xms2g"
-             "-Xmx2g"]
   :aot [clojure.tools.logging.impl]
   :profiles {
     :ubercompile {
