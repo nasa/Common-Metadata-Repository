@@ -4,9 +4,11 @@
    [cheshire.core :as json]
    [clojure.core.async :as async]
    [clojure.java.io :as io]
+   [clojusc.twig :as logger]
    [cmr.authz.token :as token]
    [cmr.exchange.common.results.errors :as base-errors]
    [cmr.exchange.query.core :as base-query]
+   [cmr.http.kit.request :as base-request]
    [cmr.ous.components.config :as config]
    [cmr.ous.core :as ous]
    [cmr.ous.results.errors :as errors]
@@ -24,50 +26,53 @@
 (defn- generate
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET."
-  [component request user-token concept-id data]
+  [component req user-token concept-id data]
   (log/debug "Generating URLs based on HTTP GET ...")
-  (let [api-version (request/accept-api-version component request)]
+  (log/trace "Got request:" (logger/pprint (into {} req)))
+  (log/debug "Got request-id: " (base-request/extract-request-id req))
+  (let [api-version (request/accept-api-version component req)]
     (->> data
-         (merge {:collection-id concept-id})
+         (merge {:collection-id concept-id
+                 :request-id (base-request/extract-request-id req)})
          (ous/get-opendap-urls component api-version user-token)
-         (response/json request))))
+         (response/json req))))
 
 (defn- generate-via-get
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   GET."
-  [component request user-token concept-id]
+  [component req user-token concept-id]
   (log/debug "Generating URLs based on HTTP GET ...")
-  (->> request
+  (->> req
        :params
-       (generate component request user-token concept-id)))
+       (generate component req user-token concept-id)))
 
 (defn- generate-via-post
   "Private function for creating OPeNDAP URLs when supplied with an HTTP
   POST."
-  [component request user-token concept-id]
-  (->> request
+  [component req user-token concept-id]
+  (->> req
        :body
        (slurp)
        (#(json/parse-string % true))
-       (generate component request user-token concept-id)))
+       (generate component req user-token concept-id)))
 
 (defn unsupported-method
   "XXX"
-  [request]
+  [req]
   {:error base-errors/not-implemented})
 
 (defn generate-urls
   "XXX"
   [component]
-  (fn [request]
+  (fn [req]
     (log/debug "Method-dispatching for URLs generation ...")
-    (log/trace "request:" request)
-    (let [user-token (token/extract request)
-          concept-id (get-in request [:path-params :concept-id])]
-      (case (:request-method request)
-        :get (generate-via-get component request user-token concept-id)
-        :post (generate-via-post component request user-token concept-id)
-        (unsupported-method request)))))
+    (log/trace "request:" req)
+    (let [user-token (token/extract req)
+          concept-id (get-in req [:path-params :concept-id])]
+      (case (:request-method req)
+        :get (generate-via-get component req user-token concept-id)
+        :post (generate-via-post component req user-token concept-id)
+        (unsupported-method req)))))
 
 (defn batch-generate
   "XXX"
@@ -75,24 +80,24 @@
   ;; XXX how much can we minimize round-tripping here?
   ;;     this may require creating divergent logic/impls ...
   ;; XXX This is being tracked in CMR-4864
-  (fn [request]
+  (fn [req]
     {:error base-errors/not-implemented}))
 
 (defn stream-urls
   ""
   [component]
-  (fn [request]
+  (fn [req]
     (let [heartbeat (config/streaming-heartbeat component)
           timeout (config/streaming-timeout component)
           iterations (Math/floor (/ timeout heartbeat))]
       (log/debug "Processing stream request ...")
-      (server/with-channel request channel
+      (server/with-channel req channel
         (log/debug "Setting 'on-close' callback ...")
         (server/on-close channel
                          (fn [status]
                           (println "Channel closed; status " status)))
         (let [result-channel (async/thread
-                                ((generate-urls component) request))]
+                                ((generate-urls component) req))]
           (log/trace "Starting loop ...")
           (async/go-loop [id 0]
             (log/trace "Loop id:" id)
@@ -139,16 +144,16 @@
     variables=V123,V234,V345&
     granules=G123"
   [component]
-  (fn [request]
-    (let [user-token (token/extract request)
+  (fn [req]
+    (let [user-token (token/extract req)
           ;; TODO: Destination will not be found in path-params.
           ;; We need to retrieve this from the raw-params.
-          {:keys [concept-id destination]} (:path-params request)
-          api-version (request/accept-api-version component request)
-          data (-> request
+          {:keys [concept-id destination]} (:path-params req)
+          api-version (request/accept-api-version component req)
+          data (-> req
                    :params
                    (merge {:collection-id concept-id}))]
-      (log/warnf "Handling bridge request from %s ..." (:referer request))
+      (log/warnf "Handling bridge request from %s ..." (:referer req))
       (log/warnf "Bridging service to %s ..." destination)
       (response/json {
                       :service {

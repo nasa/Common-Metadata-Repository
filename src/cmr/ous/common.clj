@@ -141,8 +141,11 @@
            (log/error urls-or-errs)
            urls-or-errs)
          (do
-           (log/debug "Generated URLs:" (vec urls-or-errs))
-           (results/create urls-or-errs :elapsed (util/timed start)
+           (log/info (format "request-id: %s generated-urls: %s"
+                             (:request-id params)
+                             (vec urls-or-errs)))
+           (results/create urls-or-errs :request-id (:request-id params)
+                                        :elapsed (util/timed start)
                                         :warnings warns)))))))
 
 (defn apply-bounding-conditions
