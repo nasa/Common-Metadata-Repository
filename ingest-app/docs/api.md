@@ -24,6 +24,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [DELETE - Delete a service.](#delete-service)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
+  * /translate/granule
+    * [POST - Translate granule metadata.](#translate-granule)
 
 ***
 
@@ -617,6 +619,42 @@ Example output:
         </gmd:MD_DataIdentification>
     </gmd:identificationInfo>
 </gmi:MI_Metadata>
+```
+## <a name="translate-granule"></a> Translate Granule Metadata
+
+Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported formats are ECHO10, ISO SMAP and UMM-G.
+
+Example: Translate ECHO10 metadata to UMM-G
+
+```
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.4" %CMR-ENDPOINT%/translate/granule -d \
+"<Granule>
+  <GranuleUR>SC:AE_5DSno.002:30500512</GranuleUR>
+  <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
+  <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate>
+  <Collection>
+    <DataSetId>collection_test_2468</DataSetId>
+  </Collection>
+  <Orderable>true</Orderable>
+ </Granule>"
+```
+
+Example output:
+
+```
+{
+  "ProviderDates" : [ {
+    "Date" : "2009-05-11T20:09:16.340Z",
+    "Type" : "Insert"
+  }, {
+    "Date" : "2014-03-19T09:59:12.207Z",
+    "Type" : "Update"
+  } ],
+  "CollectionReference" : {
+    "EntryTitle" : "collection_test_2468"
+  },
+  "GranuleUR" : "SC:AE_5DSno.002:30500512"
+}
 ```
 ## <a name="bulk-update"></a> Collection Bulk Update
 
