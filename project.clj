@@ -31,7 +31,7 @@
     [org.clojure/clojure "1.9.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [ring/ring-defaults "0.3.2"]
-    [selmer "1.12.3"]
+    [selmer "1.12.5"]
     [tolitius/xml-in "0.1.0"]]
   :profiles {
     :ubercompile {
