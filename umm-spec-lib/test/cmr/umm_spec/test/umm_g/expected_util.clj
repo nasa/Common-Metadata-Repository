@@ -76,14 +76,14 @@
                      {:entry-title nil
                       :short-name "CollectionShortName"
                       :version-id "Version"})
-    :access-value 42
+    :access-value 42.0
     :data-granule (umm-lib-g/map->DataGranule
                    {:day-night "UNSPECIFIED"
                     :producer-gran-id "SMAP_L3_SM_P_20150407_R13080_001.h5"
                     :crid-ids ["CRIDValue"]
                     :feature-ids ["FeatureIdValue1" "FeatureIdValue2"]
                     :production-date-time (dtp/parse-datetime "2018-07-19T12:01:01.000Z")
-                    :size 23})
+                    :size 23.0})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")
@@ -112,14 +112,14 @@
                                            {:name "ChildInstrumentCharacteristicName3",
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
-    :cloud-cover 60
+    :cloud-cover 60.0
     :project-refs ["Campaign1" "Campaign2" "Campaign3"]
     :two-d-coordinate-system (umm-lib-g/map->TwoDCoordinateSystem
                               {:name "MODIS Tile EASE"
-                               :start-coordinate-1 -100
-                               :end-coordinate-1 -50
-                               :start-coordinate-2 50
-                               :end-coordinate-2 100})
+                               :start-coordinate-1 -100.0
+                               :end-coordinate-1 -50.0
+                               :start-coordinate-2 50.0
+                               :end-coordinate-2 100.0})
     :product-specific-attributes [(umm-lib-g/map->ProductSpecificAttributeRef
                                     {:name "AdditionalAttribute1 Name1"
                                      :values
@@ -155,10 +155,10 @@
     :measured-parameters [(umm-lib-g/map->MeasuredParameter
                            {:parameter-name "Parameter Name"
                             :qa-stats (umm-lib-g/map->QAStats
-                                       {:qa-percent-missing-data 10
-                                        :qa-percent-out-of-bounds-data 20
-                                        :qa-percent-interpolated-data 30
-                                        :qa-percent-cloud-cover 40})
+                                       {:qa-percent-missing-data 10.0
+                                        :qa-percent-out-of-bounds-data 20.0
+                                        :qa-percent-interpolated-data 30.0
+                                        :qa-percent-cloud-cover 40.0})
                             :qa-flags (umm-lib-g/map->QAFlags
                                        {:automatic-quality-flag "Passed"
                                         :automatic-quality-flag-explanation "Automatic Quality Flag Explanation"
