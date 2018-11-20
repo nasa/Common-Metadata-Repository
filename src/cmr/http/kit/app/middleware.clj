@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [cmr.exchange.common.util :as util]
    [cmr.http.kit.components.config :as config]
+   [cmr.http.kit.request :as request]
    [cmr.http.kit.response :as response]
    [cmr.http.kit.site.pages :as pages]
    [ring.middleware.content-type :as ring-ct]
@@ -16,9 +17,12 @@
 (defn wrap-request-id
   [handler]
   (fn [req]
-    (-> req
-        (assoc-in [:params :request-id] (util/get-uuid))
-        handler)))
+    (let [id (util/get-uuid)]
+      (log/debugf "Adding request-id '%s' to request ..." id)
+      (-> req
+          (request/add-request-id id)
+          handler
+          (response/add-request-id id)))))
 
 (defn wrap-log-request
   [handler]
@@ -133,7 +137,6 @@
 (defn wrap-ring-middleware
   [handler system]
   (-> handler
-      wrap-request-id
       wrap-log-request
       (ring-defaults/wrap-defaults ring-defaults/api-defaults)
       (wrap-resource system)

@@ -102,6 +102,10 @@
   [response value]
   (add-header response :cmr-media-type value))
 
+(defn add-request-id
+  [response id]
+  (add-header response :cmr-request-id id))
+
 (defn errors
   [errors]
   {:errors errors})
@@ -199,9 +203,10 @@
 (defn json
   ([request data]
     (json request process-results data))
-  ([_request process-fn data]
+  ([request process-fn data]
     (log/trace "Got data for JSON:" data)
     (-> data
+        (assoc :request-id (:request-id request))
         process-fn
         (assoc :body (json/generate-string data))
         (response/content-type "application/json"))))
@@ -209,8 +214,9 @@
 (defn text
   ([request data]
     (text request process-results data))
-  ([_request process-fn data]
+  ([request process-fn data]
     (-> data
+        (assoc :request-id (:request-id request))
         process-fn
         (assoc :body data)
         (response/content-type "text/plain"))))
@@ -218,8 +224,9 @@
 (defn html
   ([request data]
     (html request process-results data))
-  ([_request process-fn data]
+  ([request process-fn data]
     (-> data
+        (assoc :request-id (:request-id request))
         process-fn
         (assoc :body data)
         (response/content-type "text/html"))))

@@ -32,9 +32,15 @@
 
 (defn add-content-type
   ([ct]
-    (add-content-type {}))
+    (add-content-type {} ct))
   ([req ct]
     (add-header req "Content-Type" ct)))
+
+(defn add-request-id
+  ([id]
+    (add-request-id {} id))
+  ([req id]
+    (add-header req "Request-Id" id)))
 
 (defn add-form-ct
   ([]
@@ -47,6 +53,12 @@
     (add-payload {} data))
   ([req data]
     (assoc req :body data)))
+
+(defn extract-request-id
+  [req]
+  (or (get-in req [:headers :request-id])
+      (get-in req [:headers "Request-Id"])
+      (get-in req [:headers "request-id"])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   HTTP Client Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
