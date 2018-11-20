@@ -42,3 +42,15 @@
   (if (= :umm-json (mt/format-key format-key))
     (umm-spec/generate-metadata context umm format-key)
     (umm/umm->xml umm format-key)))
+
+(defn validate-metadata
+  "Validates the given metadata and returns a list of errors found."
+  [concept-type fmt metadata]
+  (let [format-key (mt/format-key fmt)]
+    (if (or (= :umm-json format-key)
+            (= :collection concept-type))
+      (umm-spec/validate-metadata concept-type fmt metadata)
+      ;; calls umm-lib to validate granule xml formats
+      (umm/validate-concept-xml {:concept-type :granule
+                                 :format (mt/format->mime-type format-key)
+                                 :metadata metadata}))))

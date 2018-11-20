@@ -28,9 +28,9 @@
   "Returns a seq of errors found by UMM validation."
   [context concept-type umm]
   (seq
-    (umm-spec/validate-metadata concept-type
-                                :umm-json
-                                (umm-spec/generate-metadata context umm :umm-json))))
+   (umm-legacy/validate-metadata concept-type
+                                 :umm-json
+                                 (umm-spec/generate-metadata context umm :umm-json))))
 
 (defn- translate-response
   "Returns a translate API response map for the given UMM record and the requested response media type."
@@ -95,7 +95,7 @@
         (errors/throw-service-errors :bad-request errors)))
 
     ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
-    (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
+    (if-let [errors (seq (umm-legacy/validate-metadata concept-type content-type body))]
       (errors/throw-service-errors :bad-request errors)
 
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
