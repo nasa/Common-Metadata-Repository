@@ -132,7 +132,7 @@
       ["ltest" ":unit"]
       ["ubercompile"]
       ["build-uberjar"]]
-    ;; Installing
+    ;; Installing locally
     "install" ["do"
       ["clean"]
       ["ubercompile"]
