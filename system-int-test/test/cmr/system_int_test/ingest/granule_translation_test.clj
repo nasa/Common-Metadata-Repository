@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.ingest.granule-translation-test
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.util :as util]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.umm-spec.legacy :as umm-legacy]
-    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm.umm-granule :as umm-lib-g]))
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.umm-granule :as umm-lib-g])
+  (:import cmr.umm.umm_granule.UmmGranule))
 
 (def ^:private valid-formats
   [:umm-json
