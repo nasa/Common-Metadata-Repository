@@ -30,6 +30,11 @@
     (catch Exception _
       maybe-ref)))
 
+;; XXX This is currently broken ... with a stackoverflow error. The issue is
+;;     that soft-reference->json! calls json/generate-string, but that in
+;;     turn calls soft-reference->json!, when attempting to encode a soft-
+;;     reference. One fix for this would be to use a low-level string-
+;;     generating function instead of the API-level one.
 (defn soft-reference->json!
   "Given a soft reference object and a Cheshire JSON generator, write the
   data stored in the soft reference to the generator as a JSON string.
