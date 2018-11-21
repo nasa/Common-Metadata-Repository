@@ -63,8 +63,7 @@
   (let [umm (umm-legacy/parse-concept
              context {:concept-type concept-type
                       :format content-type
-                      :metadata body})
-        output-format (mt/mime-type->format accept-header)]
+                      :metadata body})]
     (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
       (errors/throw-service-errors :invalid-data umm-errors)
       (translate-response context umm accept-header))))
@@ -113,8 +112,7 @@
   "This defines routes for development purposes that can generate random metadata and return it."
   (GET "/random-metadata" {:keys [body headers request-context]}
     (let [supported-formats (concept-type->supported-formats :collection)
-          output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)
-          output-format (mt/mime-type->format output-mime-type)]
+          output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)]
 
       (let [umm (test-check-gen/generate umm-generators/umm-c-generator)
             output-str (umm-spec/generate-metadata umm output-mime-type)]
