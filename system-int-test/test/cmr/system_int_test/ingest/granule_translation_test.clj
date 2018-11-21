@@ -7,9 +7,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm.umm-granule :as umm-lib-g])
-  (:import cmr.umm.umm_granule.UmmGranule))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def ^:private valid-formats
   [:umm-json
@@ -46,8 +44,7 @@
                           (assoc-in updated-umm [:data-granule :feature-ids] nil)
                           updated-umm))
       ;; RelatedUrls mapping between ECHO10 and UMM-G is different
-      (assoc :related-urls nil)
-      umm-lib-g/map->UmmGranule))
+      (assoc :related-urls nil)))
 
 (deftest translate-granule-metadata
   (doseq [input-format valid-formats
