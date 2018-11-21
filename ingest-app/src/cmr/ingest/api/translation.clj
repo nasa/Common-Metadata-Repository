@@ -39,7 +39,7 @@
   (let [response-media-type (if (mt/umm-json? requested-media-type)
                               (ver/with-default-version (:concept-type umm) requested-media-type)
                               requested-media-type)
-        body (umm-spec/generate-metadata context umm response-media-type)]
+        body (umm-legacy/generate-metadata context umm (mt/mime-type->format response-media-type))]
     {:status  200
      :body    body
      :headers {"Content-Type" response-media-type}}))
@@ -67,10 +67,7 @@
         output-format (mt/mime-type->format accept-header)]
     (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
       (errors/throw-service-errors :invalid-data umm-errors)
-      (let [output-metadata (umm-legacy/generate-metadata context umm output-format)]
-        {:status  200
-         :body    output-metadata
-         :headers {"Content-Type" accept-header}}))))
+      (translate-response context umm accept-header))))
 
 (defn- translate
   "Fulfills the translate request using the body, content type header, and accept header. Returns
