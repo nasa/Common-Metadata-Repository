@@ -2,7 +2,9 @@
   "Custom ring middleware for CMR OPeNDAP."
   (:require
    [clojusc.twig :refer [pprint]]
-   [cmr.ous.util.http.request :as request]
+   [cmr.ous.util.http.request :as ous-request]
+   [cmr.http.kit.app.middleware :as middleware]
+   [cmr.http.kit.request :as request]
    [cmr.http.kit.response :as response]
    [cmr.metadata.proxy.components.auth :as auth]
    [reitit.ring :as ring]
@@ -28,7 +30,9 @@
 
   For more details, see the docstring above for `wrap-auth`."
   {:data
-    {:middleware [#(wrap-auth % system)]}})
+    {:middleware [#(-> %
+                       middleware/wrap-request-id
+                       (wrap-auth system))]}})
 
 (defn wrap-api-version-dispatch
   ""
@@ -37,7 +41,7 @@
       site-routes route-data system (reitit-auth system)))
   ([site-routes {:keys [main-api-routes-fn plugins-api-routes-fns]} system opts]
     (fn [req]
-      (let [api-version (request/accept-api-version system req)
+      (let [api-version (ous-request/accept-api-version system req)
             plugins-api-routes (vec (mapcat #(% system api-version) plugins-api-routes-fns))
             api-routes (vec (main-api-routes-fn system api-version))
             routes (concat (vec site-routes) plugins-api-routes api-routes)
@@ -46,4 +50,4 @@
         (log/debug "Made routes:" (pprint routes))
         (response/version-media-type
           (handler req)
-          (request/accept-media-type-format system req))))))
+          (ous-request/accept-media-type-format system req))))))
