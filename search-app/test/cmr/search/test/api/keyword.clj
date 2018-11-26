@@ -1,8 +1,11 @@
 (ns cmr.search.test.api.keyword
   "Tests to verify functionality in cmr.search.api.keyword namespace."
-  (:require [clojure.test :refer :all]
-            [cmr.search.api.keyword :as k]
-            [cmr.common.util :as util]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :as util]
+    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+    [cmr.search.api.keyword :as k]
+    [cmr.transmit.kms :as kms]))
 
 (deftest parse-hierarchical-keywords
   (util/are2
@@ -121,4 +124,11 @@
           :d #{{:value "D2"
                :uuid "a3d2"}}}}}))
 
-
+(deftest make-sure-nested-fields-mappings-exist
+  (testing "Making sure the nested-fields-mapping list contains the new valid keywords"
+    (let [valid-keywords (concat (keys kms/keyword-scheme->field-names)
+                                 (keys kms/cmr-to-gcmd-keyword-scheme-aliases))]
+      (is
+        (every?
+           #(some? ((kms/translate-keyword-scheme-to-cmr %) kms-fetcher/nested-fields-mappings))
+           valid-keywords)))))
