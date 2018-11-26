@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.2.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.2.2-SNAPSHOT"
   :description "A size estimation service for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {
