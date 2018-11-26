@@ -21,6 +21,16 @@
 ;;;   Support & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- format-estimate
+  "Formats estimate to two significant digits, while avoiding scientific notation for really
+   small numbers"
+  [estimate]
+  (if (double? estimate)
+    (->> estimate
+        (format "%.2f")
+        read-string)
+    estimate))
+
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.ous.common -- we should put this somewhere both can use,
 ;;     after generalizing to take a func and the func's args ...
@@ -35,19 +45,19 @@
        (log/error errs)
        errs)
      (let [sample-granule-metadata-size (count (.getBytes (:granule-metadata results)))
-           format-estimate (formats/estimate-size
-                            (:format results)
-                            (count (:granule-links results))
-                            (:vars results)
-                            sample-granule-metadata-size
-                            (:params results))]
+           formats-estimate (formats/estimate-size
+                             (:format results)
+                             (count (:granule-links results))
+                             (:vars results)
+                             sample-granule-metadata-size
+                             (:params results))]
        ;; Error handling for post-stages processing
-       (if-let [errs (errors/erred? format-estimate)]
+       (if-let [errs (errors/erred? formats-estimate)]
          (do
            (log/error errs)
            errs)
          (let [spatial-estimate (spatial/estimate-size
-                                 format-estimate
+                                 formats-estimate
                                  results)
                params (:params results)]
            (if-let [errs (errors/erred? spatial-estimate)]
@@ -60,9 +70,9 @@
                                  (:request-id params)
                                  estimate
                                  elapsed))
-               (results/create [{:bytes estimate
-                                 :mb (/ estimate (Math/pow 2 20))
-                                 :gb (/ estimate (Math/pow 2 30))}]
+               (results/create [{:bytes (format-estimate estimate)
+                                 :mb (format-estimate (/ estimate (Math/pow 2 20)))
+                                 :gb (format-estimate (/ estimate (Math/pow 2 30)))}]
                                :request-id (:request-id params)
                                :elapsed elapsed
                                :warnings warns)))))))))
