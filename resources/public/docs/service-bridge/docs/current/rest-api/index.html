@@ -279,6 +279,9 @@
                     <a href="#success" class="toc-h2 toc-link" data-title="success">Success</a>
                   </li>
                   <li>
+                    <a href="#request-ids" class="toc-h2 toc-link" data-title="request-ids">Request IDs</a>
+                  </li>
+                  <li>
                     <a href="#errors" class="toc-h2 toc-link" data-title="errors">Errors</a>
                   </li>
                   <li>
@@ -524,9 +527,29 @@ and, the time taken to process the request.</p>
 <pre class="highlight plaintext"><code>{
   "hits": ...,
   "took": ...,
-  "items": [...]
+  "items": [...],
+  "request-id": ...,
   "warnings:" null
 }
+</code></pre><h2 id='request-ids'>Request IDs</h2>
+<p>Each request is given a random UUID to allow for better debugging and
+correlation of events. In addition to being povided in the response body
+for a successful query, the request ID is also sent in the response headers.
+In the headers, the request ID has the field name <code>Cmr-Request-Id</code>.</p>
+
+<blockquote>
+<p>Example request ID in response headers:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 200 OK
+Cmr-Took: 0.541
+Cmr-Hits: 1
+Content-Type: application/json
+Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
+Cmr-Media-Type: cmr-service-bridge.v2.1; format=*
+Access-Control-Allow-Origin: *
+Content-Length: 170
+Server: http-kit
+Date: Mon, 26 Nov 2018 16:16:27 GMT
 </code></pre><h2 id='errors'>Errors</h2>
 <p>When CMR Service-Bridge returns errors, it does so in a consistent format. In
 particular, the body of the HTTP response is a JSON string (or stream)
@@ -555,8 +578,9 @@ API that will impact users of the default version.</p>
 <pre class="highlight plaintext"><code>{
   "hits": ...,
   "took": ...,
-  "warnings": [...],
-  "items": [...]
+  "request-id": ...,
+  "items": [...],
+  "warnings": [...]
 }
 </code></pre>
 <blockquote>
@@ -573,13 +597,13 @@ query URLs (intended to be sent to a deployed Service-Bridge service). The name
 that name has carried through here.</p>
 <h2 id='tag-associations'>Tag Associations</h2>
 <p>Currenly, OUS depends upon CMR tag associations in order to map from a source file
-(e.g., an HDF granule file) to a URL that represents an OPeNDAP service whichh supports
+(e.g., an HDF granule file) to a URL that represents an OPeNDAP service which supports
 subsetting on that file. In other words, this allows OUS to convert a granule&#39;s archive
 location to an OPeNDAP location.</p>
 
 <blockquote>
 <p>To map a granule&#39;s archive location to an OPeNDAP location, we first need to create a
-using the tag key <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
+tag using the tag key <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
      -XPOST <span class="se">\</span>
