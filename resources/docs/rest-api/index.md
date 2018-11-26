@@ -181,9 +181,32 @@ and, the time taken to process the request.
 {
   "hits": ...,
   "took": ...,
-  "items": [...]
+  "items": [...],
+  "request-id": ...,
   "warnings:" null
 }
+```
+
+## Request IDs
+
+Each request is given a random UUID to allow for better debugging and
+correlation of events. In addition to being povided in the response body
+for a successful query, the request ID is also sent in the response headers.
+In the headers, the request ID has the field name `Cmr-Request-Id`.
+
+> Example request ID in response headers:
+
+```
+HTTP/1.1 200 OK
+Cmr-Took: 0.541
+Cmr-Hits: 1
+Content-Type: application/json
+Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
+Cmr-Media-Type: cmr-service-bridge.v2.1; format=*
+Access-Control-Allow-Origin: *
+Content-Length: 170
+Server: http-kit
+Date: Mon, 26 Nov 2018 16:16:27 GMT
 ```
 
 ## Errors
@@ -219,8 +242,9 @@ API that will impact users of the default version.
 {
   "hits": ...,
   "took": ...,
-  "warnings": [...],
-  "items": [...]
+  "request-id": ...,
+  "items": [...],
+  "warnings": [...]
 }
 ```
 
