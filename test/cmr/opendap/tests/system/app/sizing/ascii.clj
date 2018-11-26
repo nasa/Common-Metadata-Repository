@@ -37,9 +37,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 2.998090392778058
-             :mb 2.85920180585676E-6
-             :gb 2.7921892635319922E-9}]
+    (is (= [{:bytes 3.0
+             :mb 0.0
+             :gb 0.0}]
            (util/parse-response response)))))
 
 (deftest one-var-different-gran-size-test
@@ -58,9 +58,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 811247.9886340628
-             :mb 0.7736663709965351
-             :gb 7.555335654263038E-4}]
+    (is (= [{:bytes 811247.99
+             :mb 0.77
+             :gb 0.0}]
            (util/parse-response response)))))
 
 (deftest multi-var-size-test
@@ -80,9 +80,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 8.305788196959955E9
-             :mb 7921.016880950885
-             :gb 7.735368047803599}]
+    (is (= [{:bytes 8.30578819696E9
+             :mb 7921.02
+             :gb 7.74}]
            (util/parse-response response)))))
 
 (deftest multi-var-different-gran-size-test
@@ -102,9 +102,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 1641823.8102396657
-             :mb 1.5657651998898179
-             :gb 0.0015290675780174003}]
+    (is (= [{:bytes 1641823.81
+             :mb 1.57
+             :gb 0.0}]
            (util/parse-response response)))))
 
 ;; XXX Currently not working; see CMR-5268
@@ -126,9 +126,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 405625.49336222786
-             :mb 0.38683461509917055
-             :gb 3.7776817880778374E-4}]
+    (is (= [{:bytes 405625.49
+             :mb 0.39
+             :gb 0.0}]
            (util/parse-response response)))))
 
 (deftest size-with-no-sizing-metadata-test
@@ -150,7 +150,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 830575.8216056027
-             :mb 0.7920988288932826
-             :gb 7.735340125910963E-4}]
+    (is (= [{:bytes 830575.82
+             :mb 0.79
+             :gb 0.0}]
            (util/parse-response response)))))

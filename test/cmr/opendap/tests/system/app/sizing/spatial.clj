@@ -35,9 +35,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 0.02998090392778058
-                 :mb 2.85920180585676E-8
-                 :gb 2.7921892635319923E-11}]
+        (is (= [{:bytes 0.03
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))
 
     (testing "Bounding box larger than tiling size"
@@ -57,9 +57,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 2.998090392778058
-                 :mb 2.85920180585676E-6
-                 :gb 2.7921892635319922E-9}]
+        (is (= [{:bytes 3.0
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))
 
     (testing "Bounding box equal to tiling size"
@@ -79,9 +79,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 2.998090392778058
-                 :mb 2.85920180585676E-6
-                 :gb 2.7921892635319922E-9}]
+        (is (= [{:bytes 3.0
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))))
 
 (deftest ease-grid-size-test
@@ -105,9 +105,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 0.02998090392778058
-                 :mb 2.85920180585676E-8
-                 :gb 2.7921892635319923E-11}]
+        (is (= [{:bytes 0.03
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))
 
     (testing "Bounding box larger than tiling size"
@@ -127,9 +127,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 2.998090392778058
-                 :mb 2.85920180585676E-6
-                 :gb 2.7921892635319922E-9}]
+        (is (= [{:bytes 3.0
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))
 
     (testing "Bounding box equal to tiling size"
@@ -149,9 +149,9 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 2.998090392778058
-                 :mb 2.85920180585676E-6
-                 :gb 2.7921892635319922E-9}]
+        (is (= [{:bytes 3.0
+                 :mb 0.0
+                 :gb 0.0}]
                (util/parse-response response)))))))
 
 (deftest no-tiling-size-test
@@ -174,7 +174,7 @@
       (is (= 200 (:status response)))
       (is (= "cmr-service-bridge.v2.1; format=json"
              (get-in response [:headers :cmr-media-type])))
-      (is (= [{:bytes 12.817528111197573
-               :mb 1.2223747359464238E-5
-               :gb 1.1937253280726795E-8}]
+      (is (= [{:bytes 12.82
+               :mb 0.0
+               :gb 0.0}]
              (util/parse-response response))))))

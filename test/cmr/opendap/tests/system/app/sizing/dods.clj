@@ -37,8 +37,8 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 1
-             :gb 9.313225746154785E-10
-             :mb 9.5367431640625E-7}]
+             :gb 0.0
+             :mb 0.0}]
            (util/parse-response response)))))
 
 (deftest one-var-different-gran-size-test
@@ -57,8 +57,8 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 11520000
-             :gb 0.010728836059570312
-             :mb 10.986328125}]
+             :gb 0.01
+             :mb 10.99}]
            (util/parse-response response)))))
 
 (deftest multi-var-size-test
@@ -78,8 +78,8 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 5760001
-             :gb 0.005364418961107731
-             :mb 5.493165016174316}]
+             :gb 0.01
+             :mb 5.49}]
            (util/parse-response response)))))
 
 (deftest multi-var-different-gran-size-test
@@ -99,8 +99,8 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 17280000
-             :gb 0.01609325408935547
-             :mb 16.4794921875}]
+             :gb 0.02
+             :mb 16.48}]
            (util/parse-response response)))))
 
 (deftest multi-gran-multi-var-size-test
@@ -121,8 +121,8 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 23040002
-             :mb 21.972658157348633
-             :gb 0.021457673981785774}]
+             :mb 21.97
+             :gb 0.02}]
            (util/parse-response response)))))
 
 (deftest size-with-no-sizing-metadata-test
@@ -144,6 +144,6 @@
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 6220800
-             :gb 0.005793571472167969
-             :mb 5.9326171875}]
+             :gb 0.01
+             :mb 5.93}]
            (util/parse-response response)))))
