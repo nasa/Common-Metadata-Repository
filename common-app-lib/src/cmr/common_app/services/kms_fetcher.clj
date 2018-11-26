@@ -38,7 +38,10 @@
    :projects [:short-name :long-name]
    :temporal-keywords [:temporal-resolution-range]
    :location-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
-   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]})
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
+   :concepts [:short-name]
+   :iso-topic-categories [:iso-topic-category]
+   :related-urls [:type :subtype]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
