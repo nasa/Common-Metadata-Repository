@@ -269,12 +269,12 @@ that name has carried through here.
 ## Tag Associations
 
 Currenly, OUS depends upon CMR tag associations in order to map from a source file
-(e.g., an HDF granule file) to a URL that represents an OPeNDAP service whichh supports
+(e.g., an HDF granule file) to a URL that represents an OPeNDAP service which supports
 subsetting on that file. In other words, this allows OUS to convert a granule's archive
 location to an OPeNDAP location.
 
 > To map a granule's archive location to an OPeNDAP location, we first need to create a
-using the tag key `cmr.earthdata.nasa.ous.datafile.replace`:
+tag using the tag key `cmr.earthdata.nasa.ous.datafile.replace`:
 
 ```shell
 curl --silent \
