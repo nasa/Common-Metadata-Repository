@@ -37,7 +37,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 3.0
+    (is (= [{:bytes 3
              :mb 0.0
              :gb 0.0}]
            (util/parse-response response)))))
@@ -58,7 +58,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 811247.99
+    (is (= [{:bytes 811248
              :mb 0.77
              :gb 0.0}]
            (util/parse-response response)))))
@@ -80,7 +80,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 8.30578819696E9
+    (is (= [{:bytes 8305788197
              :mb 7921.02
              :gb 7.74}]
            (util/parse-response response)))))
@@ -125,7 +125,7 @@
       (is (= 200 (:status response)))
       (is (= "cmr-service-bridge.v2.1; format=json"
              (get-in response [:headers :cmr-media-type])))
-      (is (= [{:bytes 405625.49
+      (is (= [{:bytes 405626
                :mb 0.39
                :gb 0.0}]
              (util/parse-response response)))))
@@ -149,7 +149,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 830575.82
+    (is (= [{:bytes 830576
              :mb 0.79
              :gb 0.0}]
            (util/parse-response response)))))
