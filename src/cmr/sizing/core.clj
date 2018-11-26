@@ -24,12 +24,15 @@
 (defn- format-estimate
   "Formats estimate to two significant digits, while avoiding scientific notation for really
    small numbers"
-  [estimate]
-  (if (double? estimate)
+  [estimate type]
+  (if (and (double? estimate)
+           (not= type :bytes))
     (->> estimate
-        (format "%.2f")
-        read-string)
-    estimate))
+         (format "%.2f")
+         read-string)
+    (-> estimate
+        Math/ceil
+        long)))
 
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.ous.common -- we should put this somewhere both can use,
@@ -70,9 +73,9 @@
                                  (:request-id params)
                                  estimate
                                  elapsed))
-               (results/create [{:bytes (format-estimate estimate)
-                                 :mb (format-estimate (/ estimate (Math/pow 2 20)))
-                                 :gb (format-estimate (/ estimate (Math/pow 2 30)))}]
+               (results/create [{:bytes (format-estimate estimate :bytes)
+                                 :mb (format-estimate (/ estimate (Math/pow 2 20)) :mb)
+                                 :gb (format-estimate (/ estimate (Math/pow 2 30)) :gb)}]
                                :request-id (:request-id params)
                                :elapsed elapsed
                                :warnings warns)))))))))
