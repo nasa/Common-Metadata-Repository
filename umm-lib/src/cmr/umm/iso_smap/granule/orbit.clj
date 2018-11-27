@@ -62,6 +62,13 @@
     [record]
     (v/create-error-messages (v/validate ocsd-validations record))))
 
+(extend-protocol sv/SpatialValidation
+  nil 
+  (validate
+    [record]
+    [(str "Unsupported gmd:description inside gmd:EX_GeographicDescription - "
+          "The supported ones are: OrbitParameters and OrbitCalculatedSpatialDomains")]))
+
 (defn- build-orbit-string
   "Builds ISO SMAP orbit string using umm values."
   [orbit]

@@ -463,6 +463,17 @@
                                (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))))))
 
+(deftest CMR-5226-invalid-iso-smap-geographic-description-test
+  (let [coll-metadata (-> "iso-samples/CMR-5129-coll.xml" io/resource slurp)
+        invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)
+        _ (ingest/ingest-concept
+            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+    (testing "Invalid geographic description "
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                      (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
+         (is (= 422 status))
+         (is (= ["Spatial validation error: Unsupported gmd:description inside gmd:EX_GeographicDescription - The supported ones are: OrbitParameters and OrbitCalculatedSpatialDomains"] (:errors (first errors))))))))
+
 (deftest CMR-5216-invalid-iso-smap-ocsd-values-test
   (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
         invalid-gran-metadata (-> "iso-samples/5216_IsoSmap_Granule.xml" io/resource slurp)
