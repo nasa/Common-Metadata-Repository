@@ -73,9 +73,16 @@
     (helpers/assert-invalid
      (coll-with-geometry {:CoordinateSystem "INVALID_COORDINATE_SYSTEM"} "NO_SPATIAL")
      [:SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem]
-     ["Value (\"INVALID_COORDINATE_SYSTEM\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"])))
+     ["Value [INVALID_COORDINATE_SYSTEM] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"])))
 
 (deftest granule-spatial-representations
+  (testing "Geometry exists and granule spatial representation is nil"
+    (helpers/assert-invalid
+     (coll-with-geometry {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"}}} nil)
+     [:SpatialExtent]
+     ["Granule Spatial Representation must be supplied."]))
+  (testing "Not provided geometry and nil granule spatial representation"
+    (helpers/assert-valid (coll/map->UMM-C {:SpatialExtent {:GranuleSpatialRepresentation nil}})))
   (testing "Valid granule spatial representations"
     (doseq [granule-spatial-representation ["GEODETIC" "CARTESIAN" "ORBIT" "NO_SPATIAL"]]
       (helpers/assert-valid (coll/map->UMM-C {:SpatialExtent
@@ -86,4 +93,4 @@
     (helpers/assert-invalid
      (coll-with-geometry {:CoordinateSystem "CARTESIAN"} "INVALID_GRANULE_SPATIAL_REPRESENTATION")
      [:SpatialExtent]
-     ["Value (\"INVALID_GRANULE_SPATIAL_REPRESENTATION\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"])))
+     ["Value [INVALID_GRANULE_SPATIAL_REPRESENTATION] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"])))

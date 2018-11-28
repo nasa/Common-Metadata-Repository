@@ -10,22 +10,17 @@
 
 (def valid-coord-systems
   "Coordinate systems that are valid for umm-spec geometries."
-  #{:geodetic :cartesian})
+  #{"GEODETIC" "CARTESIAN"})
 
 (def valid-granule-spatial-representations
   "Granule spatial representations that are valid for umm-spec spatial extents."
-  #{:geodetic :cartesian :orbit :no-spatial})
+  #{"GEODETIC" "CARTESIAN" "ORBIT" "NO_SPATIAL"})
 
-(defn- ->enum
-  "Returns s keyword from enums keywords."
+(defn- string->enum-keyword
+  "Returns s as keyword if s belongs to enums."
   [s enums]
-  (when s
-    (get enums (csk/->kebab-case-keyword s))))
-
-(defn- ->coordinate-system
-  "Returns a normalized coordinate system keyword from a string."
-  [s]
-  (->enum s valid-coord-systems))
+  (when (and s (get enums s))
+    (csk/->kebab-case-keyword s)))
 
 (defn polygon-validation
   "Validates a polygon for umm-spec spatial geometry."
@@ -46,31 +41,30 @@
   "Validate if value exists in enums if value is not nil."
   [field-path value enums]
   (when value
-    (when-not (->enum value enums)
+    (when-not (string->enum-keyword value enums)
       {field-path
-       [(format "Value (\"%s\") not found in enum (possible values: [%s])"
+       [(format "Value [%s] not found in enum (possible values: [%s])"
                 value
-                (->> (map #(format "\"%s\"" (csk/->SCREAMING_SNAKE_CASE_STRING %)) enums)
-                     sort ; Sorting to make order predictable for testing.
-                     (string/join ",")))]})))
+                (string/join "," (sort (map #(format "\"%s\"" %) enums))))]}))) ; Sorting to make order predictable for testing.
 
 (defn- validate-spatial-representation
- "Validate that the granule spatial representation is valid if the spatial extent
- has geometries"
+  "Validate that the granule spatial representation is valid. A granule spatial representation is invalid when:
+  Geometry exists and granule spatial representation is nil
+  Granule Spatial Representation is not nil and is not one of the specified enums."
  [field-path spatial-extent]
  (let [granule-spatial-representation (:GranuleSpatialRepresentation spatial-extent)
        geometry (util/remove-nil-keys
                  (dissoc (get-in spatial-extent [:HorizontalSpatialDomain :Geometry]) :CoordinateSystem))]
   (if (and (not (empty? geometry))
            (nil? granule-spatial-representation))
-   {field-path ["Granule Spatial Representation must be supplied."]}
-   (validate-enum field-path granule-spatial-representation valid-granule-spatial-representations))))
+    {field-path ["Granule Spatial Representation must be supplied."]}
+    (validate-enum field-path granule-spatial-representation valid-granule-spatial-representations))))
 
 (defn- set-geometries-spatial-representation
   "Attach the coordinate system to each geometry to make it available during validation."
   [spatial-extent]
   (when-let [coord-sys (-> spatial-extent :HorizontalSpatialDomain :Geometry :CoordinateSystem)]
-    (let [coord-sys (->coordinate-system coord-sys)]
+    (let [coord-sys (string->enum-keyword coord-sys valid-coord-systems)]
       (-> spatial-extent
           (set-spatial-representation [:HorizontalSpatialDomain :Geometry :GPolygons] coord-sys)
           (set-spatial-representation [:HorizontalSpatialDomain :Geometry :Lines] coord-sys)))))
