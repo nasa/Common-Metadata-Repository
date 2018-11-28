@@ -225,41 +225,26 @@
                          :Lines [(umm-cmn/map->LineType
                                    {:Points [(umm-cmn/map->PointType {:Longitude 180 :Latitude 0})
                                              (umm-cmn/map->PointType {:Longitude -180 :Latitude 0})]})]})}]
-        (testing "GranuleSpatialRepresentation enum"
-          (are3 [valid? granule-spatial-representation]
-                (if valid?
-                  (assert-valid-spatial granule-spatial-representation geometry {:format :iso19115})
-                  (assert-invalid-spatial granule-spatial-representation
-                                          geometry
-                                          ["SpatialExtent"]
-                                          [(format "Value (\"%s\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"
-                                                    granule-spatial-representation)]
-                                          {:format :iso19115}))
-
-                "ISO19115 invalid granule spatial representation"
-                false "INVALID_ISO19115_GRANULE_SPATIAL_REPRESENTATION"
-
-                "ISO19115 valid granule spatial representation"
-                true "GEODETIC"))
-
-        (testing "CoordinateSystem enum"
-          (are3 [valid? coordinate-system]
-                (if valid?
-                  (assert-valid-spatial "CARTESIAN"
-                                        (assoc-in geometry [:Geometry :CoordinateSystem] coordinate-system)
-                                        {:format :iso19115})
-                  (assert-invalid-spatial "CARTESIAN"
-                                          (assoc-in geometry [:Geometry :CoordinateSystem] coordinate-system)
-                                          ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "CoordinateSystem"]
-                                          [(format "Value (\"%s\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"
-                                                   coordinate-system)]
-                                          {:format :iso19115}))
-
-                "ISO19115 invalid coordinate system"
-                false "INVALID_ISO19115_COORDINATE_SYSTEM"
-
-                "ISO19115 valid coordinate system"
-                true "CARTESIAN"))))
+        (testing "Invalid GranuleSpatialRepresentation enum"
+          (assert-invalid-spatial "INVALID_GRANULE_SPATIAL_REPRESENTATION"
+                                  geometry
+                                  ["SpatialExtent"]
+                                  ["Value (\"INVALID_GRANULE_SPATIAL_REPRESENTATION\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"]
+                                  {:format :iso19115}))
+        (testing "Valid GranuleSpatialRepresentation enum"
+          (assert-valid-spatial "CARTESIAN"
+                                geometry
+                                {:format :iso19115}))
+        (testing "Invalid CoordinateSystem enum"
+          (assert-invalid-spatial "CARTESIAN"
+                                  (assoc-in geometry [:Geometry :CoordinateSystem] "INVALID_COORDINATE_SYSTEM")
+                                  ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "CoordinateSystem"]
+                                  ["Value (\"INVALID_COORDINATE_SYSTEM\") not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"]
+                                  {:format :iso19115}))
+        (testing "Valid CoordinateSystem enum"
+          (assert-valid-spatial "CARTESIAN"
+                                geometry
+                                {:format :iso19115}))))
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
