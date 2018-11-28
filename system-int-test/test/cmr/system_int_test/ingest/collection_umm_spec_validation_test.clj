@@ -88,7 +88,7 @@
 (defn assert-invalid-spatial
   ([coord-sys hsd field-path errors]
    (assert-invalid-spatial coord-sys hsd field-path errors nil))
-  ([coord-sys  hsd field-path errors options]
+  ([coord-sys hsd field-path errors options]
    (assert-invalid {:SpatialExtent (data-umm-c/spatial {:gsr coord-sys :hsd hsd})}
                    field-path
                    errors
@@ -99,6 +99,15 @@
    (assert-valid-spatial coord-sys hsd nil))
   ([coord-sys hsd options]
    (assert-valid {:SpatialExtent (data-umm-c/spatial {:gsr coord-sys :hsd hsd})} options)))
+
+(defn- spatial-with-enums
+  "Create a SpatialExtent with spatial enums. Helper for testing."
+  [{:keys [granule-spatial-representation coordinate-system]}]
+  {:SpatialExtent (data-umm-c/spatial {:gsr granule-spatial-representation
+                                       :hsd {:Geometry (umm-cmn/map->GeometryType
+                                                        {:CoordinateSystem coordinate-system
+                                                         :Points [(umm-cmn/map->PointType
+                                                                   {:Longitude 0 :Latitude 0})]})}})})
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -220,27 +229,29 @@
   (testing "Spatial validation"
     (testing "Spatial enums"
       (testing "Invalid GranuleSpatialRepresentation enum"
-        (assert-invalid-spatial "INVALID_GRANULE_SPATIAL_REPRESENTATION"
-                                {}
-                                ["SpatialExtent"]
-                                ["Value [INVALID_GRANULE_SPATIAL_REPRESENTATION] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"]
-                                {:format :iso19115}))
+        (assert-invalid
+         (spatial-with-enums {:granule-spatial-representation "INVALID_GRANULE_SPATIAL_REPRESENTATION"})
+         ["SpatialExtent"]
+         ["Value [INVALID_GRANULE_SPATIAL_REPRESENTATION] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"]
+         {:format :iso19115}))
+
       (testing "Valid GranuleSpatialRepresentation enum"
-        (assert-valid-spatial "CARTESIAN"
-                              {}
-                              {:format :iso19115}))
+        (assert-valid
+         (spatial-with-enums {:granule-spatial-representation "CARTESIAN"})
+         {:format :iso19115}))
+
       (testing "Invalid CoordinateSystem enum"
-        (assert-invalid-spatial "CARTESIAN"
-                                {:Geometry (umm-cmn/map->GeometryType
-                                            {:CoordinateSystem "INVALID_COORDINATE_SYSTEM"})}
-                                ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "CoordinateSystem"]
-                                ["Value [INVALID_COORDINATE_SYSTEM] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"]
-                                {:format :iso19115}))
+        (assert-invalid
+         (spatial-with-enums {:coordinate-system "INVALID_COORDINATE_SYSTEM"})
+         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "CoordinateSystem"]
+         ["Value [INVALID_COORDINATE_SYSTEM] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"]
+         {:format :iso19115}))
+
       (testing "Valid CoordinateSystem enum"
-        (assert-valid-spatial "CARTESIAN"
-                              {:Geometry (umm-cmn/map->GeometryType
-                                          {:CoordinateSystem "GEODETIC"})}
-                              {:format :iso19115})))
+        (assert-valid
+         (spatial-with-enums {:coordinate-system "GEODETIC"})
+         {:format :iso19115})))
+
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
