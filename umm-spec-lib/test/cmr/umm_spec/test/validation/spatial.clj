@@ -1,12 +1,15 @@
 (ns cmr.umm-spec.test.validation.spatial
   "This has tests for UMM validations."
-  (:require [clojure.test :refer :all]
-            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
-            [cmr.umm-spec.models.umm-collection-models :as coll]
-            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.common.services.errors :as e]))
+  (:require
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common.services.errors :as e]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.umm-spec.models.umm-collection-models :as coll]
+   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
 
 (defn- umm-spec-point
   "Returns a point for a umm-spec model."
@@ -61,3 +64,33 @@
    [:SpatialExtent]
    [(str "Orbit Parameters must be defined for a collection "
          "whose granule spatial representation is ORBIT.")])))
+
+(deftest coordinate-systems
+  (testing "Valid coordinate systems"
+    (doseq [coordinate-system ["GEODETIC" "CARTESIAN"]]
+      (helpers/assert-valid (coll-with-geometry {:CoordinateSystem coordinate-system} "NO_SPATIAL"))))
+  (testing "Invalid coordinate system"
+    (helpers/assert-invalid
+     (coll-with-geometry {:CoordinateSystem "INVALID_COORDINATE_SYSTEM"} "NO_SPATIAL")
+     [:SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem]
+     ["Value [INVALID_COORDINATE_SYSTEM] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\"])"])))
+
+(deftest granule-spatial-representations
+  (testing "Geometry exists and granule spatial representation is nil"
+    (helpers/assert-invalid
+     (coll-with-geometry {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"}}} nil)
+     [:SpatialExtent]
+     ["Granule Spatial Representation must be supplied."]))
+  (testing "Not provided geometry and nil granule spatial representation"
+    (helpers/assert-valid (coll/map->UMM-C {:SpatialExtent {:GranuleSpatialRepresentation nil}})))
+  (testing "Valid granule spatial representations"
+    (doseq [granule-spatial-representation ["GEODETIC" "CARTESIAN" "ORBIT" "NO_SPATIAL"]]
+      (helpers/assert-valid (coll/map->UMM-C {:SpatialExtent
+                                              {:GranuleSpatialRepresentation granule-spatial-representation
+                                               :OrbitParameters {}
+                                               :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"}}}}))))
+  (testing "Invalid granule spatial representation"
+    (helpers/assert-invalid
+     (coll-with-geometry {:CoordinateSystem "CARTESIAN"} "INVALID_GRANULE_SPATIAL_REPRESENTATION")
+     [:SpatialExtent]
+     ["Value [INVALID_GRANULE_SPATIAL_REPRESENTATION] not found in enum (possible values: [\"CARTESIAN\",\"GEODETIC\",\"NO_SPATIAL\",\"ORBIT\"])"])))
