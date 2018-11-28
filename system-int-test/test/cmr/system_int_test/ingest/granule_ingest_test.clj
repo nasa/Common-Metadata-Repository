@@ -451,10 +451,10 @@
 (deftest CMR-5129-invalid-iso-smap-orbit-values-test
   (let [coll-metadata (-> "iso-samples/CMR-5129-coll.xml" io/resource slurp)
         invalid-gran-metadata (-> "iso-samples/invalid-CMR-5129-gran.xml" io/resource slurp)
-        valid-gran-metadata (-> "iso-samples/valid-CMR-5129-gran.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+        valid-gran-metadata (-> "iso-samples/valid-CMR-5129-gran.xml" io/resource slurp)]
     (testing "Invalid orbit"
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status]} (ingest/ingest-concept
                                (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))))
@@ -465,10 +465,10 @@
 
 (deftest CMR-5226-invalid-iso-smap-geographic-description-test
   (let [coll-metadata (-> "iso-samples/CMR-5129-coll.xml" io/resource slurp)
-        invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+        invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)]
     (testing "Invalid geographic description "
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
@@ -477,8 +477,6 @@
 (deftest CMR-5216-invalid-iso-smap-ocsd-values-test
   (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
         invalid-gran-metadata (-> "iso-samples/5216_IsoSmap_Granule.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
         expected-errors
          [{:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."
                     "Spatial validation error: Start Orbit Number must be an integer but was [1.2]."
@@ -488,6 +486,8 @@
            {:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."],
              :path ["OrbitCalculatedSpatialDomains" 1]}]]
     (testing "Invalid orbit calculated spatial domain"
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
@@ -495,10 +495,10 @@
 
 (deftest CMR-5216-valid-iso-smap-ocsd-values-test
   (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
-        valid-gran-metadata (-> "iso-samples/5216_Valid_IsoSmap_Granule.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+        valid-gran-metadata (-> "iso-samples/5216_Valid_IsoSmap_Granule.xml" io/resource slurp)]
     (testing "Invalid orbit calculated spatial domain"
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))
@@ -507,8 +507,6 @@
 (deftest CMR-5216-invalid-echo10-ocsd-values-test
   (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
         invalid-gran-metadata (-> "5216_Echo10_Granule.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
         ;; Note: type errors for most of the fields are caught by xml validation for echo10 granule,
         ;; except for start/stop orbit numbers, which double is allowed in the xml schema.
         ;; So, it will pass the xml validation and get caught by the ocsd-validations.
@@ -516,6 +514,8 @@
          [{:errors ["Spatial validation error: Start Orbit Number must be an integer but was [1.0]."]
            :path ["OrbitCalculatedSpatialDomains" 0]}]]
     (testing "Invalid orbit calculated spatial domain"
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
          (is (= 422 status))
@@ -523,10 +523,10 @@
 
 (deftest CMR-5216-valid-echo10-ocsd-values-test
   (let [coll-metadata (-> "iso-samples/5216_IsoMends_Collection.xml" io/resource slurp)
-        invalid-gran-metadata (-> "5216_Valid_Echo10_Granule.xml" io/resource slurp)
-        _ (ingest/ingest-concept
-            (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))]
+        invalid-gran-metadata (-> "5216_Valid_Echo10_Granule.xml" io/resource slurp)]
     (testing "Invalid orbit calculated spatial domain"
+      (ingest/ingest-concept
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
          (is (= 201 status))
