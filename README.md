@@ -183,6 +183,18 @@ To perform static analysis and linting for a project, you can run
 `cmr test lint PROJ`. As above with dependency version checking, by
 not passing a project, you can run for all projects: `cmr test lint`.
 
+#### Dependency Vulnerability Scanning
+
+You can see if your currently installed version of CMR has any reported Common Vulnerabilities and Exploits (CVEs) by running the helpful alias `lein check-sec` that you can use in each application, or at the root folder to scan all CMR apps together. 
+
+You will find the vulnerability summary in `./target/dependency-check-report.html` in each application. 
+
+In order to get `check-sec` to run successfully, please make sure you follow these steps before running: 
+
+You must have the bundler-audit Ruby gem installed in order to successfully scan some projects: `gem install bundler-audit`. This is because DependencyCheck wraps bundle-audit when it encounters Gemfiles in dependencies.
+
+Make sure you set up the CMR_ORACLE_JAR_REPO environment variable. 
+
 #### Testing CMR
 
 There are two modes of testing the CMR:

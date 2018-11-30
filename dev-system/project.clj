@@ -77,6 +77,10 @@
              ; "-Dorg.eclipse.jetty.LEVEL=INFO"
              ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {
+    :security {
+      :plugins [
+        [com.livingsocial/lein-dependency-check "1.0.4"]]
+      :dependency-check {:log true :throw true}}
     :dev-dependencies {
       :exclusions [
         [org.clojure/tools.nrepl]]
@@ -161,6 +165,8 @@
       ["with-profile" "lint" "yagni"]
     "check-deps"
       ["with-profile" "lint" "ancient" ":all"]
+    "check-sec" 
+      ["with-profile" "security" "dependency-check"]
     "lint"
       ["do"
         ["check"] ["kibit"] ["eastwood"]]

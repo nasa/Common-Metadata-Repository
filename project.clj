@@ -39,6 +39,8 @@
       ["modules" "lint"]
     "check-deps"
       ["modules" "check-deps"]
+    "check-sec"
+      ["modules" "check-sec"]
     "deps-tree-conflicts"
       ["modules" "deps" ":tree"]
     "generate-static"
