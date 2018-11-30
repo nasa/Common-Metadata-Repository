@@ -11,7 +11,7 @@
 
 (def size-of-related-url-fees
   "This constant is the size of the fees element in the RelatedURL main element for UMM-C. It is
-   needed to be able to trucate strings that are to long."
+   needed to be able to trucate strings that are too long."
   80)
 
 (defn get-substring
