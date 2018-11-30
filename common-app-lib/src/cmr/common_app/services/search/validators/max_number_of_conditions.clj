@@ -6,7 +6,7 @@
 
 (defconfig max-number-of-conditions
   "The configured maximum number of conditions in a query"
-  {:default 2050
+  {:default 4100 
    :type Long})
 
 (defprotocol ConditionCounter
