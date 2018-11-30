@@ -57,6 +57,25 @@
      (search/find-refs :granule {:readable-granule-name ["*1" "*2"]
                                  "options[readable-granule-name][pattern]" true}))))
 
+(deftest search-with-2000-granule-id
+  (testing "Verify the number of conditions is twice as many as the number of granules"
+    (is (= {:errors ["The number of conditions in the query [4102] exceeded the maximum allowed for a query [4100]. Reduce the number of conditions in your query."]
+            :status 400}
+           (search/find-refs
+            :granule
+            {:readable-granule-name (for [n (range 2051)]
+                                      (str "gran-" n))
+             "options[readable-granule-name][pattern]" true}
+            {:method :post}))))
+  (testing "2000 granule-id search is supported."
+    (is (= nil 
+           (:errors (search/find-refs
+                      :granule
+                      {:readable-granule-name (for [n (range 2000)]
+                                                (str "gran-" n))
+                       "options[readable-granule-name][pattern]" true}
+                      {:method :post}))))))
+
 (deftest search-by-producer-granule-id
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {}))
