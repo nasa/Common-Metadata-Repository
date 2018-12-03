@@ -11,7 +11,7 @@
 
 (def size-of-related-url-fees
   "This constant is the size of the fees element in the RelatedURL main element for UMM-C. It is
-   needed to be able to trucate strings that are too long."
+   needed to be able to truncate strings that are too long."
   80)
 
 (defn get-substring
@@ -146,45 +146,44 @@
   "Parse ISO online resource urls. There are several places in ISO that allow for multiples of'
    online urls."
   [doc sanitize? service-urls distributor-xpaths-map]
-  (flatten
-    (for [distributor (select doc (get distributor-xpaths-map :Root))
-          :let [fees (util/trunc (value-of distributor (get distributor-xpaths-map :Fees)) size-of-related-url-fees)
-                format (parse-distributor-format distributor distributor-xpaths-map)]]
-      (for [transferOption (select distributor (get distributor-xpaths-map :TransferOptions))
-            :let [size (value-of transferOption "gmd:transferSize")
-                  unit (value-of transferOption "gmd:unitsOfDistribution/gco:CharacterString")]]
-        (for [url (select transferOption (get distributor-xpaths-map :URL))
-              :let [name (char-string-value url "gmd:name")
-                    code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
-                    url-link (value-of url "gmd:linkage/gmd:URL")
-                    url-link (when url-link (url/format-url url-link sanitize?))
-                    opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
-                                  "USE SERVICE API")
-                    types-and-desc (parse-url-types-from-description
-                                    (char-string-value url "gmd:description"))
-                    service-url (first (filter #(= url-link (:URL %)) service-urls))
-                    type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]
-              :when (seq type)]
-          (merge
-           {:URL url-link
-            :URLContentType "DistributionURL"
-            :Type type
-            :Subtype (if opendap-type
-                      "OPENDAP DATA (DODS)"
-                      (or (:Subtype types-and-desc) (:Subtype service-url)))
-            :Description (:Description types-and-desc)}
-           (case type
-             "GET DATA" {:GetData {:Format (su/with-default (:Format format) sanitize?)
-                                   :Size (if sanitize?
-                                           (or size 0.0)
-                                           size)
-                                   :Unit (if sanitize?
-                                           (or unit "KB")
-                                           unit)
-                                   :Fees fees
-                                   :Checksum (:Checksum types-and-desc)
-                                   :MimeType (:MimeType format)}}
-             nil)))))))
+  (for [distributor (select doc (get distributor-xpaths-map :Root))
+        :let [fees (util/trunc (value-of distributor (get distributor-xpaths-map :Fees)) size-of-related-url-fees)
+              format (parse-distributor-format distributor distributor-xpaths-map)]
+        transfer-option (select distributor (get distributor-xpaths-map :TransferOptions))
+        :let [size (value-of transfer-option "gmd:transferSize")
+              unit (value-of transfer-option "gmd:unitsOfDistribution/gco:CharacterString")]
+        url (select transfer-option (get distributor-xpaths-map :URL))
+        :let [name (char-string-value url "gmd:name")
+              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
+              url-link (value-of url "gmd:linkage/gmd:URL")
+              url-link (when url-link (url/format-url url-link sanitize?))
+              opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
+                            "USE SERVICE API")
+              types-and-desc (parse-url-types-from-description
+                              (char-string-value url "gmd:description"))
+              service-url (first (filter #(= url-link (:URL %)) service-urls))
+              type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]
+        :when (seq type)]
+    (merge
+     {:URL url-link
+      :URLContentType "DistributionURL"
+      :Type type
+      :Subtype (if opendap-type
+                "OPENDAP DATA (DODS)"
+                (or (:Subtype types-and-desc) (:Subtype service-url)))
+      :Description (:Description types-and-desc)}
+     (case type
+       "GET DATA" {:GetData {:Format (su/with-default (:Format format) sanitize?)
+                             :Size (if sanitize?
+                                     (or size 0.0)
+                                     size)
+                             :Unit (if sanitize?
+                                     (or unit "KB")
+                                     unit)
+                             :Fees fees
+                             :Checksum (:Checksum types-and-desc)
+                             :MimeType (:MimeType format)}}
+       nil))))
 
 (defn parse-online-and-service-urls
   "Parse online and service urls. Service urls may be a dup of distribution urls,
