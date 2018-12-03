@@ -50,7 +50,7 @@
    :Fees distributor-fees-xpath
    :Format distributor-format-xpath
    :TransferOptions distributor-transfer-options-xpath
-   :URL "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/"})
+   :URL "gmd:onLine/gmd:CI_OnlineResource/"})
 
 (defn parse-related-urls
   "Parse related-urls present in the document"

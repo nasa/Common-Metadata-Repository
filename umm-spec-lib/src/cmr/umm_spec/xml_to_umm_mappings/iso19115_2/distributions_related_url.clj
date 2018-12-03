@@ -45,13 +45,14 @@
    :Fees distributor-fees-xpath
    :Format distributor-format-xpath
    :TransferOptions distributor-transfer-options-xpath
-   :URL "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/"})
+   :URL "gmd:onLine/gmd:CI_OnlineResource/"})
 
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc sanitize?]
   (for [distributor-element (select doc distributor-xpath)
-        :when (not (value-of distributor-element (str (get distributor-xpaths-map :URL)
+        :when (not (value-of distributor-element (str "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/"
+                                                      (get distributor-xpaths-map :URL)
                                                       "gmd:linkage/gmd:URL")))]
     {:DistributionMedia (value-of distributor-element distributor-media-xpath)
      :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)

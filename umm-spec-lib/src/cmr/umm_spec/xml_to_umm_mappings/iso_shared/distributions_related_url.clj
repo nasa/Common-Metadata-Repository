@@ -9,6 +9,11 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
+(def size-of-related-url-fees
+  "This constant is the size of the fees element in the RelatedURL main element for UMM-C. It is
+   needed to be able to truncate strings that are too long."
+  80)
+
 (defn get-substring
   "Get a substring from the input string. Use start as the starting index. All of the rest
    of the input parameters are stop indexes in numerical order or nil i.e. (34 nil 50). The
@@ -138,26 +143,26 @@
                      (str/trim (subs mime-type (inc (.indexOf mime-type ":"))))))})))
 
 (defn parse-online-urls
-  "Parse ISO online resource urls"
+  "Parse ISO online resource urls. There are several places in ISO that allow for multiples of'
+   online urls."
   [doc sanitize? service-urls distributor-xpaths-map]
   (for [distributor (select doc (get distributor-xpaths-map :Root))
-        :let [size (value-of distributor (str (get distributor-xpaths-map :TransferOptions)
-                                              "/gmd:transferSize"))
-              unit (value-of distributor (str (get distributor-xpaths-map :TransferOptions)
-                                              "/gmd:unitsOfDistribution/gco:CharacterString"))
-              fees (value-of distributor (get distributor-xpaths-map :Fees))
-              url (get distributor-xpaths-map :URL)
-              format (parse-distributor-format distributor distributor-xpaths-map)
-              name (char-string-value distributor (str url "gmd:name"))
-              code (value-of distributor (str url "gmd:function/gmd:CI_OnlineFunctionCode"))
-              url-link (value-of distributor (str url "gmd:linkage/gmd:URL"))
+        :let [fees (util/trunc (value-of distributor (get distributor-xpaths-map :Fees)) size-of-related-url-fees)
+              format (parse-distributor-format distributor distributor-xpaths-map)]
+        transfer-option (select distributor (get distributor-xpaths-map :TransferOptions))
+        :let [size (value-of transfer-option "gmd:transferSize")
+              unit (value-of transfer-option "gmd:unitsOfDistribution/gco:CharacterString")]
+        url (select transfer-option (get distributor-xpaths-map :URL))
+        :let [name (char-string-value url "gmd:name")
+              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
+              url-link (value-of url "gmd:linkage/gmd:URL")
               url-link (when url-link (url/format-url url-link sanitize?))
               opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
                             "USE SERVICE API")
               types-and-desc (parse-url-types-from-description
-                              (char-string-value distributor (str url "gmd:description")))
+                              (char-string-value url "gmd:description"))
               service-url (first (filter #(= url-link (:URL %)) service-urls))
-              type (or opendap-type (:Type types-and-desc) (:Type service-url))]
+              type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]
         :when (seq type)]
     (merge
      {:URL url-link

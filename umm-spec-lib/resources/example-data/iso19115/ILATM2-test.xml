@@ -1,0 +1,2057 @@
+        <gmi:MI_Metadata
+            xmlns:eos="http://earthdata.nasa.gov/schema/eos"
+            xmlns:gco="http://www.isotc211.org/2005/gco"
+            xmlns:gmd="http://www.isotc211.org/2005/gmd"
+            xmlns:gmi="http://www.isotc211.org/2005/gmi"
+            xmlns:gml="http://www.opengis.net/gml/3.2"
+            xmlns:gmx="http://www.isotc211.org/2005/gmx"
+            xmlns:gsr="http://www.isotc211.org/2005/gsr"
+            xmlns:gss="http://www.isotc211.org/2005/gss"
+            xmlns:gts="http://www.isotc211.org/2005/gts"
+            xmlns:srv="http://www.isotc211.org/2005/srv"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd">
+            <gmd:fileIdentifier>
+                <gco:CharacterString>IceBridge ATM L2 Icessn Elevation, Slope, and Roughness V002</gco:CharacterString>
+            </gmd:fileIdentifier>
+            <gmd:language>
+                <gco:CharacterString>eng; usa</gco:CharacterString>
+            </gmd:language>
+            <gmd:characterSet>
+                <gmd:MD_CharacterSetCode
+                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="UTF8">UTF8</gmd:MD_CharacterSetCode>
+            </gmd:characterSet>
+            <gmd:hierarchyLevel>
+                <gmd:MD_ScopeCode
+                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+            </gmd:hierarchyLevel>
+            <gmd:hierarchyLevelName>
+                <gco:CharacterString>IceBridge ATM L2 Icessn Elevation, Slope, and Roughness</gco:CharacterString>
+            </gmd:hierarchyLevelName>
+            <gmd:contact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:individualName>
+                        <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                    </gmd:individualName>
+                    <gmd:organisationName>
+                        <gco:CharacterString>NASA National Snow and Ice Data Center Distributed Active Archive Center</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:phone>
+                                <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                </gmd:CI_Telephone>
+                            </gmd:phone>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                            <gmd:onlineResource>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onlineResource>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:contact>
+            <gmd:dateStamp>
+                <gco:Date>2018-03-07</gco:Date>
+            </gmd:dateStamp>
+            <gmd:metadataStandardName>
+                <gco:CharacterString>ISO 19115-2 Geographic Information 2009 Metadata</gco:CharacterString>
+            </gmd:metadataStandardName>
+            <gmd:metadataStandardVersion>
+                <gco:CharacterString>ISO 19115-2:2009</gco:CharacterString>
+            </gmd:metadataStandardVersion>
+            <gmd:referenceSystemInfo>
+                <gmd:MD_ReferenceSystem>
+                    <gmd:referenceSystemIdentifier>
+                        <gmd:RS_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>CARTESIAN</gco:CharacterString>
+                            </gmd:code>
+                        </gmd:RS_Identifier>
+                    </gmd:referenceSystemIdentifier>
+                </gmd:MD_ReferenceSystem>
+            </gmd:referenceSystemInfo>
+            <gmd:metadataExtensionInfo>
+                <gmd:MD_MetadataExtensionInformation>
+                    <gmd:extendedElementInformation>
+                        <gmd:MD_ExtendedElementInformation>
+                            <gmd:name>
+                                <gco:CharacterString>Metadata Create Date</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:definition>
+                                <gco:CharacterString>Create Date</gco:CharacterString>
+                            </gmd:definition>
+                            <gmd:dataType>
+                                <gmd:MD_DatatypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="Date">Date</gmd:MD_DatatypeCode>
+                            </gmd:dataType>
+                            <gmd:domainValue>
+                                <gco:CharacterString>2014-01-29</gco:CharacterString>
+                            </gmd:domainValue>
+                            <gmd:parentEntity gco:nilReason="missing"/>
+                            <gmd:rule gco:nilReason="missing"/>
+                            <gmd:source gco:nilReason="missing"/>
+                        </gmd:MD_ExtendedElementInformation>
+                    </gmd:extendedElementInformation>
+                </gmd:MD_MetadataExtensionInformation>
+            </gmd:metadataExtensionInfo>
+            <gmd:metadataExtensionInfo>
+                <gmd:MD_MetadataExtensionInformation>
+                    <gmd:extendedElementInformation>
+                        <gmd:MD_ExtendedElementInformation>
+                            <gmd:name>
+                                <gco:CharacterString>Metadata Update Date</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:definition>
+                                <gco:CharacterString>Update Date</gco:CharacterString>
+                            </gmd:definition>
+                            <gmd:dataType>
+                                <gmd:MD_DatatypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="Date">Date</gmd:MD_DatatypeCode>
+                            </gmd:dataType>
+                            <gmd:domainValue>
+                                <gco:CharacterString>2018-03-07</gco:CharacterString>
+                            </gmd:domainValue>
+                            <gmd:parentEntity gco:nilReason="missing"/>
+                            <gmd:rule gco:nilReason="missing"/>
+                            <gmd:source gco:nilReason="missing"/>
+                        </gmd:MD_ExtendedElementInformation>
+                    </gmd:extendedElementInformation>
+                </gmd:MD_MetadataExtensionInformation>
+            </gmd:metadataExtensionInfo>
+            <gmd:identificationInfo>
+                <gmd:MD_DataIdentification>
+                    <gmd:citation>
+                        <gmd:CI_Citation>
+                            <gmd:title>
+                                <gco:CharacterString>IceBridge ATM L2 Icessn Elevation, Slope, and Roughness V002</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date>
+                                <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2014-01-29</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                </gmd:CI_Date>
+                            </gmd:date>
+                            <gmd:edition>
+                                <gco:CharacterString>2</gco:CharacterString>
+                            </gmd:edition>
+                            <gmd:editionDate>
+                                <gco:Date>2014-01-29</gco:Date>
+                            </gmd:editionDate>
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ILATM2</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gmx:Anchor
+                                    xlink:actuate="onRequest" xlink:href="http://dx.doi.org/10.5067/CPRXXK3F39RV">doi:10.5067/CPRXXK3F39RV</gmx:Anchor>
+                                    </gmd:code>
+                                    <gmd:codeSpace gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>A Digital Object Identifier (DOI)</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Michael Studinger</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA Goddard Space Flight Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city>
+                                    <gco:CharacterString>Greenbelt</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>MD</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>michael.studinger@nasa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA National Snow and Ice Data Center Distributed Active Archive Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>Colorado</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher">publisher</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                        </gmd:CI_Citation>
+                    </gmd:citation>
+                    <gmd:abstract>
+                        <gco:CharacterString>This data set contains resampled and smoothed elevation measurements of Arctic and Antarctic sea ice, and Greenland, Antarctic Peninsula, and West Antarctic region land ice surface acquired using the NASA Airborne Topographic Mapper (ATM) instrumentation. The data were collected as part of Operation IceBridge funded aircraft survey campaigns.</gco:CharacterString>
+                    </gmd:abstract>
+                    <gmd:purpose>
+                        <gco:CharacterString>Scientific Research</gco:CharacterString>
+                    </gmd:purpose>
+                    <gmd:status>
+                        <gmd:MD_ProgressCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="underdevelopment">underdevelopment</gmd:MD_ProgressCode>
+                    </gmd:status>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Michael Studinger</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA Goddard Space Flight Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city>
+                                    <gco:CharacterString>Greenbelt</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>MD</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>michael.studinger@nasa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA National Snow and Ice Data Center Distributed Active Archive Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA National Snow and Ice Data Center Distributed Active Archive Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA/GSFC/WFF/OSB</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA/GSFC/WFF/OSB</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator">originator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:resourceMaintenance>
+                        <gmd:MD_MaintenanceInformation>
+                            <gmd:maintenanceAndUpdateFrequency>
+                                <gmd:MD_MaintenanceFrequencyCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded">asNeeded</gmd:MD_MaintenanceFrequencyCode>
+                            </gmd:maintenanceAndUpdateFrequency>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="attribute">attribute</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:contact>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:contact>
+                        </gmd:MD_MaintenanceInformation>
+                    </gmd:resourceMaintenance>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>Continent &gt; North America &gt; Greenland</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>Continent &gt; Antarctica</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>Geographic Region &gt; Arctic</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="place">place</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Location Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-02-05</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>EARTH SCIENCE &gt; Cryosphere &gt; Glaciers/Ice Sheets &gt; Glacier Elevation/Ice Sheet Elevation </gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>EARTH SCIENCE &gt; Oceans &gt; Sea Ice &gt; Ice Roughness </gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>EARTH SCIENCE &gt; Cryosphere &gt; Sea Ice &gt; Ice Roughness </gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Science Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-02-05</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>C-130 &gt; Cessna 130</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>DC-8 &gt; Douglas DC-8</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>HU-25A &gt; Dassault HU-25A Guardian</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>HU-25C &gt; Dassault HU-25C Guardian </gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>P-3B &gt; Lockheed P-3B Orion</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:keyword>
+                                <gco:CharacterString>WP-3D ORION &gt; Lockheed WP-3D ORION</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="platform">platform</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Platform Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2016-06-10</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>ATM &gt; Airborne Topographic Mapper</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="instrument">instrument</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Instrument Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2016-06-01</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>OIB &gt; Operation Ice Bridge</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="project">project</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Project Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-01-24</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:resourceConstraints>
+                        <gmd:MD_LegalConstraints>
+                            <gmd:accessConstraints>
+                                <gmd:MD_RestrictionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                            </gmd:accessConstraints>
+                            <gmd:useConstraints>
+                                <gmd:MD_RestrictionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                            </gmd:useConstraints>
+                            <gmd:otherConstraints>
+                                <gco:CharacterString>Access Constraints : none</gco:CharacterString>
+                            </gmd:otherConstraints>
+                            <gmd:otherConstraints>
+                                <gco:CharacterString>Use Constraints : none</gco:CharacterString>
+                            </gmd:otherConstraints>
+                        </gmd:MD_LegalConstraints>
+                    </gmd:resourceConstraints>
+                    <gmd:language>
+                        <gco:CharacterString>eng; usa</gco:CharacterString>
+                    </gmd:language>
+                    <gmd:characterSet>
+                        <gmd:MD_CharacterSetCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="UTF8">UTF8</gmd:MD_CharacterSetCode>
+                    </gmd:characterSet>
+                    <gmd:topicCategory>
+                        <gmd:MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</gmd:MD_TopicCategoryCode>
+                    </gmd:topicCategory>
+                    <gmd:extent>
+                        <gmd:EX_Extent id="boundingExtent">
+                            <gmd:description>
+                                <gco:CharacterString>SpatialCoverageType=HORIZONTAL, SpatialGranuleSpatialRepresentation=GEODETIC, TemporalRangeType=Continuous Range, TimeType=UTC</gco:CharacterString>
+                            </gmd:description>
+                            <gmd:geographicElement>
+                                <gmd:EX_GeographicBoundingBox>
+                                    <gmd:westBoundLongitude>
+                                    <gco:Decimal>-180.0</gco:Decimal>
+                                    </gmd:westBoundLongitude>
+                                    <gmd:eastBoundLongitude>
+                                    <gco:Decimal>180.0</gco:Decimal>
+                                    </gmd:eastBoundLongitude>
+                                    <gmd:southBoundLatitude>
+                                    <gco:Decimal>60.0</gco:Decimal>
+                                    </gmd:southBoundLatitude>
+                                    <gmd:northBoundLatitude>
+                                    <gco:Decimal>90.0</gco:Decimal>
+                                    </gmd:northBoundLatitude>
+                                </gmd:EX_GeographicBoundingBox>
+                            </gmd:geographicElement>
+                            <gmd:geographicElement>
+                                <gmd:EX_GeographicBoundingBox>
+                                    <gmd:westBoundLongitude>
+                                    <gco:Decimal>-180.0</gco:Decimal>
+                                    </gmd:westBoundLongitude>
+                                    <gmd:eastBoundLongitude>
+                                    <gco:Decimal>180.0</gco:Decimal>
+                                    </gmd:eastBoundLongitude>
+                                    <gmd:southBoundLatitude>
+                                    <gco:Decimal>-90.0</gco:Decimal>
+                                    </gmd:southBoundLatitude>
+                                    <gmd:northBoundLatitude>
+                                    <gco:Decimal>-53.0</gco:Decimal>
+                                    </gmd:northBoundLatitude>
+                                </gmd:EX_GeographicBoundingBox>
+                            </gmd:geographicElement>
+                            <gmd:temporalElement>
+                                <gmd:EX_TemporalExtent>
+                                    <gmd:extent>
+                                    <gml:TimePeriod gml:id="id-0ac32000">
+                                    <gml:beginPosition>2009-03-31T00:00:00.000Z</gml:beginPosition>
+                                    <gml:endPosition>2017-07-25T23:59:59.999Z</gml:endPosition>
+                                    </gml:TimePeriod>
+                                    </gmd:extent>
+                                </gmd:EX_TemporalExtent>
+                            </gmd:temporalElement>
+                        </gmd:EX_Extent>
+                    </gmd:extent>
+                    <gmd:processingLevel>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>Level 2</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace gco:nilReason="missing"/>
+                            <gmd:description gco:nilReason="missing"/>
+                        </gmd:MD_Identifier>
+                    </gmd:processingLevel>
+                </gmd:MD_DataIdentification>
+            </gmd:identificationInfo>
+            <gmd:distributionInfo>
+                <gmd:MD_Distribution>
+                    <gmd:distributionFormat>
+                        <gmd:MD_Format>
+                            <gmd:name>
+                                <gco:CharacterString>Comma-Separated Values (.csv)</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:version gco:nilReason="missing"/>
+                            <gmd:specification>
+                                <gco:CharacterString>HTTPS 9.96 GB</gco:CharacterString>
+                            </gmd:specification>
+                        </gmd:MD_Format>
+                    </gmd:distributionFormat>
+                    <gmd:distributionFormat>
+                        <gmd:MD_Format>
+                            <gmd:name>
+                                <gco:CharacterString>XML</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:version gco:nilReason="missing"/>
+                            <gmd:specification>
+                                <gco:CharacterString>HTTPS 0.2 GB</gco:CharacterString>
+                            </gmd:specification>
+                        </gmd:MD_Format>
+                    </gmd:distributionFormat>
+                    <gmd:distributor>
+                        <gmd:MD_Distributor>
+                            <gmd:distributorContact>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA National Snow and Ice Data Center Distributed Active Archive Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:distributorContact>
+                            <gmd:distributorTransferOptions>
+                                <gmd:MD_DigitalTransferOptions>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/icebridge/portal/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>IceBridge Portal</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>Tool to visualize, search, and download IceBridge data.</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/ILATM2.002/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>HTTPS</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>Direct download via HTTPS protocol.</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://search.earthdata.nasa.gov/search?q=ILATM2</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>Earthdata Search</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://dx.doi.org/10.5067/CPRXXK3F39RV</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>Documentation</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>Documentation explaining the data and how it was processed.</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                </gmd:MD_DigitalTransferOptions>
+                            </gmd:distributorTransferOptions>
+                            <gmd:distributorTransferOptions>
+                                <gmd:MD_DigitalTransferOptions>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/icebridge/portal/2</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>IceBridge Portal2</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>Tool to visualize, search, and download IceBridge data 2.</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                </gmd:MD_DigitalTransferOptions>
+                            </gmd:distributorTransferOptions>
+                        </gmd:MD_Distributor>
+                    </gmd:distributor>
+                </gmd:MD_Distribution>
+            </gmd:distributionInfo>
+            <gmd:dataQualityInfo>
+                <gmd:DQ_DataQuality>
+                    <gmd:scope>
+                        <gmd:DQ_Scope>
+                            <gmd:level>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                            </gmd:level>
+                        </gmd:DQ_Scope>
+                    </gmd:scope>
+                    <gmd:lineage>
+                        <gmd:LI_Lineage>
+                            <gmd:processStep>
+                                <gmi:LE_ProcessStep>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:processor>
+                                    <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA/GSFC/WFF/OSB</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                    </gmd:CI_ResponsibleParty>
+                                    </gmd:processor>
+                                    <gmi:processingInformation>
+                                    <eos:EOS_Processing>
+                                    <gmi:identifier/>
+                                    <eos:otherPropertyType/>
+                                    <eos:otherProperty>
+                                    <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>SIPSMetGenVersion</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The version of the SIPSMetGen software used to produce the metadata file for this granule</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>ThemeID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the theme under which data are logically grouped</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>identifier_product_doi</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>Digital object identifier that uniquely identifies this data product</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>identifier_product_doi_authority</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>URL of the digital object identifier resolving authority</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                    </gco:Record>
+                                    </eos:otherProperty>
+                                    </eos:EOS_Processing>
+                                    </gmi:processingInformation>
+                                </gmi:LE_ProcessStep>
+                            </gmd:processStep>
+                        </gmd:LI_Lineage>
+                    </gmd:lineage>
+                </gmd:DQ_DataQuality>
+            </gmd:dataQualityInfo>
+            <gmi:acquisitionInformation>
+                <gmi:MI_AcquisitionInformation>
+                    <gmi:instrument>
+                        <eos:EOS_Instrument id="ATM">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ATM</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Airborne Topographic Mapper</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:type>
+                                <gco:CharacterString>instrument</gco:CharacterString>
+                            </gmi:type>
+                            <eos:sensor>
+                                <eos:EOS_Sensor id="ATM_SENSOR">
+                                    <eos:identifier>
+                                    <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ATM</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Airborne Topographic Mapper</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:MD_Identifier>
+                                    </eos:identifier>
+                                    <eos:type gco:nilReason="missing"/>
+                                </eos:EOS_Sensor>
+                            </eos:sensor>
+                        </eos:EOS_Instrument>
+                    </gmi:instrument>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2009-09-17 EndDate: 2009-12-08</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2009_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2009</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2009-03-30 EndDate: 2009-05-20</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2009_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2009</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2010-10-19 EndDate: 2010-11-21</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2010_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2010</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2010-03-15 EndDate: 2010-05-28</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2010_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2010</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2011-10-07 EndDate: 2011-11-19</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2011_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2011</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2011-03-16 EndDate: 2011-05-16</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2011_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2011</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2012-10-12 EndDate: 2012-11-08</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2012_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2012</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2012-03-14 EndDate: 2012-05-17</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2012_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2012</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2013-11-18 EndDate: 2013-11-28</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2013_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2013</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2013-03-20 EndDate: 2013-11-14</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2013_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2013</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2014-10-16 EndDate: 2014-11-22</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2014_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2014</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2014-03-12 EndDate: 2014-10-02</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2014_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2014</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2015-09-17 EndDate: 2015-09-24</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2015_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2015</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2015-03-19 EndDate: 2015-10-22</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2015_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2015</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2016-01-01 EndDate: 2016-12-31</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2016_AK_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Alaska Glaciers 2016</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2016-10-14 EndDate: 2016-11-19</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2016_AN_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge West Antarctica/Antarctic Sea Ice 2016</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2016-04-19 EndDate: 2016-07-21</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2016_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2016</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:operation>
+                        <gmi:MI_Operation>
+                            <gmi:description>
+                                <gco:CharacterString>StartDate: 2017-01-01 EndDate: 2017-12-31</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>2017_GR_NASA</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.projectshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Operation IceBridge Greenland/Arctic Sea Ice 2017</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:status gco:nilReason="missing"/>
+                            <gmi:parentOperation gco:nilReason="inapplicable"/>
+                        </gmi:MI_Operation>
+                    </gmi:operation>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="C-130_27a38c08-d7db-4e29-8bdc-5a4758433677">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>C-130</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Cessna 130</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N439NA</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="DC-8_88c9417a-d098-4eec-9b4c-2c7eedad9d69">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>DC-8</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Douglas DC-8</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N817NA</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="HU-25A_6789bc71-38d9-4579-aee1-8ab4589ad072">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>HU-25A</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Dassault HU-25A Guardian</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N524NA (d77685bd-aa94-4717-bd97-632699d999b5)</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="HU-25C_3b39b70c-aa5c-4c54-9dc5-b19f57869c26">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>HU-25C</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Dassault HU-25C Guardian </gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N525NA</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="P-3B_f204a05d-8a64-45be-a3ce-399140ff7807">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>P-3B</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Lockheed P-3B Orion</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N426NA</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="WP-3DORION_87cc8d7d-908c-42cb-b93f-ead985bb5843">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>WP-3D ORION</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Lockheed WP-3D ORION</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Aircraft</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#ATM"/>
+                            <eos:otherProperty>
+                                <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>AircraftID</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>The identifier of the airplane used by the FAA to uniquely identify each aircraft</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    <eos:parameterUnitsOfMeasure>
+                                    <gco:CharacterString>Not Applicable</gco:CharacterString>
+                                    </eos:parameterUnitsOfMeasure>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    <eos:value>
+                                    <gco:CharacterString>N43RF</gco:CharacterString>
+                                    </eos:value>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                </gco:Record>
+                            </eos:otherProperty>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                </gmi:MI_AcquisitionInformation>
+            </gmi:acquisitionInformation>
+        </gmi:MI_Metadata>
