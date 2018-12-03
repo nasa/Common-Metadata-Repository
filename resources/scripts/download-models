@@ -16,7 +16,12 @@ echo "Downloading OpenNLP English language models ..."
 echo
 for MODEL in ${MODELS[@]}; do
 	echo " - $MODEL ..."
-	(cd resources/models; curl --silent -O $MODEL)
+	(cd resources/models;
+	 if [ ! -f $(basename "$MODEL") ]; then
+	 	curl --silent -O $MODEL
+	 else
+	 	echo "   (already downloaded)"
+	 fi)
 done
 echo
 echo "Downloaded models:"
