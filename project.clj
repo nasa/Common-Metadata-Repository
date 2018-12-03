@@ -125,6 +125,7 @@
       ["clean"]
       ["check-vers"]
       ["check-sec"]
+      ["download-models"]
       ["ltest" ":unit"]
       ["ubercompile"]
       ["build-uberjar"]]
