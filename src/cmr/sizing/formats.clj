@@ -70,7 +70,7 @@
   (reduce (fn [total-estimate variable]
             (let [avg-gran-size (get-avg-gran-size variable)
                   total-granule-input-bytes (read-string (:total-granule-input-bytes params))
-                  avg-compression-rate (if (= fmt :nc4)
+                  avg-compression-rate (if (= (keyword (string/lower-case fmt)) :nc4)
                                          (get-avg-compression-rate-netcdf4 variable)
                                          (get-avg-compression-rate-ascii variable))]
               (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
