@@ -3,12 +3,12 @@
 # The following are listed/described here:
 #  * http://opennlp.sourceforge.net/models-1.5/
 MODELS=("http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-token.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-chunker.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-ner-date.bin"
-       "http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin")
+        "http://opennlp.sourceforge.net/models-1.5/en-token.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-chunker.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-date.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin")
 
 mkdir -p resources/models
 echo

@@ -26,7 +26,9 @@
     [clojure-opennlp "0.5.0"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
-    [org.clojure/clojure "1.9.0"]]
+    [org.clojure/clojure "1.9.0"]
+    [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
+    [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]
   :aot [clojure.tools.logging.impl]
   :profiles {
     :ubercompile {

@@ -114,6 +114,23 @@ Find dates:
 ("last week")
 ```
 
+Get actual dates from English sentences:
+
+```clj
+[cmr.nlp.repl] λ=> (nlp/extract-dates query)
+(#inst "2018-11-27T21:40:12.946-00:00")
+```
+
+This is returned as a collection due to the fact that a query may have more
+than one date (i.e., indicate a range):
+
+```clj
+[cmr.nlp.repl] λ=> (def query2 "What was the average high temp between last year and two years ago?")
+[cmr.nlp.repl] λ=> (nlp/extract-dates query2)
+(#inst "2017-12-04T21:42:42.874-00:00"
+ #inst "2016-12-04T21:42:42.878-00:00")
+```
+
 
 ### REST API
 
