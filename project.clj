@@ -92,6 +92,8 @@
     ;; Dev & Testing Aliases
     "download-models" ["with-profile" "+local"
       "shell" "resources/scripts/download-models"]
+    "delete-models" ["with-profile" "+local"
+      "shell" "rm" "-rf" "resources/models"]
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
@@ -121,8 +123,12 @@
       ["clean"]
       ["nvd" "check"]]
     ;; Build tasks
-    "build-jar" ["with-profile" "+system,+security" "jar"]
-    "build-uberjar" ["with-profile" "+system,+security" "uberjar"]
+    "build-jar" ["with-profile" "+system,+security" "do"
+      ["delete-models"]
+      ["jar"]]
+    "build-uberjar" ["with-profile" "+system,+security" "do"
+      ["delete-models"]
+      ["uberjar"]]
     "build" ["do"
       ["clean"]
       ["check-vers"]
