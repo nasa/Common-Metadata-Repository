@@ -28,7 +28,8 @@
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
     [org.clojure/clojure "1.9.0"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
-    [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]
+    [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]
+    [ring/ring-codec "1.1.1"]]
   :aot [clojure.tools.logging.impl]
   :profiles {
     :ubercompile {
@@ -50,6 +51,8 @@
       :dependencies [
         [clojusc/system-manager "0.3.0"]]}
     :local {
+      :resource-paths [
+        "data"]
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
         [proto-repl "0.3.1"]]
@@ -93,7 +96,7 @@
     "download-models" ["with-profile" "+local"
       "shell" "resources/scripts/download-models"]
     "delete-models" ["with-profile" "+local"
-      "shell" "rm" "-rf" "resources/models"]
+      "shell" "rm" "-rf" "data/models"]
     "repl" ["do"
       ["clean"]
       ["with-profile" "+local,+system" "repl"]]
@@ -116,7 +119,7 @@
       ["kibit"]
       ;["eastwood"]
       ]
-    "ltest" ["with-profile" "+test,+system" "ltest"]
+    "ltest" ["with-profile" "+test,+system,+local" "ltest"]
     "junit" ["with-profile" "+test,+system" "test2junit"]
     ;; Security
     "check-sec" ["with-profile" "+system,+local,+security" "do"
@@ -124,10 +127,8 @@
       ["nvd" "check"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+system,+security" "do"
-      ["delete-models"]
       ["jar"]]
     "build-uberjar" ["with-profile" "+system,+security" "do"
-      ["delete-models"]
       ["uberjar"]]
     "build" ["do"
       ["clean"]

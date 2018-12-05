@@ -4,6 +4,7 @@
 /.nrepl-*
 /checkouts
 /classes
+/data
 /junit-test-results
 /resources/models
 /target
