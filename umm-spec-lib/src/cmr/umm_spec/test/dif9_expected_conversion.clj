@@ -235,6 +235,7 @@
 (defn- expected-dif-additional-attribute
   [attribute]
   (-> attribute
+      (assoc :Group "AdditionalAttribute")
       (assoc :ParameterRangeBegin nil)
       (assoc :ParameterRangeEnd nil)
       (assoc :MeasurementResolution nil)
@@ -259,7 +260,7 @@
       (if (:OnlineResource collection-citation)
         (assoc (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
           :Version version)
-        (assoc collection-citation 
+        (assoc collection-citation
           :Version version)))))
 
 (defn umm-expected-conversion-dif9

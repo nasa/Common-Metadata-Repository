@@ -19,10 +19,10 @@
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are
 ;; all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
-  (let [psa1 (dc/psa {:name "bool" :data-type :boolean :value true})
-        psa2 (dc/psa {:name "dts" :data-type :datetime-string :value "2012-01-01T01:02:03Z"})
-        psa3 (dc/psa {:name "ts" :data-type :time-string :value "01:02:03Z"})
-        psa4 (dc/psa {:name "ds" :data-type :date-string :value "2012-01-01"})
+  (let [psa1 (dc/psa {:name "bool" :data-type :boolean :value true :group "additionalattribute"})
+        psa2 (dc/psa {:name "dts" :data-type :datetime-string :value "2012-01-01T01:02:03Z" :group "additionalattribute"})
+        psa3 (dc/psa {:name "ts" :data-type :time-string :value "01:02:03Z" :group "additionalattribute"})
+        psa4 (dc/psa {:name "ds" :data-type :date-string :value "2012-01-01" :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1 psa2 psa3]})
                         {:format :dif})
         coll2 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa2 psa3]})
@@ -39,10 +39,10 @@
          "string,ds,2012-01-01" [coll3])))
 
 (deftest string-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :group "G1" :data-type :string :value "ab"})
-        psa2 (dc/psa {:name "bravo" :group "G1" :data-type :string :value "bf"})
-        psa3 (dc/psa {:name "charlie" :group "G2" :data-type :string :value "foo"})
-        psa4 (dc/psa {:name "case" :group "G3" :data-type :string :value "up"})
+  (let [psa1 (dc/psa {:name "alpha" :group "G1.additionalattribute" :data-type :string :value "ab"})
+        psa2 (dc/psa {:name "bravo" :group "G1.additionalattribute" :data-type :string :value "bf"})
+        psa3 (dc/psa {:name "charlie" :group "G2.additionalattribute" :data-type :string :value "foo"})
+        psa4 (dc/psa {:name "case" :group "G3.additionalattribute" :data-type :string :value "up"})
 
         coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1 psa2]})
                         {:format :dif})
@@ -232,14 +232,14 @@
                                             :max_value "ab" :exclude_boundary true}}
 
            ;; Test searching by group
-           [coll3] {:additional_attribute_name {:group "G3"}}
-           [coll3] {:additional_attribute_name {:group "*3" :pattern true}}
-           [coll1 coll2 coll3] {:additional_attribute_name {:group "G?" :pattern true}}))))
+           [coll3] {:additional_attribute_name {:group "G3.additionalattribute"}}
+           [coll3] {:additional_attribute_name {:group "*3.additionalattribute" :pattern true}}
+           [coll1 coll2 coll3] {:additional_attribute_name {:group "G?.additionalattribute" :pattern true}}))))
 
 (deftest float-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :data-type :float :value 10})
-        psa2 (dc/psa {:name "bravo" :data-type :float :value -12})
-        psa3 (dc/psa {:name "charlie" :data-type :float :value 45})
+  (let [psa1 (dc/psa {:name "alpha" :data-type :float :value 10 :group "additionalattribute"})
+        psa2 (dc/psa {:name "bravo" :data-type :float :value -12 :group "additionalattribute"})
+        psa3 (dc/psa {:name "charlie" :data-type :float :value 45 :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -346,9 +346,9 @@
                                             :max_value -5 :exclude_boundary true}}))))
 
 (deftest int-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :data-type :int :value 10})
-        psa2 (dc/psa {:name "bravo" :data-type :int :value -12})
-        psa3 (dc/psa {:name "charlie" :data-type :int :value 45})
+  (let [psa1 (dc/psa {:name "alpha" :data-type :int :value 10 :group "additionalattribute"})
+        psa2 (dc/psa {:name "bravo" :data-type :int :value -12 :group "additionalattribute"})
+        psa3 (dc/psa {:name "charlie" :data-type :int :value 45 :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -454,9 +454,9 @@
                                             :max_value -5 :exclude_boundary true}}))))
 
 (deftest datetime-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :data-type :datetime :value (d/make-datetime 10 false)})
-        psa2 (dc/psa {:name "bravo" :data-type :datetime :value (d/make-datetime 14 false)})
-        psa3 (dc/psa {:name "charlie" :data-type :datetime :value (d/make-datetime 45 false)})
+  (let [psa1 (dc/psa {:name "alpha" :data-type :datetime :value (d/make-datetime 10 false) :group "additionalattribute"})
+        psa2 (dc/psa {:name "bravo" :data-type :datetime :value (d/make-datetime 14 false) :group "additionalattribute"})
+        psa3 (dc/psa {:name "charlie" :data-type :datetime :value (d/make-datetime 45 false) :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -579,9 +579,9 @@
            [] {:type "datetime" :name "bravo" :min_value 0 :max_value 14 :exclude_boundary true}))))
 
 (deftest time-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :data-type :time :value (d/make-time 10 false)})
-        psa2 (dc/psa {:name "bravo" :data-type :time :value (d/make-time 23 false)})
-        psa3 (dc/psa {:name "charlie" :data-type :time :value (d/make-time 45 false)})
+  (let [psa1 (dc/psa {:name "alpha" :data-type :time :value (d/make-time 10 false) :group "additionalattribute"})
+        psa2 (dc/psa {:name "bravo" :data-type :time :value (d/make-time 23 false) :group "additionalattribute"})
+        psa3 (dc/psa {:name "charlie" :data-type :time :value (d/make-time 45 false) :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -703,9 +703,9 @@
            [] {:type "time" :name "bravo" :min_value 0 :max_value 23 :exclude_boundary true}))))
 
 (deftest date-psas-search-test
-  (let [psa1 (dc/psa {:name "alpha" :data-type :date :value (d/make-date 10 false)})
-        psa2 (dc/psa {:name "bravo" :data-type :date :value (d/make-date 23 false)})
-        psa3 (dc/psa {:name "charlie" :data-type :date :value (d/make-date 45 false)})
+  (let [psa1 (dc/psa {:name "alpha" :data-type :date :value (d/make-date 10 false) :group "additionalattribute"})
+        psa2 (dc/psa {:name "bravo" :data-type :date :value (d/make-date 23 false) :group "additionalattribute"})
+        psa3 (dc/psa {:name "charlie" :data-type :date :value (d/make-date 45 false) :group "additionalattribute"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
 
@@ -881,8 +881,8 @@
          {:type :floatRange :name "alpha" :value [10.0 6.0]})))
 
 (deftest search-by-name-and-group-test
-  (let [psa1 (dc/psa {:name "foo" :group "g1" :data-type :boolean :value true})
-        psa2 (dc/psa {:name "two" :group "g2" :data-type :datetime-string
+  (let [psa1 (dc/psa {:name "foo" :group "g1.additionalattribute" :data-type :boolean :value true})
+        psa2 (dc/psa {:name "two" :group "g2.additionalattribute" :data-type :datetime-string
                       :value "2012-01-01T01:02:03Z"})
         coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1]})
                         {:format :dif})
@@ -898,7 +898,7 @@
          [coll1] "foo" nil false
          [coll1] "f?o" nil true
          [] "f?o" nil false
-         [coll1] nil "g1" false
+         [coll1] nil "g1.additionalattribute" false
          [coll1 coll2] nil "g*" true
          [] nil "g*" false
          [] "t*o" "*" false
@@ -994,13 +994,13 @@
 
 (deftest dif-extended-metadata-test
   (let [dif9-coll (d/ingest-concept-with-metadata-file
-                    "data/dif/sample_collection_with_extended_metadata.xml"
+                    "example-data/dif/C1214305813-AU_AADC.xml"
                     {:provider-id "PROV1"
                      :concept-type :collection
                      :format-key :dif
                      :native-id "dif9-coll"})
         dif10-coll (d/ingest-concept-with-metadata-file
-                     "data/dif10/sample_collection.xml"
+                     "example-data/dif10/sample_collection.xml"
                      {:provider-id "PROV1"
                       :concept-type :collection
                       :format-key :dif10
@@ -1013,16 +1013,13 @@
         (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
         "By group"
-        [dif9-coll dif10-coll] {:additional_attribute_name {:group "gov.nasa.gsfc.gcmd"}}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "gov.nasa.gsfc.gcmd.additionalattribute"}}
 
         "By group - pattern"
-        [dif9-coll dif10-coll] {:additional_attribute_name {:group "*gcmd" :pattern true}}
-
-        "By name - link_notification.contact"
-        [dif9-coll] {:additional_attribute_name {:name "link_notification.contact"}}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "*additionalattribute" :pattern true}}
 
         "By name - metadata.extraction_date"
-        [dif9-coll] {:additional_attribute_name {:name "metadata.extraction_date"}}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:name "metadata.extraction_date"}}
 
         "By name - metadata.keyword_version"
         [dif9-coll dif10-coll] {:additional_attribute_name {:name "metadata.keyword_version"}}
@@ -1032,7 +1029,7 @@
 
         "By value - string"
         [dif9-coll] {:additional_attribute_value
-                     {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}}
+                     {:name "metadata.extraction_date" :type "string" :value "2015-11-29 18:23:23"}}
 
         ;; CMR-2413 - This is failing due to 8.100000381469727 being sent to elasticsearch.
         ; "By value - float"
@@ -1042,4 +1039,3 @@
         [dif9-coll dif10-coll] {:additional_attribute_range
                                 {:name "metadata.keyword_version" :min_value 8.0 :max_value 8.5
                                  :type "float"}}))))
-
