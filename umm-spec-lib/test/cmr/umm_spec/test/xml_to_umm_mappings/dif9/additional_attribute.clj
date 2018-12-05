@@ -11,7 +11,7 @@
 
 (def expected-additional-attributes
   "This is the normal expected value for most of the tests."
-  '({:Group "gov.nasa.gsfc.gcmd.additionalattribute",
+   [{:Group "gov.nasa.gsfc.gcmd.additionalattribute",
      :Value "f4d30361-f1bd-4c44-9d23-99208fe35b7d",
      :Name "metadata.uuid",
      :Description "Not provided",
@@ -30,7 +30,7 @@
      :Value "SOMEVALUE",
      :Name "Hello",
      :Description "Not provided",
-     :DataType "STRING"}))
+     :DataType "STRING"}])
 
 
 (defn- no-additional-attributes-test-file
@@ -44,6 +44,6 @@
     (is (= expected-additional-attributes
            (aa/xml-elem->AdditionalAttributes (additional-attributes-test-file) true))))
 
-  (testing "Testing generating additional attributes when the don't exist."
+  (testing "Testing generating additional attributes when they don't exist."
     (is (= nil
            (aa/xml-elem->AdditionalAttributes (no-additional-attributes-test-file) true)))))
