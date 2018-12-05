@@ -313,17 +313,17 @@ Zinc</Abstract>
   <DIF_Revision_History>2016-03-10 - record updated by Dave Connell - basic updates.</DIF_Revision_History>
   <Extended_Metadata>
     <Metadata>
-      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Group>gov.nasa.gsfc.gcmd.additionalattribute</Group>
       <Name>metadata.uuid</Name>
       <Value>f4d30361-f1bd-4c44-9d23-99208fe35b7d</Value>
     </Metadata>
     <Metadata>
-      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Group>gov.nasa.gsfc.gcmd.additionalattribute</Group>
       <Name>metadata.extraction_date</Name>
       <Value>2015-11-29 18:23:23</Value>
     </Metadata>
     <Metadata>
-      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Group>gov.nasa.gsfc.gcmd.additionalattribute</Group>
       <Name>metadata.keyword_version</Name>
       <Value>8.1</Value>
     </Metadata>
@@ -331,6 +331,14 @@ Zinc</Abstract>
       <Group>gov.nasa.gsfc.gcmd</Group>
       <Name>GranuleSpatialRepresentation</Name>
       <Value>CARTESIAN</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.AdditionalAttributes</Group>
+      <Name>Hello</Name>
+      <Value>SOMEVALUE</Value>
+    </Metadata>
+    <Metadata>
+      <Name>Only Required Field</Name>
     </Metadata>
   </Extended_Metadata>
 </DIF>

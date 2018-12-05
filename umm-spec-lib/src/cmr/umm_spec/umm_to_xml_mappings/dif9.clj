@@ -219,7 +219,7 @@
            ;; is value, then parameter-range-begin, then parameter-range-end.
            :let [aa-value (or Value ParamRangeBegin ParamRangeEnd)]]
        [:Metadata
-        [:Group Group]
+        [:Group "AdditionalAttribute"]
         [:Name Name]
         [:Description Description]
         [:Type DataType]
