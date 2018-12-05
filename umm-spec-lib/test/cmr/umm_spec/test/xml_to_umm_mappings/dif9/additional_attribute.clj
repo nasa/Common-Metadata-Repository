@@ -38,12 +38,12 @@
   []
   (slurp (io/resource "example-data/dif/C1214610485-SCIOPS.xml")))
 
-(deftest test-dif9-additional-attributes)
+(deftest test-dif9-additional-attributes
 
-  (testing "Testing generating additional attributes from Exdended_Metadata"
+  (testing "Testing generating additional attributes from Extended_Metadata"
     (is (= expected-additional-attributes
            (aa/xml-elem->AdditionalAttributes (additional-attributes-test-file) true))))
 
   (testing "Testing generating additional attributes when the don't exist."
     (is (= nil
-           (aa/xml-elem->AdditionalAttributes (no-additional-attributes-test-file) true))))
+           (aa/xml-elem->AdditionalAttributes (no-additional-attributes-test-file) true)))))
