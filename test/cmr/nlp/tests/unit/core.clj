@@ -28,10 +28,10 @@
     (testing "Relative year differences ..."
       (let [[d1 d2] (nlp/extract-dates test-data/relative-temporals-sentence-1)]
         (is (= 1
-               (- (.getYear d1)
-                  (.getYear d2))))))
-    (testing "Relative days differences ..."
-      (let [d (first (nlp/extract-dates test-data/relative-temporals-sentence-2))]
+               (- (.getYear d2)
+                  (.getYear d1))))))
+    (testing "Relative future days differences ..."
+      (let [d (first (nlp/extract-dates test-data/relative-future-temporals-sentence-1))]
         (is (> 7
                (- (.getDay d)
                   (.getDay now))))

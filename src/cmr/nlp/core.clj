@@ -57,7 +57,7 @@
         dates (map #(human-time/date parser %)
                    (find-dates (tokenize sentence)))]
     (if-not (empty? dates)
-      dates
+      (sort dates)
       [(human-time/date parser sentence)])))
 
 (comment

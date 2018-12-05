@@ -17,5 +17,5 @@
 (def relative-temporals-sentence-1
   "What was that thing that happened between last year and two years ago?")
 
-(def relative-temporals-sentence-2
+(def relative-future-temporals-sentence-1
   "What was that thing you planned for next Thursday?")
