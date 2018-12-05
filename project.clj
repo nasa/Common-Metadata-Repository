@@ -28,8 +28,7 @@
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
     [org.clojure/clojure "1.9.0"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
-    [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]
-    [ring/ring-codec "1.1.1"]]
+    [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]
   :aot [clojure.tools.logging.impl]
   :profiles {
     :ubercompile {

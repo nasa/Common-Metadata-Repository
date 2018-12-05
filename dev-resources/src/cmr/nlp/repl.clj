@@ -10,6 +10,7 @@
    [clojusc.twig :as logger]
    [cmr.nlp.components.core]
    [cmr.nlp.core :as nlp]
+   [cmr.nlp.query :as query]
    [cmr.nlp.time.human :as human-time]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
