@@ -20,12 +20,22 @@
 * [About](#about-)
 * [Dependencies](#dependencies-)
 * [Usage](#usage-)
+   * [Setup](#setup-)
+   * [NLP Library](#nlp-library-)
+   * [NLP via Elasticsearch](#nlp-via-elasticsearch-)
+   * [Geolocation via Elasticsearch](#geolocation-via-elasticsearch-)
 * [License](#license-)
 
 
 ## About [&#x219F;](#contents)
 
-TBD
+This project aims to provide basic natural language processing (NLP) support
+for the NASA Earthdata Common Metadata Repository (CMR) clients wishing for a
+greater user experience when making queries to the CMR Search endpoints.
+Initial focus is on NLP support for spatio-temporal queries.
+
+Future focus will be on supporting collection, granule, and variable
+identification from natural language queries.
 
 
 ## Dependencies [&#x219F;](#contents)
@@ -33,17 +43,62 @@ TBD
 * Java
 * `lein`
 * `curl` (used to download English language models)
-* Various language models
+* `docker` (used to run local Elasticsearch cluster)
 
-WARNING: You will need to run `lein download-models` before attempting to use
-this library!
+Supported versions:
+
+| cmr-nlp        | Elasticsearch | Status         |
+|----------------|---------------|----------------|
+| 0.1.0-SNAPSHOT | 6.5.1         | In development |
 
 
 ## Usage [&#x219F;](#contents)
 
-### Library
+There are several ways in which this project may be used:
+
+* the NLP portion of the codebase as a library (in-memory NLP models will be required)
+* the Geolocation functionality as a service (an Elasticsearch cluster, local or otherwise, will be required)
+* both NLP and Geolocation running as a service (no in-memory models; requires Elasticsearch cluster)
+
+Each approach requires slightly different setup.
+
+### Setup [&#x219F;](#contents)
+
+#### In-Memory Models
+
+If running just the NLP portion of the code as a library, you will need to have
+the required OpenNLP models available to the JVM on the classpath. You may do
+this easily in a cloned `cmr-nlp` directory with the following command:
+
+```
+$ lein download-models
+```
+
+This executes the script `resources/scripts/download-models`, which may be
+adapted for use in your own project.
+
+#### Elasticsearch
+
+TBD
+
+
+#### OpenNLP Elasticsearch Ingest
+
+TBD
+
+
+#### Geonames Elasticsearch Ingest
+
+TBD
+
+
+### NLP Library [&#x219F;](#contents)
 
 Start up a repl, do a require, and define a testing query:
+
+```
+$ lein repl
+```
 
 ```clj
 (require '[cmr.nlp.core :as nlp]')
@@ -146,7 +201,12 @@ Or, when URL-decoded:
 ```
 
 
-### REST API
+### NLP via Elasticsearch [&#x219F;](#contents)
+
+TBD
+
+
+### Geolocation via Elasticsearch [&#x219F;](#contents)
 
 TBD
 
