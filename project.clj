@@ -124,6 +124,13 @@
     "check-sec" ["with-profile" "+system,+local,+security" "do"
       ["clean"]
       ["nvd" "check"]]
+    ;; Docker Aliases
+    "docker-clean" ["with-profile" "+system,+local,+security" "do"
+      ["shell" "docker" "system" "prune" "-f"]]
+    "start-es" ["with-profile" "+system,+local,+security" "do"
+      ["shell" "docker-compose" "-f" "resources/elastic/docker-compose.yml" "up"]]
+    "stop-es" ["with-profile" "+system,+local,+security" "do"
+      ["shell" "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+system,+security" "do"
       ["jar"]]

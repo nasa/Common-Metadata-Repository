@@ -43,7 +43,7 @@ identification from natural language queries.
 * Java
 * `lein`
 * `curl` (used to download English language models)
-* `docker` (used to run local Elasticsearch cluster)
+* `docker` and `docker-compose` (used to run local Elasticsearch cluster)
 
 Supported versions:
 
@@ -79,7 +79,17 @@ adapted for use in your own project.
 
 #### Elasticsearch
 
-TBD
+Starting up a local Elasticsearch+Kibana cluster is as simple as:
+
+```
+$ lein start-es
+```
+
+Note that this utilizes `docker-compose` under the hood.
+
+Once started, Elasticsearch's Kibana interface will be available here:
+
+* [http://localhost:5601/](http://localhost:5601/)
 
 
 #### OpenNLP Elasticsearch Ingest
