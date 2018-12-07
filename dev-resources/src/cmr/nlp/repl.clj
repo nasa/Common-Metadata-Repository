@@ -10,13 +10,17 @@
    [clojusc.twig :as logger]
    [cmr.nlp.components.core]
    [cmr.nlp.core :as nlp]
+   [cmr.nlp.elastic.client :as es]
    [cmr.nlp.query :as query]
    [cmr.nlp.time.human :as human-time]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
   (:import
    (java.net URI)
-   (java.nio.file Paths)))
+   (java.nio.file Paths)
+   (org.apache.http HttpHost)
+   (org.elasticsearch.client RestClient
+                             RestHighLevelClient)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Initial Setup & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,4 +58,3 @@
   []
   (println (slurp (io/resource "text/banner.txt")))
   :ok)
-

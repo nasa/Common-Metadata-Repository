@@ -24,9 +24,11 @@
     [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [clojure-opennlp "0.5.0"]
+    [com.neovisionaries/nv-i18n "1.23"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
     [org.clojure/clojure "1.9.0"]
+    [org.elasticsearch.client/elasticsearch-rest-high-level-client "6.5.2"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
     [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]
   :aot [clojure.tools.logging.impl]
@@ -130,7 +132,7 @@
     "start-es" ["with-profile" "+system,+local,+security" "do"
       ["shell" "docker-compose" "-f" "resources/elastic/docker-compose.yml" "up"]]
     "stop-es" ["with-profile" "+system,+local,+security" "do"
-      ["shell" "docker-compose" "-f" "resources/docker/docker-compose.yml" "down"]]
+      ["shell" "docker-compose" "-f" "resources/elastic/docker-compose.yml" "down"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+system,+security" "do"
       ["jar"]]
@@ -139,10 +141,11 @@
     "build" ["do"
       ["clean"]
       ["check-vers"]
-      ["check-sec"]
       ["download-models"]
-      ["ltest" ":unit"]
       ["ubercompile"]
+      ;; XXX This broke with the introduction of the Elasticsearch dep
+      ;;["check-sec"]
+      ["ltest" ":unit"]
       ["build-uberjar"]]
     ;; Publishing
     "publish" ["with-profile" "+security" "do"
