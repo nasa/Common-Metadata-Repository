@@ -47,7 +47,10 @@
                      :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
                      :ReportingConditions "STP: 1013 mb and 273 K"}
    :Measurements [{:MeasurementName "radiative_flux"
-                   :MeasurementSource "BODC"}]})
+                   :MeasurementSource "BODC"}
+                  {:MeasurementName "brightness"
+                   :MeasurementSource "not matched"}
+                  {:MeasuremntName "length"}]})
 
 (def variable-concept-12
   {:Name "var1"
@@ -108,14 +111,16 @@
           :LongName "variable 1"
           :Definition "first variable"
           :DataType "float"
-          :Dimensions [{:Name "x" :Size 0.0}]
+          :Dimensions [{:Name "x" :Size 0.0 :Type "OTHER"}]
           :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
           :Scale 1.0
           :Offset 0
           :SamplingIdentifiers [{:MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
                                  :ReportingConditions "STP: 1013 mb and 273 K"}]
           :MeasurementIdentifiers [{:MeasurementSource "BODC"
-                                    :MeasurementName {:MeasurementObject "radiative_flux"}}]}
+                                    :MeasurementName {:MeasurementObject "radiative_flux"}}
+                                   {:MeasurementSource "OTHER"
+                                    :MeasurementName {:MeasurementObject "brightness"}}]}
 
          (vm/migrate-umm {} :variable "1.1" "1.2" variable-concept-11))))
 
