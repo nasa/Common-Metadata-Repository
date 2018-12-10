@@ -2,8 +2,10 @@ language: clojure
 script:
   - lein build
 jdk:
+  - oraclejdk11
   - oraclejdk8
-  - oraclejdk7
+  - openjdk11
+  - openjdk8
 env:
   - LEIN_SNAPSHOTS_IN_RELEASE=true
 notifications:
