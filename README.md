@@ -49,7 +49,7 @@ Supported versions:
 
 | cmr-nlp        | Elasticsearch | Status         |
 |----------------|---------------|----------------|
-| 0.1.0-SNAPSHOT | 6.5.1         | In development |
+| 0.1.0-SNAPSHOT | 6.5.2         | In development |
 
 
 ## Usage [&#x219F;](#contents)
@@ -94,7 +94,19 @@ Once started, Elasticsearch's Kibana interface will be available here:
 
 #### OpenNLP Elasticsearch Ingest
 
-TBD
+Before ingesting Geonames data, you need to
+
+1. Start your Elasticsearch cluster (see above), and
+1. Download the Geonames gazzette files locally:
+
+```
+$ lein download-geonames
+```
+
+Note that this will also `unzip` the two compressed files that get downloaded:
+
+* `allCountries.zip` (340MB) uncompresses to 1.4GB
+* `shapes_all_low.zip` (~1MB) uncompresses to 3.1MB
 
 
 #### Geonames Elasticsearch Ingest
