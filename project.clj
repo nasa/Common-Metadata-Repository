@@ -21,12 +21,14 @@
     :name "Apache License, Version 2.0"
     :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
+    [cheshire "5.8.1"]
     [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
     [clojure-opennlp "0.5.0"]
     [com.neovisionaries/nv-i18n "1.23"]
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
     [org.clojure/clojure "1.9.0"]
     [org.elasticsearch.client/elasticsearch-rest-high-level-client "6.5.2"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]

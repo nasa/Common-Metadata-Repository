@@ -20,7 +20,8 @@ services:
     volumes:
       - ${PWD}/data/elastic:/usr/share/elasticsearch/data
     ports:
-      - 9211:9200
+      - 9210:9200
+      - 9211:9201
     networks:
       - cmr-nlp-net
 
@@ -46,7 +47,6 @@ services:
       - 127.0.0.1:5601:5601
     networks:
       - cmr-nlp-net
-
 
 volumes:
   data:

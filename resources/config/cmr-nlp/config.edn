@@ -1,11 +1,14 @@
-{:elastic
+{:elastic {
+   :mode :dev
    :nodes {
      :dev [
-       {:scheme "http" :host "localhost" :port 9200}
-       {:scheme "http" :host "localhost" :port 9201}]
+       {:scheme "http" :host "localhost" :port 9210}
+       {:scheme "http" :host "localhost" :port 9211}]
      :public [
-       ]}
+       ]}}
  :logging {
    :level :trace
    :nss [cmr]
-   :color false}}
+   :color false}
+ :mission-control {
+   :messaging-type :core-async}}

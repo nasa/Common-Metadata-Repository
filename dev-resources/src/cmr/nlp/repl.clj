@@ -8,7 +8,9 @@
    [clojure.tools.namespace.repl :as repl]
    [clojusc.system-manager.core :as system-api :refer :all]
    [clojusc.twig :as logger]
+   [cmr.nlp.components.config :as config]
    [cmr.nlp.components.core]
+   [cmr.nlp.components.elastic :as elastic-component]
    [cmr.nlp.core :as nlp]
    [cmr.nlp.elastic.client :as es]
    [cmr.nlp.query :as query]
@@ -16,6 +18,7 @@
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
   (:import
+   (clojure.lang Keyword)
    (java.net URI)
    (java.nio.file Paths)
    (org.apache.http HttpHost)
@@ -58,3 +61,14 @@
   []
   (println (slurp (io/resource "text/banner.txt")))
   :ok)
+
+(defn elastic
+  "A convenience wrapper that makes calls to the Elasticsearch connection
+  contained in the system data structure.
+
+  Example usage:
+  ```
+  (elastic :health)
+  ```"
+  [^Keyword method & args]
+  (elastic-component/call (system) method args))
