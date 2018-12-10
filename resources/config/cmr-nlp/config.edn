@@ -1,4 +1,11 @@
-{:logging {
+{:elastic
+   :nodes {
+     :dev [
+       {:scheme "http" :host "localhost" :port 9200}
+       {:scheme "http" :host "localhost" :port 9201}]
+     :public [
+       ]}
+ :logging {
    :level :trace
    :nss [cmr]
    :color false}}
