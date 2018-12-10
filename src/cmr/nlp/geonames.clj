@@ -61,3 +61,9 @@
        util/read-geonames
        rest
        (map add-shapes-fields)))
+
+(defn shapes-lookup
+  []
+  (->> (read-shapes)
+       (map (fn [x] [(:geonameid x) (:geojson x)]))
+       (into {})))

@@ -24,7 +24,9 @@
           "elevation" : {"type" :  "long"},
           "dem" : {"type" :  "long"},
           "timzeone" :  {"type" : "keyword", "index":  "true"},
-          "modification_date" : {"type" : "date", "format": "date"}
+          "modification_date" : {"type" : "date", "format": "date"},
+          "has_shape" : {"type" : "boolean", "index": "true"},
+          "shape_coordinates" : {"type" : "", "index": "true"}
           }
        }
    }
