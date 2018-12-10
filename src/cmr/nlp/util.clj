@@ -1,10 +1,10 @@
 (ns cmr.nlp.util
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as string])
+   [clojure.java.io :as io]
+   [clojure.string :as string])
   (:import
-    (java.net URLEncoder)
-    (java.text SimpleDateFormat)))
+   (java.net URLEncoder)
+   (java.text SimpleDateFormat)))
 
 (def default-sentence-punct ".")
 (def simple-format "yyyy-MM-dd")

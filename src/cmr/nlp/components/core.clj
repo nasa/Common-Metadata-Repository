@@ -1,11 +1,11 @@
 (ns cmr.nlp.components.core
   (:require
-    [cmr.exchange.common.components.config :as config]
-    [cmr.exchange.common.components.logging :as logging]
-    [cmr.mission-control.components.pubsub :as pubsub]
-    [cmr.nlp.components.elastic :as elastic]
-    [cmr.nlp.config :as config-lib]
-    [com.stuartsierra.component :as component]))
+   [cmr.exchange.common.components.config :as config]
+   [cmr.exchange.common.components.logging :as logging]
+   [cmr.mission-control.components.pubsub :as pubsub]
+   [cmr.nlp.components.elastic :as elastic]
+   [cmr.nlp.config :as config-lib]
+   [com.stuartsierra.component :as component]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Common Configuration Components   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
