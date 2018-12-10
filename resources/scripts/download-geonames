@@ -26,3 +26,5 @@ echo
 echo "Downloaded geonames files:"
 find $GEONAMES_DIR -type f
 echo
+unzip $GEONAMES_DIR/allCountries.zip -d $GEONAMES_DIR
+unzip $GEONAMES_DIR/shapes_all_low.zip -d $GEONAMES_DIR

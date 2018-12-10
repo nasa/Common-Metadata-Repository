@@ -12,7 +12,7 @@
   [ns]
   (str "\u001B[35m[\u001B[34m"
        ns
-       "\u001B[35m]\u001B[33m λ\u001B[m=> "))
+       "\u001B[35m]\u001B[33m =>\u001B[m "))
 
 (defproject gov.nasa.earthdata/cmr-nlp "0.1.0-SNAPSHOT"
   :description "A service for converting natural language queries into CMR search parameters"
@@ -29,8 +29,8 @@
     [com.stuartsierra/component "0.3.2"]
     [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
+    [org.apache.commons/commons-csv "1.6"]
     [org.clojure/clojure "1.9.0"]
-    [org.clojure/data.csv "0.1.4"]
     [org.elasticsearch.client/elasticsearch-rest-high-level-client "6.5.2"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
     [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]

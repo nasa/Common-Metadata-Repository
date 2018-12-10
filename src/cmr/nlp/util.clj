@@ -1,8 +1,10 @@
 (ns cmr.nlp.util
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [taoensso.timbre :as log])
   (:import
+   (org.apache.commons.csv CSVFormat CSVParser)
    (java.net URLEncoder)
    (java.text SimpleDateFormat)))
 
@@ -23,6 +25,10 @@
 (defn get-model
   [filename]
   (io/resource (format "models/%s.bin" filename)))
+
+(defn get-geonames
+  [filename]
+  (io/resource (format "geonames/%s" filename)))
 
 (defn simple-date-formatter
   []
@@ -49,3 +55,40 @@
   (->> tuples
        (map encode-tuple)
        join-queries))
+
+(defn lazy-readlines [filename]
+  (letfn [(reader-manager [rdr]
+           (lazy-seq
+             (if-let [line (.readLine rdr)]
+               (cons line (reader-manager rdr))
+               (.close rdr))))]
+    (-> filename
+        io/reader
+        reader-manager)))
+
+(defn read-tabbed-line
+  [line]
+  (try
+    (-> (CSVParser/parse line CSVFormat/TDF)
+        (.getRecords)
+        first
+        (.iterator)
+        iterator-seq)
+    (catch Exception ex
+      (log/error (format "%s; skipping data in line '%s' ..."
+                         (.getMessage ex)
+                         line))
+      (log/trace ex))))
+
+(defn read-tabbed
+  [filename]
+  (->> filename
+       lazy-readlines
+       (map read-tabbed-line)
+       (remove nil?)))
+
+(defn read-geonames
+  [filename]
+  (-> filename
+      get-geonames
+      read-tabbed))

@@ -13,8 +13,11 @@
    [cmr.nlp.components.elastic :as elastic-component]
    [cmr.nlp.core :as nlp]
    [cmr.nlp.elastic.client :as es]
+   [cmr.nlp.elastic.ingest :as ingest]
+   [cmr.nlp.geonames :as geonames]
    [cmr.nlp.query :as query]
    [cmr.nlp.time.human :as human-time]
+   [cmr.nlp.util :as util]
    [com.stuartsierra.component :as component]
    [trifl.java :refer [show-methods]])
   (:import

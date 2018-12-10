@@ -1,4 +1,4 @@
-i{
+{
     "settings" : {
         "number_of_shards" : 1,
         "number_of_replicas" : 1
@@ -15,7 +15,7 @@ i{
           "feature_code" : {"type" : "keyword", "index":    "true"},
           "country_code2" : {"type" : "keyword", "index":   "true"},
           "country_code3" : {"type" : "keyword", "index":   "true"},
-          "cc2" :  {"type" : "keyword"}, 
+          "cc2" :  {"type" : "keyword"},
           "admin1_code" : {"type" : "keyword", "index":  "true"},
           "admin2_code" : {"type" : "keyword", "index":  "true"},
           "admin3_code" : {"type" : "keyword", "index":  "true"},
@@ -27,6 +27,6 @@ i{
           "modification_date" : {"type" : "date", "format": "date"}
           }
        }
-   } 
+   }
 }
 
