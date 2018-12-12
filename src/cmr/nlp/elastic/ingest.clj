@@ -1,4 +1,6 @@
 (ns cmr.nlp.elastic.ingest
   (:require
-   [cmr.nlp.elastic.client :as client]
+   [clojure.java.io :as io]
+   [cmr.nlp.elastic.client.core :as client]
    [cmr.nlp.geonames :as geonames]))
+

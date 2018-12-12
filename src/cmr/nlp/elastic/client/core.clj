@@ -1,6 +1,7 @@
-(ns cmr.nlp.elastic.client
+(ns cmr.nlp.elastic.client.core
   (:require
    [cheshire.core :as json]
+   [cmr.nlp.elastic.client.index :as index]
    [taoensso.timbre :as log])
   (:import
    (org.apache.http HttpHost)
@@ -14,15 +15,41 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol ElasticsearchAPI
+  ;; Base API
   (close [this])
+  ;; Cluster API
   (cluster [this])
-  (health [this]))
+  (health [this])
+  ;; Index API
+  (indices [this])
+  (create-index [this index-name] [this index-name source])
+  (delete-index [this index-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def -indices #(.indices %))
+
+(defn -create-index*
+  [this & args]
+  (let [req (apply index/create args)
+        resp (.create (-indices this) req RequestOptions/DEFAULT)]
+    (.index resp)))
+
+(defn -create-index
+  ([this index-name]
+    (-create-index* this index-name))
+  ([this index-name source]
+    (-create-index* this index-name source)))
+
 (def -cluster #(.cluster %))
+
+(defn -delete-index
+  [this index-name]
+  (let [req (index/delete index-name)
+        resp (.delete (-indices this) req RequestOptions/DEFAULT)]
+    (.isAcknowledged resp)))
 
 (defn -health
   [this]
@@ -33,9 +60,12 @@
         (json/parse-string true))))
 
 (def behaviour
-  {:close #(.close %)
+  {:create-index -create-index
+   :close #(.close %)
    :cluster -cluster
-   :health -health})
+   :delete-index -delete-index
+   :health -health
+   :indices -indices})
 
 (extend RestHighLevelClient
         ElasticsearchAPI

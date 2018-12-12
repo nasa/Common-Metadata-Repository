@@ -12,7 +12,7 @@
    [cmr.nlp.components.core]
    [cmr.nlp.components.elastic :as elastic-component]
    [cmr.nlp.core :as nlp]
-   [cmr.nlp.elastic.client :as es]
+   [cmr.nlp.elastic.client.core :as es]
    [cmr.nlp.elastic.ingest :as ingest]
    [cmr.nlp.geonames :as geonames]
    [cmr.nlp.query :as query]

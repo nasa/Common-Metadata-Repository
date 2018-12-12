@@ -1,7 +1,8 @@
 (ns cmr.nlp.components.elastic
   (:require
+   [clojure.java.io :as io]
    [cmr.nlp.components.config :as config]
-   [cmr.nlp.elastic.client :as client]
+   [cmr.nlp.elastic.client.core :as client]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import
@@ -17,9 +18,17 @@
   ([system ^Keyword method-key]
     (call system method-key []))
   ([system ^Keyword method-key args]
-    (let [method (ns-resolve 'cmr.nlp.elastic.client
+    (let [method (ns-resolve 'cmr.nlp.elastic.client.core
                              (symbol (name method-key)))]
       (apply method (concat [(get-conn system)] args)))))
+
+(defn add-geonames-index
+  [system]
+  (call system :create-index
+   ["geonames"
+    (slurp
+     (io/resource
+      "elastic/geonames_mapping.json"))]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
