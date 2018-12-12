@@ -213,17 +213,14 @@
     (or result
         (throw (Exception. (str "Unable to load ref " (pr-str the-ref)))))))
 
-(defn expand-top-level-refs
-  "Expand top level references inside type-selector (oneOf or anyOf).
-   Ex. \"oneOf\": [{\"$ref\": \"#/definitions/reference\"}] becomes
-       \"oneOf\": [{\"reference\": <reference-type>}]"
-  [schema schema-type type-selector]
-  (assoc schema-type
-         type-selector
-         (mapv #(if (:$ref %)
-                  (second (lookup-ref schema %))
-                  %)
-               (type-selector schema-type))))
+(defn expand-refs
+  "Expand references from ref-list. If item in ref-list is not a reference
+  return that item untouched, otherwise lookup the reference."
+  [schema ref-list]
+  (mapv #(if (:$ref %)
+           (second (lookup-ref schema %))
+           %)
+        ref-list))
 
 (defn- concept-schema*
   ([concept-type]
