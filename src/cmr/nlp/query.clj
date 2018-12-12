@@ -3,7 +3,9 @@
    [clojure.string :as string]
    [cmr.nlp.core :as nlp]
    [cmr.nlp.time.human :as human-time]
-   [cmr.nlp.util :as util]))
+   [cmr.nlp.util :as util])
+  (:import
+   (clojure.lang Keyword)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,8 +27,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ->cmr-temporal
-  [sentence]
-  (let [dates (nlp/extract-dates sentence)
+  [^Keyword data]
+  (let [dates (nlp/extract-dates (:query data))
         dates-pairs (->> dates
                          even-dates
                          dates->strs
@@ -34,4 +36,4 @@
                          (map #(string/join "," %))
                          (interleave (repeat "temporal[]"))
                          (partition 2))]
-    (util/encode-tuples dates-pairs)))
+    (assoc data :temporal (util/encode-tuples dates-pairs))))

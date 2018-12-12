@@ -212,11 +212,12 @@ Create a CMR temporal parameter query string from a natural language sentence:
 
 ```clj
 [cmr.nlp.repl] λ=> (require '[cmr.nlp.query :as query])
-[cmr.nlp.repl] λ=> (query/->cmr-temporal query2)
-"temporal%5B%5D=2016-12-05T12%3A21%3A32Z%2C2017-12-05T12%3A21%3A32Z"
+[cmr.nlp.repl] λ=> (query/->cmr-temporal {:query query2})
+{:query "What was the average high temp between last year and two years ago?"
+ :temporal "temporal%5B%5D=2016-12-12T13%3A58%3A05Z%2C2017-12-12T13%3A58%3A05Z"}
 ```
 
-Or, when URL-decoded:
+Which, when URL-decoded, gives us:
 
 ```
 "temporal[]=2016-12-05T12:21:32Z,2017-12-05T12:21:32Z"
