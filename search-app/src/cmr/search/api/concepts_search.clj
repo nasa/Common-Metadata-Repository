@@ -243,13 +243,13 @@
                :throw-exceptions false
                :query-params {:page-size 20 :pretty true}} ;; Test just 20 datasets for now
         response (client/request query)]
-    (:body response)))
+    response))
 
 (defn- find-data-json-prod
   "Retrieve collections as opendata from production."
   [ctx]
-  {:status 200
-   :body data-json-prod})
+  {:status (:status data-json-prod)
+   :body (:body data-json-prod)})
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
