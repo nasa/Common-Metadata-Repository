@@ -70,7 +70,9 @@
        ((fn [x] (log/trace "env-data:" x) x))))
 
 (defn data
-  []
-  (util/deep-merge (base-data)
-                   (props-data)
-                   (env-data)))
+  ([]
+    (data config-file))
+  ([filename]
+    (util/deep-merge (base-data filename)
+                     (props-data)
+                     (env-data))))
