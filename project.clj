@@ -36,7 +36,7 @@
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
     [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.9.0"]
-    [org.clojure/core.async "0.4.474"]
+    [org.clojure/core.async "0.4.490"]
     [org.clojure/core.cache "0.7.1"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
@@ -90,11 +90,11 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.3.3"]
+        [jonase/eastwood "0.3.4"]
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.6"]]}
+        [venantius/yagni "0.1.7"]]}
     :test {
       :dependencies [
         [clojusc/ltest "0.3.0"]]
