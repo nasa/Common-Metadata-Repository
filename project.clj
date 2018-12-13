@@ -27,7 +27,7 @@
     [clojure-opennlp "0.5.0"]
     [com.neovisionaries/nv-i18n "1.23"]
     [com.stuartsierra/component "0.3.2"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
     [org.apache.commons/commons-csv "1.6"]
     [org.clojure/clojure "1.9.0"]
@@ -82,7 +82,7 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.6"]]}
+        [venantius/yagni "0.1.7"]]}
     :test {
       :dependencies [
         [clojusc/ltest "0.3.0"]]
@@ -94,7 +94,12 @@
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
         :system :system
-        :default (complement :system)}}}
+        :default (complement :system)}}
+    :ingest {
+      :main cmr.nlp.elastic.ingest
+      :jvm-opts ^replace [
+        "-Dlogging.level=info"
+        "-Dlogging.color=true"]}}
   :aliases {
     ;; Dev & Testing Aliases
     "download-models" ["with-profile" "+local"
@@ -152,6 +157,10 @@
       ;;["check-sec"]
       ["ltest" ":unit"]
       ["build-uberjar"]]
+    ;; CLI
+    "ingest" ["with-profile" "+ingest,+local,+system" "do"
+      ["clean"]
+      ["trampoline" "run"]]
     ;; Publishing
     "publish" ["with-profile" "+security" "do"
       ["clean"]
