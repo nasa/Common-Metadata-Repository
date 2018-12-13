@@ -7,7 +7,7 @@
      :public [
        ]}}
  :logging {
-   :level :trace
+   :level :info
    :nss [cmr]
    :color false}
  :mission-control {
