@@ -79,6 +79,9 @@
         ;; AQL search - xml
         concepts-search-api/aql-search-routes
 
+        ;; Add routes for data json
+        concepts-search-api/data-json-routes
+
         ;; Provider holdings
         providers-api/holdings-routes
 
