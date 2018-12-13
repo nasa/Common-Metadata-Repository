@@ -19,14 +19,15 @@
   ring jetty adapter default of 8."
   8)
 
-(def MAX_THREADS
+(defconfig MAX_THREADS
   "The maximum number of threads for Jetty to use to process requests. This was originally set to
   the ring jetty adapter default of 50.
 
   VERY IMPORTANT NOTE: The value set here must correspond to the number of persistent HTTP
   connections we use in the transmit library. Do not change this or refactor this code without
   making sure that the transmit library uses the same amount."
-  50)
+  {:default 1024
+   :type Long})
 
 (def MIN_GZIP_SIZE
   "The size that will be used to determine if responses should be GZIP'd. See the following Stack
@@ -185,7 +186,7 @@
                              {:port port
                               :join? false
                               :min-threads MIN_THREADS
-                              :max-threads MAX_THREADS
+                              :max-threads (MAX_THREADS)
                               :configurator (fn [^Server jetty]
                                               (doseq [^Connector connector (.getConnectors jetty)]
                                                 (let [^HttpConnectionFactory http-conn-factory
