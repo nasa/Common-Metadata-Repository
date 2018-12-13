@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.1-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -30,7 +30,7 @@
     [com.stuartsierra/component "0.3.2"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1"]
-    [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+    [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
     [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
@@ -108,7 +108,39 @@
         :unit #(not (or (:integration %) (:system %)))
         :integration :integration
         :system :system
-        :default (complement :system)}}}
+        :default (complement :system)}}
+    :docs {
+      :dependencies [
+        [gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
+      :plugins [
+        [lein-codox "0.10.5"]
+        [lein-simpleton "1.3.0"]]
+      :codox {
+        :project {:name "CMR Metadata-Proxy"}
+        :themes [:eosdis]
+        :html {
+          :transforms [[:head]
+                       [:append
+                         [:script {
+                           :src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+                           :id "earthdata-tophat-script"
+                           :data-show-fbm "true"
+                           :data-show-status "true"
+                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+                           :data-status-polling-interval "10"}]]
+                       [:body]
+                       [:prepend
+                         [:div {:id "earthdata-tophat2"
+                                :style "height: 32px;"}]]
+                       [:body]
+                       [:append
+                         [:script {
+                           :src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+                           :type "text/javascript"}]]]}
+        :doc-paths ["resources/docs/markdown"]
+        :output-path "docs/current"
+        :namespaces [#"^cmr\..*(?!test).*"]
+        :metadata {:doc/format :markdown}}}}
   :aliases {
     ;; Dev & Testing Aliases
     "repl" ["do"
