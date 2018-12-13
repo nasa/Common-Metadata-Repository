@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"
   :description "Cross-project functionality, utilities, and general-use components"
   :url "https://github.com/cmr-exchange/cmr-exchange-common"
   :license {
@@ -24,6 +24,7 @@
     [clojusc/results "0.1.0"]
     [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
+    [environ "1.1.0"]
     [org.clojure/clojure "1.9.0"]]
   :aot [clojure.tools.logging.impl]
   :profiles {
@@ -57,7 +58,7 @@
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [
-        [jonase/eastwood "0.3.3"]
+        [jonase/eastwood "0.3.4"]
         [lein-ancient "0.6.15"]
         [lein-kibit "0.1.6"]]}
     :test {
