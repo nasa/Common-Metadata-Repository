@@ -16,6 +16,10 @@
 
 ;; Elasticsearch config
 
+(defn get-elastic-ingest-batch-size
+  [system]
+  (get-in (get-cfg system) [:elastic :ingest :batch-size]))
+
 (defn get-elastic-mode
   [system]
   (get-in (get-cfg system) [:elastic :mode]))

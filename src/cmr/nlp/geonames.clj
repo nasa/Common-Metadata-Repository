@@ -11,19 +11,19 @@
    3 :alternatenames
    4 :latitude
    5 :longitude
-   6 :feature-class
-   7 :feature-code
-   8 :country-code
+   6 :feature_class
+   7 :feature_code
+   8 :country_code
    9 :cc2
-   10 :admin1-code
-   11 :admin2-code
-   12 :admin3-code
-   13 :admin4-code
+   10 :admin1_code
+   11 :admin2_code
+   12 :admin3_code
+   13 :admin4_code
    14 :population
    15 :elevation
    16 :dem
    17 :timezone
-   18 :modification-date})
+   18 :modification_date})
 
 (def shapes-columns
   {0 :geonameid
@@ -44,6 +44,10 @@
   (->> "allCountries.txt"
        util/read-geonames
        (map add-gazetteer-fields)))
+
+(defn batch-read-gazetteer
+  [batch-size]
+  (partition batch-size (read-gazetteer)))
 
 (defn add-shapes-field
   [idx value]

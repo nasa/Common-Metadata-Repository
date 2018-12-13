@@ -5,7 +5,9 @@
        {:scheme "http" :host "localhost" :port 9210}
        {:scheme "http" :host "localhost" :port 9211}]
      :public [
-       ]}}
+       ]}
+   :ingest {
+     :batch-size 1000}}
  :logging {
    :level :info
    :nss [cmr]
