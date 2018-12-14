@@ -324,7 +324,9 @@
     (find-tiles ctx params)))
 
 (def data-json-routes
-  "config-enabled route for data.json."
+  "config-enabled route for data.json. Socrata does not support harvesting from
+   data.json endpoints that do not explicitly end in /data.json. This is needed
+   to harvest CMR opendata responses on data.nasa.gov."
   (GET "/socrata_test/data.json"
     {ctx :request-context}
     (if (allow-data-json-flag)
