@@ -325,8 +325,8 @@
 
 (def data-json-routes
   "config-enabled route for data.json."
-  (if (allow-data-json-flag)
-    (GET "/socrata_test/data.json"
-      {ctx :request-context}
-      (find-data-json-prod ctx))
-    (common-pages/not-found)))
+  (GET "/socrata_test/data.json"
+    {ctx :request-context}
+    (if (allow-data-json-flag)
+      (find-data-json-prod ctx)
+      (common-pages/not-found))))
