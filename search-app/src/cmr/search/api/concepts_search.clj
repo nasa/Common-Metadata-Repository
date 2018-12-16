@@ -2,8 +2,10 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
+   [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
+   [cmr.common-app.site.pages :as common-pages]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
@@ -27,6 +29,11 @@
   "This is the header that allows operators to run all granule queries when
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
+
+(defconfig allow-data-json-flag
+  "Flag to allow data.json route."
+  {:default false
+   :type Boolean})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -229,6 +236,21 @@
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
+(def ^:private data-json-prod
+  "Public opendata collections in production for data.json response."
+  (let [query {:url "https://cmr.earthdata.nasa.gov/search/collections.opendata"
+               :method :get
+               :throw-exceptions false
+               :query-params {:page-size 20 :pretty true}} ;; Test just 20 datasets for now
+        response (client/request query)]
+    response))
+
+(defn- find-data-json-prod
+  "Retrieve collections as opendata from production."
+  [ctx]
+  {:status (:status data-json-prod)
+   :body (:body data-json-prod)})
+
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
   [ctx path-w-extension params headers]
@@ -300,3 +322,13 @@
   (GET "/tiles"
     {params :params ctx :request-context}
     (find-tiles ctx params)))
+
+(def data-json-routes
+  "config-enabled route for data.json. Socrata does not support harvesting from
+   data.json endpoints that do not explicitly end in /data.json. This is needed
+   to harvest CMR opendata responses on data.nasa.gov."
+  (GET "/socrata_test/data.json"
+    {ctx :request-context}
+    (if (allow-data-json-flag)
+      (find-data-json-prod ctx)
+      (common-pages/not-found))))
