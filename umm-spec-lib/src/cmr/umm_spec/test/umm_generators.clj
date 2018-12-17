@@ -127,12 +127,12 @@
 (defmethod schema-type->generator "oneOf"
   [schema type-name schema-type]
   (gen/one-of (mapv #(schema-type->generator schema type-name %)
-                    (:oneOf (js/expand-top-level-refs schema schema-type :oneOf)))))
+                    (js/expand-refs schema (:oneOf schema-type)))))
 
 (defmethod schema-type->generator "anyOf"
   [schema type-name schema-type]
   (gen/one-of (mapv #(schema-type->generator schema type-name %)
-                    (:anyOf (js/expand-top-level-refs schema schema-type :anyOf)))))
+                    (js/expand-refs schema (:anyOf schema-type)))))
 
 (def array-min-items 0)
 (def array-max-items 5)

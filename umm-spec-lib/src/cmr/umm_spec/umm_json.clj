@@ -78,10 +78,10 @@
 
 (defmethod parse-json "oneOf"
   [schema type-name-path type-name schema-type js-data]
-  (let [expanded-schema-type (js/expand-top-level-refs schema schema-type :oneOf)
-        constructor-fn (record-gen/schema-type-constructor schema type-name)
-        merged-prop-types (apply merge (:properties expanded-schema-type)
-                                 (map :properties (:oneOf expanded-schema-type)))
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+        merged-prop-types (apply merge
+                                 (:properties schema-type)
+                                 (map :properties (js/expand-refs schema (:oneOf schema-type))))
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get merged-prop-types k)]]
@@ -90,10 +90,10 @@
 
 (defmethod parse-json "anyOf"
   [schema type-name-path type-name schema-type js-data]
-  (let [expanded-schema-type (js/expand-top-level-refs schema schema-type :anyOf)
-        constructor-fn (record-gen/schema-type-constructor schema type-name)
-        merged-prop-types (apply merge (:properties expanded-schema-type)
-                                 (map :properties (:anyOf expanded-schema-type)))
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+        merged-prop-types (apply merge
+                                 (:properties schema-type)
+                                 (map :properties (js/expand-refs schema (:anyOf schema-type))))
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get merged-prop-types k)]]

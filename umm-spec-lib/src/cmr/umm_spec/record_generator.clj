@@ -108,14 +108,25 @@
       ["  ])"
        (str "(record-pretty-printer/enable-record-pretty-printing " record-name ")")])))
 
+(defn- expand-one-of-any-of-properties
+  "Lookup all top level refs from loaded schema, retrieve referenced schema
+  and extract properties for oneOf and anyOf and return all properties in a flattened list."
+  [loaded-schema type-name]
+  (flatten
+   (for [type-selector [:oneOf :anyOf]]
+     (map :properties
+          (js/expand-refs loaded-schema
+                          (or (get-in loaded-schema [:definitions type-name type-selector])
+                              (get-in loaded-schema [:ref-schemas "umm-cmn-json-schema.json" :definitions type-name type-selector])))))))
+
 (defn- definition->record
   "Converts a JSON Schema definition into a record description if it's appropriate to have a record
   for it. Returns nil otherwise."
-  [type-name type-def]
+  [loaded-schema type-name type-def]
   (when (or (= "object" (:type type-def)) (:oneOf type-def) (:anyOf type-def))
-    (let [merged-properties (apply merge (:properties type-def)
-                                   (concat (map :properties (:oneOf type-def))
-                                           (map :properties (:anyOf type-def))))]
+    (let [merged-properties (apply merge
+                                   (:properties type-def)
+                                   (expand-one-of-any-of-properties loaded-schema type-name))]
       {:record-name (name type-name)
        :description (:description type-def)
        :fields (for [[property-name prop-def] merged-properties]
@@ -124,7 +135,7 @@
 
 (defn- generate-clojure-records
   "Generates a string containing clojure record definitions from the given schema."
-  [schema]
+  [schema loaded-schema]
   (let [definitions (:definitions schema)
         definitions (if (:title schema)
                       ;; The schema itself can define a top level object
@@ -132,7 +143,7 @@
                             definitions)
                       definitions)
         records-strings (->> definitions
-                             (map #(apply definition->record %))
+                             (map #(apply definition->record loaded-schema %))
                              (remove nil?)
                              (map generate-record))]
     (str/join "\n\n" records-strings)))
@@ -153,7 +164,7 @@
 
 (defn generate-clojure-records-file
   "Generates a file containing clojure records for the types defined in the UMM JSON schema."
-  [{:keys [the-ns schema-resource] :as ns-def}]
+  [{:keys [the-ns schema-resource loaded-schema] :as ns-def}]
   (let [schema (js/load-json-resource schema-resource)
         file-name (str "src/"
                        (-> the-ns
@@ -165,7 +176,7 @@
                            "\n"
                            (generate-ns-declaration ns-def)
                            "\n\n"
-                           (generate-clojure-records schema))]
+                           (generate-clojure-records schema loaded-schema))]
     (.. (io/file file-name) getParentFile mkdirs)
     (spit file-name file-contents)))
 
@@ -175,27 +186,32 @@
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-common-models
     :description "Defines UMM Common clojure records."
-    :schema-resource js/umm-cmn-schema-file})
+    :schema-resource js/umm-cmn-schema-file
+    :loaded-schema (get-in (js/concept-schema :collection) [:ref-schemas "umm-cmn-json-schema.json"])})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-collection-models
     :description "Defines UMM-C clojure records."
-    :schema-resource (js/concept-schema-resource :collection)})
+    :schema-resource (js/concept-schema-resource :collection)
+    :loaded-schema (js/concept-schema :collection)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-granule-models
     :description "Defines UMM-G clojure records."
-    :schema-resource (js/concept-schema-resource :granule)})
+    :schema-resource (js/concept-schema-resource :granule)
+    :loaded-schema (js/concept-schema :granule)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-service-models
     :description "Defines UMM-S clojure records."
-    :schema-resource (js/concept-schema-resource :service)})
+    :schema-resource (js/concept-schema-resource :service)
+    :loaded-schema (js/concept-schema :service)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-variable-models
     :description "Defines UMM-Var clojure records."
-    :schema-resource (js/concept-schema-resource :variable)}))
+    :schema-resource (js/concept-schema-resource :variable)
+    :loaded-schema (js/concept-schema :variable)}))
 
 (comment
   (generate-umm-records)
