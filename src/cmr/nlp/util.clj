@@ -75,7 +75,7 @@
         (.iterator)
         iterator-seq)
     (catch Exception ex
-      (log/error (format "%s; skipping data in line '%s' ..."
+      (log/error (format "CSV import error: %s; skipping data in line '%s' ..."
                          (.getMessage ex)
                          line))
       (log/trace ex))))
@@ -92,3 +92,25 @@
   (-> filename
       get-geonames
       read-tabbed))
+
+(def default-backoff-pred #(instance? clojure.lang.ExceptionInfo %))
+
+;; Adapted from https://lispcast.com/exponential-backoff/
+(defn exponential-backoff
+  ([time rate max func]
+   (exponential-backoff time rate max func func))
+  ([time rate max ready-func expired-func]
+   (exponential-backoff
+    time rate max default-backoff-pred ready-func expired-func))
+  ([time rate max pred? ready-func expired-func]
+   (if (>= time max)
+     (expired-func)
+     (try
+       (ready-func)
+       (catch Throwable t
+         (if (pred? t)
+           (do
+             (Thread/sleep time)
+             (exponential-backoff
+              (* time rate) rate max pred? ready-func expired-func))
+           (throw t)))))))

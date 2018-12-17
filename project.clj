@@ -30,7 +30,7 @@
     [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
     [org.apache.commons/commons-csv "1.6"]
-    [org.clojure/clojure "1.9.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.elasticsearch.client/elasticsearch-rest-high-level-client "6.5.3"]
     [org.ocpsoft.prettytime/prettytime "4.0.2.Final"]
     [org.ocpsoft.prettytime/prettytime-nlp "4.0.2.Final"]]
@@ -98,7 +98,7 @@
     :ingest {
       :main cmr.nlp.elastic.ingest
       :jvm-opts ^replace [
-        "-Dlogging.level=info"
+        "-Dlogging.level=debug"
         "-Dlogging.color=true"]}}
   :aliases {
     ;; Dev & Testing Aliases

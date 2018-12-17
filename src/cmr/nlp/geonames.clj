@@ -4,6 +4,8 @@
    [clojure.string :as string]
    [cmr.nlp.util :as util]))
 
+(def index-name "geonames")
+(def doctype "geoname")
 (def gazetteer-columns
   {0 :geonameid
    1 :name

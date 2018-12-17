@@ -17,9 +17,8 @@
     (log/debugf "Creating index with name '%s' ..." index-name)
     (new CreateIndexRequest index-name))
   ([^String index-name ^String source]
-    (log/debugf "Creating index with name '%s' and source '%s' ..."
-                index-name
-                source)
+    (log/debugf "Creating index with name '%s' ..." index-name)
+    (log/tracef "Creating index with source:\n'%s'" source)
     (let [req (new CreateIndexRequest index-name)]
       (.source req source XContentType/JSON)
       req)))

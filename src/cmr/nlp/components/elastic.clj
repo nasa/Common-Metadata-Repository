@@ -1,12 +1,18 @@
 (ns cmr.nlp.components.elastic
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
+   [cmr.mission-control.components.pubsub :as pubsub]
    [cmr.nlp.components.config :as config]
    [cmr.nlp.elastic.client.core :as client]
+   [cmr.nlp.elastic.client.document :as document]
+   [cmr.nlp.elastic.event :as event]
+   [cmr.nlp.geonames :as geonames]
    [com.stuartsierra.component :as component]
    [taoensso.timbre :as log])
   (:import
-   (clojure.lang Keyword)))
+   (clojure.lang Keyword)
+   (org.elasticsearch ElasticsearchStatusException)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,21 +20,88 @@
 
 (def get-conn #(get-in % [:elastic :conn]))
 
+(defn assoc-shape
+  [geoname-data shapes-data]
+  (assoc geoname-data
+         :shape_coordinates
+         (get shapes-data (:geonameid geoname-data))))
+
+(defn upsert
+  [json-data]
+  (document/upsert json-data
+                   geonames/index-name
+                   geonames/doctype
+                   (:geonameid (json/parse-string json-data true))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Transducers (step functions)   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ingest-transducer
+  [shapes]
+  (comp
+    (map #(assoc-shape % shapes))
+    (map json/generate-string)
+    (map upsert)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn system-started
+  [system]
+  (pubsub/publish system event/started))
+
+(defn ingest-completed
+  [system]
+  (pubsub/publish system event/ingest-complete))
+
+(defn subscribe-started
+  [system func]
+  (pubsub/subscribe system event/started func))
+
+(defn subscribe-ingested
+  [system func]
+  (pubsub/subscribe system event/ingest-complete func))
+
 (defn call
   ([system ^Keyword method-key]
     (call system method-key []))
   ([system ^Keyword method-key args]
-    (let [method (ns-resolve 'cmr.nlp.elastic.client.core
+    (let [conn (get-conn system)
+          method (ns-resolve 'cmr.nlp.elastic.client.core
                              (symbol (name method-key)))]
-      (apply method (concat [(get-conn system)] args)))))
+      (log/trace "Got system keys:" (keys system))
+      (log/trace "Got elastic:" (:elastic system))
+      (log/trace "Got connection:" conn)
+      (log/trace "Got method:" method)
+      (log/trace "Got args:" args)
+      (apply method (concat [conn] args)))))
 
 (defn add-geonames-index
   [system]
-  (call system :create-index
-   ["geonames"
-    (slurp
-     (io/resource
-      "elastic/geonames_mapping.json"))]))
+  (try
+    (call system :create-index
+     ["geonames"
+      (slurp
+       (io/resource
+        "elastic/geonames_mapping.json"))])
+    (catch ElasticsearchStatusException ex
+      (log/errorf "Could not add index: %s" (.getMessage ex))
+      (log/trace ex))))
+
+(defn ingest-geonames
+  [system]
+  (let [shapes (geonames/shapes-lookup)
+        x-form (ingest-transducer shapes)
+        batch-size (config/get-elastic-ingest-batch-size system)]
+    (log/debug "Ingesting Geonames in batches of size" batch-size)
+      (doseq [[batch-idx batch] (map-indexed
+                                 vector
+                                 (geonames/batch-read-gazetteer batch-size))]
+        (log/debugf "Processing batch %s ..." (inc batch-idx))
+        (transduce x-form (constantly :ok) batch)))
+  :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

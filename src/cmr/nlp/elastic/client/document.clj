@@ -13,7 +13,7 @@
   (:refer-clojure :exclude [index update]))
 
 (defn index
-  [^String index-name ^String doc-type ^String doc-id ^String source]
+  [^String source ^String index-name ^String doc-type ^String doc-id]
   (let [req (new IndexRequest index-name doc-type doc-id)]
     (.source req source XContentType/JSON)
     req))
@@ -23,13 +23,13 @@
   (new DeleteRequest index-name doc-type doc-id))
 
 (defn update
-  [^String index-name ^String doc-type ^String doc-id ^String source]
+  [^String source ^String index-name ^String doc-type ^String doc-id]
   (let [req (new UpdateRequest index-name doc-type doc-id)]
     (.doc req source XContentType/JSON)
     req))
 
 (defn upsert
-  [^String index-name ^String doc-type ^String doc-id ^String source]
+  [^String source ^String index-name ^String doc-type ^String doc-id]
   (let [req (new UpdateRequest index-name doc-type doc-id)]
     (.upsert req source XContentType/JSON)
     req))
