@@ -129,7 +129,7 @@ $ lein repl
 ```
 
 ```clj
-(require '[cmr.nlp.core :as nlp]')
+(require '[cmr.nlp.core :as nlp])
 (def query "What was the average surface temperature of Lake Superior last week?")
 ```
 

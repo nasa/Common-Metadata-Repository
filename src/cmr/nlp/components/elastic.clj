@@ -74,8 +74,8 @@
       (log/trace "Got system keys:" (keys system))
       (log/trace "Got elastic:" (:elastic system))
       (log/trace "Got connection:" conn)
-      (log/trace "Got method:" method)
-      (log/trace "Got args:" args)
+      (log/debug "Got method:" method)
+      (log/debug "Got args:" args)
       (apply method (concat [conn] args)))))
 
 (defn add-geonames-index
@@ -102,6 +102,14 @@
         (log/debugf "Processing batch %s ..." (inc batch-idx))
         (call system :bulk [(transduce x-form conj batch)])))
   :ok)
+
+(defn find-geonames
+  [system]
+  (call system :search-all [geonames/index-name]))
+
+(defn find-geoname
+  [system name]
+  (call system :search [geonames/index-name "name" name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

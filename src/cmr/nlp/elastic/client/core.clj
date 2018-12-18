@@ -4,6 +4,7 @@
    [cmr.nlp.elastic.client.document :as document]
    [cmr.nlp.elastic.client.index :as index]
    [cmr.nlp.elastic.client.pipeline :as pipeline]
+   [cmr.nlp.elastic.client.search :as search]
    [taoensso.timbre :as log])
   (:import
    (org.apache.http HttpHost)
@@ -32,16 +33,20 @@
   (indices [this])
   (create-index [this index-name] [this index-name source])
   (delete-index [this index-name])
-  ;; Pipeline API
+  ;; Ingest API
   (delete-pipeline [this id])
   (get-pipeline [this id])
-  (put-pipeline [this id source] [this id source content-type]))
+  (put-pipeline [this id source] [this id source content-type])
+  ;; Search API
+  (search [this field-name term]
+          [this index-name field-name term])
+  (search-all [this] [this index-name])
+  (search-term [this field-name term]
+               [this index-name field-name term]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Bulk API
 
 ;; Cluster API
 
@@ -134,6 +139,37 @@
           resp (.putPipeline (-ingest this) req RequestOptions/DEFAULT)]
       (.isAcknowledged resp))))
 
+;; Search API
+
+(defn- search*
+  [this req]
+  (let [resp (.search this req RequestOptions/DEFAULT)
+        hits (.getHits resp)]
+    (log/info "Search hits:" (.totalHits hits))
+    (log/info "Search took:" (.getTook resp))
+    (into [] hits)))
+
+(defn -search
+  ([this field-name term]
+    (-search this nil field-name term))
+  ([this index-name field-name term]
+    (-> (search* this (search/match index-name field-name term))
+        first
+        (.getSourceAsString)
+        (json/parse-string true))))
+
+(defn -search-all
+  ([this]
+    (-search-all this nil))
+  ([this index-name]
+    (search* this (search/match-all index-name))))
+
+(defn -search-term
+  ([this field-name term]
+    (-search-term this nil field-name term))
+  ([this index-name field-name term]
+    (search* this (search/term index-name field-name term))))
+
 (def behaviour
   {:bulk -bulk
    :create-index -create-index
@@ -148,6 +184,9 @@
    :index -index
    :ingest -ingest
    :put-pipeline -put-pipeline
+   :search -search
+   :search-all -search-all
+   :search-term -search-term
    :update-document -update-document
    :upsert-document -upsert-document})
 
