@@ -64,8 +64,8 @@
     (.getIndex resp)))
 
 (defn -bulk
-  [this reqs-data]
-  (let [req (document/bulk reqs-data)
+  [this reqs]
+  (let [req (document/bulk reqs)
         resp (.bulk this req RequestOptions/DEFAULT)]
     (log/info "Bulk document operation took:" (str (.getTook resp)))
     (.getItems resp)))

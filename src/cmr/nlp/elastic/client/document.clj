@@ -43,7 +43,8 @@
     :upsert (apply upsert args)))
 
 (defn bulk
-  [reqs-data]
-  (let [req (new BulkRequest)]
-    (mapv #(.add req %) reqs-data)
-    req))
+  [reqs]
+  (let [bulk-req (new BulkRequest)]
+    (doseq [r reqs]
+      (.add bulk-req r))
+    bulk-req))

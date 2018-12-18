@@ -7,7 +7,7 @@
      :public [
        ]}
    :ingest {
-     :batch-size 10000}}
+     :batch-size 100000}}
  :logging {
    :level :info
    :nss [cmr]

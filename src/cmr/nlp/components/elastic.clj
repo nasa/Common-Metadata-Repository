@@ -26,12 +26,12 @@
          :shape_coordinates
          (get shapes-data (:geonameid geoname-data))))
 
-(defn upsert
+(defn add-document
   [json-data]
-  (document/upsert json-data
-                   geonames/index-name
-                   geonames/doctype
-                   (:geonameid (json/parse-string json-data true))))
+  (document/index json-data
+                  geonames/index-name
+                  geonames/doctype
+                  (str (:geonameid (json/parse-string json-data true)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Transducers (step functions)   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,7 +42,7 @@
   (comp
     (map #(assoc-shape % shapes))
     (map json/generate-string)
-    (map upsert)))
+    (map add-document)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,7 +87,7 @@
        (io/resource
         "elastic/geonames_mapping.json"))])
     (catch ElasticsearchStatusException ex
-      (log/errorf "Could not add index: %s" (.getMessage ex))
+      (log/warnf "Could not add index: %s" (.getMessage ex))
       (log/trace ex))))
 
 (defn ingest-geonames
@@ -100,7 +100,7 @@
                                  vector
                                  (geonames/batch-read-gazetteer batch-size))]
         (log/debugf "Processing batch %s ..." (inc batch-idx))
-        (transduce x-form (constantly :ok) batch)))
+        (call system :bulk [(transduce x-form conj batch)])))
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

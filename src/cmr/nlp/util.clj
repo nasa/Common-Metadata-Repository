@@ -75,9 +75,9 @@
         (.iterator)
         iterator-seq)
     (catch Exception ex
-      (log/error (format "CSV import error: %s; skipping data in line '%s' ..."
-                         (.getMessage ex)
-                         line))
+      (log/warnf "CSV import error: %s; skipping data in line '%s' ..."
+                 (.getMessage ex)
+                 line)
       (log/trace ex))))
 
 (defn read-tabbed
