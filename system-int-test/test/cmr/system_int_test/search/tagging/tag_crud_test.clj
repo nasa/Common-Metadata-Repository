@@ -115,8 +115,10 @@
 
     (testing "Create tag with fields at maximum length"
       (let [tag (into {} (for [[field max-length] field-maxes]
-                           [field (tags/string-of-length max-length)]))]
-        (is (= 201 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
+                           [field (tags/string-of-length max-length)]))
+            ;; XXX understand why having this outside of a binding causes JVM corruption error
+            ;; in Clojure 1.10.0
+            _ (is (= 201 (:status (tags/create-tag (e/login (s/context) "user1") tag))))])))
 
   (testing "Creation without optional fields is allowed"
     (let [tag (dissoc (tags/make-tag {:tag-key "tag-key2"}) :description)
