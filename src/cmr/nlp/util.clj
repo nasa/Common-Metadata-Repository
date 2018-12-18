@@ -56,7 +56,14 @@
        (map encode-tuple)
        join-queries))
 
-(defn lazy-readlines [filename]
+(defn lazy-readlines
+  "Lazily read potentially very large files. Produces a lazy sequence of all
+  the lines in a given file.
+
+  Note that this is used as an alternative to reading a file `with-open` in
+  order to avoid the errors that come with attempting to operate on the data
+  read via `with-open` out of the context of that macro."
+  [filename]
   (letfn [(reader-manager [rdr]
            (lazy-seq
              (if-let [line (.readLine rdr)]
@@ -67,6 +74,7 @@
         reader-manager)))
 
 (defn read-tabbed-line
+  "This function allows one to read a tab-delimited CSV file line-by-line."
   [line]
   (try
     (-> (CSVParser/parse line CSVFormat/TDF)
@@ -75,12 +83,14 @@
         (.iterator)
         iterator-seq)
     (catch Exception ex
-      (log/warnf "CSV import error: %s; skipping data in line '%s' ..."
+      (log/warnf "Unable to import line from CSV file: %s; skipping data in line '%s' ..."
                  (.getMessage ex)
                  line)
       (log/trace ex))))
 
 (defn read-tabbed
+  "Read potentially very large tab-delimited CSV files as a lazy sequence of
+  parsed lines."
   [filename]
   (->> filename
        lazy-readlines
@@ -88,6 +98,7 @@
        (remove nil?)))
 
 (defn read-geonames
+  "Lazily read the large (GB+) Geonames CSV files."
   [filename]
   (-> filename
       get-geonames
@@ -97,6 +108,7 @@
 
 ;; Adapted from https://lispcast.com/exponential-backoff/
 (defn exponential-backoff
+  "Provides a retry function with increasingly "
   ([time rate max func]
    (exponential-backoff time rate max func func))
   ([time rate max ready-func expired-func]

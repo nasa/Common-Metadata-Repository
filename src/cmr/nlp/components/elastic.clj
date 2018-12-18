@@ -30,7 +30,7 @@
   [json-data]
   (document/index json-data
                   geonames/index-name
-                  geonames/doctype
+                  geonames/doc-type
                   (str (:geonameid (json/parse-string json-data true)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -132,8 +132,8 @@
    :stop stop})
 
 (extend ElasticClient
-  component/Lifecycle
-  lifecycle-behaviour)
+        component/Lifecycle
+        lifecycle-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Constructor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

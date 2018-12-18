@@ -1,15 +1,15 @@
 (ns cmr.nlp.elastic.ingest
-  "This is a high-level API for performing cmr-nlp-specific ingest: creating
-  all Elasticsearch indices as required by the application, and then ingesting
-  whatever data is needed by the application, for example, in support of
-  Geonames.
+  "This namespace is intended to be used from a CLI for performing high-level,
+  cmr-nlp-specific ingest:
+  * creating all Elasticsearch indices as required by the application, and
+  * ingesting whatever data is needed by the application, for example, in
+    support of Geonames.
 
   For regular Elasticsearch ingest, see the approporiate methods defined in
   `cmr.nlp.elastic.client.core`."
   (:require
    [clojure.java.io :as io]
    [clojusc.twig :as logger]
-
    [cmr.nlp.components.core :as components]
    [cmr.nlp.components.elastic :as elastic-component]
    [cmr.nlp.elastic.client.core :as client]
