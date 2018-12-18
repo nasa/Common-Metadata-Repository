@@ -37,7 +37,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 3
+    (is (= [{:bytes 2 
              :mb 0.0
              :gb 0.0}]
            (util/parse-response response)))))
@@ -58,9 +58,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 811248
-             :mb 0.77
-             :gb 0.0}]
+    (is (= [{:bytes 23039998 
+             :mb 21.97 
+             :gb 0.02}]
            (util/parse-response response)))))
 
 (deftest multi-var-size-test
@@ -80,9 +80,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 8305788197
-             :mb 7921.02
-             :gb 7.74}]
+    (is (= [{:bytes 25920000 
+             :mb 24.72 
+             :gb 0.02}]
            (util/parse-response response)))))
 
 (deftest multi-var-different-gran-size-test
@@ -102,9 +102,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 1641824
-             :mb 1.57
-             :gb 0.0}]
+    (is (= [{:bytes 48959996 
+             :mb 46.69 
+             :gb 0.05}]
            (util/parse-response response)))))
 
 ;; XXX Currently not working; see CMR-5268
@@ -126,9 +126,9 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 405626
-             :mb 0.39
-             :gb 0.0}]
+    (is (= [{:bytes 46080000 
+             :mb 43.95 
+             :gb 0.04}]
            (util/parse-response response)))))
 
 (deftest size-with-no-sizing-metadata-test
@@ -150,7 +150,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= [{:bytes 830576
-             :mb 0.79
-             :gb 0.0}]
+    (is (= [{:bytes 7775998 
+             :mb 7.42 
+             :gb 0.01}]
            (util/parse-response response)))))
