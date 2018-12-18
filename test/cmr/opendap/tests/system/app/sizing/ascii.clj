@@ -27,8 +27,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=1000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -48,8 +47,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=1000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule2-id
@@ -69,8 +67,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s,%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=100000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -91,8 +88,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s,%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=1000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule2-id
@@ -114,8 +110,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s,%s"
                                 "&variables=%s,%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=1000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule-id
@@ -140,8 +135,7 @@
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variables=%s"
-                                "&format=ascii"
-                                "&total-granule-input-bytes=1000000")
+                                "&format=ascii")
                            (test-system/http-port)
                            collection-id
                            granule-id
