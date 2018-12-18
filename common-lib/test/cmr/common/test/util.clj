@@ -1,15 +1,15 @@
 (ns cmr.common.test.util
-  (:require [clojure.test :refer :all]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clj-time.core :as t]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [cmr.common.util :as util :refer [defn-timed]]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
+   [cmr.common.util :as util :refer [defn-timed]]))
 
 (deftest test-sequence->fn
   (testing "vector of values"
@@ -48,15 +48,7 @@
       "The most basic case with 1"
       2 (+ 1 1)
       "A more complicated test"
-      4 (* 2 2)))
-  (testing "without comments"
-    (is (thrown-with-msg?
-          IllegalArgumentException
-          #"The number of args doesn't match are2's argv or testing doc string may be missing"
-          (eval '(cmr.common.util/are2
-                  [x y] (= x y)
-                  2 (+ 1 1)
-                  4 (* 2 2)))))))
+      4 (* 2 2))))
 
 (deftest are3-test
   (testing "Normal use"
@@ -65,15 +57,7 @@
       "The most basic case with 1"
       2 (+ 1 1)
       "A more complicated test"
-      4 (* 2 2)))
-  (testing "without comments"
-    (is (thrown-with-msg?
-          IllegalArgumentException
-          #"The number of args doesn't match are3's argv or testing doc string may be missing"
-          (eval '(cmr.common.util/are3
-                  [x y] (is (= x y))
-                  2 (+ 1 1)
-                  4 (* 2 2)))))))
+      4 (* 2 2))))
 
 (defn-timed test-timed-multi-arity
   "The doc string"
@@ -133,12 +117,12 @@
   (let [token-with-at-least-15-chars "1234567890abcdefg"
         token-with-at-least-5-chars "1234567890"
         token-with-less-than-5-chars "1234"]
-  (is (= "12345XXXcdefg"
-         (util/scrub-token token-with-at-least-15-chars)))
-  (is (= "12345XXX"
-         (util/scrub-token token-with-at-least-5-chars)))
-  (is (= "XXX"
-         (util/scrub-token token-with-less-than-5-chars)))))
+   (is (= "12345XXXcdefg"
+          (util/scrub-token token-with-at-least-15-chars)))
+   (is (= "12345XXX"
+          (util/scrub-token token-with-at-least-5-chars)))
+   (is (= "XXX"
+          (util/scrub-token token-with-less-than-5-chars)))))
 
 (deftest remove-map-keys-test
   (is (= {:a true :c "value" :d false}
@@ -795,4 +779,4 @@
     (is (= (util/safe-uppercase false) (str/upper-case false)))
     (is (= (util/safe-uppercase true) (str/upper-case true)))
     (is (= (util/safe-uppercase "StRing") (str/upper-case "StRing")))
-    (is (= (util/safe-uppercase nil) nil)))) 
+    (is (= (util/safe-uppercase nil) nil))))

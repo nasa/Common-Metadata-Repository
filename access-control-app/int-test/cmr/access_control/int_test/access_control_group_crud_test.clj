@@ -103,8 +103,10 @@
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
-                             [field (string-of-length max-length)]))]
-        (is (= 200 (:status (u/create-group (e/login (u/conn-context) "user1") group)))))))
+                             [field (string-of-length max-length)]))
+            ;; FIXME understand why having this outside of a binding causes JVM corruption error
+            ;; in Clojure 1.10.0
+            _ (is (= 200 (:status (u/create-group (e/login (u/conn-context) "user1") group))))])))
 
   (testing "Creation without optional fields is allowed"
     (let [group (dissoc (u/make-group {:name "name2"}) :legacy_guid)
