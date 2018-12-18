@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.data2.umm-json
   "Contains helper functions for UMM JSON testing."
-  (require
+  (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]

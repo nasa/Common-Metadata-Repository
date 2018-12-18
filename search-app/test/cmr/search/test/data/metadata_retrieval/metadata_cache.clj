@@ -1,8 +1,9 @@
 (ns cmr.search.test.data.metadata-retrieval.metadata-cache
-  (require [clojure.test :refer :all]
-           [cmr.common.util :refer [are3]]
-           [cmr.search.data.metadata-retrieval.metadata-cache :as mc]
-           [cmr.search.test.data.metadata-retrieval.revision-format-map :as rfm]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as mc]
+   [cmr.search.test.data.metadata-retrieval.revision-format-map :as rfm]))
 
 (def get-cached-metadata-in-format #'mc/get-cached-metadata-in-format)
 
@@ -58,6 +59,3 @@
       [["C1" 1] ["C2" 2] ["C3" 3]
        ["C1" 2] ["C2" 1] ["C5" 1]]
       :echo10)))
-
-
-

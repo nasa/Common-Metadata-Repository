@@ -1,5 +1,5 @@
 (ns cmr.indexer.test.data.collection-granule-aggregation-cache
-  (require
+  (:require
    [clj-time.coerce :as c]
    [clj-time.core :as t]
    [clojure.edn :as edn]

@@ -1,6 +1,6 @@
 (ns cmr.access-control.int-test.permission-check-test
   "Tests the access control permission check routes."
-  (require
+  (:require
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clojure.string :as string]
@@ -99,7 +99,7 @@
         update-acl-invalid-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
                                                                                :cmr-revision-id "invalid"})
         update-acl-conflict-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
-                                                                               :cmr-revision-id 2})
+                                                                                :cmr-revision-id 2})
         update-acl-working-revision-id #(ac/update-acl (u/conn-context) %1 %2 {:token token
                                                                                :cmr-revision-id 3})
         get-collection-permissions #(get-permissions %1 coll1)

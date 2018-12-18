@@ -1,8 +1,9 @@
 (ns cmr.search.services.health-service
   "Contains fuctions to provider health status of the search app."
-  (:require [cmr.transmit.echo.rest :as rest]
-            [cmr.metadata-db.services.health-service :as meta-db]
-            [cmr.transmit.index-set :as index-set]))
+  (:require
+   [cmr.metadata-db.services.health-service :as meta-db]
+   [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.index-set :as index-set]))
 
 (defn health
   "Returns the health state of the app."

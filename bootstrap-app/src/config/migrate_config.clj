@@ -7,7 +7,8 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [drift.builder :as drift-builder])
-  (import java.sql.SQLException))
+  (:import
+   (java.sql SQLException)))
 
 (def bootstrap-db-atom (atom nil))
 

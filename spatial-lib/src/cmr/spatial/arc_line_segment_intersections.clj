@@ -84,11 +84,11 @@
     (when (or mbr1-intersects mbr2-intersects)
       (cond
         ;; Do both the Arc and Line Segment start or end on the same pole?
-        (and (u/any? p/is-north-pole? arc-points)
+        (and (u/any-true? p/is-north-pole? arc-points)
              (or (p/is-north-pole? ls-point1) (p/is-north-pole? ls-point2)))
         [p/north-pole]
 
-        (and (u/any? p/is-south-pole? arc-points)
+        (and (u/any-true? p/is-south-pole? arc-points)
              (or (p/is-south-pole? ls-point1) (p/is-south-pole? ls-point2)))
         [p/south-pole]
 

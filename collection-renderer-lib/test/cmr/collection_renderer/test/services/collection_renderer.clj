@@ -1,5 +1,5 @@
 (ns cmr.collection-renderer.test.services.collection-renderer
-  (require
+  (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]

@@ -1,6 +1,7 @@
 (ns cmr.access-control.test.data.access-control-index
-  (require [clojure.test :refer :all]
-           [cmr.access-control.data.access-control-index :as a]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.access-control.data.access-control-index :as a]))
 
 
 (deftest acl-display-name
@@ -32,4 +33,3 @@
   (testing "catalog identity identity type"
     (is (= "Catalog Item"
            (a/acl->identity-type {:catalog-item-identity {:name "All Collections"}})))))
-

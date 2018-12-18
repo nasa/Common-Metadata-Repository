@@ -483,8 +483,8 @@
                     "Spatial validation error: Equator Crossing Longitude must be within [-180.0] and [180.0] but was [240.0]."
                     "Spatial validation error: Equator Crossing Date Time must be a datetime but was [Z]."],
            :path ["OrbitCalculatedSpatialDomains" 0]}
-           {:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."],
-             :path ["OrbitCalculatedSpatialDomains" 1]}]]
+          {:errors ["Spatial validation error: Orbit Number must be an integer but was [abc]."],
+            :path ["OrbitCalculatedSpatialDomains" 1]}]]
     (testing "Invalid orbit calculated spatial domain"
       (ingest/ingest-concept
         (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
@@ -687,7 +687,7 @@
          :orbit-number 1
          :stop-orbit-number 1}
         [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
-              "(matched only 1 out of 2)")]
+              "(matched only 1 out of 2)")]))))
 
         ;; ECSE-503: The following test should be enabled once ECSE-503 is fixed.
         ;; Currently, the UMM-G schema does not define the validation rules correctly for OrbitCalculatedSpatialDomain
@@ -696,4 +696,3 @@
         ;  :stop-orbit-number 1}
         ; [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
         ;       "(matched only 1 out of 2)")]
-        ))))

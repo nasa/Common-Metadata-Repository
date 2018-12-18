@@ -153,7 +153,7 @@
   (let [point-set (.point_set line)
         segments (.segments line)]
     (or (contains? point-set point)
-        (u/any? #(point-on-segment? % point) segments))))
+        (u/any-true? #(point-on-segment? % point) segments))))
 
 (defn intersects-br?
   "Returns true if the line intersects the br"
@@ -165,9 +165,9 @@
       (let [coord-sys (.coordinate_system line)]
         (or
          ;; Does the br cover any points of the line?
-         (u/any? #(m/covers-point? coord-sys br %) (.points line))
+         (u/any-true? #(m/covers-point? coord-sys br %) (.points line))
          ;; Does the line contain any points of the br?
-         (u/any? #(covers-point? line %) (m/corner-points br))
+         (u/any-true? #(covers-point? line %) (m/corner-points br))
          ;; Do any of the sides intersect?
          (let [segments (.segments line)
                mbr-segments (s/mbr->line-segments br)]
@@ -182,7 +182,7 @@
 (defn intersects-line-string?
   "Returns true if the line string instersects the other line string"
   [line1 line2]
-  (u/any? (fn [[s1 s2]]
+  (u/any-true? (fn [[s1 s2]]
             (seq (asi/intersections s1 s2)))
           (for [segment1 (:segments line1)
                 segment2 (:segments line2)]

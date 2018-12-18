@@ -22,7 +22,7 @@
   :dependencies [
     [log4j/log4j "1.2.17"]
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.logging "0.4.0"]
     [org.elasticsearch/elasticsearch "1.6.2"]
     [org.ow2.asm/asm "5.1"]]

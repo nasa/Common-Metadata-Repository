@@ -39,7 +39,7 @@
     [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
     [org.apache.httpcomponents/httpclient "4.5.4"]
     [org.apache.httpcomponents/httpcore "4.4.8"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.logging "0.4.0"]
     [org.clojure/tools.reader "1.1.1"]
     [potemkin "0.4.4"]

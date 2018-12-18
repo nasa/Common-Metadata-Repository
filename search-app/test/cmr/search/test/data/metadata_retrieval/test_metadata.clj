@@ -1,5 +1,5 @@
 (ns cmr.search.test.data.metadata-retrieval.test-metadata
-  (require
+  (:require
    [clojure.java.io :as io]
    [cmr.common.mime-types :as mt]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as t]))

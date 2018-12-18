@@ -1,11 +1,12 @@
 (ns cmr.bootstrap.data.rebalance-util
   "Utilities for helping with rebalancing a collection."
-  (require [cmr.indexer.data.index-set :as index-set]
-           [cmr.bootstrap.embedded-system-helper :as helper]
-           [clojurewerkz.elastisch.query :as q]
-           [clojurewerkz.elastisch.rest.document :as esd]
-           [cmr.indexer.data.elasticsearch :as indexer-es]
-           [cmr.metadata-db.services.concept-service :as cs]))
+  (:require
+   [clojurewerkz.elastisch.query :as q]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.indexer.data.elasticsearch :as indexer-es]
+   [cmr.indexer.data.index-set :as index-set]
+   [cmr.metadata-db.services.concept-service :as cs]))
 
 (def granule-mapping-type-name
   "The mapping type for granules in Elasticsearch"

@@ -1,12 +1,13 @@
 (ns cmr.common-app.services.search.validators.max-number-of-conditions
   "Validates that a query does not contain more than the configured maximum number of conditions"
-  (require [cmr.common-app.services.search.query-model]
-           [cmr.common.log :refer [debug info]]
-           [cmr.common.config :refer [defconfig]]))
+  (:require
+   [cmr.common-app.services.search.query-model]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.log :refer [debug info]]))
 
 (defconfig max-number-of-conditions
   "The configured maximum number of conditions in a query"
-  {:default 4100 
+  {:default 4100
    :type Long})
 
 (defprotocol ConditionCounter

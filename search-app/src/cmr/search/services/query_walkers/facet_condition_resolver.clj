@@ -49,7 +49,7 @@
   (has-field?
    [cg field-key]
    (let [conditions (:conditions cg)]
-     (util/any? #(has-field? % field-key) conditions)))
+     (util/any-true? #(has-field? % field-key) conditions)))
 
   (adjust-facet-query
    [cg field-key]

@@ -211,7 +211,7 @@
 
 (deftest any-test
   (are [expected f items]
-       (is (= expected (util/any? f items)))
+       (is (= expected (util/any-true? f items)))
 
       false (constantly true) nil
       false (constantly true) []

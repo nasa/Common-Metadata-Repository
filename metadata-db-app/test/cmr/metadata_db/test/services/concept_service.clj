@@ -1,18 +1,20 @@
 (ns cmr.metadata-db.test.services.concept-service
   "Contains unit tests for service layer methods and associated utility methods."
-  (:require [clojure.test :refer :all]
-            [clojure.test.check :as tc]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [clojure.string :as str]
-            [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.concept-service :as cs]
-            [cmr.metadata-db.services.provider-validation :as pv]
-            [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.test.test-util :as tu])
-  (import clojure.lang.ExceptionInfo))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [clojure.test.check :as tc]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :as prop]
+   [cmr.common.test.test-util :as tu]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.data.memory-db :as memory]
+   [cmr.metadata-db.services.concept-service :as cs]
+   [cmr.metadata-db.services.messages :as messages]
+   [cmr.metadata-db.services.provider-validation :as pv]
+   [cmr.metadata-db.services.util :as util])
+  (:import
+   (clojure.lang ExceptionInfo)))
 
 (use-fixtures :once tu/silence-logging-fixture)
 

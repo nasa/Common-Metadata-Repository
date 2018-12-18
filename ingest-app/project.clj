@@ -26,7 +26,7 @@
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.apache.httpcomponents/httpclient "4.5.4"]
     [org.apache.httpcomponents/httpcore "4.4.8"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.nrepl "0.2.13"]
     [org.quartz-scheduler/quartz "2.3.0"]
     [org.slf4j/slf4j-api "1.7.10"]
