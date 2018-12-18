@@ -16,10 +16,12 @@
 
 (defn- get-dimensionality
   "Get the dimensionality, which is the multiplication of all the sizes
-  in all the Dimensions."
+  in all the Dimensions. Returns 0 when Dimensions is not present."
   [variable]
   (let [dims (get-in variable [:umm :Dimensions])]
-    (reduce * (map :Size dims))))
+    (if (seq dims)
+      (reduce * (map :Size dims))
+      0)))
 
 (defn- get-measurement
   [variable]
@@ -42,13 +44,28 @@
       (get-in [:umm :SizeEstimation :AvgCompressionRateNetCDF4])
       read-number))
 
+(defn- get-avg-digit-number
+  "Returns the average of all the numbers in digit-numbers.
+  Return 0 when digit-numbers is empty."
+  [digit-numbers]
+  (if (seq digit-numbers)
+    (/ (reduce + digit-numbers) (count digit-numbers))
+    0))
+
 (defn- get-avg-fill-value-digit-number
   "Get the average digit number for each value of FillValues in the variable.
   For example, FillValues containing [{:Value 1} {:Value 100}], returns (1+3)/2=2."
   [variable]
   (let [fvs (get-in variable [:umm :FillValues])
         fvs-digit-numbers (map #(count (str (:Value %))) fvs)]
-    (/ (reduce + fvs-digit-numbers) (count fvs-digit-numbers))))
+    (get-avg-digit-number fvs-digit-numbers)))
+
+(defn- get-neg-to-pos-valid-range-count
+  "Get the negative to postive valid range count."
+  [vrs-min vrs-max]
+  (- (count (filter neg? vrs-min))
+     (+ (count (filter neg? vrs-max))
+        (count (filter zero? vrs-max)))))
 
 (defn- get-avg-valid-range-digit-number
   "Get the average digit number for each range of ValidRanges in the variable.
@@ -56,9 +73,18 @@
   (1+3+2+4)/4=2.5"
   [variable]
   (let [vrs (get-in variable [:umm :ValidRanges])
-        vrs-min-max (concat (map :Min vrs) (map :Max vrs))
+        vrs-min (map :Min vrs)
+        vrs-max (map :Max vrs)
+        neg-to-pos-count (get-neg-to-pos-valid-range-count vrs-min vrs-max)
+        ;; if neg-to-pos-count > 0, need to consider negative to 0, then 0 to positive.
+        ;; For example {:Min -100 :Max 1000} shouldn't return (4 + 4)/2 = 4.
+        ;; It should return (4+1+1+4)/4=2.5.
+        ;; So we will need to add (2 * neg-to-pos-count) 0's to vars-min-max.
+        zeros (when (> neg-to-pos-count 0)
+                (repeat (* 2 neg-to-pos-count) 0))
+        vrs-min-max (concat (map :Min vrs) (map :Max vrs) zeros)
         vrs-digit-numbers (map #(count (str %)) vrs-min-max)]
-    (/ (reduce + vrs-digit-numbers) (count vrs-digit-numbers))))
+    (get-avg-digit-number vrs-digit-numbers)))
 
 (defn estimate-dods-size
   "Calculates the estimated size for DODS format."
@@ -80,33 +106,57 @@
     (+ (* granule-count compression measurements)
        (* granule-count metadata))))
 
-(defn- estimate-ascii-size
-  "Calculates the estimated size for ASCII.
+(defn- estimate-ascii-size-per-granule
+  "Calculate the estimated size for ASCII output per granule, for the variable.
   In ASCII output, the actual size for a granule in bytes is the sum of digit number
   of all the dimension data + 2 bytes(comma and space) for each data except for the last one.
-  To estimate, we assume 50% dimension data has the average FillValues digit number.
-  the other 50% dimention data has the average ValidRanges digit number.
-  The estimated size = 0.5 * avg-fill-value-digit-number * dimensionality +
-                       0.5 * avg-valid-range-digit-number * dimensionality +
-                       2 * (dimensionality -1)"
+  To estimate, we have the following cases: 
+  1. dimensionality <= 0.
+     Returns 0.
+  2. avg-fill-value-digit-number = 0, avg-valid-range-digit-number != 0
+     Returns avg-valid-range-digit-number * dimensionality + 2 * (dimensionality -1)
+  3. avg-fill-value-digit-number != 0, avg-valid-range-digit-number = 0
+     Returns avg-fill-value-digit-number * dimensionality + 2 * (dimensionality -1)
+  4. avg-fill-value-digit-number = 0, avg-valid-range-digit-number = 0
+     Returns 3 * dimensionality + 2 * (dimensionality -1)
+  5. when none of these values are 0
+     Returns  0.5 * avg-fill-value-digit-number * dimensionality +
+              0.5 * avg-valid-range-digit-number * dimensionality +
+              2 * (dimensionality -1)"
+  [variable params total-estimate]
+  (let [dimensionality (get-dimensionality variable)
+        avg-fill-value-digit-number (get-avg-fill-value-digit-number variable)
+        avg-valid-range-digit-number (get-avg-valid-range-digit-number variable)]
+    (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
+                           "dimensionality: %s avg-fill-value-digit-number: %s "
+                           "avg-valid-range-digit-number: %s")
+                      (:request-id params) (get-in variable [:meta :concept-id])
+                      total-estimate dimensionality avg-fill-value-digit-number
+                      avg-valid-range-digit-number))
+    (cond 
+      (<= dimensionality 0) 0
+      (and (= 0 avg-fill-value-digit-number) 
+           (not= 0 avg-valid-range-digit-number)) (+ (* avg-valid-range-digit-number dimensionality)
+                                                     (* 2 (dec dimensionality)))
+      (and (not= 0 avg-fill-value-digit-number) 
+           (= 0 avg-valid-range-digit-number)) (+ (* avg-fill-value-digit-number dimensionality)
+                                                  (* 2 (dec dimensionality))) 
+      (and (= 0 avg-fill-value-digit-number)
+           (= 0 avg-valid-range-digit-number)) (+ (* 3 dimensionality)
+                                                  (* 2 (dec dimensionality)))
+      :else (+ (* 0.5 avg-fill-value-digit-number dimensionality)
+               (* 0.5 avg-valid-range-digit-number dimensionality)
+               (* 2 (dec dimensionality))))))
+    
+(defn- estimate-ascii-size
+  "Calculates the estimated size for ASCII output for all the variables and the granule-count."
   [granule-count variables params]
-  (* granule-count  
-     (reduce (fn [total-estimate variable]
-               (let [dimensionality (get-dimensionality variable) 
-                     avg-fill-value-digit-number (get-avg-fill-value-digit-number variable)
-                     avg-valid-range-digit-number (get-avg-valid-range-digit-number variable)]
-                 (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
-                                        "dimensionality: %s avg-fill-value-digit-number: %s "
-                                        "avg-valid-range-digit-number: %s")
-                                   (:request-id params) (get-in variable [:meta :concept-id])
-                                   total-estimate dimensionality avg-fill-value-digit-number 
-                                   avg-valid-range-digit-number))
-                 (+ total-estimate
-                    (* 0.5 avg-fill-value-digit-number dimensionality)
-                    (* 0.5 avg-valid-range-digit-number dimensionality)
-                    (* 2 (- dimensionality 1))))) 
-             0
-             variables)))
+  (* granule-count
+     (long (reduce (fn [total-estimate variable]
+                     (+ total-estimate
+                        (estimate-ascii-size-per-granule variable params total-estimate)))
+                   0
+                   variables))))
 
 (defn- estimate-netcdf4-size
   "Calculates the estimated size for NETCDF4 format.
