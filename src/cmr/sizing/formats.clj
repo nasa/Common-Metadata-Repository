@@ -14,10 +14,16 @@
     (read-string value)
     value))
 
+(defn- get-dimensionality
+  "Get the dimensionality, which is the multiplication of all the sizes
+  in all the Dimensions."
+  [variable]
+  (let [dims (get-in variable [:umm :Dimensions])]
+    (reduce * (map :Size dims))))
+
 (defn- get-measurement
   [variable]
-  (let [dims (get-in variable [:umm :Dimensions])
-        total-dimensionality (reduce * (map :Size dims))
+  (let [total-dimensionality (get-dimensionality variable)
         data-type (get-in variable [:umm :DataType])]
     (* total-dimensionality
        (util/data-type->bytes data-type))))
@@ -29,19 +35,30 @@
       (get-in [:umm :SizeEstimation :AverageSizeOfGranulesSampled])
       read-number))
 
-(defn- get-avg-compression-rate-ascii
-  "Gets SizeEstimation value for AvgCompressionRateASCII and parses it to a number."
-  [variable]
-  (-> variable
-      (get-in [:umm :SizeEstimation :AvgCompressionRateASCII])
-      read-number))
-
 (defn- get-avg-compression-rate-netcdf4
   "Gets SizeEstimation value for AvgCompressionRateNetCDF4 and parses it to a number."
   [variable]
   (-> variable
       (get-in [:umm :SizeEstimation :AvgCompressionRateNetCDF4])
       read-number))
+
+(defn- get-avg-fill-value-digit-number
+  "Get the average digit number for each value of FillValues in the variable.
+  For example, FillValues containing [{:Value 1} {:Value 100}], returns (1+3)/2=2."
+  [variable]
+  (let [fvs (get-in variable [:umm :FillValues])
+        fvs-digit-numbers (map #(count (str (:Value %))) fvs)]
+    (/ (reduce + fvs-digit-numbers) (count fvs-digit-numbers))))
+
+(defn- get-avg-valid-range-digit-number
+  "Get the average digit number for each range of ValidRanges in the variable.
+  For example, ValidRanges containing [{:Min 0 :Max 100} {:Min 10 :Max 1000}] returns
+  (1+3+2+4)/4=2.5"
+  [variable]
+  (let [vrs (get-in variable [:umm :ValidRanges])
+        vrs-min-max (concat (map :Min vrs) (map :Max vrs))
+        vrs-digit-numbers (map #(count (str %)) vrs-min-max)]
+    (/ (reduce + vrs-digit-numbers) (count vrs-digit-numbers))))
 
 (defn estimate-dods-size
   "Calculates the estimated size for DODS format."
@@ -63,16 +80,42 @@
     (+ (* granule-count compression measurements)
        (* granule-count metadata))))
 
-(defn- estimate-netcdf4-or-ascii-size
-  "Calculates the estimated size for ASCII or NETCDF4 format.
+(defn- estimate-ascii-size
+  "Calculates the estimated size for ASCII.
+  In ASCII output, the actual size for a granule in bytes is the sum of digit number
+  of all the dimension data + 2 bytes(comma and space) for each data except for the last one.
+  To estimate, we assume 50% dimension data has the average FillValues digit number.
+  the other 50% dimention data has the average ValidRanges digit number.
+  The estimated size = 0.5 * avg-fill-value-digit-number * dimensionality +
+                       0.5 * avg-valid-range-digit-number * dimensionality +
+                       2 * (dimensionality -1)"
+  [granule-count variables params]
+  (* granule-count  
+     (reduce (fn [total-estimate variable]
+               (let [dimensionality (get-dimensionality variable) 
+                     avg-fill-value-digit-number (get-avg-fill-value-digit-number variable)
+                     avg-valid-range-digit-number (get-avg-valid-range-digit-number variable)]
+                 (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
+                                        "dimensionality: %s avg-fill-value-digit-number: %s "
+                                        "avg-valid-range-digit-number: %s")
+                                   (:request-id params) (get-in variable [:meta :concept-id])
+                                   total-estimate dimensionality avg-fill-value-digit-number 
+                                   avg-valid-range-digit-number))
+                 (+ total-estimate
+                    (* 0.5 avg-fill-value-digit-number dimensionality)
+                    (* 0.5 avg-valid-range-digit-number dimensionality)
+                    (* 2 (- dimensionality 1))))) 
+             0
+             variables)))
+
+(defn- estimate-netcdf4-size
+  "Calculates the estimated size for NETCDF4 format.
    total-granule-input-bytes is a value given by the client in the size estimate request."
-  [granule-count variables params fmt]
+  [granule-count variables params]
   (reduce (fn [total-estimate variable]
             (let [avg-gran-size (get-avg-gran-size variable)
                   total-granule-input-bytes (read-string (:total-granule-input-bytes params))
-                  avg-compression-rate (if (= (keyword (string/lower-case fmt)) :nc4)
-                                         (get-avg-compression-rate-netcdf4 variable)
-                                         (get-avg-compression-rate-ascii variable))]
+                  avg-compression-rate (get-avg-compression-rate-netcdf4 variable)]
               (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
                                      "avg-gran-size: %s total-granule-input-bytes: %s "
                                      "avg-compression-rate: %s")
@@ -91,8 +134,8 @@
   (case (keyword (string/lower-case fmt))
     :dods (estimate-dods-size granule-count vars params)
     :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
-    :nc4 (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
-    :ascii (estimate-netcdf4-or-ascii-size granule-count vars params fmt)
+    :nc4 (estimate-netcdf4-size granule-count vars params)
+    :ascii (estimate-ascii-size granule-count vars params)
     (do
       (log/errorf "Cannot estimate size for %s (not implemented)." fmt)
       {:errors ["not-implemented"]})))
