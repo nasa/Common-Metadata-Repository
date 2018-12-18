@@ -44,7 +44,7 @@
     [commons-io "2.6"]
     [compojure "1.6.0"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.reader "1.1.1"]
     [ring/ring-codec "1.1.0"]
     [ring/ring-core "1.6.3"]

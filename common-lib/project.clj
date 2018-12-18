@@ -28,7 +28,7 @@
     [environ "1.1.0"]
     [instaparse "1.4.8"]
     [net.jpountz.lz4/lz4 "1.3.0"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/core.async "0.4.474"]
     [org.clojure/core.cache "0.6.5"]
     [org.clojure/data.codec "0.1.1"]

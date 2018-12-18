@@ -8,8 +8,7 @@
                  * revision-id
                  * native-format - A key or map of format and version identifying the native format
                  * various format keys each mapped to compressed metadata."
-  (require
-   [cmr.common.util :as u]
+  (:require
    [clojure.set :as set]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as q]
@@ -18,6 +17,7 @@
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
    [cmr.common.xml :as cx]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]

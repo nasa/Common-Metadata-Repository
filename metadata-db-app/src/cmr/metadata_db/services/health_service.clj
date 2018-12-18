@@ -1,8 +1,9 @@
 (ns cmr.metadata-db.services.health-service
-  (require [cmr.oracle.connection :as conn]
-           [cmr.transmit.echo.rest :as rest]
-           [cmr.common.services.health-helper :as hh]
-           [cmr.metadata-db.services.util :as util]))
+  (:require
+   [cmr.common.services.health-helper :as hh]
+   [cmr.metadata-db.services.util :as util]
+   [cmr.oracle.connection :as conn]
+   [cmr.transmit.echo.rest :as rest]))
 
 (defn- health-fn
   "Returns the health state of the app."

@@ -1,5 +1,5 @@
 (ns cmr.search.test.data.metadata-retrieval.metadata-transformer
-  (require
+  (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]

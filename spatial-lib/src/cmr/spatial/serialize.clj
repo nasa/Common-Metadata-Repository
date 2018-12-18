@@ -271,7 +271,7 @@
     (bench
       (let [{:keys [ords-info ords]} scratch/ords-info-map
             shapes (ords-info->shapes ords-info ords)]
-        (cmr.common.util/any? intersects-fn shapes)))))
+        (cmr.common.util/any-true? intersects-fn shapes)))))
 
 
 

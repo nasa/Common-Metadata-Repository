@@ -1,6 +1,6 @@
 (ns cmr.search.services.messages.association-messages
   "Contains messages for validating tag association and variable associations"
-  (require
+  (:require
    [clojure.string :as string]))
 
 (defn no-associations

@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9.data-center
   "Functions for generating DIF9 XML elements from UMM data centers."
-  (:require [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]))
+  (:require
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+   [cmr.umm-spec.util :as u]))
 
 (def umm-contact-role->dif9-data-center-contact-role
   "UMM conatct role to DIF9 data center contact role mapping. Here we only define the roles that

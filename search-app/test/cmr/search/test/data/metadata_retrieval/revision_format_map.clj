@@ -1,5 +1,5 @@
 (ns cmr.search.test.data.metadata-retrieval.revision-format-map
-  (require
+  (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.time-keeper :as tk]

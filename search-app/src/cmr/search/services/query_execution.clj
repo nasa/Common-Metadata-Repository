@@ -67,7 +67,7 @@
   [{:keys [result-format all-revisions? concept-type] :as query}]
   (and (not= false (:complicated-facets query))
        ((set (:result-features query)) :facets-v2)
-       (util/any? #(facet-condition-resolver/has-field? query %)
+       (util/any-true? #(facet-condition-resolver/has-field? query %)
                   (fv2rf/facets-v2-params concept-type))))
 
 (defn- collection-and-granule-execution-strategy-determiner

@@ -23,7 +23,7 @@
     (let [ords (get-from-fields lookup "ords")
           shapes (srl/ords-info->shapes ords-info ords)]
       (try
-        (if (u/any? intersects-fn shapes)
+        (if (u/any-true? intersects-fn shapes)
           true
           false)
         (catch Throwable t

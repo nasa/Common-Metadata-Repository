@@ -1,12 +1,14 @@
 (ns config.migrate-config
   "Provides the configuration for Drift migrations."
-  (:require [drift.builder :refer [incremental-migration-number-generator]]
-            [clojure.java.jdbc :as j]
-            [cmr.oracle.connection :as oracle]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.ingest.config :as ingest-config])
-  (import java.sql.SQLException))
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.ingest.config :as ingest-config])
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as oracle]
+   [drift.builder :refer [incremental-migration-number-generator]]
+  (:import
+   (java.sql SQLException))
 
 (def db-atom (atom nil))
 

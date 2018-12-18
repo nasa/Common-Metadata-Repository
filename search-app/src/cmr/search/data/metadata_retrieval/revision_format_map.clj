@@ -2,12 +2,13 @@
   "Defines a set of helper functions for the metadata cache for dealing with revision format maps.
   Revision format maps contain metadata from a concept in multiple formats. See the metadata cache
   namespace for the exact list of fields."
-  (require [cmr.common.util :as u]
-           [clojure.string :as str]
-           [clojure.set :as set]
-           [cmr.common.log :as log :refer (debug info warn error)]
-           [cmr.common.mime-types :as mt]
-           [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as u]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 (def ^:private non-metadata-fields
   #{:concept-id :revision-id :native-format :compressed? :size})

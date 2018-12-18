@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.data-center
   "Contains functions to extract data center fields. There are four types of data centers:
   ARCHIVER, DISTRIBUTOR, PROCESSOR and ORIGINATOR."
-  (require
+  (:require
    [clojure.string :as str]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kms-lookup]

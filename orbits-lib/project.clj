@@ -11,7 +11,7 @@
   :description "Contains Ruby code that allows performing orbit calculations for spatial search."
   :dependencies [
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.jruby/jruby-complete ~jruby-version]]
   :plugins [
     [lein-shell "0.5.0"]

@@ -27,7 +27,7 @@
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm.echo10.granule :as g])
   (:import
-   [java.lang.NumberFormatException]))
+   (java.lang NumberFormatException)))
 
 (defn assert-user-id
   "Assert concept with the given concept-id and revision-id in metadata db has
@@ -284,13 +284,13 @@
   "Parse the response as a Clojure map, optionally providing a data validation
   function."
   ([response]
-    (parse-map-response response identity))
+   (parse-map-response response identity))
   ([{:keys [status body]} data-validator]
-    (let [body (util/kebab-case-data body data-validator)]
-      (if (map? body)
-        (assoc body :status status)
-        {:status status
-         :body body}))))
+   (let [body (util/kebab-case-data body data-validator)]
+     (if (map? body)
+       (assoc body :status status)
+       {:status status
+        :body body}))))
 
 (defmulti assert-convert-kebab-case
   "For use in asserting that the field names in the map returned by the ingest

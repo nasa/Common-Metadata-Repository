@@ -14,7 +14,7 @@
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [org.apache.httpcomponents/httpcore "4.4.8"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.reader "1.1.1"]]
   :plugins [
     [lein-exec "0.3.7"]

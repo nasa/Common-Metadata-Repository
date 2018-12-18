@@ -28,7 +28,7 @@
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [net.sf.saxon/Saxon-HE "9.8.0-7"]
     [org.apache.httpcomponents/httpclient "4.5.4"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/data.csv "0.1.4"]
     [org.clojure/tools.reader "1.1.1"]
     [ring/ring-codec "1.1.0"]

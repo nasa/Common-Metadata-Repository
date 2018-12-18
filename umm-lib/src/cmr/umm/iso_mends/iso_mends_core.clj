@@ -1,6 +1,7 @@
 (ns cmr.umm.iso-mends.iso-mends-core
   "Contains main functions for parsing and generating ISO XML"
-  (require [cmr.common.xml :as cx]))
+  (:require
+   [cmr.common.xml :as cx]))
 
 (defprotocol UmmToIsoMendsXml
   "Functions for converting umm items to ISO MENDS xml."

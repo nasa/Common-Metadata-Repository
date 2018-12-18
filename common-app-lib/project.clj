@@ -12,7 +12,7 @@
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.8.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.pegdown/pegdown "1.6.0"]
     [ring/ring-core "1.6.3"]
     [ring/ring-json "0.4.0"]
