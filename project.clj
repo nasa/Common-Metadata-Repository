@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.2.3-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.2.4-SNAPSHOT"
   :description "A size estimation service for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {
@@ -30,7 +30,7 @@
     [gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-ous-plugin "0.3.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-    [org.clojure/clojure "1.9.0"]]
+    [org.clojure/clojure "1.10.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
@@ -80,7 +80,7 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.6"]]}
+        [venantius/yagni "0.1.7"]]}
     :test {
       :dependencies [
         [clojusc/ltest "0.3.0"]]
