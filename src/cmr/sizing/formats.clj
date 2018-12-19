@@ -60,29 +60,30 @@
         fvs-digit-numbers (map #(count (str (:Value %))) fvs)]
     (get-avg-digit-number fvs-digit-numbers)))
 
-(defn- get-neg-to-pos-valid-range-count
-  "Get the negative to postive valid range count."
-  [vrs-min vrs-max]
-  (- (count (filter neg? vrs-min))
-     (+ (count (filter neg? vrs-max))
-        (count (filter zero? vrs-max)))))
+(defn- process-range
+  "Split the range into two parts if the range is from negative to positive.
+  For example {:Min -10 :Max 100} becomes [{:Min -10 :Max 0} {:Min 0 :Max 100}]."
+  [range]
+  (let [min (:Min range)
+        max (:Max range)]
+    (if (and (< min 0) (> max 0))
+      [{:Min min :Max 0} {:Min 0 :Max max}]
+      range)))
+
+(defn- get-valid-ranges 
+  "Get the ValidRanges from variable. If the range is from negative
+  to positive, break it up into two ranges: negative to 0 and 0 to positive."
+  [variable]
+  (let [vrs (get-in variable [:umm :ValidRanges])]
+    (flatten (map #(process-range %) vrs))))
 
 (defn- get-avg-valid-range-digit-number
   "Get the average digit number for each range of ValidRanges in the variable.
-  For example, ValidRanges containing [{:Min 0 :Max 100} {:Min 10 :Max 1000}] returns
-  (1+3+2+4)/4=2.5"
+  For example, ValidRanges containing [{:Min -10 :Max 100} {:Min 10 :Max 1000}] 
+  returns (3+1+1+3+2+4)/6=2.3"
   [variable]
-  (let [vrs (get-in variable [:umm :ValidRanges])
-        vrs-min (map :Min vrs)
-        vrs-max (map :Max vrs)
-        neg-to-pos-count (get-neg-to-pos-valid-range-count vrs-min vrs-max)
-        ;; if neg-to-pos-count > 0, need to consider negative to 0, then 0 to positive.
-        ;; For example {:Min -100 :Max 1000} shouldn't return (4 + 4)/2 = 4.
-        ;; It should return (4+1+1+4)/4=2.5.
-        ;; So we will need to add (2 * neg-to-pos-count) 0's to vars-min-max.
-        zeros (when (> neg-to-pos-count 0)
-                (repeat (* 2 neg-to-pos-count) 0))
-        vrs-min-max (concat (map :Min vrs) (map :Max vrs) zeros)
+  (let [vrs (get-valid-ranges variable)
+        vrs-min-max (concat (map :Min vrs) (map :Max vrs))
         vrs-digit-numbers (map #(count (str %)) vrs-min-max)]
     (get-avg-digit-number vrs-digit-numbers)))
 

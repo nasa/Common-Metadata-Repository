@@ -28,6 +28,10 @@
 (def variable-missing-FillValues-And-ValidRanges
   {:umm {:Dimensions [{:Size 200} {:Size 200}]}})
 
+(deftest get-valid-ranges
+  (is (=[{:Min -10 :Max 0} {:Min 0 :Max 10} {:Min 10 :Max 100}]
+        (#'formats/get-valid-ranges {:umm {:ValidRanges [{:Min -10 :Max 10} {:Min 10 :Max 100}]}}))))
+
 (deftest get-dimensionality 
   (is (= 10000 (#'formats/get-dimensionality variable1))))
 
@@ -50,7 +54,7 @@
   (is (= 0 (#'formats/estimate-ascii-size 2 [variable-missing-Dimensions] {:request-id 1234}))))
 
 (deftest estimate-ascii-size-missing-FillValues
-  ;; dimenstionality=40000. avg-valid-range-digit-number=(4+4+3+1+2+4+4+6+1+1)/10=3. (The last two 1's are the two zeros added)
+  ;; dimenstionality=40000. avg-valid-range-digit-number=(4+1+1+4+3+1+2+4+4+6)/10=3. 
   ;; the estimated size=40000 * 3 + 2 * 39999 = 199998.
   (is (= 199998 (#'formats/estimate-ascii-size 1 [variable-missing-FillValues] {:request-id 1234}))))
 
