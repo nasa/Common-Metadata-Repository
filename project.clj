@@ -42,7 +42,7 @@
     [metosin/reitit-core "0.2.9"]
     [metosin/reitit-ring "0.2.9"]
     [metosin/ring-http-response "0.9.1"]
-    [org.clojure/clojure "1.9.0"]
+    [org.clojure/clojure "1.10.0"]
     [org.clojure/core.async "0.4.490"]
     [org.clojure/core.cache "0.7.1"]
     [org.clojure/data.xml "0.2.0-alpha5"]
@@ -106,7 +106,7 @@
         [lein-ancient "0.6.15"]
         [lein-bikeshed "0.5.1"]
         [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.6"]]}
+        [venantius/yagni "0.1.7"]]}
     :test {
       :dependencies [
         [clojusc/ltest "0.3.0"]]
