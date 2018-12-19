@@ -74,6 +74,37 @@
         :Checksum nil,
         :MimeType nil}}))
 
+(def expected-distribution-related-url-record-CMR-5366
+  '({:URL "https://nsidc.org/daac/subscriptions.html",
+     :URLContentType "DistributionURL",
+     :Type "GET DATA,",
+     :Subtype "Subscribe",
+     :Description
+     {"URLContentType" "DistributionURL,",
+      "Description"
+      "Subscribe to have new data automatically sent when the data become available.,",
+      "Type" "GET DATA,",
+      "Subtype" "Subscribe"}}
+    {:URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/",
+     :URLContentType "DistributionURL",
+     :Type "GET DATA,",
+     :Subtype "DIRECT DOWNLOAD",
+     :Description
+     {"URLContentType" "DistributionURL,",
+      "Description" "Direct download via HTTPS protocol.,",
+      "Type" "GET DATA,",
+      "Subtype" "DIRECT DOWNLOAD"}}
+    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
+     :URLContentType "DistributionURL",
+     :Type "GET DATA,",
+     :Subtype "Earthdata Search",
+     :Description
+     {"URLContentType" "DistributionURL,",
+      "Description"
+      "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.,",
+      "Type" "GET DATA,",
+      "Subtype" "Earthdata Search"}}))
+
 (defn- distribution-related-url-iso-mends-record
   "Returns an example ISO19115 metadata record that includes multiple related urls
    for multiple transfterOptions and multiple online resources."
@@ -85,6 +116,12 @@
    for multiple transfterOptions and multiple online resources."
   []
   (slurp (io/resource "example-data/iso-smap/SMAPExample.xml")))
+
+(defn- distribution-related-url-iso-mends-arc-error-record
+  "Returns an example iso mends record that caused internal errors while parsing.
+   It contains multiple related urls."
+  []
+  (slurp (io/resource "example-data/iso19115/CMR-5366.xml")))
 
 (deftest iso-mends-multiple-distributed-related-url-test
   (testing "The the software that checks multiple related urls for multiple distributors,
@@ -101,3 +138,10 @@
           doc (distribution-related-url-iso-smap-record)]
       (is (= expected-distribution-related-url-record
             (sru/parse-online-urls doc sanitize? smap-ru/service-url-path smap-ru/distributor-xpaths-map))))))
+
+(deftest iso-mends-multiple-distributed-related-url-test
+  (testing "Check error case when parsing RelatedUrls that causes negative index error."
+    (let [sanitize? true
+          doc (distribution-related-url-iso-mends-arc-error-record)]
+      (is (= expected-distribution-related-url-record-CMR-5366
+            (sru/parse-online-urls doc sanitize? mends-ru/service-url-path mends-ru/distributor-xpaths-map))))))
