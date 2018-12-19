@@ -3,12 +3,12 @@
   (:require
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.ingest.config :as ingest-config])
+   [cmr.ingest.config :as ingest-config]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
-   [drift.builder :refer [incremental-migration-number-generator]]
+   [drift.builder :refer [incremental-migration-number-generator]])
   (:import
-   (java.sql SQLException))
+   (java.sql SQLException)))
 
 (def db-atom (atom nil))
 
