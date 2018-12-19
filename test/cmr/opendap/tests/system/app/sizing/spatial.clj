@@ -25,8 +25,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,50,141,51"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,50,141,51")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -47,8 +46,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,40,170,70"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,40,170,70")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -57,7 +55,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 3
+        (is (= [{:bytes 2 
                  :mb 0.0
                  :gb 0.0}]
                (util/parse-response response)))))
@@ -69,8 +67,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,50,150,60"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,50,150,60")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -79,7 +76,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 3
+        (is (= [{:bytes 2 
                  :mb 0.0
                  :gb 0.0}]
                (util/parse-response response)))))))
@@ -95,8 +92,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,50,141,51"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,50,141,51")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -117,8 +113,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,40,170,70"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,40,170,70")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -127,7 +122,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 3
+        (is (= [{:bytes 2 
                  :mb 0.0
                  :gb 0.0}]
                (util/parse-response response)))))
@@ -139,8 +134,7 @@
                                     "?granules=%s"
                                     "&variables=%s"
                                     "&format=ascii"
-                                    "&bounding-box=140,50,150,60"
-                                    "&total-granule-input-bytes=1000000")
+                                    "&bounding-box=140,50,150,60")
                                (test-system/http-port)
                                collection-id
                                granule-id
@@ -149,7 +143,7 @@
         (is (= 200 (:status response)))
         (is (= "cmr-service-bridge.v2.1; format=json"
                (get-in response [:headers :cmr-media-type])))
-        (is (= [{:bytes 3
+        (is (= [{:bytes 2 
                  :mb 0.0
                  :gb 0.0}]
                (util/parse-response response)))))))
@@ -164,8 +158,7 @@
                                   "?granules=%s"
                                   "&variables=%s"
                                   "&format=ascii"
-                                  "&bounding-box=140,50,141,51"
-                                  "&total-granule-input-bytes=1000000")
+                                  "&bounding-box=140,50,141,51")
                              (test-system/http-port)
                              collection-id
                              granule-id
@@ -174,7 +167,7 @@
       (is (= 200 (:status response)))
       (is (= "cmr-service-bridge.v2.1; format=json"
              (get-in response [:headers :cmr-media-type])))
-      (is (= [{:bytes 13
+      (is (= [{:bytes 120
                :mb 0.0
                :gb 0.0}]
              (util/parse-response response))))))
