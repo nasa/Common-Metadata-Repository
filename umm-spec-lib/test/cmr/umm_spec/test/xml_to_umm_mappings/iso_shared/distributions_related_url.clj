@@ -75,39 +75,66 @@
         :MimeType nil}}))
 
 (def expected-distribution-related-url-record-CMR-5366
-  '({:Subtype nil,
-     :GetData {:Unit "KB",
-               :Size 0.0,
-               :Checksum nil,
-               :Fees nil,
-               :Format "Not provided",
-               :MimeType nil},
+  '({:URL "https://nsidc.org/daac/subscriptions.html",
      :URLContentType "DistributionURL",
-     :Description nil,
      :Type "GET DATA",
-     :URL "https://nsidc.org/daac/subscriptions.html"}
-    {:Subtype nil,
-     :GetData {:Unit "KB",
-               :Size 0.0,
-               :Checksum nil,
-               :Fees nil,
-               :Format "Not provided",
-               :MimeType nil},
+     :Subtype nil,
+     :Description nil,
+     :GetData
+     {:Format "Not provided",
+      :Size 0.0,
+      :Unit "KB",
+      :Fees nil,
+      :Checksum nil,
+      :MimeType nil}}
+    {:URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/",
      :URLContentType "DistributionURL",
-     :Description nil,
      :Type "GET DATA",
-     :URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/"}
-    {:Subtype nil,
-     :GetData {:Unit "KB",
-               :Size 0.0,
-               :Checksum nil,
-               :Fees nil,
-               :Format "Not provided",
-               :MimeType nil},
+     :Subtype nil,
+     :Description nil,
+     :GetData
+     {:Format "Not provided",
+      :Size 0.0,
+      :Unit "KB",
+      :Fees nil,
+      :Checksum nil,
+      :MimeType nil}}
+    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
      :URLContentType "DistributionURL",
-     :Description nil,
      :Type "GET DATA",
-     :URL "https://search.earthdata.nasa.gov/search?q=MOD10A1"}))
+     :Subtype nil,
+     :Description nil,
+     :GetData
+     {:Format "Not provided",
+      :Size 0.0,
+      :Unit "KB",
+      :Fees nil,
+      :Checksum nil,
+      :MimeType nil}}
+    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
+     :URLContentType "DistributionURL",
+     :Type "GET DATA",
+     :Subtype nil,
+     :Description nil,
+     :GetData
+     {:Format "Not provided",
+      :Size 0.0,
+      :Unit "KB",
+      :Fees nil,
+      :Checksum nil,
+      :MimeType nil}}
+    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
+     :URLContentType "DistributionURL",
+     :Type "GET DATA",
+     :Subtype nil,
+     :Description nil,
+     :GetData
+     {:Format "Not provided",
+      :Size 0.0,
+      :Unit "KB",
+      :Fees nil,
+      :Checksum nil,
+      :MimeType nil}}))
 
 (defn- distribution-related-url-iso-mends-record
   "Returns an example ISO19115 metadata record that includes multiple related urls
