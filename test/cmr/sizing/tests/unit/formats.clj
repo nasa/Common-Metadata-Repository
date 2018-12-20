@@ -30,11 +30,11 @@
 
 (deftest get-netcdf3-measurement-1-byte
   (is (= 400
-        (#'formats/get-netcdf3-measurement {:umm {:DataType "byte" :Dimensions [{:Size 10}{:Size 20}]}}))))
+        (#'formats/get-netcdf3-measurement {:umm {:DataType "byte" :Dimensions [{:Size 10} {:Size 20}]}}))))
 
 (deftest get-netcdf3-measurement-4-byte
   (is (= 800
-        (#'formats/get-netcdf3-measurement {:umm {:DataType "float" :Dimensions [{:Size 10}{:Size 20}]}}))))
+        (#'formats/get-netcdf3-measurement {:umm {:DataType "float" :Dimensions [{:Size 10} {:Size 20}]}}))))
 
 (deftest get-valid-ranges
   (is (=[{:Min -10 :Max 0} {:Min 0 :Max 10} {:Min 10 :Max 100}]
