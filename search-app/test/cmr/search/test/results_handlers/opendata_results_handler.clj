@@ -28,7 +28,6 @@
     (are3 [expected-distribution related-url]
       (is (= expected-distribution (opendata-results-handler/related-url->distribution related-url)))
 
-
       "title is defined by url-content-type, type, and sub-type"
       {:accessURL "http://example.com/"
        :title "Download this dataset through APPEEARS"}

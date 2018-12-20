@@ -11,7 +11,7 @@
     "Application/rtf" "Application/wordperfect5.1"})
 
 (defn related-url->title
-  "Return the related url title. Title is mapped by URLContentType->Type->Subtype.
+  "Return the related url title. Title is mapped by URLContentType->Type->Subtype->Title.
   if subtype is nil return the default title for that type."
   ([related-url]
    (let [{:keys [URLContentType Type Subtype]} related-url]

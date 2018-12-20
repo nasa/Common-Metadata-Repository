@@ -21,7 +21,6 @@
                                             :Type type
                                             :Subtype subtype}))))
 
-
         "DistributionURL/GET DATA/APPEEARS"
         "Download this dataset through APPEEARS" "DistributionURL" "GET DATA" "APPEEARS"
 
@@ -33,7 +32,6 @@
 
         "URLContentType and Type are valid but Subtype does not map to anything so it should return the default value"
         "Visit this dataset's data center's home page" "DataCenterURL" "HOME PAGE" "PUBLICATIONS"))
-
 
 (deftest related-url-types
   (let [r1 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
