@@ -5,7 +5,6 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.search.results-handlers.opendata-results-handler :as opendata-results-handler]))
 
-
 (deftest distribution-is-downloadable
   (testing "Mime type distribution urls"
     (are3 [expected-mime-type related-url]
@@ -25,9 +24,25 @@
                           :get-data-mime-type "Not provided"
                           :type "GET DATA"}))
 
-  (testing "downloadable url vs not downloadable url"
+  (testing "distribution urls are as expected"
     (are3 [expected-distribution related-url]
       (is (= expected-distribution (opendata-results-handler/related-url->distribution related-url)))
+
+
+      "title is defined by url-content-type, type, and sub-type"
+      {:accessURL "http://example.com/"
+       :title "Download this dataset through APPEEARS"}
+      {:url "http://example.com/"
+       :type "GET DATA"
+       :sub-type "APPEEARS"
+       :url-content-type "DistributionURL"}
+
+      "sub-type is not defined so value is defaulted"
+      {:accessURL "http://example.com"
+       :title "View information related to this dataset"}
+      {:url-content-type "PublicationURL"
+       :type "VIEW RELATED INFORMATION"
+       :url "http://example.com"}
 
       "url is downloadable without guessing mime type"
       {:downloadURL "http://example.com/mime-type"

@@ -21,6 +21,7 @@
    [cmr.spatial.serialize :as srl]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.date-util :as umm-spec-date-util]
+   [cmr.umm-spec.related-url :as related-url]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.related-url-helper :as ru]))
 
@@ -216,13 +217,14 @@
   "Returns a distribution open data field for the provided related URL.
   See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
   [related-url]
-  (let [{:keys [description url get-data-mime-type]} related-url
+  (let [{:keys [description url get-data-mime-type url-content-type type sub-type]} related-url
         get-data-mime-type (or (util/nil-if-value umm-spec-util/not-provided get-data-mime-type)
                                (ru/infer-url-mime-type url))
         downloadable? (ru/downloadable-mime-type? get-data-mime-type)
         url-type (if downloadable? :downloadURL :accessURL)]
     (util/remove-nil-keys {url-type (ru/related-url->encoded-url url)
                            :mediaType (when downloadable? get-data-mime-type)
+                           :title (related-url/related-url->title url-content-type type sub-type)
                            :description description})))
 
 (defn landing-page

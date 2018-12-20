@@ -12,6 +12,29 @@
   (is (= {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Earthdata Search"}
          (get dif-util/dif-url-content-type->umm-url-types ["GET DATA" "Earthdata Search"] su/default-url-type))))
 
+(deftest related-url->title
+  (are3 [expected content-type type subtype]
+        (is (= expected
+               (related-url/related-url->title
+                  (cmn/map->RelatedUrlType {:URL "http://example.com"
+                                            :URLContentType content-type
+                                            :Type type
+                                            :Subtype subtype}))))
+
+
+        "DistributionURL/GET DATA/APPEEARS"
+        "Download this dataset through APPEEARS" "DistributionURL" "GET DATA" "APPEEARS"
+
+        "VisualizationURL/GET RELATED VISUALIZATION with nil subtype should return default"
+        "Get a related visualization" "VisualizationURL" "GET RELATED VISUALIZATION" nil
+
+        "No match should return nil"
+        nil "CollectionURL" "USE SERVICE API" nil
+
+        "URLContentType and Type are valid but Subtype does not map to anything so it should return the default value"
+        "Visit this dataset's data center's home page" "DataCenterURL" "HOME PAGE" "PUBLICATIONS"))
+
+
 (deftest related-url-types
   (let [r1 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
                                      :URLContentType "DistributionURL"

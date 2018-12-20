@@ -724,7 +724,7 @@
                                                  :MimeType "image/png"
                                                  :Size 10.0
                                                  :Unit "KB"}}
-                                      {:Description "Download url description"
+                                      {:Description "Download url and default title description"
                                        :URL "http://example.com/download.png"
                                        :URLContentType "DistributionURL"
                                        :Type "GET DATA"
@@ -732,15 +732,17 @@
                                                  :MimeType "image/png"
                                                  :Size 10.0
                                                  :Unit "KB"}}
-                                      {:Description "no mime type specified"
+                                      {:Description "no mime type specified and GIOVANNI title"
                                        :URL "http://example2.com/download.json"
                                        :URLContentType "DistributionURL"
                                        :Type "GET DATA"
+                                       :Subtype "GIOVANNI"
                                        :GetData {:Format "png"
                                                  :Size 10.0
                                                  :Unit "KB"}}
                                       {:URL "http://example.com/csv.csv"
                                        :URLContentType "DistributionURL"
+                                       :Subtype "VERTEX"
                                        :Type "GET DATA"}
                                       {:URL "http://example.com/html.html"
                                        :URLContentType "VisualizationURL"
@@ -770,29 +772,32 @@
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
-      (testing "accessURL and downloadURL in response"
+      (testing "distribution urls"
         (are3 [expected-distribution opendata-collection]
           (is (contains? (set (:distribution opendata-collection)) expected-distribution))
 
-          "accessURL in distribution"
+          "accessURL in distribution no title"
           {:accessURL "http://example.com/access-url"
            :description "Test access URL"} opendata-coll-umm
 
-          "downloadURL in distribution"
+          "downloadURL and default title in distribution"
           {:downloadURL "http://example.com/download.png"
-           :description "Download url description"
+           :description "Download url and default title description"
+           :title "Download this dataset"
            :mediaType "image/png"} opendata-coll-umm
 
-          "downloadURL in distribution with no specified mime type"
+          "downloadURL in distribution with no specified mime type and GIOVANNI title"
           {:downloadURL "http://example2.com/download.json"
-           :description "no mime type specified"
+           :description "no mime type specified and GIOVANNI title"
+           :title "Download this dataset through GIOVANNI"
            :mediaType "application/json"} opendata-coll-umm
 
-          "downloadURL for csv"
+          "downloadURL for csv and VERTEX title"
           {:downloadURL "http://example.com/csv.csv"
+           :title "Download this dataset through VERTEX"
            :mediaType "text/csv"} opendata-coll-umm
 
-          "accessURL for text mime type"
+          "accessURL for text mime type no title"
           {:accessURL "http://example.com/html.html"} opendata-coll-umm))
       (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
