@@ -30,6 +30,13 @@
     (* total-dimensionality
        (util/data-type->bytes data-type))))
 
+(defn- get-netcdf3-measurement
+  [variable]
+  (let [total-dimensionality (get-dimensionality variable)
+        data-type (get-in variable [:umm :DataType])]
+    (* total-dimensionality
+       (max 2 (util/data-type->bytes data-type)))))
+
 (defn- get-avg-gran-size
   "Gets SizeEstimation value for AverageSizeOfGranulesSampled and parses it to a number."
   [variable]
@@ -75,7 +82,7 @@
   to positive, break it up into two ranges: negative to 0 and 0 to positive."
   [variable]
   (let [vrs (get-in variable [:umm :ValidRanges])]
-    (flatten (map #(process-range %) vrs))))
+    (flatten (map process-range vrs))))
 
 (defn- get-avg-valid-range-digit-number
   "Get the average digit number for each range of ValidRanges in the variable.
@@ -101,7 +108,7 @@
   "Calculates the estimated size for NETCDF3 format."
   [granule-count variables metadata params]
   (let [compression 1
-        measurements (reduce + (map get-measurement variables))]
+        measurements (reduce + (map get-netcdf3-measurement variables))]
     (log/info (format "request-id: %s compression: %s measurements: %s"
                       (:request-id params) compression measurements))
     (+ (* granule-count compression measurements)
