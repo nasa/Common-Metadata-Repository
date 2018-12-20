@@ -1138,7 +1138,7 @@
                                         <gco:CharacterString>Subscription</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>URLContentType: DistributionURL, Description: Subscribe to have new data automatically sent when the data become available., Type: GET DATA, Subtype: Subscribe</gco:CharacterString>
+                                        <gco:CharacterString>URLContentType: DistributionURL Description: Subscribe to have new data automatically sent when the data become available. Type: GET DATA Subtype: Subscribe</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
@@ -1154,7 +1154,7 @@
                                         <gco:CharacterString>HTTPS</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>URLContentType: DistributionURL, Description: Direct download via HTTPS protocol., Type: GET DATA, Subtype: DIRECT DOWNLOAD</gco:CharacterString>
+                                        <gco:CharacterString>URLContentType: DistributionURL Description: Direct download via HTTPS protocol. Type: GET DATA Subtype: DIRECT DOWNLOAD</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
@@ -1170,7 +1170,7 @@
                                         <gco:CharacterString>Earthdata Search</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>URLContentType: DistributionURL, Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data., Type: GET DATA, Subtype: Earthdata Search</gco:CharacterString>
+                                        <gco:CharacterString>URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data. Type: GET DATA Subtype: Earthdata Search</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>

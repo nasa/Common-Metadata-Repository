@@ -75,35 +75,39 @@
         :MimeType nil}}))
 
 (def expected-distribution-related-url-record-CMR-5366
-  '({:URL "https://nsidc.org/daac/subscriptions.html",
+  '({:Subtype nil,
+     :GetData {:Unit "KB",
+               :Size 0.0,
+               :Checksum nil,
+               :Fees nil,
+               :Format "Not provided",
+               :MimeType nil},
      :URLContentType "DistributionURL",
-     :Type "GET DATA,",
-     :Subtype "Subscribe",
-     :Description
-     {"URLContentType" "DistributionURL,",
-      "Description"
-      "Subscribe to have new data automatically sent when the data become available.,",
-      "Type" "GET DATA,",
-      "Subtype" "Subscribe"}}
-    {:URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/",
+     :Description nil,
+     :Type "GET DATA",
+     :URL "https://nsidc.org/daac/subscriptions.html"}
+    {:Subtype nil,
+     :GetData {:Unit "KB",
+               :Size 0.0,
+               :Checksum nil,
+               :Fees nil,
+               :Format "Not provided",
+               :MimeType nil},
      :URLContentType "DistributionURL",
-     :Type "GET DATA,",
-     :Subtype "DIRECT DOWNLOAD",
-     :Description
-     {"URLContentType" "DistributionURL,",
-      "Description" "Direct download via HTTPS protocol.,",
-      "Type" "GET DATA,",
-      "Subtype" "DIRECT DOWNLOAD"}}
-    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
+     :Description nil,
+     :Type "GET DATA",
+     :URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/"}
+    {:Subtype nil,
+     :GetData {:Unit "KB",
+               :Size 0.0,
+               :Checksum nil,
+               :Fees nil,
+               :Format "Not provided",
+               :MimeType nil},
      :URLContentType "DistributionURL",
-     :Type "GET DATA,",
-     :Subtype "Earthdata Search",
-     :Description
-     {"URLContentType" "DistributionURL,",
-      "Description"
-      "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.,",
-      "Type" "GET DATA,",
-      "Subtype" "Earthdata Search"}}))
+     :Description nil,
+     :Type "GET DATA",
+     :URL "https://search.earthdata.nasa.gov/search?q=MOD10A1"}))
 
 (defn- distribution-related-url-iso-mends-record
   "Returns an example ISO19115 metadata record that includes multiple related urls
@@ -139,7 +143,7 @@
       (is (= expected-distribution-related-url-record
             (sru/parse-online-urls doc sanitize? smap-ru/service-url-path smap-ru/distributor-xpaths-map))))))
 
-(deftest iso-mends-multiple-distributed-related-url-test
+(deftest iso-mends-test-CMR-5366
   (testing "Check error case when parsing RelatedUrls that causes negative index error."
     (let [sanitize? true
           doc (distribution-related-url-iso-mends-arc-error-record)]
