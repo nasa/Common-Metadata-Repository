@@ -27,30 +27,6 @@
   "Returns the pattern that matches all the related fields in description-string"
   (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:"))
 
-(defn- convert-description-string-to-map
-  "Convert Description string to a map, removing fields that are empty or nil.
-  Description string: \"URLContentType: DistributionURL Description: A very nice URL Type: GET DATA Subtype: Subscribe\"
-  Description map: {\"URLContentType\" \"DistributionURL\"
-                    \"Description\" \"A very nice URL\"
-                    \"Type\" \"GET DATA\"
-                    \"Subtype\" \"Subscribe\"}"
-  [description-string description-regex]
-  (let [description-string (-> description-string
-                               (str/replace description-regex
-                                            #(str "HSTRING" %1 "TSTRING"))
-                               (str/trim)
-                               (str/replace #"\s+HSTRING" "HSTRING")
-                               (str/replace #":TSTRING\s+" ":TSTRING"))
-        description-string-list (str/split description-string #"HSTRING")]
-    (->> description-string-list
-         ;; split each string in the description-str-list
-         (map #(str/split % #":TSTRING"))
-         ;; keep the ones with values.
-         (filter #(= 2 (count %)))
-         (into {})
-         ;; remove "nil" valued keys
-         (util/remove-map-keys #(= "nil" %)))))
-
 (defn parse-url-types-from-description
  "In ISO, since there are not separate fields for the types, they are put in the
  description in the format 'Description: X URLContentType: Y Type: Z Subtype: A'
@@ -64,7 +40,7 @@
    (if (and (nil? description-index)(nil? url-content-type-index)
             (nil? type-index) (nil? subtype-index))
     {:Description description} ; Description not formatted like above, so just description
-    (convert-description-string-to-map description description-string-field-re-pattern)))))
+    (su/convert-iso-description-string-to-map description description-string-field-re-pattern)))))
 
 (defn- parse-operation-description
   "Parses operationDescription string, returns MimeType, DataID, and DataType"

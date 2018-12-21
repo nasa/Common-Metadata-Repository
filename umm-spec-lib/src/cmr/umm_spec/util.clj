@@ -386,3 +386,39 @@
   (if sanitize?
     (util/trunc (with-default s sanitize?) n)
     s))
+
+(def key-split-string
+  "Special string to help separate keys from values in ISO strings"
+  "HSTRING")
+
+(def value-split-string
+  "Special string to help separate keys from values in ISO strings"
+  "TSTRING")
+
+(defn convert-iso-description-string-to-map
+  "Convert Description string to a map, removing fields that are empty or nil.
+  Description string: \"URLContentType: DistributionURL
+                        Description: A very nice URL
+                        Type: GET DATA Subtype: Subscribe\"
+  Description map: {\"URLContentType\" \"DistributionURL\"
+                    \"Description\" \"A very nice URL\"
+                    \"Type\" \"GET DATA\"
+                    \"Subtype\" \"Subscribe\"}"
+  [description-string description-regex]
+  (let [description-string (-> description-string
+                               (str/replace description-regex
+                                            #(str key-split-string
+                                                  %1
+                                                  value-split-string))
+                               str/trim
+                               (str/replace #"\s+HSTRING" key-split-string)
+                               (str/replace #":TSTRING\s+" (str ":" value-split-string)))
+        description-string-list (str/split description-string (re-pattern key-split-string))]
+    (->> description-string-list
+         ;; split each string in the description-str-list
+         (map #(str/split % #":TSTRING"))
+         ;; keep the ones with values.
+         (filter #(= 2 (count %)))
+         (into {})
+         ;; remove "nil" valued keys
+         (util/remove-map-keys #(= "nil" %)))))

@@ -89,3 +89,24 @@
 
       "Sanitize? false, do not truncate"
       "ABCDEFG" 4 false "ABCDEFG")))
+
+(deftest description-string-parsing
+  (testing "Parsing given string and converting it to a map"
+    (are3 [string regex expected]
+      (is (= expected (util/convert-iso-description-string-to-map string regex)))
+
+      "ISO MENDS Collection Description string"
+      "URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data. Type: GET DATA Subtype: Earthdata Search"
+      (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:")
+      {"Type" "GET DATA",
+       "URLContentType" "DistributionURL",
+       "Description" "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.",
+       "Subtype" "Earthdata Search"}
+
+      "String with odd and nil values"
+      ":: URLContentType:nil Checksum: \"nil\" Description: NASA's newest lawnmower ascii art: __\\.-.,,,, Type: SELF PROPELLED Subtype: Earthdata Search"
+      (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:")
+      {"Checksum" "\"nil\"",
+       "Description" "NASA's newest lawnmower ascii art: __\\.-.,,,,",
+       "Type" "SELF PROPELLED",
+       "Subtype" "Earthdata Search"})))
