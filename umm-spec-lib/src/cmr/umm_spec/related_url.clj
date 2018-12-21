@@ -1,13 +1,25 @@
 (ns cmr.umm-spec.related-url
   (:require
    [clojure.string :as str]
-   [cmr.common.xml.gen :refer :all]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.related-url-titles :as related-url-titles]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
   #{"Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
     "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
     "Application/rtf" "Application/wordperfect5.1"})
+
+(defn related-url->title
+  "Return the related url title. Title is mapped by URLContentType->Type->Subtype->Title.
+  if subtype is nil return the default title for that type."
+  ([related-url]
+   (let [{:keys [URLContentType Type Subtype]} related-url]
+     (related-url->title URLContentType Type Subtype)))
+  ([url-content-type type sub-type]
+   (let [sub-type-titles (get-in related-url-titles/related-url-titles [url-content-type type])]
+     (or (get sub-type-titles sub-type)
+         (get sub-type-titles "default")))))
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
