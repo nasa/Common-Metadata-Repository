@@ -236,20 +236,11 @@
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
-(def ^:private data-json-prod
-  "Public opendata collections in production for data.json response."
-  (let [query {:url "https://cmr.earthdata.nasa.gov/search/collections.opendata"
-               :method :get
-               :throw-exceptions false
-               :query-params {:page-size 20 :pretty true}} ;; Test just 20 datasets for now
-        response (client/request query)]
-    response))
-
-(defn- find-data-json-prod
-  "Retrieve collections as opendata from production."
+(defn- find-data-json
+  "Retrieve all public collections with gov.nasa.eosdis tag as opendata."
   [ctx]
-  {:status (:status data-json-prod)
-   :body (:body data-json-prod)})
+  {:status 200
+   :body (query-svc/get-data-json-collections ctx)})
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
@@ -327,8 +318,8 @@
   "config-enabled route for data.json. Socrata does not support harvesting from
    data.json endpoints that do not explicitly end in /data.json. This is needed
    to harvest CMR opendata responses on data.nasa.gov."
-  (GET "/socrata_test/data.json"
+  (GET "/socrata/data.json"
     {ctx :request-context}
     (if (allow-data-json-flag)
-      (find-data-json-prod ctx)
+      (find-data-json ctx)
       (common-pages/not-found))))

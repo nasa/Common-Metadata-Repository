@@ -329,6 +329,21 @@
          results (qe/execute-query context query)]
      (:items results))))
 
+(defn get-data-json-collections
+  [context]
+  (let [condition (common-params/parameter->condition context
+                                                      :collection
+                                                      :tag-key
+                                                      "gov.nasa.eosdis"
+                                                      {})
+        query (qm/query {:concept-type :collection
+                         :condition condition
+                         :page-size :unlimited
+                         :result-format :opendata
+                         :skip-acls? false})
+        results (qe/execute-query context query)]
+    (common-search/search-results->response context query results)))
+
 (defn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
