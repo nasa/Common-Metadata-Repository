@@ -167,6 +167,22 @@
       {:status status
        :body body})))
 
+(defn retrieve-data-json
+  "Returns the data.json response."
+  ([]
+   (retrieve-data-json {}))
+  ([options]
+   (let [url (url/data-json-url)
+         args (merge {:throw-exceptions false
+                      :connection-manager (s/conn-mgr)}
+                     options)
+         response (client/get url args)
+         {:keys [status body]} response]
+     (if (= 200 status)
+       {:status status
+        :results (json/decode body true)}
+       response))))
+
 (defn retrieve-concept
   "Returns the concept metadata through the search concept retrieval endpoint using the cmr
   concept-id and optionally revision-id."
