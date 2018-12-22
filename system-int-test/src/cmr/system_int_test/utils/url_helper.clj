@@ -298,7 +298,6 @@
   (format "http://localhost:%s/jobs/refresh-collection-metadata-cache"
           (transmit-config/search-port)))
 
-
 (defn search-health-url
   "URL to check search health."
   []
@@ -339,6 +338,11 @@
   "URL to get the humanizers report"
   []
   (format "http://localhost:%s/humanizers/report" (transmit-config/search-port)))
+
+(defn data-json-url
+  "URL to get data.json."
+  []
+  (format "http://localhost:%s/socrata/data.json" (transmit-config/search-port)))
 
 (defn search-root
   "Returns the search url root"
