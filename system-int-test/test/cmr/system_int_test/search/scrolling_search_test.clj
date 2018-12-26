@@ -17,6 +17,24 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(deftest collection-scroll-id-header
+  (testing "UMM-JSON with scroll in headers"
+    (are3 [accept extension]
+      (let [response (search/find-concepts-in-format
+                      accept
+                      :collection
+                      {:scroll true}
+                      {:url-extension extension
+                       :accept accept})
+            scroll-id (get-in response [:headers :CMR-Scroll-Id])]
+        (is (not (nil? scroll-id))))
+
+      "UMM-JSON via extension"
+      nil "umm_json"
+
+      "UMM-JSON via accept"
+      mime-types/umm-json nil)))
+
 (deftest granule-scrolling
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1"
                                                      (data-umm-c/collection {:EntryTitle "E1"

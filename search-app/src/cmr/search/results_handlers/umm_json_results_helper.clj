@@ -76,6 +76,7 @@
   [context concept-type query elastic-results]
   (let [{:keys [result-format]} query
         hits (get-in elastic-results [:hits :total])
+        scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         ;; Get concept metadata in specified UMM format and version
         tuples (mapv (partial elastic-result->tuple concept-type) elastic-matches)
@@ -89,4 +90,7 @@
                          concept-type elastic-result (:metadata concept))))
                     elastic-matches
                     concepts)]
-    (results/map->Results {:hits hits :items items :result-format result-format})))
+    (results/map->Results {:hits hits
+                           :items items
+                           :result-format result-format
+                           :scroll-id scroll-id})))
