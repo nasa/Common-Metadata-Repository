@@ -66,7 +66,7 @@
 (deftest data-json-response
   (let [tag (tag-util/make-tag {:tag-key "gov.nasa.eosdis"})
         public-collections-with-tag (create-collections 5)
-        public-collections-without-tag (create-collections 5)
+        public-collections-without-tag (create-collections 10)
         private-collections-with-tag (create-collections 5)
         private-collections-without-tag (create-collections 5)]
     (tag-util/create-tag (config/echo-system-token) tag)
@@ -87,6 +87,6 @@
       (let [data-json (search-util/retrieve-data-json)
             datasets (get-in data-json [:results :dataset])]
         (is (= 200 (:status data-json)))
-        (is (= 5 (count datasets)))
+        (is (= (count public-collections-with-tag) (count datasets)))
         (is (= (set (map :concept-id public-collections-with-tag))
                (set (map :identifier datasets))))))))
