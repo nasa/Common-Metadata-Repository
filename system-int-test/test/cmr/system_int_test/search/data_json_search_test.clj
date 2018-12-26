@@ -65,10 +65,10 @@
 
 (deftest data-json-response
   (let [tag (tag-util/make-tag {:tag-key "gov.nasa.eosdis"})
-        public-collections-with-tag (create-collections 5)
-        public-collections-without-tag (create-collections 10)
+        public-collections-with-tag (create-collections 7)
+        public-collections-without-tag (create-collections 6)
         private-collections-with-tag (create-collections 5)
-        private-collections-without-tag (create-collections 5)]
+        private-collections-without-tag (create-collections 4)]
     (tag-util/create-tag (config/echo-system-token) tag)
     (index-util/wait-until-indexed)
 
