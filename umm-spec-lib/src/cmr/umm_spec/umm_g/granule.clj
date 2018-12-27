@@ -7,7 +7,7 @@
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
    [cmr.umm-spec.umm-g.orbit-calculated-spatial-domain :as ocsd]
    [cmr.umm-spec.umm-g.platform :as platform]
-   [cmr.umm-spec.umm-g.project :as project]
+   [cmr.umm-spec.umm-g.projects :as projects]
    [cmr.umm-spec.umm-g.related-url :as related-url]
    [cmr.umm-spec.umm-g.spatial :as spatial]
    [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
@@ -69,7 +69,7 @@
       :orbit-calculated-spatial-domains (ocsd/umm-g-orbit-calculated-spatial-domains->OrbitCalculatedSpatialDomains
                                          (:OrbitCalculatedSpatialDomains umm-g-json))
       :platform-refs (platform/umm-g-platforms->PlatformRefs (:Platforms umm-g-json))
-      :project-refs (project/umm-g-projects->ProjectRefs (:Projects umm-g-json))
+      :project-refs (projects/umm-g-projects->ProjectRefs (:Projects umm-g-json))
       :access-value (get-in umm-g-json [:AccessConstraints :Value])
       :cloud-cover (:CloudCover umm-g-json)
       :two-d-coordinate-system (tiling-system/umm-g-tiling-identification-system->TwoDCoordinateSystem
@@ -118,7 +118,7 @@
      :Platforms (platform/PlatformRefs->umm-g-platforms platform-refs)
      :CloudCover cloud-cover
      :AccessConstraints (when access-value {:Value access-value})
-     :Projects (project/ProjectRefs->umm-g-projects project-refs)
+     :Projects (projects/ProjectRefs->umm-g-projects project-refs)
      :DataGranule (data-granule/DataGranule->umm-g-data-granule data-granule)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
                                   two-d-coordinate-system)

@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-g.project
+(ns cmr.umm-spec.umm-g.projects
   "Contains functions for parsing UMM-G JSON projects into umm-lib granule modelProjectRefs
   and generating UMM-G JSON projects from umm-lib granule model ProjectRefs."
   (:require
