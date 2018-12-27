@@ -1,7 +1,8 @@
 (ns cmr.ingest.services.messages
-  (:require [cmr.common.util :as util]
-            [cmr.common.validations.core :as vc]
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common.validations.core :as vc]))
 
 (defn parent-collection-does-not-exist
   [provider-id granule-ur collection-ref]
@@ -9,14 +10,14 @@
         coll-ref-humanized-fields (for [[field value] collection-ref-fields]
                                     (format "%s [%s]" (vc/humanize-field field) value))]
     (format "Collection with %s referenced in granule [%s] provider [%s] does not exist."
-            (str/join ", " coll-ref-humanized-fields)
+            (string/join ", " coll-ref-humanized-fields)
             granule-ur provider-id)))
 
 (defn invalid-multipart-params
   [expected-params actual-params]
   (format "Unexpected multipart parameters: [%s]. Expected the multipart parameters [%s]."
-          (str/join ", " actual-params)
-          (str/join ", " expected-params)))
+          (string/join ", " actual-params)
+          (string/join ", " expected-params)))
 
 (defn invalid-revision-id
   [revision-id]
@@ -24,7 +25,8 @@
 
 (defn invalid-parent-collection-for-validation
   [collection-validation-error]
-  (str "The collection given for validating the granule was invalid: " collection-validation-error))
+  (str "The collection given for validating the granule was invalid: "
+       (pr-str collection-validation-error)))
 
 (defn platform-not-matches-kms-keywords
   [platform]
@@ -76,9 +78,9 @@
                               attribute-order)]
     (case (count human-id-values)
       1 (first human-id-values)
-      2 (str/join " and " human-id-values)
+      2 (string/join " and " human-id-values)
       ;; else
-      (str (str/join ", " (drop-last human-id-values)) ", and " (last human-id-values)))))
+      (str (string/join ", " (drop-last human-id-values)) ", and " (last human-id-values)))))
 
 (defn science-keyword-not-matches-kms-keywords
   "Create the invalid science keyword message"
