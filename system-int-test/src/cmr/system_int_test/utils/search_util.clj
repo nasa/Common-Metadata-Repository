@@ -384,6 +384,7 @@
     (if (= status 200)
       {:status status
        :body body
+       :scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
        :content-type (get-in response [:headers "content-type"])
        :results (json/decode body true)}
       response)))

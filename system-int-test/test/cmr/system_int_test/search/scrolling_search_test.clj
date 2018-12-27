@@ -17,23 +17,65 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest collection-scroll-id-header
-  (testing "UMM-JSON with scroll in headers"
-    (are3 [accept extension]
-      (let [response (search/find-concepts-in-format
-                      accept
-                      :collection
-                      {:scroll true}
-                      {:url-extension extension
-                       :accept accept})
-            scroll-id (get-in response [:headers :CMR-Scroll-Id])]
-        (is (not (nil? scroll-id))))
+(defn- scroll-all-umm-json
+  "Scroll all results in umm-json and return
+   number of scrolls and all concepts harvested."
+  [concept-type initial-scroll]
+  (loop [current-scroll initial-scroll
+         all-concepts []
+         num-scrolls 0]
+    (let [current-concepts (get-in current-scroll [:results :items])
+          scroll-id (:scroll-id current-scroll)]
+      (if-not (empty? current-concepts)
+        (recur (search/find-concepts-umm-json
+                concept-type
+                {}
+                {:headers {routes/SCROLL_ID_HEADER scroll-id}})
+               (concat all-concepts current-concepts)
+               (inc num-scrolls))
+        [num-scrolls all-concepts]))))
 
-      "UMM-JSON via extension"
-      nil "umm_json"
+(deftest scrolling-in-umm-json
+  (let [colls (doall
+               (for [idx (range 5)]
+                (data2-core/ingest-umm-spec-collection
+                 "PROV1"
+                 (data-umm-c/collection idx {}))))
+        grans (doall
+               (for [coll colls]
+                 (data2-core/ingest
+                  "PROV1"
+                   (data2-granule/granule-with-umm-spec-collection
+                    coll
+                    (:concept-id coll)))))]
+    (index/wait-until-indexed)
 
-      "UMM-JSON via accept"
-      mime-types/umm-json nil)))
+    (testing "UMM-JSON scrolling"
+      (are3 [concept-type accept extension all-refs]
+        (let [response (search/find-concepts-umm-json
+                        concept-type
+                        {:scroll true
+                         :page-size 1
+                         :provider "PROV1"}
+                        {:url-extension extension
+                         :accept accept})
+              [num-scrolls all-concepts] (scroll-all-umm-json concept-type response)]
+          (is (not (nil? (:scroll-id response))))
+          (is (= (count all-refs) num-scrolls))
+          (is (= (set (map :concept-id all-refs))
+                 (set (map #(get-in % [:meta :concept-id]) all-concepts)))))
+
+        "Collection UMM-JSON via extension"
+        :collection nil "umm_json" colls
+
+        "Collection UMM-JSON via accept"
+        :collection mime-types/umm-json nil colls
+
+        "Granule UMM-JSON via extension"
+        :granule nil "umm_json" grans
+
+        "Granule UMM-JSON via accept"
+        :granule mime-types/umm-json nil grans))))
 
 (deftest granule-scrolling
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1"
