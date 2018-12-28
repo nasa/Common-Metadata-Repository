@@ -70,7 +70,6 @@
         private-collections-with-tag (create-collections 5)
         private-collections-without-tag (create-collections 4)]
     (tag-util/create-tag (config/echo-system-token) tag)
-    (index-util/wait-until-indexed)
 
     ;; Make collections public
     (make-collections-public public-collections-with-tag)
