@@ -543,10 +543,9 @@
                        {:data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
                       (d/item->concept :umm-json)
                       ingest/ingest-concept)]
-      (index/wait-until-indexed)
       (is (= 422 (:status granule)))
-      (is (contains? (set (:errors granule))
-                     "DeleteTime 2000-01-01T00:00:00.000Z is before the current time.")))))
+      (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
+             (:errors granule))))))
 
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection
