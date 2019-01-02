@@ -533,19 +533,31 @@
          (is (= nil errors))))))
 
 (deftest old-delete-time-granule-ingest-test
-  (testing "DeleteTime in past results in validation error"
+  (testing "DeleteTime validation"
     (let [collection (d/ingest-umm-spec-collection
                       "PROV1"
-                      (data-umm-c/collection 1 {}))
-          granule (-> (dg/granule-with-umm-spec-collection
+                      (data-umm-c/collection 1 {}))]
+      (testing "DeleteTime in past results in validation error"
+        (let [granule (dg/granule-with-umm-spec-collection
                        collection
                        (:concept-id collection)
-                       {:data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
-                      (d/item->concept :umm-json)
-                      ingest/ingest-concept)]
-      (is (= 422 (:status granule)))
-      (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
-             (:errors granule))))))
+                       {:granule-ur "gran1"
+                        :data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
+              {:keys [status errors]} (d/ingest "PROV1"
+                                                granule
+                                                {:format :umm-json
+                                                 :allow-failure? true})]
+          (is (= 422 status))
+          (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
+                 errors))))
+      (testing "DeleteTime in future is successful"
+        (let [granule (dg/granule-with-umm-spec-collection
+                       collection
+                       (:concept-id collection)
+                       {:granule-ur "gran2"
+                        :data-provider-timestamps {:delete-time "2100-01-01T00:00:00Z"}})
+              response (d/ingest "PROV1" granule {:format :umm-json})]
+          (is (= 201 (:status response))))))))
 
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection
