@@ -1599,6 +1599,10 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,X\Y\Z,7"
 
+Find an additional attribute with name "MISSION_NAME" with value "Big Island, HI".
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=string,MISSION_NAME,Big Island\, HI"
+
 Multiple attributes can be provided. The default is for collections to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
@@ -1760,6 +1764,10 @@ Find an additional attribute with name "X,Y,Z" with value 7.
 Find an additional attribute with name "X\Y\Z" with value 7.
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=float,X\Y\Z,7"
+
+Find an additional attribute with name "MISSION_NAME" with value "Big Island, HI".
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&attribute\[\]=string,MISSION_NAME,Big Island\, HI"
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
