@@ -7,7 +7,7 @@
 (def variable-test-concept {:concept-type :variable})
 
 (deftest business-rules-for-granules
-  (is (= []
+  (is (= [bv/delete-time-validation]
          (bv/business-rule-validations
           (:concept-type granule-test-concept)))))
 

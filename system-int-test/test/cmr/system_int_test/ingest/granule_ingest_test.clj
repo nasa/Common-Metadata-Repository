@@ -532,6 +532,22 @@
          (is (= 201 status))
          (is (= nil errors))))))
 
+(deftest old-delete-time-granule-ingest-test
+  (testing "DeleteTime in past results in validation error"
+    (let [collection (d/ingest-umm-spec-collection
+                      "PROV1"
+                      (data-umm-c/collection 1 {}))
+          granule (-> (dg/granule-with-umm-spec-collection
+                       collection
+                       (:concept-id collection)
+                       {:data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
+                      (d/item->concept :umm-json)
+                      ingest/ingest-concept)]
+      (index/wait-until-indexed)
+      (is (= 422 (:status granule)))
+      (is (contains? (set (:errors granule))
+                     "DeleteTime 2000-01-01T00:00:00.000Z is before the current time.")))))
+
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection
                     "PROV1" (data-umm-c/collection {:EntryTitle "correct"
