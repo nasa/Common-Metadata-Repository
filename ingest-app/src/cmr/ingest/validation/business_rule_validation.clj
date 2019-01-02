@@ -23,7 +23,7 @@
   (when (nil? (get-in concept [:extra-fields :version-id]))
     ["Version is required."]))
 
-(defn- delete-time-validation
+(defn delete-time-validation
   "Validates the concept delete-time.
   Returns error if the delete time exists and is before one minute from the current time."
   [_ concept]
@@ -95,5 +95,5 @@
                 concept-id-validation
                 version-is-not-nil-validation
                 collection-update-validation]
-   :granule []
+   :granule [delete-time-validation]
    :variable []})
