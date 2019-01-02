@@ -532,32 +532,31 @@
          (is (= 201 status))
          (is (= nil errors))))))
 
-(deftest old-delete-time-granule-ingest-test
-  (testing "DeleteTime validation"
-    (let [collection (d/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection 1 {}))]
-      (testing "DeleteTime in past results in validation error"
-        (let [granule (dg/granule-with-umm-spec-collection
-                       collection
-                       (:concept-id collection)
-                       {:granule-ur "gran1"
-                        :data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
-              {:keys [status errors]} (d/ingest "PROV1"
-                                                granule
-                                                {:format :umm-json
-                                                 :allow-failure? true})]
-          (is (= 422 status))
-          (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
-                 errors))))
-      (testing "DeleteTime in future is successful"
-        (let [granule (dg/granule-with-umm-spec-collection
-                       collection
-                       (:concept-id collection)
-                       {:granule-ur "gran2"
-                        :data-provider-timestamps {:delete-time "2100-01-01T00:00:00Z"}})
-              response (d/ingest "PROV1" granule {:format :umm-json})]
-          (is (= 201 (:status response))))))))
+(deftest delete-time-granule-ingest-test
+  (let [collection (d/ingest-umm-spec-collection
+                    "PROV1"
+                    (data-umm-c/collection 1 {}))]
+    (testing "DeleteTime in past results in validation error"
+      (let [granule (dg/granule-with-umm-spec-collection
+                     collection
+                     (:concept-id collection)
+                     {:granule-ur "gran1"
+                      :data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
+            {:keys [status errors]} (d/ingest "PROV1"
+                                              granule
+                                              {:format :umm-json
+                                               :allow-failure? true})]
+        (is (= 422 status))
+        (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
+               errors))))
+    (testing "DeleteTime in future is successful"
+      (let [granule (dg/granule-with-umm-spec-collection
+                     collection
+                     (:concept-id collection)
+                     {:granule-ur "gran2"
+                      :data-provider-timestamps {:delete-time "2100-01-01T00:00:00Z"}})
+            response (d/ingest "PROV1" granule {:format :umm-json})]
+        (is (= 201 (:status response)))))))
 
 (deftest ingest-umm-g-granule-test
   (let [collection (d/ingest-umm-spec-collection
