@@ -72,16 +72,20 @@
 (defn- validate-equator-crossing
   "Validate the given equator crossing date time against the temporal start and end times."
   [equator-crossing temporal-start temporal-end]
-  (cond
-    (t/before? equator-crossing temporal-start)
-    [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
-                 "is earlier than granule temporal start date time [%s].")
-            equator-crossing temporal-start)]
+  (when (and equator-crossing
+             ;; ISO SMAP granule might return a string as equator crossing date time
+             ;; when it is invalid. We don't want to perform this check in this case.
+             (not (string? equator-crossing)))
+    (cond
+      (and temporal-start (t/before? equator-crossing temporal-start))
+      [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
+                    "is earlier than granule temporal start date time [%s].")
+               equator-crossing temporal-start)]
 
-    (and temporal-end (t/after? equator-crossing temporal-end))
-    [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
-                 "is later than granule temporal end date time [%s].")
-            equator-crossing temporal-end)]))
+      (and temporal-end (t/after? equator-crossing temporal-end))
+      [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
+                    "is later than granule temporal end date time [%s].")
+               equator-crossing temporal-end)])))
 
 (defn- ocsd-temporal-validation
   "Validates the equator crossing date times against the granule temporal."
