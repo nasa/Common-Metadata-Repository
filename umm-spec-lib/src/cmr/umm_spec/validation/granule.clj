@@ -1,20 +1,21 @@
 (ns cmr.umm-spec.validation.granule
   "Defines validations for UMM granules"
-  (:require [clj-time.core :as t]
-            [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.validations.core :as v]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.umm-spec.time :as umm-spec-time]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.validation.additional-attribute :as aav]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.common.validations.core :as v]
+   [cmr.spatial.validation :as sv]
+   [cmr.umm-spec.time :as umm-spec-time]
+   [cmr.umm-spec.validation.additional-attribute :as aav]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.validation.validation-helper :as h]
+   [cmr.umm.validation.validation-utils :as vu]))
 
 (defn- spatial-extent->granule-spatial-representation
   "Returns the granule spatial representation given a parent collection spatial extent"
@@ -36,7 +37,7 @@
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
   [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
@@ -46,7 +47,7 @@
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
@@ -67,6 +68,36 @@
                  :orbit [(is-not-allowed :geometries)
                          (is-required :orbit)])]
     (apply merge (remove nil? errors))))
+
+(defn- validate-equator-crossing
+  "Validate the given equator crossing date time against the temporal start and end times."
+  [equator-crossing temporal-start temporal-end]
+  (cond
+    (t/before? equator-crossing temporal-start)
+    [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
+                 "is earlier than granule temporal start date time [%s].")
+            equator-crossing temporal-start)]
+
+    (and temporal-end (t/after? equator-crossing temporal-end))
+    [(format (str "Granule orbit calculated spatial domains equator crossing date time [%s] "
+                 "is later than granule temporal end date time [%s].")
+            equator-crossing temporal-end)]))
+
+(defn- ocsd-temporal-validation
+  "Validates the equator crossing date times against the granule temporal."
+  [_ granule]
+  (let [{:keys [temporal orbit-calculated-spatial-domains]} granule
+        temporal-start (sed/start-date :granule temporal)
+        temporal-end (sed/end-date :granule temporal)
+        equator-crossings (map :equator-crossing-date-time orbit-calculated-spatial-domains)
+        validation-errors (->> equator-crossings
+                               (map #(validate-equator-crossing % temporal-start temporal-end))
+                               (map-indexed vector)
+                               (into {})
+                               util/remove-nil-keys)]
+    (when (seq validation-errors)
+      (util/map-keys #(vector :orbit-calculated-spatial-domains % :equator-crossing-date-time)
+                     validation-errors))))
 
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
@@ -130,13 +161,13 @@
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
   [_ granule]
-  (let [project-ref-names (set (map str/lower-case (:project-refs granule)))
-        parent-project-names (->> granule :parent :Projects (map :ShortName) (map str/lower-case) set)
+  (let [project-ref-names (set (map string/lower-case (:project-refs granule)))
+        parent-project-names (->> granule :parent :Projects (map :ShortName) (map string/lower-case) set)
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]
        [(format "%%s have [%s] which do not reference any projects in parent collection."
-                (str/join ", " missing-project-refs))]})))
+                (string/join ", " missing-project-refs))]})))
 
 (defn- matches-collection-identifier-validation
   "Validates the granule collection-ref field matches the corresponding field in the parent collection."
@@ -209,7 +240,7 @@
     (when missing-operation-modes
       {field-path
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
-                (str/join ", " missing-operation-modes))]})))
+                (string/join ", " missing-operation-modes))]})))
 
 (def sensor-ref-validations
   "Defines the sensor validations for granules"
@@ -239,7 +270,7 @@
                      (matches-collection-identifier-validation :short-name [:ShortName])
                      (matches-collection-identifier-validation :version-id [:Version])]
     :spatial-coverage spatial-coverage-validations
-    :orbit-calculated-spatial-domains ocsd-validations 
+    :orbit-calculated-spatial-domains ocsd-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
@@ -251,4 +282,5 @@
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
    projects-reference-collection
+   ocsd-temporal-validation
    spatial-matches-granule-spatial-representation])
