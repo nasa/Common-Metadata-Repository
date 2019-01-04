@@ -150,7 +150,7 @@
                       <gmd:geographicIdentifier>
                         <gmd:MD_Identifier>
                           <gmd:code>
-                            <gco:CharacterString>OrbitNumber: 100 BeginOrbitNumber: 1 EquatorCrossingLongitude: 140.0 EquatorCrossingDateTime: 2015-05-30T16:01:00.000Z</gco:CharacterString>
+                            <gco:CharacterString>OrbitNumber: 100 BeginOrbitNumber: 1 EquatorCrossingLongitude: 140.0 EquatorCrossingDateTime: 2015-10-27T05:01:00.000Z</gco:CharacterString>
                           </gmd:code>
                           <gmd:codeSpace>
                             <gco:CharacterString>gov.nasa.esdis.umm.orbitcalculatedspatialdomains</gco:CharacterString>
@@ -398,4 +398,3 @@
   </gmd:composedOf>
   <gmd:seriesMetadata gco:nilReason="missing"/>
 </gmd:DS_Series>
-
