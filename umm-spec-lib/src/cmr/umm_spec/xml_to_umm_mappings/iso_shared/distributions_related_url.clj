@@ -63,6 +63,12 @@
          ;; remove "nil" valued keys
          (util/remove-map-keys #(= "nil" %)))))
 
+(defn- convert-key-strings-to-keywords
+  [map]
+  (into {}
+    (for [[k v] map]
+      [(keyword k) v])))
+
 (defn parse-url-types-from-description
  "In ISO, since there are not separate fields for the types, they are put in the
  description in the format 'Description: X URLContentType: Y Type: Z Subtype: A'
@@ -71,12 +77,17 @@
  (when description
   (let [description-index (util/get-index-or-nil description "Description:")
         url-content-type-index (util/get-index-or-nil description "URLContentType:")
-        type-index (util/get-index-or-nil description " Type:")
-        subtype-index (util/get-index-or-nil description "Subtype:")]
-   (if (and (nil? description-index)(nil? url-content-type-index)
-            (nil? type-index) (nil? subtype-index))
+        type-index (util/get-index-or-nil description "Type:")
+        subtype-index (util/get-index-or-nil description "Subtype:")
+        checksum-index (util/get-index-or-nil description "Checksum:")]
+   (if (and (nil? description-index)
+            (nil? url-content-type-index)
+            (nil? type-index)
+            (nil? subtype-index)
+            (nil? checksum-index))
     {:Description description} ; Description not formatted like above, so just description
-    (convert-iso-description-string-to-map description description-string-field-re-pattern)))))
+    (convert-key-strings-to-keywords
+     (convert-iso-description-string-to-map description description-string-field-re-pattern))))))
 
 (defn- parse-operation-description
   "Parses operationDescription string, returns MimeType, DataID, and DataType"

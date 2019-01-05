@@ -231,7 +231,9 @@
                                     </gmd:address>
                                     <gmd:onlineResource>
                                         <gmd:CI_OnlineResource>
-                                            <gmd:linkage gco:nilReason="missing"/>
+                                            <gmd:linkage>
+                                                <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                            </gmd:linkage>
                                             <gmd:name gco:nilReason="missing"/>
                                             <gmd:description gco:nilReason="missing"/>
                                         </gmd:CI_OnlineResource>
@@ -290,7 +292,9 @@
                                     </gmd:address>
                                     <gmd:onlineResource>
                                         <gmd:CI_OnlineResource>
-                                            <gmd:linkage gco:nilReason="missing"/>
+                                            <gmd:linkage>
+                                                <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                            </gmd:linkage>
                                             <gmd:name gco:nilReason="missing"/>
                                             <gmd:description gco:nilReason="missing"/>
                                         </gmd:CI_OnlineResource>
@@ -325,7 +329,9 @@
                                     </gmd:address>
                                     <gmd:onlineResource>
                                         <gmd:CI_OnlineResource>
-                                            <gmd:linkage gco:nilReason="missing"/>
+                                            <gmd:linkage>
+                                                <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                            </gmd:linkage>
                                             <gmd:name gco:nilReason="missing"/>
                                             <gmd:description gco:nilReason="missing"/>
                                         </gmd:CI_OnlineResource>
@@ -385,7 +391,9 @@
                             </gmd:address>
                             <gmd:onlineResource>
                                 <gmd:CI_OnlineResource>
-                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
                                     <gmd:name gco:nilReason="missing"/>
                                     <gmd:description gco:nilReason="missing"/>
                                 </gmd:CI_OnlineResource>
@@ -429,7 +437,9 @@
                             </gmd:address>
                             <gmd:onlineResource>
                                 <gmd:CI_OnlineResource>
-                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
                                     <gmd:name gco:nilReason="missing"/>
                                     <gmd:description gco:nilReason="missing"/>
                                 </gmd:CI_OnlineResource>
@@ -488,7 +498,9 @@
                             </gmd:address>
                             <gmd:onlineResource>
                                 <gmd:CI_OnlineResource>
-                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
                                     <gmd:name gco:nilReason="missing"/>
                                     <gmd:description gco:nilReason="missing"/>
                                 </gmd:CI_OnlineResource>
@@ -547,7 +559,9 @@
                             </gmd:address>
                             <gmd:onlineResource>
                                 <gmd:CI_OnlineResource>
-                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                    </gmd:linkage>
                                     <gmd:name gco:nilReason="missing"/>
                                     <gmd:description gco:nilReason="missing"/>
                                 </gmd:CI_OnlineResource>
@@ -798,7 +812,9 @@
                                     </gmd:address>
                                     <gmd:onlineResource>
                                         <gmd:CI_OnlineResource>
-                                            <gmd:linkage gco:nilReason="missing"/>
+                                            <gmd:linkage>
+                                                <gmd:URL>http://nsidc.org/daac/index.html</gmd:URL>
+                                            </gmd:linkage>
                                             <gmd:name gco:nilReason="missing"/>
                                             <gmd:description gco:nilReason="missing"/>
                                         </gmd:CI_OnlineResource>
@@ -1186,7 +1202,7 @@
                                         <gco:CharacterString>Earthdata Search</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>Checksum: A12345F Subtype: Earthdata Search Type: GET DATA URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 2.</gco:CharacterString>
+                                        <gco:CharacterString>URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 2. Checksum: A12345F Subtype: Earthdata Search Type: GET DATA</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
@@ -1202,7 +1218,7 @@
                                         <gco:CharacterString>Earthdata Search</gco:CharacterString>
                                     </gmd:name>
                                     <gmd:description>
-                                        <gco:CharacterString>Type: GET DATA URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 3.</gco:CharacterString>
+                                        <gco:CharacterString>URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 3. Type: GET DATA</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>

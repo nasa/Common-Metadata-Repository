@@ -79,8 +79,9 @@
   '({:URL "https://nsidc.org/daac/subscriptions.html",
      :URLContentType "DistributionURL",
      :Type "GET DATA",
-     :Subtype nil,
-     :Description nil,
+     :Subtype "Subscribe",
+     :Description
+     "Subscribe to have new data automatically sent when the data become available.",
      :GetData
      {:Format "Not provided",
       :Size 0.0,
@@ -91,8 +92,8 @@
     {:URL "https://n5eil01u.ecs.nsidc.org/MOST/MOD10A1.061/",
      :URLContentType "DistributionURL",
      :Type "GET DATA",
-     :Subtype nil,
-     :Description nil,
+     :Subtype "DIRECT DOWNLOAD",
+     :Description "Direct download via HTTPS protocol.",
      :GetData
      {:Format "Not provided",
       :Size 0.0,
@@ -103,8 +104,9 @@
     {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
      :URLContentType "DistributionURL",
      :Type "GET DATA",
-     :Subtype nil,
-     :Description nil,
+     :Subtype "Earthdata Search",
+     :Description
+     "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.",
      :GetData
      {:Format "Not provided",
       :Size 0.0,
@@ -115,20 +117,22 @@
     {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
      :URLContentType "DistributionURL",
      :Type "GET DATA",
-     :Subtype nil,
-     :Description nil,
+     :Subtype "Earthdata Search",
+     :Description
+     "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 2.",
      :GetData
      {:Format "Not provided",
       :Size 0.0,
       :Unit "KB",
       :Fees nil,
-      :Checksum nil,
+      :Checksum "A12345F",
       :MimeType nil}}
     {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
      :URLContentType "DistributionURL",
      :Type "GET DATA",
      :Subtype nil,
-     :Description nil,
+     :Description
+     "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data 3.",
      :GetData
      {:Format "Not provided",
       :Size 0.0,
@@ -153,7 +157,7 @@
   "Returns an example iso mends record that caused internal errors while parsing.
    It contains multiple related urls."
   []
-  (slurp (io/resource "example-data/iso19115/CMR-5366.xml")))
+  (slurp (io/resource "example-data/error-cases/CMR-5366.xml")))
 
 (deftest iso-mends-multiple-distributed-related-url-test
   (testing "The the software that checks multiple related urls for multiple distributors,
@@ -176,7 +180,7 @@
     (let [sanitize? true
           doc (distribution-related-url-iso-mends-arc-error-record)]
       (is (= expected-distribution-related-url-record-CMR-5366
-            (sru/parse-online-urls doc sanitize? mends-ru/service-url-path mends-ru/distributor-xpaths-map))))))
+             (sru/parse-online-urls doc sanitize? mends-ru/service-url-path mends-ru/distributor-xpaths-map))))))
 
 (deftest description-string-parsing
   (testing "Parsing given string and converting it to a map"
