@@ -715,6 +715,31 @@
          {:path [:two-d-coordinate-system :start-coordinate-1]
           :errors ["The field [Start Coordinate 1] falls outside the bounds [0 ∞] defined in the collection"]}]))))
 
+(defn- make-granule-with-equator-crossing
+  "Creates a granule with the given equator-crossing-date-time.
+  This function is tied to the collection that is used in test
+  granule-ocsd-equator-crossing-date-time and is only intended to be used in that test."
+  [equator-crossing-date-time]
+  (make-granule
+   {:temporal (g/map->GranuleTemporal
+               {:range-date-time
+                {:beginning-date-time (dtp/parse-datetime "2015-01-01T00:00:00Z")
+                 :ending-date-time (dtp/parse-datetime "2015-06-01T00:00:00Z")}})
+    :spatial-coverage (g/map->SpatialCoverage
+                       {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})
+    :orbit-calculated-spatial-domains
+    [;; a valid equator crossing to test handling of more than one orbit calculated spatial domains
+     (g/map->OrbitCalculatedSpatialDomain
+      {:orbit-number  1
+       :start-orbit-number 1
+       :stop-orbit-number 1
+       :equator-crossing-date-time (dtp/parse-datetime "2015-02-01T00:00:00Z")})
+     (g/map->OrbitCalculatedSpatialDomain
+      {:orbit-number  1
+       :start-orbit-number 1
+       :stop-orbit-number 1
+       :equator-crossing-date-time (dtp/parse-datetime equator-crossing-date-time)})]}))
+
 (deftest granule-ocsd-equator-crossing-date-time
   (let [collection-with-orbit (make-collection
                                {:TemporalExtents [(cmn/map->TemporalExtentType
@@ -725,28 +750,7 @@
                                                    :Period 100.0
                                                    :SwathWidth 2600.0
                                                    :StartCircularLatitude 50.0
-                                                   :NumberOfOrbits 2.0}}})
-        make-granule-with-equator-crossing
-        (fn [equator-crossing-date-time]
-          (make-granule
-           {:temporal (g/map->GranuleTemporal
-                       {:range-date-time
-                        {:beginning-date-time (dtp/parse-datetime "2015-01-01T00:00:00Z")
-                         :ending-date-time (dtp/parse-datetime "2015-06-01T00:00:00Z")}})
-            :spatial-coverage (g/map->SpatialCoverage
-                               {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})
-            :orbit-calculated-spatial-domains
-            [;; a valid equator crossing to test handling of more than one orbit calculated spatial domains
-             (g/map->OrbitCalculatedSpatialDomain
-              {:orbit-number  1
-               :start-orbit-number 1
-               :stop-orbit-number 1
-               :equator-crossing-date-time (dtp/parse-datetime "2015-02-01T00:00:00Z")})
-             (g/map->OrbitCalculatedSpatialDomain
-              {:orbit-number  1
-               :start-orbit-number 1
-               :stop-orbit-number 1
-               :equator-crossing-date-time (dtp/parse-datetime equator-crossing-date-time)})]}))]
+                                                   :NumberOfOrbits 2.0}}})]
 
     (testing "granules with orbit calcualted spatial domains equator crossing date time"
       (are3 [equator-crossing expected-errors]
