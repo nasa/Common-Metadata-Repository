@@ -50,8 +50,7 @@
   :profiles {
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.0.4"]]
-      :dependency-check {:log true :throw true}}
+        [com.livingsocial/lein-dependency-check "1.0.4"]]}
     :dev {
       :exclusions [
         [org.clojure/tools.nrepl]]
