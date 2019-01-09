@@ -30,7 +30,12 @@
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
-                     tags/grant-all-tag-fixture]))
+                      tags/grant-all-tag-fixture]))
+
+(defn assert-rebalance-status
+  [expected-counts collection]
+  (is (= (assoc expected-counts :status 200)
+         (bootstrap/get-rebalance-status (:concept-id collection)))))
 
 (deftest bulk-delete-by-concept-id
   (s/only-with-real-database
@@ -64,6 +69,9 @@
       ;; granules outside of 1_small_collections get deleted properly.
       (bootstrap/start-rebalance-collection coll2-id)
       (bootstrap/finalize-rebalance-collection coll2-id)
+      (index/wait-until-indexed)
+
+      (assert-rebalance-status {:small-collections 0 :separate-index 3} coll2)
 
       (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
       (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
