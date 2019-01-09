@@ -1,0 +1,44 @@
+{:httpd {
+   :port 3013
+   :entry-point-fn cmr.http.kit.app.core/main
+   :pages {
+     :default-title ""}
+   :base-url ""
+   :docs nil
+   :assets nil
+   :rest-docs {
+     :base-url-template nil
+     :source nil
+     :outdir nil}
+   :skip-static #{}
+   :base-url-fn cmr.http.kit.components.config/base-url
+   :replace-base-url #{}
+   :index-dirs #{}}
+   :streaming {
+     :timeout 20000 ; milliseconds 20 seconds * 1000
+     :heartbeat 200 ; milliseconds
+     }
+   :route-fns {
+     :api nil
+     :site nil}}
+ :logging {
+   :level :debug
+   :nss [cmr org.httpkit]
+   :color true}
+ :plugin {
+   :jarfiles {
+     ;; The reducer factory function must take two args: plugin name and plugin
+     ;; type -- both of type ^String. The default reducer converts these strings
+     ;; to regular expressions, and thus supports full Clojure regex syntax.
+     :reducer-factory cmr.plugin.jar.core/create-regex-plugin-reducer}
+   :registry {
+     :default {
+       :plugin-name ".*[Pp]lugin.*"
+       :plugin-type ".*"
+       ;; The fowllowing needs to be an in-JAR path to a plugin's config file
+       ;; once it has been identifed as a plugin of the desired name/type.
+       :config-file "config/<some-shared-name>/config.edn"}
+     :web {
+       :route-keys [:httpd :route-fns]
+       :api-route-key :api
+       :site-route-key :site}}}}
