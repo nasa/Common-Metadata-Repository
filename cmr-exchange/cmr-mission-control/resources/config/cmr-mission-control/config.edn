@@ -1,0 +1,6 @@
+{:mission-control {
+   :messaging-type :core-async}
+ :logging {
+   :level :debug
+   :nss [io.netty cmr.mission-control]
+   :color true}}
