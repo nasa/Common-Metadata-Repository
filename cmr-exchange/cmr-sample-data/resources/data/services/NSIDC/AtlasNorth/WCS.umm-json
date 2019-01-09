@@ -1,0 +1,77 @@
+{
+  "Name": "NSIDC AtlasNorth",
+  "Type": "WCS",
+  "Version": "1.1.1",
+  "Description": "Atlas of the Cryosphere: Northern Hemisphere",
+  "OnlineResource": {
+    "Linkage": "https://nsidc.org/cgi-bin/atlas_north",
+    "Name": "NSIDC WCS Service for the Northern Hemisphere",
+    "Description": "NSIDC WCS Service, tlas of the Cryosphere: Northern Hemisphere"
+  },
+  "ServiceOptions": {
+    "SubsetType": [
+      "Spatial",
+      "Temporal",
+      "Variable"
+    ],
+    "SupportedProjections": [
+      "WGS 84 / UPS North (N,E)", "WGS84 - World Geodetic System 1984", "NSIDC EASE-Grid North", "NSIDC Sea Ice Polar Stereographic North", "WGS 84 / NSIDC Sea Ice Polar Stereographic North", "WGS 84 / North Pole LAEA Bering Sea", "WGS 84 / North Pole LAEA Alaska", "WGS 84 / North Pole LAEA Canada", "WGS 84 / North Pole LAEA Atlantic", "WGS 84 / North Pole LAEA Europe", "WGS 84 / North Pole LAEA Russia", "WGS 84 / NSIDC EASE-Grid North", "WGS 84 / NSIDC EASE-Grid Global", "WGS 84 / UTM zone 24N", "WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI", "Google Maps Global Mercator -- Spherical Mercator"
+    ],
+    "InterpolationType": [
+      "Nearest Neighbor",
+      "Bilinear Interpolation"
+    ],
+    "SupportedFormats": [
+      "image/png",
+      "image/tiff",
+      "image/gif",
+      "image/png; mode=24bit",
+      "image/jpeg",
+      "image/vnd.wap.wbmp"
+    ]
+  },
+  "Layer": [
+    { "Name": "sea_ice_concentration_01" },
+    { "Name": "sea_ice_concentration_02" },
+    { "Name": "sea_ice_concentration_03" },
+    { "Name": "sea_ice_concentration_04" },
+    { "Name": "sea_ice_concentration_05" },
+    { "Name": "sea_ice_concentration_06" },
+    { "Name": "sea_ice_concentration_07" },
+    { "Name": "sea_ice_concentration_08" },
+    { "Name": "sea_ice_concentration_09" },
+    { "Name": "sea_ice_concentration_10" },
+    { "Name": "sea_ice_concentration_11" },
+    { "Name": "sea_ice_concentration_12" },
+    { "Name": "seasonal_snow_classification" },
+    { "Name": "snow_extent_01" },
+    { "Name": "snow_extent_02" },
+    { "Name": "snow_extent_03" },
+    { "Name": "snow_extent_04" },
+    { "Name": "snow_extent_05" },
+    { "Name": "snow_extent_06" },
+    { "Name": "snow_extent_07" },
+    { "Name": "snow_extent_08" },
+    { "Name": "snow_extent_09" },
+    { "Name": "snow_extent_10" },
+    { "Name": "snow_extent_11" },
+    { "Name": "snow_extent_12" },
+    { "Name": "snow_water_equivalent_01" },
+    { "Name": "snow_water_equivalent_02" },
+    { "Name": "snow_water_equivalent_03" },
+    { "Name": "snow_water_equivalent_04" },
+    { "Name": "snow_water_equivalent_05" },
+    { "Name": "snow_water_equivalent_06" },
+    { "Name": "snow_water_equivalent_07" },
+    { "Name": "snow_water_equivalent_08" },
+    { "Name": "snow_water_equivalent_09" },
+    { "Name": "snow_water_equivalent_10" },
+    { "Name": "snow_water_equivalent_11" },
+    { "Name": "snow_water_equivalent_12" },
+    { "Name": "greenland_surface_melt" },
+    { "Name": "greenland_accumulation" },
+    { "Name": "greenland_bedrock_elevation" },
+    { "Name": "greenland_ice_thickness" },
+    { "Name": "greenland_elevation" }
+  ]
+}
