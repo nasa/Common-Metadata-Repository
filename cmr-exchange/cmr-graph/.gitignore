@@ -1,0 +1,15 @@
+/target
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/data
+/logs
+all_public_collections_from_es.json
+build.xml
+/test2junit
+/junit-test-results

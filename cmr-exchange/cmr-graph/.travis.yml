@@ -1,0 +1,9 @@
+language: clojure
+script:
+  - lein build
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+notifications:
+  email:
+    - mark.h.schmele@nasa.gov

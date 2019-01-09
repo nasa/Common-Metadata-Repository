@@ -1,0 +1,111 @@
+version: '3'
+services:
+
+  ###########################################################################
+  neo4j:
+    image: neo4j:3.3.3
+    container_name: cmr-graph-neo4j
+    environment:
+      - NEO4J_AUTH=none
+    volumes:
+      - ${PWD}/data/neo4j:/data
+    ports:
+      - 7474:7474
+      - 7687:7687
+    networks:
+      - cmr-graph-net
+
+  ###########################################################################
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+    container_name: cmr-graph-elastic
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
+      - ELASTIC_PASSWORD=kibana
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${PWD}/data/elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9211:9200
+    networks:
+      - cmr-graph-net
+
+  ###########################################################################
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.2.2
+    container_name: cmr-graph-kibana
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=kibana
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${PWD}/data/kibana:/usr/share/kibana/data
+    ports:
+      - 127.0.0.1:5601:5601
+    networks:
+      - cmr-graph-net
+
+  ###########################################################################
+  # apm_server:
+  #   image: docker.elastic.co/apm/apm-server:6.2.2
+  #   container_name: cmr-graph-apm-server
+  #   depends_on:
+  #     - elasticsearch
+  #     - setup_apm_server
+  #   ports:
+  #     - 127.0.0.1:8200:8200
+  #   command: -e -E 'output.elasticsearch.password=kibana'
+  #   networks:
+  #     - cmr-graph-net
+
+  ###########################################################################
+  # setup_kibana:
+  #   image: centos:7
+  #   container_name: cmr-graph-setup-kibana
+  #   depends_on:
+  #     - elasticsearch
+  #   volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
+  #   command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
+  #   environment:
+  #     - ELASTIC_PASSWORD=kibana'
+  #   networks:
+  #     - cmr-graph-net
+
+  ###########################################################################
+  # setup_apm_server:
+  #   image: docker.elastic.co/apm/apm-server:6.2.2
+  #   container_name: setup_apm_server
+  #   depends_on:
+  #     - elasticsearch
+  #     - kibana
+  #   volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+  #   command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
+  #   environment:
+  #     - ELASTIC_PASSWORD=kibana
+  #   networks:
+  #     - cmr-graph-net
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
+
+networks:
+  cmr-graph-net:
