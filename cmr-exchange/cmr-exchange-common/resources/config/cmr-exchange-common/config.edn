@@ -1,0 +1,4 @@
+{:logging {
+   :level :debug
+   :nss [cmr]
+   :color true}}
