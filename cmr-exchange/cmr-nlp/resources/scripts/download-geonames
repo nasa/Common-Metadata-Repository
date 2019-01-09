@@ -1,0 +1,30 @@
+#!/bin/bash
+
+GEONAMES_DIR=data/geonames
+
+# The following are listed/described here:
+#  * http://opennlp.sourceforge.net/models-1.5/
+FILES=("http://download.geonames.org/export/dump/allCountries.zip"
+	   "http://download.geonames.org/export/dump/shapes_all_low.zip"
+       "http://download.geonames.org/export/dump/featureCodes_en.txt"
+       "http://download.geonames.org/export/dump/iso-languagecodes.txt")
+
+mkdir -p $GEONAMES_DIR
+echo
+echo "Downloading Geonames gazetteer files ..."
+echo
+for FILE in ${FILES[@]}; do
+	echo " - $FILE ..."
+	(cd $GEONAMES_DIR;
+	 if [ ! -f $(basename "$FILE") ]; then
+	 	curl --silent -O $FILE
+	 else
+	 	echo "   (already downloaded)"
+	 fi)
+done
+echo
+echo "Downloaded geonames files:"
+find $GEONAMES_DIR -type f
+echo
+unzip $GEONAMES_DIR/allCountries.zip -d $GEONAMES_DIR
+unzip $GEONAMES_DIR/shapes_all_low.zip -d $GEONAMES_DIR

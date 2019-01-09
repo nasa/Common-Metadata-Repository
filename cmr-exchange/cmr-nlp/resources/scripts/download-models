@@ -1,0 +1,31 @@
+#!/bin/bash
+
+MODELS_DIR=data/models
+
+# The following are listed/described here:
+#  * http://opennlp.sourceforge.net/models-1.5/
+MODELS=("http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-token.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-chunker.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-ner-date.bin"
+        "http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin")
+
+mkdir -p $MODELS_DIR
+echo
+echo "Downloading OpenNLP English language models ..."
+echo
+for MODEL in ${MODELS[@]}; do
+	echo " - $MODEL ..."
+	(cd $MODELS_DIR;
+	 if [ ! -f $(basename "$MODEL") ]; then
+	 	curl --silent -O $MODEL
+	 else
+	 	echo "   (already downloaded)"
+	 fi)
+done
+echo
+echo "Downloaded models:"
+find $MODELS_DIR -type f
+echo

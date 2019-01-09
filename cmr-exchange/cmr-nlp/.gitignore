@@ -1,0 +1,12 @@
+*.class
+*.jar
+/.lein-*
+/.nrepl-*
+/checkouts
+/classes
+/data
+/junit-test-results
+/resources/models
+/target
+build.xml
+pom.*
