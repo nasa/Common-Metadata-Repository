@@ -1,0 +1,34 @@
+#!/bin/bash
+
+SLATE_REPL=https://github.com/cmr-exchange/slate.git
+SLATE_CLONE=resources/docs/rest-api/slate
+SLATE_BUILD=$SLATE_CLONE/build
+REST_API_DIR=resources/public/docs/service-bridge/docs/current/rest-api
+
+if [ ! -d "$SLATE_CLONE" ]; then
+	git clone "$SLATE_REPL" "$SLATE_CLONE"
+fi
+
+if [ ! -d "$REST_API_DIR" ]; then
+	mkdir -p "$REST_API_DIR"
+fi
+
+# CMR-specific files needed
+cp -v resources/docs/rest-api/index.md resources/docs/rest-api/slate/source/index.html.md
+cp -v resources/docs/rest-api/logo.png resources/docs/rest-api/slate/source/images/logo.png
+
+# Slate files that we override, specific to CMR OPeNDAP
+cp -v resources/config/slate/config.rb $SLATE_CLONE
+cp -v resources/config/slate/layout.erb $SLATE_CLONE/source/layouts/
+cp -v resources/config/slate/_icon-font.scss $SLATE_CLONE/source/stylesheets/
+
+# The actual build
+cd resources/docs/rest-api/slate && ./build.sh
+cd -
+
+echo
+echo "Publishing generated docs ..."
+cp -vr ${SLATE_BUILD}/* $REST_API_DIR
+
+echo
+echo "Slate docs regeneration complete."
