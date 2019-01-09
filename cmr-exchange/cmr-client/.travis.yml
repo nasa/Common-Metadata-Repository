@@ -1,0 +1,16 @@
+language: clojure
+lein: 2.7.1
+script:
+  - lein check
+  - lein uberjar
+  - lein run-tests unit
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+env:
+  - LEIN_SNAPSHOTS_IN_RELEASE=true
+notifications:
+  email:
+      - oubiwann@gmail.com
+
