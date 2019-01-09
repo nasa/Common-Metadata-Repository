@@ -1,0 +1,21 @@
+language: clojure
+lein: 2.7.1
+before_install:
+  - echo "OK"
+install:
+  - echo "OK"
+before_script:
+  - echo "OK"
+script:
+  - echo "OK"
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+env:
+  - LEIN_SNAPSHOTS_IN_RELEASE=true
+notifications:
+  email:
+    - oubiwann@gmail.com
+    - duncan.mcgreggor@nasa.gov
+
