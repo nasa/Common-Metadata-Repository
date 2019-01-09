@@ -1,0 +1,24 @@
+{% extends "templates/base.html" %}
+
+{% block non-container-content %}
+<div class="home eui-hero">
+  <h2 class="eui-hero__title">{% block hero-title %}{{ app-title }}{% endblock %}</h2>
+  <p class="eui-hero__subtitle"
+     style="padding-left: 2em;
+            padding-right: 2em;
+            font-size: 120%;">
+  {% block hero-subtitle %}
+  {% endblock %}
+  </p>
+  {% block hero-content %}
+  {% endblock %}
+</div>
+{% endblock %}
+
+{% block main-content %}
+  <div class="home description">
+    {% block home-description %}
+      Content
+    {% endblock %}
+  </div>
+{% endblock %}

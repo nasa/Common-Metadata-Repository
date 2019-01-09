@@ -1,0 +1,33 @@
+{% extends "templates/structure.html" %}
+
+{% block title %}{{ app-title }}{% endblock %}
+
+{% block top-nav %}
+<div class="eui-masthead-logo eui-application-logo">
+  <h1><a href="{{ base-url }}">{{ app-title }}</a></h1>
+</div>
+<nav class="main-nav" role="navigation">
+  <ul class="main-nav-list">
+    {% block app-nav %}
+    {% endblock %}
+    {% block common-nav %}
+    <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum">Forum</a></li>
+    <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home">Wiki</a></li>
+    <li><a href="{{ partner-url }}">{{ partner-text }}</a></li>
+    <li><a href="https://github.com/nasa/Common-Metadata-Repository">Github</a></li>
+    {% endblock %}
+  </ul>
+</nav>
+{% endblock %}
+
+{% block footer %}
+<nav role="navigation">
+  <ul class="footer-links">
+      <li>NASA Official: Stephen Berrick</li>
+      <li><a href="http://www.nasa.gov/FOIA/index.html">FOIA</a></li>
+      <li><a href="http://www.nasa.gov/about/highlights/HP_Privacy.html">NASA Privacy Policy</a></li>
+      <li><a href="http://www.usa.gov/">USA.gov</a></li>
+      <li><a href="javascript:feedback.showForm();">Feedback</a></li>
+  </ul>
+</nav>
+{% endblock %}
