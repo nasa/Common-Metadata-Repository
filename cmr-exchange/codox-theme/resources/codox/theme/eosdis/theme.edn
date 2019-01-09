@@ -1,0 +1,22 @@
+{:transforms
+ [[:head]
+  [:append
+   [:link {:rel "stylesheet", :type "text/css" :href "css/default.css"}]
+   [:link {:rel "stylesheet", :type "text/css" :href "highlight/atom-one-dark.css"}]
+   [:script {:type "text/javascript", :src "highlight/highlight.pack.js"}]
+   [:script {:type "text/javascript", :src "js/jquery.min.js"}]
+   [:script {:type "text/javascript", :src "js/page_effects.js"}]
+   [:script "hljs.initHighlightingOnLoad();"]]
+
+  [:#header :h2]
+  [:append
+   " with the "
+   [:a {:href "https://github.com/cmr-exchange/codox-theme"} "NASA EOSDIS"]
+   " theme"]]
+
+ :resources
+ ["css/default.css"
+  "highlight/atom-one-dark.css"
+  "highlight/highlight.pack.js"
+  "js/jquery.min.js"
+  "js/page_effects.js"]}
