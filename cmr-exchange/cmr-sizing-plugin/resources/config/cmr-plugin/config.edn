@@ -1,0 +1,8 @@
+{:httpd {
+   :route-fns {
+     :api cmr.sizing.app.routes.rest/all
+     :site nil}
+ :logging {
+   :level :debug
+   :nss [cmr]
+   :color false}}}
