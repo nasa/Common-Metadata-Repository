@@ -287,7 +287,7 @@
    :xmlns:dc "http://purl.org/dc/terms/"
    :xmlns:georss "http://www.georss.org/georss/10"
    :xmlns:time "http://a9.com/-/opensearch/extensions/time/1.0/"
-   :xmlns:echo "http://www.echo.nasa.gov/esip"
+   :xmlns:echo "http://www.echo.nasa.gov/esip" ;; TODO change or delete this dead link
    :xmlns:gml "http://www.opengis.net/gml"
    :xmlns:esipdiscovery "http://commons.esipfed.org/ns/discovery/1.2/"
    :xmlns:os "http://a9.com/-/spec/opensearch/1.1/"
