@@ -149,11 +149,11 @@
 
 (defmethod base-page :cli
   [context]
-  (assoc (common-data/base-static) :app-title "CMR Search"))
+  (assoc (common-data/base-static) :app-title "Search"))
 
 (defmethod base-page :default
   [context]
-  (assoc (common-data/base-page context) :app-title "CMR Search"))
+  (assoc (common-data/base-page context) :app-title "Search"))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
