@@ -1,12 +1,13 @@
 (ns config.mdb-migrate-helper
   "Contains helper functions for performing database migrations"
-  (:require [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
-            [cmr.metadata-db.services.concept-service :as s]
-            [config.migrate-config :as config]
-            [cmr.metadata-db.data.oracle.providers]
-            [cmr.metadata-db.data.providers :as p]
-            [cmr.metadata-db.services.concept-validations :as v]))
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
+   [cmr.metadata-db.services.concept-service :as s]
+   [config.migrate-config :as config]
+   [cmr.metadata-db.data.oracle.providers]
+   [cmr.metadata-db.data.providers :as p]
+   [cmr.metadata-db.services.concept-validations :as v]))
 
 (def TRANSACTION_ID_CODE_SEQ_START
   "the value to which the transaction-id sequence used by the code should be initialized"
@@ -17,7 +18,7 @@
   [& stmt-strs]
   (println "Applying" stmt-strs)
   (let [start-time (System/currentTimeMillis)]
-    (apply j/db-do-commands (config/db) stmt-strs)
+    (apply j/db-do-commands (config/db) [stmt-strs])
     (println (format "Finished %s in [%s] ms."
                      stmt-strs
                      (- (System/currentTimeMillis) start-time)))))
