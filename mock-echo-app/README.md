@@ -12,28 +12,28 @@ To start a web server for the application, run:
 
 ### Login
 
-curl -i -XPOST -H "Content-Type: application/json" -H "Accept: application/json"  https://testbed.echo.nasa.gov/echo-rest/tokens -d '
+curl -i -XPOST -H "Content-Type: application/json" -H "Accept: application/json"  https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens -d '
 {"token": {"username":"guest",
   "password":"blah",
   "client_id":"dev test",
   "user_ip_address":"127.0.0.1"}}'
 
 HTTP/1.1 201 Created
-Location: https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXX?clientId=unknown
+Location: https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens/XXXXXXXX?clientId=unknown
 {"token":{"client_id":"dev test","id":"XXXXX","user_ip_address":"127.0.0.1","username":"guest"}}
 
 ### Get token info
 
 #### Guest
 
-curl -i -H "Accept: application/json" https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXX/token_info
+curl -i -H "Accept: application/json" https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens/XXXXXXXX/token_info
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=utf-8
 
 {"token_info":{"client_id":"dev test","created":"2014-08-11T23:44:42Z","expires":"2014-09-10T23:44:42Z","guest":true,"token":"XXXXXXXX","user_guid":"blah","user_name":"guest"}}
 
 #### User
-curl -i -H "Accept: application/json" -H "Echo-Token: XXXXXXXX" https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXXXX/token_info
+curl -i -H "Accept: application/json" -H "Echo-Token: XXXXXXXX" https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens/XXXXXXXXXX/token_info
 HTTP/1.1 200 OK
 {"token_info":{"client_id":"dev test","created":"2014-08-12T10:47:26Z","expires":"2014-09-11T10:47:26Z","guest":false,"token":"XXXXXXXXXX","user_guid":"XXXXXXXXX","user_name":"jagilman"}}
 
@@ -42,13 +42,13 @@ HTTP/1.1 200 OK
 
 #### Guest
 
-curl -i -H "Accept: application/json" https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXX/current_sids
+curl -i -H "Accept: application/json" https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens/XXXXXXXX/current_sids
 HTTP/1.1 200 OK
 [{"sid":{"user_authorization_type_sid":{"user_authorization_type":"GUEST"}}}]
 
 #### User
 
-curl -i -H "Accept: application/json" -H "Echo-Token: XXXXXX" https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXXX/current_sids
+curl -i -H "Accept: application/json" -H "Echo-Token: XXXXXX" https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/tokens/XXXXXXXXX/current_sids
 HTTP/1.1 200 OK
 [{"sid":{"user_authorization_type_sid":{"user_authorization_type":"REGISTERED"}}},{"sid":{"group_sid":{"group_guid":"XXXXXX"}}},{"sid":{"group_sid":{"group_guid":"XXXXXXXXX"}}}]
 
