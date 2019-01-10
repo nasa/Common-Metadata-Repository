@@ -12,7 +12,7 @@
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
    (org.eclipse.jetty.server.handler RequestLogHandler)
-   (org.eclipse.jetty.servlets.gzip GzipHandler)))
+   (org.eclipse.jetty.server.handler.gzip GzipHandler)))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -154,7 +154,7 @@
   (doto (GzipHandler.)
     (.setHandler existing-handler)
     ;; All the mime types that we want to support compression with must be specified here.
-    (.setMimeTypes ^java.util.Set (set mt/all-supported-mime-types))
+    (.setIncludedMimeTypes (into-array mt/all-supported-mime-types))
     (.setMinGzipSize min-gzip-size)))
 
 (defrecord WebServer

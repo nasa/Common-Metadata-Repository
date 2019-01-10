@@ -5,7 +5,7 @@
     [commons-logging]]
   :dependencies [
     [commons-logging "1.2"]
-    [compojure "1.6.0"]
+    [compojure "1.6.1"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
@@ -13,7 +13,7 @@
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.nrepl "0.2.13"]
-    [ring/ring-core "1.6.3"]
+    [ring/ring-core "1.7.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [
     [lein-shell "0.5.0"]
@@ -27,7 +27,7 @@
       :dependencies [
         [org.clojars.gjahad/debug-repl "0.3.3"]
         [org.clojure/tools.namespace "0.2.11"]
-        [pjstadig/humane-test-output "0.8.3"]]
+        [pjstadig/humane-test-output "0.9.0"]]
       :jvm-opts ^:replace ["-server"]
       :source-paths ["src" "dev" "test" "int-test"]
       :injections [(require 'pjstadig.humane-test-output)

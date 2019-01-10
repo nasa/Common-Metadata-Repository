@@ -7,13 +7,13 @@
     [org.clojure/tools.reader]]
   :dependencies [
     [commons-io "2.6"]
-    [compojure "1.6.0"]
-    [instaparse "1.4.8"]
+    [compojure "1.6.1"]
+    [instaparse "1.4.10"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
-    [org.clojure/tools.reader "1.1.1"]
-    [ring/ring-core "1.6.3"]
+    [org.clojure/tools.reader "1.3.2"]
+    [ring/ring-core "1.7.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [
     [lein-exec "0.3.7"]

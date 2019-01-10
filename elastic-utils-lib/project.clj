@@ -8,7 +8,7 @@
     [org.elasticsearch/elasticsearch]
     [potemkin]]
   :dependencies [
-    [cheshire "5.8.0"]
+    [cheshire "5.8.1"]
     [clj-http "2.3.0"]
     [clojurewerkz/elastisch "2.2.2"]
     [commons-codec/commons-codec "1.11"]
@@ -17,7 +17,7 @@
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.elasticsearch/elasticsearch "1.6.2"]
-    [potemkin "0.4.4"]]
+    [potemkin "0.4.5"]]
   :plugins [
     [lein-shell "0.5.0"]
     [test2junit "1.3.3"]]

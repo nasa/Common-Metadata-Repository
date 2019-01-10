@@ -21,7 +21,7 @@
     [com.oracle/ucp "11.2.0.4"]
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
-    [org.clojure/java.jdbc "0.4.2"]
+    [org.clojure/java.jdbc "0.7.8"]
     [sqlingvo "0.7.15"]]
   :plugins [
     [lein-shell "0.5.0"]

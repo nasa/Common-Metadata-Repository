@@ -8,7 +8,7 @@
     [commons-io "2.6"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
-    [potemkin "0.4.4"]]
+    [potemkin "0.4.5"]]
   :plugins [
     [lein-shell "0.5.0"]
     [test2junit "1.3.3"]]

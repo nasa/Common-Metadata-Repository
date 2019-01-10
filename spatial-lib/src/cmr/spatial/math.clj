@@ -2,7 +2,8 @@
   [:require
    [cmr.common.util :as util]
    [primitive-math]]
-  (:import net.jafama.StrictFastMath))
+  (:import
+   (net.jafama StrictFastMath)))
 
 (primitive-math/use-primitive-operators)
 
@@ -117,7 +118,6 @@
   [v up?]
   (when (zero? ^float v)
     (throw (Exception. "Cannot shift float that is 0.")))
-
   (let [shiftfn (if (> ^float v 0.0)
                   (if up? clojure.core/inc clojure.core/dec)
                   (if up? clojure.core/dec clojure.core/inc))]

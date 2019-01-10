@@ -13,9 +13,9 @@
     [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-    [org.apache.httpcomponents/httpcore "4.4.8"]
+    [org.apache.httpcomponents/httpcore "4.4.10"]
     [org.clojure/clojure "1.10.0"]
-    [org.clojure/tools.reader "1.1.1"]]
+    [org.clojure/tools.reader "1.3.2"]]
   :plugins [
     [lein-exec "0.3.7"]
     [lein-shell "0.5.0"]
@@ -32,7 +32,7 @@
         [org.clojars.gjahad/debug-repl "0.3.3"]
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]
-        [pjstadig/humane-test-output "0.8.3"]
+        [pjstadig/humane-test-output "0.9.0"]
         [proto-repl "0.3.1"]]
       ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
       ;; See https://github.com/technomancy/leiningen/wiki/Faster
