@@ -1,0 +1,58 @@
+CREATE (NSIDC:Provider {Type:'Provider', ShortName:'NSIDC', LongName:'National Snow and Ice Data Center'})
+
+CREATE (C1386207787NSIDCV0:Collection {Name:'NSIDC-0103', ShortName:'NSIDC-0103', Version:2, Title:'RAMP AMM-1 SAR Image Mosaic of Antarctica, Version 2', Doi:'Not provided', Type:'Collection'})
+CREATE (C1386206814NSIDCV0:Collection {Name:'GGD318', ShortName:'GGD318', Version:2, Title:'Circum-Arctic Map of Permafrost and Ground-Ice Conditions, Version 2', Doi:'Not provided', Type:'Collection'})
+CREATE
+  (NSIDC)-[:PROVIDES {Type:['collection1']}]->(C1386207787NSIDCV0),
+  (NSIDC)-[:PROVIDES {Type:['collection2']}]->(C1386206814NSIDCV0)
+
+CREATE (OGCSWMS:Service {Type:'Service', ShortName:'OGCS WMS', LongName:'Open Geospatial Consortium (OGC) Services - WMS', ServiceType:'WMS', Version:'1'})
+CREATE (OGCSWCS:Service {Type:'Service', ShortName:'OGCS WCS', LongName:'Open Geospatial Consortium (OGC) Services - WCS', ServiceType:'WCS', Version:'1'})
+CREATE
+  (OGCSWMS)-[:SERVICES {Type:['collection1']}]->(C1386207787NSIDCV0),
+  (OGCSWMS)-[:SERVICES {Type:['collection2']}]->(C1386206814NSIDCV0),
+  (OGCSWCS)-[:SERVICES {Type:['collection1']}]->(C1386207787NSIDCV0),
+  (OGCSWCS)-[:SERVICES {Type:['collection2']}]->(C1386206814NSIDCV0)
+
+CREATE (SNOW:Variable1 {Type:'Variable', Name:'Snow', VariableType:'Science'})
+CREATE (SNOWQUALITY1:Variable1 {Type:'Variable', Name:'SnowQuality 1', VariableType:'Quality'})
+CREATE (SNOWQUALITY2:Variable1 {Type:'Variable', Name:'SnowQuality 2', VariableType:'Quality'})
+CREATE (SNOWSET:VariableSet {Type:'VariableSet', Name:'SnowSet'})
+CREATE
+  (SNOWSET)-[:contains {}]->(SNOW),
+  (SNOWSET)-[:contains {}]->(SNOWQUALITY1),
+  (SNOWSET)-[:contains {}]->(SNOWQUALITY2)
+
+CREATE
+  (C1386207787NSIDCV0)-[:contains {Type:['science']}]->(SNOW),
+  (C1386207787NSIDCV0)-[:contains {Type:['science']}]->(SNOWQUALITY1),
+  (C1386207787NSIDCV0)-[:contains {Type:['science']}]->(SNOWQUALITY2)
+
+CREATE (RADARSAT1:Platform {Type:'Platform', ShortName:'RADARSAT-1', LongName:'RADARSAT-1'})
+CREATE
+  (RADARSAT1)-[:acquistion {Type:['collection']}]->(C1386207787NSIDCV0)
+
+CREATE (SAR:Instrument {Type:'Instrument', LongName:'Synthetic Aperture Radar'})
+CREATE
+  (SAR)-[:instrumentOf {Type:['platform']}]->(RADARSAT1)
+
+CREATE (C1386207787NSIDCV0URL1:PublicationURL {Type:'PublicationURL', urlContentType:"PublicationURL", type:'VIEW RELATED INFORMATION', Subtype:'', Description:'Access these data using the Open Geospatial Consortium (OGC) Services.', URL:'http://nsidc.org/data/atlas/ogc_services.html'})
+CREATE (C1386207787NSIDCV0URL2:DistributionURL {Type:'DistributionURL', urlContentType:"DistributionURL", type:'GET DATA', Subtype:'', Description:'Direct download via HTTPS protocol.', URL:'https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0103_radarsat_sar/'})
+CREATE (C1386207787NSIDCV0URL3:PublicationURL {Type:'PublicationURL', urlContentType:"PublicationURL", type:'VIEW RELATED INFORMATION', Subtype:'', Description:'Documentation explaining the data and how it was processed.', URL:'http://nsidc.org/data/docs/daac/nsidc0103_ramp_mosaic.gd.html'})
+CREATE (C1386207787NSIDCV0URL4:DistributionURL {Type:'DistributionURL', urlContentType:"DistributionURL", type:'GET SERVICE', Subtype:'WMS', Description:'Access these data using the Open Geospatial Consortium (OGC) Services - this one was added for demo purposes.', URL:'http://nsidc.org/data/atlas/getData/granule/subsetter'})
+CREATE
+  (C1386207787NSIDCV0URL1)-[:documentsService {Type:['url']}]->(C1386207787NSIDCV0),
+  (C1386207787NSIDCV0URL2)-[:distributes {Type:['url']}]->(C1386207787NSIDCV0),
+  (C1386207787NSIDCV0URL3)-[:documents {Type:['url']}]->(C1386207787NSIDCV0),
+  (C1386207787NSIDCV0URL4)-[:services {Type:['url']}]->(C1386207787NSIDCV0),
+  (C1386207787NSIDCV0URL4)-[:services {Type:['url']}]->(C1386206814NSIDCV0),
+  (C1386207787NSIDCV0URL4)-[:describes {Type:['access']}]->(OGCSWMS),
+  (C1386207787NSIDCV0URL4)-[:describes {Type:['access']}]->(OGCSWCS),
+  (C1386207787NSIDCV0URL1)-[:documentsService {Type:['url']}]->(C1386206814NSIDCV0)
+
+CREATE (C1386206814NSIDCV0URL1:DistributionURL {Type:'DistributionURL', urlContentType:"DistributionURL", type:'GET DATA', Subtype:'', Description:'Direct download via HTTPS protocol.', URL:'http://nsidc.org/forms/GGD318_or.html?major_version=2'})
+CREATE (C1386206814NSIDCV0URL2:PublicationURL {Type:'PublicationURL', urlContentType:"PublicationURL", type:'VIEW RELATED INFORMATION', Subtype:'', Description:'Documentation explaining the data and how it was processed.', URL:'http://nsidc.org/data/docs/fgdc/ggd318_map_circumarctic/index.html'})
+
+CREATE
+  (C1386206814NSIDCV0URL1)-[:distributes {Type:['url']}]->(C1386206814NSIDCV0),
+  (C1386206814NSIDCV0URL2)-[:documents {Type:['url']}]->(C1386206814NSIDCV0)

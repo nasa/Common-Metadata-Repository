@@ -1,0 +1,36 @@
+{
+  "name": "@nasa-earthdata/cmr",
+  "version": "0.1.0-release",
+  "description": "A JavaScript Client for NASA's Common Metadata Repository",
+  "main": "dist/cmr_client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmr-exchange/cmr-client.git"
+  },
+  "keywords": [
+    "client",
+    "cmr",
+    "earth-data",
+    "earth-observation",
+    "earth-science",
+    "eos",
+    "eosdis",
+    "esdis",
+    "gis",
+    "metadata",
+    "nasa",
+    "rest"
+  ],
+  "author": "Duncan McGreggor",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/cmr-exchange/cmr-client/issues"
+  },
+  "homepage": "https://github.com/cmr-exchange/cmr-client",
+  "files": [
+    "dist"
+  ]
+}

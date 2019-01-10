@@ -1,0 +1,20 @@
+{:auth-caching
+  {:init {}
+   :ttl
+    {:minutes 60}
+   :lru
+    {:threshold 1000}
+   :dumpfile "data/cache/authz-dump.edn"}
+ :cmr
+  {:access
+  	{:control
+  	  {:protocol "https"
+  	   :host "cmr.sit.earthdata.nasa.gov"
+  	   :relative
+  	     {:root
+  	       {:url "/access-control"}}}}
+   :echo
+    {:rest
+      {:protocol "https"
+       :host "cmr.sit.earthdata.nasa.gov"
+       :context "/legacy-services/rest"}}}}

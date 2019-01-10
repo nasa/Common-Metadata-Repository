@@ -1,0 +1,21 @@
+{:plugin {
+   :jarfiles {
+     ;; The reducer factory function must take two args: plugin name and plugin
+     ;; type -- both of type ^String.
+     :reducer-factory cmr.plugin.jar.core/create-regex-plugin-reducer}
+   :registry {
+     :default {
+       :plugin-name ".*[Pp]lugin.*"
+       :plugin-type ".*"
+       ;; The fowllowing needs to be an in-JAR path to a plugin's config file,
+       ;; which will be read once its plugin has been identifed as a plugin of
+       ;; the desired name/type.
+       :config-file "config/cmr-plugin/config.edn"}
+     :web {
+       :route-keys [:web :route-fns]
+       :api-route-key :api
+       :site-route-key :site}}}
+ :logging {
+   :level :debug
+   :nss [cmr]
+   :color true}}

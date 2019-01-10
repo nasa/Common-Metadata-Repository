@@ -1,0 +1,26 @@
+{% extends "templates/landing-tophat.html" %}
+
+{% block app-nav %}
+  <li><a href="{{ base-url }}docs">Documentation</a></li>
+{% endblock %}
+
+{% block home-description %}
+  <p>
+    The Common Metadata Repository (CMR) is a high-performance, high-quality,
+    continuously evolving metadata system that catalogs Earth Science data and
+    associated service metadata records. These metadata records are
+    registered, modified, discovered, and accessed through programmatic
+    interfaces leveraging standard protocols and APIs.
+  </p>
+
+  <p>
+    CMR Service-Bridge is an integration service offered by the CMR that allows
+    client applications to use CMR metadata to integrate features from other
+    services - as if they were interacting with just the CMR. As new service
+    integrations are added to CMR Service-Bridge, they will be added to the
+    documentation.
+  </p>
+  <p class="align-c">
+    <a href="{{ base-url }}docs/current/rest-api" class="eui-btn--blue">Learn more</a>
+  </p>
+{% endblock %}

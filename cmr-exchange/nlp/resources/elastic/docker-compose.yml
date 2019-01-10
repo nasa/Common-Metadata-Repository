@@ -1,0 +1,57 @@
+version: '3'
+services:
+
+  ###########################################################################
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+    container_name: cmr-nlp-elastic
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
+      - ELASTIC_PASSWORD=kibana
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${PWD}/data/elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9211:9200
+    networks:
+      - cmr-nlp-net
+
+  ###########################################################################
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.5.3
+    container_name: cmr-nlp-kibana
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=kibana
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${PWD}/data/kibana:/usr/share/kibana/data
+    ports:
+      - 127.0.0.1:5601:5601
+    networks:
+      - cmr-nlp-net
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
+
+networks:
+  cmr-nlp-net:

@@ -1,0 +1,23 @@
+{{#collection}}
+<li class='card'>
+    <div class='card-header'>
+      <h5 class='card-header-title' title='CollectionName'>{{collectionId}}</h5>
+      <span class='card-header-badge ocean-blue'>
+        <i class='eui-icon eui-fa-link'></i>
+      </span>
+  </div>
+  <div class='card-body active'>
+    <div class='card-body-details-full'>
+        <p>{{shortName}}</p>
+          <a href='{{collectionUrl}}'>
+              {{collectionUrl}}
+          </a><br>
+      <ul class='arrow-tag-group-list'>
+          <li class='arrow-tag-group-item'>
+            {{provider}}
+          </li>
+      </ul>
+    </div>
+  </div>
+</li>
+{{/collection}}

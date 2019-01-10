@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+   <suppress>
+      <notes><![CDATA[
+      file name: clansi-1.0.0.jar
+      ]]></notes>
+      <gav regex="true">^clansi:clansi:.*$</gav>
+      <cpe>cpe:/a:style_it_project:style_it</cpe>
+   </suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: cmr-site-templates-0.1.0.jar
+	   ]]></notes>
+	   <gav regex="true">^gov\.nasa\.earthdata:cmr-site-templates:.*$</gav>
+	   <cve>CVE-2017-16111</cve>
+	</suppress>
+</suppressions>

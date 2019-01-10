@@ -1,0 +1,15 @@
+language: clojure
+script:
+  - lein build
+jdk:
+  # XXX Travis has broken Debian Clojure packages for JDK11
+  #- oraclejdk11
+  #- openjdk11
+  - oraclejdk8
+  - openjdk8
+env:
+  - LEIN_SNAPSHOTS_IN_RELEASE=true
+notifications:
+  email:
+    - duncan.mcgreggor@nasa.gov
+

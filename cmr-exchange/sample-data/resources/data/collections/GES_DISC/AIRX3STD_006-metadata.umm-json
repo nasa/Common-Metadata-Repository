@@ -1,0 +1,14 @@
+{
+    "revision-id": 6,
+    "deleted": false,
+    "format": "application/dif10+xml",
+    "provider-id": "GES_DISC",
+    "user-id": "aesfandi",
+    "native-id": "AIRX3STD_006",
+    "concept-id": "C1200237736-MMT_1",
+    "revision-date": "2017-09-27T18:20:46Z",
+    "concept-type": "collection",
+    "has-variables": true,
+    "has-transforms": true,
+    "has-formats": false
+}

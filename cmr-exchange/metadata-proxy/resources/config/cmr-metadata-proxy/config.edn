@@ -1,0 +1,40 @@
+{:auth-caching {:init {}
+                :ttl {:minutes 60}
+                :lru {:threshold 1000}
+                :dumpfile "data/cache/authz-dump.edn"}
+ :concept-caching {:init {}
+                   :ttl {:hours 24}
+                   :dumpfile "data/cache/concept-dump.edn"}
+ :cmr {
+   :access {:control {:protocol "https"
+                          :host "cmr.sit.earthdata.nasa.gov"
+                          :relative {:root {:url "/access-control"}}}}
+   :concept {
+     :variable {:version "1.1"}}
+   :echo {:rest {:protocol "https"
+                 :host "cmr.sit.earthdata.nasa.gov"
+                 :context "/legacy-services/rest"}}
+   :max-pagesize 2000
+   :opendap {:protocol "https"
+             :host "cmr.sit.earthdata.nasa.gov"
+             :public {:protocol "https"
+                      :host "cmr.sit.earthdata.nasa.gov"}
+             :relative {:root {:url "/opendap"}}}
+   :search {:protocol "https"
+            :host "cmr.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
+ :giovanni {
+   :search {:protocol "https"
+            :host "giovanni.gsfc.nasa.gov"
+            :relative {:root {:url "/giovanni"}}}}
+ :edsc {
+   :search {:protocol "https"
+            :host "search.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
+ :logging {
+   :level :trace
+   :nss [cmr org.httpkit]
+   :color false}
+ :mission-control {
+   :messaging-type :core-async}
+ :vendor "cmr-metadata-proxy"}

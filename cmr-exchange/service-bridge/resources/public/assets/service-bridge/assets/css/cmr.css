@@ -1,0 +1,84 @@
+/* Home Pages
+ *
+ */
+
+.home.eui-hero {
+    background-size: cover;
+    background-color: #0d1f2b;
+    background-image: url('../images/LANCE_header_MODISAqua2.jpg');
+    background-repeat: no-repeat;
+}
+
+.home.description {
+  font-size: 150%;
+}
+
+/* Footer
+ *
+ * This section includes updates to other elements in order to give us a
+ * sticky footer.
+ */
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+main.content-section {
+    flex: 1;
+}
+
+footer {
+    background: #2276ac;
+    color: white;
+    padding: 1em 2em;
+    font-size: 0.8em;
+}
+
+footer a:link, footer a:visited {
+    color: white;
+}
+
+footer ul {
+    margin: 0.25em 0;
+    padding: 0;
+}
+
+footer ul li {
+    display: inline;
+}
+
+footer ul li:not(:first-child):before {
+    content: "\b7";
+    margin: 0 0.5em;
+}
+
+footer .badge {
+    background-color: #2c3e50;
+    position: relative;
+    top: -2px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.responsive-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table th,
+.responsive-table td {
+  vertical-align: top;
+}
+
+.responsive-table thead th {
+  vertical-align: bottom;
+}

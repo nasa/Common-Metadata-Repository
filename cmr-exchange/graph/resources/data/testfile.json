@@ -1,0 +1,255 @@
+{
+  "took": 1089,
+  "timed_out": false,
+  "_shards": {
+    "total": 10,
+    "successful": 10,
+    "failed": 0
+  },
+  "hits": {
+    "total": 33279,
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "1_collections_v2",
+        "_type": "collection",
+        "_id": "C1279109560-SCIOPS",
+        "_score": 1,
+        "fields": {
+          "downloadable": [
+            true
+          ],
+          "ords": [
+            1641300000,
+            -780300000,
+            1641300000,
+            -780300000
+          ],
+          "browsable": [
+            false
+          ],
+          "start-date": [
+            "2010-11-16T23:59:59+0000"
+          ],
+          "coordinate-system": [
+            "CARTESIAN"
+          ],
+          "atom-links": [
+            "{\"href\":\"https://tls.unavco.org/projects/B-425/PS03/SV02/\",\"link-type\":\"data\",\"mime-type\":null,\"size\":null}",
+            "{\"href\":\"http://www.unavco.org/\",\"link-type\":\"metadata\",\"mime-type\":null,\"size\":null}"
+          ],
+          "created-at": [
+            "2016-06-21T16:22:20+0000"
+          ],
+          "science-keywords-flat": [
+            "EARTH SCIENCE",
+            "CRYOSPHERE",
+            "FROZEN GROUND"
+          ],
+          "summary": [
+            "Ground based laser scan of buried ice deposits in Garwood Valley, McMurdo Dry Valleys."
+          ],
+          "permitted-group-ids": [
+            "AB218275-061B-3128-27AC-7B9764690B09",
+            "4F1137E1-0B08-D707-1716-1D4802746BAA",
+            "7D9A6899421E2BE2E04400144F4ADB84",
+            "guest",
+            "registered",
+            "BB332CC6-7B57-563E-AC7E-14301E14DE73",
+            "0AE59673-2CB1-59CB-2CE8-A9F60DA731C1"
+          ],
+          "entry-id": [
+            "Garwood_Valley_Thermokarst_TLS_PS03_SV02"
+          ],
+          "ords-info": [
+            3,
+            4
+          ],
+          "metadata-format": [
+            "dif"
+          ],
+          "provider-id": [
+            "SCIOPS"
+          ],
+          "user-id": [
+            "mmorahan"
+          ],
+          "archive-center": [
+            "UNAVCO"
+          ],
+          "revision-id": [
+            2
+          ],
+          "short-name": [
+            "Garwood_Valley_Thermokarst_TLS_PS03_SV02"
+          ],
+          "revision-date2": [
+            "2017-04-25T14:34:29+0000"
+          ],
+          "end-date": [
+            "2010-11-16T23:59:59+0000"
+          ],
+          "data-center": [
+            "UNAVCO"
+          ],
+          "has-granules": [
+            false
+          ],
+          "deleted": [
+            false
+          ],
+          "related-urls": [
+            "{\"type\":\"GET DATA\",\"sub-type\":null,\"url\":\"https://tls.unavco.org/projects/B-425/PS03/SV02/\",\"description\":\"Data set home page.\",\"mime-type\":null,\"title\":null,\"size\":null}",
+            "{\"type\":\"PROJECT HOME PAGE\",\"sub-type\":null,\"url\":\"http://www.unavco.org/\",\"description\":\"UNAVCO, a non-profit university-governed consortium, facilitates geoscience research and education using geodesy.\",\"mime-type\":null,\"title\":null,\"size\":null}"
+          ],
+          "concept-id": [
+            "C1279109560-SCIOPS"
+          ],
+          "native-id": [
+            "AMD_Garwood_Valley_Thermokarst_TLS_PS03_SV02___version_"
+          ],
+          "version-id": [
+            "Not provided"
+          ],
+          "personnel": [
+            "{\"first-name\":\"JOSEPH\",\"middle-name\":null,\"last-name\":\"LEVY\",\"roles\":[\"Data Center Contact\"],\"contacts\":[{\"type\":\"email\",\"value\":\"joe.levy@utexas.edu\"}]}"
+          ],
+          "_id": "C1279109560-SCIOPS",
+          "entry-title": [
+            "Garwood Valley Terrestrial Laser Scan 16Nov2010c"
+          ]
+        }
+      },
+      {
+        "_index": "1_collections_v2",
+        "_type": "collection",
+        "_id": "C1214560005-NOAA_NCEI",
+        "_score": 1,
+        "fields": {
+          "has-variables": [
+            false
+          ],
+          "downloadable": [
+            true
+          ],
+          "ords": [
+            -1583641500,
+            228272600,
+            -1578676000,
+            212464470
+          ],
+          "has-formats": [
+            false
+          ],
+          "browsable": [
+            false
+          ],
+          "start-date": [
+            "2008-05-26T00:00:00+0000"
+          ],
+          "coordinate-system": [
+            "CARTESIAN"
+          ],
+          "atom-links": [
+            "{\"href\":\"http://www.ngdc.noaa.gov/nndc/struts/results?op_0=l&v_0=NEW1440&t=101378&s=8&d=70&d=75&d=76&d=91&d=74&d=73&d=72&d=81&d=82&d=85&d=86&d=79&no_data=suppress\",\"link-type\":\"data\",\"mime-type\":null,\"size\":null}",
+            "{\"href\":\"http://www.ngdc.noaa.gov/nndc/struts/results?op_0=l&v_0=NEW1440&op_1=l&v_1=&op_2=l&v_2=&t=101378&s=2&d=6\",\"link-type\":\"data\",\"mime-type\":null,\"size\":null}",
+            "{\"href\":\"http://maps.ngdc.noaa.gov/viewers/bathymetry/\",\"link-type\":\"data\",\"mime-type\":null,\"size\":null}",
+            "{\"href\":\"http://www.ngdc.noaa.gov/nmmrview/xmls/xml-to-text.jsp?id=gov.noaa.ngdc.mgg.multibeam:KM0806_Multibeam\",\"link-type\":\"metadata\",\"mime-type\":null,\"size\":null}",
+            "{\"href\":\"http://www.ngdc.noaa.gov/mgg/bathymetry/multibeam.html\",\"link-type\":\"metadata\",\"mime-type\":null,\"size\":null}"
+          ],
+          "has-transforms": [
+            false
+          ],
+          "tags-gzip-b64": [
+            "H4sIAAAAAAAAAKtWyi9K10tPzS8uhpDxKYklibrJ+UWpSgrVtbUACNVwCiAAAAA="
+          ],
+          "created-at": [
+            "2015-12-02T16:25:56+0000"
+          ],
+          "science-keywords-flat": [
+            "EARTH SCIENCE",
+            "OCEANS",
+            "BATHYMETRY/SEAFLOOR TOPOGRAPHY"
+          ],
+          "has-spatial-subsetting": [
+            false
+          ],
+          "summary": [
+            "This data set is part of a larger set of data called the MultiBeam Bathymetric Data Base (MBBDB) where other similar data can be found at http://maps.ngdc.noaa.gov/viewers/multibeam/"
+          ],
+          "permitted-group-ids": [
+            "4F1137E1-0B08-D707-1716-1D4802746BAA",
+            "guest",
+            "8CBE3F3A-FCCE-5392-02AF-C260126BE67C",
+            "registered",
+            "076ECC1A-0573-5067-A50B-7FA02AF33368",
+            "7D9A6899421E2BE2E04400144F4ADB84"
+          ],
+          "entry-id": [
+            "gov.noaa.ngdc.mgg.multibeam.KM0806_Multibeam"
+          ],
+          "ords-info": [
+            3,
+            4
+          ],
+          "metadata-format": [
+            "dif"
+          ],
+          "provider-id": [
+            "NOAA_NCEI"
+          ],
+          "user-id": [
+            "mmorahan"
+          ],
+          "archive-center": [
+            "DOC/NOAA/NESDIS/NGDC"
+          ],
+          "revision-id": [
+            2
+          ],
+          "short-name": [
+            "gov.noaa.ngdc.mgg.multibeam.KM0806_Multibeam"
+          ],
+          "revision-date2": [
+            "2017-04-27T12:01:21+0000"
+          ],
+          "end-date": [
+            "2008-05-30T23:59:59+0000"
+          ],
+          "data-center": [
+            "DOC/NOAA/NESDIS/NGDC"
+          ],
+          "has-granules": [
+            false
+          ],
+          "deleted": [
+            false
+          ],
+          "related-urls": [
+            "{\"type\":\"GET DATA\",\"sub-type\":null,\"url\":\"http://www.ngdc.noaa.gov/nndc/struts/results?op_0=l&v_0=NEW1440&t=101378&s=8&d=70&d=75&d=76&d=91&d=74&d=73&d=72&d=81&d=82&d=85&d=86&d=79&no_data=suppress\",\"description\":\"\\n         Cruise File List. List of cruise related files available for download.\\n      \",\"mime-type\":null,\"title\":null,\"size\":null}",
+            "{\"type\":\"GET DATA\",\"sub-type\":null,\"url\":\"http://www.ngdc.noaa.gov/nndc/struts/results?op_0=l&v_0=NEW1440&op_1=l&v_1=&op_2=l&v_2=&t=101378&s=2&d=6\",\"description\":\"\\n         Multibeam Survey List. Listing of cruise that includes basic information about the cruise and option for downloading all cruise data.\\n      \",\"mime-type\":null,\"title\":null,\"size\":null}",
+            "{\"type\":\"GET DATA\",\"sub-type\":null,\"url\":\"http://maps.ngdc.noaa.gov/viewers/bathymetry/\",\"description\":\"\\n         Multibeam Bathymetry Map Viewer\\n      \",\"mime-type\":null,\"title\":null,\"size\":null}",
+            "{\"type\":\"EXTENDED METADATA\",\"sub-type\":null,\"url\":\"http://www.ngdc.noaa.gov/nmmrview/xmls/xml-to-text.jsp?id=gov.noaa.ngdc.mgg.multibeam:KM0806_Multibeam\",\"description\":\"\\n         View Source Metadata\\n      \",\"mime-type\":null,\"title\":null,\"size\":null}",
+            "{\"type\":\"PROJECT HOME PAGE\",\"sub-type\":null,\"url\":\"http://www.ngdc.noaa.gov/mgg/bathymetry/multibeam.html\",\"description\":\"\\n         Home page for Multibeam Bathymetry data at NGDC\\n      \",\"mime-type\":null,\"title\":null,\"size\":null}"
+          ],
+          "concept-id": [
+            "C1214560005-NOAA_NCEI"
+          ],
+          "native-id": [
+            "gov.noaa.ngdc.mgg.multibeam.KM0806_Multibeam"
+          ],
+          "version-id": [
+            "Not provided"
+          ],
+          "personnel": [
+            "{\"first-name\":\"EVAN\",\"middle-name\":null,\"last-name\":\"ROBERTSON\",\"roles\":[\"Metadata Author\"],\"contacts\":[{\"type\":\"email\",\"value\":\"Evan.Robertson@noaa.gov\"}]}"
+          ],
+          "_id": "C1214560005-NOAA_NCEI",
+          "entry-title": [
+            "Multibeam collection for KM0806: Multibeam data collected aboard Kilo Moana from 2008-05-26 to 2008-05-30, departing from Honolulu, HI and returning to Honolulu, HI"
+          ]
+        }
+      }
+    ]
+  }
+}

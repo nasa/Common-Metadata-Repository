@@ -1,0 +1,88 @@
+{:api-version "v2.1"
+ :default-content-type "json"
+ :auth-caching {:init {}
+                :ttl {:minutes 60}
+                :lru {:threshold 1000}
+                :dumpfile "data/cache/authz-dump.edn"}
+ :concept-caching {:init {}
+                   :ttl {:hours 24}
+                   :dumpfile "data/cache/concept-dump.edn"}
+ :cmr {
+   :access {:control {:protocol "https"
+                          :host "cmr.sit.earthdata.nasa.gov"
+                          :relative {:root {:url "/access-control"}}}}
+   :concept {
+     :variable {:version "1.1"}}
+   :echo {:rest {:protocol "https"
+                 :host "cmr.sit.earthdata.nasa.gov"
+                 :context "/legacy-services/rest"}}
+   :max-pagesize 2000
+   :opendap {:protocol "https"
+             :host "cmr.sit.earthdata.nasa.gov"
+             :public {:protocol "https"
+                      :host "cmr.sit.earthdata.nasa.gov"}
+             :relative {:root {:url "/opendap"}}}
+   :search {:protocol "https"
+            :host "cmr.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
+ :giovanni {
+   :search {:protocol "https"
+            :host "giovanni.gsfc.nasa.gov"
+            :relative {:root {:url "/giovanni"}}}}
+ :edsc {
+   :search {:protocol "https"
+            :host "search.sit.earthdata.nasa.gov"
+            :relative {:root {:url "/search"}}}}
+ :httpd {
+   :port 3013
+   :entry-point-fn nil
+   :route-fns {
+     :api cmr.ous.app.routes.rest.core/all
+     :site cmr.ous.app.routes.site/all}
+   :pages {
+     :default-title "CMR OPeNDAP"}
+   :base-url "/opendap"
+   :docs "resources/public/docs"
+   :assets "resources/public/assets"
+   :rest-docs
+     {:base-url-template "%%OPENDAP_BASE_URL%%"
+      :source "resources/docs/rest-api/index.md"
+      :outdir "resources/public/docs/opendap/docs/current/rest-api"}
+   :skip-static #{"/opendap/docs"}
+   :replace-base-url #{"/opendap/docs/current/rest-api"
+                       "/opendap/docs/current/reference/2000-usage.html"}
+   :index-dirs #{"/opendap/docs/1.0.0/marginalia"
+                 "/opendap/docs/1.0.0/reference"
+                 "/opendap/docs/1.0.0/rest-api"
+                 "/opendap/docs/current/marginalia"
+                 "/opendap/docs/current/reference"
+                 "/opendap/docs/current/rest-api"}
+   :streaming {
+     :timeout 20000 ; milliseconds (20 seconds * 1000)
+     :heartbeat 200 ; milliseconds
+     }}
+ :logging {
+   :level :trace
+   :nss [cmr org.httpkit]
+   :color false}
+ :mission-control {
+   :messaging-type :core-async}
+ :plugin {
+   :jarfiles {
+     ;; The reducer factory function must take two args: plugin name and plugin
+     ;; type -- both of type ^String. The default reducer checks for an exact
+     ;; string match.
+     :reducer-factory cmr.plugin.jar.core/create-has-plugin-type-reducer}
+   :registry {
+     :default {
+       :plugin-name "CMR-Plugin"
+       :plugin-type "service-bridge-app"
+       ;; The fowllowing needs to be an in-JAR path to a plugin's config file,
+       ;; which will be read once its plugin has been identifed as a plugin of
+       ;; the desired name/type.
+       :config-file "config/cmr-plugin/config.edn"}
+     :web {
+       :route-keys [:httpd :route-fns]
+       :api-route-key :api
+       :site-route-key :site}}}
+ :vendor "cmr-ous"}
