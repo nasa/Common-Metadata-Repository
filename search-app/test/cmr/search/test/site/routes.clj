@@ -87,7 +87,7 @@
       (is (= 200 (:status response)))
       (is (string/includes?
            (:body response)
-           "Documentation for CMR Search"))
+           "Documentation for Search"))
       (is (string/includes?
            (:body response)
            "site/docs/search/api"))

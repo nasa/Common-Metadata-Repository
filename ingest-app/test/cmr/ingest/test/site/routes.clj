@@ -69,7 +69,7 @@
   (let [response (site (request :get (str base-url "/site/docs/ingest")))]
     (testing "all docs links appear here"
       (is (= 200 (:status response)))
-      (is (string/includes? (:body response) "Documentation for CMR Ingest"))
+      (is (string/includes? (:body response) "Documentation for Ingest"))
       (is (string/includes? (:body response) "site/docs/ingest/api"))
       (is (string/includes? (:body response) "site/docs/ingest/site")))))
 
