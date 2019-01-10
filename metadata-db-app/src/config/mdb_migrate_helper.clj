@@ -18,7 +18,7 @@
   [& stmt-strs]
   (println "Applying" stmt-strs)
   (let [start-time (System/currentTimeMillis)]
-    (apply j/db-do-commands (config/db) [stmt-strs])
+    (j/db-do-commands (config/db) stmt-strs)
     (println (format "Finished %s in [%s] ms."
                      stmt-strs
                      (- (System/currentTimeMillis) start-time)))))
