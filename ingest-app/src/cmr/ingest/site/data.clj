@@ -23,7 +23,7 @@
   [context]
   (merge (common-data/base-page context)
          data-partners-guide
-         {:app-title "CMR Ingest"}))
+         {:app-title "Ingest"}))
 
 (defn base-static
   "Data that all static pages have in common.
@@ -32,4 +32,4 @@
   []
   (merge (common-data/base-static)
          data-partners-guide
-         {:app-title "CMR Ingest"}))
+         {:app-title "Ingest"}))
