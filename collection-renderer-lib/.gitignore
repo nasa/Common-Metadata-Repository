@@ -12,3 +12,4 @@ pom.xml.asc
 /gems
 build.xml
 test2junit
+tmp_gem_dir
