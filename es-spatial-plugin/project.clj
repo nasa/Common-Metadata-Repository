@@ -25,7 +25,7 @@
     [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.logging "0.4.0"]
     [org.elasticsearch/elasticsearch "1.6.2"]
-    [org.ow2.asm/asm "5.1"]]
+    [org.ow2.asm/asm "7.0"]]
   :plugins [
     [lein-shell "0.5.0"]
     [test2junit "1.3.3"]]

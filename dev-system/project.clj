@@ -58,7 +58,7 @@
     [org.clojure/clojure "1.10.0"]
     ;; Add groovy to support groovy scripting in elastic
     [org.codehaus.groovy/groovy-all "2.4.0"]
-    [ring/ring-codec "1.1.0"]]
+    [ring/ring-codec "1.1.1"]]
     project-dependencies)
   :plugins [
     [lein-environ "1.1.0"]
@@ -87,7 +87,7 @@
         [org.clojars.gjahad/debug-repl "0.3.3"]
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]
-        [pjstadig/humane-test-output "0.8.3"]
+        [pjstadig/humane-test-output "0.9.0"]
         [proto-repl "0.3.1"]
         [proto-repl-charts "0.3.2"]
         [proto-repl-sayid "0.1.3"]

@@ -26,7 +26,7 @@
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]
-        [pjstadig/humane-test-output "0.8.3"]
+        [pjstadig/humane-test-output "0.9.0"]
         [proto-repl "0.3.1"]]
       :jvm-opts ^:replace ["-server"]
       :source-paths ["src" "dev" "test"]

@@ -1,11 +1,12 @@
 (ns cmr.oracle.sql-utils
   (:refer-clojure :exclude [update])
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
-            [sqlingvo.core :as s]
-            [sqlingvo.db :as sdb]
-            [sqlingvo.compiler :as sc]
-            [sqlingvo.util :as su]))
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.common.log :refer (debug info warn error)]
+   [sqlingvo.compiler :as sc]
+   [sqlingvo.core :as s]
+   [sqlingvo.db :as sdb]
+   [sqlingvo.util :as su]))
 
 (def db-vendor (sdb/oracle))
 

@@ -16,20 +16,20 @@
     [potemkin]]
   :dependencies [
     [camel-snake-kebab "0.4.0"]
-    [cheshire "5.8.0"]
+    [cheshire "5.8.1"]
     [clj-http "2.3.0"]
-    [clj-time "0.14.2"]
-    [com.fasterxml.jackson.core/jackson-core "2.9.3"]
+    [clj-time "0.15.1"]
+    [com.fasterxml.jackson.core/jackson-core "2.9.8"]
     [commons-codec/commons-codec "1.11"]
     [commons-fileupload "1.3.3"]
     [commons-io "2.6"]
     [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-    [org.apache.httpcomponents/httpclient "4.5.4"]
-    [org.apache.httpcomponents/httpcore "4.4.8"]
+    [org.apache.httpcomponents/httpclient "4.5.6"]
+    [org.apache.httpcomponents/httpcore "4.4.10"]
     [org.clojure/clojure "1.10.0"]
-    [org.clojure/tools.reader "1.1.1"]
-    [potemkin "0.4.4"]]
+    [org.clojure/tools.reader "1.3.2"]
+    [potemkin "0.4.5"]]
   :plugins [
     [lein-shell "0.5.0"]
     [test2junit "1.3.3"]]
@@ -42,7 +42,7 @@
     :dependencies [
       [org.clojars.gjahad/debug-repl "0.3.3"]
       [org.clojure/tools.namespace "0.2.11"]
-      [pjstadig/humane-test-output "0.8.3"]]
+      [pjstadig/humane-test-output "0.9.0"]]
     :injections [(require 'pjstadig.humane-test-output)
                 (pjstadig.humane-test-output/activate!)]
     :jvm-opts ^:replace ["-server"

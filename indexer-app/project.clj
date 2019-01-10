@@ -4,8 +4,8 @@
   :exclusions [
     [instaparse]]
   :dependencies [
-    [compojure "1.6.0"]
-    [instaparse "1.4.8"]
+    [compojure "1.6.1"]
+    [instaparse "1.4.10"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
@@ -15,7 +15,7 @@
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.nrepl "0.2.13"]
-    [ring/ring-core "1.6.3"]
+    [ring/ring-core "1.7.1"]
     [ring/ring-json "0.4.0"]]
   :plugins [
     [lein-shell "0.5.0"]

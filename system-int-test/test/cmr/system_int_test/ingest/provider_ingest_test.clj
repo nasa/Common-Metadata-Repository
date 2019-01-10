@@ -5,7 +5,6 @@
     [clojure.set :as set]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as access-control]
-    [cmr.common.mime-types :as mt]
     [cmr.common.util :as u]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.data2.core :as d]
@@ -286,13 +285,13 @@
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
-      (is (= (mt/with-utf-8 mt/json) content-type))
+      (is (= "application/json;charset=utf-8" content-type))
       (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
              [status errors]))))
 
   (testing "delete SMALL_PROV provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
-      (is (= (mt/with-utf-8 mt/json) content-type))
+      (is (= "application/json;charset=utf-8" content-type))
       (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
              [status errors]))))
 
