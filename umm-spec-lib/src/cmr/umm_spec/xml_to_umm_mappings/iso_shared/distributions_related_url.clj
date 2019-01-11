@@ -23,6 +23,52 @@
   (let [value (subs str start (some #(when % %) args))]
     (str/trim (subs value (inc (.indexOf value ":"))))))
 
+(def description-string-field-re-pattern
+  "Returns the pattern that matches all the related fields in description-string"
+  (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:"))
+
+(def key-split-string
+  "Special string to help separate keys from values in ISO strings"
+  "HSTRING")
+
+(def value-split-string
+  "Special string to help separate keys from values in ISO strings"
+  "TSTRING")
+
+(defn convert-iso-description-string-to-map
+  "Convert Description string to a map, removing fields that are empty or nil.
+  Description string: \"URLContentType: DistributionURL
+                        Description: A very nice URL
+                        Type: GET DATA Subtype: Subscribe\"
+  Description map: {\"URLContentType\" \"DistributionURL\"
+                    \"Description\" \"A very nice URL\"
+                    \"Type\" \"GET DATA\"
+                    \"Subtype\" \"Subscribe\"}"
+  [description-string description-regex]
+  (let [description-string (-> description-string
+                               (str/replace description-regex
+                                            #(str key-split-string
+                                                  %1
+                                                  value-split-string))
+                               str/trim
+                               (str/replace #"\s+HSTRING" key-split-string)
+                               (str/replace #":TSTRING\s+" (str ":" value-split-string)))
+        description-string-list (str/split description-string (re-pattern key-split-string))]
+    (->> description-string-list
+         ;; split each string in the description-str-list
+         (map #(str/split % #":TSTRING"))
+         ;; keep the ones with values.
+         (filter #(= 2 (count %)))
+         (into {})
+         ;; remove "nil" valued keys
+         (util/remove-map-keys #(= "nil" %)))))
+
+(defn- convert-key-strings-to-keywords
+  [map]
+  (into {}
+    (for [[k v] map]
+      [(keyword k) v])))
+
 (defn parse-url-types-from-description
  "In ISO, since there are not separate fields for the types, they are put in the
  description in the format 'Description: X URLContentType: Y Type: Z Subtype: A'
@@ -31,36 +77,17 @@
  (when description
   (let [description-index (util/get-index-or-nil description "Description:")
         url-content-type-index (util/get-index-or-nil description "URLContentType:")
-        type-index (util/get-index-or-nil description " Type:")
+        type-index (util/get-index-or-nil description "Type:")
         subtype-index (util/get-index-or-nil description "Subtype:")
         checksum-index (util/get-index-or-nil description "Checksum:")]
-   (if (and (nil? description-index)(nil? url-content-type-index)
-            (nil? type-index) (nil? subtype-index))
+   (if (and (nil? description-index)
+            (nil? url-content-type-index)
+            (nil? type-index)
+            (nil? subtype-index)
+            (nil? checksum-index))
     {:Description description} ; Description not formatted like above, so just description
-    {:Description (when description-index
-                   (let [desc (subs description
-                               description-index
-                               (or url-content-type-index type-index subtype-index
-                                   checksum-index (count description)))]
-                    (str/trim (subs desc (inc (.indexOf desc ":"))))))
-     :URLContentType (when url-content-type-index
-                      (let [content-type (subs description
-                                          url-content-type-index
-                                          (or type-index subtype-index checksum-index (count description)))]
-                        (str/trim (subs content-type (inc (.indexOf content-type ":"))))))
-     :Type (when type-index
-            (let [type (subs description
-                        type-index
-                        (or subtype-index checksum-index (count description)))]
-              (str/trim (subs type (inc (.indexOf type ":"))))))
-     :Subtype (when subtype-index
-                (let [subtype (subs description
-                               subtype-index
-                               (or checksum-index (count description)))]
-                  (str/trim (subs subtype (inc (.indexOf subtype ":"))))))
-     :Checksum (when checksum-index
-                 (let [checksum (subs description checksum-index)]
-                   (str/trim (subs checksum (inc (.indexOf checksum ":"))))))}))))
+    (convert-key-strings-to-keywords
+     (convert-iso-description-string-to-map description description-string-field-re-pattern))))))
 
 (defn- parse-operation-description
   "Parses operationDescription string, returns MimeType, DataID, and DataType"
