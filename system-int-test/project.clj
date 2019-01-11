@@ -57,7 +57,6 @@
       :exclusions [
         [org.clojure/tools.nrepl]]
       :dependencies [
-        [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
         [org.clojars.gjahad/debug-repl "0.3.3"]
         [org.clojure/tools.namespace "0.2.11"]
         [org.clojure/tools.nrepl "0.2.13"]
