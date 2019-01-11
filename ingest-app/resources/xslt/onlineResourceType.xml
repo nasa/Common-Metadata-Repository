@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<onlineResourceTypeLookup>
+  <onlineResourceType name="Algorithm Info" type="information"/>
+  <onlineResourceType name="Browse" type="information"/>
+  <onlineResourceType name="Browse Calendar" type="information"/>
+  <onlineResourceType name="Calibration/validation data" type="information"/>
+  <onlineResourceType name="Data Access" type="download"/>
+  <onlineResourceType name="Data access (FTP)" type="download"/>
+  <onlineResourceType name="Data access (OpenDAP)" type="download"/>
+  <onlineResourceType name="Dataset Quality Summary" type="information"/>
+  <onlineResourceType name="DatasetDisclaimer" type="information"/>
+  <onlineResourceType name="ECSCollGuide" type="information"/>
+  <onlineResourceType name="GET DATA" type="download"/>
+  <onlineResourceType name="GET DATA : DATA POOL (ON-LINE ARCHIVE)" type="download"/>
+  <onlineResourceType name="GET DATA : ECHO" type="download"/>
+  <onlineResourceType name="GET DATA : GIOVANNI" type="download"/>
+  <onlineResourceType name="GET DATA : LANCE" type="download"/>
+  <onlineResourceType name="GET DATA : MIRADOR" type="download"/>
+  <onlineResourceType name="GET DATA : OPENDAP DATA (DODS)" type="download"/>
+  <onlineResourceType name="GET DATA : REVERB" type="download"/>
+  <onlineResourceType name="GET RELATED SERVICE METADATA (SERF)" type="download"/>
+  <onlineResourceType name="GET RELATED VISUALIZATION" type="download"/>
+  <onlineResourceType name="Get Service" type="download"/>
+  <onlineResourceType name="GET SERVICE : GET MAP SERVICE" type="download"/>
+  <onlineResourceType name="GET SERVICE : GET SOFTWARE PACKAGE" type="download"/>
+  <onlineResourceType name="GET SERVICE : GET WEB COVERAGE SERVICE (WCS)" type="download"/>
+  <onlineResourceType name="GET SERVICE : GET WEB MAP SERVICE (WMS)" type="download"/>
+  <onlineResourceType name="GHRSST Portal Home Page" type="information"/>
+  <onlineResourceType name="Guide" type="information"/>
+  <onlineResourceType name="Homepage" type="information"/>
+  <onlineResourceType name="Ice Home Page" type="information"/>
+  <onlineResourceType name="Metadata File" type="information"/>
+  <onlineResourceType name="MiscInformation" type="information"/>
+  <onlineResourceType name="OnlineResourceType" type="information"/>
+  <onlineResourceType name="PI Documentation" type="information"/>
+  <onlineResourceType name="Product Quality Monitoring Page" type="information"/>
+  <onlineResourceType name="Project Home Page" type="information"/>
+  <onlineResourceType name="Project Homepage" type="information"/>
+  <onlineResourceType name="Project Website" type="information"/>
+  <onlineResourceType name="Reference Materials" type="information"/>
+  <onlineResourceType name="Software" type="information"/>
+  <onlineResourceType name="static URL" type="information"/>
+  <onlineResourceType name="text/html" type="information"/>
+  <onlineResourceType name="Thumbnail" type="information"/>
+  <onlineResourceType name="VIEW PROJECT HOME PAGE" type="information"/>
+  <onlineResourceType name="VIEW RELATED INFORMATION" type="information"/>
+  <onlineResourceType name="VIEW RELATED INFORMATION : USER'S GUIDE" type="information"/>
+  <onlineResourceType name="Web site" type="information"/>
+</onlineResourceTypeLookup>

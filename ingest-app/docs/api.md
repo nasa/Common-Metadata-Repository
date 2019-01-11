@@ -622,7 +622,7 @@ Example output:
 ```
 ## <a name="translate-granule"></a> Translate Granule Metadata
 
-Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported formats are ECHO10, ISO SMAP and UMM-G.
+Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115. 
 
 Example: Translate ECHO10 metadata to UMM-G
 
