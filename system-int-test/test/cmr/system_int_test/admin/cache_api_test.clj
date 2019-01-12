@@ -95,6 +95,7 @@
          "acls"
          "health"
          "humanizer-alias-cache"
+         "xsl-transformer-templates"
          "kms"
          "providers"
          "token-imp"
