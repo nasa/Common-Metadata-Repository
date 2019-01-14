@@ -6,9 +6,8 @@
 
 (def extra-repository
   "The set of repositories to include if configured"
-  (if-let [repo (get (System/getenv) oracle-jar-repo-env-var)]
-    repo
-    "http://example.com/no_url_specified_this_is_ignored"))
+  (when-let [repo (get (System/getenv) oracle-jar-repo-env-var)]
+    repo))
 
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
