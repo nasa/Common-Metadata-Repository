@@ -25,7 +25,7 @@
     [cheshire "5.8.1"]
     [clojusc/trifl "0.4.2"]
     [clojusc/twig "0.4.0"]
-    [com.stuartsierra/component "0.3.2"]
+    [com.stuartsierra/component "0.4.0"]
     [environ "1.1.0"]
     [gov.nasa.earthdata/cmr-authz "0.1.1"]
     [gov.nasa.earthdata/cmr-exchange-common "0.3.0-SNAPSHOT"]
@@ -38,13 +38,13 @@
     [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
     [gov.nasa.earthdata/cmr-sizing-plugin "0.2.5-SNAPSHOT"]
     [http-kit "2.3.0"]
-    [markdown-clj "1.0.5"]
-    [metosin/reitit-core "0.2.9"]
-    [metosin/reitit-ring "0.2.9"]
+    [markdown-clj "1.0.6"]
+    [metosin/reitit-core "0.2.10"]
+    [metosin/reitit-ring "0.2.10"]
     [metosin/ring-http-response "0.9.1"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/core.async "0.4.490"]
-    [org.clojure/core.cache "0.7.1"]
+    [org.clojure/core.cache "0.7.2"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [org.clojure/java.classpath "0.3.0"]
     [ring/ring-core "1.7.1"]
@@ -64,7 +64,7 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.6"]]
+        [lein-nvd "0.6.0"]]
       :source-paths ^:replace ["src"]
       :nvd {
         :suppression-file "resources/security/false-positives.xml"}
