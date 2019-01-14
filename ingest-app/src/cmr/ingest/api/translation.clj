@@ -38,8 +38,7 @@
 
 (def xsl-transformer-cache-name
   "This is the name of the cache to use for XSLT transformer templates. Templates are thread
-  safe but transformer instances are not.
-  http://www.onjava.com/pub/a/onjava/excerpt/java_xslt_ch5/?page=9"
+  safe but transformer instances are not."
   :xsl-transformer-templates)
 
 (def ^:private echo10-iso19115-xslt
