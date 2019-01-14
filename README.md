@@ -44,7 +44,7 @@ Search API provides access to this metadata.
     Leiningen website.
 - Ruby (used to support two legacy apps)
 - Maven (https://maven.apache.org/install.html)
-    - Mac OS X devs can use `brew install maven` 
+    - Mac OS X devs can use `brew install maven`
     - Linux devs can use `sudo apt-get install maven`
 
 ## Obtaining the Code
@@ -182,6 +182,14 @@ against all projects: `cmr test dep-trees`.
 To perform static analysis and linting for a project, you can run
 `cmr test lint PROJ`. As above with dependency version checking, by
 not passing a project, you can run for all projects: `cmr test lint`.
+
+#### Dependency Vulnerability Scanning
+
+You can see if your currently installed version of CMR has any reported Common Vulnerabilities and Exploits (CVEs) by running the helpful alias `lein check-sec` that you can use in each application, or at the root folder to scan all CMR apps together.
+
+You will find the vulnerability summary in `./target/dependency-check-report.html` in each application.
+
+Make sure you set up the CMR_ORACLE_JAR_REPO environment variable.
 
 #### Testing CMR
 

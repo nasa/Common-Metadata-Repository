@@ -37,6 +37,9 @@
                        "-Dclojure.compiler.direct-linking=true"]
   :aot [cmr.message-queue.test.ExitException]
   :profiles {
+    :security {
+      :plugins [
+        [com.livingsocial/lein-dependency-check "1.1.0"]]}
     :dev {
       :exclusions [
         [org.clojure/tools.nrepl]]
@@ -79,6 +82,8 @@
       ["with-profile" "lint" "yagni"]
     "check-deps"
       ["with-profile" "lint" "ancient" ":all"]
+    "check-sec"
+      ["with-profile" "security" "dependency-check"]
     "lint"
       ["do"
         ["check"] ["kibit"] ["eastwood"]]

@@ -39,6 +39,8 @@
       ["modules" "lint"]
     "check-deps"
       ["modules" "check-deps"]
+    "check-sec"
+      ["modules" "check-sec"]
     "deps-tree-conflicts"
       ["modules" "deps" ":tree"]
     "generate-static"
@@ -77,4 +79,3 @@
       ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static,"]
     "internal-install-with-content!"
       ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static," "clean"]})
-

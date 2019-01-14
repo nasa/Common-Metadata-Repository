@@ -23,6 +23,9 @@
   :repl-options {:init-ns user}
   :test-paths ["test" "int-test"]
   :profiles {
+    :security {
+      :plugins [
+        [com.livingsocial/lein-dependency-check "1.1.0"]]}
     :dev {
       :dependencies [
         [org.clojars.gjahad/debug-repl "0.3.3"]
@@ -63,6 +66,7 @@
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
+            "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

@@ -7,6 +7,9 @@
   :dependencies [
     [org.clojure/clojure "1.10.0"]]
   :profiles {
+    :security {
+      :plugins [
+        [com.livingsocial/lein-dependency-check "1.1.0"]]}
     :test {
       :plugins [
         [lein-shell "0.5.0"]
@@ -14,4 +17,5 @@
   :aliases {
     ;; The following aliases are needed for the CMR build process.
     "generate-static" ["with-profile" "+test" "shell" "echo" "NO OP"]
+    "check-sec" ["with-profile" "security" "dependency-check"]
     "test-out" ["with-profile" "+test" "test2junit"]})

@@ -38,6 +38,9 @@
     cmr.elasticsearch.plugins.spatial.factory.core
     cmr.elasticsearch.plugins.spatial.plugin]
   :profiles {
+    :security {
+      :plugins [
+        [com.livingsocial/lein-dependency-check "1.1.0"]]}
     :dev {
       :exclusions [
         [org.clojure/tools.nrepl]]
@@ -115,6 +118,7 @@
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
+            "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})
