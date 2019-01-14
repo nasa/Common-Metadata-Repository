@@ -189,8 +189,6 @@ You can see if your currently installed version of CMR has any reported Common V
 
 You will find the vulnerability summary in `./target/dependency-check-report.html` in each application.
 
-Make sure you set up the CMR_ORACLE_JAR_REPO environment variable.
-
 #### Testing CMR
 
 There are two modes of testing the CMR:
