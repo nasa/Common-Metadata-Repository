@@ -22,4 +22,11 @@
       <gav regex="true">^gov\.nasa\.earthdata:cmr-site-templates:.*$</gav>
       <cve>CVE-2017-16111</cve>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: gt-main-20.0.jar
+      ]]></notes>
+      <gav regex="true">^.*gt-main:.*$</gav>
+      <cve>CVE-2018-18749</cve>
+   </suppress>
 </suppressions>
