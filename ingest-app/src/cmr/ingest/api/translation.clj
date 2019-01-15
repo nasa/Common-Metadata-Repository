@@ -14,9 +14,20 @@
    [cmr.umm-spec.versioning :as versioning]
    [compojure.core :refer :all]))
 
-(def concept-type->supported-formats
-  "A map of concept type to the list of formats that are supported both for input and output of
-  translation."
+(def concept-type->supported-input-formats
+  "A map of concept type to the list of formats that are supported for input of translation."
+  {:collection #{mt/echo10
+                 mt/umm-json
+                 mt/iso19115
+                 mt/dif
+                 mt/dif10
+                 mt/iso-smap}
+   :granule #{mt/echo10
+              mt/umm-json
+              mt/iso-smap}})
+
+(def concept-type->supported-output-formats
+  "A map of concept type to the list of formats that are supported for output of translation."
   {:collection #{mt/echo10
                  mt/umm-json
                  mt/iso19115
@@ -61,7 +72,7 @@
     (xslt/transform echo10-metadata (get-template context echo10-iso19115-xslt))))
 
 (defn- generate-metadata
-  "Generate the metadatat for the given umm record and output format."
+  "Generate the metadata for the given umm record and output format."
   [context umm output-format]
   (if (and (= cmr.umm.umm_granule.UmmGranule (type umm))
            (= :iso19115 output-format))
@@ -109,7 +120,8 @@
   "Fulfills the translate request using the body, content type header, and accept header. Returns
   a ring response with translated metadata."
   [context concept-type headers body skip-umm-validation]
-  (let [supported-formats (concept-type->supported-formats concept-type)
+  (let [supported-input-formats (concept-type->supported-input-formats concept-type)
+        supported-output-formats (concept-type->supported-output-formats concept-type)
         content-type (get headers "content-type")
         accept-header (get headers "accept")
         ;; always skip sanitize of granules for now as we have not considered sanitizing for granules yet
@@ -119,8 +131,8 @@
                   util/default-parsing-options)]
 
     ;; just for validation (throws service error if invalid media type is given)
-    (mt/extract-header-mime-type supported-formats headers "content-type" true)
-    (mt/extract-header-mime-type supported-formats headers "accept" true)
+    (mt/extract-header-mime-type supported-input-formats headers "content-type" true)
+    (mt/extract-header-mime-type supported-output-formats headers "accept" true)
 
     ;; Can not skip-sanitize-umm when the target format is not UMM-C
     (when (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
@@ -148,7 +160,7 @@
 (def random-metadata-routes
   "This defines routes for development purposes that can generate random metadata and return it."
   (GET "/random-metadata" {:keys [body headers request-context]}
-    (let [supported-formats (concept-type->supported-formats :collection)
+    (let [supported-formats (concept-type->supported-output-formats :collection)
           output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)]
 
       (let [umm (test-check-gen/generate umm-generators/umm-c-generator)
