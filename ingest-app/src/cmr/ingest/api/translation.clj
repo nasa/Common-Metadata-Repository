@@ -57,11 +57,11 @@
 
 (defn- get-template
   "Returns a XSLT template from the filename, using the context cache."
-  [context f]
+  [context filename]
   (cache/get-value
    (cache/context->cache context xsl-transformer-cache-name)
-   f
-   #(xslt/read-template f)))
+   filename
+   #(xslt/read-template filename)))
 
 (defn- generate-granule-iso-mends-metadata
   "Generate granule ISO MENDS metadata from the given umm-lib granule model.
