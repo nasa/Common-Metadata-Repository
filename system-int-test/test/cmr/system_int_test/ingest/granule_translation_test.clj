@@ -98,6 +98,11 @@
        #"The mime types specified in the content-type header \[application/xml\] are not supported"
        :granule :xml "notread" :umm-json))
 
+    (testing "ISO19115 is not supported input format"
+      (assert-translate-failure
+       #"The mime types specified in the content-type header \[application/iso19115\+xml\] are not supported"
+       :granule :iso19115 "notread" :umm-json))
+
     (testing "not specified input format"
       (assert-translate-failure
        #"The mime types specified in the content-type header \[\] are not supported"
