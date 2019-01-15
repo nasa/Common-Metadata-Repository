@@ -11,7 +11,7 @@
     [clj-http "2.3.0"]
     [commons-codec/commons-codec "1.11"]
     [commons-io "2.6"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.apache.httpcomponents/httpcore "4.4.10"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/data.csv "0.1.4"]

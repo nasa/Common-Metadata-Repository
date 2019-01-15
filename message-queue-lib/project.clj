@@ -23,7 +23,7 @@
     [commons-logging "1.2"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [org.apache.httpcomponents/httpclient "4.5.6"]
     [org.apache.httpcomponents/httpcore "4.4.10"]

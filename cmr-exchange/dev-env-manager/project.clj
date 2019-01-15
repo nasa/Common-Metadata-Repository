@@ -69,7 +69,7 @@
         [clojusc/twig "0.3.2"]
         [gov.nasa.earthdata/cmr-process-manager "0.1.0-SNAPSHOT"]
         [me.raynes/conch "0.8.0"]
-        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [
+        [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [
           com.dadrox/quiet-slf4j
           com.google.code.findbugs/jsr305
           gorilla-repl
@@ -149,7 +149,7 @@
       :dependencies [
         [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
         [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-        [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+        [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
         [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
         [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
       :main cmr.cubby.runner

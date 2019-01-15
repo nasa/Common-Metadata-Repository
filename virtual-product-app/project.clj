@@ -7,7 +7,7 @@
     [commons-logging "1.2"]
     [compojure "1.6.1"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]

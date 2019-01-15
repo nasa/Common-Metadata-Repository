@@ -19,7 +19,7 @@
     [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
     [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"]

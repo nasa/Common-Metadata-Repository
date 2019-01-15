@@ -10,7 +10,7 @@
 (defproject nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"
   :description "Contains Ruby code that allows performing orbit calculations for spatial search."
   :dependencies [
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.jruby/jruby-complete ~jruby-version]]
   :plugins [

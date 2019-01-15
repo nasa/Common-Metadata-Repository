@@ -9,7 +9,7 @@
     [clj-time "0.15.1"]
     [compojure "1.6.1"]
     [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]

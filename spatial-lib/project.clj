@@ -4,7 +4,7 @@
   :exclusions [
     [org.clojure/clojure]]
   :dependencies [
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [net.jafama/jafama "2.3.1"]
     [net.mikera/core.matrix "0.54.0"]
     [net.mikera/vectorz-clj "0.28.0"]

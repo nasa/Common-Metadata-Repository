@@ -10,7 +10,7 @@
     [commons-io "2.6"]
     [commons-validator/commons-validator "1.5.1"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [org.apache.httpcomponents/httpcore "4.4.10"]

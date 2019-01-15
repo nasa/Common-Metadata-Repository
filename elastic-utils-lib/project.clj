@@ -14,7 +14,7 @@
     [commons-codec/commons-codec "1.11"]
     [commons-io "2.6"]
     [log4j/log4j "1.2.17"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.elasticsearch/elasticsearch "1.6.2"]
     [potemkin "0.4.5"]]

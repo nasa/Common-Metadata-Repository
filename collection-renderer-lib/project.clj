@@ -28,7 +28,7 @@
   :dependencies [
     [commons-io "2.6"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.jruby/jruby-complete ~jruby-version]]

@@ -18,7 +18,7 @@
     [com.oracle/ojdbc6 "11.2.0.4"]
     [com.oracle/ons "11.2.0.4"]
     [com.oracle/ucp "11.2.0.4"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/java.jdbc "0.4.2"]
     [sqlingvo "0.7.15"]]
