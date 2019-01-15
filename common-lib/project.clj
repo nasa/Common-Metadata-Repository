@@ -1,4 +1,4 @@
-(defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :exclusions [
@@ -106,4 +106,6 @@
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]})
+            "generate-static" ["with-profile" "static" "shell" "echo"]
+            "build-jar" ["jar"]
+            "publish" ["do" ["clean"] ["build-jar"] ["deploy" "clojars"]]})
