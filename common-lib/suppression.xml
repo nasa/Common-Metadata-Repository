@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--For non-false positives suppress with <suppress until="YYYY-MM-DD">...-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress until="2019-02-19">
+    <notes><![CDATA[
+    file name: guava-16.0.1.jar
+    ]]></notes>
+    <gav regex="true">^com\.google\.guava:guava:.*$</gav>
+    <cpe>cpe:/a:google:guava</cpe>
+  </suppress>
+  <suppress until="2019-02-19">
+    <notes><![CDATA[
+    file name: jackson-databind-2.2.3.jar
+    ]]></notes>
+    <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
+    <cpe>cpe:/a:fasterxml:jackson-databind</cpe>
+  </suppress>
+  <suppress until="2019-02-19">
+    <notes><![CDATA[
+    file name: jackson-databind-2.2.3.jar
+    ]]></notes>
+    <gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
+    <cpe>cpe:/a:fasterxml:jackson</cpe>
+  </suppress>
+  <suppress until="2019-02-19">
+    <notes><![CDATA[
+    file name: clansi-1.0.0.jar
+    ]]></notes>
+    <gav regex="true">^clansi:clansi:.*$</gav>
+    <cpe>cpe:/a:style_it_project:style_it</cpe>
+  </suppress>
+</suppressions>
