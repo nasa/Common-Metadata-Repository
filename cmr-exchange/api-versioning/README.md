@@ -56,4 +56,4 @@ Distributed under the Apache License, Version 2.0.
 [clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-api-versioning
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-api-versioning.svg
-[security-scan-badge]: https://img.shields.io/badge/nvd%2Fsecurity%20scan-passing-brightgreen.svg
+[security-scan-badge]: https://img.shields.io/badge/dependency%20check%20security%20scan-passing-brightgreen.svg

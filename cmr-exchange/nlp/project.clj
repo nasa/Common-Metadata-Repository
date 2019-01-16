@@ -41,10 +41,8 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.6"]]
+        [com.livingsocial/lein-dependency-check "1.1.0"]]
       :source-paths ^:replace ["src"]
-      :nvd {
-        :suppression-file "resources/security/false-positives.xml"}
       :exclusions [
         ;; The following are excluded due to their being flagged as a CVE
         [com.google.protobuf/protobuf-java]
@@ -135,7 +133,7 @@
     ;; Security
     "check-sec" ["with-profile" "+system,+local,+security" "do"
       ["clean"]
-      ["nvd" "check"]]
+      ["dependency-check"]]
     ;; Docker Aliases
     "docker-clean" ["with-profile" "+system,+local,+security" "do"
       ["shell" "docker" "system" "prune" "-f"]]
