@@ -10,16 +10,19 @@
   from outside this context; the data functions defined herein are specifically
   for use in page templates, structured explicitly for their needs."
   (:require
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.site.data :as common-data]))
 
 (defn base-page
   "Data that all app pages have in common."
   [context]
-  (assoc (common-data/base-page context) :app-title "Access Control"))
+  (assoc (common-data/base-page context) :app-title "Access Control"
+                                         :release-version (str "v " (common-config/release-version))))
 
 (defn base-static
   "Data that all static pages have in common.
 
   Note that static pages don't have any context."
   []
-  (assoc (common-data/base-static) :app-title "Access Control"))
+  (assoc (common-data/base-static) :app-title "Access Control"
+                                   :release-version (str "v " (common-config/release-version))))

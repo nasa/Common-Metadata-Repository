@@ -12,6 +12,7 @@
   (:require
    [clj-time.core :as clj-time]
    [clojure.string :as string]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.services.search.query-model :as query-model]
@@ -149,11 +150,13 @@
 
 (defmethod base-page :cli
   [context]
-  (assoc (common-data/base-static) :app-title "Search"))
+  (assoc (common-data/base-static) :app-title "Search" 
+                                   :release-version (str "v " (common-config/release-version))))
 
 (defmethod base-page :default
   [context]
-  (assoc (common-data/base-page context) :app-title "Search"))
+  (assoc (common-data/base-page context) :app-title "Search" 
+                                         :release-version (str "v " (common-config/release-version))))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory

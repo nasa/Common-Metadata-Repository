@@ -43,7 +43,7 @@
     [commons-codec/commons-codec "1.11"]
     [commons-io "2.6"]
     [compojure "1.6.1"]
-    [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
+    [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/tools.reader "1.3.2"]
     [ring/ring-codec "1.1.1"]
