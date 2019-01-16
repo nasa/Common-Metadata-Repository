@@ -35,10 +35,8 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [lein-nvd "0.5.6"]]
+        [com.livingsocial/lein-dependency-check "1.1.0"]]
         :source-paths ^:replace ["src"]
-      :nvd {
-        :suppression-file "resources/security/false-positives.xml"}
       :exclusions [
         ;; The following are excluded due to their being flagged as a CVE
         [com.google.protobuf/protobuf-java]
@@ -113,7 +111,7 @@
     ;; Security
     "check-sec" ["with-profile" "+security,+system" "do"
       ["clean"]
-      ["nvd" "check"]]
+      ["dependency-check"]]
     ;; Build tasks
     "build-jar" ["with-profile" "+security,+system" "jar"]
     "build-uberjar" ["with-profile" "+security,+system" "uberjar"]
