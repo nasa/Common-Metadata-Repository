@@ -102,12 +102,13 @@
            "site/docs/search/site")))))
 
 (deftest dynamic-release-version
-  (let [_ (side-api/eval-form `(common-config/set-release-version! "1.0"))
-        response (site (request :get (str base-url "/site/docs/search")))]
+  (side-api/eval-form `(common-config/set-release-version! "1.0"))
+  (let [response (site (request :get (str base-url "/site/docs/search")))]
     (testing "release version is changed to 1.0."
       (is (string/includes?
            (:body response)
-           "v 1.0")))))
+           "v 1.0"))))
+  (side-api/eval-form `(common-config/set-release-version! "dev")))
 
 (deftest search-url-reorg-redirects
   (let [response (site (request :get (str base-url "/site/docs/search/api")))]
