@@ -17,3 +17,7 @@
   "Flag for whether or not launchpad token is enforeced."
   {:default false
    :type Boolean})
+
+(defconfig release-version
+  "Contains the release version of CMR."
+  {:default "dev"})
