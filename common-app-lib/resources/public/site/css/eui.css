@@ -160,24 +160,24 @@ table.image-grid p {
 }
 
 .eui-masthead-logo.eui-application-logo a:link {
-  padding: 13px 0 10px 120px; 
+  padding: 13px 0 10px 140px; 
   background-image: url(../images/cmr-logo-white.png);
   width: inherit;
 }
 
 .eui-masthead-logo.eui-application-logo a:hover {
-  padding: 13px 0 10px 120px; 
+  padding: 13px 0 10px 140px; 
   background-image: url(../images/cmr-logo-white.png);
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 1.3 / 1), only screen and (min-resolution: 125dpi), only screen and (min-resolution: 1.3dppx) {
   .eui-masthead-logo.eui-application-logo a:link {
-    padding: 13px 0 10px 120px;
+    padding: 13px 0 10px 140px;
     background-image: url(../images/cmr-logo-white_2x.png);
   }
 
   .eui-masthead-logo.eui-application-logo a:hover {
-    padding: 13px 0 10px 120px;
+    padding: 13px 0 10px 140px;
     background-image: url(../images/cmr-logo-white_2x.png);
   }
 }

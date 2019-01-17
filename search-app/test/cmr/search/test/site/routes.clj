@@ -1,8 +1,11 @@
 (ns cmr.search.test.site.routes
-  (:require [clojure.string :as string]
-            [clojure.test :refer :all]
-            [cmr.search.site.routes :as r]
-            [ring.mock.request :refer [request]]))
+  (:require 
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.search.site.routes :as r]
+   [ring.mock.request :refer [request]]))
 
 (def ^:private scheme "https")
 (def ^:private host "cmr.example.com")
@@ -90,10 +93,21 @@
            "Documentation for Search"))
       (is (string/includes?
            (:body response)
+           "v dev"))
+      (is (string/includes?
+           (:body response)
            "site/docs/search/api"))
       (is (string/includes?
            (:body response)
            "site/docs/search/site")))))
+
+(deftest dynamic-release-version
+  (let [_ (side-api/eval-form `(common-config/set-release-version! "1.0"))
+        response (site (request :get (str base-url "/site/docs/search")))]
+    (testing "release version is changed to 1.0."
+      (is (string/includes?
+           (:body response)
+           "v 1.0")))))
 
 (deftest search-url-reorg-redirects
   (let [response (site (request :get (str base-url "/site/docs/search/api")))]

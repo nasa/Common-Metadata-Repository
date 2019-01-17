@@ -20,4 +20,4 @@
 
 (defconfig release-version
   "Contains the release version of CMR."
-  {:default "1.1.1-r1.1.1"})
+  {:default "dev"})
