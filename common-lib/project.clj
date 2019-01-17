@@ -21,7 +21,7 @@
     [clojusc/ltest "0.3.0"]
     [com.dadrox/quiet-slf4j "0.1"]
     [com.gfredericks/test.chuck "0.2.9"]
-    [com.github.java-json-tools/json-schema-validator "2.2.10"]
+    [com.github.fge/json-schema-validator "2.2.6"]
     [com.taoensso/timbre "4.10.0"]
     [commons-codec/commons-codec "1.11"]
     [compojure "1.6.1"]
