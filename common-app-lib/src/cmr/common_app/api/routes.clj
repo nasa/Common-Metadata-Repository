@@ -164,7 +164,7 @@
 
 (defn update-response-body-with-fn
   [response f]
-  (let [new-body (f (:body response))]
+  (let [^String new-body (f (:body response))]
     (-> response
         (assoc-in [:body] new-body)
         (assoc-in [:headers "Content-Length"] (str (count (.getBytes new-body "UTF-8"))))

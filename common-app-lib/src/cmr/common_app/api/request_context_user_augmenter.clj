@@ -10,7 +10,6 @@
   the system datastructure."
   (:require
    [cheshire.core :as json]
-   [cmr.acl.core :as acl]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer (info)]

@@ -104,7 +104,7 @@
   (when-let [value (value-keyword params)]
     ; Return null if value is a vector.  Assumes single-value-validation handles vectors.
     (when-not (sequential? value)
-      (Integer. value))))
+      (Integer/parseInt value))))
 
 (defn concept-id-validation
   "Validates the concept-id(s)"

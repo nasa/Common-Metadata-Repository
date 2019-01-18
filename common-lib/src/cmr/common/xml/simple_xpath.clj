@@ -58,7 +58,9 @@
   (:require
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [cmr.common.util :as u]))
+   [cmr.common.util :as u])
+  (:import
+   (clojure.data.xml Element)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selector creation functions
@@ -558,7 +560,7 @@
                            xpath-expression)]
     (evaluate-internal (context ctx) xpath-expression)))
 
-(defn text
+(defn ^String text
   "Returns the text of all nodes selected in an XPath context."
   [context-or-node]
   (cond
@@ -576,7 +578,7 @@
   [context xpath]
   (seq (:context (evaluate context xpath))))
 
-(defmacro select
+(defmacro ^Element select
   "Returns all elements matching the XPath expression. Perform work of parsing
   XPath at compile time if a string literal is passed in to improve
   performance at runtime."

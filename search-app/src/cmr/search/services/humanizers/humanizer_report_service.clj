@@ -3,8 +3,8 @@
   (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
-   [cmr.common-app.cache.consistent-cache :as consistent-cache]
-   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
+   [cmr.transmit.cache.cubby-cache :as cubby-cache]
    [cmr.common.cache :as cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]

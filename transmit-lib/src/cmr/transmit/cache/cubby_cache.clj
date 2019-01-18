@@ -1,4 +1,4 @@
-(ns cmr.common-app.cache.cubby-cache
+(ns cmr.transmit.cache.cubby-cache
   "An implementation of the CMR cache protocol on top of the cubby application. Cubby only supports
   persistence and returning strings so this automatically serializes and deserializes the keys and
   values with EDN. Any key or value serializable to EDN is supported. Operationally cubby uses

@@ -6,7 +6,7 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]

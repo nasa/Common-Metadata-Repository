@@ -2,9 +2,9 @@
   "This tests the cache implementations in the common-app library. These caches require use of a
   running cubby application."
   (:require [clojure.test :refer :all]
-            [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.common-app.cache.consistent-cache-spec :as consistent-cache-spec]
-            [cmr.common-app.cache.cubby-cache :as cubby-cache]
+            [cmr.transmit.cache.consistent-cache :as consistent-cache]
+            [cmr.transmit.cache.consistent-cache-spec :as consistent-cache-spec]
+            [cmr.transmit.cache.cubby-cache :as cubby-cache]
             [cmr.common.cache :as cache]
             [cmr.common.cache.cache-spec :as cache-spec]))
 

@@ -36,7 +36,7 @@
   [doc base-xpath instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
         id (get-in instrument-elem [:attrs :id])
-        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
+        ^String mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
     ;; only include child instruments - when mounted-on-id = one of the instrument ids.
     (when mounted-on-id
       (let [mounted-on-id-wo-# (.replaceAll mounted-on-id "#" "")
@@ -48,7 +48,7 @@
   [doc base-xpath instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
         id (get-in instrument-elem [:attrs :id])
-        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "eos:mountedOn")))]
+        ^String mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "eos:mountedOn")))]
     ;; only include child instruments - when mounted-on-id = one of the instrument ids.
     (when mounted-on-id
       (let [mounted-on-id-wo-# (.replaceAll mounted-on-id "#" "")
@@ -77,7 +77,7 @@
     (remove nil?
             (distinct
              (concat child-instrument-sub-elems
-                     (for [[k v] child-instruments-mapping]
+                     (for [[^String k v] child-instruments-mapping]
                        (when (.contains k (str "-" id))
                          v)))))))
 
@@ -101,7 +101,7 @@
           :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}))))
   ([doc base-xpath instrument-elem options]
    ;; This is the NOAA case where instruments are from alternative xpath.
-   ;; See CMR-4885 for more details. 
+   ;; See CMR-4885 for more details.
    (when-let [short-long-name (value-of instrument-elem iso/short-name-xpath)]
      (let [short-long-name-list (string/split short-long-name #">")]
        (util/remove-nil-keys
@@ -115,7 +115,7 @@
   ([doc base-xpath instrument-elem]
    (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
          id (get-in instrument-elem [:attrs :id])
-         mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
+         ^String mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
       ;; exclude child instruments - when mounted-on-id = one of the instrument ids.
       (cond
         mounted-on-id

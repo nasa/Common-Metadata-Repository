@@ -150,8 +150,7 @@
    [ring.util.request :as request]
    [selmer.parser :as selmer])
   (:import
-   [org.pegdown PegDownProcessor
-                Extensions]))
+   (org.pegdown Extensions PegDownProcessor)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions & Constants
@@ -183,7 +182,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Routing Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  
+
 (def site-provider-map
   "Defines site and a sample provider map for all sites"
   {"cmr.earthdata.nasa.gov" "PODAAC"
@@ -195,41 +194,41 @@
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
   relative-root-url of the application, and the location of the welcome page within the classpath."
   ([public-protocol relative-root-url]
-    (routes
-      (context "/site" []
-        ;; Return swagger.json if the application provides one
-        (GET "/swagger.json" {:keys [headers]}
-          (if-let [resource (site-resource "swagger.json")]
-            {:status 200
+   (routes
+     (context "/site" []
+       ;; Return swagger.json if the application provides one
+       (GET "/swagger.json" {:keys [headers]}
+         (if-let [resource (site-resource "swagger.json")]
+           {:status 200
              :body (-> resource
                        slurp
                        (string/replace "%CMR-PROTOCOL%" public-protocol)
                        (string/replace "%CMR-HOST%" (headers "host"))
                        (string/replace "%CMR-BASE-PATH%" relative-root-url))
              :headers (:headers cr/options-response)}
-            (route/not-found (site-resource "404.html"))))
-        ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-        (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
-          (when-let [resource (site-resource page)]
-            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
-                  site-example-provider (get site-provider-map (headers "host") "PROV1") 
-                  cmr-example-collection-id (str "C1234567-" site-example-provider)]
-              {:status 200
+           (route/not-found (site-resource "404.html"))))
+       ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
+       (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
+         (when-let [resource (site-resource page)]
+           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
+                 site-example-provider (get site-provider-map (headers "host") "PROV1")
+                 cmr-example-collection-id (str "C1234567-" site-example-provider)]
+             {:status 200
                :body (-> resource
                          slurp
                          (string/replace "%CMR-ENDPOINT%" cmr-root)
                          (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
-        ;; Other static resources (Javascript, CSS)
-        (route/resources "/" {:root resource-root})
-        (pages/not-found))))
+       ;; Other static resources (Javascript, CSS)
+       (route/resources "/" {:root resource-root})
+       (pages/not-found))))
   ([public-protocol relative-root-url welcome-page-location]
-    (routes
-      ;; CMR Application Welcome Page
-      (GET "/" req
-        (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-                              {:status 200
-                               :body (slurp (io/resource welcome-page-location))}))
-      (docs-routes public-protocol relative-root-url))))
+   (routes
+     ;; CMR Application Welcome Page
+     (GET "/" req
+       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
+                             {:status 200
+                              :body (slurp (io/resource welcome-page-location))}))
+     (docs-routes public-protocol relative-root-url))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Core API Documentation Functions

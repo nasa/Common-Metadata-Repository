@@ -60,7 +60,7 @@
   :at-end? - indicates whether the entire stream has been read.
   :bytes-read - number of bytes read from the stream. If nothing was read return 0 rather than -1.
   :buffer-full? - indicates whether the max-bytes-to-read were read."
-  [input-stream buffer offset max-bytes-to-read]
+  [^InputStream input-stream buffer offset max-bytes-to-read]
   (let [bytes-read (.read input-stream buffer offset max-bytes-to-read)]
     {:at-end? (= -1 bytes-read)
      :bytes-read (max 0 bytes-read) ;; Java input stream read will return -1 when no bytes are read
@@ -130,8 +130,8 @@
               ;; Reconstruct request body into a new input stream since the current has been read
               (let [request-body (byte-stream-from-buffers all-buffers total-bytes-read)]
                 (handler (assoc request :body request-body))))
-            (recur total-bytes-read
-                   bytes-read-for-current-buffer
+            (recur (long total-bytes-read)
+                   (long bytes-read-for-current-buffer)
                    all-buffers
                    current-buffer)))))))
 

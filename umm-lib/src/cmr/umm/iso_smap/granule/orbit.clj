@@ -15,7 +15,7 @@
    [cmr.spatial.validation :as sv]
    [cmr.umm.iso-smap.helper :as h]
    [cmr.umm.umm-granule :as g])
-  (:import cmr.umm.umm_granule.Orbit))
+  (:import (cmr.umm.umm_granule Orbit)))
 
 (defn- start-end-direction
   [field-path direction]
@@ -63,7 +63,7 @@
     (v/create-error-messages (v/validate ocsd-validations record))))
 
 (extend-protocol sv/SpatialValidation
-  nil 
+  nil
   (validate
     [record]
     [(str "Unsupported gmd:description inside gmd:EX_GeographicDescription - "
@@ -103,7 +103,7 @@
   value is not parseable so that the validation can catch the error and return to the user."
   [field value]
   (try
-    (Integer. value)
+    (Integer/parseInt value)
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
       value)))
@@ -124,7 +124,7 @@
   value is not parseable."
   [field value]
   (try
-    (Double. value)
+    (Double/parseDouble value)
     (catch Exception e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an double." field value))
       ;; We return nil here instead of value because within-range validation can't handle comparing a
@@ -201,22 +201,22 @@
   (x/element :gmd:geographicElement {}
              (x/element :gmd:EX_GeographicDescription {}
                         (x/element :gmd:geographicIdentifier {}
-                        (x/element :gmd:MD_Identifier {}
-                                   (h/iso-string-element :gmd:code (build-orbit-string orbit))
-                                   (h/iso-string-element :gmd:codeSpace
-                                                         "gov.nasa.esdis.umm.orbitparameters")
-                                   (h/iso-string-element :gmd:description "OrbitParameters"))))))
+                         (x/element :gmd:MD_Identifier {}
+                                    (h/iso-string-element :gmd:code (build-orbit-string orbit))
+                                    (h/iso-string-element :gmd:codeSpace
+                                                          "gov.nasa.esdis.umm.orbitparameters")
+                                    (h/iso-string-element :gmd:description "OrbitParameters"))))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
   [ocsd]
   (x/element :gmd:geographicElement {}
              (x/element :gmd:EX_GeographicDescription {}
                         (x/element :gmd:geographicIdentifier {}
-                        (x/element :gmd:MD_Identifier {}
-                                   (h/iso-string-element :gmd:code (build-ocsd-string ocsd))
-                                   (h/iso-string-element :gmd:codeSpace
-                                                         "gov.nasa.esdis.umm.orbitcalculatedspatialdomains")
-                                   (h/iso-string-element :gmd:description "OrbitCalculatedSpatialDomains"))))))
+                         (x/element :gmd:MD_Identifier {}
+                                    (h/iso-string-element :gmd:code (build-ocsd-string ocsd))
+                                    (h/iso-string-element :gmd:codeSpace
+                                                          "gov.nasa.esdis.umm.orbitcalculatedspatialdomains")
+                                    (h/iso-string-element :gmd:description "OrbitCalculatedSpatialDomains"))))))
 
 (defmethod gmd/decode-geo-content :EX_GeographicDescription
   [geo-desc]

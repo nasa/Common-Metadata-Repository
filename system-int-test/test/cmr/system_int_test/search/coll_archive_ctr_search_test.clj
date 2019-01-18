@@ -25,30 +25,30 @@
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 5 {:DataCenters [(data-umm-cmn/data-center
                                                                                               {:Roles ["ARCHIVER"]
                                                                                                :ShortName "SEDAC AC"})
-                                                                (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
-                                                                                         :ShortName "SEDAC PC"})]}))
+                                                                                            (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
+                                                                                                                       :ShortName "SEDAC PC"})]}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 6 {:DataCenters [(data-umm-cmn/data-center
                                                                                               {:Roles ["ARCHIVER"]
                                                                                                :ShortName "Larc"})]}))
         coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 7 {:DataCenters [(data-umm-cmn/data-center
                                                                                               {:Roles ["ARCHIVER"]
                                                                                                :ShortName "Sedac AC"})
-                                                                (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
-                                                                                         :ShortName "Sedac"})]}))
+                                                                                            (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
+                                                                                                                       :ShortName "Sedac"})]}))
         ;; KMS collections, but with different case for the short-names
         kms-coll1 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 8
                               {:DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
-                                                                      :ShortName "Ucar/ncar/eoL/ceoPdm"})]}))
+                                                                        :ShortName "Ucar/ncar/eoL/ceoPdm"})]}))
         kms-coll2 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 9
                               {:DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
-                                                                      :ShortName "Doi/uSGs/Cmg/wHSc"})]}))
+                                                                        :ShortName "Doi/uSGs/Cmg/wHSc"})]}))
         ;; DIF collections support distribution-center data centers
         dif-coll1 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 10
                               {:DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
-                                                                      :ShortName "Dist center"})]})
+                                                                        :ShortName "Dist center"})]})
                             {:format :dif})]
 
     (index/wait-until-indexed)
@@ -118,10 +118,10 @@
 
            ;; Test searching on KMS subfields
            [kms-coll1 kms-coll2] {:archive_center {:level_0 "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES"
-                                           :ignore_case false}}
+                                                   :ignore_case false}}
            [] {:archive_center {:level_0 "government agencies-u.s. federal agencies" :ignore_case false}}
            [kms-coll1 kms-coll2] {:archive_center {:level_0 "government agencies-u.s. federal agencies"
-                                           :ignore_case true}}
+                                                   :ignore_case true}}
            [kms-coll1] {:archive_center {:level_1 "NSF"}}
            [kms-coll2] {:archive_center {:level_2 "USGS"}}
            [kms-coll2] {:archive_center {:level_3 "Added level 3 value"}}
@@ -193,10 +193,10 @@
 
            ;; Test searching on KMS subfields
            [kms-coll1 kms-coll2] {:data_center {:level_0 "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES"
-                                           :ignore_case false}}
+                                                :ignore_case false}}
            [] {:data_center {:level_0 "government agencies-u.s. federal agencies" :ignore_case false}}
            [kms-coll1 kms-coll2] {:data_center {:level_0 "government agencies-u.s. federal agencies"
-                                           :ignore_case true}}
+                                                :ignore_case true}}
            [kms-coll1] {:data_center {:level_1 "NSF"}}
            [kms-coll2] {:data_center {:level_2 "USGS"}}
            [kms-coll2] {:data_center {:level_3 "Added level 3 value"}}

@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact
   "Functions for generating ECHO10 XML contact elements from UMM data centers and contact persons."
-  (:require [cmr.umm-spec.util :as u]
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [cmr.umm-spec.util :as u]))
 
 (def umm-data-center-role->echo10-contact-organization-role
  {"ARCHIVER" "ARCHIVER"
@@ -121,12 +122,14 @@
   "Generate an ECHO10 ProcessingCenter. Take the first DataCenter of type 'PROCESSOR'"
   [c]
   (when-let [processing-center
-             (first (filter #(.contains (:Roles %) processing-center-umm-role) (:DataCenters c)))]
+             (first (filter #(some (set [processing-center-umm-role]) (:Roles %))
+                            (:DataCenters c)))]
    [:ProcessingCenter (:ShortName processing-center)]))
 
 (defn generate-archive-centers
   "Generate an ECHO10 ArchiveCenter. Take the first DataCenter of type 'ARCHIVER'"
   [c]
   (when-let [archive-center
-             (first (filter #(.contains (:Roles %) archive-center-umm-role) (:DataCenters c)))]
+             (first (filter #(some (set [archive-center-umm-role]) (:Roles %))
+                            (:DataCenters c)))]
    [:ArchiveCenter (:ShortName archive-center)]))

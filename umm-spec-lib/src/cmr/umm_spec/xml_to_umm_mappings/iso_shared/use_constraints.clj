@@ -12,6 +12,8 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
+(set! *warn-on-reflection* true)
+
 (defn- get-license-value
   "Get the first LicenseUrl or LicenseText info from a list of other-constraints.
    get the char-string-value from each other-constraint, Parse the label part out,
@@ -31,7 +33,7 @@
   "Get description value from the list of gmd:useLimitation values.
    Pick the first that doesn't start with Restriction Comment:."
   [description-list sanitize?]
-  (when-let [value (some #(when-let [value (value-of % "gco:CharacterString")]
+  (when-let [value (some #(when-let [^String value (value-of % "gco:CharacterString")]
                             (when-not (.contains value "Restriction Comment:")
                               value))
                          description-list)]

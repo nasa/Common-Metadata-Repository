@@ -18,8 +18,8 @@
 (defn- parse-point
   [el]
   (when el
-    {:Longitude (Double. (value-of el "Point_Longitude"))
-     :Latitude  (Double. (value-of el "Point_Latitude"))}))
+    {:Longitude (Double/parseDouble (value-of el "Point_Longitude"))
+     :Latitude  (Double/parseDouble (value-of el "Point_Latitude"))}))
 
 (defn- parse-line
   [el]
