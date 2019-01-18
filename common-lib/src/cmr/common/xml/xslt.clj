@@ -8,7 +8,8 @@
            [javax.xml.transform
             TransformerFactory
             Templates
-            URIResolver]))
+            URIResolver]
+           net.sf.saxon.TransformerFactoryImpl))
 
 (defn- create-uri-resolver
   "Creates an instance of the URIResolver interface that will direct all paths within the xslt
@@ -24,7 +25,7 @@
   [f]
   (with-open [r (io/reader f)]
     (let [xsl-resource (StreamSource. r)
-          factory (TransformerFactory/newInstance)]
+          factory (TransformerFactoryImpl.)]
       (.setURIResolver factory (create-uri-resolver))
       (.newTemplates factory xsl-resource))))
 
