@@ -1,15 +1,12 @@
 (ns cmr.common.xml.xslt
   "Provides functions for invoking xsl on metadata."
-  (:require [clojure.java.io :as io])
-  (:import java.io.StringReader
-           java.io.StringWriter
-           javax.xml.transform.stream.StreamSource
-           javax.xml.transform.stream.StreamResult
-           [javax.xml.transform
-            TransformerFactory
-            Templates
-            URIResolver]
-           net.sf.saxon.TransformerFactoryImpl))
+  (:require
+   [clojure.java.io :as io])
+  (:import
+   (java.io StringReader StringWriter)
+   (javax.xml.transform TransformerFactory Templates URIResolver)
+   (javax.xml.transform.stream StreamSource StreamResult)
+   (net.sf.saxon TransformerFactoryImpl)))
 
 (defn- create-uri-resolver
   "Creates an instance of the URIResolver interface that will direct all paths within the xslt
