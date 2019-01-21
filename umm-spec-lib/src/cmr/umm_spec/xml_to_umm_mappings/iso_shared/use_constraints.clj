@@ -12,8 +12,6 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
-(set! *warn-on-reflection* true)
-
 (defn- get-license-value
   "Get the first LicenseUrl or LicenseText info from a list of other-constraints.
    get the char-string-value from each other-constraint, Parse the label part out,

@@ -14,8 +14,6 @@
    [compojure.core :refer :all]
    [ring.util.response :as rsp]))
 
-(set! *warn-on-reflection* true)
-
 (defn get-user
   "Processes a request to get a user."
   [context name]
@@ -110,8 +108,6 @@
              (urs-db/password-matches? context username password))
       successful-login-response
       unsuccessful-login-response)))
-
-(def bees (byte-array 10))
 
 (defn decode-base64
   [^String string]

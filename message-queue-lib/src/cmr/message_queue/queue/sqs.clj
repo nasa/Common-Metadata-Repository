@@ -30,9 +30,8 @@
    (com.amazonaws.auth.policy.conditions ConditionFactory)
    (com.amazonaws.regions InMemoryRegionImpl)
    (com.amazonaws.services.sns AmazonSNSClient)
-   (com.amazonaws.services.sns.model Topic)
-   (com.amazonaws.services.sns.util Topics)
    (com.amazonaws.services.sqs AmazonSQSClient)
+   (com.amazonaws.services.sns.util Topics)
    (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
                                      PurgeQueueRequest ReceiveMessageRequest
                                      SendMessageResult SetQueueAttributesRequest)
@@ -101,7 +100,7 @@
   Amazon Resource Name"
   "QueueArn")
 
-(defn- ^String dead-letter-queue
+(defn- dead-letter-queue
   "Returns the dead-letter-queue name for a given queue name. The
   given queue name should already be normalized."
   [queue]
@@ -126,7 +125,7 @@
     (http-url->name endpoint)
     (arn->name endpoint)))
 
-(defn- ^String normalize-queue-name
+(defn- normalize-queue-name
   "Ensure all queues start with gsfc-eosdis-cmr since the permissions in NGAP specify that CMR
   can only create queues with that prefix. Also adds in the environment (sit/uat/wl/ops) and
   replaces dots with underscores. This is needed because SQS only allows alpha-numeric chars
@@ -141,11 +140,11 @@
 
 (defn- -get-topic
   "Returns the Topic with the given display name."
-  [^AmazonSNSClient sns-client exchange-name]
+  [sns-client exchange-name]
   (info "Calling SNS to get topic " exchange-name)
   (let [exchange-name (normalize-queue-name exchange-name)
         topics (vec (.getTopics (.listTopics sns-client)))]
-    (some (fn [^Topic topic]
+    (some (fn [topic]
             (let [topic-arn (.getTopicArn topic)
                   topic-name (arn->name topic-arn)]
               (when (= exchange-name topic-name)
@@ -156,24 +155,17 @@
  "Memoized function that returns the Topic with the given display name."
  (memoize -get-topic))
 
-(defn- get-queue-url
-  "Returns an SQS queue URL."
-  [^AmazonSQSClient sqs-client ^String queue-name]
-  (let [^GetQueueUrlResult queue-url-result (.getQueueUrl sqs-client queue-name)]
-    (.getQueueUrl queue-url-result)))
-
 (defn- get-queue-arn
   "Get the Amazon Resource Name (ARN) for the given queue.
   See http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html.
   Queue name must be normalized."
-  [^AmazonSQSClient sqs-client queue-name]
-  (let [q-url (get-queue-url sqs-client queue-name)
+  [sqs-client queue-name]
+  (let [q-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
         q-attrs (->> (ArrayList. [queue-arn-attribute])
                      (.getQueueAttributes sqs-client q-url)
                      .getAttributes
                      (into {}))]
    (get q-attrs queue-arn-attribute)))
-
 
 (defn- create-async-handler
   "Creates a thread that will asynchronously pull messages off the queue, pass them to the handler,
@@ -184,7 +176,7 @@
   (info  "Starting listener for queue: " queue-name)
   (let [queue-name (normalize-queue-name queue-name)
         sqs-client (get queue-broker :sqs-client)
-        queue-url (get-queue-url sqs-client queue-name)
+        queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
         rec-req (doto (ReceiveMessageRequest. queue-url)
                       ;; Only take one message at a time from the queue.
                       (.setMaxNumberOfMessages (Integer. 1))
@@ -216,7 +208,7 @@
 
 (defn- create-queue
   "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
-  [^AmazonSQSClient sqs-client queue-name max-tries visibility-timeout]
+  [sqs-client queue-name max-tries visibility-timeout]
   (let [q-name (normalize-queue-name queue-name)
         dlq-name (dead-letter-queue q-name)
 
@@ -239,23 +231,23 @@
 
 (defn- create-exchange
   "Create an SNS topic to be used as an exchange."
-  [^AmazonSNSClient sns-client exchange-name]
+  [sns-client exchange-name]
   (.createTopic sns-client (normalize-queue-name exchange-name)))
 
 (defn- topic-conditions
   "Returns a sequence of Conditions allowing the given exchanges access to a queue.
   These will be applied to an explicit queue later."
-  [^AmazonSNSClient sns-client exchange-names]
+  [sns-client exchange-names]
   (map (fn [exchange-name]
            (let [ex-name (normalize-queue-name exchange-name)
-                 ^Topic topic (get-topic sns-client ex-name)
+                 topic (get-topic sns-client ex-name)
                  topic-arn (.getTopicArn topic)]
             (ConditionFactory/newSourceArnCondition topic-arn)))
       exchange-names))
 
 (defn- sns-to-sqs-access-policy
   "Returns an access policy allowing the given SNS topic to publish to the given SQS queue."
-  [^AmazonSNSClient sns-client sqs-client queue-name exchange-names]
+  [sns-client sqs-client queue-name exchange-names]
   (let [conditions (topic-conditions sns-client exchange-names)
         queue-arn (get-queue-arn sqs-client queue-name)
         resource (Resource. queue-arn)
@@ -270,11 +262,11 @@
 (defn bind-queue-to-exchange
   "Bind a queue to a single exchange. Extend should be true
   if the queue is already bound to other exchanges."
-  [^AmazonSNSClient sns-client sqs-client exchange-name queue-name extend?]
+  [sns-client sqs-client exchange-name queue-name extend?]
   (let [q-name (normalize-queue-name queue-name)
-        q-url (get-queue-url sqs-client q-name)
+        q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
         ex-name (normalize-queue-name exchange-name)
-        ^Topic topic (get-topic sns-client ex-name)
+        topic (get-topic sns-client ex-name)
         topic-arn (.getTopicArn topic)
         sub-arn (Topics/subscribeQueue sns-client sqs-client topic-arn q-url extend?)]
     ;; use raw mode
@@ -282,7 +274,7 @@
 
 (defn- bind-queue-to-exchanges
  "Bind a queue to SNS Topics representing exchanges."
- [^AmazonSNSClient sns-client sqs-client exchange-names queue-name]
+ [sns-client sqs-client exchange-names queue-name]
  (bind-queue-to-exchange sns-client
                          sqs-client
                          (first exchange-names)
@@ -302,9 +294,9 @@
 
 (defn- -get-queue-url
   "Returns the queue url for the given queue name."
-  [^AmazonSQSClient sqs-client queue-name]
+  [sqs-client queue-name]
   (info "Calling SQS to get URL for queue " queue-name)
-  (get-queue-url sqs-client queue-name))
+  (.getQueueUrl (.getQueueUrl sqs-client queue-name)))
 
 (def get-queue-url
   "Memoized function that returns the queue url for the given name."
@@ -441,7 +433,7 @@
   (get-queues-bound-to-exchange
     [this exchange-name]
     (let [exchange-name (normalize-queue-name exchange-name)
-          ^Topic topic (get-topic sns-client exchange-name)
+          topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)
           subs (vec (.getSubscriptions (.listSubscriptionsByTopic sns-client topic-arn)))]
       (map (fn [sub]
@@ -455,7 +447,7 @@
     [this exchange-name msg]
     (let [msg (json/generate-string msg)
           exchange-name (normalize-queue-name exchange-name)
-          ^Topic topic (get-topic sns-client exchange-name)
+          topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)]
       (debug "Publishing message" msg "to exchange" exchange-name)
       (.publish sns-client topic-arn msg)))
@@ -467,12 +459,12 @@
 
   (reset
     [this]
-    (let [^AmazonSQSClient sqs-client (:sqs-client this)]
+    (let [sqs-client (:sqs-client this)]
       (doseq [queue (:queues this)
               :let [queue-name (normalize-queue-name queue)
                     dlq-name (dead-letter-queue queue-name)
-                    queue-url (get-queue-url sqs-client queue-name)
-                    dlq-url (get-queue-url sqs-client dlq-name)
+                    queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+                    dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
                     q-purge-req (PurgeQueueRequest. queue-url)
                     dlq-purge-req (PurgeQueueRequest. dlq-url)]]
         (.purgeQueue sqs-client q-purge-req)

@@ -12,7 +12,7 @@
   "The key to use when storing the orbit runtime"
   :orbits)
 
-(defn create-jruby-runtime
+(defn ^JRubyEngine create-jruby-runtime
   "Creates and initializes a JRuby runtime."
   []
   (let [jruby (.. (ScriptEngineManager.)
