@@ -4,18 +4,15 @@
    [cmr.common.lifecycle :as l]
    [clojure.java.io :as io])
   (:import
-   (javax.script
-    ScriptEngine
-    ScriptEngineManager
-    Invocable)
-   (java.io
-    ByteArrayInputStream)))
+   (javax.script ScriptEngine ScriptEngineManager Invocable)
+   (java.io ByteArrayInputStream)
+   (org.jruby.embed.jsr223 JRubyEngine)))
 
 (def system-key
   "The key to use when storing the orbit runtime"
   :orbits)
 
-(defn create-jruby-runtime
+(defn ^JRubyEngine create-jruby-runtime
   "Creates and initializes a JRuby runtime."
   []
   (let [jruby (.. (ScriptEngineManager.)
@@ -25,7 +22,7 @@
 
 ;; An wrapper component for the JRuby runtime
 (defrecord OrbitsRuntime
-  [jruby-runtime]
+  [^JRubyEngine jruby-runtime]
   l/Lifecycle
 
   (start
@@ -67,15 +64,15 @@
               swath-width
               start-clat
               num-orbits]
-        {:keys [jruby-runtime]} orbits-runtime]
+        jruby-runtime ^JRubyEngine (:jruby-runtime orbits-runtime)]
     (.invokeFunction jruby-runtime "areaCrossingRange" (to-array args))))
 
 (defn denormalize-latitude-range
   "Returns an array containing all min, max ranges crossing the range from min to max for ascending
    and descending passes."
-  [orbits-runtime min max]
+  [^OrbitsRuntime orbits-runtime min max]
   (let [args [min max]
-        {:keys [jruby-runtime]} orbits-runtime]
+        jruby-runtime ^JRubyEngine (:jruby-runtime orbits-runtime)]
     (.invokeFunction jruby-runtime "denormalizeLatitudeRange" (to-array args))))
 
 ;; Allows easily evaluating Ruby code in the Clojure REPL.

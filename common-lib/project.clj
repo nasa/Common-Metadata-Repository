@@ -28,7 +28,6 @@
     [environ "1.1.0"]
     [instaparse "1.4.10"]
     [net.jpountz.lz4/lz4 "1.3.0"]
-    [net.sf.saxon/Saxon-HE "9.9.0-2"]
     [org.clojure/clojure "1.10.0"]
     [org.clojure/core.async "0.4.490"]
     [org.clojure/core.cache "0.7.2"]
@@ -58,7 +57,10 @@
   :profiles {
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.0"]]}
+        [com.livingsocial/lein-dependency-check "1.1.1"]]
+      :dependency-check {
+        :output-format [:html :csv]
+        :suppression-file "resources/security/suppression.xml"}}
     :dev {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]

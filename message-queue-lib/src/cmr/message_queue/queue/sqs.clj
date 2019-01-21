@@ -365,10 +365,10 @@
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
   [
    ;; Connection to AWS SNS
-   sns-client
+   ^AmazonSNSClient sns-client
 
    ;; Connection to AWS SQS
-   sqs-client
+   ^AmazonSQSClient sqs-client
 
    ;; queues known to this broker
    queues

@@ -24,6 +24,7 @@
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [net.sf.saxon/Saxon-HE "9.9.0-2"]
     [org.apache.httpcomponents/httpclient "4.5.6"]
     [org.apache.httpcomponents/httpcore "4.4.10"]
     [org.clojure/clojure "1.10.0"]
@@ -44,7 +45,10 @@
   :profiles {
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.0"]]}
+        [com.livingsocial/lein-dependency-check "1.1.1"]]
+      :dependency-check {
+        :output-format [:html :csv]
+        :suppression-file "resources/security/suppression.xml"}}
     :dev {
       :dependencies [
         [org.clojars.gjahad/debug-repl "0.3.3"]

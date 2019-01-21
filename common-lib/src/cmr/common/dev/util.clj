@@ -1,11 +1,12 @@
 (ns cmr.common.dev.util
   "This contains utility functions for development"
-  (:require [clojure.java.shell :as sh]
-            [clojure.java.io :as io]
-            [clojure.string :as str])
-  (:import java.awt.datatransfer.StringSelection
-           java.awt.datatransfer.Clipboard
-           java.awt.Toolkit))
+  (:require
+   [clojure.java.shell :as sh]
+   [clojure.java.io :as io])
+  (:import
+   (java.awt.datatransfer Clipboard StringSelection)
+   (java.awt Toolkit)
+   (java.io File)))
 
 (defn touch-file
   [file]
@@ -27,8 +28,11 @@
   "Touches all top level files in the folder."
   [dir]
   (let [d (io/file dir)
-        files (seq (.listFiles d))]
-    (dorun (map #(-> % str touch-file) (remove #(.isDirectory %) files)))))
+        files-or-directories (.listFiles d)
+        files (remove (fn [^File file]
+                        (.isDirectory file))
+                      files-or-directories)]
+    (dorun (map #(-> % str touch-file) files))))
 
 (defn speak
   "Says the specified text outloud."

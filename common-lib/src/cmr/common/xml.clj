@@ -95,7 +95,7 @@
   [xml-struct path]
   (map str (apply concat (contents-at-path xml-struct path))))
 
-(defn string-at-path
+(defn ^String string-at-path
   "Extracts a string from the given path in the XML structure."
   [xml-struct path]
   (first (strings-at-path xml-struct path)))

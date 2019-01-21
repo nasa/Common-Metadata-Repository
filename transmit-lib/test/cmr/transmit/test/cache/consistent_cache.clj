@@ -1,9 +1,9 @@
-(ns cmr.common-app.test.cache.consistent-cache
+(ns cmr.transmit.test.cache.consistent-cache
   "Unit tests for the consistent cache. It tests everything using in memory caches."
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.cache.consistent-cache :as cc]
-   [cmr.common-app.cache.consistent-cache-spec :as consistent-cache-spec]
+   [cmr.transmit.cache.consistent-cache :as cc]
+   [cmr.transmit.cache.consistent-cache-spec :as consistent-cache-spec]
    [cmr.common.cache :as c]
    [cmr.common.cache.cache-spec :as cache-spec]
    [cmr.common.cache.fallback-cache :as fallback-cache]

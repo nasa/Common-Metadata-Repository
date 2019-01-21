@@ -1,8 +1,9 @@
 (ns cmr.transmit.cubby
   "Provide functions for accessing the cubby app"
-  (:require [cmr.transmit.connection :as conn]
-            [ring.util.codec :as codec]
-            [cmr.transmit.http-helper :as h]))
+  (:require
+   [cmr.transmit.connection :as conn]
+   [ring.util.codec :as codec]
+   [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions

@@ -1,31 +1,32 @@
 (ns cmr.dev-system.control
   "A namespace that creates a web server for control of the dev system. It allows the system to be
   stopped for easy testing in CI."
-  (:require [cmr.common-app.test.side-api :as side-api]
-            [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
-            [clojure.java.io :as io]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.search.data.elastic-search-index :as es]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.date-time-parser :as parser]
-            [cmr.common.mime-types :as mt]
-            [cmr.elastic-utils.connect :as elastic-conn]
-            [cmr.ingest.api.translation :as ingest-translation-api]
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.common.date-time-parser :as parser]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.time-keeper :as tk]
+   [cmr.elastic-utils.connect :as elastic-conn]
+   [cmr.ingest.api.translation :as ingest-translation-api]
+   [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
+   [cmr.search.data.elastic-search-index :as es]
+   [cmr.transmit.echo.acls :as echo-acls]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
 
-            ;; Services for reseting
-            [cmr.metadata-db.services.concept-service :as mdb-service]
-            [cmr.index-set.services.index-service :as index-set-service]
-            [cmr.indexer.services.index-service :as indexer-service]
-            [cmr.ingest.services.ingest-service :as ingest-service]
-            [cmr.access-control.api.routes :as access-control]
-            [cmr.search.services.query-service :as search-service]
-            [cmr.mock-echo.api.routes :as mock-echo-api]
-            [cmr.cubby.api.routes :as cubby-api]
-            [cmr.common.cache :as cache]))
+   ;; Services for reseting
+   [cmr.access-control.api.routes :as access-control]
+   [cmr.common.cache :as cache]
+   [cmr.cubby.api.routes :as cubby-api]
+   [cmr.index-set.services.index-service :as index-set-service]
+   [cmr.indexer.services.index-service :as indexer-service]
+   [cmr.ingest.services.ingest-service :as ingest-service]
+   [cmr.metadata-db.services.concept-service :as mdb-service]
+   [cmr.mock-echo.api.routes :as mock-echo-api]
+   [cmr.search.services.query-service :as search-service]))
 
 (defn app-context
   [system app]
@@ -147,7 +148,7 @@
       (PUT "/freeze-time/:date-time" [date-time]
         (tk/set-time-override! (parser/parse-datetime date-time))
         {:status 200})
-      (POST "/advance-time/:num-secs" [num-secs]
+      (POST "/advance-time/:num-secs" [^String num-secs]
         (tk/advance-time! (Long. num-secs))
         {:status 200}))
 

@@ -1,11 +1,12 @@
 (ns cmr.system-int-test.jobs-test
   "This tests the jobs api."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (defn- perform-action-on-jobs
   "Call the specified endpoint on the jobs api. Parses the response body and returns the status

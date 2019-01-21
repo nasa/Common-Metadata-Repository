@@ -1,9 +1,10 @@
 (ns cmr.common.nrepl
   "Common nREPL component for CMR apps."
-  (:require [clojure.tools.nrepl.server :as nrepl]
-            [cmr.common.config :as config]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer [info]]))
+  (:require
+   [clojure.tools.nrepl.server :as nrepl]
+   [cmr.common.config :as config]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer [info]]))
 
 (defrecord nREPLComponent [port server]
   lifecycle/Lifecycle

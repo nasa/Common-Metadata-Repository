@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.extended-metadata
   "Provide functions to parse and generate DIF Extended_Metadata elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def product_level_id_external_meta_name
   "ProductLevelId")
@@ -72,7 +73,7 @@
   [xml-struct]
   (let [access-value (extended-metadata-value xml-struct restriction_flag_external_meta_name)]
     (when access-value
-      (Double. access-value))))
+      (Double/parseDouble access-value))))
 
 (defn generate-metadata-elements
   "Generate a Metadata element based on the passed in metadata maps. The keys in the map are the

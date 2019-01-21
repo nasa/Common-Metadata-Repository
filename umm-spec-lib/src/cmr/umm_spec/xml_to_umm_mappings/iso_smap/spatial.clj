@@ -15,7 +15,7 @@
   [br-el]
   (let [coordinate-fn (fn [coord-path]
                         (when-let [coord (value-of br-el (str coord-path "/gco:Decimal"))]
-                          (Double. coord)))]
+                          (Double/parseDouble coord)))]
     {:NorthBoundingCoordinate (coordinate-fn "gmd:northBoundLatitude")
      :SouthBoundingCoordinate (coordinate-fn "gmd:southBoundLatitude")
      :WestBoundingCoordinate (coordinate-fn "gmd:westBoundLongitude")

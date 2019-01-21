@@ -316,25 +316,26 @@
 (deftest update-collection-with-different-formats-test
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
-      (let [coll (d/ingest-umm-spec-collection "PROV1"
-                           (data-umm-c/collection {:ShortName "S1"
-                                                   :Version "V1"
-                                                   :EntryTitle "ET1"
-                                                   :LongName "L4"
-                                                   :Abstract (name coll-format)
-                                           ;; The following fields are needed for DIF to pass xml validation
-                                                   :ScienceKeywords [(data-umm-cmn/science-keyword
-                                                                      {:Category "upcase"
-                                                                       :Topic "Cool"
-                                                                       :Term "Mild"})]
-                                                   :DataCenters [(data-umm-cmn/data-center
-                                                                  {:Roles ["DISTRIBUTOR"]
-                                                                   :ShortName "Larc"})]
-                                           ;; The following fields are needed for DIF10 to pass xml validation
-                                                   :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                       {:beginning-date-time "1965-12-12T12:00:00Z"
-                                                                        :ending-date-time "1967-12-12T12:00:00Z"})]})
-                           {:format coll-format})]
+      (let [coll (d/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection {:ShortName "S1"
+                                          :Version "V1"
+                                          :EntryTitle "ET1"
+                                          :LongName "L4"
+                                          :Abstract (name coll-format)
+                                          ;; Needed for DIF to pass xml validation
+                                          :ScienceKeywords [(data-umm-cmn/science-keyword
+                                                             {:Category "upcase"
+                                                              :Topic "Cool"
+                                                              :Term "Mild"})]
+                                          :DataCenters [(data-umm-cmn/data-center
+                                                         {:Roles ["DISTRIBUTOR"]
+                                                          :ShortName "Larc"})]
+                                          ;; Needed for DIF10 to pass xml validation
+                                          :TemporalExtents [(data-umm-cmn/temporal-extent
+                                                             {:beginning-date-time "1965-12-12T12:00:00Z"
+                                                              :ending-date-time "1967-12-12T12:00:00Z"})]})
+                  {:format coll-format})]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
         (is (= 1 (:hits (search/find-refs :collection {:keyword (name coll-format)}))))))))

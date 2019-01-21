@@ -1,4 +1,4 @@
-(ns cmr.common-app.cache.consistent-cache
+(ns cmr.transmit.cache.consistent-cache
   "This defines an in memory cache that will be kept consistent with other instances of this cache.
   It achieves this by storing a hash code of the in memory values in another cache. Its expected that
   the hash code cache will be implemented to store the hashes in a single location (database, app,
@@ -43,14 +43,14 @@
   to the set of keys in the cache consider a different implementation."
   (:require
    [clojure.set :as set]
-   [cmr.common-app.cache.cubby-cache :as cubby-cache]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as time-keeper])
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.transmit.cache.cubby-cache :as cubby-cache])
   (:import
    (cmr.common.cache.in_memory_cache InMemoryCache)))
 

@@ -64,7 +64,10 @@
       :source-paths ["test"]}
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.0"]]
+        [com.livingsocial/lein-dependency-check "1.1.1"]]
+      :dependency-check {
+        :output-format [:html :csv]
+        :suppression-file "resources/security/suppression.xml"}
       :source-paths ^:replace ["src"]
       :exclusions [
         ;; The following are excluded due to their being flagged as a CVE

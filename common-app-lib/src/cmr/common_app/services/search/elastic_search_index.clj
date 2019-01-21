@@ -12,7 +12,7 @@
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
@@ -185,9 +185,9 @@
             (update-in [:took] + took-total)
             (update-in [:hits :hits] concat prev-items))
         ;; We need to keep searching subsequent pages
-        (recur (+ offset unlimited-page-size)
+        (recur (long (+ offset unlimited-page-size))
                (concat prev-items current-items)
-               (+ took-total (:took results)))))))
+               (long (+ took-total (:took results))))))))
 
 
 (defn execute-query

@@ -180,7 +180,7 @@
   "Convert the error path string into a sequence with element conversion to integers where possible"
   [path]
   (when path
-    (map (fn [v]
+    (map (fn [^String v]
            (try
              (Integer. v)
              (catch NumberFormatException _

@@ -1,4 +1,4 @@
-(ns cmr.common-app.cache.consistent-cache-spec
+(ns cmr.transmit.cache.consistent-cache-spec
   "Defines a common set of tests for a consistent cache."
   (:require
    [clojure.test :refer [is testing]]

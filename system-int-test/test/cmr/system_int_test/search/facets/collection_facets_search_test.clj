@@ -18,7 +18,6 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as tc]))
 
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false}))
 

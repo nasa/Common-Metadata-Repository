@@ -1,13 +1,17 @@
 (ns cmr.common.test.nrepl
   "Tests for the nREPL component."
-  (:require [clojure.test :refer :all]
-            [clojure.tools.nrepl :as nrepl]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.nrepl :as nrepl-component]))
+  (:require
+   [clojure.test :refer :all]
+   [clojure.tools.nrepl :as nrepl]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.nrepl :as nrepl-component])
+  (:import
+   (clojure.tools.nrepl.transport FnTransport)
+   (java.net BindException)))
 
 (deftest test-nrepl-component
   (let [repl (lifecycle/start (nrepl-component/create-nrepl 0) nil)
-        response (with-open [conn (nrepl/connect :port (:port repl))]
+        response (with-open [^FnTransport conn (nrepl/connect :port (:port repl))]
                    (-> (nrepl/client conn 1000)
                        (nrepl/message {:op :eval :code "(+ 21 21)"})
                        nrepl/response-values
@@ -17,5 +21,5 @@
 
 (deftest test-nrepl-port-in-use
   (let [repl (lifecycle/start (nrepl-component/create-nrepl 0) nil)]
-    (is (thrown? java.net.BindException (lifecycle/start (nrepl-component/create-nrepl (:port repl)) nil)))
+    (is (thrown? BindException (lifecycle/start (nrepl-component/create-nrepl (:port repl)) nil)))
     (lifecycle/stop repl nil)))

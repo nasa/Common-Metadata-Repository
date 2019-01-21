@@ -1,27 +1,21 @@
 (ns cmr.elastic-utils.embedded-elastic-server
-  (:import (org.elasticsearch.common.settings
-             ImmutableSettings
-             ImmutableSettings$Builder)
-           org.elasticsearch.common.logging.log4j.LogConfigurator
-           org.elasticsearch.node.NodeBuilder
-           org.elasticsearch.node.Node)
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [clj-http.client :as client]
-            [cmr.common.util :as util]
-            [cmr.common.log :as log :refer (debug info warn error)]))
-
+  "Used to run an in memory Elasticsearch server."
+  (:require
+   [clj-http.client :as client]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.util :as util])
+  (:import
+   (org.elasticsearch.common.settings ImmutableSettings ImmutableSettings$Builder)
+   (org.elasticsearch.common.logging.log4j LogConfigurator)
+   (org.elasticsearch.node Node NodeBuilder)))
 
 (comment
-
   (def settings (create-settings {:http-port 9201
                                   :transport-port 9203
                                   :data-dir"es_data2"}))
-
   (def env (org.elasticsearch.env.Environment. settings))
-
-  (.configFile env)
-
-  )
+  (.configFile env))
 
 (defn- setup-logging
   "Sets up elastic search logging."
@@ -30,18 +24,19 @@
 
 (defn- create-settings
   "Creates an Elastic Search Immutable Settings"
-  [{:keys [http-port transport-port data-dir]}]
-  (.. (ImmutableSettings/settingsBuilder)
-      (put "node.name" "embedded-elastic")
-      (put "path.conf" ".")
-      (put "path.data" data-dir)
-      (put "http.port" (str http-port))
-      (put "transport.tcp.port" (str transport-port))
-      (put "index.store.type" "memory")
-      ;; dynamic scripting configurations
-      (put "scipt.inline" "on")
-      (put "script.search" "on")
-      build))
+  [{:keys [http-port transport-port ^String data-dir]}]
+  (let [^ImmutableSettings$Builder builder (ImmutableSettings/settingsBuilder)]
+    (.. builder
+        (put "node.name" "embedded-elastic")
+        (put "path.conf" ".")
+        (put "path.data" data-dir)
+        (put "http.port" (str http-port))
+        (put "transport.tcp.port" (str transport-port))
+        (put "index.store.type" "memory")
+        ;; dynamic scripting configurations
+        (put "scipt.inline" "on")
+        (put "script.search" "on")
+        build)))
 
 (defn- build-node
   "Creates the internal elastic search node that will run."
@@ -66,8 +61,8 @@
    http-port
    transport-port
    data-dir
-   node
-   ]
+   node]
+
 
   lifecycle/Lifecycle
 
@@ -105,6 +100,4 @@
 
   (def started-server (lifecycle/start server nil))
 
-  (def stopped-server (lifecycle/stop started-server nil))
-
-  )
+  (def stopped-server (lifecycle/stop started-server nil)))

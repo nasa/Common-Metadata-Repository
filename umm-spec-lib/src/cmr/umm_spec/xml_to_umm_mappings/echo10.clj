@@ -15,7 +15,9 @@
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
-   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]))
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element])
+  (:import
+   (clojure.data.xml Element)))
 
 (def coll-progress-mapping
   "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
@@ -29,9 +31,10 @@
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
   [doc]
-  (for [temporal (select doc "/Collection/Temporal")]
+  (for [^Element temporal (select doc "/Collection/Temporal")
+        :let [^String ends-at-present-flag (value-of temporal "EndsAtPresentFlag")]]
     {:PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
-     :EndsAtPresentFlag (Boolean/valueOf (value-of temporal "EndsAtPresentFlag"))
+     :EndsAtPresentFlag (Boolean/valueOf ends-at-present-flag)
      :RangeDateTimes (for [rdt (select temporal "RangeDateTime")]
                        (fields-from rdt :BeginningDateTime :EndingDateTime))
      :SingleDateTimes (values-at temporal "SingleDateTime")

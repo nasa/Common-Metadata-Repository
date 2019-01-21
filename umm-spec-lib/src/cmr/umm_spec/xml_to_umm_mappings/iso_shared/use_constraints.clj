@@ -31,7 +31,7 @@
   "Get description value from the list of gmd:useLimitation values.
    Pick the first that doesn't start with Restriction Comment:."
   [description-list sanitize?]
-  (when-let [value (some #(when-let [value (value-of % "gco:CharacterString")]
+  (when-let [value (some #(when-let [^String value (value-of % "gco:CharacterString")]
                             (when-not (.contains value "Restriction Comment:")
                               value))
                          description-list)]

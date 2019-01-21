@@ -110,7 +110,7 @@
       unsuccessful-login-response)))
 
 (defn decode-base64
-  [string]
+  [^String string]
   (-> string .getBytes b64/decode String.))
 
 (defn decode-basic-auth
