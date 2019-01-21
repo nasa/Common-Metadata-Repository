@@ -153,10 +153,7 @@
   ([concept-type params]
    (default-parse-query-level-params concept-type params {}))
   ([concept-type params aliases]
-   (let [page-size-str (get params :page-size)
-         page-size (if page-size-str
-                     (Integer/parseInt page-size-str)
-                     qm/default-page-size)
+   (let [page-size (Integer. (get params :page-size qm/default-page-size))
          scroll (when-let [scroll-param (:scroll params)]
                   (= (string/lower-case scroll-param) "true"))
          {:keys [offset page-num]} params]
@@ -165,8 +162,8 @@
        :page-size page-size
        :scroll scroll
        :offset (cond
-                 page-num (* (dec (Integer/parseInt page-num)) page-size)
-                 offset (Integer/parseInt offset)
+                 page-num (* (dec (Integer. page-num)) page-size)
+                 offset (Integer. offset)
                  :else qm/default-offset)
        :sort-keys (parse-sort-key (:sort-key params) aliases)
        :result-format (:result-format params)}])))
