@@ -22,7 +22,7 @@
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
-                     tags/grant-all-tag-fixture]))
+                      tags/grant-all-tag-fixture]))
 
 (defn- normalize-search-result-item
   "Returns a map with just concept-id and revision-id for the given item."

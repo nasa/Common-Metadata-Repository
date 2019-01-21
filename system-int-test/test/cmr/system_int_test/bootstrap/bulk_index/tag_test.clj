@@ -19,7 +19,7 @@
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
-                     tags/grant-all-tag-fixture]))
+                      tags/grant-all-tag-fixture]))
 
 ;; This test is to verify that bulk index works with tombstoned tag associations
 (deftest bulk-index-collections-with-tag-association-test
