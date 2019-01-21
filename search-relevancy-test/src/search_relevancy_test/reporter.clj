@@ -7,7 +7,7 @@
   "Returns the actual order of results based on the expected order of concept-ids and the
   actual order they were returned in. Orders are one based rather than zero based."
   [expected-ids actual-ids]
-  (for [id actual-ids]
+  (for [^String id actual-ids]
     (inc (.indexOf expected-ids id))))
 
 (defn colorize-positional-order

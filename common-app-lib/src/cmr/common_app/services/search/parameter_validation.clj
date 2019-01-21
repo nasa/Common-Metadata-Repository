@@ -102,7 +102,7 @@
   if the value cannot be converted to an Integer."
   [params value-keyword]
   (when-let [value (value-keyword params)]
-    ; Return null if value is a vector.  Assumes single-value-validation handles vectors.
+    ;; Return null if value is a vector.  Assumes single-value-validation handles vectors.
     (when-not (sequential? value)
       (Integer. value))))
 

@@ -1,10 +1,11 @@
 (ns cmr.common-app.test.client-util
   "Contains test utilities for testing clients"
-  (:require [clj-http.client :as client]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.lifecycle :as l]
-            [cmr.common-app.test.side-api :as side-api]))
+  (:require
+   [clj-http.client :as client]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.common.lifecycle :as l]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (defn url-available?
   "Returns true if the given url can be connected to."

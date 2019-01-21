@@ -288,12 +288,12 @@
   [x]
   (cond
     (map? x)
-      (let [clean-map (remove-nil-keys
-                        (zipmap (keys x) (map remove-empty-maps (vals x))))]
-        (when (seq clean-map)
-          clean-map))
+    (let [clean-map (remove-nil-keys
+                      (zipmap (keys x) (map remove-empty-maps (vals x))))]
+      (when (seq clean-map)
+        clean-map))
     (sequential? x)
-      (keep remove-empty-maps x)
+    (keep remove-empty-maps x)
     :else
       x))
 
@@ -885,13 +885,13 @@
   run before the mapping takes place. This is useful for tests when you want to
   perform assertion checks upon the raw data, before transformation."
   ([data]
-    (cond
-      (sequential? data) (map map-keys->kebab-case data)
-      (map? data) (map-keys->kebab-case data)
-      :else data))
+   (cond
+     (sequential? data) (map map-keys->kebab-case data)
+     (map? data) (map-keys->kebab-case data)
+     :else data))
   ([data fun]
-    (fun data)
-    (kebab-case-data data)))
+   (fun data)
+   (kebab-case-data data)))
 
 (defn show-methods
   "Display a Java object's public methods."
@@ -938,7 +938,7 @@
 (defn get-index-or-nil
  "Get the index of the substring in the string. Return nil if the substring does not
  exist in the string"
- [s substring]
+ [^String s ^String substring]
  (when s
   (let [index (.indexOf s substring)]
    (when (>= index 0)

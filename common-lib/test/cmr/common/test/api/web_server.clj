@@ -1,12 +1,13 @@
 (ns cmr.common.test.api.web-server
   "This tests capabilities of the web server component."
-  (:require [clojure.test :refer :all]
-            [cmr.common.api.web-server :as s]
-            [cmr.common.lifecycle :as l]
-            [clj-http.client :as h]
-            [clojure.string :as str]
-            [clojure.java.io :as io]
-            [cmr.common.util :as u]))
+  (:require
+   [clj-http.client :as h]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.api.web-server :as s]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.util :as u]))
 
 (def PORT 3123)
 

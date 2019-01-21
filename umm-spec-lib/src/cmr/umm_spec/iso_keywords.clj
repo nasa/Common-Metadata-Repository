@@ -12,7 +12,9 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.models.umm-common-models :as c]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su])
+  (:import
+   (clojure.lang PersistentHashSet)))
 
 (def nil-science-keyword-field
   "String used in ISO19115-2 to indicate that a given science keyword field is not present."
@@ -39,7 +41,7 @@
     "Solar/Space Observation Satellites"
     "Space Stations/Manned Spacecraft"})
 
-(def science-keyword-categories
+(def ^PersistentHashSet science-keyword-categories
   #{"EARTH SCIENCE" "EARTH SCIENCE SERVICES"})
 
 (def location-keyword-type

@@ -7,7 +7,7 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
-   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.transmit.cache.cubby-cache :as cubby-cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.services.search.query-validation :as qv]
    [cmr.common-app.services.search.query-execution :as qe]

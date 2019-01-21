@@ -14,8 +14,8 @@
          :providers [...]}"
   (:require
     [clojure.string :as str]
-    [cmr.common-app.cache.consistent-cache :as consistent-cache]
-    [cmr.common-app.cache.cubby-cache :as cubby-cache]
+    [cmr.transmit.cache.consistent-cache :as consistent-cache]
+    [cmr.transmit.cache.cubby-cache :as cubby-cache]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.cache :as cache]
     [cmr.common.cache.deflating-cache :as deflating-cache]

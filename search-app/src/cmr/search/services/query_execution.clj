@@ -147,16 +147,16 @@
     (some #(when (= title-val (:title %)) %) all-facets-with-count)))
 
 (defn- get-facets-with-count
-  "Extract out the facet part that contains title and count, amoung other things: 
+  "Extract out the facet part that contains title and count, amoung other things:
   [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
-  from the facets result.  Note: facets-result is the result from a particular field, 
-  so there is only one child under :facets :children, which is why we use first to 
+  from the facets result.  Note: facets-result is the result from a particular field,
+  so there is only one child under :facets :children, which is why we use first to
   get to the child."
   [facets-result]
   (-> facets-result
       (get-in [:facets :children])
       first
-      :children)) 
+      :children))
 
 (defn- get-facets-for-field-again?
   "Check to see if any facet count in facets-for-field is 0
@@ -165,15 +165,16 @@
   [facets-size-for-field facets-for-field]
   (let [facets-with-count (get-facets-with-count facets-for-field)]
     (and (or (nil? facets-size-for-field)
+             ;; facets-size-for-field could be a string or a long so reflection will be used
              (< (Integer. facets-size-for-field) fv2rf/UNLIMITED_TERMS_SIZE))
          (some #(= 0 (:count %)) facets-with-count))))
 
 (defn- update-facets-for-field
   "Update the counts in facets-for-field with the counts in all-facets-for-field.
-  orig-facets-with-count is like: 
+  orig-facets-with-count is like:
   [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
   all-facets-with-count is like:
-  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1} 
+  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}
    {:title \"t4\" :count 2} {:title \"t5\" :count 1}]
   updated-orig-facets-with-count is:
   [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
@@ -215,8 +216,9 @@
   If a facet with the same title already exists in others, overwrite that facet with the one
   provided in facets."
   [concept-type facets others]
-  (let [facets-sort-fn (fn [facet] (.indexOf (fv2rf/v2-facets-result-field-in-order concept-type)
-                                             (:title facet)))
+  (let [facets-sort-fn (fn [facet]
+                         (let [ordered-fields (fv2rf/v2-facets-result-field-in-order concept-type)]
+                           (.indexOf ordered-fields (:title facet))))
         facet-titles (set (map :title facets))
         unique-others (remove #(contains? facet-titles (:title %)) others)]
     (sort-by facets-sort-fn (concat facets unique-others))))

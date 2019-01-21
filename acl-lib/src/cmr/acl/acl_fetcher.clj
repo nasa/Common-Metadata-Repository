@@ -5,7 +5,7 @@
   for callers without any"
   (:require
    [clojure.set :as set]
-   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]

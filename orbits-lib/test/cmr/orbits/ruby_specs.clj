@@ -6,11 +6,13 @@
    [clojure.test :refer :all]
    [cmr.orbits.orbits-runtime :as orbits-runtime])
   (:import
-   (javax.script
-    ScriptEngineManager)))
+   (javax.script ScriptEngineManager)
+   (org.jruby.embed.jsr223 JRubyEngine)))
+
+(set! *warn-on-reflection* true)
 
 (defn eval-jruby
-  [jruby s]
+  [^JRubyEngine jruby s]
   (.eval jruby (java.io.StringReader. s)))
 
 (deftest test-ruby-specs
