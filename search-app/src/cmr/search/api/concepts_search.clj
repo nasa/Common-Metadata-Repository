@@ -30,11 +30,6 @@
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
 
-(defconfig allow-data-json-flag
-  "Flag to allow data.json route."
-  {:default false
-   :type Boolean})
-
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
   #{mt/any
@@ -320,6 +315,4 @@
    to harvest CMR opendata responses on data.nasa.gov."
   (GET "/socrata/data.json"
     {ctx :request-context}
-    (if (allow-data-json-flag)
-      (find-data-json ctx)
-      (common-pages/not-found))))
+    (find-data-json ctx)))
