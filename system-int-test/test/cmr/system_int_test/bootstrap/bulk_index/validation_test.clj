@@ -10,6 +10,8 @@
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [clj-http.client :as client]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm.echo10.echo10-core :as echo10]))
 
@@ -100,3 +102,14 @@
              [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]
              [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
              [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))
+
+(deftest invalid-route-test
+  (s/only-with-real-database
+   (testing "Invalid route returns a 404"
+    (let [response (client/request
+                    {:method :post
+                     :url (url/bootstrap-url "bad-route")
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})]
+      (is (= 404 (:status response)))))))

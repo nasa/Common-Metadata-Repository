@@ -93,7 +93,8 @@
           (drift/run (conj migrate-args "-c" "config.migrate-config/app-migrate-config")))
         {:status 204})
       ;; Add routes for checking health of the application
-      (common-health/health-api-routes hs/health))))
+      (common-health/health-api-routes hs/health))
+    (route/not-found "Not Found")))
 
 (defn make-api [system]
   (-> (build-routes system)
