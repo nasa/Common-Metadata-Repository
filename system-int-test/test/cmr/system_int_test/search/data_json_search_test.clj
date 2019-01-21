@@ -17,7 +17,7 @@
 (def ^:private coll-idx (atom 0))
 
 (defn- data-json-fixture
-  "Enable/Disable data.json endpoint, reset coll-idx for collection creation."
+  "Reset coll-idx for collection creation."
   [f]
   (reset! coll-idx 0)
   (f))
