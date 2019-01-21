@@ -92,7 +92,7 @@
               "PROV1,C1200000009-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]
              (str/split report #"\n")))
       (testing "Ensure that the returned report is the same as the cached one"
-      (is (= report (get-cached-report)))))))
+       (is (= report (get-cached-report)))))))
 
 (deftest humanizer-report-batch
   (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
@@ -108,13 +108,17 @@
   (search/refresh-collection-metadata-cache)
   (testing "Humanizer report batches"
     (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-      ;; XXX the following have been commented out due to unpredictable errors
-      ;;     a bug was filed for this under CMR-4461.
-      #_(is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
-      #_(doall
-        (for [actual-line (rest report-lines)
-              n (inc hrs/humanizer-report-collection-batch-size)]
-          (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra")))))))
+      (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
+      (doall
+       (map-indexed (fn [n actual-line]
+                      (let [coll-normalized (+ n 7) ;; First collection concept ID ends with 7
+                            coll-suffix (if (< coll-normalized 10)
+                                          (str "0" coll-normalized)
+                                          (str coll-normalized))]
+                        (is (= (format "PROV1,C12000000%s-PROV1,B,%d,AM-1,Terra" coll-suffix n)
+                               actual-line))))
+                    (rest report-lines)))))
+  (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500)))
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
@@ -186,20 +190,20 @@
 
 (deftest search-by-science-keywords-humanized
   (let [sk1 (data-umm-cmn/science-keyword {:Category "bioosphere"
-                                         :Topic "topic1"
-                                         :Term "term1"})
+                                           :Topic "topic1"
+                                           :Term "term1"})
         sk2 (data-umm-cmn/science-keyword {:Category "category1"
-                                         :Topic "bioosphere"
-                                         :Term "term1"})
+                                           :Topic "bioosphere"
+                                           :Term "term1"})
         sk3 (data-umm-cmn/science-keyword {:Category "biosphere"
-                                         :Topic "topic1"
-                                         :Term "term1"})
+                                           :Topic "topic1"
+                                           :Term "term1"})
         sk4 (data-umm-cmn/science-keyword {:Category "category1"
-                                         :Topic "biosphere"
-                                         :Term "term1"})
+                                           :Topic "biosphere"
+                                           :Term "term1"})
         sk5 (data-umm-cmn/science-keyword {:Category "category1"
-                                         :Topic "topic1"
-                                         :Term "term1"})
+                                           :Topic "topic1"
+                                           :Term "term1"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ScienceKeywords [sk1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ScienceKeywords [sk2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ScienceKeywords [sk3]}))
