@@ -5,7 +5,6 @@
    [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
-   [cmr.common-app.site.pages :as common-pages]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
