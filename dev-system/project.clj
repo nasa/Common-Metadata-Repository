@@ -79,8 +79,11 @@
   :profiles {
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.0"]]
-      :dependency-check {:properties-file "resources/dependencycheck.properties"}}
+        [com.livingsocial/lein-dependency-check "1.1.1"]]
+      :dependency-check {
+        :output-format [:html :csv]
+        :suppression-file "resources/security/suppression.xml"
+        :properties-file "resources/security/dependencycheck.properties"}}
     :dev-dependencies {
       :exclusions [
         [org.clojure/tools.nrepl]]

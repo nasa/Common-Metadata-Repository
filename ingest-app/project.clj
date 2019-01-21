@@ -45,7 +45,10 @@
   :profiles {
     :security {
       :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.0"]]}
+        [com.livingsocial/lein-dependency-check "1.1.1"]]
+      :dependency-check {
+        :output-format [:html :csv]
+        :suppression-file "resources/security/suppression.xml"}}
     :dev {
       :dependencies [
         [org.clojars.gjahad/debug-repl "0.3.3"]
