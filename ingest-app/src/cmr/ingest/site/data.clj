@@ -10,6 +10,7 @@
   this context; the data functions defined herein are specifically for use in
   page templates, structured explicitly for their needs."
   (:require
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.site.data :as common-data]))
 
 (def data-partners-guide
@@ -23,7 +24,7 @@
   [context]
   (merge (common-data/base-page context)
          data-partners-guide
-         {:app-title "Ingest"}))
+         {:app-title "Ingest" :release-version (str "v " (common-config/release-version))}))
 
 (defn base-static
   "Data that all static pages have in common.
@@ -32,4 +33,4 @@
   []
   (merge (common-data/base-static)
          data-partners-guide
-         {:app-title "Ingest"}))
+         {:app-title "Ingest" :release-version (str "v " (common-config/release-version))}))

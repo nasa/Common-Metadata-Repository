@@ -3,14 +3,10 @@
   (:require
    [clojure.java.io :as io])
   (:import
-   (java.io StringReader StringWriter
-           java.io.StringWriter
-           javax.xml.transform.stream.StreamSource
-           javax.xml.transform.stream.StreamResult
-           [javax.xml.transform
-            TransformerFactory
-            Templates
-            URIResolver])))
+   (java.io StringReader StringWriter)
+   (javax.xml.transform TransformerFactory Templates URIResolver)
+   (javax.xml.transform.stream StreamSource StreamResult)
+   (net.sf.saxon TransformerFactoryImpl)))
 
 (defn- create-uri-resolver
   "Creates an instance of the URIResolver interface that will direct all paths within the xslt
@@ -26,7 +22,7 @@
   [f]
   (with-open [r (io/reader f)]
     (let [xsl-resource (StreamSource. r)
-          factory (TransformerFactory/newInstance)]
+          factory (TransformerFactoryImpl.)]
       (.setURIResolver factory (create-uri-resolver))
       (.newTemplates factory xsl-resource))))
 

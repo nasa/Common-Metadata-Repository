@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-site-templates "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"
   :description "Selmer templates for CMR documentation, directory pages, and various static web content"
   :url "https://github.com/nasa/Common-Metadata-Repository/site-templates"
   :license {

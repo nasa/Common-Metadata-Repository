@@ -1,8 +1,11 @@
 (ns cmr.search.test.site.routes
-  (:require [clojure.string :as string]
-            [clojure.test :refer :all]
-            [cmr.search.site.routes :as r]
-            [ring.mock.request :refer [request]]))
+  (:require 
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.search.site.routes :as r]
+   [ring.mock.request :refer [request]]))
 
 (def ^:private scheme "https")
 (def ^:private host "cmr.example.com")
@@ -88,6 +91,9 @@
       (is (string/includes?
            (:body response)
            "Documentation for Search"))
+      (is (string/includes?
+           (:body response)
+           "v dev"))
       (is (string/includes?
            (:body response)
            "site/docs/search/api"))

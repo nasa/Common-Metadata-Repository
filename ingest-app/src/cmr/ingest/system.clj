@@ -12,6 +12,7 @@
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -20,6 +21,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.ingest.api.core :as ingest-api]
+   [cmr.ingest.api.translation :as ingest-translation]
    [cmr.ingest.config :as config]
    [cmr.ingest.routes :as routes]
    [cmr.ingest.services.event-handler :as event-handler]
@@ -106,6 +108,7 @@
                        af/acl-cache-key (af/create-consistent-acl-cache
                                          [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
+                       ingest-translation/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
                        common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
