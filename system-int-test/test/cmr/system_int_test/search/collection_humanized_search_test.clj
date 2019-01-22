@@ -94,31 +94,39 @@
       (testing "Ensure that the returned report is the same as the cached one"
        (is (= report (get-cached-report)))))))
 
+(defn- get-humanizer-report-batch-size
+  "Returns the currently configured value for the humanizer report batch size."
+  []
+  (-> (side/eval-form `(hrs/humanizer-report-collection-batch-size))
+      :body
+      Integer/parseInt))
+
 (deftest humanizer-report-batch
   (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
-  ;; Insert more entries than the batch size to test batches
-  (doseq [n (range (inc (hrs/humanizer-report-collection-batch-size)))]
-    (d/ingest-umm-spec-collection "PROV1"
-     (data-umm-c/collection n
-      {:ShortName "B"
-       :Version n
-       :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
-  (index/wait-until-indexed)
-  ;; Refresh the metadata cache
-  (search/refresh-collection-metadata-cache)
-  (testing "Humanizer report batches"
-    (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-      (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
-      (doall
-       (map-indexed (fn [n actual-line]
-                      (let [coll-normalized (+ n 7) ;; First collection concept ID ends with 7
-                            coll-suffix (if (< coll-normalized 10)
-                                          (str "0" coll-normalized)
-                                          (str coll-normalized))]
-                        (is (= (format "PROV1,C12000000%s-PROV1,B,%d,AM-1,Terra" coll-suffix n)
-                               actual-line))))
-                    (rest report-lines)))))
-  (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500)))
+  (let [updated-batch-size (get-humanizer-report-batch-size)]
+    ;; Insert more entries than the batch size to test batches
+    (doseq [n (range (inc updated-batch-size))]
+      (d/ingest-umm-spec-collection "PROV1"
+       (data-umm-c/collection n
+        {:ShortName "B"
+         :Version n
+         :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
+    (index/wait-until-indexed)
+    ;; Refresh the metadata cache
+    (search/refresh-collection-metadata-cache)
+    (testing "Humanizer report batches"
+      (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
+        (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
+        (doall
+         (map-indexed (fn [n actual-line]
+                        (let [coll-normalized (+ n 7) ;; First collection concept ID ends with 7
+                              coll-suffix (if (< coll-normalized 10)
+                                            (str "0" coll-normalized)
+                                            (str coll-normalized))]
+                          (is (= (format "PROV1,C12000000%s-PROV1,B,%d,AM-1,Terra" coll-suffix n)
+                                 actual-line))))
+                      (rest report-lines)))))
+    (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500))))
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
