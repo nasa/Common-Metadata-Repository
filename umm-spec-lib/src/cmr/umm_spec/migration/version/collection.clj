@@ -251,3 +251,12 @@
 (defmethod interface/migrate-umm-version [:collection "1.11" "1.10"]
   [context c & _]
   (related-url/migrate-down-from-1_11 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.11" "1.12"]
+  [context c & _]
+  ;; since only related url keywords were added to 1.12 the mapping from 1.11 doesn't change to 1.12
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.12" "1.11"]
+  [context c & _]
+  (related-url/migrate-down-from-1_12 c))

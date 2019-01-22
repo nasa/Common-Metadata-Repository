@@ -1736,3 +1736,139 @@
         result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
     (is (= (dissoc related-urls-UMM-1-10-example :RelatedUrls)
            result))))
+
+(def related-urls-UMM-1-11-example
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :RelatedUrls [{:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "Earthdata Search"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url 3 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "DistributionURL"
+                          :Type "USE SERVICE API"
+                          :GetService {:MimeType "application/json"
+                                       :DataID "dataid"
+                                       :DataType "datatype"
+                                       :Protocol "HTTP"
+                                       :FullName "fullname"
+                                       :Format "ascii"
+                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                         {:Description "Related url 2 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "VisualizationURL"
+                          :Type "GET RELATED VISUALIZATION"
+                          :Subtype "WORLDVIEW"}])))
+
+(def related-urls-UMM-1-12-example
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :RelatedUrls [{:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "Earthdata Search"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "Subscribe"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url 3 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "DistributionURL"
+                          :Type "USE SERVICE API"
+                          :GetService {:MimeType "application/json"
+                                       :DataID "dataid"
+                                       :DataType "datatype"
+                                       :Protocol "HTTP"
+                                       :FullName "fullname"
+                                       :Format "ascii"
+                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                         {:Description "Related url 2 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "VisualizationURL"
+                          :Type "GET RELATED VISUALIZATION"
+                          :Subtype "WORLDVIEW"}])))
+
+(def related-urls-UMM-1-12-example-result
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :RelatedUrls [{:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :Subtype "Earthdata Search"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url description"
+                          :URL "http://www.foo.com?a=1&ver=5"
+                          :URLContentType "DistributionURL"
+                          :Type "GET DATA"
+                          :GetData {:Format "ascii"
+                                    :MimeType "application/json"
+                                    :Checksum "checksum"
+                                    :Size 10.0
+                                    :Unit "MB"
+                                    :Fees "fees"}}
+                         {:Description "Related url 3 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "DistributionURL"
+                          :Type "USE SERVICE API"
+                          :GetService {:MimeType "application/json"
+                                       :DataID "dataid"
+                                       :DataType "datatype"
+                                       :Protocol "HTTP"
+                                       :FullName "fullname"
+                                       :Format "ascii"
+                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                         {:Description "Related url 2 description"
+                          :URL "http://www.foo.com"
+                          :URLContentType "VisualizationURL"
+                          :Type "GET RELATED VISUALIZATION"
+                          :Subtype "WORLDVIEW"}])))
+
+(deftest migrate-1-11-to-1-12
+  (let [result (vm/migrate-umm {} :collection "1.11" "1.12" related-urls-UMM-1-11-example)]
+    (is (= related-urls-UMM-1-11-example
+           result))))
+
+(deftest migrate-1-11-to-1-12-no-related-urls
+  (let [collection (dissoc related-urls-UMM-1-11-example :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.11" "1.12" collection)]
+    (is (= (dissoc exp-conv/example-collection-record :RelatedUrls)
+           result))))
+
+(deftest migrate-1-12-to-1-11
+  (let [result (vm/migrate-umm {} :collection "1.12" "1.11" related-urls-UMM-1-12-example)]
+    (is (= related-urls-UMM-1-12-example-result
+           result))))
+
+(deftest migrate-1-12-down-to-1-11-no-related-urls
+  (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.12" "1.11" collection)]
+    (is (= (dissoc related-urls-UMM-1-11-example :RelatedUrls)
+           result))))
