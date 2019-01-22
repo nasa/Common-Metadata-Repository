@@ -376,12 +376,12 @@
    UMM-11 mapping table."
   [related-url]
   (let [{:keys [URLContentType Type Subtype]} related-url
-        keywords (remove-nil-keys {:URLContentType URLContentType
-                                   :Type Type
-                                   :Subtype Subtype})
-        result (if (nil? (some #{keywords} ru-maps/umm-1-11-related-url-types))
-                 (ru-maps/umm-1-12-umm-url-types->umm-1-11-umm-url-types keywords)
-                 keywords)]
+        url-types (remove-nil-keys {:URLContentType URLContentType
+                                    :Type Type
+                                    :Subtype Subtype})
+        result (if (some #{url-types} ru-maps/umm-1-11-related-url-types)
+                 url-types
+                 (ru-maps/umm-1-12-umm-url-types->umm-1-11-umm-url-types url-types))]
     (assoc related-url :URLContentType (:URLContentType result)
                        :Type (:Type result)
                        :Subtype (:Subtype result))))
@@ -391,6 +391,6 @@
    to GCMD Related URL Keyword updates 8.6 December 2018 additions, so we need to translate the
    values back to the old 8.6 keyword version."
   [collection]
-  (if (nil? (:RelatedUrls collection))
-    collection
-    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)))
+  (if (:RelatedUrls collection)
+    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)
+    collection))

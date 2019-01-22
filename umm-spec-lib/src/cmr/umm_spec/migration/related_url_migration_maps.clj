@@ -243,7 +243,7 @@
    {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "WORLDVIEW"}])
 
 (def umm-1-12-umm-url-types->umm-1-11-umm-url-types
-  "Mapping from the UMM-C v1.11 URLContentType, Type, and Subtype to the UMM v 1.10 URLContentType, Type, and Subtype
+  "Mapping from the UMM-C v1.12 URLContentType, Type, and Subtype to the UMM v 1.11 URLContentType, Type, and Subtype
    Pair of {:URLContentType 'X' :Type 'Y' :Subtype 'Z'} -> {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}
    Note UMM Subtype is not required so there may not be a subtype"
   {{:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GoLIVE Portal"} {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "PORTAL"}
