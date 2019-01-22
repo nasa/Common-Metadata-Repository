@@ -17,13 +17,10 @@
 (def ^:private coll-idx (atom 0))
 
 (defn- data-json-fixture
-  "Enable/Disable data.json endpoint, reset coll-idx for collection creation."
+  "Reset coll-idx for collection creation."
   [f]
-  (let [saved-data-json-flag (concepts-search/allow-data-json-flag)]
-    (side-api/eval-form `(concepts-search/set-allow-data-json-flag! true))
-    (reset! coll-idx 0)
-    (f)
-    (side-api/eval-form `(concepts-search/set-allow-data-json-flag! ~saved-data-json-flag))))
+  (reset! coll-idx 0)
+  (f))
 
 (use-fixtures :each (join-fixtures
                       [(ingest-util/reset-fixture {"provguid1" "PROV1"}

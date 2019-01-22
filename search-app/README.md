@@ -11,6 +11,13 @@ generated into the static site by running the following:
 $ lein generate-static
 ```
 
+### Data.JSON
+
+Collections with gov.nasa.eosdis tag and returned as opendata to be harvested
+by data.nasa.gov can be retrieved with:
+
+    curl -i http://localhost:3003/socrata/data.json
+
 ## License
 
 Copyright © 2014-2017 NASA
