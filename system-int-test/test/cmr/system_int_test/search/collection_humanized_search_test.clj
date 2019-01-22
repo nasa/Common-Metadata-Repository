@@ -116,7 +116,7 @@
     (search/refresh-collection-metadata-cache)
     (testing "Humanizer report batches"
       (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-        (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
+        (is (= (count report-lines) (+ 2 updated-batch-size)))
         (doall
          (map-indexed (fn [n actual-line]
                         (let [coll-normalized (+ n 7) ;; First collection concept ID ends with 7
