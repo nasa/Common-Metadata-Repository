@@ -369,3 +369,28 @@
   (if (nil? (:RelatedUrls collection))
     collection
     (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords "1.10")))
+
+(defn replace-existing-related-url-keywords-for-umm-12
+  "Pass in a related url. If the keywords match what is in the umm-1-11-umm-url-types map then just
+   use the passed in keys because they haven't changed. If they don't match then use the UMM-12 to
+   UMM-11 mapping table."
+  [related-url]
+  (let [{:keys [URLContentType Type Subtype]} related-url
+        url-types (remove-nil-keys {:URLContentType URLContentType
+                                    :Type Type
+                                    :Subtype Subtype})
+        result (if (some #{url-types} ru-maps/umm-1-11-related-url-types)
+                 url-types
+                 (ru-maps/umm-1-12-umm-url-types->umm-1-11-umm-url-types url-types))]
+    (assoc related-url :URLContentType (:URLContentType result)
+                       :Type (:Type result)
+                       :Subtype (:Subtype result))))
+
+(defn migrate-down-from-1_12
+  ":RelatedUrl Type and Subtypes have been added in UMM-C version 1.12 to correspond
+   to GCMD Related URL Keyword updates 8.6 December 2018 additions, so we need to translate the
+   values back to the old 8.6 keyword version."
+  [collection]
+  (if (:RelatedUrls collection)
+    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)
+    collection))
