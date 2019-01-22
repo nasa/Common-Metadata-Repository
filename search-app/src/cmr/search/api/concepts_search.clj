@@ -5,7 +5,6 @@
    [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
-   [cmr.common-app.site.pages :as common-pages]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
@@ -29,11 +28,6 @@
   "This is the header that allows operators to run all granule queries when
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
-
-(defconfig allow-data-json-flag
-  "Flag to allow data.json route."
-  {:default false
-   :type Boolean})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -315,11 +309,10 @@
     (find-tiles ctx params)))
 
 (def data-json-routes
-  "config-enabled route for data.json. Socrata does not support harvesting from
+  "Route for data.json response. Socrata does not support harvesting from
    data.json endpoints that do not explicitly end in /data.json. This is needed
-   to harvest CMR opendata responses on data.nasa.gov."
+   to harvest CMR opendata responses on data.nasa.gov. This endpoint returns
+   collections with the gov.nasa.eosdis tag as opendata."
   (GET "/socrata/data.json"
     {ctx :request-context}
-    (if (allow-data-json-flag)
-      (find-data-json ctx)
-      (common-pages/not-found))))
+    (find-data-json ctx)))
