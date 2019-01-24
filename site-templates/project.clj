@@ -11,7 +11,7 @@
       :plugins [
         [com.livingsocial/lein-dependency-check "1.1.1"]]
       :dependency-check {
-        :output-format [:html :csv]
+        :output-format [:all]
         :suppression-file "resources/security/suppression.xml"}}
     :test {
       :plugins [
