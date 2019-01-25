@@ -47,18 +47,18 @@
         (POST "/system_concepts" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-system-concepts request-context params))
-        (POST "/variables" {:keys [request-context]}
+        (POST "/variables" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (bulk-index/index-variables request-context))
-        (POST "/variables/:provider-id" [provider-id :as {:keys [request-context]}]
+          (bulk-index/index-variables request-context params))
+        (POST "/variables/:provider-id" [provider-id :as {:keys [request-context params]}]
           (acl/verify-ingest-management-permission request-context :update)
-          (bulk-index/index-variables request-context provider-id))
-        (POST "/services" {:keys [request-context]}
+          (bulk-index/index-variables request-context params provider-id))
+        (POST "/services" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (bulk-index/index-services request-context))
-        (POST "/services/:provider-id" [provider-id :as {:keys [request-context]}]
+          (bulk-index/index-services request-context params))
+        (POST "/services/:provider-id" [provider-id :as {:keys [request-context params]}]
           (acl/verify-ingest-management-permission request-context :update)
-          (bulk-index/index-services request-context provider-id))
+          (bulk-index/index-services request-context params provider-id))
         (POST "/concepts" {:keys [request-context body params]}
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-concepts-by-id request-context body params))

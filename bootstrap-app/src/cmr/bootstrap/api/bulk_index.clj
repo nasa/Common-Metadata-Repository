@@ -90,12 +90,16 @@
   Note that this function differs from the service function it calls, in that
   this function extracts dispatcher implementation from the context, while the
   service function takes the dispatcher as an argument."
-  ([context]
-   (let [dispatcher (api-util/get-dispatcher context :index-variables)]
-     (service/index-variables context dispatcher)))
-  ([context provider-id]
-    (let [dispatcher (api-util/get-dispatcher context :index-variables)]
-      (service/index-variables context dispatcher provider-id))))
+  ([context params]
+   (let [dispatcher (api-util/get-dispatcher context params :index-variables)
+         result (service/index-variables context dispatcher)]
+     {:status 202
+      :body {:message (msg/index-variables params nil result)}}))
+  ([context params provider-id]
+   (let [dispatcher (api-util/get-dispatcher context params :index-variables)
+         result (service/index-variables context dispatcher provider-id)]
+     {:status 202
+      :body {:message (msg/index-variables params provider-id result)}})))
 
 (defn index-services
   "(Re-)Index the services stored in metadata-db. If a provider-id is passed,
@@ -105,12 +109,16 @@
   Note that this function differs from the service function it calls, in that
   this function extracts dispatcher implementation from the context, while the
   service function takes the dispatcher as an argument."
-  ([context]
-   (let [dispatcher (api-util/get-dispatcher context :index-services)]
-     (service/index-services context dispatcher)))
-  ([context provider-id]
-    (let [dispatcher (api-util/get-dispatcher context :index-services)]
-      (service/index-services context dispatcher provider-id))))
+  ([context params]
+   (let [dispatcher (api-util/get-dispatcher context params :index-services)
+         result (service/index-services context dispatcher)]
+     {:status 202
+      :body {:message (msg/index-services params nil result)}}))
+  ([context params provider-id]
+   (let [dispatcher (api-util/get-dispatcher context params :index-services)
+         result (service/index-services context dispatcher provider-id)]
+     {:status 202
+      :body {:message (msg/index-services params provider-id result)}})))
 
 (defn delete-concepts-by-id
   "Delete concepts from the indexes by concept-id."
