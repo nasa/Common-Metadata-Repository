@@ -458,7 +458,7 @@
                                                                     :start-orbit-number 3
                                                                     :stop-orbit-number 4
                                                                     :equator-crossing-longitude -45.0
-                                                                    :equator-crossing-date-time "2010-01-01T12:00:00.000Z"}]
+                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]
                                 :related-urls [ru1 ru2]
                                 :orbit-parameters {:inclination-angle 98.0
                                                    :period 97.87

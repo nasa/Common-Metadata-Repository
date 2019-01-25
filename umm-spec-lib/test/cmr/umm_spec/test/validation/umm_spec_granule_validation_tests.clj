@@ -771,23 +771,4 @@
         [{:path [:orbit-calculated-spatial-domains 1 :equator-crossing-date-time]
           :errors [(str "Granule orbit calculated spatial domains equator crossing date time "
                         "[2018-04-01T00:00:00.000Z] is later than granule temporal end "
-                        "date time [2015-06-01T00:00:00.000Z].")]}]))
-
-    (testing "granules without temporal info"
-      (let [gran-wo-temporal (make-granule
-                              {:spatial-coverage (g/map->SpatialCoverage
-                                                  {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})
-                               :orbit-calculated-spatial-domains
-                               [(g/map->OrbitCalculatedSpatialDomain
-                                 {:orbit-number  1
-                                  :start-orbit-number 1
-                                  :stop-orbit-number 1
-                                  :equator-crossing-date-time (dtp/parse-datetime
-                                                               "2014-04-01T00:00:00Z")})
-                                (g/map->OrbitCalculatedSpatialDomain
-                                 {:orbit-number  2
-                                  :start-orbit-number 2
-                                  :stop-orbit-number 2
-                                  :equator-crossing-date-time (dtp/parse-datetime
-                                                               "2018-04-01T00:00:00Z")})]})]
-        (assert-valid-gran collection-with-orbit gran-wo-temporal)))))
+                        "date time [2015-06-01T00:00:00.000Z].")]}]))))
