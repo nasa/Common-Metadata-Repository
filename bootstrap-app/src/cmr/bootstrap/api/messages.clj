@@ -25,6 +25,24 @@
     result
     (format "Processing collection %s for bulk indexing." collection-id)))
 
+(defn index-variables
+  "Message to return when indexing variables."
+  [params provider-id result]
+  (if (api-util/synchronous? params)
+    result
+    (if provider-id
+      (format "Processing variables for provider %s for bulk indexing." provider-id)
+      "Processing all variables for bulk indexing.")))
+
+(defn index-services
+  "Message to return when indexing services."
+  [params provider-id result]
+  (if (api-util/synchronous? params)
+    result
+    (if provider-id
+      (format "Processing services for provider %s for bulk indexing." provider-id)
+      "Processing all services for bulk indexing.")))
+
 (defn data-later-than-date-time
   [params result date-time]
   (if (api-util/synchronous? params)
@@ -78,10 +96,10 @@
 
 (defn bootstrapping-virtual-products
   ([]
-    "Bootstrapping virtual products")
+   "Bootstrapping virtual products")
   ([provider-id entry-title]
-    (format "%s for provider [%s] entry-title [%s]"
-            (bootstrapping-virtual-products) provider-id entry-title)))
+   (format "%s for provider [%s] entry-title [%s]"
+           (bootstrapping-virtual-products) provider-id entry-title)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Virtual product messages
