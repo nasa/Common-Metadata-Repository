@@ -67,8 +67,9 @@
  [contact-info-xml url-content-type sanitize?]
  (for [url (select contact-info-xml "gmd:onlineResource/gmd:CI_OnlineResource")
        :let [name (char-string-value url "gmd:name")
-             url-link (value-of url "gmd:linkage/gmd:URL")]]
-   {:URL (when url-link (url/format-url url-link sanitize?))
+             url-link (value-of url "gmd:linkage/gmd:URL")]
+       :when url-link]
+   {:URL (url/format-url url-link sanitize?)
     :Description (char-string-value url "gmd:description")
     :URLContentType url-content-type
     :Type "HOME PAGE"}))
