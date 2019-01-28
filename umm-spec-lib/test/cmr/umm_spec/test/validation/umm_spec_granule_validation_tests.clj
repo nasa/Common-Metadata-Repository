@@ -2,18 +2,18 @@
   "This has tests for UMM validations."
   (:require
    [clojure.test :refer :all]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as v]
+   [cmr.umm-spec.models.umm-collection-models :as c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u :refer [are3]]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.umm-spec.additional-attribute :as aa]
-   [cmr.umm-spec.models.umm-collection-models :as c]
-   [cmr.umm-spec.models.umm-common-models :as cmn]
-   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as v]
    [cmr.umm.collection.product-specific-attribute :as psa]
-   [cmr.umm.umm-granule :as g]))
+   [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn assert-valid-gran
   "Asserts that the given granule is valid."
@@ -714,61 +714,3 @@
           :errors ["The field [End Coordinate 2] falls outside the bounds [-∞ 17] defined in the collection"]}
          {:path [:two-d-coordinate-system :start-coordinate-1]
           :errors ["The field [Start Coordinate 1] falls outside the bounds [0 ∞] defined in the collection"]}]))))
-
-(deftest granule-ocsd-equator-crossing-date-time
-  (let [collection-with-orbit (make-collection
-                               {:TemporalExtents [(cmn/map->TemporalExtentType
-                                                   {:RangeDateTimes [(helpers/range-date-time "2015-01-01T00:00:00Z" "2016-01-02T00:00:00Z")]})]
-                                :SpatialExtent
-                                {:GranuleSpatialRepresentation :orbit
-                                 :OrbitParameters {:InclinationAngle 98.2
-                                                   :Period 100.0
-                                                   :SwathWidth 2600.0
-                                                   :StartCircularLatitude 50.0
-                                                   :NumberOfOrbits 2.0}}})
-        make-granule-with-equator-crossing
-        (fn [equator-crossing-date-time]
-          (make-granule
-           {:temporal (g/map->GranuleTemporal
-                       {:range-date-time
-                        {:beginning-date-time (dtp/parse-datetime "2015-01-01T00:00:00Z")
-                         :ending-date-time (dtp/parse-datetime "2015-06-01T00:00:00Z")}})
-            :spatial-coverage (g/map->SpatialCoverage
-                               {:orbit (g/->Orbit 76.123 50.0 :asc 50.0 :desc)})
-            :orbit-calculated-spatial-domains
-            [;; a valid equator crossing to test handling of more than one orbit calculated spatial domains
-             (g/map->OrbitCalculatedSpatialDomain
-              {:orbit-number  1
-               :start-orbit-number 1
-               :stop-orbit-number 1
-               :equator-crossing-date-time (dtp/parse-datetime "2015-02-01T00:00:00Z")})
-             (g/map->OrbitCalculatedSpatialDomain
-              {:orbit-number  1
-               :start-orbit-number 1
-               :stop-orbit-number 1
-               :equator-crossing-date-time (dtp/parse-datetime equator-crossing-date-time)})]}))]
-
-    (testing "granules with orbit calcualted spatial domains equator crossing date time"
-      (are3 [equator-crossing expected-errors]
-        (is (= (set (map e/map->PathErrors expected-errors))
-               (set (v/validate-granule
-                     collection-with-orbit
-                     (make-granule-with-equator-crossing equator-crossing)))))
-
-        "equator crossing within temporal range is valid"
-        "2015-04-01T00:00:00Z"
-        []
-
-        "equator crossing before temporal start"
-        "2014-04-01T00:00:00Z"
-        [{:path [:orbit-calculated-spatial-domains 1 :equator-crossing-date-time]
-          :errors [(str "Granule orbit calculated spatial domains equator crossing date time "
-                        "[2014-04-01T00:00:00.000Z] is earlier than granule temporal start "
-                        "date time [2015-01-01T00:00:00.000Z].")]}]
-
-        "equator crossing after temporal end"
-        "2018-04-01T00:00:00Z"
-        [{:path [:orbit-calculated-spatial-domains 1 :equator-crossing-date-time]
-          :errors [(str "Granule orbit calculated spatial domains equator crossing date time "
-                        "[2018-04-01T00:00:00.000Z] is later than granule temporal end "
-                        "date time [2015-06-01T00:00:00.000Z].")]}]))))
