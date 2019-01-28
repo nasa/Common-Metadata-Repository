@@ -163,7 +163,7 @@
                       <gmd:geographicIdentifier>
                         <gmd:MD_Identifier>
                           <gmd:code>
-                            <gco:CharacterString>OrbitNumber: 266 EquatorCrossingLongitude: -140.637396 EquatorCrossingDateTime: 2018-10-16T01:46:46Z</gco:CharacterString>
+                            <gco:CharacterString>OrbitNumber: 266 EquatorCrossingLongitude: -140.637396 EquatorCrossingDateTime: 2018-10-16T00:46:46Z</gco:CharacterString>
                           </gmd:code>
                           <gmd:codeSpace>
                             <gco:CharacterString>gov.nasa.esdis.umm.orbitcalculatedspatialdomains</gco:CharacterString>
@@ -394,3 +394,4 @@
   </gmd:composedOf>
   <gmd:seriesMetadata gco:nilReason="missing"/>
 </gmd:DS_Series>
+

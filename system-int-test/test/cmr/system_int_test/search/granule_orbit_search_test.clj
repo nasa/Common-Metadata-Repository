@@ -419,13 +419,13 @@
         _ (index/wait-until-indexed)
         json-response (search/find-concepts-json :granule {:concept-id (:concept-id gran)})
         granule-json (-> json-response :results :entries first)
-        expected-points-in-polygons [(point/point -138.53139236829912 -21.934090108103632)
-                                     (point/point -140.45759744705086 -3.350715045066012)
-                                     (point/point -140.84991106473183 0.489910890282507)
-                                     (point/point -140.52615925987396 0.5012165378709617)
-                                     (point/point -140.13330589643058 -3.339390526142819)
-                                     (point/point -138.1824391723707 -21.92190320860364)
-                                     (point/point -138.53139236829912 -21.934090108103632)]
+        expected-points-in-polygons [(point/point 25.235719457640535 -21.19078458692315)
+                                     (point/point 23.13297924763377 -39.771484792279814)
+                                     (point/point 22.646805419273353 -43.610681332179986)
+                                     (point/point 22.199982651743795 -43.5950693405511)
+                                     (point/point 22.711995770988835 -39.7567775481513)
+                                     (point/point 24.8885475222218 -21.178659983890096)
+                                     (point/point 25.235719457640535 -21.19078458692315)]
         expected-ascending-crossing -140.637396
         expected-equator-crossings [-140.637396]
         actual-ascending-crossing (-> granule-json :orbit :ascending-crossing)
