@@ -15,6 +15,7 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
+        variable-alias (:Alias parsed-concept)
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:ScienceKeywords :measurement :variable-name]
         keyword-values (keyword-util/concept-keys->keyword-text
@@ -43,6 +44,8 @@
        :deleted deleted
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
+       :variable-alias variable-alias 
+       :variable-alias.lowercase (util/safe-lowercase variable-alias)
        :measurement measurement
        :measurement.lowercase (string/lower-case measurement)
        :provider-id provider-id
