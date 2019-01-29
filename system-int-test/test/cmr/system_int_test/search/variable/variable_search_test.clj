@@ -72,18 +72,22 @@
 
 (deftest search-for-variables-test
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
+                                                         :Alias "Alias1"
                                                          :Name "Variable1"
                                                          :LongName "Measurement1"
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
+                                                         :Alias "Alias2"
                                                          :Name "Variable2"
                                                          :LongName "Measurement2"
                                                          :provider-id "PROV1"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
+                                                         :Alias "Alias3"
                                                          :Name "a subsitute for variable2"
                                                          :LongName "variable1"
                                                          :provider-id "PROV2"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
+                                                         :Alias "v.other"
                                                          :Name "v.other"
                                                          :LongName "m.other"
                                                          :provider-id "PROV2"})
@@ -135,6 +139,44 @@
       "By multiple names with options"
       [variable1 variable4]
       {:name ["Variable1" "*other"] "options[name][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Alias Param
+      "By alias case sensitive - exact match"
+      [variable1]
+      {:alias "Alias1"}
+
+      "By alias case sensitive, default ignore-case true"
+      [variable1]
+      {:alias "alias1"}
+
+      "By alias ignore case false"
+      []
+      {:alias "alias1" "options[alias][ignore-case]" false}
+
+      "By alias ignore case true"
+      [variable1]
+      {:alias "alias1" "options[alias][ignore-case]" true}
+
+      "By alias Pattern, default false"
+      []
+      {:alias "*other"}
+
+      "By alias Pattern true"
+      [variable4]
+      {:alias "*other" "options[alias][pattern]" true}
+
+      "By alias Pattern false"
+      []
+      {:alias "*other" "options[alias][pattern]" false}
+
+      "By multiple aliases"
+      [variable1 variable2]
+      {:alias ["Alias1" "Alias2"]}
+
+      "By multiple aliases with options"
+      [variable1 variable4]
+      {:alias ["Alias1" "*other"] "options[alias][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param

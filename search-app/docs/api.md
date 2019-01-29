@@ -3227,6 +3227,8 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * native_id
   * options: pattern, ignore_case
+* alias 
+  * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
   * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
