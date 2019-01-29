@@ -144,75 +144,39 @@
       ;; Alias Param
       "By alias case sensitive - exact match"
       [variable1]
-      {:variable-alias "Alias1"}
+      {:alias "Alias1"}
 
       "By alias case sensitive, default ignore-case true"
       [variable1]
-      {:variable-alias "alias1"}
+      {:alias "alias1"}
 
       "By alias ignore case false"
       []
-      {:variable-alias "alias1" "options[variable-alias][ignore-case]" false}
+      {:alias "alias1" "options[alias][ignore-case]" false}
 
       "By alias ignore case true"
       [variable1]
-      {:variable-alias "alias1" "options[variable-alias][ignore-case]" true}
+      {:alias "alias1" "options[alias][ignore-case]" true}
 
       "By alias Pattern, default false"
       []
-      {:variable-alias "*other"}
+      {:alias "*other"}
 
       "By alias Pattern true"
       [variable4]
-      {:variable-alias "*other" "options[variable-alias][pattern]" true}
+      {:alias "*other" "options[alias][pattern]" true}
 
       "By alias Pattern false"
       []
-      {:variable-alias "*other" "options[variable-alias][pattern]" false}
+      {:alias "*other" "options[alias][pattern]" false}
 
       "By multiple aliases"
       [variable1 variable2]
-      {:variable-alias ["Alias1" "Alias2"]}
+      {:alias ["Alias1" "Alias2"]}
 
       "By multiple aliases with options"
       [variable1 variable4]
-      {:variable-alias ["Alias1" "*other"] "options[variable-alias][pattern]" true}
-
-      "By alias case sensitive - exact match, underscore case"
-      [variable1]
-      {:variable_alias "Alias1"}
-
-      "By alias case sensitive, default ignore-case true, underscore case"
-      [variable1]
-      {:variable_alias "alias1"}
-
-      "By alias ignore case false, underscore case"
-      []
-      {:variable_alias "alias1" "options[variable_alias][ignore-case]" false}
-
-      "By alias ignore case true, underscore case"
-      [variable1]
-      {:variable_alias "alias1" "options[variable_alias][ignore-case]" true}
-
-      "By alias Pattern, default false, underscore case"
-      []
-      {:variable_alias "*other"}
-
-      "By alias Pattern true, underscore case"
-      [variable4]
-      {:variable_alias "*other" "options[variable_alias][pattern]" true}
-
-      "By alias Pattern false, underscore case"
-      []
-      {:variable_alias "*other" "options[variable_alias][pattern]" false}
-
-      "By multiple aliases, underscore case"
-      [variable1 variable2]
-      {:variable_alias ["Alias1" "Alias2"]}
-
-      "By multiple aliases with options, underscore case"
-      [variable1 variable4]
-      {:variable_alias ["Alias1" "*other"] "options[variable_alias][pattern]" true}
+      {:alias ["Alias1" "*other"] "options[alias][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param

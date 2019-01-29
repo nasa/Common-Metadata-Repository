@@ -662,8 +662,8 @@
    :provider-id.lowercase (m/doc-values m/string-field-mapping)
    :variable-name (-> m/string-field-mapping m/stored m/doc-values)
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
-   :variable-alias (-> m/string-field-mapping m/stored m/doc-values)
-   :variable-alias.lowercase (m/doc-values m/string-field-mapping) 
+   :alias (-> m/string-field-mapping m/stored m/doc-values)
+   :alias.lowercase (m/doc-values m/string-field-mapping) 
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping

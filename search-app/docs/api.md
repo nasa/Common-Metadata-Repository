@@ -3227,7 +3227,7 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * native_id
   * options: pattern, ignore_case
-* variable_alias 
+* alias 
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)

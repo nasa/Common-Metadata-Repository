@@ -126,7 +126,7 @@
 (defmethod common-params/param-mappings :variable
   [_]
   {:variable-name :string
-   :variable-alias :string
+   :alias :string
    :name :string
    :measurement :string
    :provider :string
