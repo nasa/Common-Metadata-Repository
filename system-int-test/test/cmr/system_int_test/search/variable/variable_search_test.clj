@@ -178,6 +178,42 @@
       [variable1 variable4]
       {:variable-alias ["Alias1" "*other"] "options[variable-alias][pattern]" true}
 
+      "By alias case sensitive - exact match, underscore case"
+      [variable1]
+      {:variable_alias "Alias1"}
+
+      "By alias case sensitive, default ignore-case true, underscore case"
+      [variable1]
+      {:variable_alias "alias1"}
+
+      "By alias ignore case false, underscore case"
+      []
+      {:variable_alias "alias1" "options[variable_alias][ignore-case]" false}
+
+      "By alias ignore case true, underscore case"
+      [variable1]
+      {:variable_alias "alias1" "options[variable_alias][ignore-case]" true}
+
+      "By alias Pattern, default false, underscore case"
+      []
+      {:variable_alias "*other"}
+
+      "By alias Pattern true, underscore case"
+      [variable4]
+      {:variable_alias "*other" "options[variable_alias][pattern]" true}
+
+      "By alias Pattern false, underscore case"
+      []
+      {:variable_alias "*other" "options[variable_alias][pattern]" false}
+
+      "By multiple aliases, underscore case"
+      [variable1 variable2]
+      {:variable_alias ["Alias1" "Alias2"]}
+
+      "By multiple aliases with options, underscore case"
+      [variable1 variable4]
+      {:variable_alias ["Alias1" "*other"] "options[variable_alias][pattern]" true}
+
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param
       "By variable-name case sensitive - exact match"
