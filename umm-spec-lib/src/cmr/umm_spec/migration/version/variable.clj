@@ -109,3 +109,30 @@
   ;; Migrate up to 1.3
   [context v & _]
   v)
+
+(defmethod interface/migrate-umm-version [:variable "1.4" "1.3"]
+  [context v & _]
+  ;; Migrate down to 1.3
+  (if-let [avg-comp-info (get-in v [:SizeEstimation :AverageCompressionInformation])]
+    (as-> v m
+      (when-let [avg-comp-ascii (some #(when (= "ASCII" (:Format %)) (:Rate %)) avg-comp-info)]
+        (assoc-in m [:SizeEstimation :AvgCompressionRateASCII] avg-comp-ascii))
+      (when-let [avg-comp-netcdf4 (some #(when (= "NetCDF-4" (:Format %)) (:Rate %)) avg-comp-info)]
+        (assoc-in m [:SizeEstimation :AvgCompressionRateNetCDF4] avg-comp-netcdf4))
+      (update-in m [:SizeEstimation] dissoc :AverageCompressionInformation)
+      (util/remove-nil-keys m))
+    v))
+
+(defmethod interface/migrate-umm-version [:variable "1.3" "1.4"]
+  ;; Migrate up to 1.4
+  [context v & _]
+  (let [avg-comp-info-ascii (when-let [rate (get-in v [:SizeEstimation :AvgCompressionRateASCII])]
+                              [{:Rate rate :Format "ASCII"}])
+        avg-comp-info-netcdf4 (when-let [rate (get-in v [:SizeEstimation :AvgCompressionRateNetCDF4])]
+                                [{:Rate rate :Format "NetCDF-4"}])]
+    (if (or avg-comp-info-ascii avg-comp-info-netcdf4)
+      (-> v
+          (update-in [:SizeEstimation] dissoc :AvgCompressionRateASCII :AvgCompressionRateNetCDF4)
+          (assoc-in [:SizeEstimation :AverageCompressionInformation] 
+                    (concat avg-comp-info-ascii avg-comp-info-netcdf4)))
+      v)))
