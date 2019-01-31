@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd">
+  <Entry_ID>RossSea_Araon</Entry_ID>
+  <Entry_Title>Araon RossSea_Araon</Entry_Title>
+  <Personnel>
+  <Role>INVESTIGATOR</Role>
+  <First_Name>Jae</First_Name>
+  <Middle_Name>Il</Middle_Name>
+  <Last_Name>Lee</Last_Name>
+  <Email>leeji@kopri.re.kr</Email>
+  </Personnel>
+  <Parameters>
+  <Category>EARTH SCIENCE</Category>
+  <Topic>Oceans</Topic>
+  <Term>Bathymetry/Seafloor Topography</Term>
+  <Variable_Level_1>Bathymetry</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+  <Category>EARTH SCIENCE</Category>
+  <Topic>Oceans</Topic>
+  <Term>Bathymetry/Seafloor Topography</Term>
+  <Variable_Level_1>Seafloor Topography</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+  <Category>EARTH SCIENCE</Category>
+  <Topic>Oceans</Topic>
+  <Term>Bathymetry/Seafloor Topography</Term>
+  <Variable_Level_1>Water Depth</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+  <Category>EARTH SCIENCE</Category>
+  <Topic>OCEANS</Topic>
+  <Term>MARINE GEOPHYSICS</Term>
+  </Parameters>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+  <Sensor_Name>
+  <Short_Name>MBES</Short_Name>
+  <Long_Name>Multibeam Mapping System</Long_Name>
+  </Sensor_Name>
+  <Source_Name>
+    <Short_Name></Short_Name>
+    <Long_Name>Araon</Long_Name>
+  </Source_Name>
+  <Temporal_Coverage>
+  <Start_Date></Start_Date><Stop_Date>
+  </Stop_Date></Temporal_Coverage>
+  <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+  <Spatial_Coverage>
+  <Southernmost_Latitude></Southernmost_Latitude><Northernmost_Latitude>
+  </Northernmost_Latitude><Westernmost_Longitude></Westernmost_Longitude>
+  <Easternmost_Longitude></Easternmost_Longitude><Minimum_Altitude>0</Minimum_Altitude>
+  <Maximum_Altitude>0</Maximum_Altitude></Spatial_Coverage>
+  <Location>
+  <Location_Category>VERTICAL LOCATION</Location_Category>
+  <Location_Type>SEA FLOOR</Location_Type>
+  </Location>
+  <Location>
+  <Location_Category>OCEAN</Location_Category>
+  <Location_Type>SOUTHERN OCEAN</Location_Type>
+  </Location>
+  <Location>
+  <Location_Category>OCEAN</Location_Category>
+  <Location_Type>SOUTHERN OCEAN</Location_Type>
+  <Location_Subregion1>Ross Sea</Location_Subregion1>
+  </Location>
+  <Project>
+  <Short_Name>NSF/OPP</Short_Name>
+  <Long_Name>Office of Polar Programs, National Science Foundation</Long_Name>
+  </Project>
+  <Project>
+  <Short_Name>AMBS</Short_Name>
+  <Long_Name>Antarctic Multibeam Bathymetry &amp; Geophysical Synthesis</Long_Name>
+  </Project>
+  <Data_Set_Language>English</Data_Set_Language>
+  <Originating_Center>COLUMBIA/LDEO/MGDS</Originating_Center>
+  <Data_Center>
+  <Data_Center_Name>
+  <Short_Name>COLUMBIA/LDEO/MGDS</Short_Name>
+  <Long_Name>Marine Geoscience Data  System, Lamont-Doherty Earth Observatory, Columbia University</Long_Name>
+  </Data_Center_Name>
+  <Data_Center_URL>http://www.marine-geo.org/</Data_Center_URL>
+  <Data_Set_ID>RossSea_Araon</Data_Set_ID>
+  <Personnel>
+  <Role>DATA CENTER CONTACT</Role>
+  <Last_Name>MGDS Data Manager</Last_Name>
+  <Email>info@marine-geo.org</Email>
+  <Contact_Address>
+  <Address>Lamont-Doherty Earth Observatory</Address>
+  <Address>61 Route 9W</Address>
+  <City>Palisades</City>
+  <Province_or_State>NY</Province_or_State>
+  <Postal_Code>10964</Postal_Code>
+  <Country>USA</Country>
+  </Contact_Address>
+  </Personnel>
+  </Data_Center>
+  <Distribution>
+  <Distribution_Media>Online HTTP</Distribution_Media>
+  <Fees>None</Fees>
+  </Distribution>
+  <Summary>
+  <Abstract>
+  The NSF-supported research icebreaker  operates year-round in support of the U.S. Antarctic Program, carrying out global change studies in biological, chemical, physical, and oceanographic disciplines.
+  This data set consists of underway data from Ross Sea Leg on the Araon.</Abstract>
+  </Summary>
+  <Related_URL>
+  <URL_Content_Type>
+  <Type>GET DATA</Type>
+  </URL_Content_Type>
+  <URL>http://www.marine-geo.org/link/entry.php?id=RossSea_Araon</URL>
+  <Description>Expedition Data</Description>
+  </Related_URL>
+  <Parent_DIF>AMBS</Parent_DIF>
+          <IDN_Node>
+                  <Short_Name>AMD</Short_Name>
+          </IDN_Node>
+          <IDN_Node>
+                  <Short_Name>AMD/US</Short_Name>
+          </IDN_Node>
+          <IDN_Node>
+                  <Short_Name>USA/NSF</Short_Name>
+          </IDN_Node>
+          <IDN_Node>
+                  <Short_Name>CEOS</Short_Name>
+          </IDN_Node>
+          <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+          <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+          <Metadata_Version>VERSION 9.7</Metadata_Version>
+          <DIF_Creation_Date>2017-08-03</DIF_Creation_Date>
+          <Last_DIF_Revision_Date>2017-08-03</Last_DIF_Revision_Date>
+</DIF>
