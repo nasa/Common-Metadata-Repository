@@ -165,9 +165,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "int"
-                                                                                             :DataType "INT"
-                                                                                             :ParameterRangeBegin (first range)
-                                                                                             :ParameterRangeEnd (second range)})]}))
+                                                                                               :DataType "INT"
+                                                                                               :ParameterRangeBegin (first range)
+                                                                                               :ParameterRangeEnd (second range)})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -189,9 +189,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "int"
-                                                                                             :DataType "INT"
-                                                                                             :ParameterRangeBegin (first range)
-                                                                                             :ParameterRangeEnd (second range)})]})
+                                                                                               :DataType "INT"
+                                                                                               :ParameterRangeBegin (first range)
+                                                                                               :ParameterRangeEnd (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -224,9 +224,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "float"
-                                                                                             :DataType "FLOAT"
-                                                                                             :ParameterRangeBegin (first range)
-                                                                                             :ParameterRangeEnd (second range)})]}))
+                                                                                               :DataType "FLOAT"
+                                                                                               :ParameterRangeBegin (first range)
+                                                                                               :ParameterRangeEnd (second range)})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -247,9 +247,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "float"
-                                                                                             :DataType "FLOAT"
-                                                                                             :ParameterRangeBegin (first range)
-                                                                                             :ParameterRangeEnd (second range)})]})
+                                                                                               :DataType "FLOAT"
+                                                                                               :ParameterRangeBegin (first range)
+                                                                                               :ParameterRangeEnd (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -265,8 +265,8 @@
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial aa/parse-value "DATETIME")
         a1 (data-umm-cmn/additional-attribute {:Name "datetime" :DataType "DATETIME"
-                                             :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z")
-                                             :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
+                                               :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z")
+                                               :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -287,9 +287,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "datetime"
-                                                                                             :DataType "DATETIME"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
+                                                                                               :DataType "DATETIME"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -310,9 +310,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "datetime"
-                                                                                             :DataType "DATETIME"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
+                                                                                               :DataType "DATETIME"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -326,8 +326,8 @@
 (deftest collection-update-additional-attributes-date-range-test
   (let [parse-fn (partial aa/parse-value "DATE")
         a1 (data-umm-cmn/additional-attribute {:Name "date" :DataType "DATE"
-                                             :ParameterRangeBegin (parse-fn "2012-02-02Z")
-                                             :ParameterRangeEnd (parse-fn "2012-11-02Z")})
+                                               :ParameterRangeBegin (parse-fn "2012-02-02Z")
+                                               :ParameterRangeEnd (parse-fn "2012-11-02Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -348,9 +348,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "date"
-                                                                                             :DataType "DATE"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
+                                                                                               :DataType "DATE"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -371,9 +371,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "date"
-                                                                                             :DataType "DATE"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
+                                                                                               :DataType "DATE"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -387,8 +387,8 @@
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial aa/parse-value "TIME")
         a1 (data-umm-cmn/additional-attribute {:Name "time" :DataType "TIME"
-                                             :ParameterRangeBegin (parse-fn "01:02:03Z")
-                                             :ParameterRangeEnd (parse-fn "11:02:03Z")})
+                                               :ParameterRangeBegin (parse-fn "01:02:03Z")
+                                               :ParameterRangeEnd (parse-fn "11:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -409,9 +409,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "time"
-                                                                                             :DataType "TIME"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
+                                                                                               :DataType "TIME"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -432,9 +432,9 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "time"
-                                                                                             :DataType "TIME"
-                                                                                             :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
+                                                                                               :DataType "TIME"
+                                                                                               :ParameterRangeBegin (parse-fn (first range))
+                                                                                               :ParameterRangeEnd (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -811,28 +811,28 @@
         "Removing a tile not referenced by any granule in the collection is OK"
         ["MISR" "CALIPSO" "WRS-1" "WRS-2"])
 
-        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
+      "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
         ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
 
-    (testing "Update collection failure cases"
-      (are3
-        [tile-names expected-errors]
-        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                                              {:EntryTitle "parent-collection"
-                                                               :ShortName "S2"
-                                                               :Version "V2"
-                                                               :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)})
-                                 {:allow-failure? true})
-              {:keys [status errors]} response]
-          (is (= [422 expected-errors] [status errors])))
+  (testing "Update collection failure cases"
+    (are3
+      [tile-names expected-errors]
+      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                            {:EntryTitle "parent-collection"
+                                                             :ShortName "S2"
+                                                             :Version "V2"
+                                                             :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)})
+                               {:allow-failure? true})
+            {:keys [status errors]} response]
+        (is (= [422 expected-errors] [status errors])))
 
-        "Removing a tile that is referenced by a granule is invalid."
-        ["CALIPSO"]
-        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."]
+      "Removing a tile that is referenced by a granule is invalid."
+      ["CALIPSO"]
+      ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."]
 
-        "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
-        ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
-        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."])))
+      "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
+      ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
+      ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."])))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
