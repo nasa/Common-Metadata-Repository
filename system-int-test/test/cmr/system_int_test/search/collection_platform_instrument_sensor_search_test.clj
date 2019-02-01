@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
   (:require
-    [clojure.java.io :as io]
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]

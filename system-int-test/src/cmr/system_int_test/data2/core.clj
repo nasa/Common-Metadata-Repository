@@ -213,7 +213,9 @@
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
-    (merge (umm-spec/parse-metadata context concept) response)))
+    (if (= concept-type :granule)
+      (merge (umm-legacy/parse-concept context concept) response)
+      (merge (umm-spec/parse-metadata context concept) response))))
 
 (defn ingest-concept-with-metadata-file
   "Ingest the given concept with the metadata file. The metadata file has to be located on the
