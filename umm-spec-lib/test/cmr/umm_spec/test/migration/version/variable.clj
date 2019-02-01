@@ -95,6 +95,13 @@
 (def variable-concept-14-without-compression
   variable-concept-13-without-compression)
 
+(def variable-concept-14-without-ascii-and-netcdf-4-compression
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageCompressionInformation [{:Format "Test1" :Rate 2}
+                                                           {:Format "Test2" :Rate 3}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
 (def variable-concept-13-only-ascii
   (merge variable-concept-12
          {:Alias "Test Alias"
@@ -253,6 +260,10 @@
 (deftest migrate-14->13-without-compression
   (is (= variable-concept-13-without-compression
          (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-compression))))
+
+(deftest migrate-14->13-without-ascii-and-netcdf-4-compression
+  (is (= variable-concept-13-without-compression
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-ascii-and-netcdf-4-compression))))
 
 (deftest migrate-14->13-only-ascii
   (is (= variable-concept-13-only-ascii

@@ -122,7 +122,7 @@
         (assoc-in m [:SizeEstimation :AvgCompressionRateNetCDF4] avg-comp-netcdf4)
         m)
       (update-in m [:SizeEstimation] dissoc :AverageCompressionInformation)
-      (util/remove-nil-keys m))
+      (util/remove-empty-maps m))
     v))
 
 (defmethod interface/migrate-umm-version [:variable "1.3" "1.4"]
