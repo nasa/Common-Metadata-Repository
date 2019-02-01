@@ -2,16 +2,16 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as client]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
-    [cmr.access-control.test.util :as u]
+    [cmr.access-control.test.util :as test-util]
     [cmr.common.util :as util :refer [are3]]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.access-control :as ac]
+    [cmr.mock-echo.client.echo-util :as echo-util]
+    [cmr.transmit.access-control :as access-control]
     [cmr.transmit.config :as transmit-config]
     ; [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.transmit.metadata-db2 :as mdb]))
+    [cmr.transmit.metadata-db2 :as metadata-db2]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -47,19 +47,20 @@
                               :target_id "REPLACEME"}})
 
 (deftest create-acl-test
-  (let [token (e/login (u/conn-context) "admin")
-        resp (ac/create-acl (u/conn-context) system-acl {:token token})]
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        resp (access-control/create-acl (test-util/conn-context) system-acl {:token token})]
     ;; Acceptance criteria: A concept id and revision id of the created ACL should be returned.
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
 (deftest create-single-instance-acl-test
-  (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "user1")
+        group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        resp (ac/create-acl (u/conn-context) (assoc-in single-instance-acl
-                                                       [:single_instance_identity :target_id]
-                                                       group1-concept-id)
+        resp (access-control/create-acl (test-util/conn-context)
+                                        (assoc-in single-instance-acl
+                                                  [:single_instance_identity :target_id]
+                                                  group1-concept-id)
                             {:token token})]
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
@@ -70,41 +71,41 @@
 (deftest create-catalog-item-identity-acl-test
   (testing "with collection_identifier, collection_applicable true, and granule_applicable false"
     (is (= 1 (:revision_id
-               (ac/create-acl (u/conn-context)
-                              {:group_permissions [{:user_type "guest"
-                                                    :permissions ["read"]}]
-                               :catalog_item_identity {:name "Catalog Item Identity 1"
-                                                       :provider_id "PROV1"
-                                                       :collection_identifier {:access_value {:include_undefined_value true
-                                                                                              :min_value 1 :max_value 10000}}
-                                                       :collection_applicable true
-                                                       :granule_applicable false}}
-                              {:token (transmit-config/echo-system-token)})))))
+               (access-control/create-acl (test-util/conn-context)
+                                          {:group_permissions [{:user_type "guest"
+                                                                :permissions ["read"]}]
+                                           :catalog_item_identity {:name "Catalog Item Identity 1"
+                                                                   :provider_id "PROV1"
+                                                                   :collection_identifier {:access_value {:include_undefined_value true
+                                                                                                          :min_value 1 :max_value 10000}}
+                                                                   :collection_applicable true
+                                                                   :granule_applicable false}}
+                                          {:token (transmit-config/echo-system-token)})))))
   (testing "with collection_identifier, collection_applicable false, and granule_applicable true"
     (is (= 1 (:revision_id
-               (ac/create-acl (u/conn-context)
-                              {:group_permissions [{:user_type "guest"
-                                                    :permissions ["read"]}]
-                               :catalog_item_identity {:name "Catalog Item Identity 2"
-                                                       :provider_id "PROV1"
-                                                       :collection_identifier {:access_value {:include_undefined_value true
-                                                                                              :min_value 4 :max_value 999}}
-                                                       :collection_applicable false
-                                                       :granule_applicable true}}
-                              {:token (transmit-config/echo-system-token)}))))))
+               (access-control/create-acl (test-util/conn-context)
+                                          {:group_permissions [{:user_type "guest"
+                                                                :permissions ["read"]}]
+                                           :catalog_item_identity {:name "Catalog Item Identity 2"
+                                                                   :provider_id "PROV1"
+                                                                   :collection_identifier {:access_value {:include_undefined_value true
+                                                                                                          :min_value 4 :max_value 999}}
+                                                                   :collection_applicable false
+                                                                   :granule_applicable true}}
+                                          {:token (transmit-config/echo-system-token)}))))))
 
 (deftest create-single-instance-acl-permission-test
-  (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "user1")
+        group1 (test-util/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
         group1-concept-id (:concept_id group1)]
     ;; Update the system ACL to remove permission to create single instance ACLs
-    (ac/update-acl (u/conn-context)
-                   (:concept-id fixtures/*fixture-system-acl*)
-                   {:system_identity {:target "ANY_ACL"}
-                    :group_permissions [{:user_type "registered" :permissions ["read"]}]}
-                   {:token transmit-config/mock-echo-system-token})
-    (let [{:keys [status body]} (ac/create-acl
-                                 (u/conn-context)
+    (access-control/update-acl (test-util/conn-context)
+                               (:concept-id fixtures/*fixture-system-acl*)
+                               {:system_identity {:target "ANY_ACL"}
+                                :group_permissions [{:user_type "registered" :permissions ["read"]}]}
+                               {:token transmit-config/mock-echo-system-token})
+    (let [{:keys [status body]} (access-control/create-acl
+                                 (test-util/conn-context)
                                  {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
                                   :single_instance_identity {:target_id group1-concept-id
                                                              :target "GROUP_MANAGEMENT"}}
@@ -112,42 +113,45 @@
       (is (= 401 status))
       (is (= ["Permission to create ACL is denied"] (:errors body))))
     ;; Create a provider-specific ACL granting permission to create ACLs targeting groups
-    (ac/create-acl (u/conn-context)
-                   {:group_permissions [{:user_type "registered" :permissions ["create"]}]
-                    :provider_identity {:target "PROVIDER_OBJECT_ACL"
-                                        :provider_id "PROV1"}}
-                   {:token transmit-config/mock-echo-system-token})
+    (access-control/create-acl (test-util/conn-context)
+                               {:group_permissions [{:user_type "registered" :permissions ["create"]}]
+                                :provider_identity {:target "PROVIDER_OBJECT_ACL"
+                                                    :provider_id "PROV1"}}
+                               {:token transmit-config/mock-echo-system-token})
     (is (= 1 (:revision_id
-              (ac/create-acl (u/conn-context)
-                             {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
-                              :single_instance_identity {:target_id group1-concept-id
-                                                         :target "GROUP_MANAGEMENT"}}
-                             {:token token}))))))
+              (access-control/create-acl
+               (test-util/conn-context)
+               {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
+                :single_instance_identity {:target_id group1-concept-id
+                                           :target "GROUP_MANAGEMENT"}}
+               {:token token}))))))
 
 
 (deftest create-provider-acl-permission-test
   ;; Tests user permission to create provider acls
-  (let [token-user1 (e/login (u/conn-context) "user1")
-        guest-token (e/login-guest (u/conn-context))
-        token-user2 (e/login (u/conn-context) "user2")
-        token-user3 (e/login (u/conn-context) "user3")
-        any-acl-group (u/ingest-group token-user1 {:name "any acl group"} ["user1"])
+  (let [token-user1 (echo-util/login (test-util/conn-context) "user1")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        token-user2 (echo-util/login (test-util/conn-context) "user2")
+        token-user3 (echo-util/login (test-util/conn-context) "user3")
+        any-acl-group (test-util/ingest-group token-user1 {:name "any acl group"} ["user1"])
         any-acl-group-id (:concept_id any-acl-group)
-        prov-obj-acl-group (u/ingest-group token-user1 {:name "prov obj acl group"} ["user2"])
+        prov-obj-acl-group (test-util/ingest-group token-user1 {:name "prov obj acl group"} ["user2"])
         prov-obj-acl-group-id (:concept_id prov-obj-acl-group)
-        cat-item-prov-acl-group (u/ingest-group token-user1 {:name "cat item prov acl"} ["user3"])
+        cat-item-prov-acl-group (test-util/ingest-group token-user1 {:name "cat item prov acl"} ["user3"])
         cat-item-prov-acl-group-id (:concept_id cat-item-prov-acl-group)]
 
     ;; Update ANY_ACL fixture to remove permissions to create from registered users.
-    (ac/update-acl (merge {:token guest-token} (u/conn-context))
-                   (:concept-id fixtures/*fixture-system-acl*)
-                   {:system_identity {:target "ANY_ACL"}
-                    :group_permissions [{:user_type "guest" :permissions ["create" "update"]}]})
+    (access-control/update-acl (merge {:token guest-token} (test-util/conn-context))
+                               (:concept-id fixtures/*fixture-system-acl*)
+                               {:system_identity {:target "ANY_ACL"}
+                                :group_permissions [{:user_type "guest" :permissions ["create" "update"]}]})
 
     (testing "Without permissions"
       (are3 [token acl]
-        (let [{:keys [status body]} (ac/create-acl
-                                     (merge {:token token} (u/conn-context)) acl {:raw? true})]
+        (let [{:keys [status body]} (access-control/create-acl
+                                     (merge {:token token} (test-util/conn-context))
+                                     acl
+                                     {:raw? true})]
           (is (= 401 status))
           (is (= ["Permission to create ACL is denied"] (:errors body))))
 
@@ -168,21 +172,21 @@
 
     (testing "grant ACL create permission to specific group"
       ;; Update ANY_ACL to grant user1 permission to create ACL.
-      (ac/update-acl (merge {:token guest-token} (u/conn-context))
-                     (:concept-id fixtures/*fixture-system-acl*)
-                     {:system_identity {:target "ANY_ACL"}
-                      :group_permissions [{:user_type "guest" :permissions ["create"]}
-                                          {:group_id any-acl-group-id :permissions ["create"]}]})
+      (access-control/update-acl (merge {:token guest-token} (test-util/conn-context))
+                                 (:concept-id fixtures/*fixture-system-acl*)
+                                 {:system_identity {:target "ANY_ACL"}
+                                  :group_permissions [{:user_type "guest" :permissions ["create"]}
+                                                      {:group_id any-acl-group-id :permissions ["create"]}]})
       ;; Create provider acl target PROVIDER_OBJECT_ACL and grant ACL create permission to user2,
       ;; which is a member of the prov-obj-acl-group.
-      (ac/create-acl (merge {:token guest-token} (u/conn-context))
-                     {:provider_identity {:provider_id "PROV2" :target "PROVIDER_OBJECT_ACL"}
-                      :group_permissions [{:user_type "guest" :permissions ["create"]}
-                                          {:group_id prov-obj-acl-group-id :permissions ["create"]}]})
+      (access-control/create-acl (merge {:token guest-token} (test-util/conn-context))
+                                 {:provider_identity {:provider_id "PROV2" :target "PROVIDER_OBJECT_ACL"}
+                                  :group_permissions [{:user_type "guest" :permissions ["create"]}
+                                                      {:group_id prov-obj-acl-group-id :permissions ["create"]}]})
 
       ;; verify that user1 and user2 can now create their permitted ACLs
       (are3 [token acl]
-        (let [resp (ac/create-acl (merge {:token token} (u/conn-context)) acl)]
+        (let [resp (access-control/create-acl (merge {:token token} (test-util/conn-context)) acl)]
           (is (re-find #"^ACL.*" (:concept_id resp)))
           (is (= 1 (:revision_id resp))))
         "ANY_ACL check"
@@ -196,8 +200,8 @@
          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
 
       ;; verify that user3 still don't have permission to create ACL
-      (let [{:keys [status body]} (ac/create-acl
-                                   (merge {:token token-user3} (u/conn-context))
+      (let [{:keys [status body]} (access-control/create-acl
+                                   (merge {:token token-user3} (test-util/conn-context))
                                    {:provider_identity {:provider_id "PROV2" :target "CATALOG_ITEM_ACL"}
                                     :group_permissions [{:user_type "guest" :permissions ["read"]}]}
                                    {:raw? true})]
@@ -205,22 +209,26 @@
         (is (= ["Permission to create ACL is denied"] (:errors body)))))))
 
 (deftest create-system-level-acl-permission-test
-  (let [token-user1 (e/login (u/conn-context) "user1")
-        guest-token (e/login-guest (u/conn-context))
-        token-user2 (e/login (u/conn-context) "user2")
-        group1 (u/ingest-group token-user1 {:name "group1"} ["user1"])
+  (let [token-user1 (echo-util/login (test-util/conn-context) "user1")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        token-user2 (echo-util/login (test-util/conn-context) "user2")
+        group1 (test-util/ingest-group token-user1 {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         ;; Update ANY_ACL fixture to remove permissions from guest and registered,
         ;; and replace it with group1
-        _ (ac/update-acl (merge {:token token-user1} (u/conn-context)) (:concept-id fixtures/*fixture-system-acl*)
-                         (assoc (assoc-in system-acl
-                                          [:system_identity :target] "ANY_ACL")
-                                :group_permissions [{:group_id group1-concept-id :permissions ["read" "create"]},
-                                                    {:user_type :guest :permissions ["read"]}]))]
+        _ (access-control/update-acl (merge {:token token-user1} (test-util/conn-context))
+                                     (:concept-id fixtures/*fixture-system-acl*)
+                                     (assoc (assoc-in system-acl
+                                                      [:system_identity :target]
+                                                      "ANY_ACL")
+                                            :group_permissions [{:group_id group1-concept-id
+                                                                 :permissions ["read" "create"]},
+                                                                {:user_type :guest
+                                                                 :permissions ["read"]}]))]
     (testing "create system level ACL without permission"
       (are3 [token]
-        (let [{:keys [status body]} (ac/create-acl (assoc (u/conn-context) :token token)
-                                                   system-acl {:raw? true})]
+        (let [{:keys [status body]} (access-control/create-acl (assoc (test-util/conn-context) :token token)
+                                                               system-acl {:raw? true})]
           (is (= 401 status))
           (is (= ["Permission to create ACL is denied"] (:errors body))))
 
@@ -231,73 +239,76 @@
         token-user2))
 
     (testing "create system level ACL with permission, user1 has permission"
-      (let [{:keys [concept_id revision_id]} (ac/create-acl
-                                              (assoc (u/conn-context) :token token-user1) system-acl)]
+      (let [{:keys [concept_id revision_id]} (access-control/create-acl
+                                              (assoc (test-util/conn-context) :token token-user1) system-acl)]
         (is (re-find #"^ACL.*" concept_id))
         (is (= 1 revision_id))))))
 
 (deftest acl-targeting-group-with-legacy-guid-test
-  (let [admin-token (e/login (u/conn-context) "admin")
+  (let [admin-token (echo-util/login (test-util/conn-context) "admin")
         ;; as an admin user, create a group with a legacy_guid
-        created-group (:concept_id (ac/create-group (u/conn-context)
-                                                    {:name "group"
-                                                     :description "a group"
-                                                     :legacy_guid "normal-group-guid"
-                                                     :members ["user1"]}
-                                                    {:token admin-token}))]
+        created-group (:concept_id (access-control/create-group (test-util/conn-context)
+                                                                {:name "group"
+                                                                 :description "a group"
+                                                                 :legacy_guid "normal-group-guid"
+                                                                 :members ["user1"]}
+                                                                {:token admin-token}))]
 
     ;; Update the system-level ANY_ACL to avoid granting ACL creation permission to "user1", since it normally
     ;; grants this permission to all registered users.
-    (ac/update-acl (u/conn-context)
-                   (:concept-id fixtures/*fixture-system-acl*)
-                   {:group_permissions [{:group_id created-group
-                                         :permissions [:create :read :update :delete]}]
-                    :system_identity {:target "ANY_ACL"}}
-                   {:token admin-token})
+    (access-control/update-acl (test-util/conn-context)
+                               (:concept-id fixtures/*fixture-system-acl*)
+                               {:group_permissions [{:group_id created-group
+                                                     :permissions [:create :read :update :delete]}]
+                                :system_identity {:target "ANY_ACL"}}
+                               {:token admin-token})
 
     ;; Update the PROV1 CATALOG_ITEM_ACL ACL to grant permission explicitly to only the group which "user1" belongs to.
-    (ac/update-acl (u/conn-context)
-                   (:concept-id fixtures/*fixture-provider-acl*)
-                   {:group_permissions [{:group_id created-group
-                                         :permissions [:create :read :update :delete]}]
-                    :provider_identity {:provider_id "PROV1"
-                                        :target "CATALOG_ITEM_ACL"}}
-                   {:token admin-token})
+    (access-control/update-acl (test-util/conn-context)
+                               (:concept-id fixtures/*fixture-provider-acl*)
+                               {:group_permissions [{:group_id created-group
+                                                     :permissions [:create :read :update :delete]}]
+                                :provider_identity {:provider_id "PROV1"
+                                                    :target "CATALOG_ITEM_ACL"}}
+                               {:token admin-token})
 
     ;; As "user1" try to create a catalog item ACL for PROV1.
-    (let [user-token (e/login (u/conn-context) "user1" ["normal-group-guid"])]
+    (let [user-token (echo-util/login (test-util/conn-context) "user1" ["normal-group-guid"])]
       (is (= 1 (:revision_id
-                (ac/create-acl (u/conn-context)
-                               {:group_permissions [{:user_type :registered
-                                                     :permissions [:read]}]
-                                :catalog_item_identity {:provider_id "PROV1"
-                                                        :name "PROV1 collections ACL"
-                                                        :collection_applicable true}}
-                               {:token user-token})))))))
+                (access-control/create-acl (test-util/conn-context)
+                                           {:group_permissions [{:user_type :registered
+                                                                 :permissions [:read]}]
+                                            :catalog_item_identity {:provider_id "PROV1"
+                                                                    :name "PROV1 collections ACL"
+                                                                    :collection_applicable true}}
+                                           {:token user-token})))))))
 
 (deftest create-catalog-item-acl-permission-test
   ;; Tests creation permissions of catalog item acls
-  (let [user1-token (e/login (u/conn-context) "user1")
-        guest-token (e/login-guest (u/conn-context))
-        user2-token (e/login (u/conn-context) "user2")
-        group1 (u/ingest-group user1-token {:name "group1"} ["user1"])
+  (let [user1-token (echo-util/login (test-util/conn-context) "user1")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        user2-token (echo-util/login (test-util/conn-context) "user2")
+        group1 (test-util/ingest-group user1-token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         acl-to-create (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "PROV2")]
     ;; create ACL to grant user1 permission to create catalog item ACL on PROV2
-    (ac/create-acl (u/conn-context) {:group_permissions [{:group_id group1-concept-id
-                                                          :permissions ["create"]}]
-                                     :provider_identity {:provider_id "PROV2"
-                                                         :target "CATALOG_ITEM_ACL"}})
+    (access-control/create-acl (test-util/conn-context) {:group_permissions [{:group_id group1-concept-id
+                                                                              :permissions ["create"]}]
+                                                            :provider_identity {:provider_id "PROV2"
+                                                                                :target "CATALOG_ITEM_ACL"}})
     ;; update system ACL to not allow guest or registered users to create any ACLs
-    (ac/update-acl (u/conn-context)
-                   (:concept-id fixtures/*fixture-system-acl*)
-                   {:system_identity {:target "ANY_ACL"}
-                    :group_permissions [{:user_type "guest" :permissions ["read"]}]})
+    (access-control/update-acl (test-util/conn-context)
+                               (:concept-id fixtures/*fixture-system-acl*)
+                               {:system_identity {:target "ANY_ACL"}
+                                :group_permissions [{:user_type "guest" :permissions ["read"]}]})
 
     (testing "create catalog item ACL without permission"
       (are3 [token]
-        (let [{:keys [status body]} (ac/create-acl (u/conn-context)
-                                                   acl-to-create {:token token :raw? true})]
+        (let [{:keys [status body]} (access-control/create-acl
+                                     (test-util/conn-context)
+                                     acl-to-create
+                                     {:token token
+                                      :raw? true})]
           (is (= 401 status))
           (is (= ["Permission to create ACL is denied"] (:errors body))))
 
@@ -308,40 +319,48 @@
         user2-token))
 
     (testing "create catalog item ACL with permission, user1 has permission"
-      (let [{:keys [concept_id revision_id]} (ac/create-acl
-                                              (u/conn-context) acl-to-create {:token user1-token})]
+      (let [{:keys [concept_id revision_id]} (access-control/create-acl
+                                              (test-util/conn-context)
+                                              acl-to-create
+                                              {:token user1-token})]
         (is (re-find #"^ACL.*" concept_id))
         (is (= 1 revision_id))))))
 
 (deftest create-acl-errors-test
-  (let [token (e/login (u/conn-context) "admin")
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        provider-id (:provider_id (:provider_identity (ac/create-acl (u/conn-context) provider-acl {:token token})))]
+        provider-id (:provider_id (:provider_identity (access-control/create-acl
+                                                       (test-util/conn-context)
+                                                       provider-acl
+                                                       {:token token})))]
     (are3 [re acl]
-          (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
+          (is (thrown-with-msg? Exception re (access-control/create-acl
+                                              (test-util/conn-context)
+                                              acl
+                                              {:token token})))
 
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
           ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
           "Nil field value"
-          #"object has missing required properties"
+          #"#: required key \[.*\] not found"
           (dissoc system-acl :group_permissions)
 
           "Empty field value"
-          #"group_permissions.* object has missing required properties"
+          #"#/group_permissions/0: required key \[.*\] not found"
           (assoc system-acl :group_permissions [{}])
 
           "Missing target"
-          #"system_identity object has missing required properties"
+          #"#/system_identity: required key \[.*\] not found"
           (update-in system-acl [:system_identity] dissoc :target)
 
           "Acceptance criteria: I receive an error if creating an ACL with a non-existent system
            identity, provider identity, or single instance identity target."
-          #"instance value .* not found in enum"
+          #"#/system_identity/target: .* is not a valid enum value"
           (update-in system-acl [:system_identity] assoc :target "WHATEVER")
 
           "Value not found in enum"
-          #"instance value .* not found in enum"
+          #"#/provider_identity/target: .* is not a valid enum value"
           (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
 
           "Provider doesn't exist, provider version"
@@ -379,7 +398,10 @@
       (is
         (re-find #"Invalid JSON:"
                  (:body
-                   (client/post (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
+                   (client/post (access-control/acl-root-url
+                                 (transmit-config/context->app-connection
+                                  (test-util/conn-context)
+                                  :access-control))
                                 {:body "{\"bad-json:"
                                  :headers {"Content-Type" "application/json"
                                            "ECHO-Token" token}
@@ -390,15 +412,18 @@
         (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
                  (:body
                    (client/post
-                     (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
+                     (access-control/acl-root-url
+                      (transmit-config/context->app-connection
+                       (test-util/conn-context)
+                       :access-control))
                      {:body (json/generate-string system-acl)
                       :headers {"Content-Type" "application/xml"
                                 "ECHO-Token" token}
                       :throw-exceptions false})))))))
 
 (deftest acl-catalog-item-identity-validation-test
-  (let [token (e/login-guest (u/conn-context))]
-    (are3 [errors acl] (is (= errors (:errors (u/create-acl token acl {:raw? true}))))
+  (let [token (echo-util/login-guest (test-util/conn-context))]
+    (are3 [errors acl] (is (= errors (:errors (test-util/create-acl token acl {:raw? true}))))
 
           "An error is returned if creating a catalog item identity that does not grant permission
            to collections or granules. (It must grant to collections or granules or both.)"
@@ -440,7 +465,7 @@
                                    :collection_identifier {:access_value {:include_undefined_value false}}}}
 
           "min and max value must be valid numbers if specified"
-          ["/catalog_item_identity/collection_identifier/access_value/min_value instance type (string) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"]
+          ["#/catalog_item_identity/collection_identifier/access_value/min_value: expected type: Number, found: String"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
@@ -476,7 +501,7 @@
                                    :granule_identifier {:access_value {:include_undefined_value false}}}}
 
           "start and stop dates must be valid dates"
-          ["/catalog_item_identity/granule_identifier/temporal/start_date string \"banana\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"]
+          ["#/catalog_item_identity/granule_identifier/temporal/start_date: [banana] is not a valid date-time. Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
@@ -486,7 +511,7 @@
                                                                    :mask "intersect"}}}}
 
           "start and stop dates must be valid dates"
-          ["/catalog_item_identity/granule_identifier/temporal/stop_date string \"robot\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"]
+          ["#/catalog_item_identity/granule_identifier/temporal/stop_date: [robot] is not a valid date-time. Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
@@ -506,7 +531,7 @@
                                                                    :mask "intersect"}}}}
 
           "Must specify a valid temporal mask"
-          ["/catalog_item_identity/granule_identifier/temporal/mask instance value (\"underwhelm\") not found in enum (possible values: [\"intersect\",\"contains\",\"disjoint\"])"]
+          ["#/catalog_item_identity/granule_identifier/temporal/mask: underwhelm is not a valid enum value"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
@@ -516,41 +541,47 @@
                                                                    :mask "underwhelm"}}}})
 
     (testing "collection concept id and entry title check passes when collection exists"
-      (let [concept-id (u/save-collection {:entry-title "coll1 v1"
-                                           :native-id "coll1"
-                                           :entry-id "coll1"
-                                           :short-name "coll1"
-                                           :version "v1"
-                                           :provider-id "PROV1"})]
+      (let [concept-id (test-util/save-collection {:entry-title "coll1 v1"
+                                                   :native-id "coll1"
+                                                   :entry-id "coll1"
+                                                   :short-name "coll1"
+                                                   :version "v1"
+                                                   :provider-id "PROV1"})]
         (is (= {:revision_id 1 :status 200}
                (select-keys
-                (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-                                     :catalog_item_identity {:name "A real live catalog item ACL"
-                                                             :provider_id "PROV1"
-                                                             :collection_applicable true
-                                                             :collection_identifier {:concept_ids [concept-id]
-                                                                                     :entry_titles ["coll1 v1"]}}})
+                (test-util/create-acl
+                 token
+                 {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+                  :catalog_item_identity {:name "A real live catalog item ACL"
+                                          :provider_id "PROV1"
+                                          :collection_applicable true
+                                          :collection_identifier {:concept_ids [concept-id]
+                                                                  :entry_titles ["coll1 v1"]}}})
                 [:revision_id :status])))))
 
     (testing "collection concept id and entry title check passes when one collection doesn't exist."
-      (let [concept-id (u/save-collection {:entry-title "coll5 v1"
-                                           :native-id "coll5"
-                                           :entry-id "coll5"
-                                           :short-name "coll5"
-                                           :version "v1"
-                                           :provider-id "PROV1"})
+      (let [concept-id (test-util/save-collection {:entry-title "coll5 v1"
+                                                   :native-id "coll5"
+                                                   :entry-id "coll5"
+                                                   :short-name "coll5"
+                                                   :version "v1"
+                                                   :provider-id "PROV1"})
             ;; To test that validly formated collection concept-ids that don't exist in the provider
             ;; are not added into the collection-identifier on creation.
             non-existent-coll-id "C999999-PROV1"
-            acl (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-                                     :catalog_item_identity {:name "A real live catalog item ACL2"
-                                                             :provider_id "PROV1"
-                                                             :collection_applicable true
-                                                             :collection_identifier {:concept_ids
-                                                                                     [concept-id non-existent-coll-id]
-                                                                                     :entry_titles ["coll5 v1"]}}})
-            resp (ac/get-acl (u/conn-context) (get acl :concept_id) {:token token :raw? true
-                                                                     :include_full_acl true})]
+            acl (test-util/create-acl
+                 token
+                 {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+                  :catalog_item_identity {:name "A real live catalog item ACL2"
+                                          :provider_id "PROV1"
+                                          :collection_applicable true
+                                          :collection_identifier {:concept_ids
+                                                                  [concept-id non-existent-coll-id]
+                                                                  :entry_titles ["coll5 v1"]}}})
+            resp (access-control/get-acl (test-util/conn-context)
+                                         (get acl :concept_id)
+                                         {:token token :raw? true
+                                          :include_full_acl true})]
         (is (= 1 (get acl :revision_id)))
         (is (= 200 (get acl :status)))
         (is (= (get-in resp [:body :catalog_item_identity :collection_identifier :concept_ids])
@@ -559,80 +590,84 @@
                ["coll5 v1"]))))
 
     (testing "long entry titles"
-      (u/save-collection {:entry-title "coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                          :native-id "coll2"
-                          :entry-id "coll2"
-                          :short-name "coll2"
-                          :version "v1"
-                          :provider-id "PROV1"})
-      (let [result (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-                                        :catalog_item_identity {:name "Catalog item ACL with a long entry title"
-                                                                :provider_id "PROV1"
-                                                                :collection_applicable true
-                                                                :collection_identifier {:entry_titles ["coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]}}})]
+      (test-util/save-collection {:entry-title "coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                  :native-id "coll2"
+                                  :entry-id "coll2"
+                                  :short-name "coll2"
+                                  :version "v1"
+                                  :provider-id "PROV1"})
+      (let [result
+            (test-util/create-acl
+             token
+             {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+              :catalog_item_identity {:name "Catalog item ACL with a long entry title"
+                                      :provider_id "PROV1"
+                                      :collection_applicable true
+                                      :collection_identifier {:entry_titles ["coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]}}})]
         (is (= 1 (:revision_id result)))))))
 
 (deftest create-duplicate-acl-test
-  (let [token (e/login-guest (u/conn-context))]
+  (let [token (echo-util/login-guest (test-util/conn-context))]
     (testing "system ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) system-acl {:token token}))))
+      (is (= 1 (:revision_id (access-control/create-acl (test-util/conn-context) system-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) system-acl {:token token}))))
+                            (access-control/create-acl (test-util/conn-context) system-acl {:token token}))))
     (testing "provider ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) provider-acl {:token token}))))
+      (is (= 1 (:revision_id (access-control/create-acl (test-util/conn-context) provider-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) provider-acl {:token token}))))
+                            (access-control/create-acl (test-util/conn-context) provider-acl {:token token}))))
     (testing "catalog item ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))
+      (is (= 1 (:revision_id (access-control/create-acl (test-util/conn-context) catalog-item-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
+                            (access-control/create-acl (test-util/conn-context) catalog-item-acl {:token token}))))))
 
 (deftest get-acl-test
   (testing "get acl general case"
-    (let [token (e/login (u/conn-context) "admin")
-          concept-id (:concept_id (ac/create-acl (u/conn-context) system-acl {:token token}))]
+    (let [token (echo-util/login (test-util/conn-context) "admin")
+          concept-id (:concept_id (access-control/create-acl (test-util/conn-context) system-acl {:token token}))]
       ;; Acceptance criteria: A created ACL can be retrieved after it is created.
-      (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))
-      (let [resp (ac/get-acl (u/conn-context) "NOTACONCEPTID" {:token token :raw? true})]
+      (is (= system-acl (access-control/get-acl (test-util/conn-context) concept-id {:token token})))
+      (let [resp (access-control/get-acl (test-util/conn-context) "NOTACONCEPTID" {:token token :raw? true})]
         (is (= 400 (:status resp)))
         (is (= ["Concept-id [NOTACONCEPTID] is not valid."] (:errors (:body resp)))))
-      (let [resp (ac/get-acl (u/conn-context) "ACL999999-CMR" {:token token :raw? true})]
+      (let [resp (access-control/get-acl (test-util/conn-context) "ACL999999-CMR" {:token token :raw? true})]
         (is (= 404 (:status resp)))
         (is (= ["ACL could not be found with concept id [ACL999999-CMR]"]
                (:errors (:body resp)))))))
 
   (testing "get acl with group id"
-    (let [token (e/login (u/conn-context) "admin")
+    (let [token (echo-util/login (test-util/conn-context) "admin")
           group1-legacy-guid "group1-legacy-guid"
-          group1 (u/ingest-group token
-                                 {:name "group1"
-                                  :legacy_guid group1-legacy-guid}
-                                 ["user1"])
-          group2 (u/ingest-group token
-                                 {:name "group2"}
-                                 ["user1"])
+          group1 (test-util/ingest-group token
+                                         {:name "group1"
+                                          :legacy_guid group1-legacy-guid}
+                                         ["user1"])
+          group2 (test-util/ingest-group token
+                                         {:name "group2"}
+                                         ["user1"])
           group1-concept-id (:concept_id group1)
           group2-concept-id (:concept_id group2)
 
           ;; ACL associated with a group that has legacy guid
-          acl1 (assoc-in (u/system-acl "TAG_GROUP")
+          acl1 (assoc-in (test-util/system-acl "TAG_GROUP")
                          [:group_permissions 0]
                          {:permissions ["create"] :group_id group1-concept-id})
 
           ;; ACL associated with a group that does not have legacy guid
-          acl2 (assoc-in (u/system-acl "ARCHIVE_RECORD")
+          acl2 (assoc-in (test-util/system-acl "ARCHIVE_RECORD")
                          [:group_permissions 0]
                          {:permissions ["delete"] :group_id group2-concept-id})
           ;; SingleInstanceIdentity ACL with a group that has legacy guid
-          acl3 (u/single-instance-acl group1-concept-id)
+          acl3 (test-util/single-instance-acl group1-concept-id)
           ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
-          acl4 (u/single-instance-acl group2-concept-id)]
+          acl4 (test-util/single-instance-acl group2-concept-id)]
 
       (are3 [expected-acl acl]
-        (let [concept-id (:concept_id (ac/create-acl (u/conn-context) acl {:token token}))]
-          (is (= expected-acl (ac/get-acl (u/conn-context) concept-id
-                                          {:token token
-                                           :http-options {:query-params {:include_legacy_group_guid true}}}))))
+        (let [concept-id (:concept_id (access-control/create-acl (test-util/conn-context) acl {:token token}))]
+          (is (= expected-acl (access-control/get-acl (test-util/conn-context)
+                                                      concept-id
+                                                      {:token token
+                                                       :http-options {:query-params {:include_legacy_group_guid true}}}))))
 
         "ACL associated with a group that has legacy guid"
         (assoc-in acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
@@ -651,55 +686,65 @@
         acl4))))
 
 (deftest get-acl-permission-test
-  (let [user1-token (e/login (u/conn-context) "user1")
-        user2-token (e/login (u/conn-context) "user2")
-        user3-token (e/login (u/conn-context) "user3")
-        guest-token (e/login-guest (u/conn-context))
-        group1 (u/ingest-group user1-token
-                               {:name "any acl read"}
-                               ["user1"])
-        group2 (u/ingest-group user1-token
-                               {:name "without any acl read"}
-                               ["user2"])
-        group3 (u/ingest-group user1-token
-                               {:name "provider object prov1 read"}
-                               ["user3"])
+  (let [user1-token (echo-util/login (test-util/conn-context) "user1")
+        user2-token (echo-util/login (test-util/conn-context) "user2")
+        user3-token (echo-util/login (test-util/conn-context) "user3")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        group1 (test-util/ingest-group user1-token
+                                       {:name "any acl read"}
+                                       ["user1"])
+        group2 (test-util/ingest-group user1-token
+                                       {:name "without any acl read"}
+                                       ["user2"])
+        group3 (test-util/ingest-group user1-token
+                                       {:name "provider object prov1 read"}
+                                       ["user3"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         group3-concept-id (:concept_id group3)
 
         ;; remove ANY_ACL read to all users except user1
-        _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
-                         (assoc-in (u/system-acl "ANY_ACL")
-                                   [:group_permissions 0]
-                                   {:permissions ["read" "create"] :group_id group1-concept-id}))
+        _ (access-control/update-acl (test-util/conn-context)
+                                     (:concept-id fixtures/*fixture-system-acl*)
+                                     (assoc-in (test-util/system-acl "ANY_ACL")
+                                               [:group_permissions 0]
+                                               {:permissions ["read" "create"] :group_id group1-concept-id}))
 
-        acl1 (u/ingest-acl user1-token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
-                                                 [:group_permissions 0]
-                                                 {:permissions ["read"] :group_id group1-concept-id}))
-        acl2 (u/ingest-acl user1-token (assoc-in (u/system-acl "ARCHIVE_RECORD")
-                                                 [:group_permissions 0]
-                                                 {:permissions ["delete"] :group_id group2-concept-id}))
-        acl3 (u/ingest-acl user1-token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
-        acl4 (u/ingest-acl user1-token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
-                                              :group_permissions
-                                              [{:group_id group3-concept-id :permissions ["read"]}]))
-        acl5 (u/ingest-acl user1-token (u/provider-acl "OPTION_DEFINITION"))
-        acl6 (u/ingest-acl user1-token (assoc-in (u/provider-acl "OPTION_DEFINITION")
-                                                 [:provider_identity :provider_id] "PROV2"))
+        acl1 (test-util/ingest-acl user1-token
+                                   (assoc-in (test-util/system-acl "INGEST_MANAGEMENT_ACL")
+                                             [:group_permissions 0]
+                                             {:permissions ["read"] :group_id group1-concept-id}))
+        acl2 (test-util/ingest-acl user1-token
+                                   (assoc-in (test-util/system-acl "ARCHIVE_RECORD")
+                                             [:group_permissions 0]
+                                             {:permissions ["delete"] :group_id group2-concept-id}))
+        acl3 (test-util/ingest-acl user1-token
+                                   (test-util/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
+        acl4 (test-util/ingest-acl user1-token
+                                   (assoc (test-util/provider-acl "PROVIDER_OBJECT_ACL")
+                                          :group_permissions
+                                          [{:group_id group3-concept-id :permissions ["read"]}]))
+        acl5 (test-util/ingest-acl user1-token
+                                   (test-util/provider-acl "OPTION_DEFINITION"))
+        acl6 (test-util/ingest-acl user1-token
+                                   (assoc-in (test-util/provider-acl "OPTION_DEFINITION")
+                                             [:provider_identity :provider_id]
+                                             "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
-        acl7 (u/ingest-acl user1-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                        :catalog_item_identity {:provider_id "PROV1"
-                                                                :name "PROV1 All Collections ACL"
-                                                                :collection_applicable true}})
-        acl8 (u/ingest-acl user1-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                        :catalog_item_identity {:provider_id "PROV2"
-                                                                :name "PROV2 All Collections ACL"
-                                                                :collection_applicable true}})
+        acl7 (test-util/ingest-acl user1-token
+                                   {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                    :catalog_item_identity {:provider_id "PROV1"
+                                                            :name "PROV1 All Collections ACL"
+                                                            :collection_applicable true}})
+        acl8 (test-util/ingest-acl user1-token
+                                   {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                    :catalog_item_identity {:provider_id "PROV2"
+                                                            :name "PROV2 All Collections ACL"
+                                                            :collection_applicable true}})
         permission-granted? (fn [token acl granted?]
-                              (let [{:keys [status]} (ac/get-acl (u/conn-context)
-                                                                 (:concept-id acl)
-                                                                 {:token token :raw? true})]
+                              (let [{:keys [status]} (access-control/get-acl (test-util/conn-context)
+                                                                             (:concept-id acl)
+                                                                             {:token token :raw? true})]
                                 (if granted?
                                   (is (= 200 status))
                                   (is (= 401 status)))))]
@@ -745,13 +790,13 @@
 
     (testing "without fixture provider object acls"
       ;; grant only guest user permission to PROV1 CATALOG_ITEM_ACL
-      (ac/update-acl (u/conn-context)
-                     (:concept-id fixtures/*fixture-provider-acl*)
-                     {:provider_identity {:provider_id "PROV1"
-                                          :target "CATALOG_ITEM_ACL"}
-                      :group_permissions [{:user_type "guest"
-                                           :permissions ["read" "update"]}]}
-                     {:token user1-token})
+      (access-control/update-acl (test-util/conn-context)
+                                 (:concept-id fixtures/*fixture-provider-acl*)
+                                 {:provider_identity {:provider_id "PROV1"
+                                                      :target "CATALOG_ITEM_ACL"}
+                                  :group_permissions [{:user_type "guest"
+                                                       :permissions ["read" "update"]}]}
+                                 {:token user1-token})
       (are [token acl granted?]
         (permission-granted? token acl granted?)
         ;; guest only has permission to retrieve acl7
@@ -793,27 +838,27 @@
 
 (deftest update-acl-test
   (testing "update acl successful case"
-    (let [token (e/login (u/conn-context) "admin")
+    (let [token (echo-util/login (test-util/conn-context) "admin")
           ;; Create the ACL with one set of attributes
-          {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
+          {concept-id :concept_id} (access-control/create-acl (test-util/conn-context) system-acl {:token token})
           ;; Now update it to be completely different
-          resp (ac/update-acl (u/conn-context) concept-id catalog-item-acl {:token token})]
+          resp (access-control/update-acl (test-util/conn-context) concept-id catalog-item-acl {:token token})]
       ;; Acceptance criteria: A concept id and revision id of the updated ACL should be returned.
       (is (= concept-id (:concept_id resp)))
       (is (= 2 (:revision_id resp)))
       ;; Acceptance criteria: An updated ACL can be retrieved after it is updated.
       ;; Acceptance criteria: An updated ACL can be found via the search API with any changes.
-      (is (= catalog-item-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
+      (is (= catalog-item-acl (access-control/get-acl (test-util/conn-context) concept-id {:token token})))))
   (testing "update acl no permission"
     ;; Update the system ACL to remove permission to update single instance ACLs
-    (ac/update-acl (u/conn-context)
-                   (:concept-id fixtures/*fixture-system-acl*)
-                   {:system_identity {:target "ANY_ACL"}
-                    :group_permissions [{:user_type "guest" :permissions ["read"]}]}
-                   {:token transmit-config/mock-echo-system-token})
-    (let [token (e/login (u/conn-context) "user1")
-          {:keys [status body]} (ac/update-acl
-                                 (u/conn-context)
+    (access-control/update-acl (test-util/conn-context)
+                               (:concept-id fixtures/*fixture-system-acl*)
+                               {:system_identity {:target "ANY_ACL"}
+                                :group_permissions [{:user_type "guest" :permissions ["read"]}]}
+                               {:token transmit-config/mock-echo-system-token})
+    (let [token (echo-util/login (test-util/conn-context) "user1")
+          {:keys [status body]} (access-control/update-acl
+                                 (test-util/conn-context)
                                  (:concept-id fixtures/*fixture-system-acl*)
                                  {:system_identity {:target "ANY_ACL"}
                                   :group_permissions [{:user_type "guest" :permissions ["update"]}]}
@@ -822,62 +867,86 @@
       (is (= ["Permission to update ACL is denied"] (:errors body))))))
 
 (deftest update-single-instance-acl-test
-  (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token
-                               {:name "group1"}
-                               ["user1"])
-        group2 (u/ingest-group token
-                               {:name "group2"}
-                               ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "user1")
+        group1 (test-util/ingest-group token
+                                       {:name "group1"}
+                                       ["user1"])
+        group2 (test-util/ingest-group token
+                                       {:name "group2"}
+                                       ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
-        {concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})
-        resp (ac/update-acl (u/conn-context) concept-id (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) {:token token})]
+        {concept-id :concept_id} (access-control/create-acl
+                                  (test-util/conn-context)
+                                  (assoc-in single-instance-acl
+                                            [:single_instance_identity :target_id]
+                                            group1-concept-id)
+                                  {:token token})
+        resp (access-control/update-acl (test-util/conn-context)
+                                        concept-id
+                                        (assoc-in single-instance-acl
+                                                  [:single_instance_identity :target_id]
+                                                  group2-concept-id)
+                                        {:token token})]
     (is (= concept-id (:concept_id resp)))
     (is (= 2 (:revision_id resp)))
     (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id)
-           (ac/get-acl (u/conn-context) concept-id {:token token})))))
+           (access-control/get-acl (test-util/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
-  (let [token (e/login (u/conn-context) "admin")
-        {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        {system-concept-id :concept_id} (access-control/create-acl
+                                         (test-util/conn-context)
+                                         system-acl
+                                         {:token token})
+        group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})
-        {catalog-concept-id :concept_id} (ac/create-acl (u/conn-context) catalog-item-acl {:token token})
-        {single-instance-concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
+        {provider-concept-id :concept_id} (access-control/create-acl
+                                           (test-util/conn-context)
+                                           provider-acl
+                                           {:token token})
+        {catalog-concept-id :concept_id} (access-control/create-acl
+                                          (test-util/conn-context)
+                                          catalog-item-acl
+                                          {:token token})
+        {single-instance-concept-id :concept_id} (access-control/create-acl
+                                                  (test-util/conn-context)
+                                                  (assoc-in single-instance-acl
+                                                            [:single_instance_identity :target_id]
+                                                            group1-concept-id)
+                                                  {:token token})]
     (are3 [re acl concept-id]
-          (is (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token})))
+          (is (thrown-with-msg? Exception re (access-control/update-acl (test-util/conn-context) concept-id acl {:token token})))
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
           ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
           "Nil field value"
-          #"object has missing required properties"
+          #"#: required key \[.*\] not found"
           (dissoc system-acl :group_permissions)
           system-concept-id
 
           "Empty field value"
-          #"group_permissions.* object has missing required properties"
+          #"#/group_permissions/0: required key \[.*\] not found"
           (assoc system-acl :group_permissions [{}])
           system-concept-id
 
           "Missing target"
-          #"system_identity object has missing required properties"
+          #"#/system_identity: required key \[target\] not found"
           (update-in system-acl [:system_identity] dissoc :target)
           system-concept-id
 
           "Acceptance criteria: I receive an error if updating an ACL with an invalid combination of fields. (Only one of system, provider, single instance, or catalog item identities)"
-          #"instance failed to match exactly one schema"
+          #"#: required key \[catalog_item_identity\] not found"
           (assoc system-acl :provider_identity {:provider_id "PROV1"
                                                 :target "INGEST_MANAGEMENT_ACL"})
           system-concept-id
 
           "Acceptance criteria: I receive an error if updating an ACL with a non-existent system identity, provider identity, or single instance identity target."
-          #"instance value .* not found in enum"
+          #"#/system_identity/target: .* is not a valid enum value"
           (update-in system-acl [:system_identity] assoc :target "WHATEVER")
           system-concept-id
 
           "Value not found in enum"
-          #"instance value .* not found in enum"
+          #"#/provider_identity/target: .* is not a valid enum value"
           (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
           provider-concept-id
 
@@ -919,8 +988,8 @@
         (re-find #"Invalid JSON:"
                  (:body
                    (client/put
-                     (ac/acl-concept-id-url
-                       (transmit-config/context->app-connection (u/conn-context) :access-control)
+                     (access-control/acl-concept-id-url
+                       (transmit-config/context->app-connection (test-util/conn-context) :access-control)
                        system-concept-id)
                      {:body "{\"bad-json:"
                       :headers {"Content-Type" "application/json"
@@ -932,8 +1001,8 @@
         (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
                  (:body
                    (client/put
-                     (ac/acl-concept-id-url
-                       (transmit-config/context->app-connection (u/conn-context) :access-control)
+                     (access-control/acl-concept-id-url
+                       (transmit-config/context->app-connection (test-util/conn-context) :access-control)
                        system-concept-id)
                      {:body (json/generate-string system-acl)
                       :headers {"Content-Type" "application/xml"
@@ -941,108 +1010,125 @@
                       :throw-exceptions false})))))))
 
 (deftest update-acl-invalid-data-test
-  (let [token (e/login (u/conn-context) "admin")
-        {concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})]
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        {concept-id :concept_id} (access-control/create-acl
+                                  (test-util/conn-context)
+                                  provider-acl
+                                  {:token token})]
     (testing "updating an ACL to change its legacy guid"
       (is (thrown-with-msg?
             Exception
             #"ACL legacy guid cannot be updated, was \[ABCD-EFG-HIJK-LMNOP\] and now \[XYZ-EFG-HIJK-LMNOP\]"
-            (ac/update-acl (u/conn-context) concept-id
-                           (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))
+            (access-control/update-acl
+             (test-util/conn-context)
+             concept-id
+             (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP")
+             {:token token}))))
     (testing "Updating an ACL with an empty legacy guid is permitted"
-      (let [response (ac/update-acl (u/conn-context) concept-id (dissoc provider-acl :legacy_guid))]
+      (let [response (access-control/update-acl (test-util/conn-context)
+                                                concept-id
+                                                (dissoc provider-acl :legacy_guid))]
         (is (= {:concept_id concept-id :revision_id 2} response))
-        (is (= (:legacy_guid provider-acl) (:legacy_guid (ac/get-acl (u/conn-context) concept-id))))))))
+        (is (= (:legacy_guid provider-acl) (:legacy_guid (access-control/get-acl
+                                                          (test-util/conn-context)
+                                                          concept-id))))))))
 
 (deftest delete-acl-test
-  (let [token (e/login-guest (u/conn-context))
+  (let [token (echo-util/login-guest (test-util/conn-context))
         acl-concept-id (:concept_id
-                        (ac/create-acl (u/conn-context)
-                                       {:group_permissions [{:permissions [:read]
-                                                             :user_type :guest}]
-                                        :catalog_item_identity {:name "PROV1 guest read"
-                                                                :collection_applicable true
-                                                                :provider_id "PROV1"}}
-                                       {:token token}))
-        coll1 (u/save-collection {:entry-title "coll1"
-                                  :native-id "coll1"
-                                  :entry-id "coll1"
-                                  :short-name "coll1"
-                                  :provider-id "PROV1"})]
+                        (access-control/create-acl
+                         (test-util/conn-context)
+                         {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "PROV1 guest read"
+                                                  :collection_applicable true
+                                                  :provider_id "PROV1"}}
+                         {:token token}))
+        coll1 (test-util/save-collection {:entry-title "coll1"
+                                          :native-id "coll1"
+                                          :entry-id "coll1"
+                                          :short-name "coll1"
+                                          :provider-id "PROV1"})]
     (testing "created ACL grants permissions (precursor to testing effectiveness of deletion)"
       (is (= {coll1 ["read"]}
              (json/parse-string
-              (ac/get-permissions (u/conn-context)
-                                  {:concept_id coll1 :user_type "guest"}
-                                  {:token token})))))
+              (access-control/get-permissions (test-util/conn-context)
+                                              {:concept_id coll1 :user_type "guest"}
+                                              {:token token})))))
     (testing "404 status is returned if ACL does not exist"
       (is (= {:status 404
               :body {:errors ["ACL could not be found with concept id [ACL1234-NOPE]"]}
               :content-type :json}
-             (ac/delete-acl (u/conn-context) "ACL1234-NOPE" {:token token :raw? true}))))
+             (access-control/delete-acl (test-util/conn-context) "ACL1234-NOPE" {:token token :raw? true}))))
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
               :body {:revision-id 2
                      :concept-id acl-concept-id}
               :content-type :json}
-             (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
+             (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
               :body {:errors ["ACL with concept id [ACL1200000009-CMR] was deleted."]}
               :content-type :json}
-             (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
+             (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"
       (is (= nil
-             (ac/get-acl (u/conn-context) acl-concept-id))))
+             (access-control/get-acl (test-util/conn-context) acl-concept-id))))
     (testing "tombstone can be retrieved from Metadata DB"
       (is (= {:deleted true
               :revision-id 2
               :metadata ""
               :concept-id acl-concept-id}
              (select-keys
-              (mdb/get-latest-concept (u/conn-context) acl-concept-id)
+              (metadata-db2/get-latest-concept (test-util/conn-context) acl-concept-id)
               [:deleted :revision-id :metadata :concept-id]))))
     (testing "permissions granted by the ACL are no longer in effect"
       (is (= {coll1 []}
              (json/parse-string
-              (ac/get-permissions (u/conn-context)
-                                  {:concept_id coll1 :user_type "guest"}
-                                  {:token token})))))
+              (access-control/get-permissions (test-util/conn-context)
+                                              {:concept_id coll1 :user_type "guest"}
+                                              {:token token})))))
     (testing "delete an ACL that is already deleted."
-      (let [{:keys [status body]} (ac/delete-acl
-                                   (u/conn-context) acl-concept-id {:token token :raw? true})]
+      (let [{:keys [status body]} (access-control/delete-acl
+                                   (test-util/conn-context) acl-concept-id {:token token :raw? true})]
         (is (= 404 status))
         (is (= [(format "ACL with concept id [%s] was deleted." acl-concept-id)] (:errors body)))))
     (testing "delete ACL without permission."
       (let [acl-concept-id (:concept_id
-                            (ac/create-acl (u/conn-context)
-                                           {:group_permissions [{:permissions [:read]
-                                                                 :user_type :guest}]
-                                            :catalog_item_identity {:name "PROV1 guest read"
-                                                                    :collection_applicable true
-                                                                    :provider_id "PROV1"}}
-                                           {:token token}))
+                            (access-control/create-acl
+                             (test-util/conn-context)
+                             {:group_permissions [{:permissions [:read]
+                                                   :user_type :guest}]
+                              :catalog_item_identity {:name "PROV1 guest read"
+                                                      :collection_applicable true
+                                                      :provider_id "PROV1"}}
+                             {:token token}))
             ;; update system ANY_ACL to not allow guest to delete ACLs
-            _ (ac/update-acl (u/conn-context)
-                             (:concept-id fixtures/*fixture-system-acl*)
-                             {:system_identity {:target "ANY_ACL"}
-                              :group_permissions [{:user_type "guest" :permissions ["read" "update"]}]}
-                             {:token token})
+            _ (access-control/update-acl
+               (test-util/conn-context)
+               (:concept-id fixtures/*fixture-system-acl*)
+               {:system_identity {:target "ANY_ACL"}
+                :group_permissions [{:user_type "guest" :permissions ["read" "update"]}]}
+               {:token token})
             ;; update *fixture-provider-acl* to not allow guest to delete PROV1 ACLs
-            _ (ac/update-acl (u/conn-context)
-                             (:concept-id fixtures/*fixture-provider-acl*)
-                             {:provider_identity {:provider_id "PROV1"
-                                                  :target "CATALOG_ITEM_ACL"}
-                              :group_permissions [{:user_type "guest"
-                                                   :permissions ["read" "update"]}]}
-                             {:token token})
-            {:keys [status body]} (ac/delete-acl
-                                   (u/conn-context) acl-concept-id {:token token :raw? true})]
+            _ (access-control/update-acl
+               (test-util/conn-context)
+               (:concept-id fixtures/*fixture-provider-acl*)
+               {:provider_identity {:provider_id "PROV1"
+                                    :target "CATALOG_ITEM_ACL"}
+                :group_permissions [{:user_type "guest"
+                                     :permissions ["read" "update"]}]}
+               {:token token})
+            {:keys [status body]} (access-control/delete-acl
+                                   (test-util/conn-context)
+                                   acl-concept-id
+                                   {:token token 
+                                    :raw? true})]
         (is (= 401 status))
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
 
 (deftest entry-titles-concept-ids-sync
-  (let [token (e/login-guest (u/conn-context))
+  (let [token (echo-util/login-guest (test-util/conn-context))
         make-catalog-item (fn [name coll-id]
                             (-> catalog-item-acl
                                 (assoc-in [:catalog_item_identity :name] name)
@@ -1051,48 +1137,52 @@
                       (-> coll-id
                           (update :entry_titles set)
                           (update :concept_ids set)))
-        coll1 (u/save-collection {:entry-title "coll1 entry title"
-                                  :short-name "coll1"
-                                  :native-id "coll1"
-                                  :provider-id "PROV1"})
+        coll1 (test-util/save-collection {:entry-title "coll1 entry title"
+                                          :short-name "coll1"
+                                          :native-id "coll1"
+                                          :provider-id "PROV1"})
 
-        coll2 (u/save-collection {:entry-title "coll2 entry title"
-                                  :short-name "coll2"
-                                  :native-id "coll2"
-                                  :provider-id "PROV1"})
+        coll2 (test-util/save-collection {:entry-title "coll2 entry title"
+                                          :short-name "coll2"
+                                          :native-id "coll2"
+                                          :provider-id "PROV1"})
 
-        coll3 (u/save-collection {:entry-title "coll3 entry title"
-                                  :short-name "coll3"
-                                  :native-id "coll3"
-                                  :provider-id "PROV1"})
+        coll3 (test-util/save-collection {:entry-title "coll3 entry title"
+                                          :short-name "coll3"
+                                          :native-id "coll3"
+                                          :provider-id "PROV1"})
 
-        coll4 (u/save-collection {:entry-title "coll4 entry title"
-                                  :short-name "coll4"
-                                  :native-id "coll4"
-                                  :provider-id "PROV1"})
+        coll4 (test-util/save-collection {:entry-title "coll4 entry title"
+                                          :short-name "coll4"
+                                          :native-id "coll4"
+                                          :provider-id "PROV1"})
 
-        acl1 (ac/create-acl (u/conn-context)
-                            (make-catalog-item "acl1" {:entry_titles ["coll1 entry title"
-                                                                      "coll2 entry title"
-                                                                      "coll3 entry title"]})
-                            {:token token})
+        acl1 (access-control/create-acl
+              (test-util/conn-context)
+              (make-catalog-item "acl1" {:entry_titles ["coll1 entry title"
+                                                        "coll2 entry title"
+                                                        "coll3 entry title"]})
+              {:token token})
 
-        acl2 (ac/create-acl (u/conn-context)
-                            (make-catalog-item "acl2" {:concept_ids [coll1 coll2 coll3]})
-                            {:token token})
+        acl2 (access-control/create-acl
+              (test-util/conn-context)
+              (make-catalog-item "acl2" {:concept_ids [coll1 coll2 coll3]})
+              {:token token})
 
-        acl3 (ac/create-acl (u/conn-context)
-                            (make-catalog-item "acl3" {:concept_ids [coll1 coll2 coll3]
-                                                       :entry_titles ["coll1 entry title"
-                                                                      "coll2 entry title"
-                                                                      "coll3 entry title"]})
-                            {:token token})
+        acl3 (access-control/create-acl
+              (test-util/conn-context)
+              (make-catalog-item "acl3" {:concept_ids [coll1 coll2 coll3]
+                                         :entry_titles ["coll1 entry title"
+                                                        "coll2 entry title"
+                                                        "coll3 entry title"]})
+              {:token token})
 
-        acl4 (ac/create-acl (u/conn-context)
-                            (make-catalog-item "acl4" {:concept_ids [coll1 coll2]
-                                                       :entry_titles ["coll2 entry title"
-                                                                      "coll3 entry title"]})
-                            {:token token})
+        acl4 (access-control/create-acl
+              (test-util/conn-context)
+              (make-catalog-item "acl4" {:concept_ids [coll1 coll2]
+                                         :entry_titles ["coll2 entry title"
+                                                        "coll3 entry title"]})
+              {:token token})
         expected-collection-identifier {:concept_ids #{coll1 coll2 coll3}
                                         :entry_titles #{"coll1 entry title"
                                                         "coll2 entry title"
@@ -1106,7 +1196,7 @@
       (are3 [concept-id]
         (is (= expected-collection-identifier
                (actual->set
-                (get-in (ac/get-acl (u/conn-context) concept-id {:token token})
+                (get-in (access-control/get-acl (test-util/conn-context) concept-id {:token token})
                         [:catalog_item_identity :collection_identifier]))))
 
         "Only entry-titles"
@@ -1122,53 +1212,56 @@
         (:concept_id acl4)))
 
     (testing "update acls add collection via concept-ids"
-      (ac/update-acl (u/conn-context)
-                     (:concept_id acl4)
-                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3 coll4]
-                                                :entry_titles ["coll1 entry title"
-                                                               "coll2 entry title"
-                                                               "coll3 entry title"]})
+      (access-control/update-acl
+       (test-util/conn-context)
+       (:concept_id acl4)
+       (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3 coll4]
+                                  :entry_titles ["coll1 entry title"
+                                                 "coll2 entry title"
+                                                 "coll3 entry title"]})
 
-                     {:token token})
+       {:token token})
       (is (= expected-collection-identifier2
              (actual->set
-              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+              (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))
 
     (testing "update acls remove collection"
-      (ac/update-acl (u/conn-context)
-                     (:concept_id acl4)
-                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
-                                                :entry_titles ["coll1 entry title"
-                                                               "coll2 entry title"
-                                                               "coll3 entry title"]})
+      (access-control/update-acl
+       (test-util/conn-context)
+       (:concept_id acl4)
+       (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
+                                  :entry_titles ["coll1 entry title"
+                                                 "coll2 entry title"
+                                                 "coll3 entry title"]})
 
-                     {:token token})
+       {:token token})
       (is (= expected-collection-identifier
              (actual->set
-              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+              (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))
 
     (testing "update acls via entry-titles"
-      (ac/update-acl (u/conn-context)
-                     (:concept_id acl4)
-                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
-                                                :entry_titles ["coll1 entry title"
-                                                               "coll2 entry title"
-                                                               "coll3 entry title"
-                                                               "coll4 entry title"]})
+      (access-control/update-acl
+       (test-util/conn-context)
+       (:concept_id acl4)
+       (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
+                                  :entry_titles ["coll1 entry title"
+                                                 "coll2 entry title"
+                                                 "coll3 entry title"
+                                                 "coll4 entry title"]})
 
-                     {:token token})
+       {:token token})
       (is (= expected-collection-identifier2
              (actual->set
-              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+              (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
 
 (deftest CMR-5128-mmt-dashboard-acl-test
-  (let [token (e/login (u/conn-context) "admin")
-        user1-token (e/login (u/conn-context) "user1")
-        guest-token (e/login-guest (u/conn-context))
-        group1 (u/ingest-group user1-token {:name "group1"} ["user1"])
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        user1-token (echo-util/login (test-util/conn-context) "user1")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        group1 (test-util/ingest-group user1-token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         dash-daac {:group_permissions [{:user_type "guest"
                                         :permissions ["read"]}
@@ -1176,62 +1269,74 @@
                                         :permissions ["read" "create" "delete" "update"]}]
                    :provider_identity {:provider_id "PROV1"
                                        :target "DASHBOARD_DAAC_CURATOR"}}
-        acl1 (ac/create-acl (u/conn-context)
-                            dash-daac
-                            {:token token})
+        acl1 (access-control/create-acl (test-util/conn-context)
+                                        dash-daac
+                                        {:token token})
         dash-admin {:group_permissions [{:user_type "guest"
                                          :permissions ["read"]}
                                         {:group_id group1-concept-id
                                          :permissions ["read" "create" "delete" "update"]}]
                     :system_identity {:target "DASHBOARD_ADMIN"}}
-        acl2 (ac/create-acl (u/conn-context)
-                            dash-admin
-                            {:token token})
+        acl2 (access-control/create-acl (test-util/conn-context)
+                                        dash-admin
+                                        {:token token})
         dash-arch {:group_permissions [{:user_type "guest"
                                         :permissions ["read"]}
                                        {:group_id group1-concept-id
                                         :permissions ["read" "create" "delete" "update"]}]
                    :system_identity {:target "DASHBOARD_ARC_CURATOR"}}
-        acl3 (ac/create-acl (u/conn-context)
-                            dash-arch
-                            {:token token})]
+        acl3 (access-control/create-acl (test-util/conn-context)
+                                        dash-arch
+                                        {:token token})]
 
     (is (= dash-daac
-           (ac/get-acl (u/conn-context) (:concept_id acl1) {:token token})))
+           (access-control/get-acl (test-util/conn-context) (:concept_id acl1) {:token token})))
     (is (= dash-admin
-           (ac/get-acl (u/conn-context) (:concept_id acl2) {:token token})))
+           (access-control/get-acl (test-util/conn-context) (:concept_id acl2) {:token token})))
     (is (= dash-arch
-           (ac/get-acl (u/conn-context) (:concept_id acl3) {:token token})))
+           (access-control/get-acl (test-util/conn-context) (:concept_id acl3) {:token token})))
 
     (is (= {"DASHBOARD_DAAC_CURATOR" ["read"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_type "guest"
-                                                   :provider "PROV1"
-                                                   :target "DASHBOARD_DAAC_CURATOR"}
-                                 {:token token}))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_type "guest"
+               :provider "PROV1"
+               :target "DASHBOARD_DAAC_CURATOR"}
+              {:token token}))))
     (is (= {"DASHBOARD_ADMIN" ["read"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_type "guest"
-                                                   :system_object "DASHBOARD_ADMIN"}
-                                 {:token token}))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_type "guest"
+               :system_object "DASHBOARD_ADMIN"}
+              {:token token}))))
     (is (= {"DASHBOARD_ARC_CURATOR" ["read"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_type "guest"
-                                                   :system_object "DASHBOARD_ARC_CURATOR"}
-                                 {:token token}))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_type "guest"
+               :system_object "DASHBOARD_ARC_CURATOR"}
+              {:token token}))))
     (is (= {"DASHBOARD_DAAC_CURATOR" ["read" "create" "update" "delete"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_id "user1"
-                                                   :provider "PROV1"
-                                                   :target "DASHBOARD_DAAC_CURATOR"}
-                                 {:token token}))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_id "user1"
+               :provider "PROV1"
+               :target "DASHBOARD_DAAC_CURATOR"}
+              {:token token}))))
     (is (= {"DASHBOARD_ADMIN" ["read" "create" "update" "delete"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_id "user1"
-                                                   :system_object "DASHBOARD_ADMIN"}
-                                 {:token token}))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_id "user1"
+               :system_object "DASHBOARD_ADMIN"}
+              {:token token}))))
     (is (= {"DASHBOARD_ARC_CURATOR" ["read" "create" "update" "delete"]}
            (json/parse-string
-             (ac/get-permissions (u/conn-context) {:user_id "user1"
-                                                   :system_object "DASHBOARD_ARC_CURATOR"}
-                                 {:token token}))))))
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_id "user1"
+               :system_object "DASHBOARD_ARC_CURATOR"}
+              {:token token}))))))

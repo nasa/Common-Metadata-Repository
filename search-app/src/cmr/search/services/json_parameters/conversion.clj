@@ -24,9 +24,7 @@
 
 (def json-query-schema
   "JSON Schema for querying for collections."
-  (-> (io/resource "schema/JSONQueryLanguage.json")
-      str
-      js/parse-json-schema-from-uri))
+  (js/parse-json-schema-from-path "schema/JSONQueryLanguage.json"))
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."

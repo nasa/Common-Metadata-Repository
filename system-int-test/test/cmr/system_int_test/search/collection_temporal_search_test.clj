@@ -113,7 +113,7 @@
       [] {:concept_id (:concept-id coll1)
           "temporal[]" "2001-01-01T00:00:00Z,2002-01-01T00:00:00Z"
           "options[temporal][limit_to_granules]" true}
-      
+
       "Search by temporal start and end day is supported"
       [coll2 coll3] {"temporal[]" "2000-01-01T00:00:00Z,2003-01-01T00:00:00Z,50,70"
                      "options[temporal][limit_to_granules]" true}
@@ -458,7 +458,7 @@
   (testing "search by empty temporal"
     (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} {:temporal {}})]
       (is (= 400 status))
-      (is (= "/condition/temporal object has too few properties (found 0 but schema requires at least 1)"
+      (is (= "#/condition/temporal: minimum size: [1], found: [0]"
              (first errors)))))
 
   (testing "search by temporal with only exclude_boundary"
@@ -472,5 +472,5 @@
     (let [{:keys [status errors]} (search/find-refs-with-json-query
                                     :collection {} {:temporal {:exclude_boundary "false"}})]
       (is (= 400 status))
-      (is (= "/condition/temporal/exclude_boundary instance type (string) does not match any allowed primitive type (allowed: [\"boolean\"])"
+      (is (= "#/condition/temporal/exclude_boundary: expected type: Boolean, found: String"
              (first errors))))))

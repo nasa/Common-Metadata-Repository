@@ -7,8 +7,8 @@
 (defn- load-opendata-schema
   "Load and parse named opendata schema from resources"
   [schema-name]
-  (json-schema/parse-json-schema-from-uri
-   (io/resource (str "schema/opendata/" schema-name ".json"))))
+  (json-schema/parse-json-schema-from-path
+   (str "schema/opendata/" schema-name ".json")))
 
 (def opendata-schemas
   {:catalog (load-opendata-schema "catalog")

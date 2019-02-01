@@ -1,23 +1,23 @@
 (ns cmr.system-int-test.virtual-product.translation-test
   (:require
    [cheshire.core :as json]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.collection :as collection]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.virtual-product-util :as vp]
+   [cmr.system-int-test.utils.virtual-product-util :as virtual-product-util]
    [cmr.virtual-product.config]
-   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+   [cmr.virtual-product.data.source-to-virtual-mapping :as source-to-virtual-mapping]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"
                                                  "LP_ALIAS_guid" "LP_ALIAS"}
-                                                (for [p vp/virtual-product-providers]
+                                                (for [p virtual-product-util/virtual-product-providers]
                                                   [(str p "_guid") p]))))
 
 
@@ -42,44 +42,58 @@
    :granule-ur (:granule-ur granule)})
 
 (deftest translate-granule-entries-test
-  (vp/with-provider-aliases
+  (virtual-product-util/with-provider-aliases
    {"LPDAAC_ECS"  #{"LP_ALIAS"}}
    (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-         [ast-coll] (vp/ingest-source-collections
+         [ast-coll] (virtual-product-util/ingest-source-collections
                      [(assoc
-                       (dc/collection
+                       (collection/collection
                         {:entry-title ast-entry-title
                          :short-name "AST_L1A"})
                        :provider-id "LPDAAC_ECS")])
-         [alias-ast-coll] (vp/ingest-source-collections
+         [alias-ast-coll] (virtual-product-util/ingest-source-collections
                            [(assoc
-                             (dc/collection
+                             (collection/collection
                               {:entry-title ast-entry-title
                                :short-name "AST_L1A"})
                              :provider-id "LP_ALIAS")])
-         vp-colls (vp/ingest-virtual-collections [ast-coll])
-         alias-vp-colls (vp/ingest-virtual-collections [alias-ast-coll])
-         ast-gran (vp/ingest-source-granule "LPDAAC_ECS"
-                                            (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
-         alias-ast-gran (vp/ingest-source-granule "LP_ALIAS"
-                                                  (dg/granule alias-ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
-         prov-ast-coll (d/ingest "PROV"
-                                 (dc/collection
-                                  {:entry-title ast-entry-title}))
-         prov-ast-gran (d/ingest "PROV"
-                                 (dg/granule prov-ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
+         vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll])
+         alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll])
+         ast-gran (virtual-product-util/ingest-source-granule
+                   "LPDAAC_ECS"
+                   (granule/granule
+                    ast-coll
+                    {:granule-ur "SC:AST_L1A.003:2006227720"}))
+         alias-ast-gran (virtual-product-util/ingest-source-granule
+                         "LP_ALIAS"
+                         (granule/granule
+                          alias-ast-coll
+                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
+         prov-ast-coll (data-core/ingest "PROV"
+                                         (collection/collection
+                                          {:entry-title ast-entry-title}))
+         prov-ast-gran (data-core/ingest "PROV"
+                                         (granule/granule
+                                          prov-ast-coll
+                                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
 
-         lpdaac-non-ast-coll (d/ingest "LPDAAC_ECS"
-                                       (dc/collection
-                                        {:entry-title "non virtual entry title"}))
-         lpdaac-non-ast-gran (d/ingest "LPDAAC_ECS"
-                                       (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
-         prov-coll (d/ingest "PROV"
-                             (dc/collection
-                              {:entry-title "some other entry title"}))
-         prov-gran1 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
+         lpdaac-non-ast-coll (data-core/ingest "LPDAAC_ECS"
+                                               (collection/collection
+                                                {:entry-title "non virtual entry title"}))
+         lpdaac-non-ast-gran (data-core/ingest "LPDAAC_ECS"
+                                               (granule/granule
+                                                lpdaac-non-ast-coll
+                                                {:granule-ur "granule-ur2"}))
+         prov-coll (data-core/ingest "PROV"
+                                     (collection/collection
+                                      {:entry-title "some other entry title"}))
+         prov-gran1 (data-core/ingest "PROV" (granule/granule
+                                              prov-coll
+                                              {:granule-ur "granule-ur3"}))
 
-         prov-gran2 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur4"}))
+         prov-gran2 (data-core/ingest "PROV" (granule/granule
+                                              prov-coll
+                                              {:granule-ur "granule-ur4"}))
 
 
          _ (index/wait-until-indexed)
@@ -110,7 +124,7 @@
 
      (testing "Valid input to translate-granule-entries end-point"
        (util/are2 [request-json expected-response-json]
-         (let [response (vp/translate-granule-entries
+         (let [response (virtual-product-util/translate-granule-entries
                          (json/generate-string request-json))]
            (= expected-response-json (json/parse-string (:body response) true)))
 
@@ -144,9 +158,9 @@
 
      (testing "Translating a granule which is deleted"
        (util/are2 [deleted-granule request-json expected-response-json]
-         (let [_ (ingest/delete-concept (d/item->concept deleted-granule))
+         (let [_ (ingest/delete-concept (data-core/item->concept deleted-granule))
                _ (index/wait-until-indexed)
-               response (vp/translate-granule-entries
+               response (virtual-product-util/translate-granule-entries
                          (json/generate-string request-json))]
            (= expected-response-json (json/parse-string (:body response) true)))
 
@@ -161,26 +175,27 @@
          [nil non-virtual-granule1 nil nil]))
 
      (testing "Malformed JSON"
-       (let [malformed-json (str/replace (json/generate-string [virtual-granule1]) #"}" "]")
-             response (vp/translate-granule-entries malformed-json)
+       (let [malformed-json (string/replace (json/generate-string [virtual-granule1]) #"}" "]")
+             response (virtual-product-util/translate-granule-entries malformed-json)
              errors (:errors (json/parse-string (:body response) true))]
          (is (= 400 (:status response)))
          (is (= 1 (count errors)))
-         (is (.startsWith (first errors) "Invalid JSON: Unexpected close marker ']': expected '}'"))))
+         (is (string/starts-with? (first errors) "Invalid JSON: Expected a ',' or '}' at"))))
 
      (testing "Invalid input to translate-granule-items end-point should result in error"
        (let [invalid-json (json/generate-string [virtual-granule1
                                                  (dissoc virtual-granule1 :concept-id)])
-             response (vp/translate-granule-entries invalid-json)
+             response (virtual-product-util/translate-granule-entries invalid-json)
              errors (:errors (json/parse-string (:body response) true))]
          (is (= 400 (:status response)))
-         (is (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))
+         (is (= ["#/1: required key [concept-id] not found"] errors))))
 
      (testing "Empty granule entries should result in error"
-       (let [response (vp/translate-granule-entries (json/generate-string []))
+       (let [response (virtual-product-util/translate-granule-entries
+                       (json/generate-string []))
              errors (:errors (json/parse-string (:body response) true))]
          (is (= 400 (:status response)))
-         (is (= ["array is too short: must have at least 1 elements but instance has 0 elements"]
+         (is (= ["#: expected minimum item count: 1, found: 0"]
                 errors))))
 
      (testing "More than 2000 granule entries in a request results in error"
@@ -189,7 +204,8 @@
                               :entry-title "Dataset1"
                               :granule-ur (str "gran" i)})
              granule-entries (map granule-entry (range 2001))
-             response (vp/translate-granule-entries (json/generate-string granule-entries))
+             response (virtual-product-util/translate-granule-entries
+                       (json/generate-string granule-entries))
              errors (:errors (json/parse-string (:body response) true))]
          (is (= 400 (:status response)))
          (is (= ["The maximum allowed granule entries in a request is 2000, but was 2001."]
@@ -200,7 +216,7 @@
              `(cmr.virtual-product.config/set-virtual-products-enabled! false))
          (let [granule-entries [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
                                 non-virtual-granule3 non-virtual-granule4 virtual-granule2 virtual-granule3]
-               response (vp/translate-granule-entries
+               response (virtual-product-util/translate-granule-entries
                          (json/generate-string granule-entries))]
            (= granule-entries (json/parse-string (:body response) true)))
          (finally (dev-sys-util/eval-in-dev-sys
@@ -213,10 +229,10 @@
         provider-id (:provider-id src-umm)
         entry-title (get-in src-umm [:collection-ref :entry-title])
         attr-search-str (format "string,%s,%s"
-                                svm/source-granule-ur-additional-attr-name
+                                source-to-virtual-mapping/source-granule-ur-additional-attr-name
                                 src-granule-ur)]
     (flatten
-      (for [virt-coll (:virtual-collections (get svm/source-to-virtual-product-mapping
+      (for [virt-coll (:virtual-collections (get source-to-virtual-mapping/source-to-virtual-product-mapping
                                                  [provider-id entry-title]))
             :let [virt-entry-title (:entry-title virt-coll)
                   granule-refs (:refs (search/find-refs
@@ -235,21 +251,25 @@
 ;; granules in the config file. All the virtual granule entries should be translated to corresponding
 ;; source entries by the end-point.
 (deftest all-virtual-granules-translate-entries-test
-  (let [source-collections (vp/ingest-source-collections)
+  (let [source-collections (virtual-product-util/ingest-source-collections)
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
                            (into new-colls (map #(assoc % :source-collection source-coll)
-                                                (vp/ingest-virtual-collections [source-coll]))))
+                                                (virtual-product-util/ingest-virtual-collections
+                                                 [source-coll]))))
                          []
                          source-collections)
         _ (index/wait-until-indexed)
         src-grans (doall (for [source-coll source-collections
                                :let [{:keys [provider-id entry-title]} source-coll]
-                               granule-ur (svm/sample-source-granule-urs
+                               granule-ur (source-to-virtual-mapping/sample-source-granule-urs
                                             [provider-id entry-title])]
-                           (vp/ingest-source-granule provider-id
-                                                     (dg/granule source-coll {:granule-ur granule-ur}))))
+                           (virtual-product-util/ingest-source-granule
+                            provider-id
+                            (granule/granule
+                             source-coll
+                             {:granule-ur granule-ur}))))
         _ (index/wait-until-indexed)
         virt-gran-entries-by-src (into {} (map #(vector % (get-virtual-entries-by-source %)) src-grans))
         all-virt-entries (mapcat second virt-gran-entries-by-src)
@@ -257,7 +277,7 @@
                                #(repeat (count (second %)) (granule->entry (first %)))
                                virt-gran-entries-by-src)]
 
-    (let [response (vp/translate-granule-entries
+    (let [response (virtual-product-util/translate-granule-entries
                      (json/generate-string all-virt-entries))]
       (= expected-src-entries (json/parse-string (:body response) true)))))
 
@@ -265,13 +285,16 @@
   "Ingest n granules for the given collection"
   [coll n]
   (doall (for [i (range 0 n)]
-           (d/ingest "PROV" (dg/granule coll {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})))))
+           (data-core/ingest "PROV"
+                             (granule/granule
+                              coll
+                              {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})))))
 
 ;; This test is added for CMR-3508 to show that we can now handle translation of more than
 ;; 10 (default search page size) granules on a single collection during the translation
 (deftest translate-granule-entries-more-than-default-page-size-test
-  (let [coll (d/ingest "PROV"
-                       (dc/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
+  (let [coll (data-core/ingest "PROV"
+                               (collection/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
         grans (make-grans coll 12)
         gran->entry (fn [g]
                       {:concept-id (:concept-id g)
@@ -279,5 +302,6 @@
                        :granule-ur (:granule-ur g)})
         entries (map gran->entry grans)
         _ (index/wait-until-indexed)
-        response (vp/translate-granule-entries (json/generate-string entries))]
+        response (virtual-product-util/translate-granule-entries
+                  (json/generate-string entries))]
     (is (= entries (json/parse-string (:body response) true)))))

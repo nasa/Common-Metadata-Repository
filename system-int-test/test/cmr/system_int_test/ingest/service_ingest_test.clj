@@ -5,8 +5,8 @@
    [clojure.test :refer :all]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]))
@@ -79,13 +79,13 @@
         (ingest/assert-user-id concept-id revision-id expected-user-id))
 
       "user id from token"
-      {:token (e/login (s/context) "user1")} "user1"
+      {:token (echo-util/login (system/context) "user1")} "user1"
 
       "user id from user-id header"
       {:user-id "user2"} "user2"
 
       "both user-id and token in the header results in the revision getting user id from user-id header"
-      {:token (e/login (s/context) "user3")
+      {:token (echo-util/login (system/context) "user3")
        :user-id "user4"} "user4"
 
       "neither user-id nor token in the header"
@@ -106,9 +106,9 @@
         (ingest/assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
 
       "user id from token"
-      {:token (e/login (s/context) "user1")} "user1"
-      {:token (e/login (s/context) "user2")} "user2"
-      {:token (e/login (s/context) "user3")} "user3"
+      {:token (echo-util/login (system/context) "user1")} "user1"
+      {:token (echo-util/login (system/context) "user2")} "user2"
+      {:token (echo-util/login (system/context) "user3")} "user3"
       {:token nil} nil
 
       "user id from user-id header"
@@ -150,16 +150,13 @@
     (let [concept (service-util/make-service-concept {:Type ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= [(str "/Type instance value (\"\") not found in enum "
-                   "(possible values: [\"OPeNDAP\",\"THREDDS\",\"WEB SERVICES\","
-                   "\"ESI\",\"ECHO ORDERS\",\"WCS\",\"WMS\",\"SOFTWARE PACKAGE\",\"TOOL\",\"WEB PORTAL\","
-                   "\"International Web Portal\",\"MODEL\",\"NOT PROVIDED\"])")]
+      (is (= ["#/Type:  is not a valid enum value"]
              errors))))
   (testing "ingest of service concept JSON schema validation invalid field"
     (let [concept (service-util/make-service-concept {:InvalidField "xxx"})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["object instance has properties which are not allowed by the schema: [\"InvalidField\"]"]
+      (is (= ["#: extraneous key [InvalidField] is not permitted"]
              errors)))))
 
 (deftest service-update-error-test

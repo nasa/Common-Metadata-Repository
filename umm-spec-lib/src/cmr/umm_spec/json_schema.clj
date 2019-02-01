@@ -156,14 +156,19 @@
   [type-def]
   (referenced-schema-names (:items type-def)))
 
+(defn- umm-schema-path
+  "Returns a path for the given concept type, schema name and optional UMM version."
+  [concept-type schema-name umm-version]
+  (format "json-schemas/%s/umm/v%s/%s"
+          (name concept-type) umm-version schema-name))
+
 (defn- umm-schema-resource
   "Returns a resource URL for the given concept type, schema name and optional UMM version.
   If umm-version is not specified, the current version for the given concept type is returned."
   ([concept-type schema-name]
    (umm-schema-resource concept-type schema-name (ver/current-version concept-type)))
   ([concept-type schema-name umm-version]
-   (io/resource (format "json-schemas/%s/umm/v%s/%s"
-                        (name concept-type) umm-version schema-name))))
+   (io/resource (umm-schema-path concept-type schema-name umm-version))))
 
 (defn concept-schema-resource
   "Returns a resource URL for the specified UMM concept type keyword."
@@ -237,8 +242,8 @@
 
 (defn- concept-schema-java*
   [umm-version concept-type]
-  (let [schema-url (umm-schema-resource concept-type (concept-schema-name concept-type) umm-version)]
-    (js-validations/parse-json-schema-from-uri schema-url)))
+  (let [schema-path (umm-schema-path concept-type (concept-schema-name concept-type) umm-version)]
+    (js-validations/parse-json-schema-from-path schema-path)))
 
 (def concept-schema-java (memoize concept-schema-java*))
 
@@ -251,18 +256,17 @@
    (validate-umm-json json-str concept-type (ver/current-version concept-type)))
   ([json-str concept-type umm-version]
    (let [schema-name (concept-schema-name concept-type)
-         schema-url (umm-schema-resource concept-type schema-name umm-version)]
-     (if schema-url
-       (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
-         (js-validations/validate-json java-schema-obj json-str))
+         schema-path (umm-schema-path concept-type schema-name umm-version)]
+     (if-let [java-schema-obj (js-validations/parse-json-schema-from-path schema-path)]
+       (js-validations/validate-json java-schema-obj json-str)
        [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
 
 (defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
   [json-str concept-type schema-name umm-version]
-  (if-let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
-    (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
-      (js-validations/validate-json java-schema-obj json-str))
+  (if-let [java-schema-obj (js-validations/parse-json-schema-from-path
+                            (umm-schema-path concept-type schema-name umm-version))]
+    (js-validations/validate-json java-schema-obj json-str)
     [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)]))
 
 (defn validate-collection-umm-json-search-result

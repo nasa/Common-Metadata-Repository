@@ -1,11 +1,11 @@
 (ns cmr.system-int-test.ingest.granule-translation-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.umm-spec.legacy :as umm-legacy]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
@@ -20,7 +20,7 @@
    :iso19115
    :echo10])
 
-(def test-context (lkt/setup-context-for-test))
+(def test-context (location-keywords-helper/setup-context-for-test))
 
 (defn- assert-translate-failure
   [error-regex & args]
@@ -58,7 +58,7 @@
   (when (not= :iso19115 output-format)
     (let [actual-parsed (umm-legacy/parse-concept
                          context {:concept-type :granule
-                                  :format (mt/format->mime-type output-format)
+                                  :format (mime-types/format->mime-type output-format)
                                   :metadata metadata})]
       (umm->umm-for-comparison actual-parsed))))
 
@@ -71,11 +71,11 @@
             expected (umm->umm-for-comparison expected-util/expected-sample-granule)
             {:keys [status headers body]} (ingest/translate-metadata
                                            :granule input-format input-str output-format)
-            content-type (first (mt/extract-mime-types (:content-type headers)))
+            content-type (first (mime-types/extract-mime-types (:content-type headers)))
             actual-parsed (parsed-metadata-for-comparison test-context body output-format)]
 
         (is (= 200 status) body)
-        (is (= (mt/format->mime-type output-format) content-type))
+        (is (= (mime-types/format->mime-type output-format) content-type))
 
         ;; now compare the translated metadata when possible
         (cond
@@ -131,5 +131,5 @@
                              test-context expected-util/expected-sample-granule :echo10) :umm-json))
 
       (testing "bad json"
-        (assert-translate-failure #"object has missing required properties"
+        (assert-translate-failure #"#: required key \[.*\] not found"
                                   :granule :umm-json "{}" :echo10)))))

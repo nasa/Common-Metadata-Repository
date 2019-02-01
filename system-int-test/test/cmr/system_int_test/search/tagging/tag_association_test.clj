@@ -3,16 +3,16 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are2] :as util]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.system :as s]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.collection :as collection]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]
-   [cmr.transmit.tag :as tt]))
+   [cmr.transmit.tag :as transmit-tag]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
@@ -22,8 +22,10 @@
 (deftest associate-tags-by-query-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV2"))
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
@@ -32,15 +34,17 @@
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
-                                    (:concept-id (d/ingest p (dc/collection
-                                                               {:short-name (str "S" n)
-                                                                :version-id (str "V" n)
-                                                                :entry-title (str "ET" n)}))))
+                                    (:concept-id (data-core/ingest
+                                                  p
+                                                  (collection/collection
+                                                   {:short-name (str "S" n)
+                                                    :version-id (str "V" n)
+                                                    :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag (tags/make-tag)
         tag-key (:tag-key tag)
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
@@ -79,8 +83,10 @@
 (deftest associate-tags-by-concept-ids-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV2"))
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
@@ -89,15 +95,17 @@
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
-                                    (:concept-id (d/ingest p (dc/collection
-                                                              {:short-name (str "S" n)
-                                                               :version-id (str "V" n)
-                                                               :entry-title (str "ET" n)}))))
+                                    (:concept-id (data-core/ingest
+                                                  p
+                                                  (collection/collection
+                                                   {:short-name (str "S" n)
+                                                    :version-id (str "V" n)
+                                                    :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
@@ -163,14 +171,17 @@
          response)))))
 
 (deftest associate-tag-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
         tag (assoc tag :originator-id "user1")
-        coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
+        coll-concept-id (:concept-id (data-core/ingest
+                                      "PROV1"
+                                      (collection/collection)))]
     (testing "Associate tag using query sent with invalid content type"
       (are [associate-tag-fn request-json]
            (= {:status 400,
@@ -187,10 +198,10 @@
               (associate-tag-fn token tag-key {:foo "bar"}))
 
            tags/associate-by-query {:foo "bar"}
-           "/condition object instance has properties which are not allowed by the schema: [\"foo\"]"
+           "#/condition: extraneous key [foo] is not permitted"
 
            tags/associate-by-concept-ids {:concept-id coll-concept-id}
-           "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
+           "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Associate tag that doesn't exist"
       (are [associate-tag-fn request-json]
@@ -213,28 +224,36 @@
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+  (let [group1-concept-id (echo-util/get-or-create-group (system/context) "group1")
         ;; Grant all collections in PROV1 and 2
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
-        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV1"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV2"))
+        _ (echo-util/grant-group (system/context)
+                                 group1-concept-id
+                                 (echo-util/coll-catalog-item-id "PROV3"))
 
         [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                  {:short-name (str "S" n)
-                                                   :version-id (str "V" n)
-                                                   :entry-title (str "ET" n)})))
+                                    (data-core/ingest
+                                     p
+                                     (collection/collection
+                                      {:short-name (str "S" n)
+                                       :version-id (str "V" n)
+                                       :entry-title (str "ET" n)})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
         all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
-        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
+        token (echo-util/login (system/context) "user1")
+        prov3-token (echo-util/login (system/context)
+                                     "prov3-user"
+                                     [group1-concept-id])
         {:keys [concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
@@ -269,27 +288,35 @@
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+  (let [group1-concept-id (echo-util/get-or-create-group (system/context) "group1")
         ;; Grant all collections in PROV1 and 2
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
-        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV1"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV2"))
+        _ (echo-util/grant-group (system/context)
+                                 group1-concept-id
+                                 (echo-util/coll-catalog-item-id "PROV3"))
         [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                  {:short-name (str "S" n)
-                                                   :version-id (str "V" n)
-                                                   :entry-title (str "ET" n)})))
+                                    (data-core/ingest
+                                     p
+                                     (collection/collection
+                                      {:short-name (str "S" n)
+                                       :version-id (str "V" n)
+                                       :entry-title (str "ET" n)})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
         all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
-        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
+        token (echo-util/login (system/context) "user1")
+        prov3-token (echo-util/login (system/context)
+                                     "prov3-user"
+                                     [group1-concept-id])
         {:keys [concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
@@ -337,14 +364,17 @@
           response)))))
 
 (deftest dissociate-tag-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
         tag (assoc tag :originator-id "user1")
-        coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
+        coll-concept-id (:concept-id (data-core/ingest
+                                      "PROV1"
+                                      (collection/collection)))]
 
     (testing "Dissociate tag using query sent with invalid content type"
       (are [dissociate-tag-fn request-json]
@@ -361,10 +391,10 @@
                :errors [message]}
               (dissociate-tag-fn token tag-key request-json))
            tags/dissociate-by-query {:foo "bar"}
-           "/condition object instance has properties which are not allowed by the schema: [\"foo\"]"
+           "#/condition: extraneous key [foo] is not permitted"
 
            tags/dissociate-by-concept-ids {:concept-id coll-concept-id}
-           "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
+           "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Dissociate tag that doesn't exist"
       (are [dissociate-tag-fn request-json]
@@ -384,11 +414,12 @@
            tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest dissociate-tags-with-partial-match-query-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with only some of the collections matching the query are associated with the tag is OK"
-    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
-          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
-          token (e/login (s/context) "user1")
+    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
+          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
+          token (echo-util/login (system/context) "user1")
           _ (index/wait-until-indexed)
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
@@ -398,12 +429,13 @@
         (assert-tag-associated [])))))
 
 (deftest dissociate-tags-with-mixed-response-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with mixed success and failure response"
-    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
-          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
-          coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
-          token (e/login (s/context) "user1")
+    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
+          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
+          coll3 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET3"}))
+          token (echo-util/login (system/context) "user1")
           tag-key "tag1"
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
       (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
@@ -430,30 +462,31 @@
 
 ;; This tests association retention when collections and tags are updated or deleted.
 (deftest association-retention-test
-  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-  (let [coll (d/ingest "PROV1" (dc/collection))
-        token (e/login (s/context) "user1")
+  (echo-util/grant-all (system/context)
+                       (echo-util/coll-catalog-item-id "PROV1"))
+  (let [coll (data-core/ingest "PROV1" (collection/collection))
+        token (echo-util/login (system/context) "user1")
         _ (index/wait-until-indexed)
         tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
         assert-tag-associated (partial tags/assert-tag-associated-with-query nil {:tag-key "tag1"})
         assert-tag-not-associated (fn []
                                     (let [refs (search/find-refs :collection {:tag-key "tag1"})]
                                       (is (nil? (:errors refs)))
-                                      (is (d/refs-match? [] refs))))]
+                                      (is (data-core/refs-match? [] refs))))]
     (index/wait-until-indexed)
 
     (testing "Tag initially associated with collection"
       (assert-tag-associated [coll]))
 
     (testing "Tag still associated with collection after updating collection"
-      (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+      (let [updated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status updated-coll)))
         (index/wait-until-indexed)
         (assert-tag-associated [updated-coll])))
 
     (testing "Tag still associated with collection after deleting and recreating the collection"
-      (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
-      (let [recreated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+      (is (= 200 (:status (ingest/delete-concept (data-core/item->concept coll)))))
+      (let [recreated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status recreated-coll)))
         (index/wait-until-indexed)
         (assert-tag-associated [recreated-coll])))
@@ -483,17 +516,18 @@
 (defn- assert-tag-association
   "Assert the collections are associated with the tag for the given tag-key"
   [token colls tag-key]
-  (is (d/refs-match? colls
-                     (search/find-refs :collection {:token token
-                                                    :tag-key tag-key}))))
+  (is (data-core/refs-match? colls
+                             (search/find-refs :collection {:token token
+                                                            :tag-key tag-key}))))
 
 (deftest associate-dissociate-tag-with-collections-test
   ;; Grant all collections in PROV1
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (for [n (range 1 4)]
-                              (d/ingest "PROV1" (dc/collection)))
+                              (data-core/ingest "PROV1" (collection/collection)))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
-        token (e/login (s/context) "user1")]
+        token (echo-util/login (system/context) "user1")]
     (tags/create-tag token (tags/make-tag {:tag-key "tag1"}))
     (tags/create-tag token (tags/make-tag {:tag-key "tag2"}))
     (index/wait-until-indexed)
@@ -546,10 +580,11 @@
     (assert-tag-association token [coll3] "tag2")))
 
 (deftest associate-tags-with-data-test
-  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-  (let [coll (d/ingest "PROV1" (dc/collection))
+  (echo-util/grant-all (system/context)
+                       (echo-util/coll-catalog-item-id "PROV1"))
+  (let [coll (data-core/ingest "PROV1" (collection/collection))
         coll-concept-id (:concept-id coll)
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         tag-key "tag1"]
     (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
     (index/wait-until-indexed)
@@ -569,12 +604,15 @@
            {"status" "reviewed" "action" "fix typos"}))
 
     (testing "Associate tag with collections with invalid data"
-      (let [{:keys [status body]} (tt/associate-tag :concept-ids (s/context) tag-key nil
-                                                    {:raw? true
-                                                     :http-options {:body "{{{{"}})
+      (let [{:keys [status body]} (transmit-tag/associate-tag :concept-ids
+                                                              (system/context)
+                                                              tag-key
+                                                              nil
+                                                              {:raw? true
+                                                               :http-options {:body "{{{{"}})
             error (-> body :errors first)]
         (is (= 400 status))
-        (is (re-find #"Invalid JSON: Unexpected character" error))))
+        (is (re-find #"Invalid JSON: A JSONObject text must end with \'}\' at \d \[character \d line \d\]" error))))
 
     (testing "Associate tag with collections with data exceed 32KB"
       (let [too-much-data {"a" (tags/string-of-length 32768)}

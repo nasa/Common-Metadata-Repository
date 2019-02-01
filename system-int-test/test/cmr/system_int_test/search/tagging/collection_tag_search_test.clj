@@ -4,13 +4,11 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are2]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.spatial.point :as p]
-   [cmr.system-int-test.data2.atom :as da]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.system :as s]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.atom :as atom]
+   [cmr.system-int-test.data2.collection :as collection]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -38,7 +36,7 @@
   (testing "Unsupported options and"
     (are [field option-field]
          (= {:status 400
-             :errors [(format "/condition/tag object instance has properties which are not allowed by the schema: [\"%s\"]"
+             :errors [(format "#/condition/tag: extraneous key [%s] is not permitted"
                               (name option-field))]}
             (search/find-refs-with-json-query :collection {} {:tag {field "foo" option-field true}}))
          :tag_key :and
@@ -50,13 +48,14 @@
   (let [[c1-p1 c2-p1 c3-p1
          c1-p2 c2-p2 c3-p2] (for [p ["PROV1" "PROV2"]
                                   n (range 1 4)]
-                              (d/ingest p (dc/collection {:entry-title (str "coll" n)})))
+                              (data-core/ingest p (collection/collection
+                                                   {:entry-title (str "coll" n)})))
 
         ;; Wait until collections are indexed so tags can be associated with them
         _ (index/wait-until-indexed)
 
-        user1-token (e/login (s/context) "user1")
-        user2-token (e/login (s/context) "user2")
+        user1-token (echo-util/login (system/context) "user1")
+        user2-token (echo-util/login (system/context) "user2")
 
         tag1-colls [c1-p1 c1-p2]
         tag2-colls [c2-p1 c2-p2]
@@ -84,8 +83,8 @@
 
     (testing "All tag parameters with XML references"
       (are2 [expected-tags-colls query]
-            (d/refs-match? (distinct (apply concat expected-tags-colls))
-                           (search/find-refs :collection query))
+            (data-core/refs-match? (distinct (apply concat expected-tags-colls))
+                                   (search/find-refs :collection query))
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Tag-key Param
@@ -131,8 +130,8 @@
 
     (testing "Search collections by tags with JSON query"
       (are2 [expected-tags-colls query]
-            (d/refs-match? (distinct (apply concat expected-tags-colls))
-                           (search/find-refs-with-json-query :collection {} query))
+            (data-core/refs-match? (distinct (apply concat expected-tags-colls))
+                                   (search/find-refs-with-json-query :collection {} query))
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; tag-key query
@@ -172,8 +171,12 @@
                                       {:tag {:tag_key "tag other"}}]}]}))
 
     (testing "Combination of tag parameters and other collection conditions"
-      (is (d/refs-match? [c1-p1 c2-p1] (search/find-refs :collection {:tag-key "tag?" "options[tag-key][pattern]" true
-                                                                      :provider "PROV1"}))))))
+      (is (data-core/refs-match? [c1-p1 c2-p1]
+                                 (search/find-refs
+                                  :collection
+                                  {:tag-key "tag?"
+                                   "options[tag-key][pattern]" true
+                                   :provider "PROV1"}))))))
 
 (defn- add-tags-to-collections
   "Returns the collections with the tags associated based on the given dataset-id-tags mapping.
@@ -197,12 +200,14 @@
 
 (deftest search-for-collections-with-include-tags-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
-                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
-        coll5 (d/ingest "PROV2" (dc/collection))
+                                    (data-core/ingest "PROV1"
+                                                      (collection/collection
+                                                       {:entry-title (str "coll" n)})))
+        coll5 (data-core/ingest "PROV2" (collection/collection))
         all-prov1-colls [coll1 coll2 coll3 coll4]
 
-        user1-token (e/login (s/context) "user1")
-        user2-token (e/login (s/context) "user2")
+        user1-token (echo-util/login (system/context) "user1")
+        user2-token (echo-util/login (system/context) "user2")
 
         tag1-colls [coll1 coll5]
         tag2-colls [coll1 coll2]
@@ -244,7 +249,7 @@
                                        (str/replace "," "%2C"))
                                    (format "collections.%s?provider=PROV1&include_tags=%s"
                                            (name response-format)))]
-                  (-> (da/collections->expected-atom all-prov1-colls feed-id)
+                  (-> (atom/collections->expected-atom all-prov1-colls feed-id)
                       (update-in [:entries] add-tags-to-collections dataset-id-tags))))
 
               {json-status :status json-results :results}
@@ -360,9 +365,11 @@
 
 (deftest search-for-collections-with-associated-tag-data-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
-                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+                                    (data-core/ingest "PROV1"
+                                                      (collection/collection
+                                                       {:entry-title (str "coll" n)})))
         all-prov1-colls [coll1 coll2 coll3 coll4]
-        user1-token (e/login (s/context) "user1")
+        user1-token (echo-util/login (system/context) "user1")
         tag1 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag1"}))
@@ -399,7 +406,7 @@
           (fn [response-format]
             (let [feed-id (format "collections.%s?provider=PROV1&include_tags=*"
                                   (name response-format))]
-              (-> (da/collections->expected-atom all-prov1-colls feed-id)
+              (-> (atom/collections->expected-atom all-prov1-colls feed-id)
                   (update-in [:entries] add-tags-to-collections dataset-id-tags))))
 
           {json-status :status json-results :results}
@@ -414,9 +421,11 @@
 
 (deftest search-collections-by-tag-data-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
-                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+                                    (data-core/ingest "PROV1"
+                                                      (collection/collection
+                                                       {:entry-title (str "coll" n)})))
         all-prov1-colls [coll1 coll2 coll3 coll4]
-        user1-token (e/login (s/context) "user1")
+        user1-token (echo-util/login (system/context) "user1")
         tag1 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag1"}))
@@ -445,8 +454,11 @@
 
     (testing "search with valid tag-data"
       (are [expected-colls query]
-           (d/refs-match? expected-colls
-                          (search/find-refs :collection query {:snake-kebab? false}))
+           (data-core/refs-match? expected-colls
+                                  (search/find-refs
+                                   :collection
+                                   query
+                                   {:snake-kebab? false}))
 
            ;; tag-data search is always case-insensitive
            [coll3] {:tag-data {"TAG3" "Tag 3 Rocks"}}

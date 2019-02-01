@@ -1,13 +1,11 @@
 (ns cmr.system-int-test.search.humanizer.community-usage-metrics-test
   "This tests the CMR Search API's community usage metric capabilities"
   (:require
-   [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.humanizer-util :as humanizer-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -29,75 +27,95 @@
 
 (deftest update-community-metrics-test
   (testing "Successful community usage creation")
-  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
-        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
-        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
-        {:keys [status concept-id revision-id]} (hu/update-community-usage-metrics admin-update-token sample-usage-csv)]
+  (let [admin-update-group-concept-id (echo-util/get-or-create-group
+                                       (system/context)
+                                       "admin-update-group")
+        _  (echo-util/grant-group-admin (system/context)
+                                        admin-update-group-concept-id
+                                        :update)
+        admin-update-token (echo-util/login (system/context)
+                                            "admin"
+                                            [admin-update-group-concept-id])
+        {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
+                                                 admin-update-token
+                                                 sample-usage-csv)]
     (is (= 201 status))
     (is concept-id)
     (is (= 1 revision-id))
-    (hu/assert-humanizers-saved {:community-usage-metrics sample-usage-data} "admin" concept-id revision-id)
+    (humanizer-util/assert-humanizers-saved
+     {:community-usage-metrics sample-usage-data}
+     "admin"
+     concept-id
+     revision-id)
 
     (testing "Get community usage metrics"
-      (let [{:keys [status body]} (hu/get-community-usage-metrics)]
+      (let [{:keys [status body]} (humanizer-util/get-community-usage-metrics)]
         (is (= 200 status))
         (is (= sample-usage-data body))))
 
     (testing "Successful community usage update"
       (let [existing-concept-id concept-id
             {:keys [status concept-id revision-id]}
-            (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\nAST_09XT,3,156")]
+            (humanizer-util/update-community-usage-metrics
+             admin-update-token
+             "Product,Version,Hosts\nAST_09XT,3,156")]
         (is (= 200 status))
         (is (= existing-concept-id concept-id))
         (is (= 2 revision-id))
-        (hu/assert-humanizers-saved {:community-usage-metrics [{:short-name "AST_09XT" :version "3" :access-count 156}]}
-                                    "admin" concept-id revision-id)))))
+        (humanizer-util/assert-humanizers-saved
+         {:community-usage-metrics [{:short-name "AST_09XT" :version "3" :access-count 156}]}
+         "admin" 
+         concept-id
+         revision-id)))))
 
 (deftest update-community-usage-no-permission-test
   (testing "Create without token"
     (is (= {:status 401
             :errors ["You do not have permission to perform that action."]}
-           (hu/update-community-usage-metrics nil sample-usage-csv))))
+           (humanizer-util/update-community-usage-metrics nil sample-usage-csv))))
 
   (testing "Create with unknown token"
     (is (= {:status 401
             :errors ["Token [ABC] does not exist"]}
-           (hu/update-community-usage-metrics "ABC" sample-usage-csv))))
+           (humanizer-util/update-community-usage-metrics "ABC" sample-usage-csv))))
 
   (testing "Create without permission"
-    (let [token (e/login (s/context) "user2")]
+    (let [token (echo-util/login (system/context) "user2")]
       (is (= {:status 401
               :errors ["You do not have permission to perform that action."]}
-             (hu/update-community-usage-metrics token sample-usage-csv))))))
+             (humanizer-util/update-community-usage-metrics token sample-usage-csv))))))
 
 (deftest update-community-usage-metrics-validation-test
-  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
-        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
-        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])]
+  (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")
+        _  (echo-util/grant-group-admin (system/context) admin-update-group-concept-id :update)
+        admin-update-token (echo-util/login (system/context) "admin" [admin-update-group-concept-id])]
     (testing "Create community usage with invalid content type"
       (is (= {:status 400,
               :errors
               ["The mime types specified in the content-type header [application/json] are not supported."]}
-             (hu/update-community-usage-metrics admin-update-token sample-usage-csv {:http-options {:content-type :json}}))))
+             (humanizer-util/update-community-usage-metrics
+              admin-update-token
+              sample-usage-csv
+              {:http-options {:content-type :json}}))))
 
     (testing "Create community usage with nil body"
       (is (= {:status 422,
               :errors
               ["You posted empty content"]}
-             (hu/update-community-usage-metrics admin-update-token nil))))
+             (humanizer-util/update-community-usage-metrics admin-update-token nil))))
 
     (testing "Create humanizer with empty csv"
       (is (= {:status 422,
               :errors
               ["You posted empty content"]}
-             (hu/update-community-usage-metrics admin-update-token ""))))
+             (humanizer-util/update-community-usage-metrics admin-update-token ""))))
 
     (testing "Missing CSV Column"
       (are3 [column-name csv]
             (is (= {:status 422
                     :errors [(format "A '%s' column is required in community usage CSV data"
                                      column-name)]}
-                   (hu/update-community-usage-metrics admin-update-token csv)))
+                   (humanizer-util/update-community-usage-metrics admin-update-token csv)))
 
             "Missing product (short-name)"
             "Product" "Version,Hosts\n3,4"
@@ -109,36 +127,38 @@
       (testing "Empty Product"
         (is (= {:status 422
                 :errors ["Error parsing 'Product' CSV Data. Product may not be empty."]}
-               (hu/update-community-usage-metrics admin-update-token
-                                                  "Product,Version,Hosts\n,4,64"))))
+               (humanizer-util/update-community-usage-metrics
+                admin-update-token
+                "Product,Version,Hosts\n,4,64"))))
       (testing "Empty Hosts"
         (is (= {:status 422
                 :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [4]. Hosts may not be empty."]}
-               (hu/update-community-usage-metrics admin-update-token
-                                                  "Product,Version,Hosts\nAMSR-L1A,4,")))))
+               (humanizer-util/update-community-usage-metrics
+                admin-update-token
+                "Product,Version,Hosts\nAMSR-L1A,4,")))))
 
     (testing "Maximum product length validations"
       (let [long-value (apply str (repeat 86 "x"))]
         (is (= {:status 400
-                :errors [(format
-                          "/0/short-name string \"%s\" is too long (length: 86, maximum allowed: 85)"
-                          long-value)]}
-               (hu/update-community-usage-metrics
-                admin-update-token (format "Product,Version,Hosts\n%s,3,4" long-value))))))
+                :errors ["#/0/short-name: expected maxLength: 85, actual: 86"]}
+               (humanizer-util/update-community-usage-metrics
+                admin-update-token
+                (format "Product,Version,Hosts\n%s,3,4" long-value))))))
 
     (testing "Maximum version length validations"
       (let [long-value (apply str (repeat 21 "x"))]
         (is (= {:status 400
-                :errors [(format
-                          "/0/version string \"%s\" is too long (length: 21, maximum allowed: 20)"
-                          long-value)]}
-               (hu/update-community-usage-metrics
-                admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
+                :errors ["#/0/version: expected maxLength: 20, actual: 21"]}
+               (humanizer-util/update-community-usage-metrics
+                admin-update-token
+                (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
 
     (testing "Non-integer value for hosts (access-count)"
       (is (= {:status 422
               :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [3]. Hosts must be an integer."]}
-             (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
+             (humanizer-util/update-community-usage-metrics
+              admin-update-token
+              "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name
@@ -162,25 +182,32 @@
 (deftest aggregate-community-metrics-test
 
   (testing "Successful community usage aggregation")
-  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
-        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
-        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
-        {:keys [status concept-id revision-id]} (hu/update-community-usage-metrics admin-update-token sample-aggregation-csv)]
+  (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")
+        _  (echo-util/grant-group-admin (system/context) admin-update-group-concept-id :update)
+        admin-update-token (echo-util/login (system/context) "admin" [admin-update-group-concept-id])
+        {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
+                                                 admin-update-token
+                                                 sample-aggregation-csv)]
     (is (= 201 status))
     (is concept-id)
     (is (= 1 revision-id))
-    (hu/assert-humanizers-saved {:community-usage-metrics sample-aggregation-data} "admin" concept-id revision-id)))
+    (humanizer-util/assert-humanizers-saved
+     {:community-usage-metrics sample-aggregation-data}
+     "admin"
+     concept-id
+     revision-id)))
 
 (deftest commas-in-access-count-test
   (testing "Successful community usage aggregation")
-  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
-        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
-        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
+  (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")
+        _  (echo-util/grant-group-admin (system/context) admin-update-group-concept-id :update)
+        admin-update-token (echo-util/login (system/context) "admin" [admin-update-group-concept-id])
         {:keys [status concept-id revision-id]}
-        (hu/update-community-usage-metrics admin-update-token
-                                           "\"Product\",\"Version\",\"Hosts\"\n\"AMSR-L1A\",\"3\",\"4,186\"")]
+        (humanizer-util/update-community-usage-metrics
+         admin-update-token
+         "\"Product\",\"Version\",\"Hosts\"\n\"AMSR-L1A\",\"3\",\"4,186\"")]
     (is (= 201 status))
-    (hu/assert-humanizers-saved
+    (humanizer-util/assert-humanizers-saved
      {:community-usage-metrics[{:short-name "AMSR-L1A"
                                 :version "3"
                                 :access-count 4186}]}

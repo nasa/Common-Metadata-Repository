@@ -53,10 +53,10 @@
                                                                {:Date (time/date-time 2000) :Type "DELETE"}
                                                                {:Date (time/date-time 2020) :Type "DELETE"}])
     [{:path [:DataDates]
-     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past. "
-              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past. "
-              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future. "
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future. "
+     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
+              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
+              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
+              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
               "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
               "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
 
@@ -93,10 +93,10 @@
                                                                     {:Date (time/date-time 2000) :Type "DELETE"}
                                                                     {:Date (time/date-time 2020) :Type "DELETE"}])
     [{:path [:MetadataDates]
-     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past. "
-              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past. "
-              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future. "
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future. "
+     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
+              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
+              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
+              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
               "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
               "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
 )
@@ -219,7 +219,7 @@
                               :Authority "Data Center or Creator of the DOI - not the DOI registration service"})
         doi2 (c/map->DoiType {:DOI "incorrect doi"
                               :Authority "Data Center or Creator of the DOI - not the DOI registration service"})]
-    
+
     (testing "valid doi format"
       (h/assert-warnings-valid (coll/map->UMM-C {:DOI doi1})))
 

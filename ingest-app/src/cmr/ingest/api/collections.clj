@@ -32,7 +32,7 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/contextualize-warnings validate-response)
+        (select-keys (api-core/format-and-contextualize-warnings validate-response)
                      [:warnings]))))))
 
 (defn ingest-collection
@@ -53,10 +53,10 @@
                                   (api-core/set-user-id concept request-context headers)
                                   validation-options)]
       ;; Log the successful ingest, with the metadata size in bytes.
-      (api-core/log-concept-with-metadata-size 
+      (api-core/log-concept-with-metadata-size
         (assoc concept :entry-title (:entry-title save-collection-result)) request-context)
       (api-core/generate-ingest-response headers
-                                         (api-core/contextualize-warnings
+                                         (api-core/format-and-contextualize-warnings
                                           ;; entry-title is added just for the logging above.
                                           ;; dissoc it so that it remains the same as the
                                           ;; original code.

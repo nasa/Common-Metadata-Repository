@@ -2,11 +2,11 @@
   "This tests associating variables with collections."
   (:require
    [clojure.test :refer :all]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.collection :as collection]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.association-util :as association-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -25,8 +25,10 @@
 (deftest associate-variables-by-concept-ids-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV2"))
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
@@ -35,20 +37,20 @@
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
                                                n (range 1 5)]
-                                           (:concept-id (d/ingest
+                                           (:concept-id (data-core/ingest
                                                          p
-                                                         (dc/collection
+                                                         (collection/collection
                                                           {:short-name (str "S" n)
                                                            :version-id (str "V" n)
                                                            :entry-title (str "ET" n)})))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name "variable1"})]
     (index/wait-until-indexed)
 
     (testing "Associate variable with collections by concept-ids"
-      (let [response (au/associate-by-concept-ids
+      (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
                                         {:concept-id c3-p2}])]
         (vu/assert-variable-association-response-ok?
@@ -59,23 +61,23 @@
          response)))
 
     (testing "Associate to no collections"
-      (let [response (au/associate-by-concept-ids token concept-id [])]
-        (au/assert-invalid-data-error
+      (let [response (association-util/associate-by-concept-ids token concept-id [])]
+        (association-util/assert-invalid-data-error
          ["At least one collection must be provided for variable association."]
          response)))
 
     (testing "Associate to collection revision and whole collection at the same time"
-      (let [response (au/associate-by-concept-ids
+      (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
                                         {:concept-id c1-p1 :revision-id 1}])]
-        (au/assert-invalid-data-error
+        (association-util/assert-invalid-data-error
          [(format (str "Unable to create variable association on a collection revision and the whole "
                        "collection at the same time for the following collections: %s.")
                   c1-p1)]
          response)))
 
     (testing "Associate to non-existent collections"
-      (let [response (au/associate-by-concept-ids
+      (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
         (vu/assert-variable-association-response-ok?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
@@ -85,7 +87,7 @@
       (let [c1-p1-concept (mdb/get-concept c1-p1)
             _ (ingest/delete-concept c1-p1-concept)
             _ (index/wait-until-indexed)
-            response (au/associate-by-concept-ids
+            response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-response-ok?
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
@@ -93,13 +95,15 @@
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
-      (let [response (au/associate-by-concept-ids token concept-id [{:concept-id c4-p3}])]
+      (let [response (association-util/associate-by-concept-ids token
+                                                                concept-id
+                                                                [{:concept-id c4-p3}])]
         (vu/assert-variable-association-response-ok?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))
 
     (testing "Variable association mixed response"
-      (let [response (au/associate-by-concept-ids
+      (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c2-p1}
                                         {:concept-id "C100-P5"}])]
         (vu/assert-variable-association-response-ok?
@@ -109,14 +113,15 @@
          response)))))
 
 (deftest associate-variable-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [native-id "var123"
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         var-concept (vu/make-variable-concept {:native-id native-id
                                                :Name "variable1"
                                                :provider-id "PROV1"})
         {:keys [concept-id revision-id]} (vu/ingest-variable var-concept)
-        coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
+        coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
     (testing "Associate variable using query sent with invalid content type"
       (are [associate-variable-fn request-json]
         (= {:status 400,
@@ -124,7 +129,7 @@
             ["The mime types specified in the content-type header [application/xml] are not supported."]}
            (associate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
 
-        au/associate-by-concept-ids [{:concept-id coll-concept-id}]))
+        association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate applies JSON Query validations"
       (are [associate-variable-fn request-json message]
@@ -132,8 +137,8 @@
             :errors [message]}
            (associate-variable-fn token concept-id {:foo "bar"}))
 
-        au/associate-by-concept-ids {:concept-id coll-concept-id}
-        "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
+        association-util/associate-by-concept-ids {:concept-id coll-concept-id}
+        "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Associate variable that doesn't exist"
       (are [associate-variable-fn request-json]
@@ -141,7 +146,7 @@
             :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
            (associate-variable-fn token "V12345-PROV1" request-json))
 
-        au/associate-by-concept-ids [{:concept-id coll-concept-id}]))
+        association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate deleted variable"
       (ingest/delete-concept var-concept {:token token})
@@ -150,44 +155,50 @@
             :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
            (associate-variable-fn token concept-id request-json))
 
-        au/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
+        association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest dissociate-variables-with-collections-by-concept-ids-test
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+  (let [group1-concept-id (echo-util/get-or-create-group (system/context) "group1")
         ;; Grant all collections in PROV1 and 2
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
-        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV1"))
+        _ (echo-util/grant-registered-users (system/context)
+                                            (echo-util/coll-catalog-item-id "PROV2"))
+        _ (echo-util/grant-group (system/context)
+                                 group1-concept-id
+                                 (echo-util/coll-catalog-item-id "PROV3"))
         [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
                                                n (range 1 5)]
-                                           (d/ingest p (dc/collection
-                                                        {:short-name (str "S" n)
-                                                         :version-id (str "V" n)
-                                                         :entry-title (str "ET" n)}))))
+                                           (data-core/ingest
+                                            p
+                                            (collection/collection
+                                             {:short-name (str "S" n)
+                                              :version-id (str "V" n)
+                                              :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
         all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         variable-name "variable1"
-        token (e/login (s/context) "user1")
-        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
+        token (echo-util/login (system/context) "user1")
+        prov3-token (echo-util/login (system/context) "prov3-user" [group1-concept-id])
         {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})
         assert-variable-associated (partial vu/assert-variable-associated-with-query
                                             prov3-token {:variable-name variable-name})]
     (index/wait-until-indexed)
     ;; Associate the variable with every collection
-    (au/associate-by-concept-ids
+    (association-util/associate-by-concept-ids
      prov3-token
      concept-id
      (map #(hash-map :concept-id (:concept-id %)) all-colls))
 
     (testing "Successfully dissociate variable with collections"
-      (let [{:keys [status]} (au/dissociate-by-concept-ids
+      (let [{:keys [status]} (association-util/dissociate-by-concept-ids
                               token
                               concept-id
                               (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
@@ -195,7 +206,7 @@
         (assert-variable-associated (concat all-prov2-colls all-prov3-colls))))
 
     (testing "Dissociate non-existent collections"
-      (let [response (au/dissociate-by-concept-ids
+      (let [response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
         (vu/assert-variable-dissociation-response-ok?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
@@ -206,7 +217,7 @@
             c1-p2-concept (mdb/get-concept c1-p2-concept-id)
             _ (ingest/delete-concept c1-p2-concept)
             _ (index/wait-until-indexed)
-            response (au/dissociate-by-concept-ids
+            response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id c1-p2-concept-id}])]
         (vu/assert-variable-dissociation-response-ok?
          {[c1-p2-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
@@ -216,7 +227,7 @@
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [coll-concept-id (:concept-id c4-p3)
-            response (au/dissociate-by-concept-ids
+            response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id coll-concept-id}])]
         (vu/assert-variable-dissociation-response-ok?
          {[coll-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
@@ -224,12 +235,15 @@
          response)))))
 
 (deftest dissociate-variable-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [variable-name "variable1"
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         var-concept (vu/make-variable-concept {:Name variable-name})
         {:keys [concept-id revision-id]} (vu/ingest-variable var-concept)
-        coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
+        coll-concept-id (:concept-id (data-core/ingest
+                                      "PROV1"
+                                      (collection/collection)))]
 
     (testing "Dissociate variable using query sent with invalid content type"
       (are [dissociate-variable-fn request-json]
@@ -238,7 +252,7 @@
             ["The mime types specified in the content-type header [application/xml] are not supported."]}
            (dissociate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
 
-        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Dissociate applies JSON Query validations"
       (are [dissociate-variable-fn request-json message]
@@ -246,8 +260,8 @@
             :errors [message]}
            (dissociate-variable-fn token concept-id request-json))
 
-        au/dissociate-by-concept-ids {:concept-id coll-concept-id}
-        "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
+        association-util/dissociate-by-concept-ids {:concept-id coll-concept-id}
+        "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Dissociate variable that doesn't exist"
       (are [dissociate-variable-fn request-json]
@@ -255,7 +269,7 @@
             :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
            (dissociate-variable-fn token "V12345-PROV1" request-json))
 
-        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Dissociate deleted variable"
       (ingest/delete-concept var-concept {:token token})
@@ -264,27 +278,34 @@
             :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
            (dissociate-variable-fn token concept-id request-json))
 
-        au/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest dissociate-variables-with-mixed-response-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate variable with mixed success and failure response"
-    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
-          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
-          coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
-          token (e/login (s/context) "user1")
+    (let [coll1 (data-core/ingest "PROV1"
+                                  (collection/collection {:entry-title "ET1"}))
+          coll2 (data-core/ingest "PROV1"
+                                  (collection/collection {:entry-title "ET2"}))
+          coll3 (data-core/ingest "PROV1"
+                                  (collection/collection {:entry-title "ET3"}))
+          token (echo-util/login (system/context) "user1")
           variable-name "variable1"
           assert-variable-associated (partial vu/assert-variable-associated-with-query
                                               token {:variable-name variable-name})
           {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})]
 
       (index/wait-until-indexed)
-      (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id coll1)}
-                                                        {:concept-id (:concept-id coll2)
-                                                         :revision-id (:revision-id coll2)}])
+      (association-util/associate-by-concept-ids
+       token
+       concept-id
+       [{:concept-id (:concept-id coll1)}
+        {:concept-id (:concept-id coll2)
+         :revision-id (:revision-id coll2)}])
       (assert-variable-associated [coll1 coll2])
 
-      (let [response (au/dissociate-by-concept-ids
+      (let [response (association-util/dissociate-by-concept-ids
                       token concept-id
                       [{:concept-id "C100-P5"} ;; non-existent collection
                        {:concept-id (:concept-id coll1)} ;; success
@@ -303,42 +324,46 @@
 
 ;; This tests association retention when collections and variables are updated or deleted.
 (deftest association-retention-test
-  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-  (let [token (e/login (s/context) "user1")
-        coll (d/ingest "PROV1" (dc/collection))
+  (echo-util/grant-all (system/context) (echo-util/coll-catalog-item-id "PROV1"))
+  (let [token (echo-util/login (system/context) "user1")
+        coll (data-core/ingest "PROV1" (collection/collection))
         var-concept (vu/make-variable-concept {:native-id "var123"
                                                :Name "variable1"})
         {:keys [concept-id]} (vu/ingest-variable var-concept)
         _ (index/wait-until-indexed)
-        _ (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id coll)}])
+        _ (association-util/associate-by-concept-ids token
+                                                     concept-id
+                                                     [{:concept-id (:concept-id coll)}])
         assert-variable-associated (partial vu/assert-variable-associated-with-query
                                             nil {:variable-name "variable1"})
         assert-variable-not-associated (fn []
                                          (let [refs (search/find-refs
                                                      :collection {:variable-name "variable1"})]
                                            (is (nil? (:errors refs)))
-                                           (is (d/refs-match? [] refs))))]
+                                           (is (data-core/refs-match? [] refs))))]
     (index/wait-until-indexed)
 
     (testing "Variable initially associated with collection"
       (assert-variable-associated [coll]))
 
     (testing "Variable still associated with collection after updating collection"
-      (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+      (let [updated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status updated-coll)))
         (index/wait-until-indexed)
         (assert-variable-associated [updated-coll])))
 
     (testing "Variable no longer associated with collection after deleting and recreating the collection"
-      (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
-      (let [update-resp (d/ingest "PROV1" (dissoc coll :revision-id))]
+      (is (= 200 (:status (ingest/delete-concept (data-core/item->concept coll)))))
+      (let [update-resp (data-core/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status update-resp)))
         (index/wait-until-indexed)
         (assert-variable-not-associated)))
 
     ;; create the association again
     (let [latest-coll (assoc coll :revision-id 4)]
-      (au/associate-by-concept-ids token concept-id [{:concept-id (:concept-id latest-coll)}])
+      (association-util/associate-by-concept-ids token
+                                                concept-id
+                                                [{:concept-id (:concept-id latest-coll)}])
       (assert-variable-associated [latest-coll])
 
       (testing "Variable still associated with collection after updating variable"
@@ -368,63 +393,78 @@
 (defn- assert-variable-association
   "Assert the collections are associated with the variable for the given variable-name"
   [token colls variable-name]
-  (is (d/refs-match? colls
-                     (search/find-refs :collection {:token token
-                                                    :variable-name variable-name}))))
+  (is (data-core/refs-match? colls
+                             (search/find-refs :collection {:token token
+                                                            :variable-name variable-name}))))
 
 (deftest associate-dissociate-variable-with-collections-test
   ;; Grant all collections in PROV1
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
-                                    (d/ingest "PROV1" (dc/collection))))
+                                    (data-core/ingest "PROV1" (collection/collection))))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs {:Name "variable1"})
         {variable2-concept-id :concept-id} (vu/ingest-variable-with-attrs {:Name "variable2"})]
     (index/wait-until-indexed)
 
     ;; associate variable1 to coll1, variable2 to coll2
     ;; both :concept-id and :concept_id works as keys
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept_id coll1-id}])
-    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id coll2-id}])
+    (association-util/associate-by-concept-ids token
+                                               variable1-concept-id
+                                               [{:concept_id coll1-id}])
+    (association-util/associate-by-concept-ids token
+                                               variable2-concept-id
+                                               [{:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll1] "variable1")
     (assert-variable-association token [coll2] "variable2")
 
     ;; associate variable1 to coll1 again
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id coll1-id}])
+    (association-util/associate-by-concept-ids token
+                                               variable1-concept-id
+                                               [{:concept-id coll1-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll1] "variable1")
     (assert-variable-association token [coll2] "variable2")
 
     ;; associate variable1 to coll2
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id coll2-id}])
+    (association-util/associate-by-concept-ids token
+                                               variable1-concept-id
+                                               [{:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll1 coll2] "variable1")
     (assert-variable-association token [coll2] "variable2")
 
     ;; associate variable2 to coll1, coll2 and coll3
-    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id coll1-id}
-                                                             {:concept-id coll2-id}
-                                                             {:concept-id coll3-id}])
+    (association-util/associate-by-concept-ids token
+                                               variable2-concept-id
+                                               [{:concept-id coll1-id}
+                                                {:concept-id coll2-id}
+                                                {:concept-id coll3-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll1 coll2] "variable1")
     (assert-variable-association token [coll1 coll2 coll3] "variable2")
 
     ;; dissociate variable1 from coll1
-    (au/dissociate-by-concept-ids token variable1-concept-id [{:concept-id coll1-id}])
+    (association-util/dissociate-by-concept-ids token
+                                                variable1-concept-id
+                                                [{:concept-id coll1-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll2] "variable1")
     (assert-variable-association token [coll1 coll2 coll3] "variable2")
 
     ;; dissociate variable2 from coll1 and coll2
-    (au/dissociate-by-concept-ids token variable2-concept-id [{:concept-id coll1-id}
-                                                              {:concept-id coll2-id}])
+    (association-util/dissociate-by-concept-ids token
+                                                variable2-concept-id
+                                                [{:concept-id coll1-id}
+                                                 {:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-variable-association token [coll2] "variable1")

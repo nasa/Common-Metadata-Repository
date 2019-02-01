@@ -3,106 +3,68 @@
   for more details."
   (:require
    [cheshire.core :as json]
-   [cmr.common.services.errors :as errors]
+   [clojure.java.io :as io]
    [cmr.common.log :as log :refer (warn info)]
-   [clojure.string :as str])
+   [cmr.common.services.errors :as errors])
   (:import
-   (com.github.fge.jsonschema.main JsonSchema
-                                   JsonSchemaFactory)
-   (com.github.fge.jackson JsonLoader)
-   (com.github.fge.jsonschema.core.report ListProcessingReport)
-   (com.fasterxml.jackson.core JsonParseException)))
+   (org.everit.json.schema Schema ValidationException)
+   (org.everit.json.schema.loader SchemaLoader SchemaClient)
+   (org.json JSONArray JSONException JSONObject JSONTokener)))
 
-(defn- parse-error-report
-  "Parses the error-report to return a human friendly error message.
-
-  Example:
-  {:instance {:pointer \"/provider\"}
-   :message \"object instance has properties which are not allowed by the schema: [\"123\"]\"
-  ... other keys ignored}"
-  [error-report]
-  (let [{:keys [instance message]} error-report
-        pointer (:pointer instance)]
-    (str (when-not (str/blank? pointer)
-           (str pointer " "))
-         (if (re-find #"ECMA" message)
-          (do
-           (info (str "UMM Validation error. Full message: " pointer " " message))
-           (str/replace message #"ECMA.*" "is in an invalid format"))
-          message))))
-
-(defn- parse-nested-error-report
-  "Parses nested error messages from within an error report. See comment block
-  at bottom of file for an example nested error report."
-  [nested-error-report]
-  (for [map-key (keys nested-error-report)
-        :when (re-matches #".*oneOf.*" (name map-key))
-        sub-error-report (map-key nested-error-report)]
-    (parse-error-report sub-error-report)))
-
-(defn- parse-validation-report
-  "Takes a validation report and returns a sequence of any errors contained in
-  the report. Returns nil if there are no errors. Takes a
-  com.github.fge.jsonschema.core.report.ListProcessingReport.
-
-  For details, see:
-  * [ProcessingMessage](http://java-json-tools.github.io/json-schema-core/1.2.x/com/github/fge/jsonschema/core/report/ProcessingMessage.html)
-  * [ListProcessingReport](http://java-json-tools.github.io/json-schema-core/1.2.x/com/github/fge/jsonschema/core/report/ListProcessingReport.html)"
-  [^ListProcessingReport report]
-  (flatten
-    (for [error-report (seq (.asJson report))
-          :let [json-error-report (json/decode (str ^Object error-report) true)]]
-      (conj (parse-nested-error-report (:reports json-error-report))
-            (parse-error-report json-error-report)))))
-
-(defn- json-string->JsonNode
-  "Takes JSON as a string or as EDN and returns a
-  com.fasterxml.jackson.databind.JsonNode. Throws an exception if the provided
-  JSON is not valid JSON."
-  [json-string]
+(defn- json-string->JSONType
+  "Takes JSON as a string and returns a org.json.JSONObject. or org.json.JSONArray
+   Throws an exception if the provided JSON is not valid JSON."
+  [^String json-string]
   (try
-    (JsonLoader/fromString json-string)
-    (catch JsonParseException e
-      ;; Removes the source from the message which is just going to say
-      ;; StringReader@XXXXX
-      (let [message (str/replace (.getMessage e) #"\[Source[^;]+;" "")]
-        (errors/throw-service-error :bad-request (str "Invalid JSON: " message))))))
+    (.nextValue (JSONTokener. json-string))
+    (catch JSONException e
+      (errors/throw-service-error :bad-request (str "Invalid JSON: " (.getMessage e))))))
 
 (defn json-string->json-schema
-  "Convert a string to com.github.fge.jsonschema.main.JsonSchema object."
+  "Convert a string to org.everit.json.schema.Schema object."
   [schema-string]
-  (->> schema-string
-       JsonLoader/fromString
-       (.getJsonSchema (JsonSchemaFactory/byDefault))))
+  (SchemaLoader/load (json-string->JSONType schema-string)))
 
 (defn parse-json-schema
   "Convert a Clojure object to a JSON string then parses into a
-  com.github.fge.jsonschema.main.JsonSchema object."
+  org.everit.json.schema.Schema object."
   [schema-def]
   (->> (assoc schema-def :$schema "http://json-schema.org/draft-04/schema#")
        json/generate-string
        json-string->json-schema))
 
-(defn parse-json-schema-from-uri
-  "Loads a JSON schema from a URI into a com.github.fge.jsonschema.main.JsonSchema
+(defn parse-json-schema-from-path
+  "Loads a JSON schema from a resource into a org.everit.json.schema.Schema
   object. It's necessary to use this one if loading a JSON schema from the
   classpath that references other JSON schemas on the classpath."
-  [uri]
-  (let [factory (JsonSchemaFactory/byDefault)]
-    (.getJsonSchema factory (str uri))))
+  ([path]
+   (when-let [uri (io/resource path)]
+     (parse-json-schema-from-path path uri)))
+  ([path uri]
+   (-> (SchemaLoader/builder)
+       (.schemaClient (SchemaClient/classPathAwareClient))
+       (.schemaJson (json-string->JSONType (slurp (str uri))))
+       (.resolutionScope (str "classpath://" path))
+       .build
+       .load
+       .build)))
 
 (defn validate-json
   "Performs schema validation using the provided JSON schema and the given
-  json string to validate. Uses com.github.fge.jsonschema to perform the
+  json string to validate. Uses org.everit.json.schema to perform the
   validation. The JSON schema must be provided as a
-  com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must
+  org.everit.json.schema.Schema object and the json-to-validate must
   be a string. Returns a list of the errors found.
 
   For details, see:
-  * [JsonSchema](http://java-json-tools.github.io/json-schema-validator/2.2.x/com/github/fge/jsonschema/main/JsonSchema.html)"
-  [^JsonSchema json-schema json-to-validate]
-  (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
-    (parse-validation-report validation-report)))
+  * [Schema](http://erosb.github.io/everit-json-schema/javadoc/1.11.0/)"
+  [^Schema json-schema json-to-validate]
+  (try
+    (.validate json-schema (json-string->JSONType json-to-validate))
+    (catch ValidationException e
+      (let [message (seq (.getAllMessages e))]
+        (info (str "UMM Validation error. Full message: " (pr-str message)))
+        message))))
 
 (defn validate-json!
   "Validates the JSON string against the given schema. Throws a service error
