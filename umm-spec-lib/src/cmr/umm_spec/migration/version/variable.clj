@@ -115,10 +115,12 @@
   ;; Migrate down to 1.3
   (if-let [avg-comp-info (get-in v [:SizeEstimation :AverageCompressionInformation])]
     (as-> v m
-      (when-let [avg-comp-ascii (some #(when (= "ASCII" (:Format %)) (:Rate %)) avg-comp-info)]
-        (assoc-in m [:SizeEstimation :AvgCompressionRateASCII] avg-comp-ascii))
-      (when-let [avg-comp-netcdf4 (some #(when (= "NetCDF-4" (:Format %)) (:Rate %)) avg-comp-info)]
-        (assoc-in m [:SizeEstimation :AvgCompressionRateNetCDF4] avg-comp-netcdf4))
+      (if-let [avg-comp-ascii (some #(when (= "ASCII" (:Format %)) (:Rate %)) avg-comp-info)]
+        (assoc-in m [:SizeEstimation :AvgCompressionRateASCII] avg-comp-ascii)
+        m)
+      (if-let [avg-comp-netcdf4 (some #(when (= "NetCDF-4" (:Format %)) (:Rate %)) avg-comp-info)]
+        (assoc-in m [:SizeEstimation :AvgCompressionRateNetCDF4] avg-comp-netcdf4)
+        m)
       (update-in m [:SizeEstimation] dissoc :AverageCompressionInformation)
       (util/remove-nil-keys m))
     v))

@@ -87,6 +87,34 @@
                                                            {:Format "NetCDF-4" :Rate 3}]}
           :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
 
+(def variable-concept-13-only-ascii
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AvgCompressionRateASCII 2}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-14-only-ascii
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AverageCompressionInformation [{:Format "ASCII" :Rate 2}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-13-only-netcdf-4
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AvgCompressionRateNetCDF4 3}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-14-only-netcdf-4
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1   
+                           :AverageCompressionInformation [{:Format "NetCDF-4" :Rate 3}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2" "1.3" "1.4"]}}
     (is (= [] (#'vm/version-steps :variable "1.2" "1.2")))
@@ -198,6 +226,22 @@
   (is (= variable-concept-14
          (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13))))
 
+(deftest migrate-13->14-only-ascii
+  (is (= variable-concept-14-only-ascii
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-ascii))))
+
+(deftest migrate-13->14-only-netcdf-4
+  (is (= variable-concept-14-only-netcdf-4
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-netcdf-4))))
+
 (deftest migrate-14->13
   (is (= variable-concept-13
          (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14))))
+
+(deftest migrate-14->13-only-ascii
+  (is (= variable-concept-13-only-ascii
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-ascii))))
+
+(deftest migrate-14->13-only-netcdf-4
+  (is (= variable-concept-13-only-netcdf-4
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-netcdf-4))))
