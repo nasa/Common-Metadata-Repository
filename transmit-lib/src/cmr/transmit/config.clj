@@ -11,10 +11,11 @@
   with those that are defined here, but instances such as that are simply
   where there are values which are the same in both and not expected to change
   between public and private communications."
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.util :as util]
-            [cmr.transmit.connection :as conn]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.util :as util]
+   [cmr.transmit.connection :as conn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants for help in testing.
