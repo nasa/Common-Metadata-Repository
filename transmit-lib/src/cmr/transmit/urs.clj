@@ -1,12 +1,13 @@
 (ns cmr.transmit.urs
-  (:require [cmr.transmit.connection :as conn]
-            [cmr.transmit.config :as config]
-            [ring.util.codec :as codec]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.xml :as cx]
-            [clojure.data.xml :as x]
-            [cmr.transmit.http-helper :as h]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml :as cx]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]
+   [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -109,8 +110,3 @@
  (login context "notexist" "foopass")
  (login context "notexist" "")
  (login context "notexist" nil))
-
-
-
-
-

@@ -87,7 +87,7 @@
 (def-app-conn-config metadata-db {:port 3001})
 ;; CMR open search is 3010
 (def-app-conn-config search {:port 3003})
-(def-app-conn-config urs {:port 3008, :relative-root-url "/urs"})
+(def-app-conn-config urs {:port 3008})
 (def-app-conn-config virtual-product {:port 3009})
 
 (defconfig urs-username
