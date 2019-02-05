@@ -1,23 +1,24 @@
 (ns cmr.mock-echo.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [cheshire.core :as json]
-            [clojure.set :as set]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.services.errors :as svc-errors]
-            [cmr.common.api.context :as context]
-            [cmr.mock-echo.api.tokens :as token-api]
-            [cmr.mock-echo.api.providers :as providers-api]
-            [cmr.mock-echo.api.acls :as acls-api]
-            [cmr.mock-echo.api.urs :as urs-api]
-            [cmr.mock-echo.data.token-db :as token-db]
-            [cmr.mock-echo.data.provider-db :as provider-db]
-            [cmr.mock-echo.data.acl-db :as acl-db]
-            [cmr.mock-echo.data.urs-db :as urs-db]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.mock-echo.api.acls :as acls-api]
+   [cmr.mock-echo.api.providers :as providers-api]
+   [cmr.mock-echo.api.tokens :as token-api]
+   [cmr.mock-echo.api.urs :as urs-api]
+   [cmr.mock-echo.data.acl-db :as acl-db]
+   [cmr.mock-echo.data.provider-db :as provider-db]
+   [cmr.mock-echo.data.token-db :as token-db]
+   [cmr.mock-echo.data.urs-db :as urs-db]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]))
 
 (defn reset
   [context]
@@ -25,7 +26,6 @@
   (provider-db/reset context)
   (acl-db/reset context)
   (urs-db/reset context))
-
 
 (defn- build-routes [system]
   (routes
