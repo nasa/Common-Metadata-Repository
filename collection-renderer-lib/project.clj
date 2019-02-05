@@ -23,58 +23,46 @@
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/collection-renderer-lib"
-  :exclusions [
-    [commons-io]]
-  :dependencies [
-    [commons-io "2.6"]
-    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-    [org.clojure/clojure "1.10.0"]
-    [org.jruby/jruby-complete ~jruby-version]]
-  :plugins [
-    [lein-shell "0.5.0"]
-    [test2junit "1.3.3"]]
+  :exclusions [[commons-io]]
+  :dependencies [[commons-io "2.6"]
+                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+                 [org.clojure/clojure "1.10.0"]
+                 [org.jruby/jruby-complete ~jruby-version]]
+  :plugins [[lein-shell "0.5.0"]
+            [test2junit "1.3.3"]]
   :resource-paths ["resources" ~gem-install-path]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {
-    :security {
-      :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.1"]]
-      :dependency-check {
-        :output-format [:all]
-        :suppression-file "resources/security/suppression.xml"
-        :properties-file "resources/security/dependencycheck.properties"}}
-    :dev {
-      :exclusions [
-        [org.clojure/tools.nrepl]]
-      :dependencies [
-        [org.clojure/tools.namespace "0.2.11"]
-        [org.clojure/tools.nrepl "0.2.13"]
-        [pjstadig/humane-test-output "0.9.0"]
-        [proto-repl "0.3.1"]]
-      :jvm-opts ^:replace ["-server"]
-      :source-paths ["src" "dev" "test"]
-      :injections [(require 'pjstadig.humane-test-output)
-                   (pjstadig.humane-test-output/activate!)]}
-    :static {}
-    ;; This profile is used for linting and static analysis. To run for this
-    ;; project, use `lein lint` from inside the project directory. To run for
-    ;; all projects at the same time, use the same command but from the top-
-    ;; level directory.
-    :lint {
-      :source-paths ^:replace ["src"]
-      :test-paths ^:replace []
-      :plugins [
-        [jonase/eastwood "0.2.5"]
-        [lein-ancient "0.6.15"]
-        [lein-bikeshed "0.5.0"]
-        [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}
-    ;; The following profile is overriden on the build server or in the user's
-    ;; ~/.lein/profiles.clj file.
-    :internal-repos {}}
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+                        :dependency-check {:output-format [:all]
+                                           :suppression-file "resources/security/suppression.xml"
+                                           :properties-file "resources/security/dependencycheck.properties"}}
+             :dev {:exclusions [[org.clojure/tools.nrepl]]
+                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [proto-repl "0.3.1"]]
+                   :jvm-opts ^:replace ["-server"]
+                   :source-paths ["src" "dev" "test"]
+                   :injections [(require 'pjstadig.humane-test-output)
+                                (pjstadig.humane-test-output/activate!)]}
+             :static {}
+             ;; This profile is used for linting and static analysis. To run for this
+             ;; project, use `lein lint` from inside the project directory. To run for
+             ;; all projects at the same time, use the same command but from the top-
+             ;; level directory.
+             :lint {:source-paths ^:replace ["src"]
+                    :test-paths ^:replace []
+                    :plugins [[jonase/eastwood "0.2.5"]
+                              [lein-ancient "0.6.15"]
+                              [lein-bikeshed "0.5.0"]
+                              [lein-kibit "0.1.6"]
+                              [venantius/yagni "0.1.4"]]}
+             ;; The following profile is overriden on the build server or in the user's
+             ;; ~/.lein/profiles.clj file.
+             :internal-repos {}}
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
