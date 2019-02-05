@@ -49,140 +49,125 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions [
-    [commons-codec/commons-codec]
-    [org.clojure/clojure]
-    [ring/ring-codec]]
-  :dependencies ~(concat '[
-    [commons-codec/commons-codec "1.11"]
-    [org.clojure/clojure "1.10.0"]
-    ;; Add groovy to support groovy scripting in elastic
-    [org.codehaus.groovy/groovy-all "2.4.0"]
-    [ring/ring-codec "1.1.1"]]
-    project-dependencies)
-  :plugins [
-    [lein-environ "1.1.0"]
-    [lein-shell "0.5.0"]
-    [test2junit "1.3.3"]]
-  :repl-options {
-    :init-ns user
-    :timeout 300000
-    :welcome (do
-              (println (slurp "resources/text/banner.txt"))
-              (println (slurp "resources/text/loading.txt")))}
+  :exclusions [[commons-codec/commons-codec]
+               [org.clojure/clojure]
+               [ring/ring-codec]]
+  :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
+                           [org.clojure/clojure "1.10.0"]
+                           ;; Add groovy to support groovy scripting in elastic
+                           [org.codehaus.groovy/groovy-all "2.4.0"]
+                           [ring/ring-codec "1.1.1"]]
+                  project-dependencies)
+  :plugins [[lein-environ "1.1.0"]
+            [lein-shell "0.5.0"]
+            [test2junit "1.3.3"]]
+  :repl-options {:init-ns user
+                 :timeout 300000
+                 :welcome (do
+                           (println (slurp "resources/text/banner.txt"))
+                           (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"]
              ;; Uncomment to enable logging in jetty.
              ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
              ; "-Dorg.eclipse.jetty.LEVEL=INFO"
              ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
-  :profiles {
-    :security {
-      :plugins [
-        [com.livingsocial/lein-dependency-check "1.1.1"]]
-      :dependency-check {
-        :output-format [:all]
-        :suppression-file "resources/security/suppression.xml"
-        :properties-file "resources/security/dependencycheck.properties"}}
-    :dev-dependencies {
-      :exclusions [
-        [org.clojure/tools.nrepl]]
-      :dependencies [
-        [criterium "0.4.4"]
-        [debugger "0.2.0"]
-        [drift "1.5.3"]
-        [org.clojars.gjahad/debug-repl "0.3.3"]
-        [org.clojure/tools.namespace "0.2.11"]
-        [org.clojure/tools.nrepl "0.2.13"]
-        [pjstadig/humane-test-output "0.9.0"]
-        [proto-repl "0.3.1"]
-        [proto-repl-charts "0.3.2"]
-        [proto-repl-sayid "0.1.3"]
-        [ring-mock "0.1.5"]]
-      ;; XXX Note that profiling can be kept in a profile,
-      ;;     with no need to comment/uncomment.
-      ;; Use the following to enable JMX profiling with visualvm
-      ;:jvm-opts ^:replace ["-server"
-      ;                     "-Dcom.sun.management.jmxremote"
-      ;                     "-Dcom.sun.management.jmxremote.ssl=false"
-      ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
-      ;                     "-Dcom.sun.management.jmxremote.port=1098"]
-      :source-paths ["src" "dev" "test"]
-      :injections [(require 'pjstadig.humane-test-output)
-                   (pjstadig.humane-test-output/activate!)]}
-    ;; This is to separate the dependencies from the dev-config specified in profiles.clj
-    :dev [:dev-dependencies :dev-config]
-    ;; The following run-* profiles are used in conjunction with other lein
-    ;; profiles to set the default CMR run mode and may be used in the
-    ;; following manner:
-    ;;
-    ;;   $ lein with-profile +run-external repl
-    ;;
-    ;; which will use dev and the other default profiles in addition to
-    ;; run-external (or whichever run mode profile is given).
-    :run-in-memory {
-      :jvm-opts ["-Dcmr.runmode=in-memory"]}
-    :run-external {
-      :jvm-opts ["-Dcmr.runmode=external"]}
-    :uberjar {:main cmr.dev-system.runner
-              ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
-              :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
-              :aot :all}
-    :static {}
-    ;; This profile is used for linting and static analysis. To run for this
-    ;; project, use `lein lint` from inside the project directory. To run for
-    ;; all projects at the same time, use the same command but from the top-
-    ;; level directory.
-    :lint {
-      :source-paths ^:replace ["src"]
-      :test-paths ^:replace []
-      :plugins [
-        [jonase/eastwood "0.2.5"]
-        [lein-ancient "0.6.15"]
-        [lein-bikeshed "0.5.0"]
-        [lein-kibit "0.1.6"]
-        [venantius/yagni "0.1.4"]]}
-    ;; The following profile is overriden on the build server or in the user's
-    ;; ~/.lein/profiles.clj file.
-    :internal-repos {}}
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+                        :dependency-check {:output-format [:all]
+                                           :suppression-file "resources/security/suppression.xml"
+                                           :properties-file "resources/security/dependencycheck.properties"}}
+             :dev-dependencies {:exclusions [[org.clojure/tools.nrepl]]
+                                :dependencies [[criterium "0.4.4"]
+                                               [debugger "0.2.0"]
+                                               [drift "1.5.3"]
+                                               [org.clojars.gjahad/debug-repl "0.3.3"]
+                                               [org.clojure/tools.namespace "0.2.11"]
+                                               [org.clojure/tools.nrepl "0.2.13"]
+                                               [pjstadig/humane-test-output "0.9.0"]
+                                               [proto-repl "0.3.1"]
+                                               [proto-repl-charts "0.3.2"]
+                                               [proto-repl-sayid "0.1.3"]
+                                               [ring-mock "0.1.5"]]
+                                ;; XXX Note that profiling can be kept in a profile,
+                                ;;     with no need to comment/uncomment.
+                                ;; Use the following to enable JMX profiling with visualvm
+                                ;:jvm-opts ^:replace ["-server"
+                                ;                     "-Dcom.sun.management.jmxremote"
+                                ;                     "-Dcom.sun.management.jmxremote.ssl=false"
+                                ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
+                                ;                     "-Dcom.sun.management.jmxremote.port=1098"]
+                                :source-paths ["src" "dev" "test"]
+                                :injections [(require 'pjstadig.humane-test-output)
+                                             (pjstadig.humane-test-output/activate!)]}
+              ;; This is to separate the dependencies from the dev-config specified in profiles.clj
+             :dev [:dev-dependencies :dev-config]
+             ;; The following run-* profiles are used in conjunction with other lein
+             ;; profiles to set the default CMR run mode and may be used in the
+             ;; following manner:
+             ;;
+             ;;   $ lein with-profile +run-external repl
+             ;;
+             ;; which will use dev and the other default profiles in addition to
+             ;; run-external (or whichever run mode profile is given).
+             :run-in-memory {:jvm-opts ["-Dcmr.runmode=in-memory"]}
+             :run-external {:jvm-opts ["-Dcmr.runmode=external"]}
+             :uberjar {:main cmr.dev-system.runner
+             ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
+                       :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
+                       :aot :all}
+             :static {}
+             ;; This profile is used for linting and static analysis. To run for this
+             ;; project, use `lein lint` from inside the project directory. To run for
+             ;; all projects at the same time, use the same command but from the top-
+             ;; level directory.
+             :lint {:source-paths ^:replace ["src"]
+                    :test-paths ^:replace []
+                    :plugins [[jonase/eastwood "0.2.5"]
+                              [lein-ancient "0.6.15"]
+                              [lein-bikeshed "0.5.0"]
+                              [lein-kibit "0.1.6"]
+                              [venantius/yagni "0.1.4"]]}
+             ;; The following profile is overriden on the build server or in the user's
+             ;; ~/.lein/profiles.clj file.
+             :internal-repos {}}
   :aliases {
-    ;; Creates the checkouts directory to the local projects
-    "create-checkouts" ~create-checkouts-commands
-    ;; Alias to test2junit for consistency with lein-test-out
-    "test-out"
-      ["test2junit"]
-    ;; Installs the Elasticsearch Marvel plugin locally.
-    ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
-    "install-marvel"
-      ["shell" "cmr" "install" "local" "marvel"]
-    ;; Linting aliases
-    "kibit"
-      ["do"
-        ["shell" "echo" "== Kibit =="]
-        ["with-profile" "lint" "kibit"]]
-    "eastwood"
-      ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
-    "bikeshed"
-      ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
-    "yagni"
-      ["with-profile" "lint" "yagni"]
-    "check-deps"
-      ["with-profile" "lint" "ancient" ":all"]
-    "check-sec"
-      ["with-profile" "security" "dependency-check"]
-    "lint"
-      ["do"
-        ["check"] ["kibit"] ["eastwood"]]
-    ;; Placeholder for future docs and enabler of top-level alias
-    "generate-static"
-      ["with-profile" "static"
-       "shell" "echo"]
-    ;; Run a local copy of SQS/SNS
-    "start-sqs-sns"
-      ["shell" "cmr" "start" "local" "sqs-sns"]
-    "stop-sqs-sns"
-      ["shell" "cmr" "stop" "local" "sqs-sns"]
-    "restart-sqs-sns"
-      ["do"
-        ["stop-sqs-sns"]
-        ["start-sqs-sns"]]})
+            ;; Creates the checkouts directory to the local projects
+            "create-checkouts" ~create-checkouts-commands
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out"
+            ["test2junit"]
+            ;; Installs the Elasticsearch Marvel plugin locally.
+            ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
+            "install-marvel"
+            ["shell" "cmr" "install" "local" "marvel"]
+            ;; Linting aliases
+            "kibit"
+            ["do"
+              ["shell" "echo" "== Kibit =="]
+              ["with-profile" "lint" "kibit"]]
+            "eastwood"
+            ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
+            "bikeshed"
+            ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
+            "yagni"
+            ["with-profile" "lint" "yagni"]
+            "check-deps"
+            ["with-profile" "lint" "ancient" ":all"]
+            "check-sec"
+            ["with-profile" "security" "dependency-check"]
+            "lint"
+            ["do"
+              ["check"] ["kibit"] ["eastwood"]]
+            ;; Placeholder for future docs and enabler of top-level alias
+            "generate-static"
+            ["with-profile" "static"
+             "shell" "echo"]
+            ;; Run a local copy of SQS/SNS
+            "start-sqs-sns"
+            ["shell" "cmr" "start" "local" "sqs-sns"]
+            "stop-sqs-sns"
+            ["shell" "cmr" "stop" "local" "sqs-sns"]
+            "restart-sqs-sns"
+            ["do"
+              ["stop-sqs-sns"]
+              ["start-sqs-sns"]]})
