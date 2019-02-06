@@ -16,7 +16,7 @@
 ;; XXX We can pull this from configuration once async-get-metadata function
 ;;     signatures get updated to accept the system data structure as an arg.
 (def variables-api-path "/variables")
-(def pinned-variable-schema-version "1.3")
+(def pinned-variable-schema-version "1.4")
 (def results-content-type "application/vnd.nasa.cmr.umm_results+json")
 (def charset "charset=utf-8")
 (def accept-format "%s; version=%s; %s")
