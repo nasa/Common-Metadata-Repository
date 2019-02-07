@@ -6,8 +6,7 @@
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
     [cmr.common.util :as util :refer [are3]]
-    [cmr.ingest.config :as icfg]
-    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]))
@@ -18,13 +17,13 @@
   ([coll-attributes options]
    (let [collection (assoc (data-umm-c/collection coll-attributes) :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
-         response (d/ingest provider-id collection options)]
+         response (data-core/ingest provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
 
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (data-umm-c/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection {:allow-failure? true})]
+        response (data-core/ingest "PROV1" collection {:allow-failure? true})]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
@@ -42,7 +41,7 @@
 
       (is (= 201 status))
       (is (str/includes? warnings
-           "After translating item to UMM-C the metadata had the following issue: [:SpatialExtent] Granule Spatial Representation must be supplied.")))))
+           "[:SpatialExtent] Granule Spatial Representation must be supplied.")))))
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
@@ -71,12 +70,12 @@
                         :Purpose (apply str (repeat 12000 "y"))
                         :ProcessingLevel {:Id "1"}
                         :CollectionProgress "COMPLETE"})
-          ingest-response (d/ingest "PROV1" collection {:format :dif10})
+          ingest-response (data-core/ingest "PROV1" collection {:format :dif10})
           validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :dif10))]
-      (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
-      (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings validation-response))))
-      (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
-      (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response)))))))
+      (is (some? (re-find #"#/Platforms/0/ShortName: expected maxLength: 80, actual: 81" (:warnings ingest-response))))
+      (is (some? (re-find #"#/Platforms/0/ShortName: expected maxLength: 80, actual: 81" (:warnings validation-response))))
+      (is (some? (re-find #"#/Purpose: expected maxLength: 10000, actual: 12000" (:warnings ingest-response))))
+      (is (some? (re-find #"#/Purpose: expected maxLength: 10000, actual: 12000" (:warnings validation-response)))))))
 
 (deftest error-messages-are-friendly
   (testing "Error messages don't contain regexes"
@@ -99,7 +98,7 @@
                                           :DetailedVariable ""
                                           :Topic ""})]})]
       (are3 [collection]
-       (let [ingest-response (d/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
+       (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
              validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
          (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
          (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response)))))
@@ -114,16 +113,14 @@
        "Invalid Science Keywords"
        science-keyword-collection)
       (testing "Explicitly test error messages - ShorName and LongName should fail the regex"
-        (let [ingest-response (d/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true})
+        (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true})
               validation-response (ingest/validate-concept (data-umm-c/collection-concept platform-collection :umm-json))]
           (is (= (:errors ingest-response)
-                 ["/Platforms/0/LongName string \"\" is too short (length: 0, required minimum: 1)"
-                  "/Platforms/0/LongName is in an invalid format"
-                  "/Platforms/0/ShortName string \"\" is too short (length: 0, required minimum: 1)"
-                  "/Platforms/0/ShortName is in an invalid format"]))
+                 ["#/Platforms/0/LongName: expected minLength: 1, actual: 0"
+                  "#/Platforms/0/LongName: string [] does not match pattern [\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,1023}"
+                  "#/Platforms/0/ShortName: expected minLength: 1, actual: 0"
+                  "#/Platforms/0/ShortName: string [] does not match pattern [\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"]))
           (is (= (:status ingest-response) 400)))))))
-
-
 
 (deftest multiple-warnings
  (testing "Schema and UMM-C validation warnings"
@@ -132,10 +129,10 @@
                       :RelatedUrls [{:URL "htp://www.x.com"
                                      :URLContentType "DistributionURL"
                                      :Type "GET DATA"}]})
-        ingest-response (d/ingest "PROV1" collection)
+        ingest-response (data-core/ingest "PROV1" collection)
         validation-response (ingest/validate-concept (data-umm-c/collection-concept collection))]
-    (is (some? (re-find #"object has missing required properties \(\[\"DataCenters\"\]\)"  (:warnings ingest-response))))
-    (is (some? (re-find #"object has missing required properties \(\[\"DataCenters\"\]\)" (:warnings validation-response))))
+    (is (some? (re-find #"#: required key \[DataCenters\] not found"  (:warnings ingest-response))))
+    (is (some? (re-find #"#: required key \[DataCenters\] not found" (:warnings validation-response))))
     (is (some? (re-find #"\[:RelatedUrls 0 :URL\] \[htp://www.x.com\] is not a valid URL" (:warnings ingest-response))))
     (is (some? (re-find #"\[:RelatedUrls 0 :URL\] \[htp://www.x.com\] is not a valid URL" (:warnings validation-response))))
     (is (some? (re-find #"\[:RelatedUrls 0\] RelatedUrl does not have a description." (:warnings ingest-response))))

@@ -3,7 +3,7 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :refer [are2]]
-    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
@@ -13,79 +13,117 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-periodic-temporal
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2000-01-01T12:00:00Z"
-                                                :ending-date-time "2000-02-14T12:00:00Z"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2000-02-14T12:00:00Z"
-                                                :ending-date-time "2000-02-15T12:00:00Z"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2000-03-15T12:00:00Z"
-                                                :ending-date-time "2000-04-15T12:00:00Z"})]}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2000-04-01T12:00:00Z"
-                                                :ending-date-time "2000-04-15T12:00:00Z"})]}))
-        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2001-01-01T12:00:00Z"
-                                                :ending-date-time "2001-01-31T12:00:00Z"})]}))
-        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2001-01-01T12:00:00Z"
-                                                :ending-date-time "2001-02-14T12:00:00Z"})]}))
-        coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 7 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2001-03-15T12:00:00Z"
-                                                :ending-date-time "2001-04-15T12:00:00Z"})]}))
-        coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 8 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2001-04-01T12:00:00Z"
-                                                :ending-date-time "2001-04-15T12:00:00Z"})]}))
-        coll9 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 9 {:TemporalExtents
-                                                                              [(data-umm-cmn/temporal-extent
-                                               {:beginning-date-time "2002-01-01T12:00:00Z"
-                                                :ending-date-time "2002-01-31T12:00:00Z"})]}))
-        coll10 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 10 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2002-01-01T12:00:00Z"
-                                                 :ending-date-time "2002-02-14T12:00:00Z"})]}))
-        coll11 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 11 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2002-03-14T12:00:00Z"
-                                                 :ending-date-time "2002-04-15T12:00:00Z"})]}))
-        coll12 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 12 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2002-03-15T12:00:00Z"
-                                                 :ending-date-time "2002-04-15T12:00:00Z"})]}))
-        coll13 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 13 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2002-04-01T12:00:00Z"
-                                                 :ending-date-time "2002-04-15T12:00:00Z"})]}))
-        coll14 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 14 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "1999-02-15T12:00:00Z"
-                                                 :ending-date-time "1999-03-15T12:00:00Z"})]}))
-        coll15 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 15 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2003-02-15T12:00:00Z"
-                                                 :ending-date-time "2003-03-15T12:00:00Z"})]}))
-        coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 16 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "1999-02-15T12:00:00Z"})]}))
-        coll17 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 17 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2001-02-15T12:00:00Z"})]}))
-        coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 18 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2002-03-15T12:00:00Z"})]}))
-        coll19 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 19 {:TemporalExtents
-                                                                                [(data-umm-cmn/temporal-extent
-                                                {:beginning-date-time "2001-11-15T12:00:00Z"
-                                                 :ending-date-time "2001-12-15T12:00:00Z"})]}))]
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 1 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2000-01-01T12:00:00Z"
+                                            :ending-date-time "2000-02-14T12:00:00Z"})]}))
+        coll2 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 2 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2000-02-14T12:00:00Z"
+                                            :ending-date-time "2000-02-15T12:00:00Z"})]}))
+        coll3 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 3 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2000-03-15T12:00:00Z"
+                                            :ending-date-time "2000-04-15T12:00:00Z"})]}))
+        coll4 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 4 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2000-04-01T12:00:00Z"
+                                            :ending-date-time "2000-04-15T12:00:00Z"})]}))
+        coll5 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 5 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2001-01-01T12:00:00Z"
+                                            :ending-date-time "2001-01-31T12:00:00Z"})]}))
+        coll6 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 6 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2001-01-01T12:00:00Z"
+                                            :ending-date-time "2001-02-14T12:00:00Z"})]}))
+        coll7 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 7 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2001-03-15T12:00:00Z"
+                                            :ending-date-time "2001-04-15T12:00:00Z"})]}))
+        coll8 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 8 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2001-04-01T12:00:00Z"
+                                            :ending-date-time "2001-04-15T12:00:00Z"})]}))
+        coll9 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection 9 {:TemporalExtents
+                                         [(data-umm-cmn/temporal-extent
+                                           {:beginning-date-time "2002-01-01T12:00:00Z"
+                                            :ending-date-time "2002-01-31T12:00:00Z"})]}))
+        coll10 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 10 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2002-01-01T12:00:00Z"
+                                              :ending-date-time "2002-02-14T12:00:00Z"})]}))
+        coll11 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 11 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2002-03-14T12:00:00Z"
+                                              :ending-date-time "2002-04-15T12:00:00Z"})]}))
+        coll12 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 12 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2002-03-15T12:00:00Z"
+                                              :ending-date-time "2002-04-15T12:00:00Z"})]}))
+        coll13 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 13 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2002-04-01T12:00:00Z"
+                                              :ending-date-time "2002-04-15T12:00:00Z"})]}))
+        coll14 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 14 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "1999-02-15T12:00:00Z"
+                                              :ending-date-time "1999-03-15T12:00:00Z"})]}))
+        coll15 (data-core/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection 15 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2003-02-15T12:00:00Z"
+                                              :ending-date-time "2003-03-15T12:00:00Z"})]}))
+        coll16 (data-core/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-c/collection 16 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "1999-02-15T12:00:00Z"})]}))
+        coll17 (data-core/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-c/collection 17 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2001-02-15T12:00:00Z"})]}))
+        coll18 (data-core/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-c/collection 18 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2002-03-15T12:00:00Z"})]}))
+        coll19 (data-core/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-c/collection 19 {:TemporalExtents
+                                           [(data-umm-cmn/temporal-extent
+                                             {:beginning-date-time "2001-11-15T12:00:00Z"
+                                              :ending-date-time "2001-12-15T12:00:00Z"})]}))]
     (index/wait-until-indexed)
 
     (testing "search by both start-day and end-day - testing singular temporal."
@@ -97,7 +135,7 @@
 
     (testing "search by temporal params"
       (are2 [items search]
-            (d/refs-match? items (search/find-refs :collection (assoc search :page_size 100)))
+            (data-core/refs-match? items (search/find-refs :collection (assoc search :page_size 100)))
 
             "search by both start-day and end-day"
             [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17]
@@ -130,10 +168,12 @@
 
     (testing "search by temporal with aql"
       (are2 [items start-date stop-date start-day end-day]
-            (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
-                                                                                     :stop-date stop-date
-                                                                                     :start-day start-day
-                                                                                     :end-day end-day}}]))
+            (data-core/refs-match?
+             items
+             (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
+                                                                 :stop-date stop-date
+                                                                 :start-day start-day
+                                                                 :end-day end-day}}]))
             "search by both start-day and end-day"
             [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17]
             "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 90
@@ -152,7 +192,7 @@
 
     (testing "Search collections by temporal using a JSON Query"
       (are2 [items search]
-            (d/refs-match? items (search/find-refs-with-json-query :collection {:page_size 100} search))
+            (data-core/refs-match? items (search/find-refs-with-json-query :collection {:page_size 100} search))
 
             "search by both start-day and end-day"
             [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17]
@@ -221,27 +261,27 @@
 
 (deftest search-period-temporal-json-error-scenarios
   (testing "search by invalid temporal day format"
-    (are2 [search error-field field-type]
+    (are2 [search error-field field-type expected-type]
           (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
-                expected-error (str (format "/condition/temporal/%s instance type (%s) "
-                                            (name error-field) field-type)
-                                    "does not match any allowed primitive "
-                                    "type (allowed: [\"integer\"])")]
+                expected-error (format "#/condition/temporal/%s: expected type: %s, found: %s"
+                                       (name error-field)
+                                       expected-type
+                                       field-type)]
             (= [400 [expected-error]]
                [status errors]))
 
           "invalid recurring_start_day, type string"
           {:temporal {:recurring_start_day "40"}}
-          :recurring_start_day "string"
+          :recurring_start_day "String" "Number"
 
           "invalid recurring_start_day, type number"
           {:temporal {:recurring_start_day 4.0}}
-          :recurring_start_day "number"
+          :recurring_start_day "Double" "Integer"
 
           "invalid recurring_end_day, type string"
           {:temporal {:recurring_start_day  5 :recurring_end_day "40"}}
-          :recurring_end_day "string"
+          :recurring_end_day "String" "Number"
 
           "invalid recurring_end_day, type number"
           {:temporal {:recurring_start_day  5 :recurring_end_day 4.0}}
-          :recurring_end_day "number")))
+          :recurring_end_day "Double" "Integer")))

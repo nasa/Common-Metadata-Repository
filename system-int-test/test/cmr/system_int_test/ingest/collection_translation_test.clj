@@ -1,15 +1,14 @@
 (ns cmr.system-int-test.ingest.collection-translation-test
   (:require
-    [clj-time.core :as t]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
-    [cmr.common.mime-types :as mt]
+    [cmr.common.mime-types :as mime-types]
     [cmr.common.util :refer [update-in-each]]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def valid-formats
@@ -20,7 +19,7 @@
    :dif10
    :echo10])
 
-(def test-context (lkt/setup-context-for-test))
+(def test-context (location-keywords-helper/setup-context-for-test))
 
 (defn assert-translate-failure
   [error-regex & args]
@@ -51,14 +50,14 @@
                                                :NumberOfInstruments nil)
             expected (convert-to-sets expected)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
-            content-type (first (mt/extract-mime-types (:content-type headers)))
+            content-type (first (mime-types/extract-mime-types (:content-type headers)))
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)
             parsed-umm-json (update-in-each parsed-umm-json [:Platforms] update-in-each [:Instruments] assoc
                                                              :NumberOfInstruments nil)
             parsed-umm-json (convert-to-sets parsed-umm-json)]
 
         (is (= 200 status) body)
-        (is (= (mt/format->mime-type output-format) content-type))
+        (is (= (mime-types/format->mime-type output-format) content-type))
         ;; when translating from dif9 to echo10,
         ;; The expected is umm-C->dif9->umm-C->echo10->umm-C
         ;; The DataDates part is lost at dif9->umm-C. so in the end there is no DataDates in the expected.
@@ -107,7 +106,7 @@
             input-xml (umm-spec/generate-metadata test-context collection input-format)
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                             output-format options)]
-        (is (= "{\"errors\":[\"object has missing required properties ([\\\"DataCenters\\\"])\"]}" body))
+        (is (= "{\"errors\":[\"#: required key [DataCenters] not found\"]}" body))
         (is (= 422 status))))
 
     (testing (format "Translating iso19115 to umm-json with skipping sanitizing and with skipping validation")
@@ -165,7 +164,7 @@
           :collection :dif (umm-spec/generate-metadata test-context expected-conversion/example-collection-record :dif10) :umm-json))
 
       (testing "bad json"
-        (assert-translate-failure #"object has missing required properties"
+        (assert-translate-failure #"#: required key \[.*\] not found"
                                   :collection :umm-json "{}" :echo10)))))
 
 (deftest translate-metadata-handles-date-string

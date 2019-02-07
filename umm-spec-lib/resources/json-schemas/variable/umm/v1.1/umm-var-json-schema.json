@@ -90,10 +90,9 @@
       }
     },
     "FillValueType": {
-        "description": "The fill value, fill value type and fill value description  of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The fill value type is data provider-defined. For example, 'Out of Valid Range'.",
+      "description": "The fill value, fill value type and fill value description  of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The fill value type is data provider-defined. For example, 'Out of Valid Range'.",
       "type": "object",
       "additionalProperties": false,
-      "description": "The elements of this section apply to the fill value of a variable.",
       "properties": {
         "Value": {
           "description": "The fill value of the variable in the data file.",

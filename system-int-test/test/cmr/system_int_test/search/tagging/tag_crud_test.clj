@@ -6,10 +6,8 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.util :refer [are2]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.system :as s]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -35,7 +33,7 @@
             :errors ["Token [ABC] does not exist"]}
            (tags/create-tag "ABC" (tags/make-tag)))))
 
-  (let [valid-user-token (e/login (s/context) "user1")
+  (let [valid-user-token (echo-util/login (system/context) "user1")
         valid-tag (tags/make-tag)]
 
     (testing "Create tag with invalid content type"
@@ -52,13 +50,13 @@
 
     (testing "Missing field validations"
       (is (= {:status 400
-              :errors ["object has missing required properties ([\"tag_key\"])"]}
+              :errors ["#: required key [tag_key] not found"]}
              (tags/create-tag valid-user-token (dissoc valid-tag :tag-key)))))
 
     (testing "Minimum field length validations"
       (are [field]
            (= {:status 400
-               :errors [(format "/%s string \"\" is too short (length: 0, required minimum: 1)"
+               :errors [(format "#/%s: expected minLength: 1, actual: 0"
                                 (name field))]}
               (tags/create-tag valid-user-token (assoc valid-tag field "")))
 
@@ -68,8 +66,10 @@
       (doseq [[field max-length] field-maxes]
         (let [long-value (tags/string-of-length (inc max-length))]
           (is (= {:status 400
-                  :errors [(format "/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
-                                   (name field) long-value (inc max-length) max-length)]}
+                  :errors [(format "#/%s: expected maxLength: %d, actual: %d"
+                                   (name field)
+                                   max-length
+                                   (inc max-length))]}
                  (tags/create-tag
                    valid-user-token
                    (assoc valid-tag field long-value)))))))))
@@ -78,7 +78,7 @@
   (testing "Successful creation"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
-          token (e/login (s/context) "user1")
+          token (echo-util/login (system/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 201 status))
       (is concept-id)
@@ -106,7 +106,7 @@
       (testing "Creation of previously deleted tag"
         (tags/delete-tag token tag-key)
         (let [new-tag (assoc tag :description "new description")
-              token2 (e/login (s/context) "user2")
+              token2 (echo-util/login (system/context) "user2")
               response (tags/create-tag token2 new-tag)]
           (is (= {:status 200 :concept-id concept-id :revision-id 3}
                  response))
@@ -118,11 +118,14 @@
                            [field (tags/string-of-length max-length)]))
             ;; XXX understand why having this outside of a binding causes JVM corruption error
             ;; in Clojure 1.10.0
-            _ (is (= 201 (:status (tags/create-tag (e/login (s/context) "user1") tag))))])))
+            _ (is (= 201 (:status (tags/create-tag (echo-util/login
+                                                    (system/context)
+                                                    "user1")
+                                                   tag))))])))
 
   (testing "Creation without optional fields is allowed"
     (let [tag (dissoc (tags/make-tag {:tag-key "tag-key2"}) :description)
-          token (e/login (s/context) "user1")
+          token (echo-util/login (system/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 201 status))
       (is concept-id)
@@ -131,7 +134,7 @@
 (deftest get-tag-test
   (let [tag (tags/make-tag {:tag-key "MixedCaseTagKey"})
         tag-key "mixedcasetagkey"
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         _ (tags/create-tag token tag)
         expected-tag (-> tag
                          (update :tag-key str/lower-case)
@@ -155,14 +158,14 @@
 (deftest update-tag-test
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 
     (testing "Update with originator id"
       (let [updated-tag (-> tag
                             (update-in [:description] #(str % " updated"))
                             (assoc :originator-id "user1"))
-            token2 (e/login (s/context) "user2")
+            token2 (echo-util/login (system/context) "user2")
             response (tags/update-tag token2 tag-key updated-tag)]
         (is (= {:status 200 :concept-id concept-id :revision-id 2}
                response))
@@ -170,7 +173,7 @@
 
     (testing "Update without originator id"
       (let [updated-tag (dissoc tag :originator-id)
-            token2 (e/login (s/context) "user2")
+            token2 (echo-util/login (system/context) "user2")
             response (tags/update-tag token2 tag-key updated-tag)]
         (is (= {:status 200 :concept-id concept-id :revision-id 3}
                response))
@@ -180,7 +183,7 @@
 (deftest update-tag-failure-test
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
         tag (assoc tag :originator-id "user1")]
@@ -209,7 +212,7 @@
 
     (testing "Updates applies JSON validations"
       (is (= {:status 400
-              :errors ["/description string \"\" is too short (length: 0, required minimum: 1)"]}
+              :errors ["#/description: expected minLength: 1, actual: 0"]}
              (tags/update-tag token concept-id (assoc tag :description "")))))
 
     (testing "Update tag that doesn't exist"
@@ -226,7 +229,7 @@
 (deftest delete-tag-test
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
-        token (e/login (s/context) "user1")
+        token (echo-util/login (system/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 
     (testing "Delete without token"
@@ -254,7 +257,7 @@
   (testing "Successful creation with launchpad token"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
-          token (e/login-with-launchpad-token (s/context) "user1")
+          token (echo-util/login-with-launchpad-token (system/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 201 status))
       (is concept-id)
@@ -267,14 +270,14 @@
   (testing "URS token with launchpad token enforcement turned on"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
-          token (e/login (s/context) "user1")
+          token (echo-util/login (system/context) "user1")
           {:keys [status errors]} (tags/create-tag token tag)]
       (is (= 400 status))
       (is (= ["Launchpad token is required. Token [ABC-1] is not a launchpad token."] errors))))
   (testing "launchpad token with launchpad token enforcement turned on"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
-          token (e/login-with-launchpad-token (s/context) "user1")
+          token (echo-util/login-with-launchpad-token (system/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 201 status))
       (is concept-id)

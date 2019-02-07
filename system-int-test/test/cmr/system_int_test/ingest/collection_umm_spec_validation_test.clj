@@ -1,15 +1,13 @@
 (ns cmr.system-int-test.ingest.collection-umm-spec-validation-test
   "CMR Ingest umm-spec validation integration tests"
   (:require
-    [clj-time.core :as t]
+    [clj-time.core :as time]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
-    [cmr.common.util :as u :refer     [are3]]
-    [cmr.ingest.config :as icfg]
-    [cmr.spatial.line-string :as l]
-    [cmr.spatial.mbr :as m]
-    [cmr.spatial.polygon :as poly]
-    [cmr.system-int-test.data2.core :as d]
+    [cmr.common.util :as u :refer [are3]]
+    [cmr.ingest.config :as ingest-config]
+    [cmr.spatial.polygon :as polygon]
+    [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -36,24 +34,24 @@
    :Version "V1"
    :EntryTitle "The entry title V5"
    :CollectionProgress "COMPLETE"
-   :MetadataDates [(umm-cmn/map->DateType {:Date (t/date-time 2049)
+   :MetadataDates [(umm-cmn/map->DateType {:Date (time/date-time 2049)
                                            :Type "UPDATE"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2011)
+                   (umm-cmn/map->DateType {:Date (time/date-time 2011)
                                            :Type "REVIEW"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2050)
+                   (umm-cmn/map->DateType {:Date (time/date-time 2050)
                                            :Type "REVIEW"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2049)
+                   (umm-cmn/map->DateType {:Date (time/date-time 2049)
                                            :Type "DELETE"})]
-   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2050)
+   :DataDates [(umm-cmn/map->DateType {:Date (time/date-time 2050)
                                        :Type "CREATE"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2049)
+               (umm-cmn/map->DateType {:Date (time/date-time 2049)
                                        :Type "UPDATE"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2011)
+               (umm-cmn/map->DateType {:Date (time/date-time 2011)
                                        :Type "UPDATE"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2011)
+               (umm-cmn/map->DateType {:Date (time/date-time 2011)
                                        :Type "REVIEW"})]
    :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]})
 
 (defn collection-invalid-data-date-ranges
   "Returns a UmmCollection with invalid data date ranges"
@@ -63,14 +61,16 @@
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
-  (poly/polygon [(apply umm-s/ords->ring ords)]))
+  (polygon/polygon [(apply umm-s/ords->ring ords)]))
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection-missing-properties coll-attributes)
-                            (merge {:allow-failure? true} options))]
+   (let [response (data-core/ingest-umm-spec-collection
+                   "PROV1"
+                   (data-umm-c/collection-missing-properties coll-attributes)
+                   (merge {:allow-failure? true} options))]
      (is (= {:status 422
              :errors [{:path field-path
                        :errors errors}]}
@@ -82,7 +82,7 @@
   ([coll-attributes options]
    (let [collection (assoc (data-umm-c/collection-missing-properties coll-attributes) :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
-         response (d/ingest-umm-spec-collection provider-id collection options)]
+         response (data-core/ingest-umm-spec-collection provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-spatial
@@ -114,8 +114,8 @@
 (deftest collection-umm-spec-validation-test
   (testing "UMM-C JSON-Schema validation through config settings"
     (testing "schema validation errors returned"
-      (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
-      (let [response (d/ingest-umm-spec-collection
+      (side/eval-form `(ingest-config/set-return-umm-json-validation-errors! true))
+      (let [response (data-core/ingest-umm-spec-collection
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
@@ -123,17 +123,23 @@
                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
+
+                :errors ["#: required key [DataCenters] not found"
+                         "#: required key [ProcessingLevel] not found"
+                         "#: required key [ScienceKeywords] not found"
+                         "#: required key [TemporalExtents] not found"
+                         "#: required key [Platforms] not found"
+                         "#: required key [CollectionProgress] not found"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation errors not returned"
-      (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+      (side/eval-form `(ingest-config/set-return-umm-json-validation-errors! false))
       (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
 
   (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
     (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
-      (let [response (d/ingest-umm-spec-collection
+      (let [response (data-core/ingest-umm-spec-collection
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
@@ -141,14 +147,19 @@
                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
+                :errors ["#: required key [DataCenters] not found"
+                         "#: required key [ProcessingLevel] not found"
+                         "#: required key [ScienceKeywords] not found"
+                         "#: required key [TemporalExtents] not found"
+                         "#: required key [Platforms] not found"
+                         "#: required key [CollectionProgress] not found"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true"
       (let [coll-attr {:AdditionalAttributes
                        [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                         (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]}]
-        (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+        (side/eval-form `(ingest-config/set-return-umm-json-validation-errors! false))
         (are3 [coll-attributes options]
               (assert-valid coll-attributes options)
 
@@ -180,7 +191,7 @@
                      :AdditionalAttributes
                      [(data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
                       (data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}]
-      (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+      (side/eval-form `(ingest-config/set-return-umm-json-validation-errors! false))
       (are3 [coll-attributes field-path error options]
             (assert-invalid coll-attributes field-path error options)
 
@@ -202,9 +213,9 @@
     (assert-invalid
       {:AdditionalAttributes
        [(data-umm-cmn/additional-attribute {:Name "int"
-                                          :DataType "INT"
-                                          :ParameterRangeBegin 100
-                                          :ParameterRangeEnd 0})]}
+                                            :DataType "INT"
+                                            :ParameterRangeBegin 100
+                                            :ParameterRangeEnd 0})]}
       ["AdditionalAttributes" 0]
       ["Parameter Range Begin [100] cannot be greater than Parameter Range End [0]."]))
 
@@ -212,10 +223,10 @@
     (assert-invalid
       {:AdditionalAttributes
        [(data-umm-cmn/additional-attribute {:Name "float"
-                                          :DataType "FLOAT"
-                                          :ParameterRangeBegin 0.0
-                                          :ParameterRangeEnd 10.0
-                                          :Value 12.0})]}
+                                            :DataType "FLOAT"
+                                            :ParameterRangeBegin 0.0
+                                            :ParameterRangeEnd 10.0
+                                            :Value 12.0})]}
       ["AdditionalAttributes" 0]
       ["Value [12.0] cannot be greater than Parameter Range End [10.0]."]))
 
@@ -348,7 +359,7 @@
   (testing "Ingest and Ingest Validation with warning messages for all formats"
     (are3 [format collection warning-message]
           (do
-            (let [response (d/ingest-umm-spec-collection "PROV1" collection {:format format})]
+            (let [response (data-core/ingest-umm-spec-collection "PROV1" collection {:format format})]
               (is (#{200 201} (:status response)))
               (is (= warning-message (:warnings response))))
             (let [response (ingest/validate-concept (data-umm-c/collection-concept collection format))]
@@ -356,26 +367,32 @@
               (is (= warning-message (:warnings response)))))
 
           "ECHO10 Ingest and Ingest Validation"
-          :echo10 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"
+          :echo10 (data-umm-c/collection-missing-properties {})
+          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "umm-json Ingest and Ingest Validation for Invalid data date ranges"
-          :umm-json (collection-invalid-data-date-ranges) "After translating item to UMM-C the metadata had the following issue: [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].After translating item to UMM-C the metadata had the following issue: [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past.  latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
+          :umm-json (collection-invalid-data-date-ranges)
+          "After translating item to UMM-C the metadata had the following issue: [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].. [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past. latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
 
           "DIF10 Ingest and Ingest Validation"
-          :dif10 (data-umm-c/collection-missing-properties-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"ProcessingLevel\"])"
+          :dif10 (data-umm-c/collection-missing-properties-dif10 {})
+          "After translating item to UMM-C the metadata had the following issue: #: required key [ProcessingLevel] not found. #: required key [CollectionProgress] not found"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (data-umm-c/collection-missing-properties-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :dif (data-umm-c/collection-missing-properties-dif {})
+          "After translating item to UMM-C the metadata had the following issue: #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "ISO19115 Ingest and Ingest Validation"
-          :iso19115 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso19115 (data-umm-c/collection-missing-properties {})
+          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso-smap (data-umm-c/collection-missing-properties {})
+          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
-          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
+          "After translating item to UMM-C the metadata had the following issue: #: required key [Version] not found. #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found")))
 
 (deftest umm-spec-temporal-validation
   (testing "Invalid temporal extents"
@@ -403,10 +420,10 @@
                                                                   :StartDate "2005-01-01"
                                                                   :EndDate "123456789-10-11"}]}])]
       (are3 [format collection error-message]
-            (let [response (d/ingest-umm-spec-collection "PROV1"
-                                                         collection
-                                                         {:format format
-                                                          :allow-failure? true})]
+            (let [response (data-core/ingest-umm-spec-collection "PROV1"
+                                                                 collection
+                                                                 {:format format
+                                                                  :allow-failure? true})]
               (is (= 422 (:status response)))
               (is (= error-message (first (:errors response)))))
 

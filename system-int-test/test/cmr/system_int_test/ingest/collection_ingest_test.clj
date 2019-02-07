@@ -4,23 +4,22 @@
   For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clj-http.client :as client]
-   [clj-time.core :as t]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.access-control.test.util :as ac]
+   [cmr.access-control.test.util :as test-util]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.date-time-parser :as p]
+   [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -28,14 +27,14 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-   [cmr.umm-spec.test.expected-conversion :as exc]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversation]
+   [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
-(def test-context (lkt/setup-context-for-test))
+(def test-context (location-keywords-helper/setup-context-for-test))
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
@@ -66,13 +65,13 @@
         (ingest/assert-user-id concept-id revision-id expected-user-id))
 
       "user id from token"
-      {:token (e/login (s/context) "user1")} "user1"
+      {:token (echo-util/login (system/context) "user1")} "user1"
 
       "user id from user-id header"
       {:user-id "user2"} "user2"
 
       "both user-id and token in the header results in the revision getting user id from user-id header"
-      {:token (e/login (s/context) "user3")
+      {:token (echo-util/login (system/context) "user3")
        :user-id "user4"} "user4"
 
       "neither user-id nor token in the header"
@@ -94,9 +93,9 @@
         (ingest/assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
 
       "user id from token"
-      {:token (e/login (s/context) "user1")} "user1"
-      {:token (e/login (s/context) "user2")} "user2"
-      {:token (e/login (s/context) "user3")} "user3"
+      {:token (echo-util/login (system/context) "user1")} "user1"
+      {:token (echo-util/login (system/context) "user2")} "user2"
+      {:token (echo-util/login (system/context) "user3")} "user3"
       {:token nil} nil
 
       "user id from user-id header"
@@ -185,18 +184,22 @@
 ;; Verify that the accept header works with deletions
 (deftest delete-collection-with-accept-header-test
   (testing "json response"
-    (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+    (let [coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                      (data-umm-c/collection {:EntryTitle "E1"
                                                                               :ShortName "S1"}))
-          response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :json
-                                                                                       :raw? true})]
+          response (ingest/delete-concept (data-core/umm-c-collection->concept coll1 :echo10)
+                                          {:accept-format :json
+                                           :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
-    (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+    (let [coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                      (data-umm-c/collection {:EntryTitle "E2"
                                                                               :ShortName "S2"}))
           _ (index/wait-until-indexed)
-          response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :xml
-                                                                                       :raw? true})]
+          response (ingest/delete-concept (data-core/umm-c-collection->concept coll1 :echo10)
+                                          {:accept-format :xml
+                                           :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
 
@@ -219,10 +222,10 @@
       (is (= {:concept-id "C1-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "dif"
-    (let [concept (d/umm-c-collection->concept (assoc (data-umm-c/collection {:EntryTitle "E2"
-                                                                              :ShortName "S2"
-                                                                              :concept-id "C2-PROV1"})
-                                                :provider-id "PROV1") :dif)
+    (let [concept (data-core/umm-c-collection->concept (assoc (data-umm-c/collection {:EntryTitle "E2"
+                                                                                      :ShortName "S2"
+                                                                                      :concept-id "C2-PROV1"})
+                                                        :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
@@ -248,58 +251,62 @@
                                         :native-id "NID-3"})
         coll1-4 (assoc-in coll1-3 [:ShortName] "EID-4")
         ;; ingest the collections/granules for test
-        _ (d/ingest-umm-spec-collection "PROV1" coll1-1 {:format :dif})
-        coll3 (d/ingest-umm-spec-collection "PROV1" coll1-3 {:format :dif})
-        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule2"}))]
+        _ (data-core/ingest-umm-spec-collection "PROV1" coll1-1 {:format :dif})
+        coll3 (data-core/ingest-umm-spec-collection "PROV1" coll1-3 {:format :dif})
+        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule1"}))
+        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule2"}))]
     (index/wait-until-indexed)
 
     (testing "update the collection with a different entry-id is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest-umm-spec-collection "PROV1" coll1-2 {:format :dif})]
+            (data-core/ingest-umm-spec-collection "PROV1" coll1-2 {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "update the collection that has granules with a different entry-id is allowed"
       ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
       ;; with existing granules for the collection. We will change this with CMR-2485.
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest-umm-spec-collection "PROV1" coll1-4 {:format :dif :allow-failure? true})]
+            (data-core/ingest-umm-spec-collection "PROV1" coll1-4 {:format :dif :allow-failure? true})]
         (is (= ["C3-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"
-      (let [{:keys [status errors]} (d/ingest-umm-spec-collection "PROV1"
-                                              (assoc coll1-2
-                                                     :concept-id "C2-PROV1"
-                                                     :native-id "NID-2"
-                                                     :EntryTitle "EID-2")
-                                              {:format :dif :allow-failure? true})]
+      (let [{:keys [status errors]} (data-core/ingest-umm-spec-collection
+                                     "PROV1"
+                                     (assoc coll1-2
+                                            :concept-id "C2-PROV1"
+                                            :native-id "NID-2"
+                                            :EntryTitle "EID-2")
+                                     {:format :dif :allow-failure? true})]
         (is (= [409 ["The Short Name [EID-2] and Version Id [V1] combined must be unique. The following concepts with the same Short Name and Version Id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection, but not the latest revision within the same provider is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest-umm-spec-collection "PROV1"
-                      (assoc coll1-1
-                             :concept-id "C2-PROV1"
-                             :native-id "NID-2"
-                             :EntryTitle "EID-2")
-                      {:format :dif :allow-failure? true})]
+            (data-core/ingest-umm-spec-collection
+             "PROV1"
+             (assoc coll1-1
+                    :concept-id "C2-PROV1"
+                    :native-id "NID-2"
+                    :EntryTitle "EID-2")
+             {:format :dif :allow-failure? true})]
         (is (= ["C2-PROV1" 1 201 nil] [concept-id revision-id status errors]))))
 
     (testing "entry-id and entry-title constraint violations return multiple errors"
-      (let [{:keys [status errors]} (d/ingest-umm-spec-collection "PROV1"
-                                              (assoc coll1-2
-                                                     :concept-id "C5-PROV1"
-                                                     :native-id "NID-5")
-                                              {:format :dif :allow-failure? true})]
+      (let [{:keys [status errors]} (data-core/ingest-umm-spec-collection
+                                     "PROV1"
+                                     (assoc coll1-2
+                                            :concept-id "C5-PROV1"
+                                            :native-id "NID-5")
+                                     {:format :dif :allow-failure? true})]
         (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
                      "The Short Name [EID-2] and Version Id [V1] combined must be unique. The following concepts with the same Short Name and Version Id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
-      (let [{:keys [status]} (d/ingest-umm-spec-collection "PROV2"
-                                       (assoc coll1-2 :concept-id "C1-PROV2")
-                                       {:format :dif})]
+      (let [{:keys [status]} (data-core/ingest-umm-spec-collection
+                              "PROV2"
+                              (assoc coll1-2 :concept-id "C1-PROV2")
+                              {:format :dif})]
         (is (= 201 status))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
@@ -316,7 +323,7 @@
 (deftest update-collection-with-different-formats-test
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
-      (let [coll (d/ingest-umm-spec-collection
+      (let [coll (data-core/ingest-umm-spec-collection
                   "PROV1"
                   (data-umm-c/collection {:ShortName "S1"
                                           :Version "V1"
@@ -350,10 +357,10 @@
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
-  (let [coll (data-umm-c/collection {:DataDates [(umm-cmn/map->DateType {:Date (p/parse-datetime "2000-01-01T12:00:00Z")
+  (let [coll (data-umm-c/collection {:DataDates [(umm-cmn/map->DateType {:Date (date-time-parser/parse-datetime "2000-01-01T12:00:00Z")
                                                                          :Type "DELETE"})]})
         {:keys [status errors]} (ingest/ingest-concept
-                                  (d/umm-c-collection->concept (assoc coll :provider-id "PROV1") :echo10))]
+                                  (data-core/umm-c-collection->concept (assoc coll :provider-id "PROV1") :echo10))]
     (index/wait-until-indexed)
     (is (= status 422))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
@@ -378,17 +385,17 @@
       (is (mdb/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
 
 (deftest delete-collection-test
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                                            :ShortName "S1"}))
-        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
-        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
-                                                                            :ShortName "S2"}))
-        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2)))]
+  (let [coll1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                                    :ShortName "S1"}))
+        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        coll2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                                    :ShortName "S2"}))
+        gran3 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll2 (:concept-id coll2)))]
     (index/wait-until-indexed)
 
     ;; delete collection
-    (is (= 200 (:status (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10)))))
+    (is (= 200 (:status (ingest/delete-concept (data-core/umm-c-collection->concept coll1 :echo10)))))
     (index/wait-until-indexed)
 
     (is (:deleted (mdb/get-concept (:concept-id coll1))) "The collection should be deleted")
@@ -405,115 +412,115 @@
     (is (mdb/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
     (is (mdb/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
 
-    (is (d/refs-match?
+    (is (data-core/refs-match?
           [coll2]
           (search/find-refs :collection {"concept-id" (:concept-id coll2)})))
-    (is (d/refs-match?
+    (is (data-core/refs-match?
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
 (deftest delete-collection-acls-test
   ;; Remove search fixture acls
-  (let [fixture-acls (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))
+  (let [fixture-acls (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))
         _ (doseq [fixture-acl fixture-acls]
-            (e/ungrant (ac/conn-context) (:concept_id fixture-acl)))
+            (echo-util/ungrant (test-util/conn-context) (:concept_id fixture-acl)))
 
         ;; Ingest a collection under PROV1.
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                                            :ShortName "S1"}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
-                                                                            :ShortName "S2"}))
-        coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E3"
-                                                                            :ShortName "S3"}))
-        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E4"
-                                                                            :ShortName "S4"}))
-        token (e/login-guest (s/context))]
+        coll1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                                    :ShortName "S1"}))
+        coll2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                                    :ShortName "S2"}))
+        coll3 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E3"
+                                                                                    :ShortName "S3"}))
+        coll4 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E4"
+                                                                                    :ShortName "S4"}))
+        token (echo-util/login-guest (system/context))]
 
     ;; wait for the collections to be indexed so that ACLs will be valid
     (index/wait-until-indexed)
-    (ac/create-acl (transmit-config/echo-system-token)
-                   {:group_permissions [{:user_type "guest"
-                                         :permissions ["read" "create"]}]
-                    :provider_identity {:provider_id "PROV1"
-                                        :target "CATALOG_ITEM_ACL"}})
+    (test-util/create-acl (transmit-config/echo-system-token)
+                          {:group_permissions [{:user_type "guest"
+                                                :permissions ["read" "create"]}]
+                           :provider_identity {:provider_id "PROV1"
+                                               :target "CATALOG_ITEM_ACL"}})
 
-    (ac/create-acl (transmit-config/echo-system-token)
-                   {:group_permissions [{:user_type "guest"
-                                         :permissions ["read" "create"]}]
-                    :provider_identity {:provider_id "PROV2"
-                                        :target "CATALOG_ITEM_ACL"}})
+    (test-util/create-acl (transmit-config/echo-system-token)
+                          {:group_permissions [{:user_type "guest"
+                                                :permissions ["read" "create"]}]
+                           :provider_identity {:provider_id "PROV2"
+                                               :target "CATALOG_ITEM_ACL"}})
     (index/wait-until-indexed)
     ;; Ingest some ACLs that reference the collection by concept id.
-    (ac/create-acl token {:group_permissions [{:user_type "guest"
-                                               :permissions ["read" "order"]}]
-                          :catalog_item_identity {:name "coll1 ACL"
-                                                  :provider_id "PROV1"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
+    (test-util/create-acl token {:group_permissions [{:user_type "guest"
+                                                      :permissions ["read" "order"]}]
+                                 :catalog_item_identity {:name "coll1 ACL"
+                                                         :provider_id "PROV1"
+                                                         :collection_applicable true
+                                                         :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
 
-    (ac/create-acl token {:group_permissions [{:user_type "guest"
-                                               :permissions ["read"]}]
-                          :catalog_item_identity {:name "coll1/coll2 ACL"
-                                                  :provider_id "PROV1"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]}}})
+    (test-util/create-acl token {:group_permissions [{:user_type "guest"
+                                                      :permissions ["read"]}]
+                                 :catalog_item_identity {:name "coll1/coll2 ACL"
+                                                         :provider_id "PROV1"
+                                                         :collection_applicable true
+                                                         :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]}}})
 
-    (ac/create-acl token {:group_permissions [{:user_type "guest"
-                                               :permissions ["read" "order"]}]
-                          :catalog_item_identity {:name "coll3 ACL"
-                                                  :provider_id "PROV2"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:concept_ids [(:concept-id coll3)]}}})
-    (ac/create-acl token {:group_permissions [{:user_type "guest"
-                                               :permissions ["read"]}]
-                          :catalog_item_identity {:name "coll3/coll4 ACL"
-                                                  :provider_id "PROV2"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:concept_ids [(:concept-id coll3) (:concept-id coll4)]}}})
+    (test-util/create-acl token {:group_permissions [{:user_type "guest"
+                                                      :permissions ["read" "order"]}]
+                                 :catalog_item_identity {:name "coll3 ACL"
+                                                         :provider_id "PROV2"
+                                                         :collection_applicable true
+                                                         :collection_identifier {:concept_ids [(:concept-id coll3)]}}})
+    (test-util/create-acl token {:group_permissions [{:user_type "guest"
+                                                      :permissions ["read"]}]
+                                 :catalog_item_identity {:name "coll3/coll4 ACL"
+                                                         :provider_id "PROV2"
+                                                         :collection_applicable true
+                                                         :collection_identifier {:concept_ids [(:concept-id coll3) (:concept-id coll4)]}}})
     (index/wait-until-indexed)
 
     (testing "Entry title based catalog item acls"
       ;; Verify that the ACLs are found in Access Control Service search.
-      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
+      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
         (is (= [1 1] (map :revision_id results)))
         (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
       ;; Delete the collection via ingest.
-      (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10))
+      (ingest/delete-concept (data-core/umm-c-collection->concept coll1 :echo10))
       (index/wait-until-indexed)
       ;; Verify that those ACLs are NOT found.
-      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
+      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
         (is (= [2] (map :revision_id results)))
         (is (= ["coll1/coll2 ACL"] (map :name results)))
         (is (= [(:EntryTitle coll2)]
-               (-> (ac/get-acl token (:concept_id (first results)))
+               (-> (test-util/get-acl token (:concept_id (first results)))
                    :catalog_item_identity
                    :collection_identifier
                    :entry_titles)))))
 
     ;; Verify that the ACLs are found in Access Control Service search.
     (testing "Concept id based catalog item acls"
-      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
+      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
         (is (= [1 1] (map :revision_id results)))
         (is (= ["coll3 ACL" "coll3/coll4 ACL"] (map :name results))))
       ;; Delete the collection via ingest.
-      (ingest/delete-concept (d/umm-c-collection->concept coll3 :echo10))
+      (ingest/delete-concept (data-core/umm-c-collection->concept coll3 :echo10))
       (index/wait-until-indexed)
       ;; Verify that those ACLs are NOT found.
-      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
+      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
         (is (= [2] (map :revision_id results)))
         (is (= ["coll3/coll4 ACL"] (map :name results)))
         (is (= [(:concept-id coll4)]
-               (-> (ac/get-acl token (:concept_id (first results)))
+               (-> (test-util/get-acl token (:concept_id (first results)))
                    :catalog_item_identity
                    :collection_identifier
                    :concept_ids)))))))
 
 (deftest delete-deleted-collection-with-new-revision-id-returns-404
-  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))
+  (let [coll (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))
         concept-id (:concept-id coll)
         native-id (:EntryTitle coll)
-        coll-del1 (ingest/delete-concept (d/umm-c-collection->concept coll :echo10) {:revision-id 5})
-        coll-del2 (ingest/delete-concept (d/umm-c-collection->concept coll :echo10) {:revision-id 7})]
+        coll-del1 (ingest/delete-concept (data-core/umm-c-collection->concept coll :echo10) {:revision-id 5})
+        coll-del2 (ingest/delete-concept (data-core/umm-c-collection->concept coll :echo10) {:revision-id 7})]
     (is (= 200 (:status coll-del1)))
     (is (= 404 (:status coll-del2)))
     (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
@@ -578,7 +585,7 @@
              {:keys [status errors]}
              (ingest/ingest-concept
                (assoc concept
-                      :format (mt/format->mime-type concept-format)
+                      :format (mime-types/format->mime-type concept-format)
                       :metadata (-> concept
                                     :metadata
                                     (string/replace "2010-12-12T12:00:00" "A")
@@ -608,7 +615,7 @@
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata test-context exc/curr-ingest-ver-example-collection-record :umm-json)
+  (let [json (umm-spec/generate-metadata test-context expected-conversation/curr-ingest-ver-example-collection-record :umm-json)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
@@ -633,7 +640,7 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc exc/curr-ingest-ver-example-collection-record
+    (let [json (umm-spec/generate-metadata test-context (assoc expected-conversation/curr-ingest-ver-example-collection-record
                                                          :DataDates
                                                          [{:Date "invalid date"
                                                            :Type "CREATE"}])
@@ -645,11 +652,11 @@
                        :format "application/vnd.nasa.cmr.umm+json"
                        :metadata json}
           response (ingest/ingest-concept concept-map {:accept-format :json})]
-      (is (= ["/DataDates/0/Date string \"invalid date\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"] (:errors response)))
+      (is (= ["#/DataDates/0/Date: [invalid date] is not a valid date-time. Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]"] (:errors response)))
       (is (= 400 (:status response))))))
 
 (deftest ingest-old-json-versions
-  (let [json     (umm-spec/generate-metadata test-context exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
+  (let [json     (umm-spec/generate-metadata test-context expected-conversation/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection

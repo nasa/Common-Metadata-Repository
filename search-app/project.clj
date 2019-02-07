@@ -12,7 +12,6 @@
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.9.8"]
-                 [com.github.fge/json-schema-validator "2.2.6"]
                  [commons-codec/commons-codec "1.11"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
