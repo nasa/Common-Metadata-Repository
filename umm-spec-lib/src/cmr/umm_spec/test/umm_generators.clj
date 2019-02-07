@@ -1,12 +1,13 @@
 (ns cmr.umm-spec.test.umm-generators
   "Contains code for creating Clojure test.check generators from a JSON schema."
-  (:require [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen]
-            [com.gfredericks.test.chuck.generators :as chgen]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.record-generator :as record-gen]
-            [cmr.umm-spec.test.umm-record-sanitizer :as san]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.record-generator :as record-gen]
+   [cmr.umm-spec.test.umm-record-sanitizer :as san]
+   [com.gfredericks.test.chuck.generators :as chgen]))
 
 ;;; We could move this to common lib if desired at some point. There's not much here that is UMM specific.
 
@@ -38,11 +39,19 @@
   with keys properties, required, and additionalProperties. This is used to handle a normal object
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :required :additionalProperties :not} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties :not :allOf} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
         properties (:properties schema-type)
+        ;; The following line is a hack!!!
+        ;; Since UMM-G InstrumentType has ComposedOf field that is also an InstrumentType
+        ;; and there could be multiple levels of ComposedOf within an InstrumentType,
+        ;; We randomly (1 out of 2) drop the ComposedOf field from properties
+        ;; to not get into infinite loops of generating InstrumentTypes
+        properties (if (= 0 (rand-int 2))
+                     (dissoc properties :ComposedOf)
+                     properties)
 
         ;; Create a map of property keys to generators for those properties
         prop-gens (into {} (for [[k subtype] properties]
@@ -109,7 +118,8 @@
 
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf :not} schema-type)
+  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf
+                                :anyOf :allOf :not :dependencies} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (object-one-of->generator schema type-name schema-type)
     ;; else
@@ -121,8 +131,8 @@
            vec
            gen/one-of)
       (object-like-schema-type->generator
-        schema type-name
-        (select-keys schema-type [:properties :required :additionalProperties])))))
+       schema type-name
+       (select-keys schema-type [:properties :required :additionalProperties])))))
 
 (defmethod schema-type->generator "oneOf"
   [schema type-name schema-type]
@@ -142,7 +152,7 @@
 
 (defmethod schema-type->generator "array"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:items :minItems :maxItems} schema-type)
+  (rejected-unexpected-fields #{:items :minItems :maxItems :uniqueItems} schema-type)
   (let [{:keys [items minItems maxItems]} (merge array-defaults schema-type)
         item-generator (gen/such-that some? (schema-type->generator schema type-name items))
         ;; Limit the maximum number of items in an array to array-max-items.
@@ -232,6 +242,10 @@
   (gen/fmap san/sanitized-umm-c-record
             (schema->generator js/umm-c-schema)))
 
+(def umm-g-generator
+  (gen/fmap san/sanitized-umm-g-record
+            (schema->generator js/umm-g-schema)))
+
 (def umm-s-generator
   (gen/fmap san/sanitized-umm-s-record
             (schema->generator js/umm-s-schema)))
@@ -241,5 +255,7 @@
             (schema->generator js/umm-var-schema)))
 
 (comment
+
+ (schema->generator js/umm-g-schema)
 
   (last (gen/sample umm-c-generator 10)))

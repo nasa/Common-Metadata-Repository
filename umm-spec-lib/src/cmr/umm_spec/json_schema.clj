@@ -298,6 +298,8 @@
 
 (def umm-c-schema (concept-schema :collection))
 
+(def umm-g-schema (concept-schema :granule))
+
 (def umm-s-schema (concept-schema :service))
 
 (def umm-var-schema (concept-schema :variable))
@@ -315,6 +317,7 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
+   "umm-g-json-schema.json" 'cmr.umm-spec.models.umm-granule-models
    "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 

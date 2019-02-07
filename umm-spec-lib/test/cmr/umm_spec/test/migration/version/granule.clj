@@ -20,7 +20,7 @@
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
-  (for-all [umm-record   (gen/no-shrink umm-gen/umm-var-generator)
+  (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
             dest-version (gen/elements (v/versions :granule))]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
           metadata (core/generate-metadata (lkt/setup-context-for-test)

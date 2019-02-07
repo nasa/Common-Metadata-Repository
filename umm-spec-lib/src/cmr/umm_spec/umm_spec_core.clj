@@ -31,6 +31,7 @@
   (:import
    (cmr.umm.umm_granule UmmGranule)
    (cmr.umm_spec.models.umm_collection_models UMM-C)
+   (cmr.umm_spec.models.umm_granule_models UMM-G)
    (cmr.umm_spec.models.umm_service_models UMM-S)
    (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
@@ -39,6 +40,8 @@
   [record]
   (condp instance? record
     UMM-C :collection
+    ;; UMM-G record are used when UMM-G record is migrated to another UMM-G version
+    UMM-G :granule
     UmmGranule :granule
     UMM-S :service
     UMM-Var :variable))
@@ -113,9 +116,11 @@
                              context :service metadata (umm-json-version :service fmt)))))
 
 (defn- generate-umm-g-metadata
-  "Generate UMM-G metadata from umm-lib granule model"
+  "Generate UMM-G metadata from umm-lib granule model or UMM-G record."
   [context source-version fmt umm]
-  (let [parsed-umm-g (umm-g/Granule->umm-g umm)
+  (let [parsed-umm-g (if (instance? UMM-G umm)
+                       umm
+                       (umm-g/Granule->umm-g umm))
         target-umm-json-version (umm-json-version :granule fmt)]
     ;; migrate parsed umm-g to the version specified in format
     (umm-json/umm->json

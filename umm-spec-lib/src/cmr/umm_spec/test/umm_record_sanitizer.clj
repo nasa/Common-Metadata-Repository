@@ -317,6 +317,11 @@
       sanitize-umm-data-presentation-form
       sanitize-umm-collection-citations))
 
+(defn sanitized-umm-g-record
+  "Include only the sanitizers needed for a given umm-g record."
+  [record]
+  record)
+
 (defn sanitized-umm-s-record
   "Include only the sanitizers needed for a given umm-s record."
   [record]
