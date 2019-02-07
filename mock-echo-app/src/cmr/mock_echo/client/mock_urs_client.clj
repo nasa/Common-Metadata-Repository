@@ -1,16 +1,19 @@
 (ns cmr.mock-echo.client.mock-urs-client
   "Contains functions for communicating with the mock urs api that aren't normal URS
   operations"
-  (:require [cmr.transmit.http-helper :as h]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]))
 
 (defn- create-users-url
+  "Call to create users in mock URS. Makes an assumption that the URS root context in the
+  connection is an empty string."
   [conn]
-  (format "%s/users" (conn/root-url conn)))
+  (format "%s/urs/users" (conn/root-url conn)))
 
 (defn create-users
   "Creates the users in mock urs given an array of maps with :username and :password"
@@ -26,7 +29,3 @@
       (errors/internal-error!
        (format "Unexpected status %d from response. body: %s"
                status (pr-str body))))))
-
-
-
-

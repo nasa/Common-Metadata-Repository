@@ -2,17 +2,18 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.mock-echo.api.routes :as routes]
-            [cmr.common.api.web-server :as web]
-            [cmr.mock-echo.data.token-db :as token-db]
-            [cmr.mock-echo.data.provider-db :as provider-db]
-            [cmr.mock-echo.data.acl-db :as acl-db]
-            [cmr.mock-echo.data.urs-db :as urs-db]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.api.context :as context]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [cmr.common.api.context :as context]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.system :as common-sys]
+   [cmr.mock-echo.api.routes :as routes]
+   [cmr.mock-echo.data.acl-db :as acl-db]
+   [cmr.mock-echo.data.provider-db :as provider-db]
+   [cmr.mock-echo.data.token-db :as token-db]
+   [cmr.mock-echo.data.urs-db :as urs-db]
+   [cmr.transmit.config :as transmit-config]))
 
 (def ^:private component-order
   "Defines the order to start the components."

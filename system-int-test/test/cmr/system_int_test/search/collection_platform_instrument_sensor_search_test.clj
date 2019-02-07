@@ -25,36 +25,36 @@
         p8 (data-umm-cmn/platform {:ShortName "diaDEM-1d"})
 
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p7]
-                                                        :EntryTitle "E1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"}))
+                                                                            :EntryTitle "E1"
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2 p8]
-                                                        :EntryTitle "E2"
-                                                        :ShortName "S2"
-                                                        :Version "V2"}))
+                                                                            :EntryTitle "E2"
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
-                                                        :EntryTitle "E3"
-                                                        :ShortName "S3"
-                                                        :Version "V3"}))
+                                                                            :EntryTitle "E3"
+                                                                            :ShortName "S3"
+                                                                            :Version "V3"}))
         coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
-                                                        :EntryTitle "E4"
-                                                        :ShortName "S4"
-                                                        :Version "V4"}))
+                                                                            :EntryTitle "E4"
+                                                                            :ShortName "S4"
+                                                                            :Version "V4"}))
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
-                                                        :EntryTitle "E5"
-                                                        :ShortName "S5"
-                                                        :Version "V5"}))
+                                                                            :EntryTitle "E5"
+                                                                            :ShortName "S5"
+                                                                            :Version "V5"}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
-                                                        :EntryTitle "E6"
-                                                        :ShortName "S6"
-                                                        :Version "V6"}))
+                                                                            :EntryTitle "E6"
+                                                                            :ShortName "S6"
+                                                                            :Version "V6"}))
         coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
-                                                        :EntryTitle "E7"
-                                                        :ShortName "S7"
-                                                        :Version "V7"}))
+                                                                            :EntryTitle "E7"
+                                                                            :ShortName "S7"
+                                                                            :Version "V7"}))
         coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E8"
-                                                        :ShortName "S8"
-                                                        :Version "V8"}))
+                                                                            :ShortName "S8"
+                                                                            :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
         ;; found in KMS with a category of "Earth Observation Satellites"
         coll9 (d/ingest-concept-with-metadata-file "example-data/iso-smap/SMAPExample.xml"
@@ -152,7 +152,7 @@
            ;; Test searching on KMS subfields
            "Search collections by platform using JSON query test11"
            [coll1 coll2 coll9] {:platform {:category "Earth Observation Satellites"
-                                     :ignore_case false}}
+                                           :ignore_case false}}
            "Search collections by platform using JSON query test12"
            [] {:platform {:category "EARTH OBSERVATION SATELLITES" :ignore_case false}}
            "Search collections by platform using JSON query test13"
@@ -196,40 +196,40 @@
         p6 (data-umm-cmn/platform {:ShortName "platform_6" :Instruments [i5]})
         p7 (data-umm-cmn/platform {:ShortName "platform_7" :Instruments [i6]})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
-                                                        :EntryTitle "E1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"}))
+                                                                            :EntryTitle "E1"
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
-                                                        :EntryTitle "E2"
-                                                        :ShortName "S2"
-                                                        :Version "V2"}))
+                                                                            :EntryTitle "E2"
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
-                                                        :EntryTitle "E3"
-                                                        :ShortName "S3"
-                                                        :Version "V3"}))
+                                                                            :EntryTitle "E3"
+                                                                            :ShortName "S3"
+                                                                            :Version "V3"}))
         coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
-                                                        :EntryTitle "E4"
-                                                        :ShortName "S4"
-                                                        :Version "V4"}))
+                                                                            :EntryTitle "E4"
+                                                                            :ShortName "S4"
+                                                                            :Version "V4"}))
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
-                                                        :EntryTitle "E5"
-                                                        :ShortName "S5"
-                                                        :Version "V5"}))
+                                                                            :EntryTitle "E5"
+                                                                            :ShortName "S5"
+                                                                            :Version "V5"}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
-                                                        :EntryTitle "E6"
-                                                        :ShortName "S6"
-                                                        :Version "V6"}))
+                                                                            :EntryTitle "E6"
+                                                                            :ShortName "S6"
+                                                                            :Version "V6"}))
         coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
-                                                        :EntryTitle "E7"
-                                                        :ShortName "S7"
-                                                        :Version "V7"}))
+                                                                            :EntryTitle "E7"
+                                                                            :ShortName "S7"
+                                                                            :Version "V7"}))
         coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p7]
-                                                        :EntryTitle "E8"
-                                                        :ShortName "S8"
-                                                        :Version "V8"}))
+                                                                            :EntryTitle "E8"
+                                                                            :ShortName "S8"
+                                                                            :Version "V8"}))
         coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E9"
-                                                        :ShortName "S9"
-                                                        :Version "V9"}))
+                                                                            :ShortName "S9"
+                                                                            :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
         coll10 (d/ingest-concept-with-metadata-file "example-data/iso-smap/SMAPExample.xml"
                                                    {:provider-id "PROV1"
@@ -383,44 +383,44 @@
         p7 (data-umm-cmn/platform {:ShortName "platform_7" :Instruments [i6]})
         p8 (data-umm-cmn/platform {:ShortName "platform_8" :Instruments [i7]})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
-                                                        :EntryTitle "E1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"}))
+                                                                            :EntryTitle "E1"
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
-                                                        :EntryTitle "E2"
-                                                        :ShortName "S2"
-                                                        :Version "V2"}))
+                                                                            :EntryTitle "E2"
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
-                                                        :EntryTitle "E3"
-                                                        :ShortName "S3"
-                                                        :Version "V3"}))
+                                                                            :EntryTitle "E3"
+                                                                            :ShortName "S3"
+                                                                            :Version "V3"}))
         coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
-                                                        :EntryTitle "E4"
-                                                        :ShortName "S4"
-                                                        :Version "V4"}))
+                                                                            :EntryTitle "E4"
+                                                                            :ShortName "S4"
+                                                                            :Version "V4"}))
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
-                                                        :EntryTitle "E5"
-                                                        :ShortName "S5"
-                                                        :Version "V5"}))
+                                                                            :EntryTitle "E5"
+                                                                            :ShortName "S5"
+                                                                            :Version "V5"}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
-                                                        :EntryTitle "E6"
-                                                        :ShortName "S6"
-                                                        :Version "V6"}))
+                                                                            :EntryTitle "E6"
+                                                                            :ShortName "S6"
+                                                                            :Version "V6"}))
         coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
-                                                        :EntryTitle "E7"
-                                                        :ShortName "S7"
-                                                        :Version "V7"}))
+                                                                            :EntryTitle "E7"
+                                                                            :ShortName "S7"
+                                                                            :Version "V7"}))
         coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p7]
-                                                        :EntryTitle "E8"
-                                                        :ShortName "S8"
-                                                        :Version "V8"}))
+                                                                            :EntryTitle "E8"
+                                                                            :ShortName "S8"
+                                                                            :Version "V8"}))
         coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p8]
-                                                        :EntryTitle "E9"
-                                                        :ShortName "S9"
-                                                        :Version "V9"}))
+                                                                            :EntryTitle "E9"
+                                                                            :ShortName "S9"
+                                                                            :Version "V9"}))
         coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E10"
-                                                        :ShortName "S10"
-                                                        :Version "V10"}))]
+                                                                             :ShortName "S10"
+                                                                             :Version "V10"}))]
 
     (index/wait-until-indexed)
 
@@ -458,7 +458,7 @@
 
     (testing "Search collections by sensor with JSON query"
       (are [items search]
-             (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
            [coll1 coll2 coll6 coll7] {:sensor "sensor_Sn A"}
            [coll8 coll9] {:sensor "sensor_x"}
@@ -470,3 +470,23 @@
            [coll1 coll2 coll3 coll6 coll7] {:sensor {:value "sensor_Sn *" :pattern true}}
            [coll4 coll5] {:sensor {:value "sensor_Sn?" :pattern true}}))))
 
+(deftest dif9-blank-platform-short-name
+  (testing "Ingest of a DIF9 collection with a long name for a platform, but a blank short name is
+           treated as not provided"
+    (let [{:keys [status]} (d/ingest-concept-with-metadata-file "CMR-5490/5490_dif9_blank_platform_sn.xml"
+                                                                {:concept-type :collection
+                                                                 :provider-id "PROV1"
+                                                                 :native-id "blank-platform-sn"
+                                                                 :format-key :dif})]
+      (is (= 201 status))
+      (testing "Collection can be updated without an internal server error from the platform validation"
+        (let [response (d/ingest-concept-with-metadata-file "CMR-5490/5490_dif9_blank_platform_sn.xml"
+                                                            {:concept-type :collection
+                                                             :provider-id "PROV1"
+                                                             :native-id "blank-platform-sn"
+                                                             :format-key :dif})]
+          (is (= 200 (:status response)))
+          (index/wait-until-indexed)
+          (testing "Collection is indexed despite the blank platform short name"
+            (d/refs-match? [response]
+                           (search/find-refs :collection {}))))))))

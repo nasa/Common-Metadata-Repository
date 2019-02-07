@@ -141,6 +141,7 @@
 
 (defmethod create-echo :in-memory
   [type]
+  (transmit-config/set-urs-relative-root-url! "/urs")
   (mock-echo-system/create-system))
 
 (defmethod create-echo :external

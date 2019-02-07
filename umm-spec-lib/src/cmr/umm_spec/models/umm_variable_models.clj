@@ -76,7 +76,10 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Var)
 
-;; The elements of this section apply to the fill value of a variable.
+;; The fill value, fill value type and fill value description of the variable in the data file. The
+;; fill value is generally a value which falls outside the valid range. For example, if the valid
+;; range is '0, 360', the fill value may be '-1'. The elements of this section apply to the fill
+;; value of a variable.
 (defrecord FillValueType
   [
    ;; The fill value of the variable in the data file.
@@ -147,12 +150,10 @@
    ;; This element contains the average size for the sampled granules in bytes.
    AverageSizeOfGranulesSampled
 
-   ;; This element contains the average compression rate as a ratio for the granule in ASCII format.
-   AvgCompressionRateASCII
-
-   ;; This element contains the average compression rate as a ratio for the granule in NetCDF4
-   ;; format.
-   AvgCompressionRateNetCDF4
+   ;; This element is a list of 1 or more average compression rate(s) as a ratio for the granule in
+   ;; the specified format. The size estimation service takes this information so that it can
+   ;; calculate the approximate downloadable size for the variable.
+   AverageCompressionInformation
   ])
 (record-pretty-printer/enable-record-pretty-printing SizeEstimationType)
 
@@ -186,6 +187,20 @@
    Type
   ])
 (record-pretty-printer/enable-record-pretty-printing DimensionType)
+
+;; This type defines the container for a specific rate as a ratio for the granule with the
+;; accompanying file format.
+(defrecord AverageCompressionInformationType
+  [
+   ;; This element contains the average compression rate as a ratio for the granule for the
+   ;; specified format.
+   Rate
+
+   ;; This element contains the file format that the size estimation service supports for the given
+   ;; rate as a ratio for the granule to be able to predict the size of the downloadable product.
+   Format
+  ])
+(record-pretty-printer/enable-record-pretty-printing AverageCompressionInformationType)
 
 ;; The index ranges consist of a LatRange and an LonRange.
 (defrecord IndexRangesType

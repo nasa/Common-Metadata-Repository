@@ -79,15 +79,70 @@
                            :AvgCompressionRateNetCDF4 3}
           :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
 
+(def variable-concept-14
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AverageCompressionInformation [{:Format "ASCII" :Rate 2}
+                                                           {:Format "NetCDF-4" :Rate 3}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-13-without-compression
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-14-without-compression
+  variable-concept-13-without-compression)
+
+(def variable-concept-14-without-ascii-and-netcdf-4-compression
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageCompressionInformation [{:Format "Test1" :Rate 2}
+                                                           {:Format "Test2" :Rate 3}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-13-only-ascii
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AvgCompressionRateASCII 2}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-14-only-ascii
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AverageCompressionInformation [{:Format "ASCII" :Rate 2}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-13-only-netcdf-4
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                           :AvgCompressionRateNetCDF4 3}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
+(def variable-concept-14-only-netcdf-4
+  (merge variable-concept-12
+         {:Alias "Test Alias"
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1   
+                           :AverageCompressionInformation [{:Format "NetCDF-4" :Rate 3}]}
+          :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
+
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2"]}}
+  (with-bindings {#'cmr.umm-spec.versioning/versions {:variable ["1.0" "1.1" "1.2" "1.3" "1.4"]}}
     (is (= [] (#'vm/version-steps :variable "1.2" "1.2")))
-    (is (= [["1.0" "1.1"] ["1.1" "1.2"]] (#'vm/version-steps :variable "1.0" "1.2")))
+    (is (= [["1.0" "1.1"] ["1.1" "1.2"] ["1.2" "1.3"] ["1.3" "1.4"]] (#'vm/version-steps :variable "1.0" "1.4")))
     (is (= [["1.0" "1.1"]] (#'vm/version-steps :variable "1.0" "1.1")))
     (is (= [["1.1" "1.0"]] (#'vm/version-steps :variable "1.1" "1.0")))
     (is (= [["1.1" "1.2"]] (#'vm/version-steps :variable "1.1" "1.2")))
     (is (= [["1.2" "1.1"]] (#'vm/version-steps :variable "1.2" "1.1")))
-    (is (= [["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps :variable "1.2" "1.0")))))
+    (is (= [["1.2" "1.3"]] (#'vm/version-steps :variable "1.2" "1.3")))
+    (is (= [["1.3" "1.2"]] (#'vm/version-steps :variable "1.3" "1.2")))
+    (is (= [["1.3" "1.4"]] (#'vm/version-steps :variable "1.3" "1.4")))
+    (is (= [["1.4" "1.3"]] (#'vm/version-steps :variable "1.4" "1.3"))) 
+    (is (= [["1.4" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps :variable "1.4" "1.0")))))
 
 
 (defspec all-migrations-produce-valid-umm-spec 100
@@ -181,3 +236,39 @@
                                                             {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
                                                              :IndexRanges {:LatRange [-45 45]
                                                                            :LonRange [90 180]}})))))
+
+(deftest migrate-13->14
+  (is (= variable-concept-14
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13))))
+
+(deftest migrate-13->14-without-compression
+  (is (= variable-concept-14-without-compression
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-without-compression))))
+
+(deftest migrate-13->14-only-ascii
+  (is (= variable-concept-14-only-ascii
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-ascii))))
+
+(deftest migrate-13->14-only-netcdf-4
+  (is (= variable-concept-14-only-netcdf-4
+         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-netcdf-4))))
+
+(deftest migrate-14->13
+  (is (= variable-concept-13
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14))))
+
+(deftest migrate-14->13-without-compression
+  (is (= variable-concept-13-without-compression
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-compression))))
+
+(deftest migrate-14->13-without-ascii-and-netcdf-4-compression
+  (is (= variable-concept-13-without-compression
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-ascii-and-netcdf-4-compression))))
+
+(deftest migrate-14->13-only-ascii
+  (is (= variable-concept-13-only-ascii
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-ascii))))
+
+(deftest migrate-14->13-only-netcdf-4
+  (is (= variable-concept-13-only-netcdf-4
+         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-netcdf-4))))

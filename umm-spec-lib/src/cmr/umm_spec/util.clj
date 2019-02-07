@@ -2,7 +2,7 @@
   "This contains utilities for the UMM Spec code."
   (:require
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.parse :as p]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as util]
@@ -272,9 +272,9 @@
   "Capitalize every word in a string"
   [s]
   (when s
-    (->> (str/split (str s) #"\b")
-         (map str/capitalize)
-         (str/join))))
+    (->> (string/split (str s) #"\b")
+         (map string/capitalize)
+         (string/join))))
 
 (defn generate-id
   "Returns a 5 character random id to use as an ISO id"
@@ -284,9 +284,12 @@
 (defn parse-short-name-long-name
   "Returns the list of ShortName and LongName from parsing the given doc on the given path."
   [doc path]
-  (seq (for [elem (select doc path)]
-         {:ShortName (p/value-of elem "Short_Name")
-          :LongName (p/value-of elem "Long_Name")})))
+  (seq (for [elem (select doc path)
+             :let [short-name (p/value-of elem "Short_Name")
+                   long-name (p/value-of elem "Long_Name")]
+             :when (not (string/blank? short-name))]
+         {:ShortName short-name
+          :LongName long-name})))
 
 (defn entry-id
   "Returns the entry-id for the given short-name and version-id."
@@ -309,19 +312,19 @@
   (seq
     (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
-          :when (and num-str (not (str/blank? unit-str)))]
-      (if (= (str/lower-case unit-str) "bytes")
-        {:Size (/ (Double. (str/replace num-str "," "")) 1000.0)
+          :when (and num-str (not (string/blank? unit-str)))]
+      (if (= (string/lower-case unit-str) "bytes")
+        {:Size (/ (Double. (string/replace num-str "," "")) 1000.0)
          :Unit "KB"}
-        {:Size (Double. (str/replace num-str "," ""))
-         :Unit (-> unit-str str/trim str/upper-case first (str "B"))}))))
+        {:Size (Double. (string/replace num-str "," ""))
+         :Unit (-> unit-str string/trim string/upper-case first (str "B"))}))))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
   string representation."
   [sizes]
   (when (seq sizes)
-    (str/join ", "
+    (string/join ", "
               (for [size sizes]
                 (str (:Size size) " " (or (:Unit size) "MB"))))))
 
@@ -369,11 +372,11 @@
   [isbn]
   (when (some? isbn)
     (let [isbn (-> isbn
-                   str/trim
-                   (str/replace "-" "")
-                   (str/replace "ISBN" "")
-                   (str/replace "ISSN" ""))]
-      (when (not (str/blank? isbn))
+                   string/trim
+                   (string/replace "-" "")
+                   (string/replace "ISBN" "")
+                   (string/replace "ISSN" ""))]
+      (when (not (string/blank? isbn))
         isbn))))
 
 (defn truncate
