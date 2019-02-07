@@ -19,6 +19,4 @@
 
 (defn data
   []
-  (util/deep-merge (base-data)
-                   (config/props-data)
-                   (config/env-data)))
+  (util/deep-merge (base-data)))

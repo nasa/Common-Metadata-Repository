@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.2-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -24,8 +24,8 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
-                 [com.stuartsierra/component "0.3.2"]
+                 [clojusc/twig "0.4.1"]
+                 [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.1"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
@@ -35,14 +35,14 @@
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.async "0.4.490"]
-                 [org.clojure/core.cache "0.7.1"]]
+                 [org.clojure/core.cache "0.7.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -55,7 +55,7 @@
                         :dependencies [;; The following pull required deps that have been either been
                                        ;; explicitly or implicitly excluded above due to CVEs and need
                                        ;; declare secure versions of the libs pulled in
-                                       [commons-fileupload "1.3.3"]
+                                       [commons-fileupload "1.4"]
                                        [commons-io "2.6"]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -71,7 +71,7 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.4"]
+                    :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
                               [lein-kibit "0.1.6"]

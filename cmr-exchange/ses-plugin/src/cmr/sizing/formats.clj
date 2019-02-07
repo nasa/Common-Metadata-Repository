@@ -7,6 +7,9 @@
 ;;; Note that all internal operations for estimating size are performed
 ;;; assuming bytes as the units.
 
+(def NetCDF-4
+  "NetCDF-4")
+
 (defn- read-number
   "If value is string, read-string.  Otherwise ignore."
   [value]
@@ -44,11 +47,18 @@
       (get-in [:umm :SizeEstimation :AverageSizeOfGranulesSampled])
       read-number))
 
+(defn- get-netcdf4-rate
+  "Gets the :Rate value for :NetCDF-4 format in avg-comp-info."
+  [avg-comp-info]
+  (some #(when (= NetCDF-4 (:Format %)) (:Rate %)) avg-comp-info))  
+
 (defn- get-avg-compression-rate-netcdf4
-  "Gets SizeEstimation value for AvgCompressionRateNetCDF4 and parses it to a number."
+  "Gets :Rate value for NetCDF-4 format in :SizeEstimation of variable 
+  and parses it to a number."
   [variable]
   (-> variable
-      (get-in [:umm :SizeEstimation :AvgCompressionRateNetCDF4])
+      (get-in [:umm :SizeEstimation :AverageCompressionInformation])
+      get-netcdf4-rate
       read-number))
 
 (defn- get-avg-digit-number

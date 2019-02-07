@@ -15,28 +15,28 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.1-SNAPSHOT"
   :description "A CMR services plugin that performs URL translations for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
-                 [com.stuartsierra/component "0.3.2"]
+                 [clojusc/twig "0.4.1"]
+                 [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.1"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.0-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.async "0.4.490"]
-                 [org.clojure/core.cache "0.7.1"]
+                 [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [ring/ring-core "1.7.1"]
@@ -47,7 +47,7 @@
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -71,11 +71,11 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.3"]
+                    :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
                               [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.6"]]}
+                              [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]]
