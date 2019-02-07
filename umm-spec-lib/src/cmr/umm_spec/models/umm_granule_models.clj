@@ -94,6 +94,11 @@
    ;; under the same project.
    Projects
 
+   ;; Requires the user to add in schema information into every granule record. It includes the
+   ;; schema's name, version, and URL location. The information is controlled through enumerations
+   ;; at the end of this schema.
+   MetadataSpecification
+
    ;; Represents the native grid mapping of the granule, if the granule is gridded.
    GridMappingNames
 
@@ -187,12 +192,21 @@
    ;; coordinate system.
    ZoneIdentifier
 
+   ;; This entity holds the geometry representing the spatial coverage information of a granule.
    Geometry
 
    ;; This entity stores orbital coverage information of the granule. This coverage is an
    ;; alternative way of expressing granule spatial coverage. This information supports orbital
    ;; backtrack searching on a granule.
    Orbit
+
+   ;; This element stores track information of the granule. Track information is used to allow a
+   ;; user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile
+   ;; mapping. Though it is derived from the SWOT mission requirements, it is intended that this
+   ;; element type be generic enough so that other missions can make use of it. While track
+   ;; information is a type of spatial domain, it is expected that the metadata provider will
+   ;; provide geometry information that matches the spatial extent of the track information.
+   Track
   ])
 (record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
 
@@ -202,6 +216,21 @@
    Boundaries
   ])
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
+
+;; This object requires any metadata record that is validated by this schema to provide information
+;; about the schema.
+(defrecord MetadataSpecificationType
+  [
+   ;; This element represents the URL where the schema lives. The schema can be downloaded.
+   URL
+
+   ;; This element represents the name of the schema.
+   Name
+
+   ;; This element represents the version of the schema.
+   Version
+  ])
+(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
 
 ;; This entity stores the tiling identification system for the granule. The tiling identification
 ;; system information is an alternative way to express granule's spatial coverage based on a certain
@@ -471,6 +500,30 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PointType)
 
+;; This element stores track information of the granule. Track information is used to allow a user
+;; to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping.
+;; Though it is derived from the SWOT mission requirements, it is intended that this element type be
+;; generic enough so that other missions can make use of it. While track information is a type of
+;; spatial domain, it is expected that the metadata provider will provide geometry information that
+;; matches the spatial extent of the track information.
+(defrecord TrackType
+  [
+   ;; An integer that represents a specific set of orbital spatial extents defined by passes and
+   ;; tiles. Though intended to be generic, this comes from a SWOT mission requirement where each
+   ;; cycle represents a set of 1/2 orbits. Each 1/2 orbit is called a 'pass'. During science mode,
+   ;; a cycle represents 21 days of 14 full orbits or 588 passes.
+   Cycle
+
+   ;; A pass number identifies a subset of a granules spatial extent. This element holds a list of
+   ;; pass numbers and their tiles that exist in the graule. It will allow a user to search by pass
+   ;; number and their tiles that are contained with in a cycle number. While trying to keep this
+   ;; generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2
+   ;; orbit. This element will then hold a list of 1/2 orbits and their tiles that together
+   ;; represent the granules spatial extent.
+   Passes
+  ])
+(record-pretty-printer/enable-record-pretty-printing TrackType)
+
 ;; This entity stores orbital coverage information of the granule. This coverage is an alternative
 ;; way of expressing granule spatial coverage. This information supports orbital backtrack searching
 ;; on a granule.
@@ -629,6 +682,29 @@
    SizeUnit
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
+
+;; This element stores a track pass and its tile information. It will allow a user to search by pass
+;; number and their tiles that are contained with in a cycle number. While trying to keep this
+;; generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit.
+;; This element will then hold a list of 1/2 orbits and their tiles that together represent the
+;; granules spatial extent.
+(defrecord TrackPassTileType
+  [
+   ;; A pass number identifies a subset of a granules spatial extent. This element holds a pass
+   ;; number that exists in the graule and will allow a user to search by pass number that is
+   ;; contained with in a cycle number. While trying to keep this generic for all to use, this comes
+   ;; from a SWOT requirement where a pass represents a 1/2 orbit.
+   Pass
+
+   ;; A tile is a subset of a pass' spatial extent. This element holds a list of tile identifiers
+   ;; that exist in the granule and will allow a user to search by tile identifier that is contained
+   ;; within a pass number within a cycle number. Though intended to be generic, this comes from a
+   ;; SWOT mission requirement where a tile is a spatial extent that encompasses either a square
+   ;; scanning swath to the left or right of the ground track or a rectangle that includes a full
+   ;; scanning swath both to the left and right of the ground track.
+   Tiles
+  ])
+(record-pretty-printer/enable-record-pretty-printing TrackPassTileType)
 
 ;; This entity stores basic descriptive characteristics related to the Product Generation Executable
 ;; associated with a granule.

@@ -15,6 +15,12 @@
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
 
+(def ^:private umm-g-metadata-specification
+  "Defines the current UMM-G MetadataSpecification"
+  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
+   :Name "UMM-G"
+   :Version "1.5"})
+
 (defn- get-date-by-type
   "Returns the date of the given type from the given provider dates"
   [provider-dates date-type]
@@ -121,9 +127,10 @@
      :Projects (projects/ProjectRefs->umm-g-projects project-refs)
      :DataGranule (data-granule/DataGranule->umm-g-data-granule data-granule)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
-                                  two-d-coordinate-system)
+                                   two-d-coordinate-system)
      :AdditionalAttributes (aa/ProductSpecificAttributeRefs->umm-g-additional-attributes
-                            product-specific-attributes)
+                             product-specific-attributes)
      :MeasuredParameters (measured-parameters/MeasuredParameters->umm-g-measured-parameters
                           measured-parameters)
-     :RelatedUrls (related-url/RelatedURLs->umm-g-related-urls related-urls)}))
+     :RelatedUrls (related-url/RelatedURLs->umm-g-related-urls related-urls)
+     :MetadataSpecification umm-g-metadata-specification}))
