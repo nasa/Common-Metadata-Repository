@@ -16,6 +16,7 @@
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.migration.version.collection]
+   [cmr.umm-spec.migration.version.granule]
    [cmr.umm-spec.migration.version.interface :as interface]
    [cmr.umm-spec.migration.version.variable]
    [cmr.umm-spec.migration.version.service]
