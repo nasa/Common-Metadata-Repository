@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cdn.earthdata.nasa.gov/umm/granule/v1.5",
   "title": "UMM-G",
   "type": "object",
   "additionalProperties": false,
@@ -696,7 +697,7 @@
           "type": "integer"
         },
         "Passes": {
-          "description": "A pass number identifies a subset of a granules spatial extent. This element holds a list of pass numbers and their tiles that exist in the graule. It will allow a user to search by pass number and their tiles that are contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit. This element will then hold a list of 1/2 orbits and their tiles that together represent the granules spatial extent.",
+          "description": "A pass number identifies a subset of a granule's spatial extent. This element holds a list of pass numbers and their tiles that exist in the granule. It will allow a user to search by pass number and its tiles that are contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit. This element will then hold a list of 1/2 orbits and their tiles that together represent the granule's spatial extent.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/TrackPassTileType"
@@ -712,7 +713,7 @@
       "description": "This element stores a track pass and its tile information. It will allow a user to search by pass number and their tiles that are contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit. This element will then hold a list of 1/2 orbits and their tiles that together represent the granules spatial extent.",
       "properties": {
         "Pass": {
-          "description": "A pass number identifies a subset of a granules spatial extent. This element holds a pass number that exists in the graule and will allow a user to search by pass number that is contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit.",
+          "description": "A pass number identifies a subset of a granule's spatial extent. This element holds a pass number that exists in the granule and will allow a user to search by pass number that is contained within a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit.",
           "type": "integer"
         },
         "Tiles": {
@@ -724,7 +725,7 @@
           "minItems": 1
         }
       },
-      "required": ["Pass", "Tiles"]
+      "required": ["Pass"]
     },
     "VerticalSpatialDomainType": {
       "type": "object",

@@ -514,12 +514,12 @@
    ;; a cycle represents 21 days of 14 full orbits or 588 passes.
    Cycle
 
-   ;; A pass number identifies a subset of a granules spatial extent. This element holds a list of
-   ;; pass numbers and their tiles that exist in the graule. It will allow a user to search by pass
-   ;; number and their tiles that are contained with in a cycle number. While trying to keep this
+   ;; A pass number identifies a subset of a granule's spatial extent. This element holds a list of
+   ;; pass numbers and their tiles that exist in the granule. It will allow a user to search by pass
+   ;; number and its tiles that are contained with in a cycle number. While trying to keep this
    ;; generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2
    ;; orbit. This element will then hold a list of 1/2 orbits and their tiles that together
-   ;; represent the granules spatial extent.
+   ;; represent the granule's spatial extent.
    Passes
   ])
 (record-pretty-printer/enable-record-pretty-printing TrackType)
@@ -690,9 +690,9 @@
 ;; granules spatial extent.
 (defrecord TrackPassTileType
   [
-   ;; A pass number identifies a subset of a granules spatial extent. This element holds a pass
-   ;; number that exists in the graule and will allow a user to search by pass number that is
-   ;; contained with in a cycle number. While trying to keep this generic for all to use, this comes
+   ;; A pass number identifies a subset of a granule's spatial extent. This element holds a pass
+   ;; number that exists in the granule and will allow a user to search by pass number that is
+   ;; contained within a cycle number. While trying to keep this generic for all to use, this comes
    ;; from a SWOT requirement where a pass represents a 1/2 orbit.
    Pass
 
