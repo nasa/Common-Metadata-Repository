@@ -12,6 +12,7 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.umm-spec.legacy :as legacy]
+    [cmr.umm-spec.versioning :as versioning]
     [cmr.umm.echo10.granule :as g]
     [cmr.umm.umm-granule :as umm-g]))
 
@@ -89,7 +90,7 @@
         {umm-g-gran-concept-id :concept-id
          umm-g-gran-revision-id :revision-id} (ingest/ingest-concept umm-g-gran)]
     (index/wait-until-indexed)
-    (testing "retrieve UMM-G granule in UMM JSON format"
+    (testing "retrieve UMM-G granule in UMM JSON format in latest UMM version"
       (are3
         [accept-format]
         (let [response (search/retrieve-concept
@@ -97,7 +98,7 @@
               response-format (-> response
                                   (get-in [:headers :Content-Type])
                                   mt/mime-type->format)]
-          (is (= {:format :umm-json :version "1.4"}
+          (is (= {:format :umm-json :version versioning/current-granule-version}
                  response-format))
           (is (= (:metadata umm-g-gran) (:body response))))
 
@@ -108,7 +109,18 @@
         "application/vnd.nasa.cmr.umm+json"
 
         "specifying umm json accept format with version"
-        "application/vnd.nasa.cmr.umm+json;version=1.4"))
+        (str "application/vnd.nasa.cmr.umm+json;version=" versioning/current-granule-version)))
+
+    (testing "retrieve UMM-G granule in UMM JSON format in specific UMM version"
+      (let [accept-format "application/vnd.nasa.cmr.umm+json;version=1.4"
+            response (search/retrieve-concept
+                      umm-g-gran-concept-id umm-g-gran-revision-id {:accept accept-format})
+            response-format (-> response
+                                (get-in [:headers :Content-Type])
+                                mt/mime-type->format)]
+        (is (= 200 (:status response)))
+        (is (= {:format :umm-json :version "1.4"}
+               response-format))))
 
     (testing "retrieve UMM-G granule in ECHO10 format"
       (let [response (search/retrieve-concept
@@ -137,7 +149,7 @@
             response-format (-> response
                                 (get-in [:headers :Content-Type])
                                 mt/mime-type->format)]
-        (is (= {:format :umm-json :version "1.4"}
+        (is (= {:format :umm-json :version versioning/current-granule-version}
                response-format))
         (is (= (:metadata umm-g-gran) (:body response)))))
 
@@ -149,6 +161,6 @@
             response-format (-> response
                                 (get-in [:headers :Content-Type])
                                 mt/mime-type->format)]
-        (is (= {:format :umm-json :version "1.4"}
+        (is (= {:format :umm-json :version versioning/current-granule-version}
                response-format))
         (is (= (:metadata umm-g-gran) (:body response)))))))
