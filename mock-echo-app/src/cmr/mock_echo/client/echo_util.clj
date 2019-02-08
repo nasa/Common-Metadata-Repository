@@ -23,7 +23,6 @@
   [context provider-guid-id-map]
   (echo-client/create-providers context provider-guid-id-map))
 
-
 (defn get-or-create-group
   "Gets a group or creates it if it does not exist"
   ([context group-name]
@@ -34,7 +33,7 @@
                                {:raw? true :token token})
                             (get-in [:body :items])
                             (first))
-         ;;Return the existing group if it exists, otherwise create a new one
+         ;; Return the existing group if it exists, otherwise create a new one
          group (or existing-group (:body (ac/create-group context
                                           {:name group-name
                                            :description group-name}

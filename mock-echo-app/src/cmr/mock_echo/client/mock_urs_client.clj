@@ -7,13 +7,18 @@
    [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]))
+   [cmr.transmit.http-helper :as h]
+   [clojure.string :as string]))
 
 (defn- create-users-url
-  "Call to create users in mock URS. Makes an assumption that the URS root context in the
-  connection is an empty string."
+  "Call to create users in mock URS. Depending on how tests are being run the context for URS URLs
+  might or might not have /urs as the relative root URL. We'll make sure we use the correct URL here
+  in all circumstances."
   [conn]
-  (format "%s/urs/users" (conn/root-url conn)))
+  (let [base-url (conn/root-url conn)]
+    (if (string/includes? base-url "urs")
+      (format "%s/users" base-url)
+      (format "%s/urs/users" base-url))))
 
 (defn create-users
   "Creates the users in mock urs given an array of maps with :username and :password"
