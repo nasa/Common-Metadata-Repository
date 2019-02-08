@@ -8,8 +8,8 @@
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.providers :as p]
-   [cmr.oracle.sql-utils :as su :refer
-    [insert values select from where with order-by desc delete as]])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
+                                        delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -84,7 +84,7 @@
   (first (map dbresult->provider
               (j/query db
                        ["SELECT provider_id, short_name, cmr_only, small FROM providers where provider_id = ?"
-                       provider-id]))))
+                        provider-id]))))
 
 (defn update-provider
   [db {:keys [provider-id short-name cmr-only]}]

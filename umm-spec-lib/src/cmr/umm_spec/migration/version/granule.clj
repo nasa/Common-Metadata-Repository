@@ -1,9 +1,7 @@
 (ns cmr.umm-spec.migration.version.granule
   "Contains functions for migrating between versions of the UMM-G schema."
   (:require
-   [clojure.set :as set]
    [cmr.common.util :as util]
-   [cmr.common.log :as log]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
 (def ^:private v1-4-url-subtype-enum->v1-5-url-subtype-enum
@@ -18,7 +16,7 @@
    "Order" nil
    "Subscribe" nil
    "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)" "ALGORITHM THEORETICAL BASIS DOCUMENT"
-   "USER FEEDBACK PAGE" "USER FEEDBACK" })
+   "USER FEEDBACK PAGE" "USER FEEDBACK"})
 
 (def ^:private v1-5-to-1-4-changed-url-subtype-enums
   "Defines a set of v1.5 RelatedUrlSubTypeEnums that need to be changed when migrate to v1.4"

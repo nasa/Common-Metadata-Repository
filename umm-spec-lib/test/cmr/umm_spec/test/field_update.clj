@@ -130,15 +130,15 @@
         :ScienceKeywords [{:Category "EARTH SCIENCE SERVICES"
                            :Topic "DATA ANALYSIS AND VISUALIZATION"
                            :Term "GEOGRAPHIC INFORMATION SYSTEMS"}]}
-       
-       ;; In order to filter out the concepts in the bulk update that's not found through find-value, 
+
+       ;; In order to filter out the concepts in the bulk update that's not found through find-value,
        ;; apply-update code is modified to return nil for all the find operations
        ;; when the concept is not found.
        "Find and remove"
        :find-and-remove
        nil
        {:Category "EARTH SCIENCE SERVICES"}
-       nil 
+       nil
 
        "Find and update"
        :find-and-update
@@ -146,7 +146,7 @@
         :Topic "DATA ANALYSIS AND VISUALIZATION"
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
        {:Category "EARTH SCIENCE SERVICES"}
-       nil 
+       nil
 
        "Find and replace"
        :find-and-replace
@@ -218,13 +218,13 @@
                                                                   :URL "http://nsidc.org/daac/index.html"}
                                                                  {:URLContentType "DataCenterURL"
                                                                   :Type "PROJECT HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/index.html"} ]
+                                                                  :URL "http://nsidc.org/daac/index.html"}]
                                                    :ContactMechanisms  [{:Type "Telephone"
-                                                                         :Value "1 303 492 6199 x" }
+                                                                         :Value "1 303 492 6199 x"}
                                                                         {:Type  "Fax"
-                                                                         :Value "1 303 492 2468 x" }
+                                                                         :Value "1 303 492 2468 x"}
                                                                         {:Type  "Email"
-                                                                         :Value "nsidc@nsidc.org" }]}}
+                                                                         :Value "nsidc@nsidc.org"}]}}
                              {:ShortName "ShortName"
                               :LongName "Hydrogeophysics Group, Aarhus University "
                               :Roles ["ARCHIVER"]}
@@ -239,7 +239,7 @@
         (is (= result
                (field-update/apply-update update-type umm [:DataCenters] update-value find-value)))
 
-        "Find and update home page url" 
+        "Find and update home page url"
         :find-and-update-home-page-url
         {:ShortName "NewShortName" :LongName nil :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                                                                :Type "HOME PAGE"
@@ -254,13 +254,13 @@
                                                             :URL "http://nsidc.org/daac/newindex.html"}
                                                            {:URLContentType "DataCenterURL"
                                                             :Type "PROJECT HOME PAGE"
-                                                            :URL "http://nsidc.org/daac/index.html"} ]
+                                                            :URL "http://nsidc.org/daac/index.html"}]
                                              :ContactMechanisms  [{:Type "Telephone"
-                                                                   :Value "1 303 492 6199 x" }
+                                                                   :Value "1 303 492 6199 x"}
                                                                   {:Type  "Fax"
-                                                                   :Value "1 303 492 2468 x" }
+                                                                   :Value "1 303 492 2468 x"}
                                                                   {:Type  "Email"
-                                                                   :Value "nsidc@nsidc.org" }]}}
+                                                                   :Value "nsidc@nsidc.org"}]}}
                        {:ShortName "NewShortName"
                         :LongName nil
                         :Roles ["ARCHIVER"]
@@ -274,7 +274,7 @@
                                           :LastName "Smith"}]
                         :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                             :Type "HOME PAGE"
-                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}]}))) 
+                                                            :URL "http://nsidc.org/daac/newindex.html"}]}}]})))
   (testing "DataCenter home page url updates when home page url is NOT present in the update-value."
     (let [umm {:DataCenters [{:ShortName "ShortName"
                               :LongName "Hydrogeophysics Group, Aarhus University "
@@ -285,13 +285,13 @@
                                                                   :URL "http://nsidc.org/daac/index.html"}
                                                                  {:URLContentType "DataCenterURL"
                                                                   :Type "PROJECT HOME PAGE"
-                                                                  :URL "http://nsidc.org/daac/index.html"} ]
+                                                                  :URL "http://nsidc.org/daac/index.html"}]
                                                    :ContactMechanisms  [{:Type "Telephone"
-                                                                         :Value "1 303 492 6199 x" }
+                                                                         :Value "1 303 492 6199 x"}
                                                                         {:Type  "Fax"
-                                                                         :Value "1 303 492 2468 x" }
+                                                                         :Value "1 303 492 2468 x"}
                                                                         {:Type  "Email"
-                                                                         :Value "nsidc@nsidc.org" }]}}
+                                                                         :Value "nsidc@nsidc.org"}]}}
                              {:ShortName "ShortName"
                               :LongName "Hydrogeophysics Group, Aarhus University "
                               :Roles ["ARCHIVER"]}
@@ -318,13 +318,13 @@
                         :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
                         :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                             :Type "PROJECT HOME PAGE"
-                                                            :URL "http://nsidc.org/daac/index.html"} ]
+                                                            :URL "http://nsidc.org/daac/index.html"}]
                                              :ContactMechanisms  [{:Type "Telephone"
-                                                                   :Value "1 303 492 6199 x" }
+                                                                   :Value "1 303 492 6199 x"}
                                                                   {:Type  "Fax"
-                                                                   :Value "1 303 492 2468 x" }
+                                                                   :Value "1 303 492 2468 x"}
                                                                   {:Type  "Email"
-                                                                   :Value "nsidc@nsidc.org" }]}}
+                                                                   :Value "nsidc@nsidc.org"}]}}
                        {:ShortName "NewShortName"
                         :LongName "NewLongName"
                         :Roles ["ARCHIVER"]}
@@ -371,7 +371,7 @@
                                      :LongName "The Full Name of An Instrument v123.4"
                                      :Technique "Two cans and a string"
                                      :NumberOfInstruments 0}]}]}
-        
+
         "Find and update nil long name"
         :find-and-update
         {:ShortName "A340-600"

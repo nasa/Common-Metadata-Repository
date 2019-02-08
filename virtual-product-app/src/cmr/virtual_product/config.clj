@@ -1,11 +1,13 @@
 (ns cmr.virtual-product.config
   "Defines configuration for virtual product app."
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.message-queue.config :as mq-conf]
-            [cmr.umm.umm-granule :as umm-g]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt])
-  (:import java.util.regex.Pattern))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.mime-types :as mt]
+   [cmr.message-queue.config :as mq-conf]
+   [cmr.umm.umm-granule :as umm-g])
+  (:import
+   (java.util.regex Pattern)))
 
 (defconfig virtual-products-enabled
   "Enables the updates of virtual products. If this is false every ingest event will be ignored

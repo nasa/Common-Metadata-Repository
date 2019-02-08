@@ -20,10 +20,10 @@
     [pjstadig.assertions :as pj]
     [primitive-math])
   (:import
-    cmr.spatial.cartesian_ring.CartesianRing
-    cmr.spatial.geodetic_ring.GeodeticRing
-    cmr.spatial.mbr.Mbr
-    cmr.spatial.polygon.Polygon))
+    (cmr.spatial.cartesian_ring CartesianRing)
+    (cmr.spatial.geodetic_ring GeodeticRing)
+    (cmr.spatial.mbr Mbr)
+    (cmr.spatial.polygon Polygon)))
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^long max-search-depth
@@ -261,10 +261,9 @@
             (lr-search [:east] polygon)
             (lr-search [:south] polygon)
             (lr-search [:west] polygon))
-        (if not-found-is-error?
-          (errors/internal-error! (str "Could not find lr from polygon " (pr-str polygon)))
-          (do
-            (warn "Use mbr from one of the points in the polygon because lr is not found "
-                  (pr-str polygon))
-            (m/point->mbr (-> polygon :rings first :points first))))))))
-
+       (if not-found-is-error?
+         (errors/internal-error! (str "Could not find lr from polygon " (pr-str polygon)))
+         (do
+           (warn "Use mbr from one of the points in the polygon because lr is not found "
+                 (pr-str polygon))
+           (m/point->mbr (-> polygon :rings first :points first))))))))

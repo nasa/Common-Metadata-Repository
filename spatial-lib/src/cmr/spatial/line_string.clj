@@ -2,22 +2,25 @@
   "This contains generic functions for operating on geodetic or cartesian line strings. Geodetic line
   strings are represented by the Arc record. Cartesian line strings are represented by the LineSegment
   record."
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.arc-line-segment-intersections :as asi]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.points-validation-helpers :as pv]
-            [cmr.spatial.messages :as msg]
-            [cmr.common.util :as u]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
-  (:import cmr.spatial.arc.Arc
-           cmr.spatial.line_segment.LineSegment
-           cmr.spatial.mbr.Mbr))
+  (:require
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.util :as u]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.arc-line-segment-intersections :as asi]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.line-segment :as s]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.points-validation-helpers :as pv]
+   [cmr.spatial.validation :as v]
+   [primitive-math])
+  (:import
+   (cmr.spatial.arc Arc)
+   (cmr.spatial.line_segment LineSegment)
+   (cmr.spatial.mbr Mbr)))
+
 (primitive-math/use-primitive-operators)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -183,7 +186,7 @@
   "Returns true if the line string instersects the other line string"
   [line1 line2]
   (u/any-true? (fn [[s1 s2]]
-            (seq (asi/intersections s1 s2)))
+                (seq (asi/intersections s1 s2)))
           (for [segment1 (:segments line1)
                 segment2 (:segments line2)]
             [segment1 segment2])))

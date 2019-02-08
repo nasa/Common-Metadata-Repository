@@ -30,7 +30,7 @@
 (defmethod gcrf/query-results->concept-ids :umm-json-results
   [results]
   (->> results
-       :items 
+       :items
        (map :meta)
        (map :concept-id)))
 
@@ -64,7 +64,7 @@
   (let [granule-counts-map (:granule-counts-map results)
         items (:items results)
         results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
-  (json/generate-string (select-keys results [:hits :took :items]))))
+   (json/generate-string (select-keys results [:hits :took :items]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection Legacy UMM JSON

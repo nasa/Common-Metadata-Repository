@@ -10,7 +10,7 @@
   (let [{:keys [MeasurementConditions ReportingConditions]} x]
     (when (and MeasurementConditions ReportingConditions)
       [{:MeasurementConditions MeasurementConditions
-       :ReportingConditions ReportingConditions}])))
+        :ReportingConditions ReportingConditions}])))
 
 (def ^:private measurement-sources
  #{"CSDMS", "CF", "BODC", "OTHER"})
@@ -135,6 +135,6 @@
     (if (or avg-comp-info-ascii avg-comp-info-netcdf4)
       (-> v
           (update-in [:SizeEstimation] dissoc :AvgCompressionRateASCII :AvgCompressionRateNetCDF4)
-          (assoc-in [:SizeEstimation :AverageCompressionInformation] 
+          (assoc-in [:SizeEstimation :AverageCompressionInformation]
                     (concat avg-comp-info-ascii avg-comp-info-netcdf4)))
       v)))

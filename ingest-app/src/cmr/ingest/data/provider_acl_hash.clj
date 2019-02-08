@@ -1,11 +1,12 @@
 (ns cmr.ingest.data.provider-acl-hash
   "Stores and retrieves the hashes of the ACLs for a provider."
-  (:require [cmr.oracle.connection]
-            [cmr.common.lifecycle :as lifecycle]
-            [clojure.java.jdbc :as j]
-            [clojure.edn :as edn]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :refer [defn-timed] :as util]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.java.jdbc :as j]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.oracle.connection]))
 
 (defprotocol AclHashStore
   "Defines a protocol for storing the acl hashes as a string."
@@ -49,5 +50,4 @@
 
 (comment
   (save-provider-id-acl-hashes {:system (get-in user/system [:apps :ingest])} {"a" 1 "b" 3})
-  (get-provider-id-acl-hashes {:system (get-in user/system [:apps :ingest])})
-  )
+  (get-provider-id-acl-hashes {:system (get-in user/system [:apps :ingest])}))

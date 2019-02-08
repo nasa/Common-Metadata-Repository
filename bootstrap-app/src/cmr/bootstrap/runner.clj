@@ -1,11 +1,12 @@
 (ns cmr.bootstrap.runner
   "Entry point for the application. Defines a main method that accepts arguments."
-  (:require [cmr.bootstrap.system :as system]
-            [clojure.string :as string]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.web-server :as web]
-            [cmr.bootstrap.api.routes :as routes]
-            [cmr.common.config :as cfg])
+  (:require
+   [clojure.string :as string]
+   [cmr.bootstrap.api.routes :as routes]
+   [cmr.bootstrap.system :as system]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.config :as cfg]
+   [cmr.common.log :refer (debug info warn error)])
   (:gen-class))
 
 (defn -main

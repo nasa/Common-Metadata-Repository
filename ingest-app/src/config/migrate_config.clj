@@ -50,7 +50,7 @@
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
    :current-version current-db-version
-   :update-version update-db-version })
+   :update-version update-db-version})
 
 (defn migrate-config []
   "Drift migrate configuration used by lein migrate.

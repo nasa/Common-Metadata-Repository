@@ -1,9 +1,10 @@
 (ns cmr.spatial.messages
   "Contains error messages for spatial validation."
-  (:require [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as u]
-            [pjstadig.assertions :as pj]
-            [clojure.string :as str]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [cmr.common.util :as u]
+   [pjstadig.assertions :as pj]))
 
 (defn shape-decode-msg
   [type s]
@@ -75,7 +76,7 @@
 
 (defn ring-contains-both-poles
   []
-"The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole. Please check the order of your points.
+ "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole. Please check the order of your points.
  You may have provided them in the wrong order (clockwise vs counter-clockwise)")
 
 (defn ring-points-out-of-order

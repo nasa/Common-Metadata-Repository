@@ -1,21 +1,20 @@
 (ns cmr.umm.test.echo10.echo10-collection-tests
   "Tests parsing and generating ECHO10 Collection XML."
-  (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [cmr.common.joda-time]
-            [cmr.common.date-time-parser :as p]
-            [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.echo10.echo10-collection :as c]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.related-url-helper :as ru]))
+  (:require
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.joda-time]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.umm.echo10.echo10-collection :as c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.test.generators.collection :as coll-gen]
+   [cmr.umm.umm-collection :as umm-c]))
 
 (defn- umm-related-url->expected-related-url
   "Modifies the umm related-urls to the expected-related urls"
@@ -535,11 +534,11 @@
         {:type :archive-center
          :org-name "SEDAC AC"})]
      :personnel [#cmr.umm.umm_collection.Personnel{:first-name "JOSEPHINO 'JOEY'"
-                                               :middle-name nil
-                                               :last-name "COMISO"
-                                               :roles ["INVESTIGATOR"]
-                                               :contacts (#cmr.umm.umm_collection.Contact{:type :email
-                                                                                      :value "josefino.c.comiso@nasa.gov"})}]
+                                                   :middle-name nil
+                                                   :last-name "COMISO"
+                                                   :roles ["INVESTIGATOR"]
+                                                   :contacts (#cmr.umm.umm_collection.Contact{:type :email
+                                                                                              :value "josefino.c.comiso@nasa.gov"})}]
      :collection-progress :complete}))
 
 (deftest parse-collection-test

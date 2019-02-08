@@ -241,7 +241,7 @@
                     (constantly
                       (system/start s))))
 
-    (d/touch-user-clj))
+  (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."
@@ -320,10 +320,10 @@
   `run-suites` function defined in this `user` namespace provides that
   convenience."
   ([]
-    (let [orig-log-level @settings/logging-level]
-      (set-logging-level! :fatal)
-      (ltest/run-suites)
-      (set-logging-level! orig-log-level))))
+   (let [orig-log-level @settings/logging-level]
+     (set-logging-level! :fatal)
+     (ltest/run-suites)
+     (set-logging-level! orig-log-level))))
 
 (defn banner
   "Who doesn't like a banner?"

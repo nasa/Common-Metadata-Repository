@@ -2,9 +2,9 @@
   "Defines the HTTP URL routes for the access-control web site."
   (:require
    [cmr.access-control.site.pages :as pages]
-   [cmr.common-app.static :as static]
    [cmr.common-app.site.data :as common-data]
    [cmr.common-app.site.pages :as common-pages]
+   [cmr.common-app.static :as static]
    [cmr.transmit.config :as config]
    [compojure.core :refer [GET context routes]]
    [ring.util.response :refer [redirect]]))
@@ -34,7 +34,7 @@
              (redirect
               (str (config/application-public-root-url ctx)
                    "site/docs/access-control/api.html")
-             307))
+              307))
         (GET "/usage"
              {ctx :request-context}
              (redirect

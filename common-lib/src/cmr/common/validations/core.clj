@@ -7,7 +7,7 @@
   value. It returns either nil or a map of field paths to a list of errors.
   Maps and lists will automatically be converted into record-validation or
   seq-of-validations."
-  (:require 
+  (:require
    [camel-snake-kebab.core :as csk]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as date-time-parser]
@@ -71,21 +71,21 @@
 (defn validate
   "Returns a map of fields to error messages."
   ([validation value]
-    (validate validation [] value))
+   (validate validation [] value))
   ([validation key-path value]
    (cond
      (sequential? validation)
-       (reduce
-         (fn [error-map v]
-           (merge-with concat error-map (validate v key-path value)))
-         {}
-         validation)
+     (reduce
+       (fn [error-map v]
+         (merge-with concat error-map (validate v key-path value)))
+       {}
+       validation)
      (map? validation)
-      (reduce
-        (fn [error-map [k v]]
-           (merge error-map (validate v (conj key-path k) (get value k))))
-        {}
-        validation)
+     (reduce
+       (fn [error-map [k v]]
+          (merge error-map (validate v (conj key-path k) (get value k))))
+       {}
+       validation)
      (fn? validation) (validation key-path value))))
 
 (defn validate!

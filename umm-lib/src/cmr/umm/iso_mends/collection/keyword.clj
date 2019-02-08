@@ -67,6 +67,8 @@
                       variable-level-3 detailed-variable]))))
 
 (defn generate-keywords
+  "Generates the keywords XML. Note: we can add the gmd:thesaurusName stuff later, which is a
+  lot of duplicate info on GCMD and is not required by the schema."
   [type keywords]
   (when-not (empty? keywords)
     (x/element
@@ -77,10 +79,8 @@
           (for [keyword keywords] (h/iso-string-element :gmd:keyword keyword))
           (h/iso-string-element :gmd:keyword keywords))
         (x/element :gmd:type {}
-                   (x/element :gmd:MD_KeywordTypeCode (keyword-type-attributes type) type))
-        ;; Note: we can add the gmd:thesaurusName stuff later
-        ;; which is a lot of duplicate info on GCMD and is not required by the schema
-        ))))
+                   (x/element :gmd:MD_KeywordTypeCode (keyword-type-attributes type) type))))))
+
 
 (defn generate-science-keywords
   [science-keywords]

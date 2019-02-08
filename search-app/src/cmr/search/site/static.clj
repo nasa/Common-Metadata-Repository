@@ -14,13 +14,13 @@
 
 ;; Contextual data that is used for static content in the absense of a system
 ;; context, e.g., when run from the command line.
-(defrecord StaticContext [
-  ;; the application which is being run with the context, e.g., :search
-  cmr-application
-  ;; the context of execution, e.g., :cli, when run from a system shell
-  execution-context
-  ;; a place to store context-specific data
-  static-data])
+(defrecord StaticContext
+  [;; the application which is being run with the context, e.g., :search
+   cmr-application
+   ;; the context of execution, e.g., :cli, when run from a system shell
+   execution-context
+   ;; a place to store context-specific data
+   static-data])
 
 (defn- generate-api-docs
   "Generate CMR Search API docs."

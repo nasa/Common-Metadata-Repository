@@ -1,6 +1,7 @@
 (ns cmr.indexer.config
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.message-queue.config :as rmq-conf]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig index-queue-name
   "The queue containing ingest events for the indexer"

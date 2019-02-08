@@ -1,6 +1,6 @@
 (ns cmr.umm.iso-smap.granule
   "Contains functions for parsing and generating the SMAP ISO dialect."
-  (:require 
+  (:require
    [clj-time.format :as f]
    [clojure.data.xml :as x]
    [clojure.java.io :as io]
@@ -13,7 +13,8 @@
    [cmr.umm.iso-smap.helper :as h]
    [cmr.umm.iso-smap.iso-smap-collection :as c]
    [cmr.umm.umm-granule :as g])
-  (:import cmr.umm.umm_granule.UmmGranule))
+  (:import
+   (cmr.umm.umm_granule UmmGranule)))
 
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
@@ -169,7 +170,7 @@
           (h/generate-short-name-element short-name)
           (h/generate-version-id-element version-id)))
       ;; This probably shouldn't be hard-coded
-      (h/iso-string-element :gmd:abstract identification-abstract )
+      (h/iso-string-element :gmd:abstract identification-abstract)
       (h/iso-string-element :gmd:language "eng")
       (x/element :gmd:extent {}
                  (x/element :gmd:EX_Extent {}
@@ -235,7 +236,7 @@
     ([granule]
      (let [{{:keys [entry-title short-name version-id]} :collection-ref
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains 
+            :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    related-urls spatial-coverage]} granule
            {:keys [producer-gran-id production-date-time]} data-granule]
        (x/emit-str
@@ -259,7 +260,7 @@
                               (x/element :gco:Date {} (f/unparse (f/formatters :date) update-time)))
                    (generate-granule-ur-element granule-ur update-time)
                    (generate-identification-info-element
-                     producer-gran-id update-time short-name version-id 
+                     producer-gran-id update-time short-name version-id
                      spatial-coverage temporal orbit-calculated-spatial-domains)
                    (h/generate-dataset-id-element entry-title update-time)
                    (h/generate-datetime-element "InsertTime" "creation" insert-time)

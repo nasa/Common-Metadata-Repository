@@ -21,13 +21,13 @@
   {[:Instruments] (partial util/update-in-each umm [:Platforms])})
 
 (defn mapping-snuf-and-its-values
-  "Returns a map of snuf: supported nested update-field, and all its values in umm.  
-   Currently bulk update only supports one nested update-field [:Instruments]." 
-  [umm] 
+  "Returns a map of snuf: supported nested update-field, and all its values in umm.
+   Currently bulk update only supports one nested update-field [:Instruments]."
+  [umm]
   {[:Instruments] (for [platform (:Platforms umm)
                         instrument (:Instruments platform)]
-                    instrument)})  
- 
+                    instrument)})
+
 (def update-types-associated-with-find-operations
  "All the update types that are associated with the find operations."
  [:find-and-remove :find-and-replace :find-and-update :find-and-update-home-page-url])
@@ -74,14 +74,14 @@
   [data-center]
   (if (seq (get-in data-center [:ContactInformation :RelatedUrls]))
     data-center
-    (update-in data-center [:ContactInformation] dissoc :RelatedUrls))) 
+    (update-in data-center [:ContactInformation] dissoc :RelatedUrls)))
 
 (defn- remove-data-center-empty-contact-info
   "Remove data center's ContactInformation if it's empty"
   [data-center]
   (if (seq (:ContactInformation data-center))
     data-center
-    (dissoc data-center :ContactInformation))) 
+    (dissoc data-center :ContactInformation)))
 
 (defn- data-center-update
   "Apply update to data-center using the update-value. Returns data center.
@@ -110,7 +110,7 @@
 (defn- remove-duplicates
   "Remove duplicates in update-field, whoes value is [map(s)] for bulk updates."
   [umm update-field]
-  (-> umm 
+  (-> umm
       (util/update-in-each update-field util/remove-nil-keys)
       ;; In order to do distinct, convert the list of models to a list of maps
       (update-in update-field #(map (partial into {}) %))
@@ -121,8 +121,8 @@
   [find-value umm update-field]
   ;; snuf stands for supported nested update-field.
   (if-let [snuf-values (get (mapping-snuf-and-its-values umm) update-field)]
-    (some (partial value-matches? find-value) snuf-values)   
-    (some (partial value-matches? find-value) (get-in umm update-field)))) 
+    (some (partial value-matches? find-value) snuf-values)
+    (some (partial value-matches? find-value) (get-in umm update-field))))
 
 (defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
@@ -157,12 +157,12 @@
         ;; For each entry in update-field, if we find it using the find params,
         ;; completely replace with update value
         updated-umm (if (get-in umm update-field)
-                      (update-in umm update-field #(flatten 
+                      (update-in umm update-field #(flatten
                                                      (map (fn [x]
                                                             (if (value-matches? find-value x)
                                                               update-value
                                                               x))
-                                                           %)))
+                                                          %)))
                       umm)]
      (if (= updated-umm umm)
        umm
@@ -172,7 +172,7 @@
   [update-type umm update-field update-value find-value]
   ;; For each entry in update-field, if we find it using the find params,
   ;; update only the fields supplied in update-value with nils removed
-  (if (get-in umm update-field) 
+  (if (get-in umm update-field)
     (update-in umm update-field #(distinct (map (fn [x]
                                                   (if (value-matches? find-value x)
                                                     (merge x update-value)
@@ -211,7 +211,7 @@
   [update-type umm update-field update-value find-value]
   (if (some #(= update-type %) update-types-associated-with-find-operations)
     (when (find-value-exists-in-umm? find-value umm update-field)
-      (apply-umm-list-update update-type umm update-field update-value find-value)) 
+      (apply-umm-list-update update-type umm update-field update-value find-value))
     (apply-umm-list-update update-type umm update-field update-value find-value)))
 
 (defn apply-update
@@ -225,10 +225,10 @@
     (apply-list-update-default update-type umm update-field update-value find-value)))
 
 (defn update-concept
-  "Apply an update to a raw concept. 
-   Convert to UMM, apply the update, and convert back to the passed in update-format or native format
-   if update-format is nil. Currently update-format is hard-coded to umm+json in bulk-update-service.
-   Returns nil if apply-update returns nil - when the concept is not found through find-value."
+  "Apply an update to a raw concept.
+  Convert to UMM, apply the update, and convert back to the passed in update-format or native format
+  if update-format is nil. Currently update-format is hard-coded to umm+json in bulk-update-service.
+  Returns nil if apply-update returns nil - when the concept is not found through find-value."
   [context concept update-type update-field update-value find-value update-format]
   (let [{:keys [format metadata concept-type]} concept
         update-format (or update-format (:format concept))
@@ -237,6 +237,3 @@
     (when-let [umm (apply-update update-type umm update-field update-value find-value)]
       (let [umm (date-util/update-metadata-dates umm "UPDATE")]
         (spec-core/generate-metadata context umm update-format)))))
-
-
-

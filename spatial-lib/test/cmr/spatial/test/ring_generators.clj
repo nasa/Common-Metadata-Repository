@@ -1,22 +1,12 @@
 (ns cmr.spatial.test.ring-generators
   "Tests that sanity check the ring generators"
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.math.combinatorics :as combo]
-            [clojure.string :as str]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]))
+  (:require
+   [clojure.math.combinatorics :as combo]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]))
 
 ;; Ring tests. These are functions that return true if the ring is correct and false if invalid.
 
@@ -66,7 +56,7 @@
   "Takes a list of vars and creates a map that uses the keyword version of the var name to the var value"
   [var-syms]
   (into {} (for [v var-syms]
-             [(keyword v) @(resolve v)]) ))
+             [(keyword v) @(resolve v)])))
 
 (def ring-tests
   "A map of ring test names to functions that perform the test."
@@ -130,6 +120,3 @@
           [boundary & holes] rings]
       (and (empty? failed-tests)
            (every? (partial rr/covers-ring? boundary) holes)))))
-
-
-

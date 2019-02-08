@@ -86,9 +86,9 @@
                (not= data-centers update-field))
       (errors/throw-service-errors
        :bad-request
-      [(str find-and-update-home-page-url " update type can not be used for the [" update-field
-            "] update field. "
-            "It can only be used for the " data-centers " update field.")]))
+       [(str find-and-update-home-page-url " update type can not be used for the [" update-field
+             "] update field. "
+             "It can only be used for the " data-centers " update field.")]))
     (when (and (not= add-to-existing update-type)
                (not= clear-all-and-replace update-type)
                (not= find-and-replace update-type)
@@ -166,14 +166,14 @@
         task-id (try
                   (data-bulk-update/create-bulk-update-task
                     context provider-id json concept-ids)
-                (catch Exception e
-                  (let [msg (.getMessage e)
-                        msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
-                              "Bulk update name needs to be unique within the provider."
-                              msg)]
-                    (errors/throw-service-errors
-                      :invalid-data
-                      [(str "Error creating bulk update task: " msg)]))))]
+                 (catch Exception e
+                   (let [msg (.getMessage e)
+                         msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
+                               "Bulk update name needs to be unique within the provider."
+                               msg)]
+                     (errors/throw-service-errors
+                       :invalid-data
+                       [(str "Error creating bulk update task: " msg)]))))]
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
       context

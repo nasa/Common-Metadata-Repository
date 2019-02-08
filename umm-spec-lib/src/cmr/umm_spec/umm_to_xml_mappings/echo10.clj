@@ -166,9 +166,9 @@
      (dc/generate-archive-centers c)
      [:VersionDescription (:VersionDescription c)]
      (generate-collection-citations c)
-   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                           (get coll-progress-mapping (string/upper-case coll-progress)))]
-     [:CollectionState c-progress])
+     (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                             (get coll-progress-mapping (string/upper-case coll-progress)))]
+       [:CollectionState c-progress])
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
      [:Price (when-let [price-str (-> c :Distributions first :Fees)]

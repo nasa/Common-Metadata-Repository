@@ -35,7 +35,7 @@
   [context base-path]
   (static/generate
    (str base-path "resources/public/site/collections/directory/eosdis/index.html")
-             "templates/search-eosdis-directory-links.html"
+   "templates/search-eosdis-directory-links.html"
              (assoc (data/get-eosdis-directory-links context)
                     :base-url (util/make-relative-parents 4))))
 

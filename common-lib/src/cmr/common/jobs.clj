@@ -1,19 +1,21 @@
 (ns cmr.common.jobs
   "Defines a job scheduler that wraps quartz for defining a job."
-  (:require [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.services.errors :as errors]
-            [clj-time.core :as t]
-            [cmr.common.config :as config :refer [defconfig]]
-            ;; quartzite dependencies
-            [clojurewerkz.quartzite.scheduler :as qs]
-            [clojurewerkz.quartzite.triggers :as qt]
-            [clojurewerkz.quartzite.jobs :as qj]
-            [clojurewerkz.quartzite.stateful :as qst]
-            [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
-            [clojurewerkz.quartzite.schedule.cron :as qcron]
-            [clojurewerkz.quartzite.conversion :as qc])
-  (:import org.quartz.impl.StdScheduler))
+  (:require
+   [clj-time.core :as t]
+   [cmr.common.config :as config :refer [defconfig]]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   ;; quartzite dependencies
+   [clojurewerkz.quartzite.conversion :as qc]
+   [clojurewerkz.quartzite.jobs :as qj]
+   [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
+   [clojurewerkz.quartzite.schedule.cron :as qcron]
+   [clojurewerkz.quartzite.scheduler :as qs]
+   [clojurewerkz.quartzite.stateful :as qst]
+   [clojurewerkz.quartzite.triggers :as qt])
+  (:import
+   (org.quartz.impl StdScheduler)))
 
 (defn defjob*
   "The function that does the bulk of the work for the def job macros."
@@ -255,7 +257,7 @@
           (assoc this
                  :running? true
                  :qz-scheduler scheduler)))
-    (errors/internal-error! "No jobs to schedule.")))
+     (errors/internal-error! "No jobs to schedule.")))
 
   (stop
     [this system]

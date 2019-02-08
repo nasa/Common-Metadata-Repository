@@ -1,10 +1,11 @@
 (ns migrations.034-generate-tag-associations-from-tags
-  (:require [clojure.java.jdbc :as j]
-            [clojure.edn :as edn]
-            [clojure.string :as str]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.services.concept-service :as cs]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.java.jdbc :as j]
+   [clojure.string :as str]
+   [cmr.metadata-db.services.concept-service :as cs]
+   [config.mdb-migrate-helper :as h]
+   [config.migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 34."
@@ -67,8 +68,8 @@
                 metadata (edn/read-string (:metadata tag-concept))
                 new-metadata (pr-str (assoc metadata :associated-concept-ids associated-concept-ids))
                 tag-concept (-> tag-concept
-                        (assoc :metadata new-metadata :revision-id (inc revision-id))
-                        (dissoc :transaction-id))]
+                             (assoc :metadata new-metadata :revision-id (inc revision-id))
+                             (dissoc :transaction-id))]
             (cs/save-concept-revision context tag-concept)))))
     (h/sql "delete from cmr_tag_associations")
     (h/sql "alter table cmr_tag_associations drop column tag_key")

@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.collection.org
   "Archive and Processing Center elements of echo10 are mapped umm organization elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Organizations
   "Return organizations or []"
@@ -56,7 +57,6 @@
         prctr (generate-processing-center orgs)]
     (vector arctr prctr))
 
-  (clojure.repl/dir camel-snake-kebab)
+  (clojure.repl/dir camel-snake-kebab))
 
   ;;;;;;;;;;;;
-  )

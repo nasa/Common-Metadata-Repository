@@ -55,5 +55,4 @@
   ;; integration tests
   (let [db (oracle-config/sys-dba-db-spec)]
     (o/create-user db "DEV_52_CATALOG_REST" "DEV_52_CATALOG_REST")
-    (o/grant-select-privileges db "DEV_52_CATALOG_REST" "METADATA_DB"))
-  )
+    (o/grant-select-privileges db "DEV_52_CATALOG_REST" "METADATA_DB")))

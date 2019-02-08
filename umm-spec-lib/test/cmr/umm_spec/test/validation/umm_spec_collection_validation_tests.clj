@@ -52,13 +52,13 @@
                                                                {:Date (time/date-time 2020) :Type "REVIEW"}
                                                                {:Date (time/date-time 2000) :Type "DELETE"}
                                                                {:Date (time/date-time 2020) :Type "DELETE"}])
-    [{:path [:DataDates]
-     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
-              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
-              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
-              "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
+     [{:path [:DataDates]
+       :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
+                "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
+                "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
+                "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
+                "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
+                "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
 
   (testing "valid meta data dates"
     (testing "all nil cases for CREATE, UPDATE, REVIEW and DELETE"
@@ -92,14 +92,14 @@
                                                                     {:Date (time/date-time 2020) :Type "REVIEW"}
                                                                     {:Date (time/date-time 2000) :Type "DELETE"}
                                                                     {:Date (time/date-time 2020) :Type "DELETE"}])
-    [{:path [:MetadataDates]
-     :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
-              "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
-              "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
-              "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
-              "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}]))
-)
+     [{:path [:MetadataDates]
+       :errors ["CREATE date value: [2020-01-01T00:00:00.000Z] should be in the past."
+                "latest UPDATE date value: [2021-01-01T00:00:00.000Z] should be in the past."
+                "earliest REVIEW date value: [2000-01-01T00:00:00.000Z] should be in the future."
+                "DELETE date value: [2000-01-01T00:00:00.000Z] should be in the future."
+                "Earliest UPDATE date value: [2000-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2020-01-01T00:00:00.000Z]."
+                "DELETE date value: [2000-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2020-01-01T00:00:00.000Z]."]}])))
+
 
 (deftest collection-projects-validation
   (time-keeper/set-time-override! (time/date-time 2017 8 1))
