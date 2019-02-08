@@ -36,8 +36,7 @@
   for UMM JSON format."
   [concept-type format-key]
   (if-let [version (:version format-key)]
-    (mime-types/format->mime-type {:format format-key
-                                   :version version})
+    (mime-types/format->mime-type format-key)
     (if (= :umm-json format-key)
       (mime-types/format->mime-type {:format format-key
                                      :version (versioning/current-version concept-type)})
@@ -49,10 +48,7 @@
    (item->concept item :echo10))
   ([item format-key]
    (let [concept-type (umm-legacy/item->concept-type item)
-         format (format-key->concept-format concept-type format-key)
-         format-key (if-let [umm-format (:format format-key)]
-                      umm-format
-                      format-key)]
+         format (format-key->concept-format concept-type format-key)]
      (merge {:concept-type concept-type
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
