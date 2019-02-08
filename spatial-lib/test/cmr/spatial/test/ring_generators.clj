@@ -6,7 +6,16 @@
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
-   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]))
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.validation :as v]))
 
 ;; Ring tests. These are functions that return true if the ring is correct and false if invalid.
 
