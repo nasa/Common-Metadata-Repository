@@ -1,18 +1,19 @@
 (ns cmr.spatial.orbits.swath-geometry
   "Functions for transforming orbit parameters into useful geometries"
-  (:require [cmr.spatial.math :refer :all]
-            [cmr.common.services.errors :as errors]
-            [primitive-math]
-            [clojure.core.matrix :as cm]
-            [mikera.vectorz.core :as v]
-            [mikera.vectorz.matrix :as m]
-            [clj-time.core :as t]
-            [clj-time.coerce :as c]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.orbits.orbits :as orbits]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.polygon :as poly])
-  (:import [mikera.matrixx AMatrix]))
+  (:require
+   [clj-time.coerce :as c]
+   [clj-time.core :as t]
+   [clojure.core.matrix :as cm]
+   [cmr.common.services.errors :as errors]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.orbits.orbits :as orbits]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [mikera.vectorz.core :as v]
+   [mikera.vectorz.matrix :as m]
+   [primitive-math])
+  (:import (mikera.matrixx AMatrix)))
 
 ;; This module constructs orbit geometries as strings of lat/lon edge points by
 ;; using rotation matrices.  It helps to take a second to visualize the rotations.
@@ -222,11 +223,11 @@
                  {:orbit-number 593 :equator-crossing-longitude  125.265396  :equator-crossing-date-time (t/date-time 2003  2 21 18 58 47)}]
           ascending-crossing-lon 104.0823
           start-date (t/date-time 2003 2 20 21 48 32)
-          end-time (t/date-time 2003 2 21 19 12 15)
-          ]
+          end-time (t/date-time 2003 2 21 19 12 15)]
+
       (with-progress-reporting
-        (bench (to-polygons orbit-parameters ascending-crossing-lon ocsds start-time end-time)))))
-  )
+        (bench (to-polygons orbit-parameters ascending-crossing-lon ocsds start-time end-time))))))
+
 (comment
   ; Based on G195170098-GSFCS4PA and G195170099-GSFCS4PA.  These should line up one against the other
   (defn test-orbit-to-poly-2
@@ -240,12 +241,11 @@
           crossing-lon1 167.71
           ocsds1 [{:orbit-number 1133 :equator-crossing-longitude 167.71   :equator-crossing-date-time (t/date-time 2004 10  1  2 31 15)}]
           start-date1 (t/date-time 2004 10 1 1 41 58)
-          end-date1 (t/date-time 2004 10 1 3 20 50)
-          ]
+          end-date1 (t/date-time 2004 10 1 3 20 50)]
+
       (let [geo0 (to-polygons orbit-parameters crossing-lon0 ocsds0 start-time0 end-time0)
             geo1 (to-polygons orbit-parameters crossing-lon1 ocsds1 start-time1 end-time1)]
         (viz-helper/clear-geometries)
         (viz-helper/add-geometries geo0)
         (viz-helper/add-geometries geo1)
-        [geo0 geo1])))
-  )
+        [geo0 geo1]))))

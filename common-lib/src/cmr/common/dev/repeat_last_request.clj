@@ -24,8 +24,7 @@
   []
   (let [system (var-get (find-var 'user/system))
         routes-fn (get-in system [:web :routes-fn])]
-  (if @last-request-atom
-    (let [api-fn (routes-fn system)]
-      (api-fn @last-request-atom))
-    (println "No last request captured to repeat"))))
-
+   (if @last-request-atom
+     (let [api-fn (routes-fn system)]
+       (api-fn @last-request-atom))
+     (println "No last request captured to repeat"))))

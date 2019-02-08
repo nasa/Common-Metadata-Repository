@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.collection.platform
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.echo10.collection.instrument :as inst]
-            [cmr.umm.echo10.collection.characteristic :as char]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.echo10.collection.characteristic :as char]
+   [cmr.umm.echo10.collection.instrument :as inst]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Platform
   [platform-elem]
@@ -38,4 +39,4 @@
                      (x/element :LongName {} long-name)
                      (x/element :Type {} type)
                      (char/generate-characteristics characteristics)
-                     (inst/generate-instruments instruments) ))))))
+                     (inst/generate-instruments instruments)))))))

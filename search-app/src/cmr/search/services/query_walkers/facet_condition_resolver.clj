@@ -27,9 +27,9 @@
     [c field-key]
     "Returns true if the condition has the field key")
 
-   (adjust-facet-query
-    [c field-key]
-    "Returns the query condition by dropping the conditions that are related to the field key."))
+  (adjust-facet-query
+   [c field-key]
+   "Returns the query condition by dropping the conditions that are related to the field key."))
 
 (extend-protocol AdjustFacetQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -72,26 +72,26 @@
 
 (def linkage-xpath
   (str "gmd:contactInfo/gmd:CI_Contact"
-       "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL")) 
+       "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"))
 
 (def protocal-xpath
-  (str "gmd:contactInfo/gmd:CI_Contact" 
-       "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:protocol/gco:CharacterString")) 
+  (str "gmd:contactInfo/gmd:CI_Contact"
+       "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:protocol/gco:CharacterString"))
 
 (def application-profile-xpath
-  (str "gmd:contactInfo/gmd:CI_Contact" 
+  (str "gmd:contactInfo/gmd:CI_Contact"
        "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:applicationProfile/gco:CharacterString"))
 
 (def name-xpath
-  (str "gmd:contactInfo/gmd:CI_Contact" 
+  (str "gmd:contactInfo/gmd:CI_Contact"
        "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:name/gco:CharacterString"))
 
 (def description-xpath
-  (str "gmd:contactInfo/gmd:CI_Contact" 
+  (str "gmd:contactInfo/gmd:CI_Contact"
        "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:description/gco:CharacterString"))
 
 (def function-xpath
-  (str "gmd:contactInfo/gmd:CI_Contact" 
+  (str "gmd:contactInfo/gmd:CI_Contact"
        "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:function/gmd:CI_OnLineFunctionCode/@codeListValue"))
 
 (defn- get-creator-editor
@@ -174,24 +174,22 @@
                 online-resource-parties (seq (select resource-citation online-resource-xpath))
                 creator (:creator (get-creator-editor creator-editor-parties))
                 editor (:editor (get-creator-editor creator-editor-parties))
-                publisher (:publisher (get-publisher-release-place pub-rel-pl-parties ))
+                publisher (:publisher (get-publisher-release-place pub-rel-pl-parties))
                 release-place (:release-place (get-publisher-release-place pub-rel-pl-parties))
                 online-resources (remove #(nil? (seq %))(get-online-resources online-resource-parties))]]
       (util/remove-nil-keys
         {:Creator creator
-         :Editor editor 
+         :Editor editor
          :Title  (value-of resource-citation title-xpath)
          :SeriesName (value-of resource-citation series-name-xpath)
          :ReleaseDate (if sanitize?
                         (when (date/valid-date? release-date)
                           release-date)
                         release-date)
-         :ReleasePlace release-place 
-         :Publisher publisher 
+         :ReleasePlace release-place
+         :Publisher publisher
          :Version (value-of resource-citation version-xpath)
          :IssueIdentification (value-of resource-citation issue-identification-xpath)
          :DataPresentationForm (value-of resource-citation data-presentation-form-xpath)
          :OtherCitationDetails (value-of resource-citation other-citation-details-xpath)
          :OnlineResource (first online-resources)}))))
-  
-                       

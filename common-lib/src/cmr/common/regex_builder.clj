@@ -2,21 +2,22 @@
   "Provides functions for programmatically building a regular expression. All of the regular
   expression functions work by joining strings together. Call compile-regex to create the final
   regular expression"
-  (:require [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]))
 
 (defn group
   "Groups together items in a sequence."
   [& parts]
   (if (= (count parts) 1)
       (first parts)
-      (str "(?:" (str/join "" parts) ")" )))
+      (str "(?:" (str/join "" parts) ")")))
 
 (defn capture
   "Groups together items in a sequence that will be captured"
   [& parts]
   (if (= (count parts) 1)
       (str "(" (first parts) ")")
-      (str "(" (str/join "" parts) ")" )))
+      (str "(" (str/join "" parts) ")")))
 
 (defn- build-postfix-op
   "Helper for building a postfix operation that can also group items"

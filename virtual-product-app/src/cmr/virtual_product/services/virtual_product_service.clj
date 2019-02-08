@@ -33,9 +33,9 @@
     (keyword (:action event))))
 
 (defmethod handle-ingest-event :default
-  [context event]
+  [context event])
   ;; Does nothing. We ignore events we don't care about.
-  )
+
 
 (defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."

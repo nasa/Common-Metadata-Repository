@@ -1,13 +1,12 @@
 (ns cmr.search.test.services.query-walkers.temporal-range-extractor
   "Tests for extracting temporal ranges from queries"
  (:require
-  [clojure.test :refer :all]
   [clj-time.core :as time]
+  [clojure.test :refer :all]
   [cmr.common-app.services.search.query-model :as qm]
   [cmr.search.models.query :as query]
   [cmr.search.services.query-walkers.temporal-range-extractor :as range-extractor]
   [cmr.search.test.models.helpers :as query-helper]))
-
 
 (deftest extract-temporal-range-test
   (let [query (qm/query {:condition

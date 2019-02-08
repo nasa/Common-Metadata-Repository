@@ -175,8 +175,8 @@
   ;; XXX Looking at search-with-params, seems like it might need to be
   ;;     in a utility ns for use by all impls
   (let [found-concepts (mapcat #(concepts/search-with-params
-                                @(:concepts-atom db)
-                                (assoc params :provider-id (:provider-id %)))
+                                 @(:concepts-atom db)
+                                 (assoc params :provider-id (:provider-id %)))
                               providers)]
     (concepts->find-result found-concepts params)))
 
@@ -203,7 +203,7 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-       num (swap! (:next-id-atom db) inc)]
+        num (swap! (:next-id-atom db) inc)]
    (cc/build-concept-id {:concept-type concept-type
                          :sequence-number num
                          :provider-id provider-id})))
@@ -211,7 +211,7 @@
 (defn get-concept-id
   [db concept-type provider native-id]
   (let [provider-id (:provider-id provider)
-       concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
+        concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
    (->> @(:concepts-atom db)
         (filter (fn [c]
                   (and (= concept-type (:concept-type c))
@@ -260,10 +260,10 @@
 
 (defn get-concept
   ([db concept-type provider concept-id]
-    (-get-concept db concept-type provider concept-id))
+   (-get-concept db concept-type provider concept-id))
   ([db concept-type provider concept-id revision-id]
-    (-get-concept-with-revision
-     db concept-type provider concept-id revision-id)))
+   (-get-concept-with-revision
+    db concept-type provider concept-id revision-id)))
 
 (defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
@@ -274,24 +274,24 @@
         concept-id-revision-id-tuples)))
 
 (defn get-latest-concepts
-[db concept-type provider concept-ids]
-  (let [concept-id-set (set concept-ids)
-        concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
-                             (if (contains? concept-id-set concept-id)
-                               (cond
+ [db concept-type provider concept-ids]
+ (let [concept-id-set (set concept-ids)
+       concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
+                            (if (contains? concept-id-set concept-id)
+                              (cond
 
-                                 (nil? (get concept-map concept-id))
-                                 (assoc concept-map concept-id concept)
+                                (nil? (get concept-map concept-id))
+                                (assoc concept-map concept-id concept)
 
-                                 (> revision-id (:revision-id (get concept-map concept-id)))
-                                 (assoc concept-map concept-id concept)
+                                (> revision-id (:revision-id (get concept-map concept-id)))
+                                (assoc concept-map concept-id concept)
 
-                                 :else
-                                 concept-map)
-                               concept-map))
-                            {}
-                            @(:concepts-atom db))]
-   (keep (partial get concept-map) concept-ids)))
+                                :else
+                                concept-map)
+                              concept-map))
+                           {}
+                           @(:concepts-atom db))]
+  (keep (partial get concept-map) concept-ids)))
 
 (defn get-transactions-for-concept
   [db provider con-id]
@@ -389,10 +389,10 @@
 (defn get-old-concept-revisions
   [db provider concept-type max-versions limit]
   (letfn [(drop-highest
-          [concepts]
-          (->> concepts
-               (sort-by :revision-id)
-               (drop-last max-versions)))]
+           [concepts]
+           (->> concepts
+                (sort-by :revision-id)
+                (drop-last max-versions)))]
    (->> @(:concepts-atom db)
         (filter #(= concept-type (:concept-type %)))
         (filter #(= (:provider-id provider) (:provider-id %)))

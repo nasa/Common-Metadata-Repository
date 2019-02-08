@@ -1,9 +1,10 @@
 (ns cmr.spatial.orbits.orbits
   "Useful constants and transformation for orbit parameters"
-  (:require [cmr.spatial.math :refer :all]
-            [cmr.common.services.errors :as errors]
-            [primitive-math]
-            [clj-time.core :as t]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.common.services.errors :as errors]
+   [cmr.spatial.math :refer :all]
+   [primitive-math]))
 
 (primitive-math/use-primitive-operators)
 
@@ -20,9 +21,9 @@
      ;; The starting circular latitude in degrees
      :start-circular-latitude -90.0
      ;;The number of orbits per granule of data (may be a fraction)
-     :number-of-orbits 1.0})
+     :number-of-orbits 1.0}))
 
-)
+
 
 (defn angular-velocity-rad-s
   "Returns the orbit's angular velocity in radians/second"

@@ -1,13 +1,15 @@
 (ns cmr.virtual-product.data.source-to-virtual-mapping
   "Defines source to vritual granule mapping rules."
-  (:require [cmr.umm.umm-granule :as umm-g]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.related-url-helper :as ruh]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [cmr.virtual-product.config :as vp-config]
-            [cmr.virtual-product.data.ast-l1a :as l1a])
-  (:import java.util.regex.Pattern))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.mime-types :as mt]
+   [cmr.umm.related-url-helper :as ruh]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.virtual-product.config :as vp-config]
+   [cmr.virtual-product.data.ast-l1a :as l1a])
+  (:import
+   (java.util.regex Pattern)))
 
 (def source-granule-ur-additional-attr-name
   "The name of the additional attribute used to store the granule-ur of the source granule"
@@ -55,126 +57,126 @@
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:short-name "AST_L1A"
     :virtual-collections [
-      {:entry-title "ASTER L2 Surface Emissivity V003"
-       :short-name "AST_05"
-       :version-id "003"
-       :matcher tir-mode?}
-      {:entry-title "ASTER L2 Surface Reflectance SWIR and ASTER L2 Surface Reflectance VNIR V003"
-       :short-name "AST_07"
-       :version-id "003"
-       :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER L2 Surface Reflectance VNIR and Crosstalk Corrected SWIR V003"
-       :short-name "AST_07XT"
-       :version-id "003"
-       :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER L2 Surface Temperature V003"
-       :short-name "AST_08"
-       :version-id "003"
-       :matcher tir-mode?}
-      {:entry-title "ASTER L2 Surface Radiance VNIR and SWIR V003"
-       :short-name "AST_09"
-       :version-id "003"
-       :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER L2 Surface Radiance - VNIR and Crosstalk Corrected SWIR V003"
-       :short-name "AST_09XT"
-       :version-id "003"
-       :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER L2 Surface Radiance TIR V003"
-       :short-name "AST_09T"
-       :version-id "003"
-       :matcher tir-mode?}
-      {:entry-title "ASTER Digital Elevation Model V003"
-       :short-name "AST14DEM"
-       :version-id "003"
-       :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER Registered Radiance at the Sensor - Orthorectified V003"
-       :short-name "AST14OTH"
-       :version-id "003"
-       :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
-       :short-name "AST14DMO"
-       :version-id "003"
-       :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
-      {:entry-title "ASTER L1B Registered Radiance at the Sensor V003"
-       :short-name "AST_L1B"
-       :version-id "003"}]}
+                          {:entry-title "ASTER L2 Surface Emissivity V003"
+                           :short-name "AST_05"
+                           :version-id "003"
+                           :matcher tir-mode?}
+                          {:entry-title "ASTER L2 Surface Reflectance SWIR and ASTER L2 Surface Reflectance VNIR V003"
+                           :short-name "AST_07"
+                           :version-id "003"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L2 Surface Reflectance VNIR and Crosstalk Corrected SWIR V003"
+                           :short-name "AST_07XT"
+                           :version-id "003"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L2 Surface Temperature V003"
+                           :short-name "AST_08"
+                           :version-id "003"
+                           :matcher tir-mode?}
+                          {:entry-title "ASTER L2 Surface Radiance VNIR and SWIR V003"
+                           :short-name "AST_09"
+                           :version-id "003"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L2 Surface Radiance - VNIR and Crosstalk Corrected SWIR V003"
+                           :short-name "AST_09XT"
+                           :version-id "003"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L2 Surface Radiance TIR V003"
+                           :short-name "AST_09T"
+                           :version-id "003"
+                           :matcher tir-mode?}
+                          {:entry-title "ASTER Digital Elevation Model V003"
+                           :short-name "AST14DEM"
+                           :version-id "003"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER Registered Radiance at the Sensor - Orthorectified V003"
+                           :short-name "AST14OTH"
+                           :version-id "003"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
+                           :short-name "AST14DMO"
+                           :version-id "003"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L1B Registered Radiance at the Sensor V003"
+                           :short-name "AST_L1B"
+                           :version-id "003"}]}
    ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"]
    {:short-name "OMUVBd"
     :virtual-collections [
-      {:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd_ErythemalUV) at GES DISC"
-       :short-name "OMUVBd_ErythemalUV"
-       :version-id "003"}]}
+                          {:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd_ErythemalUV) at GES DISC"
+                           :short-name "OMUVBd_ErythemalUV"
+                           :version-id "003"}]}
    ["GES_DISC" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"]
    {:short-name "AIRX3STD"
     :virtual-collections [
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006 (AIRX3STD_H2O_MMR_Surf) at GES DISC"
-       :short-name "AIRX3STD_H2O_MMR_Surf"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STD_OLR) at GES DISC"
-       :short-name "AIRX3STD_OLR"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STD_SurfAirTemp) at GES DISC"
-       :short-name "AIRX3STD_SurfAirTemp"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STD_SurfSkinTemp) at GES DISC"
-       :short-name "AIRX3STD_SurfSkinTemp"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STD_TotCO) at GES DISC"
-       :short-name "AIRX3STD_TotCO"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation Clear Sky V006 (AIRX3STD_ClrOLR) at GES DISC"
-       :short-name "AIRX3STD_ClrOLR"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STD_TotCH4) at GES DISC"
-       :short-name "AIRX3STD_TotCH4"
-       :version-id "006"}]}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006 (AIRX3STD_H2O_MMR_Surf) at GES DISC"
+                           :short-name "AIRX3STD_H2O_MMR_Surf"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STD_OLR) at GES DISC"
+                           :short-name "AIRX3STD_OLR"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STD_SurfAirTemp) at GES DISC"
+                           :short-name "AIRX3STD_SurfAirTemp"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STD_SurfSkinTemp) at GES DISC"
+                           :short-name "AIRX3STD_SurfSkinTemp"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STD_TotCO) at GES DISC"
+                           :short-name "AIRX3STD_TotCO"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation Clear Sky V006 (AIRX3STD_ClrOLR) at GES DISC"
+                           :short-name "AIRX3STD_ClrOLR"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STD_TotCH4) at GES DISC"
+                           :short-name "AIRX3STD_TotCH4"
+                           :version-id "006"}]}
    ["GES_DISC" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STM) at GES DISC"]
    {:short-name "AIRX3STM"
     :virtual-collections [
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006 (AIRX3STM_ClrOLR) at GES DISC"
-       :short-name "AIRX3STM_ClrOLR"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio at Surface V006 (AIRX3STM_H2O_MMR_Surf) at GES DISC"
-       :short-name "AIRX3STM_H2O_MMR_Surf"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STM_OLR) at GES DISC"
-       :short-name "AIRX3STM_OLR"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STM_SurfAirTemp) at GES DISC"
-       :short-name "AIRX3STM_SurfAirTemp"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STM_SurfSkinTemp) at GES DISC"
-       :short-name "AIRX3STM_SurfSkinTemp"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STM_TotCO) at GES DISC"
-       :short-name "AIRX3STM_TotCO"
-       :version-id "006"}
-      {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STM_TotCH4) at GES DISC"
-       :short-name "AIRX3STM_TotCH4"
-       :version-id "006"}]}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006 (AIRX3STM_ClrOLR) at GES DISC"
+                           :short-name "AIRX3STM_ClrOLR"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio at Surface V006 (AIRX3STM_H2O_MMR_Surf) at GES DISC"
+                           :short-name "AIRX3STM_H2O_MMR_Surf"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STM_OLR) at GES DISC"
+                           :short-name "AIRX3STM_OLR"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STM_SurfAirTemp) at GES DISC"
+                           :short-name "AIRX3STM_SurfAirTemp"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STM_SurfSkinTemp) at GES DISC"
+                           :short-name "AIRX3STM_SurfSkinTemp"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STM_TotCO) at GES DISC"
+                           :short-name "AIRX3STM_TotCO"
+                           :version-id "006"}
+                          {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STM_TotCH4) at GES DISC"
+                           :short-name "AIRX3STM_TotCH4"
+                           :version-id "006"}]}
    ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
    {:short-name "AST_L1T"
     :virtual-collections [
-      {:entry-title "ASTER Level 1 Full Resolution Browse Thermal Infrared V003"
-       :short-name "AST_FRBT"
-       :version-id "003"
-       :matcher (matches-on-psa "FullResolutionThermalBrowseAvailable" "YES")}
-      {:entry-title "ASTER Level 1 Full Resolution Browse Visible Near Infrared V003"
-       :short-name "AST_FRBV"
-       :version-id "003"
-       :matcher (matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES")}]}
+                          {:entry-title "ASTER Level 1 Full Resolution Browse Thermal Infrared V003"
+                           :short-name "AST_FRBT"
+                           :version-id "003"
+                           :matcher (matches-on-psa "FullResolutionThermalBrowseAvailable" "YES")}
+                          {:entry-title "ASTER Level 1 Full Resolution Browse Visible Near Infrared V003"
+                           :short-name "AST_FRBV"
+                           :version-id "003"
+                           :matcher (matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES")}]}
    ["GES_DISC" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_3H) at GES DISC"]
    {:short-name "GLDAS_NOAH10_3H"
     :virtual-collections [
-      {:entry-title "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_3Hourly) at GES DISC"
-       :short-name "GLDAS_NOAH10_3Hourly"
-       :version-id "2.0"}]}
+                          {:entry-title "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_3Hourly) at GES DISC"
+                           :short-name "GLDAS_NOAH10_3Hourly"
+                           :version-id "2.0"}]}
    ["GES_DISC" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_M) at GES DISC"]
    {:short-name "GLDAS_NOAH10_M"
     :virtual-collections [
-      {:entry-title "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_Monthly) at GES DISC"
-       :short-name "GLDAS_NOAH10_Monthly"
-       :version-id "2.0"}]}})
+                          {:entry-title "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_Monthly) at GES DISC"
+                           :short-name "GLDAS_NOAH10_Monthly"
+                           :version-id "2.0"}]}})
 
 (def virtual-product-to-source-mapping
   "A map derived from the map source-to-virtual-product-mapping. This map consists of keys which are
@@ -403,7 +405,7 @@
                                         "identifier_product_doi_authority"
                                         "FullResolutionVisibleBrowseAvailable"
                                         "FullResolutionThermalBrowseAvailable"}
-                                        (:name %)) psas)))))
+                                       (:name %)) psas)))))
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1A"]
   [virtual-umm provider-id source-short-name virtual-short-name]

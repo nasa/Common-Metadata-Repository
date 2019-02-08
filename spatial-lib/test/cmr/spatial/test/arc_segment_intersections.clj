@@ -1,19 +1,17 @@
 (ns cmr.spatial.test.arc-segment-intersections
-   (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.arc-line-segment-intersections :as asi]
-            [cmr.spatial.test.generators :as sgen]
-            [clojure.string :as str]))
-
+   (:require
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [clojure.test.check.generators :as gen]
+    [clojure.test.check.properties :refer [for-all]]
+    [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+    [cmr.spatial.arc :as a]
+    [cmr.spatial.arc-line-segment-intersections :as asi]
+    [cmr.spatial.line-segment :as s]
+    [cmr.spatial.math :refer :all]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.spatial.test.generators :as sgen]))
 
 (defn print-failure
   [type arc ls]
@@ -87,4 +85,3 @@
        [0 0 -25 -30] [85 90 -14 -20] [-14 -16.8]
        ;; arc ends on north pole
        [0 0 -25 -30] [-14 -20 85 90] [-14 -16.8]))
-

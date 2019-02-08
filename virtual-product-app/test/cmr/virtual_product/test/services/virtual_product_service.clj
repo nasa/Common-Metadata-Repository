@@ -1,8 +1,8 @@
 (ns cmr.virtual-product.test.services.virtual-product-service
-  (:require [clojure.test :refer :all]
-            [cmr.message-queue.config :as queue-config]
-            [cmr.virtual-product.services.virtual-product-service :as vps]))
-
+  (:require
+   [clojure.test :refer :all]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.virtual-product.services.virtual-product-service :as vps]))
 
 (deftest responses-not-causing-error-tests
   (testing "Update responses not causing error"
@@ -26,7 +26,7 @@
 (deftest responses-causing-error-tests
   (testing "Testing unexpected status code in an update response"
     (assert-error (partial #'vps/handle-update-response
-                  {:status 500 :body "body"} "granule-ur")
+                   {:status 500 :body "body"} "granule-ur")
                   (str "Received unexpected status code [500] and the following response when "
                        "ingesting the virtual granule [granule-ur] : [{:status 500, :body \"body\"}]")))
   (testing "Testing status code 404 in a  delete response"
@@ -39,5 +39,3 @@
     (assert-error (partial #'vps/handle-delete-response {:status 500 :body "body"} "granule-ur" 1)
                   (str "Received unexpected status code [500] and the following response when "
                        "deleting the virtual granule [granule-ur] : [{:status 500, :body \"body\"}]"))))
-
-

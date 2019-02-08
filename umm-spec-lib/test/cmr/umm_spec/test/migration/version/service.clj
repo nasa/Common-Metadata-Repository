@@ -79,63 +79,63 @@
 (deftest migrate-service-options-1_1-up-to-1_2
   (is (= {:Type "OPeNDAP"
           :LongName "long name"
-          :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
+          :ServiceOptions {:SubsetTypes [ "Spatial", "Variable"]
                            :SupportedInputProjections [{:ProjectionName "Geographic"}]
                            :SupportedOutputProjections [{:ProjectionName "Geographic"}]
                            :SupportedInputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]
                            :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS2"]}
           :ServiceOrganizations [{:Roles ["DEVELOPER"]
-                                 :ShortName "EED2"}]}
+                                  :ShortName "EED2"}]}
          (vm/migrate-umm
           {} :service "1.1" "1.2"
           {:Type "OPeNDAP"
            :LongName "long name"
-           :ServiceOptions {:SubsetTypes [ "Spatial" "Variable" ]
-                            :SupportedProjections [ "Geographic" ]
+           :ServiceOptions {:SubsetTypes [ "Spatial" "Variable"]
+                            :SupportedProjections [ "Geographic"]
                             :SupportedFormats ["Binary" "HDF4" "netCDF-3" "HDF-EOS4"]}
            :ServiceOrganizations [{:Roles ["DEVELOPER"]
-                                  :ShortName "EED2"}]}))))
+                                   :ShortName "EED2"}]}))))
 
 (deftest migrate-service-options-1_2-down-to-1_1
   (is (= {:Type "OPeNDAP"
           :LongName "long name"
-          :ServiceOptions {:SubsetTypes [ "Spatial" "Variable" ]
-                           :SupportedProjections [ "Geographic" ]
+          :ServiceOptions {:SubsetTypes [ "Spatial" "Variable"]
+                           :SupportedProjections [ "Geographic"]
                            :SupportedFormats ["Binary" "HDF4" "HDF-EOS4" "HDF-EOS5"]}
           :ServiceOrganizations [{:Roles ["DEVELOPER"]
-                                 :ShortName "EED2"}]}
+                                  :ShortName "EED2"}]}
          (vm/migrate-umm
           {} :service "1.2" "1.1"
           {:Type "OPeNDAP"
            :LongName "long name"
-           :ServiceOptions {:SubsetTypes [ "Spatial", "Variable" ]
+           :ServiceOptions {:SubsetTypes [ "Spatial", "Variable"]
                             :SupportedInputProjections [{:ProjectionName "Geographic"}]
                             :SupportedOutputProjections [{:ProjectionName "Geographic"}]
                             :SupportedInputFormats ["BINARY" "HDF4" "HDF-EOS2" "HDF-EOS" "KML"]
                             :SupportedOutputFormats ["BINARY" "HDF4" "NETCDF-3" "HDF-EOS4"]}
            :ServiceOrganizations [{:Roles ["DEVELOPER"]
-                                  :ShortName "EED2"}]}))))
+                                   :ShortName "EED2"}]}))))
 
 (deftest migrate-contact-groups-1_1-up-to-1_2
   (is (= {:Type "OPeNDAP"
           :LongName "long name"
-          :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+          :ContactGroups [{:Roles [ "INVESTIGATOR"]
                            :GroupName "I TEAM"}]
           :ServiceOrganizations [{:Roles ["DEVELOPER"]
                                   :ShortName "EED2"
-                                  :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                  :ContactGroups [{:Roles [ "DEVELOPER"]
                                                    :GroupName "D TEAM"}]}]}
          (vm/migrate-umm
           {} :service "1.1" "1.2"
           {:Type "OPeNDAP"
            :LongName "long name"
-           :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+           :ContactGroups [{:Roles [ "INVESTIGATOR"]
                             :Uuid "74a1f32f-ca06-489b-bd61-4ce85872df9c"
                             :NonServiceOrganizationAffiliation "MSFC"
                             :GroupName "I TEAM"}]
            :ServiceOrganizations [{:Roles ["DEVELOPER"]
                                    :ShortName "EED2"
-                                   :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                   :ContactGroups [{:Roles [ "DEVELOPER"]
                                                     :Uuid "86a1f32f-ca06-489b-bd61-4ce85872df08"
                                                     :NonServiceOrganizationAffiliation "GSFC"
                                                     :GroupName "D TEAM"}]}]}))))
@@ -143,21 +143,21 @@
 (deftest migrate-contact-groups-1_2-down-to-1_1
   (is (= {:Type "OPeNDAP"
           :LongName "long name"
-          :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+          :ContactGroups [{:Roles [ "INVESTIGATOR"]
                            :GroupName "I TEAM"}]
           :ServiceOrganizations [{:Roles ["DEVELOPER"]
                                   :ShortName "EED2"
-                                  :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                  :ContactGroups [{:Roles [ "DEVELOPER"]
                                                    :GroupName "D TEAM"}]}]}
          (vm/migrate-umm
           {} :service "1.2" "1.1"
           {:Type "OPeNDAP"
            :LongName "long name"
-           :ContactGroups [{:Roles [ "INVESTIGATOR" ]
+           :ContactGroups [{:Roles [ "INVESTIGATOR"]
                             :GroupName "I TEAM"}]
            :ServiceOrganizations [{:Roles ["DEVELOPER"]
                                    :ShortName "EED2"
-                                   :ContactGroups [{:Roles [ "DEVELOPER" ]
+                                   :ContactGroups [{:Roles [ "DEVELOPER"]
                                                     :GroupName "D TEAM"}]}]}))))
 
 (deftest migrate-main-fields-1_1-up-to-1_2
@@ -192,7 +192,5 @@
 
  (core/validate-metadata
   :service "application/vnd.nasa.cmr.umm+json; version=1.2"
-  (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S1200245793-EDF_OPS_v1.2.json"))))
+  (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S1200245793-EDF_OPS_v1.2.json")))))
   ; (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S10000000-TEST_ORNL_WCS_v1.2.json"))))
-
- )

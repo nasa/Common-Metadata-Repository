@@ -1,8 +1,9 @@
 (ns cmr.access-control.test.site.routes
-  (:require [clojure.string :as string]
-            [clojure.test :refer :all]
-            [cmr.access-control.site.routes :as r]
-            [ring.mock.request :refer [request]]))
+  (:require
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.access-control.site.routes :as r]
+   [ring.mock.request :refer [request]]))
 
 (def ^:private scheme "https")
 (def ^:private host "cmr.example.com")
@@ -18,7 +19,7 @@
   (testing "visited on a path without a trailing slash"
     (let [response (site (request :get base-url))]
       (testing "produces a HTTP 200 success response"
-        (is (= 200 (:status response) )))
+        (is (= 200 (:status response))))
       (testing "returns the welcome page HTML"
         (is (string/includes?
              (:body response)

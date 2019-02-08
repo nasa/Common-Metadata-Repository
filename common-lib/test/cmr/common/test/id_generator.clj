@@ -83,7 +83,6 @@
       (with-curr-times
         [5 6]
         (is (= {:worker 1 :sequence 255 :time 5}
-                (id-generator/next-id-state id-state)))
+               (id-generator/next-id-state id-state)))
         (is (= {:worker 1 :sequence 0 :time 6}
-                (id-generator/next-id-state id-state)))))))
-
+               (id-generator/next-id-state id-state)))))))

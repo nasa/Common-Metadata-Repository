@@ -3,7 +3,8 @@
   RelatedURLs and generating UMM-G JSON related-urls from umm-lib granule model RelatedURLs."
   (:require
    [cmr.umm.umm-collection :as umm-c])
-  (:import cmr.umm.umm_collection.RelatedURL))
+  (:import
+   (cmr.umm.umm_collection RelatedURL)))
 
 (defn- umm-g-related-url->RelatedURL
   "Returns the umm-lib granule model RelatedURL from the given UMM-G RelatedUrl."
@@ -27,7 +28,7 @@
   "Defines the valid UMM-G related url types. This list is based on RelatedUrlTypeEnum in
   umm-g-json-schema.json, and needs to be updated when the UMM-G schema is updated."
   #{"DOWNLOAD SOFTWARE" "EXTENDED METADATA" "GET DATA" "GET RELATED VISUALIZATION"
-  "GOTO WEB TOOL" "PROJECT HOME PAGE" "USE SERVICE API" "VIEW RELATED INFORMATION"})
+    "GOTO WEB TOOL" "PROJECT HOME PAGE" "USE SERVICE API" "VIEW RELATED INFORMATION"})
 
 (def umm-g-related-url-sub-types
   "Defines the valid UMM-G related url sub-types. This list is based on RelatedUrlSubTypeEnum in

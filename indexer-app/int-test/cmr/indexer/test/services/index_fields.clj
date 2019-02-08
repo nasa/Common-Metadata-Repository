@@ -43,17 +43,17 @@
   ([es-type concept-id revision-id]
    (delete-document-in-elastic es-type concept-id revision-id {}))
   ([es-type concept-id revision-id options]
-    (delete-document-in-elastic
-     ["tests"] es-type concept-id revision-id options))
+   (delete-document-in-elastic
+    ["tests"] es-type concept-id revision-id options))
   ([es-index es-type concept-id revision-id options]
    (es/delete-document
     @context es-index es-type concept-id revision-id revision-id options)))
 
 (defn- get-document
   ([es-type concept-id]
-    (get-document "tests" es-type concept-id))
+   (get-document "tests" es-type concept-id))
   ([es-index es-type concept-id]
-    (es/get-document @context es-index es-type concept-id)))
+   (es/get-document @context es-index es-type concept-id)))
 
 (defn- assert-same
   "Assert the retrieved document for the given concept and field has the

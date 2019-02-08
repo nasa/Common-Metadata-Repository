@@ -1,30 +1,29 @@
 (ns cmr.access-control.services.acl-service
   (:require
-    [clojure.edn :as edn]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [cmr.access-control.data.access-control-index :as index]
-    [cmr.access-control.data.acl-json-results-handler :as result-handler]
-    [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.acl-authorization :as acl-auth]
-    [cmr.access-control.services.acl-service-messages :as acl-msg]
-    [cmr.access-control.services.acl-util :as acl-util]
-    [cmr.access-control.services.acl-validation :as v]
-    [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.messages :as msg]
-    [cmr.access-control.services.parameter-validation :as pv]
-    [cmr.acl.core :as acl]
-    [cmr.common-app.api.enabled :as common-enabled]
-    [cmr.common-app.services.search.params :as cp]
-    [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer [info debug]]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.transmit.echo.tokens :as tokens]
-    [cmr.transmit.metadata-db :as mdb1]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm-spec.acl-matchers :as acl-matchers]))
-
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.access-control.data.access-control-index :as index]
+   [cmr.access-control.data.acl-json-results-handler :as result-handler]
+   [cmr.access-control.data.acl-schema :as schema]
+   [cmr.access-control.services.acl-authorization :as acl-auth]
+   [cmr.access-control.services.acl-service-messages :as acl-msg]
+   [cmr.access-control.services.acl-util :as acl-util]
+   [cmr.access-control.services.acl-validation :as v]
+   [cmr.access-control.services.auth-util :as auth-util]
+   [cmr.access-control.services.messages :as msg]
+   [cmr.access-control.services.parameter-validation :as pv]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.services.search.params :as cp]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer [info debug]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db :as mdb1]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -74,7 +73,7 @@
       (errors/throw-service-error
         :invalid-data
         (msg/invalid-revision-id revision-id)))
-     concept))
+    concept))
 
 (defn update-acl
   "Update the ACL with the given concept-id and revision-id in Metadata DB.

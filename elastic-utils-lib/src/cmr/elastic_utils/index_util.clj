@@ -1,11 +1,12 @@
 (ns cmr.elastic-utils.index-util
   "Defines different types and functions for defining mappings"
-  (:require [clojurewerkz.elastisch.rest.index :as esi]
-            [cmr.elastic-utils.connect :as esc]
-            [clojurewerkz.elastisch.rest.document :as doc]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [clj-time.format :as f]))
+  (:require
+   [clj-time.format :as f]
+   [clojurewerkz.elastisch.rest.document :as doc]
+   [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.connect :as esc]))
 
 (defn date->elastic
   "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."

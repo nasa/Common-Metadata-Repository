@@ -7,11 +7,8 @@
    [ring.util.codec :refer [assoc-conj]]
    [ring.util.request :as req])
   (:import
-    (org.apache.commons.fileupload UploadContext
-                                   FileItemIterator
-                                   FileItemStream
-                                   FileUpload)
-    (org.apache.commons.fileupload.util Streams)))
+   (org.apache.commons.fileupload FileItemIterator FileItemStream FileUpload UploadContext)
+   (org.apache.commons.fileupload.util Streams)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private methods copied from ring.middleware.multipart-params
@@ -61,10 +58,10 @@
   "Parse a map of multipart parameters from the request."
   [request]
   (let [encoding (or (req/character-encoding request) "UTF-8")]
-  (->> (request-context request encoding)
-       file-item-seq
-       (map parse-file-item)
-       (reduce (fn [m [k v]] (assoc-conj m k v)) {}))))
+   (->> (request-context request encoding)
+        file-item-seq
+        (map parse-file-item)
+        (reduce (fn [m [k v]] (assoc-conj m k v)) {}))))
 
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request."
@@ -85,4 +82,3 @@
   [handler]
   (fn [request]
     (handler (multipart-params-request request))))
-

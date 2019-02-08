@@ -1,25 +1,25 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
-    [clojure.string :as string]
-    [cmr.common.util :as util]
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.date-util :as du]
-    [cmr.umm-spec.iso-keywords :as kws]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
-    [cmr.umm-spec.util :as su :refer [with-default char-string]]))
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.date-util :as du]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
+   [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"

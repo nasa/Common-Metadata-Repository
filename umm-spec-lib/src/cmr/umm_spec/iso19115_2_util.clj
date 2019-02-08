@@ -1,11 +1,10 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require
+   [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select]])
-  (:require
-   clojure.set))
+   [cmr.common.xml.simple-xpath :refer [select]]))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -42,7 +41,7 @@
 
 (def umm-date-type-codes
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
-  (clojure.set/map-invert iso-date-type-codes))
+  (set/map-invert iso-date-type-codes))
 
 (def iso-metadata-type-definitions
  "A map of UMM date type enums to ISO metadata date definitions"
@@ -60,7 +59,7 @@
 
 (def umm-metadata-date-types
  "A map of ISO metadata date definitions to UMM date type enum"
- (clojure.set/map-invert iso-metadata-type-definitions))
+ (set/map-invert iso-metadata-type-definitions))
 
 (def eos-echo-attributes-info
   [:eos:otherPropertyType
@@ -138,7 +137,7 @@
       extent-info-map
       (let [[extent-alt-el] (select doc extent-alt-xpath)]
         (merge extent-info-map
-               {"SpatialGranuleSpatialRepresentation" 
+               {"SpatialGranuleSpatialRepresentation"
                 (value-of extent-alt-el "gmd:code/gco:CharacterString")})))))
 
 (defn parse-data-dates

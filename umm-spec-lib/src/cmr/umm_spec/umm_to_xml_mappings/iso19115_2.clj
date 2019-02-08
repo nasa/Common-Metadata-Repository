@@ -192,10 +192,10 @@
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
                [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
-             (when-let [name (:Name online-resource)]
-               [:gmd:name (char-string name)])
-             (when-let [description (:Description online-resource)]
-               [:gmd:description (char-string (str description " PublicationReference:"))])
+               (when-let [name (:Name online-resource)]
+                 [:gmd:name (char-string name)])
+               (when-let [description (:Description online-resource)]
+                 [:gmd:description (char-string (str description " PublicationReference:"))])
                [:gmd:function
                 [:gmd:CI_OnLineFunctionCode
                  {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")
@@ -225,8 +225,8 @@
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
            "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)}]
     (string/join "," (for [[k v] m
-                        :when (some? v)]
-                    (str k "=" (string/replace v #"[,=]" ""))))))
+                           :when (some? v)]
+                      (str k "=" (string/replace v #"[,=]" ""))))))
 
 (defn- generate-doi
   "Returns the DOI field."

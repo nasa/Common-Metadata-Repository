@@ -3,14 +3,15 @@
   This is used by granule search in atom format where the atom links in the parent collection
   that are not browse type should be included in the granule atom links as inherited.
   This handles the retrieval of collection atom links by collection concept ids."
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.common-app.services.search.query-model :as qm]
-            [clojure.data.xml :as x]
-            [cheshire.core :as json]
-            [clojure.string :as str]
-            [clj-time.core :as time]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom-links]
   [concept-type query]

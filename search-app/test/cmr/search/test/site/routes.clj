@@ -1,5 +1,5 @@
 (ns cmr.search.test.site.routes
-  (:require 
+  (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.config :as common-config]
@@ -43,7 +43,7 @@
       (testing "page title is correct"
         (is (string/includes?
              (:body response)
-              "Provider Holdings Directory")))
+             "Provider Holdings Directory")))
       (testing "page has a link to EOSDIS collections directory"
         (is (string/includes?
              (:body response)

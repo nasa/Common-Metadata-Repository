@@ -1,11 +1,11 @@
 (ns cmr.indexer.data.concepts.collection.location-keyword
   "Contains functions for converting location keyword hierarchies into elastic documents"
   (:require
-    [clojure.string :as str]
-    [cmr.common-app.services.kms-fetcher :as kf]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.common.util :as util]
-    [cmr.umm-spec.location-keywords :as lk]))
+   [clojure.string :as str]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.location-keywords :as lk]))
 
 (def default-location
   "Default values to use for any location fields which are nil."
@@ -23,11 +23,11 @@
         hierarchical-location (merge default-location
                                      location-keyword-kebab-key
                                      (kms-lookup/lookup-by-umm-c-keyword
-                                       kms-index 
-                                       :spatial-keywords 
+                                       kms-index
+                                       :spatial-keywords
                                        (dissoc location-keyword-kebab-key :detailed-location)))
-        {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]} 
-          hierarchical-location]
+        {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]}
+        hierarchical-location]
     {:category category
      :category.lowercase (str/lower-case category)
      :type type

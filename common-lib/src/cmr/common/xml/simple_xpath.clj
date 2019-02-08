@@ -511,9 +511,9 @@
   (try
     (let [source-elements (cond
                             (= source :from-root)
-                              [(:root xpath-context)]
+                            [(:root xpath-context)]
                             (= source :from-context)
-                              (:context xpath-context)
+                            (:context xpath-context)
                             :else
                               (throw
                                 (Exception.
@@ -565,13 +565,13 @@
   [context-or-node]
   (cond
     (string? context-or-node)
-      context-or-node
+    context-or-node
     (xpath-context? context-or-node)
-      (str/join (map text (:context context-or-node)))
+    (str/join (map text (:context context-or-node)))
     (seq? context-or-node)
-      (str/join (map text context-or-node))
+    (str/join (map text context-or-node))
     (:content context-or-node)
-      (str/join (map text (:content context-or-node)))))
+    (str/join (map text (:content context-or-node)))))
 
 (defn select*
   "Returns all elements matching the XPath expression."

@@ -207,5 +207,4 @@
   (get-provider-collection-list-sql  "FIX_PROV1")
   (copy-granule-data-for-provider (oc/create-db (mdb-config/db-spec)) "FIX_PROV1")
   (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
-  (mu/full-metadata-db-concept-table "FIX_PROV1" :collection)
-  )
+  (mu/full-metadata-db-concept-table "FIX_PROV1" :collection))

@@ -1,8 +1,9 @@
 (ns cmr.metadata-db.test.services.concept-validations
-  (:require [clojure.test :refer :all]
-            [cmr.metadata-db.services.concept-validations :as v]
-            [cmr.metadata-db.services.search-service :as search]
-            [cmr.metadata-db.services.messages :as msg]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.metadata-db.services.concept-validations :as v]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.search-service :as search]))
 
 (def valid-collection
   {:concept-id "C1-PROV1"
@@ -112,8 +113,8 @@
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "C1-PROV1" "PROV1" :granule)]
            (v/default-concept-validation (assoc valid-collection
-                                        :concept-type :granule
-                                        :extra-fields (:extra-fields valid-granule))))))
+                                          :concept-type :granule
+                                          :extra-fields (:extra-fields valid-granule))))))
   (testing "extra fields missing"
     (is (= [(msg/missing-extra-fields)]
            (v/default-concept-validation (dissoc valid-collection :extra-fields))))
@@ -147,8 +148,8 @@
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "G1-PROV1" "PROV1" :collection)]
            (v/default-concept-validation (assoc valid-granule
-                                        :concept-type :collection
-                                        :extra-fields (:extra-fields valid-collection))))))
+                                          :concept-type :collection
+                                          :extra-fields (:extra-fields valid-collection))))))
   (testing "extra fields missing"
     (is (= [(msg/missing-extra-fields)]
            (v/default-concept-validation (dissoc valid-granule :extra-fields))))

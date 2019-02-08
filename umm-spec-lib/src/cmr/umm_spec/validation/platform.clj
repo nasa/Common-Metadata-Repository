@@ -6,7 +6,6 @@
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
-
 (def ^:private sensor-validations
   "Defines the sensor validations for collections"
   {:Characteristics (vu/unique-by-name-validator :Name)})

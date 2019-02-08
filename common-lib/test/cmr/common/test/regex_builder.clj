@@ -54,5 +54,5 @@
     :non-matches ["Abz1" "Abzbz1" "Abbb1"]}
 
    {:regex (group "A" (n-to-m-times 2 3 "b" "z") "1")
-    :matches ["Abzbz1" "Abzbzbz1" ]
+    :matches ["Abzbz1" "Abzbzbz1"]
     :non-matches ["Abz1" "Abzbzbzbz1" "Abbb1"]}])

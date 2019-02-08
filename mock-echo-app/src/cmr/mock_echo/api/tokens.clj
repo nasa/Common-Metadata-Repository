@@ -12,7 +12,6 @@
    [cmr.mock-echo.data.token-db :as token-db]
    [compojure.core :refer :all]))
 
-
 (def token-keys
   #{
     ;; Fields provided during login
@@ -22,8 +21,8 @@
     :user_ip_address
 
     ;; A list of group guids the user belongs to.
-    :group_guids
-    })
+    :group_guids})
+
 
 (defn login
   [context body]

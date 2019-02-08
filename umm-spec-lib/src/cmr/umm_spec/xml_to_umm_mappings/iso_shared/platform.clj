@@ -1,14 +1,14 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform
   "Functions for parsing UMM platform records out of ISO SMAP XML documents."
   (:require
-    [clojure.string :as string]
-    [cmr.common.util :as util]
-    [cmr.common.xml.parse :refer :all]
-    [cmr.common.xml.simple-xpath :refer [select text]]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes :as char-and-opsmode]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.instrument :as inst]))
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.util :as su :refer [without-default-value-of]]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes :as char-and-opsmode]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.instrument :as inst]))
 
 (def platforms-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
@@ -22,8 +22,8 @@
          instruments (->> (concat
                             (map (partial get instruments-mapping) instrument-ids)
                             (filter #(= platform-id (:mounted-on-id %)) (vals instruments-mapping)))
-                           (map #(dissoc % :mounted-on-id))
-                           distinct
+                          (map #(dissoc % :mounted-on-id))
+                          distinct
                            seq)]
      (util/remove-nil-keys
        {:ShortName (value-of platform-elem iso/short-name-xpath)
@@ -31,14 +31,14 @@
         :Type (without-default-value-of platform-elem "gmi:description/gco:CharacterString")
         :Characteristics (char-and-opsmode/parse-characteristics platform-elem)
         :Instruments instruments})))
-   ([doc base-xpath platform-elem]
+  ([doc base-xpath platform-elem]
     ;; This is the case when platform-elem is from alternative path. This platform will only contain ShortName and LongName.
-    (when-let [short-long-name (value-of platform-elem iso/short-name-xpath)]
-     (let [short-long-name-list (string/split short-long-name #">")]
-       (util/remove-nil-keys
-         {:ShortName (string/trim (first short-long-name-list))
-          :LongName (when-let [long-name (second short-long-name-list)]
-                      (string/trim long-name))})))))
+   (when-let [short-long-name (value-of platform-elem iso/short-name-xpath)]
+    (let [short-long-name-list (string/split short-long-name #">")]
+      (util/remove-nil-keys
+        {:ShortName (string/trim (first short-long-name-list))
+         :LongName (when-let [long-name (second short-long-name-list)]
+                     (string/trim long-name))})))))
 
 (defn parse-platforms
   "Returns the platforms parsed from the given xml document."

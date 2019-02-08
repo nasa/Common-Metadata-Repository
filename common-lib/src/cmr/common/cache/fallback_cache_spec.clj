@@ -1,8 +1,9 @@
 (ns cmr.common.cache.fallback-cache-spec
   "Defines a common set of tests for a fallback cache."
-  (:require [clojure.test :refer :all]
-            [cmr.common.cache :as c]
-            [cmr.common.cache.spec-util :as su]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.cache :as c]
+   [cmr.common.cache.spec-util :as su]))
 
 (defn- basic-fallback-test
   "Tests the fallback cache works as expected with regards to the primary and backup store."
@@ -86,14 +87,14 @@
     (testing "Lookup function is used if value is not in either cache"
       (is (= "lookup function value" (c/get-value fallback-cache :alpha lookup-fn))))
 
-   	(testing "Value added by lookup function is in primary cache"
-      (is (= "lookup function value" (c/get-value primary-cache :alpha))))
+    (testing "Value added by lookup function is in primary cache"
+     (is (= "lookup function value" (c/get-value primary-cache :alpha))))
 
     (testing "Value added by lookup function is in backup cache"
       (is (= "lookup function value" (c/get-value backup-cache :alpha)))))
 
-  	(testing "Get keys returns all of the keys"
-     (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
+  (testing "Get keys returns all of the keys"
+   (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
 
 (def ^:private cache-test-fns
   "Defines the set of test functions that check a cache implementation"
@@ -110,5 +111,3 @@
     (c/reset fallback-cache)
     (testing (:name (meta test-fn-var))
       ((var-get test-fn-var) fallback-cache primary-cache backup-cache))))
-
-

@@ -27,17 +27,16 @@
      :short-name.lowercase (string/lower-case short-name)
      :measurements measurements
      :measurements.lowercase (string/lower-case measurements)
-     :variables [
-       {:measurement measurement1
-        :measurement.lowercase (string/lower-case measurement1)
-        :variable variable1
-        :variable.lowercase (string/lower-case variable1)
-        :originator-id.lowercase "alice"}
-       {:measurement measurement2
-        :measurement.lowercase (string/lower-case measurement2)
-        :variable variable2
-        :variable.lowercase (string/lower-case variable2)
-        :originator-id.lowercase "bob"}]}))
+     :variables [{:measurement measurement1
+                  :measurement.lowercase (string/lower-case measurement1)
+                  :variable variable1
+                  :variable.lowercase (string/lower-case variable1)
+                  :originator-id.lowercase "alice"}
+                 {:measurement measurement2
+                  :measurement.lowercase (string/lower-case measurement2)
+                  :variable variable2
+                  :variable.lowercase (string/lower-case variable2)
+                  :originator-id.lowercase "bob"}]}))
 
 (defn- es-doc-var-rev-2
   "Returns dummy elasticsearch doc for testing"

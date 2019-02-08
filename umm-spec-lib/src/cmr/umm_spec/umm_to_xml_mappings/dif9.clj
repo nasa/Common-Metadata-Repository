@@ -1,18 +1,18 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
   (:require
-    [camel-snake-kebab.core :as csk]
-    [clj-time.format :as f]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [cmr.common.util :as common-util]
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.date-util :as date]
-    [cmr.umm-spec.dif-util :as dif-util]
-    [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
-    [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
-    [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
-    [cmr.umm-spec.util :as u]))
+   [camel-snake-kebab.core :as csk]
+   [clj-time.format :as f]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.util :as common-util]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
+   [cmr.umm-spec.util :as u]))
 
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for DIF9 Data_Set_Progress."
@@ -126,9 +126,9 @@
           [:Epoch Epoch]
           [:Stage Stage]
           [:Detailed_Classification DetailedClassification]])])
-  (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                          (get coll-progress-mapping (string/upper-case coll-progress)))]
-    [:Data_Set_Progress c-progress])
+    (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                            (get coll-progress-mapping (string/upper-case coll-progress)))]
+      [:Data_Set_Progress c-progress])
     (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
       [:Spatial_Coverage
        [:Southernmost_Latitude (:SouthBoundingCoordinate mbr)]

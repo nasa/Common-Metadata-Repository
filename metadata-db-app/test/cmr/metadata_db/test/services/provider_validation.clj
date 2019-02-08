@@ -1,13 +1,14 @@
 (ns cmr.metadata-db.test.services.provider-validation
   "Contains unit tests for service layer methods and associated utility methods."
-  (:require [clojure.test :refer :all]
-            [clojure.test.check :as tc]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [cmr.metadata-db.services.provider-validation :as pv]
-            [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.util :as u]
-            [cmr.common.test.test-util :as tu]))
+  (:require
+   [clojure.test :refer :all]
+   [clojure.test.check :as tc]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :as prop]
+   [cmr.common.test.test-util :as tu]
+   [cmr.common.util :as u]
+   [cmr.metadata-db.services.messages :as messages]
+   [cmr.metadata-db.services.provider-validation :as pv]))
 
 (def long-short-name
   "A provider short name with 128 characters, maximum allowed."
@@ -64,7 +65,7 @@
 
             "short-name too long"
             {:short-name too-long-short-name}
-             (format "Short Name [%s] exceeds 128 characters" too-long-short-name)
+            (format "Short Name [%s] exceeds 128 characters" too-long-short-name)
 
             "cmr-only not provided"
             {:cmr-only nil}

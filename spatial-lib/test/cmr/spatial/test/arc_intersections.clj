@@ -1,19 +1,17 @@
 (ns cmr.spatial.test.arc-intersections
-  (:require [clojure.test :refer :all]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as str]
-            [clojure.set]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.test.generators :as sgen]))
+  (:require
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   ;; [clojure.test.check.clojure-test :refer [defspec]]
+   [clojure.set]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]))
 
 (declare example-arcs example-intersections example-non-intersections)
 
@@ -72,8 +70,8 @@
               p2 (a/midpoint (a/arc (:east-point a1) (:east-point a2)))]
           (println "Non intersecting. Distance:" (point-distance (:west-point a1) (:west-point a2))
                    "ords:" (pr-str (a/arc->ords a2)))
-          (recur (a/arc p1 p2))))))
-  )
+          (recur (a/arc p1 p2)))))))
+
 
 
 
@@ -219,4 +217,3 @@
            (set-of-sorted-tuples (map #(subvec % 0 2) example-intersections)))
          vec
          (sort-by first))))
-

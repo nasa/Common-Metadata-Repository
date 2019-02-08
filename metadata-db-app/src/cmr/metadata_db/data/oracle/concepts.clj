@@ -378,9 +378,9 @@
 (defn force-delete
   [this concept-type provider concept-id revision-id]
   (let [table (tables/get-table-name provider concept-type)
-       stmt (su/build (delete table
-                              (where `(and (= :concept-id ~concept-id)
-                                           (= :revision-id ~revision-id)))))]
+        stmt (su/build (delete table
+                               (where `(and (= :concept-id ~concept-id)
+                                            (= :revision-id ~revision-id)))))]
     (j/execute! this stmt)))
 
 (defn force-delete-by-params
@@ -405,9 +405,9 @@
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
   (let [table (tables/get-table-name provider :granule)
-       {:keys [provider-id small]} provider
-       stmt (if small
-              [(format "select count(1) concept_count, a.parent_collection_id
+        {:keys [provider-id small]} provider
+        stmt (if small
+               [(format "select count(1) concept_count, a.parent_collection_id
                         from %s a,
                         (select concept_id, max(revision_id) revision_id
                         from %s where provider_id = '%s' group by concept_id) b
@@ -415,8 +415,8 @@
                         and    a.concept_id = b.concept_id
                         and    a.revision_id = b.revision_id
                         group by a.parent_collection_id"
-                       table table provider-id)]
-              [(format "select count(1) concept_count, a.parent_collection_id
+                        table table provider-id)]
+               [(format "select count(1) concept_count, a.parent_collection_id
                         from %s a,
                         (select concept_id, max(revision_id) revision_id
                         from %s group by concept_id) b
@@ -424,8 +424,8 @@
                         and    a.concept_id = b.concept_id
                         and    a.revision_id = b.revision_id
                         group by a.parent_collection_id"
-                       table table)])
-       result (su/query db stmt)]
+                        table table)])
+        result (su/query db stmt)]
     (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
               (assoc count-map parent_collection_id (long concept_count)))
             {}

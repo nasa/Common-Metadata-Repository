@@ -55,10 +55,10 @@
   of all namepsace objects whose namepsace names beginn with 'cmr' will be
   used instead."
   ([]
-    (get-all-tests (-all-cmr-namespaces)))
+   (get-all-tests (-all-cmr-namespaces)))
   ([nss]
-    (->> nss
-         (map #(vals (ns-interns %)))
-         (flatten)
-         (map #(-> % meta :test))
-         (remove nil?))))
+   (->> nss
+        (map #(vals (ns-interns %)))
+        (flatten)
+        (map #(-> % meta :test))
+        (remove nil?))))

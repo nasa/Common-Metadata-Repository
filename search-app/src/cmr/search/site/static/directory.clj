@@ -16,7 +16,7 @@
                            context
                            provider-id
                            tag)
-                           :base-url (util/get-app-url context))))
+                          :base-url (util/get-app-url context))))
 
 (defn generate-directory-html
   "Generate the search directory page file for a given provider and tag

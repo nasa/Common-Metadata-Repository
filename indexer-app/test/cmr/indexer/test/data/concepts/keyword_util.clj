@@ -85,15 +85,15 @@
                                                                        :Protocol "HTTP"
                                                                        :FullName "John Doe"
                                                                        :URI ["uri-1" "uri-2"]}}
-                                                        :ContactMechanisms [{:Type "Email"
-                                                                             :Value "sample-email-two@example.com"}
-                                                                            {:Type "Mobile"
-                                                                             :Value "666-666-6666"}]
-                                                        :Addresses [{:StreetAddresses ["4 Cherrywood Lane" "8100 Baltimore Avenue"]
-                                                                     :City "College Park"
-                                                                     :StateProvince "MD"
-                                                                     :Country "America"
-                                                                     :PostalCode "20770"}]}}]}]
+                                                         :ContactMechanisms [{:Type "Email"
+                                                                              :Value "sample-email-two@example.com"}
+                                                                             {:Type "Mobile"
+                                                                              :Value "666-666-6666"}]
+                                                         :Addresses [{:StreetAddresses ["4 Cherrywood Lane" "8100 Baltimore Avenue"]
+                                                                      :City "College Park"
+                                                                      :StateProvince "MD"
+                                                                      :Country "America"
+                                                                      :PostalCode "20770"}]}}]}]
    :DirectoryNames [{:ShortName "directory-shortname-one"
                      :LongName "directory-longname-one"}
                     {:ShortName "directory-shortname-two"
@@ -163,56 +163,56 @@
                   :Subtype "GENERAL DOCUMENTATION"
                   :URL "related-url-example-two.com"}]
    :ContactPersons [
-     {:Roles ["AUTHOR"]
-      :ContactInformation {
-        :ContactMechanisms [
-          {:Type "Email"
-           :Value "ncdc.orders at noaa.gov"}
-          {:Type "Telephone"
-           :Value "+1 828-271-4800"}]
-        :Addresses [
-          {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
-           :City "Asheville"
-           :StateProvince "NC"
-           :Country "USA"
-           :PostalCode "28801-5001"}]}
-      :FirstName "Alice"
-      :MiddleName ""
-      :LastName "Bob"}]
+                    {:Roles ["AUTHOR"]
+                     :ContactInformation {
+                                          :ContactMechanisms [
+                                                              {:Type "Email"
+                                                               :Value "ncdc.orders at noaa.gov"}
+                                                              {:Type "Telephone"
+                                                               :Value "+1 828-271-4800"}]
+                                          :Addresses [
+                                                      {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
+                                                       :City "Asheville"
+                                                       :StateProvince "NC"
+                                                       :Country "USA"
+                                                       :PostalCode "28801-5001"}]}
+                     :FirstName "Alice"
+                     :MiddleName ""
+                     :LastName "Bob"}]
    :ContactGroups [
-     {:Roles ["SCIENCE CONTACT"]
-      :GroupName "TEAM SPOCK"
-      :LongName "VULCAN YET LIVES"
-      :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
-      :NonServiceOrganizationAffiliation "TEAM KIRK"
-      :ContactInformation {
-        :ContactMechanisms
-          [{:Type "Email"
-            :Value "custserv at usgs.gov"}
-           {:Type "Fax"
-            :Value "605-594-6589"}
-           {:Type "Telephone"
-            :Value "605-594-6151"}]
-        :Addresses [
-          {:StreetAddresses ["47914 252nd Street"]
-           :City "Sioux Falls"
-           :StateProvince "SD"
-           :Country "USA"
-           :PostalCode "57198-0001"}]}}]
+                   {:Roles ["SCIENCE CONTACT"]
+                    :GroupName "TEAM SPOCK"
+                    :LongName "VULCAN YET LIVES"
+                    :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
+                    :NonServiceOrganizationAffiliation "TEAM KIRK"
+                    :ContactInformation {
+                                         :ContactMechanisms
+                                         [{:Type "Email"
+                                           :Value "custserv at usgs.gov"}
+                                          {:Type "Fax"
+                                           :Value "605-594-6589"}
+                                          {:Type "Telephone"
+                                           :Value "605-594-6151"}]
+                                         :Addresses [
+                                                     {:StreetAddresses ["47914 252nd Street"]
+                                                      :City "Sioux Falls"
+                                                      :StateProvince "SD"
+                                                      :Country "USA"
+                                                      :PostalCode "57198-0001"}]}}]
    :ScienceKeywords [
-     {:Category "EARTH SCIENCE SERVICES"
-      :Topic "DATA ANALYSIS AND VISUALIZATION"
-      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
-     {:Category "ATMOSPHERE"
-      :Topic "ATMOSPHERIC WINDS"
-      :Term "SURFACE WINDS"
-      :VariableLevel1 "SPECTRAL/ENGINEERING"
-      :VariableLevel2 "MICROWAVE"
-      :VariableLevel3 "MICROWAVE IMAGERY"
-      :DetailedVariable "RADAR"}
-     {:Category "SCIENCE CAT 3"
-      :Topic "SCIENCE TOPIC 3"
-      :Term "SCIENCE TERM 3"}]})
+                     {:Category "EARTH SCIENCE SERVICES"
+                      :Topic "DATA ANALYSIS AND VISUALIZATION"
+                      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+                     {:Category "ATMOSPHERE"
+                      :Topic "ATMOSPHERIC WINDS"
+                      :Term "SURFACE WINDS"
+                      :VariableLevel1 "SPECTRAL/ENGINEERING"
+                      :VariableLevel2 "MICROWAVE"
+                      :VariableLevel3 "MICROWAVE IMAGERY"
+                      :DetailedVariable "RADAR"}
+                     {:Category "SCIENCE CAT 3"
+                      :Topic "SCIENCE TOPIC 3"
+                      :Term "SCIENCE TERM 3"}]})
 
 (def sample-umm-service-concept
   "This sample UMM Service data is a mish-mash of several examples, done this
@@ -230,94 +230,94 @@
                   :Subtype "ACCESS WEB SERVICE"
                   :URLContentType "CollectionURL"}]
    :ContactPersons [
-     {:Roles ["AUTHOR"]
-      :ContactInformation {
-        :ContactMechanisms [
-          {:Type "Email"
-           :Value "ncdc.orders at noaa.gov"}
-          {:Type "Telephone"
-           :Value "+1 828-271-4800"}]
-        :Addresses [
-          {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
-           :City "Asheville"
-           :StateProvince "NC"
-           :Country "USA"
-           :PostalCode "28801-5001"}]}
-      :FirstName "Alice"
-      :MiddleName ""
-      :LastName "Bob"}]
+                    {:Roles ["AUTHOR"]
+                     :ContactInformation {
+                                          :ContactMechanisms [
+                                                              {:Type "Email"
+                                                               :Value "ncdc.orders at noaa.gov"}
+                                                              {:Type "Telephone"
+                                                               :Value "+1 828-271-4800"}]
+                                          :Addresses [
+                                                      {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
+                                                       :City "Asheville"
+                                                       :StateProvince "NC"
+                                                       :Country "USA"
+                                                       :PostalCode "28801-5001"}]}
+                     :FirstName "Alice"
+                     :MiddleName ""
+                     :LastName "Bob"}]
    :Platforms [
-     {:ShortName "A340-600"
-      :LongName "Airbus A340-600"
-      :Instruments [
-       {:ShortName "SMWE4B"
-        :LongName "Senso-matic Wonder Eye 4B"}]}]
+               {:ShortName "A340-600"
+                :LongName "Airbus A340-600"
+                :Instruments [
+                              {:ShortName "SMWE4B"
+                               :LongName "Senso-matic Wonder Eye 4B"}]}]
    :AncillaryKeywords ["Data Visualization" "Data Discovery"]
    :ScienceKeywords [
-     {:Category "EARTH SCIENCE SERVICES"
-      :Topic "DATA ANALYSIS AND VISUALIZATION"
-      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
-     {:Category "ATMOSPHERE"
-      :Topic "ATMOSPHERIC WINDS"
-      :Term "SURFACE WINDS"
-      :VariableLevel1 "SPECTRAL/ENGINEERING"
-      :VariableLevel2 "MICROWAVE"
-      :VariableLevel3 "MICROWAVE IMAGERY"
-      :DetailedVariable "RADAR"}
-     {:Category "SCIENCE CAT 3"
-      :Topic "SCIENCE TOPIC 3"
-      :Term "SCIENCE TERM 3"}]
+                     {:Category "EARTH SCIENCE SERVICES"
+                      :Topic "DATA ANALYSIS AND VISUALIZATION"
+                      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+                     {:Category "ATMOSPHERE"
+                      :Topic "ATMOSPHERIC WINDS"
+                      :Term "SURFACE WINDS"
+                      :VariableLevel1 "SPECTRAL/ENGINEERING"
+                      :VariableLevel2 "MICROWAVE"
+                      :VariableLevel3 "MICROWAVE IMAGERY"
+                      :DetailedVariable "RADAR"}
+                     {:Category "SCIENCE CAT 3"
+                      :Topic "SCIENCE TOPIC 3"
+                      :Term "SCIENCE TERM 3"}]
    :ServiceKeywords [
-     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
-      :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}
-     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"}
-     {:ServiceTopic "STATISTICAL APPLICATIONS"}]
+                     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
+                      :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}
+                     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"}
+                     {:ServiceTopic "STATISTICAL APPLICATIONS"}]
    :ContactGroups [
-     {:Roles ["SCIENCE CONTACT"]
-      :GroupName "TEAM SPOCK"
-      :LongName "VULCAN YET LIVES"
-      :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
-      :NonServiceOrganizationAffiliation "TEAM KIRK"
-      :ContactInformation {
-        :ContactMechanisms
-          [{:Type "Email"
-            :Value "custserv at usgs.gov"}
-           {:Type "Fax"
-            :Value "605-594-6589"}
-           {:Type "Telephone"
-            :Value "605-594-6151"}]
-        :Addresses [
-          {:StreetAddresses ["47914 252nd Street"]
-           :City "Sioux Falls"
-           :StateProvince "SD"
-           :Country "USA"
-           :PostalCode "57198-0001"}]}}]
+                   {:Roles ["SCIENCE CONTACT"]
+                    :GroupName "TEAM SPOCK"
+                    :LongName "VULCAN YET LIVES"
+                    :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
+                    :NonServiceOrganizationAffiliation "TEAM KIRK"
+                    :ContactInformation {
+                                         :ContactMechanisms
+                                         [{:Type "Email"
+                                           :Value "custserv at usgs.gov"}
+                                          {:Type "Fax"
+                                           :Value "605-594-6589"}
+                                          {:Type "Telephone"
+                                           :Value "605-594-6151"}]
+                                         :Addresses [
+                                                     {:StreetAddresses ["47914 252nd Street"]
+                                                      :City "Sioux Falls"
+                                                      :StateProvince "SD"
+                                                      :Country "USA"
+                                                      :PostalCode "57198-0001"}]}}]
    :ServiceOrganizations [
-     {:Roles ["SERVICE PROVIDER"]
-      :ShortName "LDPAAC"}
-     {:Roles ["SERVICE PROVIDER"]
-      :ShortName "USGS/EROS"
-      :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
-      :Uuid "005c89f8-39ca-4645-b31a-d06a0118d7a1"
-      :ContactPersons [{
-        :Roles [ "PUBLISHER"]
-          :ContactInformation
-           {:ContactMechanisms
-            [{:Type "Email"
-              :Value "custserv at usgs.gov"}
-             {:Type "Fax"
-              :Value "605-594-6589"}
-             {:Type "Telephone"
-              :Value "605-594-6151"}]
-            :Addresses
-            [{:StreetAddresses ["47914 252nd Street"]
-              :City "Sioux Falls"
-              :StateProvince "SD"
-              :Country "USA"
-              :PostalCode "57198-0001"}]}
-          :FirstName "Carol"
-          :MiddleName "D."
-          :LastName "Eve"}]}]})
+                          {:Roles ["SERVICE PROVIDER"]
+                           :ShortName "LDPAAC"}
+                          {:Roles ["SERVICE PROVIDER"]
+                           :ShortName "USGS/EROS"
+                           :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
+                           :Uuid "005c89f8-39ca-4645-b31a-d06a0118d7a1"
+                           :ContactPersons [{
+                                             :Roles [ "PUBLISHER"]
+                                             :ContactInformation
+                                             {:ContactMechanisms
+                                              [{:Type "Email"
+                                                :Value "custserv at usgs.gov"}
+                                               {:Type "Fax"
+                                                :Value "605-594-6589"}
+                                               {:Type "Telephone"
+                                                :Value "605-594-6151"}]
+                                              :Addresses
+                                              [{:StreetAddresses ["47914 252nd Street"]
+                                                :City "Sioux Falls"
+                                                :StateProvince "SD"
+                                                :Country "USA"
+                                                :PostalCode "57198-0001"}]}
+                                             :FirstName "Carol"
+                                             :MiddleName "D."
+                                             :LastName "Eve"}]}]})
 
 (deftest fields->fn-mapper-single-valued
   (is (= "An abstract summary"

@@ -55,8 +55,8 @@
   "Returns user id of the token in the context. Throws an error if no token is
   provided."
   ([context]
-    (context->user-id context "Valid user token required."))
+   (context->user-id context "Valid user token required."))
   ([context msg]
-    (if-let [token (:token context)]
-      (util/lazy-get context :user-id)
-      (errors/throw-service-error :unauthorized msg))))
+   (if-let [token (:token context)]
+     (util/lazy-get context :user-id)
+     (errors/throw-service-error :unauthorized msg))))
