@@ -3,12 +3,12 @@
   operations"
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]
-   [clojure.string :as string]))
+   [cmr.transmit.http-helper :as h]))
 
 (defn- create-users-url
   "Call to create users in mock URS. Depending on how tests are being run the context for URS URLs
