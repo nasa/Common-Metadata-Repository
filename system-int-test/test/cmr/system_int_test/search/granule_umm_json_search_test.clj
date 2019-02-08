@@ -10,6 +10,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm-spec.versioning :as versioning]
    [cmr.umm.umm-granule :as umm-g]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -54,7 +55,8 @@
     (ingest/delete-concept (d/item->concept gran-to-be-deleted :echo10))
     (index/wait-until-indexed)
     (testing "search granules in UMM JSON format"
-      (assert-umm-json-found [echo10-gran smap-gran umm-g-gran] "1.4" {:provider "PROV1"}))
+      (assert-umm-json-found
+       [echo10-gran smap-gran umm-g-gran] versioning/current-granule-version {:provider "PROV1"}))
 
     (testing "search granules with invalid UMM JSON version"
       (let [expected-errors [(str "The mime type [application/vnd.nasa.cmr.umm_results+json] "
