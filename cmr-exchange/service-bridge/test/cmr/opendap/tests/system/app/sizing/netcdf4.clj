@@ -19,6 +19,8 @@
 (def granule2-id "G1200301322-HMR_TME")
 (def variable2-id "V1200301323-HMR_TME")
 (def variable3-id "V1200297236-HMR_TME")
+(def variable3-alias "Test%20Alias%205")
+(def variable-alias "Test%20Alias%206")
 (def options (request/add-token-header {} (util/get-sit-token)))
 
 (deftest one-var-size-test
@@ -76,6 +78,75 @@
                            granule-id
                            variable-id
                            variable3-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 438984930
+             :mb 418.65
+             :gb 0.41}]
+           (util/parse-response response)))))
+
+(deftest mix-alias-var-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&variable_aliases=%s"
+                                "&format=nc4"
+                                "&total-granule-input-bytes=100000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id
+                           variable3-alias)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 438984930
+             :mb 418.65
+             :gb 0.41}]
+           (util/parse-response response)))))
+
+(deftest mix-alias-var-with-duplicate-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s,%s"
+                                "&variable_aliases=%s"
+                                "&format=nc4"
+                                "&total-granule-input-bytes=100000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id
+                           variable3-id
+                           variable3-alias)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 438984930
+             :mb 418.65
+             :gb 0.41}]
+           (util/parse-response response)))))
+
+(deftest multi-alias-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variable_aliases=%s,%s"
+                                "&format=nc4"
+                                "&total-granule-input-bytes=100000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-alias
+                           variable3-alias)
                    options)]
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
