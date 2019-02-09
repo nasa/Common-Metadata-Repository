@@ -74,7 +74,7 @@
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [venantius/ultra "0.5.4"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -91,7 +91,7 @@
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]
-                              [venantius/ultra "0.5.2"]]
+                              [venantius/ultra "0.5.4"]]
                     :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
                     :test2junit-output-dir "junit-test-results"
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))

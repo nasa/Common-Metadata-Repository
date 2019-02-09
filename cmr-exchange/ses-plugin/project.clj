@@ -48,7 +48,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.3"]]
                      :plugins [[lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [venantius/ultra "0.5.4"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[clojusc/trifl "0.4.2"]
