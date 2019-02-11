@@ -4,6 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [cmr.common.log :as log :refer (warn info)]
    [cmr.common.services.errors :as errors])
   (:import
@@ -16,7 +17,11 @@
    Throws an exception if the provided JSON is not valid JSON."
   [^String json-string]
   (try
-    (.nextValue (JSONTokener. json-string))
+    (let [tokener (JSONTokener. (string/trim (string/trim-newline json-string)))
+          json-type (.nextValue tokener)]
+      (if (.more tokener)
+        (throw (.syntaxError tokener "Trailing characters are not permitted."))
+        json-type))
     (catch JSONException e
       (errors/throw-service-error :bad-request (str "Invalid JSON: " (.getMessage e))))))
 
