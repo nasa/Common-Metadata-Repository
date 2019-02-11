@@ -83,7 +83,40 @@
     (is (thrown-with-msg?
           ExceptionInfo
           #"Invalid JSON: Missing value at 7 \[character 8 line 1\]"
-          (json-schema/validate-json sample-json-schema "{\"bar\":}"))))
+          (json-schema/validate-json sample-json-schema "{\"bar\":}")))
+
+    (util/are3 [invalid-json]
+               (is (thrown-with-msg?
+                    ExceptionInfo
+                    #"Invalid JSON: Trailing characters are not permitted\."
+                    (json-schema/validate-json sample-json-schema invalid-json)))
+
+               "No new line or trailing space"
+               "{}random garbage."
+
+               "With trailing spaces"
+               "{}             random garbage."
+
+               "With trailing new lines"
+               "{}\n\n{}{}[][]random garbage."
+
+               "Combination of spaces and newlines"
+               "{}\n\r  random garbage[][][][]"))
+
+
+  (testing "Valid JSON Structure"
+    (util/are3 [valid-json]
+               (is (nil? (json-schema/validate-json sample-json-schema valid-json)))
+
+               "Valid JSON with trailing spaces"
+               "{\"bar\": false}                     "
+
+               "Valid JSON With trailing new lines"
+               "{\"bar\": false}\n\n\n\n\n\n\n\n\n"
+
+               "Valid JSON with combination of new lines, spaces, tabs"
+               "{\"bar\": true}\t\n\t\t\n\r\r       \r\n\t\t\n\n\t\n"))
+
 
   (testing "Invalid schema - description cannot be an array"
     (is (thrown-with-msg?
