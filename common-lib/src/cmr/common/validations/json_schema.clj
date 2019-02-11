@@ -17,7 +17,7 @@
    Throws an exception if the provided JSON is not valid JSON."
   [^String json-string]
   (try
-    (let [tokener (JSONTokener. (string/trim (string/trim-newline json-string)))
+    (let [tokener (JSONTokener. (string/trim json-string))
           json-type (.nextValue tokener)]
       (if (.more tokener)
         (throw (.syntaxError tokener "Trailing characters are not permitted."))
