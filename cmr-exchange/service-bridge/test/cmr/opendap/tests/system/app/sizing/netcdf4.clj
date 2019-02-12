@@ -110,7 +110,7 @@
              :gb 0.41}]
            (util/parse-response response)))))
 
-(deftest mix-alias-var-with-duplicate-size-test
+(deftest mix-one-alias-multi-var-with-duplicate-size-test
   (let [response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/service-bridge/size-estimate/collection/%s"
@@ -124,6 +124,55 @@
                            granule-id
                            variable-id
                            variable3-id
+                           variable3-alias)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 438984930
+             :mb 418.65
+             :gb 0.41}]
+           (util/parse-response response)))))
+
+(deftest mix-multi-alias-one-var-with-duplicate-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&variable_aliases=%s,%s"
+                                "&format=nc4"
+                                "&total-granule-input-bytes=100000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id
+                           variable-alias
+                           variable3-alias)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 438984930
+             :mb 418.65
+             :gb 0.41}]
+           (util/parse-response response)))))
+
+(deftest mix-multi-alias-multi-var-with-duplicate-size-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s,%s"
+                                "&variable_aliases=%s,%s"
+                                "&format=nc4"
+                                "&total-granule-input-bytes=100000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id
+                           variable3-id
+                           variable-alias
                            variable3-alias)
                    options)]
     (is (= 200 (:status response)))

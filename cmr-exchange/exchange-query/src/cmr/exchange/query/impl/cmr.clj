@@ -28,11 +28,11 @@
    ;; to be a blacklist.
    exclude-granules
    ;;
-   ;; `variables` is a list of variables to be speficied when creating the
+   ;; `variables` is a list of variables to be specified when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variables
    ;;
-   ;; `variables-aliases` is a list of variable aliases to be speficied when creating the
+   ;; `variables-aliases` is a list of variable aliases to be specified when creating the
    ;; OPeNDAP URL. This is used for subsetting.
    variable-aliases
    ;;
