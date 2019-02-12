@@ -14,15 +14,15 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-query "0.3.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-query "0.3.1-SNAPSHOT"
   :description "Cross-project query and parameter parsing and transformations"
   :url "https://github.com/cmr-exchange/cmr-exchange-query"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
-                 [com.stuartsierra/component "0.3.2"]
+                 [clojusc/twig "0.4.1"]
+                 [com.stuartsierra/component "0.4.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
                  [org.clojure/clojure "1.9.0"]
                  [ring/ring-codec "1.1.1"]]
@@ -32,7 +32,7 @@
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -47,7 +47,7 @@
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [venantius/ultra "0.5.4"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -56,11 +56,11 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.3"]
+                    :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
                               [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.6"]]}
+                              [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]]

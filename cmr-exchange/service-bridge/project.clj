@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.2-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.3-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -27,14 +27,14 @@
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.1"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-query "0.3.0-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-query "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.2-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.3-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.1-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.2.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.2.7-SNAPSHOT"]
                  [http-kit "2.3.0"]
                  [markdown-clj "1.0.7"]
                  [metosin/reitit-core "0.2.13"]
@@ -74,7 +74,7 @@
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [venantius/ultra "0.5.4"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -91,7 +91,7 @@
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]
-                              [venantius/ultra "0.5.2"]]
+                              [venantius/ultra "0.5.4"]]
                     :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
                     :test2junit-output-dir "junit-test-results"
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))

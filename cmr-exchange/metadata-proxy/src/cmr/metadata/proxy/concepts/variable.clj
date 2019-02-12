@@ -24,6 +24,9 @@
                            results-content-type
                            pinned-variable-schema-version
                            charset))
+(def id-search-constraint "concept_id[]")
+(def alias-search-constraint "alias[]")
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,24 +39,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-query
-  [variable-ids]
+  "Build variable search query based on variable-info, which could be
+  list of concept-ids, or aliases. search-constraint could be either
+  concept_id[] or alias[]." 
+  [variable-info search-constraint]
   (string/join
-   "&"
-   (conj
-    (map #(str (codec/url-encode "concept_id[]")
-               "=" %)
-         variable-ids)
-    (str "page_size=" (count variable-ids)))))
+    "&"
+    (conj
+      (map #(str (codec/url-encode search-constraint) "=" %) variable-info)
+      (str "page_size=" (count variable-info)))))
 
 (defn async-get-metadata
-  "Given a 'params' data structure with a ':variables' key (which may or may
-  not have values) and a list of all collection variable-ids, return the
-  metadata for the passed variables, if defined, and for all associated
-  variables, if params does not contain any."
-  [search-endpoint user-token {variable-ids :variables}]
-  (if (seq variable-ids)
+  "Given variable-info, which could be a list of concept-ids or aliases, 
+  and the search-constraint, which could be concept_id[] or alias[], 
+  returns the metadata for the related variables."
+  [search-endpoint user-token variable-info search-constraint]
+  (if (seq variable-info)
     (let [url (str search-endpoint variables-api-path)
-          payload (build-query variable-ids)]
+          payload (build-query variable-info search-constraint)]
       (log/debug "Variables query CMR URL:" url)
       (log/debug "Variables query CMR payload:" payload)
       (request/async-post
@@ -67,6 +70,16 @@
        {}
        response/json-handler))
     (deliver (promise) [])))
+
+(defn async-get-metadata-by-ids
+  "Get variables by ids"
+  [search-endpoint user-token ids]
+  (async-get-metadata search-endpoint user-token ids id-search-constraint))
+
+(defn async-get-metadata-by-aliases
+  "Get variables by aliases"
+  [search-endpoint user-token aliases]
+  (async-get-metadata search-endpoint user-token aliases alias-search-constraint))
 
 (defn extract-metadata
   [promise]
@@ -83,6 +96,13 @@
         (:items rslts)))))
 
 (defn get-metadata
-  [search-endpoint user-token variables]
-  (let [promise (async-get-metadata search-endpoint user-token variables)]
-    (extract-metadata promise)))
+  [search-endpoint user-token params]
+  (let [promise-by-ids (when-let [ids (:variables params)]
+                         (async-get-metadata-by-ids search-endpoint user-token ids))
+        promise-by-aliases (when-let [aliases (:variable-aliases params)]
+                             (async-get-metadata-by-aliases search-endpoint user-token aliases))
+        variables-by-ids (when promise-by-ids 
+                           (extract-metadata promise-by-ids))
+        variables-by-aliases (when promise-by-aliases
+                               (extract-metadata promise-by-aliases))]
+    (distinct (concat variables-by-ids variables-by-aliases))))

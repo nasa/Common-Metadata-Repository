@@ -180,26 +180,28 @@
   * `vars` - metadata for all the specified variable ids
   * `vars` - metadata for all the specified variable ids
   * `vars` - metadata for all the variables associated in the collection"
-  [search-endpoint user-token coll {:keys [bounding-box variables] :as params}]
+  [search-endpoint user-token coll {:keys [bounding-box variables variable-aliases] :as params}]
   (log/debugf (str "Applying bounding conditions with bounding box %s and "
-                   "variable ids %s ...")
+                   "variable ids %s and "
+                   "variable aliases %s...")
               bounding-box
-              variables)
+              variables
+              variable-aliases)
   (cond
     ;; Condition 1 - no spatial subsetting and no variables
-    (and (nil? bounding-box) (empty? variables))
+    (and (nil? bounding-box) (empty? variables) (empty? variable-aliases))
     []
 
     ;; Condition 2 - variables but no spatial subsetting
-    (and (nil? bounding-box) (seq variables))
+    (and (nil? bounding-box) (or (seq variables) (seq variable-aliases)))
     (variable/get-metadata search-endpoint user-token params)
 
     ;; Condition 3 - variables and spatial subsetting
-    (and bounding-box (seq variables))
+    (and bounding-box (or (seq variables) (seq variable-aliases)))
     (variable/get-metadata search-endpoint user-token params)
 
     ;; Condition 4 - spatial subsetting but no variables
-    (and bounding-box (empty? variables))
+    (and bounding-box (empty? variables) (empty? variable-aliases))
     (variable/get-metadata search-endpoint
      user-token
      (assoc params :variables (collection/extract-variable-ids coll)))))

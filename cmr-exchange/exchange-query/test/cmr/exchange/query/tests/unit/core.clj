@@ -183,7 +183,8 @@
           :granules ()
           :subset nil
           :temporal []
-          :variables ()}
+          :variables ()
+          :variable-aliases ()}
          (query/parse {:collection-id "C130"})))
   (is (= #cmr.exchange.query.impl.cmr.CollectionCmrStyleParams{
           :bounding-box nil
@@ -193,7 +194,8 @@
           :granules ()
           :subset []
           :temporal []
-          :variables ()}
+          :variables ()
+          :variable-aliases ()}
          (query/parse {:collection-id "C130" :subset []})))
   (is (= #cmr.exchange.query.impl.cmr.CollectionCmrStyleParams{
           :collection-id "C130"

@@ -34,6 +34,16 @@
         Math/ceil
         long)))
 
+(defn- create-empty-result-with-error
+  "This returns an empty result with warnings indicating what went wrong."
+  [results start errs]
+  (results/create [{:bytes 0
+                    :mb 0
+                    :gb 0}]
+                    :request-id (get-in results [:params :request-id])
+                    :elapsed (util/timed start)
+                    :warnings {:warnings errs}))
+
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.ous.common -- we should put this somewhere both can use,
 ;;     after generalizing to take a func and the func's args ...
@@ -46,7 +56,7 @@
    (if errs
      (do
        (log/error errs)
-       errs)
+       (create-empty-result-with-error results start errs))
      (let [sample-granule-metadata-size (count (.getBytes (:granule-metadata results)))
            formats-estimate (formats/estimate-size
                              (:format results)
@@ -58,7 +68,7 @@
        (if-let [errs (errors/erred? formats-estimate)]
          (do
            (log/error errs)
-           errs)
+           (create-empty-result-with-error results start errs))
          (let [spatial-estimate (spatial/estimate-size
                                  formats-estimate
                                  results)
@@ -66,7 +76,7 @@
            (if-let [errs (errors/erred? spatial-estimate)]
              (do
                (log/error errs)
-               errs)
+               (create-empty-result-with-error results start errs))
              (let [estimate spatial-estimate
                    elapsed (util/timed start)]
                (log/info (format "request-id: %s estimate: %s elapsed: %s"

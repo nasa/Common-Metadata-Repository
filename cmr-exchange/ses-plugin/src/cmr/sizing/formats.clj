@@ -206,4 +206,4 @@
     :ascii (estimate-ascii-size granule-count vars params)
     (do
       (log/errorf "Cannot estimate size for %s (not implemented)." fmt)
-      {:errors ["not-implemented"]})))
+      {:errors [(str "Cannot estimate size for format: " fmt)]})))
