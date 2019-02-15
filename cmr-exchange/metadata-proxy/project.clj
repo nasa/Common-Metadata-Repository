@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.3-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.4-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -86,7 +86,7 @@
                                      :system :system
                                      :default (complement :system)}}
              :docs {:dependencies [[gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
-                    :plugins [[lein-codox "0.10.5"]
+                    :plugins [[lein-codox "0.10.6"]
                               [lein-simpleton "1.3.0"]]
                     :codox {:project {:name "CMR Metadata-Proxy"}
                             :themes [:eosdis]

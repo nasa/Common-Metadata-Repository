@@ -100,7 +100,7 @@
     (map->CollectionCmrStyleParams
       (-> params
           (assoc
-           :format (or (:format params) const/default-format)
+           :format (:format params)
            :granules (if (query-util/not-array? granules-array)
                        (query-util/split-comma->sorted-coll (:granules params))
                        granules-array)

@@ -44,6 +44,72 @@
              :gb 0.0}]
            (util/parse-response response)))))
 
+(deftest one-var-size-egi-test 
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&format=netcdf4-cf"
+                                "&service_id=S1200341767-DEMO_PROV"
+                                "&total-granule-input-bytes=1000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 45 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response)))))
+
+(deftest one-var-size-egi-test-2
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&format=netcdf4"
+                                "&service_id=S1200341767-DEMO_PROV"
+                                "&total-granule-input-bytes=1000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 45 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response)))))
+
+(deftest one-var-size-egi-test-3
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&format=netcdf-4"
+                                "&service_id=S1200341767-DEMO_PROV"
+                                "&total-granule-input-bytes=1000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 45 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response)))))
+
 (deftest one-var-different-gran-size-test
   (let [response @(httpc/get
                    (format (str "http://localhost:%s"
@@ -190,6 +256,7 @@
                                 "?granules=%s"
                                 "&variable_aliases=%s,%s"
                                 "&format=nc4"
+                                "&service_id=S1200341768-DEMO_PROV"
                                 "&total-granule-input-bytes=100000000")
                            (test-system/http-port)
                            collection-id

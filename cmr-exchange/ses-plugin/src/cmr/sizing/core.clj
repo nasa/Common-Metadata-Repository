@@ -59,7 +59,7 @@
        (create-empty-result-with-error results start errs))
      (let [sample-granule-metadata-size (count (.getBytes (:granule-metadata results)))
            formats-estimate (formats/estimate-size
-                             (:format results)
+                             (:svcs results)
                              (count (:granule-links results))
                              (:vars results)
                              sample-granule-metadata-size
@@ -106,7 +106,7 @@
           :token user-token
           :params raw-params})
         ;; Stage 2
-        [params coll granule-links service-ids vars s2-errs]
+        [params coll granule-links service-ids vars tag-data s2-errs svcs]
         (ous/stage2
          component
          coll-promise
@@ -121,7 +121,7 @@
         ;; Error handling for all stages
         errs (errors/collect
               params bounding-box grans-promise coll-promise s1-errs
-              granule-links service-ids vars s2-errs
+              granule-links service-ids vars tag-data s2-errs svcs
               granule-metadata
               {:errors (errors/check
                         [not granule-links metadata-errors/empty-gnl-data-files])})
@@ -132,12 +132,13 @@
     (log/debug "Got format:" fmt)
     (log/debug "Got granule-links:" (vec granule-links))
     (log/debug "Got vars:" vars)
+    (log/debug "Got svcs:" svcs)
     (log/debug "Got total-granule-input-bytes:" (:total-granule-input-bytes raw-params))
     (process-results
       {:params params
        :granule-links granule-links
        :vars vars
-       :format fmt
+       :svcs svcs 
        :collection-metadata coll
        :granule-metadata granule-metadata}
       start

@@ -35,6 +35,8 @@
         granule-links (map granule/extract-granule-links granules)
         service-ids (collection/extract-service-ids coll)
         vars (common/apply-bounding-conditions endpoint token coll params)
+        svcs (when (:service-id params)
+               (service/get-metadata endpoint token [(:service-id params)]))
         errs (apply errors/collect (concat [granules coll vars] granule-links))]
     (when errs
       (log/error "Stage 2 errors:" errs))
@@ -42,7 +44,7 @@
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params coll granule-links service-ids vars tag-data errs]))
+    [params coll granule-links service-ids vars tag-data errs svcs]))
 
 (defn stage3
   [component service-ids vars bounding-box {:keys [endpoint token params]}]

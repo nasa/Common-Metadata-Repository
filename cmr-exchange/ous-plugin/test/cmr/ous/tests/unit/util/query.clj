@@ -11,7 +11,7 @@
           :bounding-box nil
           :collection-id "C130"
           :exclude-granules false
-          :format "nc"
+          :format nil 
           :granules ()
           :subset nil
           :temporal []
@@ -22,7 +22,7 @@
           :bounding-box nil
           :collection-id "C130"
           :exclude-granules false
-          :format "nc"
+          :format nil 
           :granules ()
           :subset []
           :temporal []
