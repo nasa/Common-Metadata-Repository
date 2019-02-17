@@ -55,7 +55,7 @@
                            granule-id
                            variable-id)
                    options)]
-    (is (string/includes? (:body response) "Cannot estimate size for service type: ESI and format: dods"))))
+    (is (string/includes? (:body response) "Cannot estimate size for service type: [ESI] and format: [dods]"))))
 
 (deftest one-var-different-gran-size-test
   (let [response @(httpc/get

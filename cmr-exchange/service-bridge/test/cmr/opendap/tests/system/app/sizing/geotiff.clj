@@ -33,7 +33,7 @@
                            granule-id
                            variable-id)
                    options)]
-    (is (string/includes? (:body response) "Cannot estimate size for service type: opendap and format: geotiff"))))
+    (is (string/includes? (:body response) "Cannot estimate size for service type: [opendap] and format: [geotiff]"))))
 
 (deftest one-var-size-egi-test 
   (let [response @(httpc/get
@@ -49,4 +49,4 @@
                            granule-id
                            variable-alias)
                    options)]
-    (is (string/includes? (:body response) "geotiff not implemented"))))
+    (is (string/includes? (:body response) "[geotiff] format is not implemented yet for service type: [ESI]."))))

@@ -33,7 +33,7 @@
                            granule-id
                            variable-id)
                    options)]
-    (is (string/includes? (:body response) "Cannot estimate size for service type: opendap and format: native"))))
+    (is (string/includes? (:body response) "Cannot estimate size for service type: [opendap] and format: [native]"))))
 
 (deftest one-var-size-egi-test 
   (let [response @(httpc/get
@@ -48,4 +48,4 @@
                            granule-id
                            variable-alias)
                    options)]
-    (is (string/includes? (:body response) "native not implemented"))))
+    (is (string/includes? (:body response) "[native] format is not implemented yet for service type: [ESI]."))))

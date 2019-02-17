@@ -8,7 +8,8 @@
 ;;; assuming bytes as the units.
 
 (def default-format
- "default")
+  "This will map to different default formats for egi and opendap requests."
+  "default")
 
 (def egi-service-type
   "esi")
@@ -239,6 +240,23 @@
           0
           variables))
 
+(defn- not-implemented-msg
+  "Generate the msg for the format that's not implemented yet for the service type."
+  [fmt svc-type]
+  (format "[%s] format is not implemented yet for service type: [%s]." fmt svc-type))
+
+(defn- not-supported-format-for-service-type-msg
+  "Generate the msg about fmt not being supported for the service type."
+  [fmt svc-type]
+  (format "Cannot estimate size for service type: [%s] and format: [%s]."
+          svc-type
+          fmt))
+
+(defn- not-supported-service-type-msg
+  "Generate the msg about not having the right service type for the service id."
+  [svc-id]
+  (format "No esi or opendap service type associated with: [%s]." svc-id))
+
 (defn estimate-size
   [svcs granule-count vars granule-metadata-size params]
   (let [svc-id (:service-id params)
@@ -265,15 +283,13 @@
         :shapefile 
           (estimate-netcdf4-shapefile-size 
             granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
-        :tabular_ascii {:errors ["tabular_ascii not implemented"]}
-        :geotiff {:errors ["geotiff not implemented"]}
-        :native {:errors ["native not implemented"]}
+        (or :tabular_ascii :geotiff :native)
+          {:errors [(not-implemented-msg ses-fmt svc-type)]}
         (do
-          (log/errorf "Can not estimate size for service type: %s and format: %s"
-                      svc-type
-                      format)
-          {:errors [(str "Cannot estimate size for service type: " svc-type
-                         " and format: " format)]}))
+          (let [message (not-supported-format-for-service-type-msg format svc-type)]
+            (log/errorf message)
+            {:errors [message]})))
       (do
-          (log/errorf "Service-id: %s is not of esi or opendap service type." svc-id)
-          {:errors [(str "No esi or opendap service type associated with:  " svc-id)]}))))
+        (let [message (not-supported-service-type-msg svc-id)]
+          (log/errorf message)
+          {:errors [message]})))))

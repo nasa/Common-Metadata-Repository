@@ -33,7 +33,7 @@
                            granule-id
                            variable-id)
                    options)]
-    (is (string/includes? (:body response) "Cannot estimate size for service type: opendap and format: shapefile"))))
+    (is (string/includes? (:body response) "Cannot estimate size for service type: [opendap] and format: [shapefile]"))))
 
 (deftest one-var-size-egi-test 
   (let [response @(httpc/get
@@ -71,4 +71,4 @@
                            granule-id
                            variable-id)
                    options)]
-    (is (string/includes? (:body response) "No esi or opendap service type associated with:  S1200341766-DEMO_PROV"))))
+    (is (string/includes? (:body response) "No esi or opendap service type associated with: [S1200341766-DEMO_PROV]."))))
