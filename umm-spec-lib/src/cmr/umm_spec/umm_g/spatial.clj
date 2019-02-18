@@ -8,6 +8,7 @@
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
+   [cmr.umm-spec.umm-g.track :as track]
    [cmr.umm.umm-granule :as g]
    [cmr.umm.umm-spatial :as umm-s])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -77,11 +78,13 @@
   [umm-g-json]
   (let [spatial (get-in umm-g-json [:SpatialExtent :HorizontalSpatialDomain])
         geometry (:Geometry spatial)
-        orbit (:Orbit spatial)]
+        orbit (:Orbit spatial)
+        track (:Track spatial)]
     (when (or geometry orbit)
       (g/map->SpatialCoverage
        {:geometries (when geometry (umm-g-geometry->geometries geometry))
-        :orbit (when orbit (umm-g-orbit->Orbit orbit))}))))
+        :orbit (when orbit (umm-g-orbit->Orbit orbit))
+        :track (track/umm-g-track->Track track)}))))
 
 (defn- Point->umm-g-point
   "Returns the UMM-G Point from the given spatial point."
@@ -128,7 +131,7 @@
   "Returns the UMM-G SpatialExtent from the given umm-lib granule model SpatialCoverage."
   [spatial]
   (when spatial
-    (let [{:keys [geometries orbit]} spatial]
+    (let [{:keys [geometries orbit track]} spatial]
       {:HorizontalSpatialDomain
        {:Geometry
         (when (seq geometries)
@@ -153,4 +156,5 @@
                     :StartLatitude start-lat
                     :StartDirection (key->orbit-direction start-direction)
                     :EndLatitude end-lat
-                    :EndDirection (key->orbit-direction end-direction)}))}})))
+                    :EndDirection (key->orbit-direction end-direction)}))
+        :Track (track/Track->umm-g-track track)}})))
