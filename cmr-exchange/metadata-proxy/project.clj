@@ -29,7 +29,7 @@
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.1"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-query "0.2.0"]
+                 [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]

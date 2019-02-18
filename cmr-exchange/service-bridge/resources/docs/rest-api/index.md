@@ -723,25 +723,25 @@ or `variables[](or variable_aliases[]`, which is repeated for each variable(or v
 A `service_id` parameter is optional; if not provided, the service type of `opendap` is assumed.
 otherwise, the service type will be retrieved using the service_id through ous call to CMR.
 
-A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed for 
+A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed for
 `opendap` service type and the format of `native` is assumed for `esi` service type.
-Currently supported `format` values are:
+Currently supported `format` values are(case insensitive):
+
+For `opendap` service type:
 
 * `dods` (binary)
 * `nc`
 * `nc4`
 * `ascii`
+
+For `esi` service type:
+
+* `nc` (or `netcdf`)
+* `nc4` (or `netcdf4-cf`,`netcdf4`,`netcdf-4`)
 * `tabular_ascii`
 * `native`
 * `geotiff`
 * `shapefile`
-
-For opendap service type, only the first 4 formats are supported, case insensitive. 
-
-For egi service type, all are supported except for the dods format.
-`nc` format needs to be passed in as `netcdf`, case insensitive. 
-`nc4` format needs to be passed in as one of the following, case insensitive: 
-`netcdf4-cf`,`netcdf4`,`netcdf-4`. 
 
 All parameters behave as documented above in the OUS sections on `granules`, `variables`, and
 `format`, so see those sections for more details.

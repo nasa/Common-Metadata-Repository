@@ -49,3 +49,19 @@
                            variable-alias)
                    options)]
     (is (string/includes? (:body response) "[native] format is not implemented yet for service type: [ESI]."))))
+
+(deftest one-var-size-egi-test-2
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variable_aliases=%s"
+                                "&service_id=S1200341767-DEMO_PROV"
+                                "&format=native"
+                                "&total-granule-input-bytes=1000000")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-alias)
+                   options)]
+    (is (string/includes? (:body response) "[native] format is not implemented yet for service type: [ESI]."))))
