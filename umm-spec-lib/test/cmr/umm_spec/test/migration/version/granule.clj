@@ -141,7 +141,13 @@
                          :MimeType "application/xhdf5"}
                         {:URL "https://example-3"
                          :Type "GET DATA"
-                         :Subtype "PORTAL"}]}
+                         :Subtype "PORTAL"}]
+          :SpatialExtent {:HorizontalSpatialDomain
+                          {:Orbit {:AscendingCrossing 100
+                                   :StartLatitude 60
+                                   :StartDirection "A"
+                                   :EndLatitude 80
+                                   :EndDirection "A"}}}}
          (vm/migrate-umm {} :granule "1.5" "1.4"
                          {:MetadataSpecification
                            {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
@@ -185,8 +191,14 @@
                                          {:URL "https://example-3"
                                           :Type "GET DATA"
                                           :Subtype "PORTAL"}]
-                           :Track {:Cycle 1
-                                   :Passes [{:Pass 1
-                                             :Tiles ["1L" "1R" "2F"]}
-                                            {:Pass 2
-                                             :Tiles ["3L","3R","4F"]}]}}))))
+                           :SpatialExtent {:HorizontalSpatialDomain
+                                           {:Orbit {:AscendingCrossing 100
+                                                    :StartLatitude 60
+                                                    :StartDirection "A"
+                                                    :EndLatitude 80
+                                                    :EndDirection "A"}
+                                            :Track {:Cycle 1
+                                                    :Passes [{:Pass 1
+                                                              :Tiles ["1L" "1R" "2F"]}
+                                                             {:Pass 2
+                                                              :Tiles ["3L","3R","4F"]}]}}}}))))

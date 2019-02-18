@@ -54,6 +54,13 @@
     "application/xhdf5"
     mime-type))
 
+(defn- dissoc-track
+  "Migrate v1.5 Track to v1.4 by dissociating it from HorizontalSpatialDomain if applicable"
+  [g]
+  (if (get-in g [:SpatialExtent :HorizontalSpatialDomain :Track])
+    (update-in g [:SpatialExtent :HorizontalSpatialDomain] dissoc :Track)
+    g))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -74,7 +81,8 @@
 (defmethod interface/migrate-umm-version [:granule "1.5" "1.4"]
   [context g & _]
   (-> g
-      (dissoc :MetadataSpecification :Track)
+      (dissoc :MetadataSpecification)
+      dissoc-track
       (util/update-in-each [:RelatedUrls] v1-5-related-url-subtype->v1-4-related-url-subtype)
       (util/update-in-all [:RelatedUrls :MimeType] v1-5-mime-type->v1-4-mime-type)
       (util/update-in-all [:DataGranule :ArchiveAndDistributionInformation :MimeType]

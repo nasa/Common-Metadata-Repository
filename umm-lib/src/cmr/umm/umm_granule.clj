@@ -1,6 +1,7 @@
 (ns cmr.umm.umm-granule
   "Defines the UMM Granule record."
-  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+  (:require
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord CollectionRef
   [
@@ -107,12 +108,19 @@
 
 (defrecord SpatialCoverage
   [
-   ;; Only one of the following two should be present
+   ;; Only one of geometries and orbit should be present
 
    ;; A sequence of spatial points, bounding rectangles, polygons, and lines
    geometries
    ;; An alternative way to express spatial coverage - used for orbit backtracking
    orbit
+   ;; This element stores track information of the granule. Track information is used to allow a
+   ;; user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile
+   ;; mapping. Though it is derived from the SWOT mission requirements, it is intended that this
+   ;; element type be generic enough so that other missions can make use of it. While track
+   ;; information is a type of spatial domain, it is expected that the metadata provider will
+   ;; provide geometry information that matches the spatial extent of the track information.
+   track
    ])
 
 (defrecord TwoDCoordinateSystem
@@ -147,6 +155,18 @@
    parameter-name
    qa-stats
    qa-flags
+   ])
+
+(defrecord Track
+  [
+   cycle
+   passes
+   ])
+
+(defrecord TrackPass
+  [
+   pass
+   tiles
    ])
 
 (defrecord UmmGranule
@@ -204,4 +224,6 @@
   QAStats
   QAFlags
   MeasuredParameter
+  Track
+  TrackPass
   UmmGranule)
