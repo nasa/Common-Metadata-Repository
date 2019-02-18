@@ -725,7 +725,7 @@ otherwise, the service type will be retrieved using the service_id through ous c
 
 A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed for
 `opendap` service type and the format of `native` is assumed for `esi` service type.
-Currently supported `format` values are(case insensitive):
+Currently supported `format` values are (case insensitive):
 
 For `opendap` service type:
 
