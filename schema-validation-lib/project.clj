@@ -10,7 +10,6 @@
                  [org.clojure/clojure "1.10.0"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
-  :aot [cmr.schema-validation.json-schema]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
@@ -24,6 +23,7 @@
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
+             :uberjar {:aot [cmr.schema-validation.json-schema]}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
              ;; all projects at the same time, use the same command but from the top-
