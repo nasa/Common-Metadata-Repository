@@ -717,16 +717,31 @@ Two parameters are required in a query string to this resource:
 
 * `granules` which is comma-separated for two or more granules, or `granules[]`,
   which is repeated for each granule in the query string
-* `variables` which is comma-separated for two or more variables, or `variables[]`,
-  which is repeated for each variable in the query string
+* `variables(or variable_aliases)`  which is comma-separated for two or more variables(or variable-aliases), 
+or `variables[](or variable_aliases[]`, which is repeated for each variable(or variable_alias) in the query string.
 
-A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed.
+A `service_id` parameter is optional; if not provided, the service type of `opendap` is assumed.
+otherwise, the service type will be retrieved using the service_id through ous call to CMR.
+
+A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed for 
+`opendap` service type and the format of `native` is assumed for `esi` service type.
 Currently supported `format` values are:
 
 * `dods` (binary)
 * `nc`
 * `nc4`
 * `ascii`
+* `tabular_ascii`
+* `native`
+* `geotiff`
+* `shapefile`
+
+For opendap service type, only the first 4 formats are supported, case insensitive. 
+
+For egi service type, all are supported except for the dods format.
+`nc` format needs to be passed in as `netcdf`, case insensitive. 
+`nc4` format needs to be passed in as one of the following, case insensitive: 
+`netcdf4-cf`,`netcdf4`,`netcdf-4`. 
 
 All parameters behave as documented above in the OUS sections on `granules`, `variables`, and
 `format`, so see those sections for more details.
