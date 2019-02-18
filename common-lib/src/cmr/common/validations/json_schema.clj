@@ -23,10 +23,15 @@
   [schema-def]
   (json-schema/parse-json-schema schema-def))
 
+(defn json-string->json-schema
+  "Convenience function for not needing to require extra dependencies throughout CMR."
+  [schema-string]
+  (json-schema/json-string->json-schema schema-string))
+
 (defn validate-json
   "Performs schema validation using the provided JSON schema and the given
   json string to validate."
-  [^Schema json-schema json-to-validate]
+  [json-schema json-to-validate]
   (try
     (json-schema/validate-json json-schema json-to-validate true)
     (catch JSONException e
