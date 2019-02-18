@@ -72,7 +72,7 @@
          ["#: extraneous key [bad-property] is not permitted"]))
 
   (testing "Invalid JSON structure"
-    (is (= "Missing value at 7 [character 8 line 1]"
+    (is (= ["Missing value at 7 [character 8 line 1]"]
            (json-schema/validate-json sample-json-schema "{\"bar\":}"))))
 
   (testing "Invalid schema - description cannot be an array"
