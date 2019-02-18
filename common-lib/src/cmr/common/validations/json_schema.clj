@@ -4,7 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.common.log :as log :refer (warn info)]
+   [cmr.common.log :as log :refer [warn info]]
    [cmr.common.services.errors :as errors]
    [cmr.schema-validation.json-schema :as json-schema])
   (:import

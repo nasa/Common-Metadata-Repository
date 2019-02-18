@@ -2,6 +2,7 @@
   "Tests to verify JSON schema validation."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.schema-validation.json-schema :as json-schema])
   (:import
@@ -73,7 +74,30 @@
 
   (testing "Invalid JSON structure"
     (is (= ["Missing value at 7 [character 8 line 1]"]
-           (json-schema/validate-json sample-json-schema "{\"bar\":}"))))
+           (json-schema/validate-json sample-json-schema "{\"bar\":}")))
+
+    (are [invalid-json]
+         (string/includes?
+          (json-schema/validate-json sample-json-schema invalid-json)
+          "Trailing characters are not permitted.")
+
+         "{}random garbage."
+
+         "{}             random garbage."
+
+         "{}\n\n{}{}[][]random garbage."
+
+         "{}\n\r  random garbage[][][][]"))
+
+  (testing "Valid JSON Structure"
+    (are [valid-json]
+         (nil? (json-schema/validate-json sample-json-schema valid-json))
+
+         "{\"bar\": false}                     "
+
+         "{\"bar\": false}\n\n\n\n\n\n\n\n\n"
+
+         "{\"bar\": true}\t\n\t\t\n\r\r       \r\n\t\t\n\n\t\n"))
 
   (testing "Invalid schema - description cannot be an array"
     (is (thrown-with-msg?
