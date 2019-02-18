@@ -5,6 +5,7 @@
   Definition used for system tests:
   * https://en.wikipedia.org/wiki/Software_testing#System_testing"
   (:require
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.http.kit.request :as request]
     [cmr.opendap.testing.system :as test-system]
@@ -40,6 +41,21 @@
              :gb 0.0
              :mb 0.0}]
            (util/parse-response response)))))
+
+(deftest one-var-size-egi-test
+  (let [response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/size-estimate/collection/%s"
+                                "?granules=%s"
+                                "&variables=%s"
+                                "&format=dods"
+                                "&service_id=S1200341767-DEMO_PROV")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id
+                           variable-id)
+                   options)]
+    (is (string/includes? (:body response) "Cannot estimate size for service type: [ESI] and format: [dods]"))))
 
 (deftest one-var-different-gran-size-test
   (let [response @(httpc/get

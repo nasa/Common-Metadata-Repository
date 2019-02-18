@@ -6,6 +6,7 @@
    [cmr.exchange.common.results.errors :as errors]
    [cmr.exchange.common.util :as util]
    [cmr.exchange.query.core :as query]
+   [cmr.exchange.query.const :as const]
    [cmr.exchange.query.util :as query-util]
    [cmr.metadata.proxy.components.concept :as concept]
    [cmr.metadata.proxy.concepts.collection :as collection]
@@ -114,12 +115,13 @@
   (when granule-links
     (let [urls (map (comp replace-double-slashes
                           #(granule-link->opendap-url % tag-data))
-                    granule-links)]
+                    granule-links)
+          format (or (:format params) const/default-format)]
       (if (errors/any-erred? urls)
         (do
           (log/error "Some problematic urls:" (vec urls))
           (apply errors/collect urls))
-        (map #(str % "." (:format params) query-string) urls)))))
+        (map #(str % "." format query-string) urls)))))
 
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.sizing.core -- we should put this somewhere both can use,

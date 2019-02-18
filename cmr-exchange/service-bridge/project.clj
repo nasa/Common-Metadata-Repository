@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.3-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.4-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -27,14 +27,14 @@
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.1"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-query "0.3.1-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.3-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.2-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.3-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.2.7-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.2.8-SNAPSHOT"]
                  [http-kit "2.3.0"]
                  [markdown-clj "1.0.7"]
                  [metosin/reitit-core "0.2.13"]
@@ -99,7 +99,7 @@
                                      :system :system
                                      :default (complement :system)}}
              :docs {:dependencies [[gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
-                    :plugins [[lein-codox "0.10.5"]
+                    :plugins [[lein-codox "0.10.6"]
                               [lein-marginalia "0.9.1"]]
                     :source-paths ["resources/docs/src"]
                     :codox {:project {:name "CMR Service-Bridge"

@@ -7,8 +7,53 @@
 ;;; Note that all internal operations for estimating size are performed
 ;;; assuming bytes as the units.
 
-(def NetCDF-4
-  "NetCDF-4")
+(def default-format
+  "This will map to different default formats for egi and opendap requests."
+  "default")
+
+(def egi-service-type
+  "esi")
+
+(def opendap-service-type
+  "opendap")
+
+(def egi-formats->ses-formats-mapping
+  "Mapping the EGI supported formats(in lower-case) from echo forms to the
+  SES supported formats."
+  {"shapefile"     "shapefile"
+   "tabular_ascii" "tabular_ascii"
+   "geotiff"       "geotiff"
+   "nc"            "nc"
+   "netcdf"        "nc"
+   "nc4"           "nc4"
+   "netcdf4-cf"    "nc4"
+   "netcdf4"       "nc4"
+   "netcdf-4"      "nc4"
+   "native"        "native"
+   "default"       "native"})
+
+(def opendap-formats->ses-formats-mapping
+  "Mapping the OPeNDAP supported formats to the SES supported formats."
+  {"nc"      "nc"
+   "nc4"     "nc4"
+   "ascii"   "ascii"
+   "dods"    "dods"
+   "default" "nc"})
+
+(def service-type->formats-mapping
+  "Mapping the service-type to the map of service supported format and
+  SES supported formats."
+  {"esi" egi-formats->ses-formats-mapping
+   "opendap" opendap-formats->ses-formats-mapping})
+
+(def ses-formats->compression-format-mapping
+  "Mapping the ses supported formats to the formats in
+  AverageCompressionInformation in UMM-VAR." 
+  {"tabular_ascii" "ASCII"
+   "nc4"           "NetCDF-4"
+   "shapefile"     "ESRI Shapefile"
+   "geotiff"       "GeoTIFF"
+   "native"        "Native"})
 
 (defn- read-number
   "If value is string, read-string.  Otherwise ignore."
@@ -47,18 +92,18 @@
       (get-in [:umm :SizeEstimation :AverageSizeOfGranulesSampled])
       read-number))
 
-(defn- get-netcdf4-rate
-  "Gets the :Rate value for :NetCDF-4 format in avg-comp-info."
-  [avg-comp-info]
-  (some #(when (= NetCDF-4 (:Format %)) (:Rate %)) avg-comp-info))  
+(defn- get-rate
+  "Gets the :Rate value for compression-format in avg-comp-info."
+  [avg-comp-info compression-format]
+  (some #(when (= compression-format (:Format %)) (:Rate %)) avg-comp-info))  
 
-(defn- get-avg-compression-rate-netcdf4
-  "Gets :Rate value for NetCDF-4 format in :SizeEstimation of variable 
+(defn- get-avg-compression-rate
+  "Gets :Rate value for compression-format in :SizeEstimation of variable 
   and parses it to a number."
-  [variable]
+  [variable compression-format]
   (-> variable
       (get-in [:umm :SizeEstimation :AverageCompressionInformation])
-      get-netcdf4-rate
+      (get-rate compression-format)
       read-number))
 
 (defn- get-avg-digit-number
@@ -176,14 +221,14 @@
                    0
                    variables))))
 
-(defn- estimate-netcdf4-size
-  "Calculates the estimated size for NETCDF4 format.
+(defn- estimate-netcdf4-shapefile-size
+  "Calculates the estimated size for NETCDF4 and shapefile format.
    total-granule-input-bytes is a value given by the client in the size estimate request."
-  [granule-count variables params]
+  [granule-count variables params compression-format]
   (reduce (fn [total-estimate variable]
             (let [avg-gran-size (get-avg-gran-size variable)
                   total-granule-input-bytes (read-string (:total-granule-input-bytes params))
-                  avg-compression-rate (get-avg-compression-rate-netcdf4 variable)]
+                  avg-compression-rate (get-avg-compression-rate variable compression-format)]
               (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
                                      "avg-gran-size: %s total-granule-input-bytes: %s "
                                      "avg-compression-rate: %s")
@@ -192,18 +237,61 @@
                                 avg-compression-rate))
               (+ total-estimate
                  (* total-granule-input-bytes
-                    avg-compression-rate
+                    (or avg-compression-rate 0) 
                     (/ (/ total-granule-input-bytes granule-count) avg-gran-size)))))
           0
           variables))
 
+(defn- not-implemented-msg
+  "Generate the msg for the format that's not implemented yet for the service type."
+  [fmt svc-type]
+  (format "[%s] format is not implemented yet for service type: [%s]." fmt svc-type))
+
+(defn- not-supported-format-for-service-type-msg
+  "Generate the msg about fmt not being supported for the service type."
+  [fmt svc-type]
+  (format "Cannot estimate size for service type: [%s] and format: [%s]."
+          svc-type
+          fmt))
+
+(defn- not-supported-service-type-msg
+  "Generate the msg about not having the right service type for the service id."
+  [svc-id]
+  (format "No esi or opendap service type associated with: [%s]." svc-id))
+
 (defn estimate-size
-  [fmt granule-count vars granule-metadata-size params]
-  (case (keyword (string/lower-case fmt))
-    :dods (estimate-dods-size granule-count vars params)
-    :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
-    :nc4 (estimate-netcdf4-size granule-count vars params)
-    :ascii (estimate-ascii-size granule-count vars params)
-    (do
-      (log/errorf "Cannot estimate size for %s (not implemented)." fmt)
-      {:errors [(str "Cannot estimate size for format: " fmt)]})))
+  [svcs granule-count vars granule-metadata-size params]
+  (let [svc-id (:service-id params)
+        svc-type (if svc-id
+                   ;; There is at most one svc associated with svc-id 
+                   (get-in (first svcs) [:umm :Type])              
+                   opendap-service-type)
+        svc-type-lc (when svc-type
+                      (string/lower-case svc-type))
+        format (:format params)
+        fmt-lc (if format 
+                 (string/lower-case format)
+                 default-format)
+        ses-fmt (get-in service-type->formats-mapping [svc-type-lc fmt-lc])]
+    (if (or (= svc-type-lc opendap-service-type)
+            (= svc-type-lc egi-service-type))
+      (case (keyword ses-fmt)
+        :dods (estimate-dods-size granule-count vars params)
+        :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
+        :nc4 
+          (estimate-netcdf4-shapefile-size 
+            granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
+        :ascii (estimate-ascii-size granule-count vars params)
+        :shapefile 
+          (estimate-netcdf4-shapefile-size 
+            granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
+        (or :tabular_ascii :geotiff :native)
+          {:errors [(not-implemented-msg ses-fmt svc-type)]}
+        (do
+          (let [message (not-supported-format-for-service-type-msg format svc-type)]
+            (log/errorf message)
+            {:errors [message]})))
+      (do
+        (let [message (not-supported-service-type-msg svc-id)]
+          (log/errorf message)
+          {:errors [message]})))))
