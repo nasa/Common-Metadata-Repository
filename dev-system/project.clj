@@ -17,7 +17,6 @@
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
    :cmr-orbits-lib "0.1.0-SNAPSHOT"
-   :cmr-schema-validation-lib "0.1.0-SNAPSHOT"
    :cmr-search-app "0.1.0-SNAPSHOT"
    :cmr-search-relevancy-test "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
