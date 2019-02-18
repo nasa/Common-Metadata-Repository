@@ -52,6 +52,8 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
+    ;; Need to update the size here once the compression info becomes avaiable
+    ;; in the variables.
     (is (= [{:bytes 0 
              :mb 0.0
              :gb 0.0}]
