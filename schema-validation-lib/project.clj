@@ -1,4 +1,4 @@
-(defproject nasa-cmr/schema-validation-lib "0.1.0-SNAPSHOT"
+(defproject nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"
   :description "Provides json schema validation code"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
   :plugins [[lein-exec "0.3.7"]
