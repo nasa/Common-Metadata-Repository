@@ -9,12 +9,12 @@
    (org.json JSONException JSONTokener))
   (:gen-class
    :name cmr.validation.jsonSchema
-   :methods [^:static [validateJson [org.everit.json.schema.Schema String] java.util.List]
-             ^:static [validateJson [org.everit.json.schema.Schema String Boolean] java.util.List]
-             ^:static [parseSchemaFromURI [java.net.URI] org.everit.json.schema.Schema]
+   :methods [^:static [parseSchemaFromPath [String] org.everit.json.schema.Schema]
+             ^:static [parseSchemaFromString [String] org.everit.json.schema.Schema]
              ^:static [parseSchemaFromURI [String] org.everit.json.schema.Schema]
-             ^:static [parseSchemaFromPath [String] org.everit.json.schema.Schema]
-             ^:static [parseSchemaFromString [String] org.everit.json.schema.Schema]]))
+             ^:static [parseSchemaFromURI [java.net.URI] org.everit.json.schema.Schema]
+             ^:static [validateJson [org.everit.json.schema.Schema String Boolean] java.util.List]
+             ^:static [validateJson [org.everit.json.schema.Schema String] java.util.List]]))
 
 (defn- json-string->JSONType
   "Takes JSON as a string and returns a org.json.JSONObject. or org.json.JSONArray
