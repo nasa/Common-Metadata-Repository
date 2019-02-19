@@ -3,7 +3,6 @@
   (:require
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.memory-queue :as memory]
-   [cmr.message-queue.queue.rabbit-mq :as rmq]
    [cmr.message-queue.queue.sqs :as sqs]))
 
 (defn create-queue-broker
@@ -12,6 +11,5 @@
   [queue-config]
   (let [create-fn (case (config/queue-type)
                     "memory" memory/create-memory-queue-broker
-                    "rabbit-mq" rmq/create-queue-broker
                     "aws" sqs/create-queue-broker)]
     (create-fn queue-config)))

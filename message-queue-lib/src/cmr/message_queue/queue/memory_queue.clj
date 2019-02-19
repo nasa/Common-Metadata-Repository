@@ -5,7 +5,7 @@
    [clojure.core.async :as a]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
    [cmr.message-queue.config :as config]
