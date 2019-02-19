@@ -552,4 +552,4 @@ Example un-healthy response body:
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2019 NASA
