@@ -23,9 +23,10 @@ Search API provides access to this metadata.
   - API Docs: https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html
 
 - Access Control
-  - Access Control Lists (ACLs) are the mechanism by which grants users
-    access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which are a superset of the generic ACL
-    design pattern used in many other systems. At a high level, an ACL is a
+  - Access Control Lists (ACLs) are the mechanism which grants users
+    access to perform different operations in the CMR. CMR ACLs follow the same
+    design as ECHO ACLs, which are a superset of the generic ACL
+    design pattern used in many other systems. An ACL is a
     mapping of actors (subjects) to resources (object) to operations
     (predicate).
   - Two quick examples of a CMR ACL could be:
@@ -104,17 +105,25 @@ Here are the steps to do so:
 1. Download the Oracle JDBC JAR files into `./oracle-libs/support` by
    following instructions in `./oracle-lib/README.md`. (The CMR must have these
    libraries to build but it does not depend on Oracle DB when running
-   locally. It uses a local in-memory database by default.)
+   locally. It uses a local in-memory database by default.) If you're reading this
+   guide on the web, [here is a handy link to the instructions.](https://github.com/nasa/Common-Metadata-Repository/tree/master/oracle-lib)
 1. With the JAR files downloaded to the proper location, you're now ready
    to install them for use by the CMR:" `cmr install oracle-libs`
 
-#### Building and Running CMR Dev System in a REPL
+#### Building and Running CMR Dev System in a REPL with CMR CLI tool
 
-1. `cmr setup profile` and then update the new `./dev-system/profiles.clj`
-   according to personal instructions provided by a CMR code developer.
-1. `cmr setup dev`
-1. `cmr start repl`
-1. Once given a Clojure prompt, run `(reset)`
+1. `cmr setup profile` and then update the new `./dev-system/profiles.clj` file.
+   it will look something like this:
+   ```
+   {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
+                       :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
+                       :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
+                       :cmr-ingest-password "<YOUR PASSWORD HERE>"
+                       :cmr-rabbit-mq-password "<YOUR PASSWORD HERE>"}}}
+
+2. `cmr setup dev`
+3. `cmr start repl`
+4. Once given a Clojure prompt, run `(reset)`
 
 Note that the `reset` action could potentially take a while, not only due to
 the code reloading for a large number of namespaces, but for bootstrapping

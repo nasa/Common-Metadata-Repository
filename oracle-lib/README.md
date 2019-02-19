@@ -16,9 +16,7 @@ project.
 
 ### Manually installing the Oracle JDBC Jars
 
-1. Download oracle Jars from Oracle's website. You can usually google for
-   each of the jar files with a search term such as "oracle ucp jar" to find
-   the location of each jar file. You need to download the following:
+1. Download oracle Jars from [Oracle's website.](https://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html) You need to download the following:
 
   * `ojdbc6.jar` - Orcale JDBC Driver
   * `ucp.jar` - Universal Connection Pool (not bundled with the JDBC driver)
@@ -32,4 +30,4 @@ project.
 
 ## License
 
-Copyright © 2014-2018 NASA
+Copyright © 2014-2019 NASA
