@@ -24,7 +24,6 @@
    [cmr.ingest.system :as ingest-system]
    [cmr.message-queue.config :as rmq-conf]
    [cmr.message-queue.queue.memory-queue :as mem-queue]
-   [cmr.message-queue.queue.rabbit-mq :as rmq]
    [cmr.message-queue.queue.sqs :as sqs]
    [cmr.message-queue.services.queue :as queue]
    [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
@@ -175,16 +174,6 @@
       (rmq-conf/merge-configs (ingest-config/queue-config))
       (rmq-conf/merge-configs (bootstrap-config/queue-config))
       (assoc :ttls ttls)))
-
-;; for legacy reasons :external refers to Rabbit MQ
-(defmethod create-queue-broker :external
-  [type]
-  ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
-  (let [ttls [1 1 1 1 1]]
-    (rmq-conf/set-rabbit-mq-ttls! ttls)
-    (-> (external-queue-config ttls)
-        rmq/create-queue-broker
-        wrapper/create-queue-broker-wrapper)))
 
 (defmethod create-queue-broker :aws
   [type]

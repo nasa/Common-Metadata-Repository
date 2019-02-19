@@ -144,7 +144,7 @@
   [status msg]
   {:pre [(valid-message-states status)]}
   (if (and (= :retry status)
-           (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
+           (queue/retry-limit-met? msg (count (iconfig/time-to-live-s))))
     :failure
     status))
 

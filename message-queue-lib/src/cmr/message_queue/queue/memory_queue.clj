@@ -20,7 +20,7 @@
   "Attempts to retry processing the message unless the retry count has been exceeded."
   [queue-broker queue-name msg resp]
   (let [retry-count (get msg :retry-count 0)]
-    (if (queue/retry-limit-met? msg (count (config/rabbit-mq-ttls)))
+    (if (queue/retry-limit-met? msg (count (config/time-to-live-s)))
       ;; give up
       (warn "Max retries exceeded for processing message:" (pr-str msg))
       (let [new-retry-count (inc retry-count)
