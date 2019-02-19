@@ -1,20 +1,20 @@
 (ns user
   "user is the default namespace of the REPL. This defines helper functions for starting and
   stopping the application from the REPL."
-  (:require [clojure.pprint :refer (pprint pp)]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.metadata-db.system :as system]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.common.dev.util :as d]
-            [cmr.common.lifecycle :as l]
-            [cmr.common-app.test.side-api :as side-api]
-            [cmr.mock-echo.system :as mock-echo])
-  (:use [clojure.test :only [run-all-tests]]
-        [clojure.repl]
-        [alex-and-georges.debug-repl]
-        [cmr.common.dev.capture-reveal]))
+  (:require
+   [alex-and-georges.debug-repl]
+   [clojure.pprint :refer [pprint pp]]
+   [clojure.repl]
+   [clojure.test :only [run-all-tests]]
+   [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [cmr.common.dev.capture-reveal]
+   [cmr.common.dev.util :as d]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.metadata-db.data.memory-db :as memory]
+   [cmr.metadata-db.system :as system]
+   [cmr.mock-echo.system :as mock-echo]))
 
 (def system nil)
 (def mock-echo nil)

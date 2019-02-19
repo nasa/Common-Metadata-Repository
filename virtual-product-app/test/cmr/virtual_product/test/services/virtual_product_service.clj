@@ -14,7 +14,7 @@
          (nil? (#'vps/handle-delete-response {:status status :body "body"} "granule-ur" retry-count))
          204 1
          409 1
-         404 (inc (count (queue-config/rabbit-mq-ttls))))))
+         404 (inc (count (queue-config/time-to-live-s))))))
 
 ; status body granule-ur
 (defn- assert-error
@@ -31,7 +31,7 @@
                        "ingesting the virtual granule [granule-ur] : [{:status 500, :body \"body\"}]")))
   (testing "Testing status code 404 in a  delete response"
     (assert-error (partial #'vps/handle-delete-response {:status 404 :body "body"} "granule-ur"
-                           (dec (count (queue-config/rabbit-mq-ttls))))
+                           (dec (count (queue-config/time-to-live-s))))
                   (str "Received a response with status code [404] and the following response body "
                        "when deleting the virtual granule [granule-ur] : [\"body\"]."
                        " The delete request will be retried.")))
