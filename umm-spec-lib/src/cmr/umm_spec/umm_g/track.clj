@@ -16,7 +16,6 @@
 (defn umm-g-track->Track
   "Returns the umm-lib granule model Track from the given UMM-G Track."
   [track]
-  (println "------track:"track)
   (when track
     (g/map->Track
      (let [{:keys [Cycle Passes]} track]
