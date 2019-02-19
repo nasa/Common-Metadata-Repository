@@ -3,7 +3,8 @@
    Track and generating UMM-G JSON Track from umm-lib granule model Track."
   (:require
    [cmr.umm.umm-granule :as g])
-  (:import cmr.umm.umm_granule.UmmGranule))
+  (:import
+   (cmr.umm.umm_granule UmmGranule)))
 
 (defn- umm-g-pass->TrackPass
   "Returns the umm-lib granule model TrackPass from the given UMM-G Pass."
