@@ -1,7 +1,7 @@
 (def jruby-version
   "The version of JRuby to use. This is the same as used in the echo orbits java package to prevent
    classpath issues"
-  "9.1.8.0")
+  "9.2.6.0")
 
 (def cmr-metadata-preview-repo
   "Defines the repo url of cmr_metadata_preview project"
