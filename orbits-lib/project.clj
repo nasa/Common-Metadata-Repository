@@ -1,6 +1,6 @@
 (def jruby-version
-  "The version of JRuby to use. This is the same as used in the echo orbits java package to prevent
-   classpath issues"
+  "The version of JRuby to use. This is the same as used in the collection renderer 
+   java package to prevent classpath issues"
   "9.2.6.0")
 
 (def dev-gem-install-path
