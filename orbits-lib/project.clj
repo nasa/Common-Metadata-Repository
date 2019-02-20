@@ -1,7 +1,7 @@
 (def jruby-version
   "The version of JRuby to use. This is the same as used in the echo orbits java package to prevent
    classpath issues"
-  "9.1.8.0")
+  "9.2.6.0")
 
 (def dev-gem-install-path
   "The directory within this library where Ruby gems are installed for development time dependencies."
