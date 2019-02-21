@@ -212,9 +212,12 @@ Main NCEI website providing links to access data and data services.
                             <gmd:code>
                                 <gco:CharacterString>SPL1CS0</gco:CharacterString>
                             </gmd:code>
-                            <gmd:version>
-                                <gco:CharacterString>001</gco:CharacterString>
-                            </gmd:version>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.shortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Short Name</gco:CharacterString>
+                            </gmd:description>
                         </gmd:MD_Identifier>
                     </gmd:identifier>
                 </gmd:CI_Citation>
