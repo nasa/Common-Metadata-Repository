@@ -18,7 +18,7 @@ Search API provides access to this metadata.
 - Ingest
   - Ingest refers to the process of validating, inserting, updating, or
     deleting metadata in the CMR system. It affects only the metadata for the
-    specific Data Partner. The CMR allows Data Partners to ingest metadata
+    specific Data Partner. The CMR allows Data Partners to ingest metadata.
     records through a RESTful API
   - API Docs: https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html
 
@@ -118,8 +118,7 @@ Here are the steps to do so:
    {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
                        :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
                        :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
-                       :cmr-ingest-password "<YOUR PASSWORD HERE>"
-                       :cmr-rabbit-mq-password "<YOUR PASSWORD HERE>"}}}
+                       :cmr-ingest-password "<YOUR PASSWORD HERE>"}}}
 
 2. `cmr setup dev`
 3. `cmr start repl`
@@ -246,7 +245,7 @@ For non-terminal based dev, depending upon your IDE/editor, you may have
 shortcuts available to you for starting/restarting the services and/or running the
 tests. To find out what these are you can contact a CMR core dev.
 
-To run the tests against an Oracle database, it we recommend that
+To run the tests against an Oracle database, we recommend that
 you use an Oracle VM built for this purpose. You will also need
 configuration and authentication information that will be set as environment
 variables. Be sure to contact a CMR core dev for this information.
@@ -283,7 +282,7 @@ It will contain usage instructions
 
 ## Code structure
 
-The CMR contains several small services called microservices. These are
+The CMR comprises several small services called microservices. These are
 small purposed-based services that do a small set of things well.
 
 - For more reading on microservices: https://martinfowler.com/articles/microservices.html
