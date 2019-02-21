@@ -49,4 +49,10 @@
                            granule-id
                            variable-alias)
                    options)]
-    (is (string/includes? (:body response) "[tabular_ascii] format is not implemented yet for service type: [ESI]."))))
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 26 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response)))))

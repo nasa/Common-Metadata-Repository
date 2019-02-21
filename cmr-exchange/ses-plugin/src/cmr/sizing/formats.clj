@@ -62,6 +62,11 @@
     (read-string value)
     value))
 
+(defn- get-alias
+  "Get the alias from the variable."
+  [variable]
+  (get-in variable [:umm :Alias]))
+
 (defn- get-dimensionality
   "Get the dimensionality, which is the multiplication of all the sizes
   in all the Dimensions. Returns 0 when Dimensions is not present."
@@ -221,6 +226,37 @@
                    0
                    variables))))
 
+(defn- estimate-tabular-ascii-size-per-granule
+  "Calculate the estimated size for Tabular ASCII output per granule, for the variable.
+  In Tabular ASCII output, the first row is all the aliases separated by a space(or newline in the end?),
+  Then all the data under each alias are padded to contain the same size as the alias - what if the data
+  contains more digits than the number of characters in the alias?
+  
+  size = (# of characters in the alias + 1(space or newline)) * (dimensionality + 1(the first row))
+  
+  Note: different variable may have different dimensionality, but tabular ascii only groups
+  the variables with the same dimensionalities together."
+  [variable params total-estimate]
+  (let [alias (get-alias variable)
+        dimensionality (get-dimensionality variable)]
+    (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
+                           "dimensionality: %s variable alias: %s")
+                      (:request-id params) (get-in variable [:meta :concept-id])
+                      total-estimate dimensionality alias))
+    (if (and alias (> dimensionality 0))
+      (* (inc (count alias)) (inc dimensionality))
+      0)))
+
+(defn- estimate-tabular-ascii-size
+  "Calculates the estimated size for Tabular ASCII output for all the variables and the granule-count."
+  [granule-count variables params]
+  (* granule-count
+     (long (reduce (fn [total-estimate variable]
+                     (+ total-estimate
+                        (estimate-tabular-ascii-size-per-granule variable params total-estimate)))
+                   0
+                   variables))))
+
 (defn- estimate-netcdf4-shapefile-size
   "Calculates the estimated size for NETCDF4 and shapefile format.
    total-granule-input-bytes is a value given by the client in the size estimate request."
@@ -285,7 +321,8 @@
         :shapefile 
           (estimate-netcdf4-shapefile-size 
             granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
-        (or :tabular_ascii :geotiff :native)
+        :tabular_ascii (estimate-tabular-ascii-size granule-count vars params) 
+        (or :geotiff :native)
           {:errors [(not-implemented-msg ses-fmt svc-type)]}
         (do
           (let [message (not-supported-format-for-service-type-msg format svc-type)]
