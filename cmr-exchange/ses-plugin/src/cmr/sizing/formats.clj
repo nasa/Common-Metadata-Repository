@@ -228,14 +228,16 @@
 
 (defn- estimate-tabular-ascii-size-per-granule
   "Calculate the estimated size for Tabular ASCII output per granule, for the variable.
-  In Tabular ASCII output, the first row is all the aliases separated by a space(or newline in the end?),
-  Then all the data under each alias are padded to contain the same size as the alias - what if the data
-  contains more digits than the number of characters in the alias?
+  In Tabular ASCII output, the first row is all the aliases separated by a space(or newline in the end),
+  Then all the data under each alias are padded to contain the same size as the alias.
   
   size = (# of characters in the alias + 1(space or newline)) * (dimensionality + 1(the first row))
   
-  Note: different variable may have different dimensionality, but tabular ascii only groups
-  the variables with the same dimensionalities together."
+  Note: We have made three assumptions in this approach, which needs to be verified:
+  1. Different variable may have different dimensionality, but tabular ascii only groups
+  the variables with the same dimensionalities together, if not we will need to use the max dimensionality.
+  2. Data width will never be wider than the header width. 
+  3. Alias put in the variable is the same as what appears in the tabular ascii - confirmed"
   [variable params total-estimate]
   (let [alias (get-alias variable)
         dimensionality (get-dimensionality variable)]
