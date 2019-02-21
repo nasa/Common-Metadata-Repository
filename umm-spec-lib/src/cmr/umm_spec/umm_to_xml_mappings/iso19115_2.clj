@@ -296,7 +296,8 @@
             [:gmd:identifier
               [:gmd:MD_Identifier
                 [:gmd:code (char-string (:ShortName c))]
-                [:gmd:version (char-string (:Version c))]]]
+                [:gmd:codeSpace (char-string "gov.nasa.esdis.umm.shortname")]
+                [:gmd:description (char-string "Short Name")]]]
             (generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
               [:gmd:identifier
