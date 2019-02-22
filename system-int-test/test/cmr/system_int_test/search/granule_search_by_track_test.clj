@@ -16,9 +16,10 @@
 (defn- ingest-granule-with-track
   "ingest a generated granule on the given provider, parent collection and track info"
   [provider-id coll track]
-  (d/ingest provider-id (dg/granule-with-umm-spec-collection
-                         coll (:concept-id coll)
-                         {:spatial-coverage (dg/spatial-with-track track)})
+  (d/ingest provider-id
+            (dg/granule-with-umm-spec-collection
+             coll (:concept-id coll)
+             {:spatial-coverage (dg/spatial-with-track track)})
             {:format :umm-json}))
 
 (deftest search-by-track

@@ -259,11 +259,11 @@
                           :type "string"},
  :end-lat {:store "yes", :type "double"},
  :lr-west-doc-values {:doc_values true, :type "float"}
- :cycle {:type "integer"},
+ :cycle {:type "integer", :doc_values true},
  :passes
  {:properties
-  {:pass {:type "integer"},
-   :tiles {:type "string", :index "not_analyzed"}},
+  {:pass {:type "integer", :doc_values true},
+   :tiles {:type "string", :index "not_analyzed", :doc_values true}},
   :type "nested",
   :_all {:enabled false},
   :dynamic "strict",
