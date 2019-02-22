@@ -138,10 +138,10 @@
 (defn- pass-param->TrackPass
   "Returns the umm-lib granule model TrackPass from the given pass param."
   [track-pass]
-  (g/map->TrackPass
-     (let [{:keys [pass tiles]} track-pass]
-       {:pass pass
-        :tiles tiles})))
+  (let [{:keys [pass tiles]} track-pass]
+    (g/map->TrackPass
+     {:pass pass
+      :tiles tiles})))
 
 (defn- track-param->Track
   "Returns the umm-lib granule model Track from the given track param."

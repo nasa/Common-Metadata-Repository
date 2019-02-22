@@ -211,8 +211,8 @@
 
 (defnestedmapping track-pass-mapping
   "Defines mappings for storing track pass."
-  {:pass m/int-field-mapping
-   :tiles m/string-field-mapping})
+  {:pass (m/doc-values m/int-field-mapping)
+   :tiles (m/doc-values m/string-field-mapping)})
 
 (defnestedmapping prioritized-humanizer-mapping
   "Defines a string value and priority for use in boosting facets."
@@ -619,7 +619,7 @@
      :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
      :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
 
-     :cycle m/int-field-mapping
+     :cycle (m/doc-values m/int-field-mapping)
      :passes track-pass-mapping
 
      ;; Used for orbit search
