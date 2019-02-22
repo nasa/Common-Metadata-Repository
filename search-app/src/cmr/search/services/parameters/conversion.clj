@@ -116,7 +116,9 @@
    :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
    :updated-since :updated-since
-   :version :collection-query})
+   :version :collection-query
+   :cycle :int
+   :passes :passes})
 
 (defmethod common-params/param-mappings :tag
   [_]

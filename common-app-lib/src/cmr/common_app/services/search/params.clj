@@ -100,6 +100,13 @@
   [_context concept-type param value options]
   (string-parameter->condition concept-type param value options))
 
+(defmethod parameter->condition :int
+  [_context concept-type param value options]
+  (if (sequential? value)
+    (gc/group-conds (group-operation param options)
+                    (map #(qm/numeric-value-condition param %) value))
+    (qm/numeric-value-condition param value)))
+
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
   [context concept-type param value options]

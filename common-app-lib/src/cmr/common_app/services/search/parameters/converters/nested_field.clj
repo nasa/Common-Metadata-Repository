@@ -1,7 +1,7 @@
 (ns cmr.common-app.services.search.parameters.converters.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.params :as p]
    [cmr.common-app.services.search.query-model :as qm]
@@ -15,6 +15,10 @@
   "The subfields of the granule temporal facet nested field."
   [:year :month :day])
 
+(def pass-subfields
+  "The subfields of the granule pass nested field."
+  [:pass :tiles])
+
 (defn get-subfield-names
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
@@ -23,12 +27,13 @@
   ;; and :science-keywords-h to :science-keywords
   (let [base-parent-field (-> parent-field
                               name
-                              (str/replace #"\..*$" "")
-                              (str/replace #"-h$" "")
+                              (string/replace #"\..*$" "")
+                              (string/replace #"-h$" "")
                               keyword)]
     (condp = base-parent-field
       :variables variable-subfields
       :temporal-facet temporal-facet-subfields
+      :passes pass-subfields
       ;; else
       (conj (kms/keyword-scheme->field-names
              (kms/translate-keyword-scheme-to-gcmd base-parent-field))
@@ -51,18 +56,59 @@
     (qm/string-condition (nested-field->elastic-keyword parent-field subfield) value
                          case-sensitive? pattern?)))
 
+(def subfield-name->condition-type
+  "Defines the subfield-name to non-string condition type mapping"
+  {:pass :int
+   ;; tiles could be comma separated string or list
+   :tiles :list})
+
+(defmulti nested-field+value->condition
+  "Converts a nested field and its value into a condition"
+  (fn [parent-field subfield-name subfield-value case-sensitive? pattern?]
+    (subfield-name->condition-type subfield-name)))
+
+(defmethod nested-field+value->condition :int
+  [parent-field subfield-name subfield-value _ _]
+  (qm/numeric-value-condition
+   (nested-field->elastic-keyword parent-field subfield-name)
+   subfield-value))
+
+(defn- comma-separated-string->list
+  "Returns the list of values from a comma separated string"
+  [value]
+  (map string/trim (string/split value #",")))
+
+(defn- normalized-list-value
+  "Returns the normalized value of a comma separated string or a list of such string."
+  [value]
+  (let [values (if (sequential? value)
+                 (mapcat comma-separated-string->list value)
+                 (comma-separated-string->list value))]
+    (distinct values)))
+
+(defmethod nested-field+value->condition :list
+  [parent-field subfield-name subfield-value case-sensitive? pattern?]
+  (let [normalized-values (normalized-list-value subfield-value)]
+    (nested-field+value->string-condition
+     parent-field subfield-name normalized-values case-sensitive? pattern?)))
+
+(defmethod nested-field+value->condition :default
+  [parent-field subfield-name subfield-value case-sensitive? pattern?]
+  (nested-field+value->string-condition
+   parent-field subfield-name subfield-value case-sensitive? pattern?))
+
 (defn parse-nested-condition
   "Converts a nested condition into a nested query model condition."
   [parent-field query-map case-sensitive? pattern?]
   (qm/nested-condition
-    parent-field
-    (gc/and-conds
-      (map (fn [[subfield-name subfield-value]]
-             (if (= :any subfield-name)
-               (gc/or-conds
-                 (map #(nested-field+value->string-condition parent-field % subfield-value
-                                                             case-sensitive? pattern?)
-                      (get-subfield-names parent-field)))
-               (nested-field+value->string-condition parent-field subfield-name subfield-value
-                                                     case-sensitive? pattern?)))
-           (dissoc query-map :pattern :ignore-case)))))
+   parent-field
+   (gc/and-conds
+    (map (fn [[subfield-name subfield-value]]
+           (if (= :any subfield-name)
+             (gc/or-conds
+              (map #(nested-field+value->condition parent-field % subfield-value
+                                                   case-sensitive? pattern?)
+                   (get-subfield-names parent-field)))
+             (nested-field+value->condition parent-field subfield-name subfield-value
+                                            case-sensitive? pattern?)))
+         (dissoc query-map :pattern :ignore-case)))))
