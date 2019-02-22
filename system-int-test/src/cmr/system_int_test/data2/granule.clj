@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.data2.granule
   "Contains data generators for example based testing in system integration tests."
-  (:require [cmr.umm.umm-granule :as g]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.granule.temporal :as gt]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.common.date-time-parser :as p]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.common.util :as util]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.spatial.orbits.swath-geometry :as swath])
-  (:import [cmr.umm.umm_granule
-            Orbit
-            DataProviderTimestamps]))
+  (:require
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.util :as util]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.orbits.swath-geometry :as swath]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.granule.temporal :as gt]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.umm-spatial :as umm-s])
+  (:import
+   [cmr.umm.umm_granule Orbit DataProviderTimestamps]))
 
 (defn related-url
   "Creates related url for online_only test"
@@ -133,6 +134,33 @@
 (defmethod spatial :geometry
   [& geometries]
   (g/map->SpatialCoverage {:geometries geometries}))
+
+(defn- pass-param->TrackPass
+  "Returns the umm-lib granule model TrackPass from the given pass param."
+  [track-pass]
+  (g/map->TrackPass
+     (let [{:keys [pass tiles]} track-pass]
+       {:pass pass
+        :tiles tiles})))
+
+(defn- track-param->Track
+  "Returns the umm-lib granule model Track from the given track param."
+  [track]
+  (when track
+    (g/map->Track
+     (let [{:keys [cycle passes]} track]
+       {:cycle cycle
+        :passes (map pass-param->TrackPass passes)}))))
+
+(defn spatial-with-track
+  "This is a helper function returns a spatial coverage of granule with track information.
+  This function is used only to construct various track for searching granules by track tests.
+  The given track is in the format of: e.g.
+  {:cycle 1
+   :passes [{:pass 3 :tiles [\"2F\" \"3R\"]}]}"
+  [track]
+  (g/map->SpatialCoverage {:geometries [(m/mbr -180 90 180 -90)]
+                           :track (track-param->Track track)}))
 
 (defn granule->orbit-shapes
   "This is a helper for creating the expected spatial for a granule that has orbit data that could be

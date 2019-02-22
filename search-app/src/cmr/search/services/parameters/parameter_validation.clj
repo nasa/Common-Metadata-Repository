@@ -53,7 +53,7 @@
     {:single-value #{:echo-compatible :include-facets}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
-                       :platform :sensor :feature-id :crid-id}
+                       :platform :sensor :feature-id :crid-id :cycle}
      :always-case-sensitive #{:echo-granule-id}
      :disallow-pattern #{:echo-granule-id}}))
 
@@ -173,6 +173,7 @@
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
    :created-at cpv/and-option
+   :passes cpv/and-option
    :revision-date cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :tag
