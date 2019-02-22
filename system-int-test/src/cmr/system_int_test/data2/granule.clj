@@ -147,8 +147,8 @@
   "Returns the umm-lib granule model Track from the given track param."
   [track]
   (when track
-    (g/map->Track
-     (let [{:keys [cycle passes]} track]
+    (let [{:keys [cycle passes]} track]
+      (g/map->Track
        {:cycle cycle
         :passes (map pass-param->TrackPass passes)}))))
 
