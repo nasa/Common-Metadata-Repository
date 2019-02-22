@@ -13,6 +13,7 @@
    [cmr.indexer.data.concepts.attribute :as attrib]
    [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
    [cmr.indexer.data.concepts.spatial :as spatial]
+   [cmr.indexer.data.concepts.track :as track]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
@@ -139,8 +140,10 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
         update-time (index-util/date->elastic update-time)
+        track (get-in umm-granule [:spatial-coverage :track])
         {:keys [ShortName Version EntryTitle]} parent-collection
-        granule-spatial-representation (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation])]
+        granule-spatial-representation (get-in parent-collection
+                                               [:SpatialExtent :GranuleSpatialRepresentation])]
     (merge {:concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
@@ -231,7 +234,9 @@
             :start-coordinate-2-doc-values start-coordinate-2
             :end-coordinate-2-doc-values end-coordinate-2
             :atom-links atom-links
-            :orbit-calculated-spatial-domains-json ocsd-json}
+            :orbit-calculated-spatial-domains-json ocsd-json
+            :cycle (:cycle track)
+            :passes (track/passes->elastic-docs track)}
            (spatial->elastic parent-collection umm-granule))))
 
 (defmethod es/parsed-concept->elastic-doc :granule

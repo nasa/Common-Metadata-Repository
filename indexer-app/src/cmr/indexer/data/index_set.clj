@@ -209,6 +209,11 @@
    :equator-crossing-longitude m/double-field-mapping
    :equator-crossing-date-time m/date-field-mapping})
 
+(defnestedmapping track-pass-mapping
+  "Defines mappings for storing track pass."
+  {:pass m/int-field-mapping
+   :tiles m/string-field-mapping})
+
 (defnestedmapping prioritized-humanizer-mapping
   "Defines a string value and priority for use in boosting facets."
   {:value m/string-field-mapping
@@ -614,6 +619,9 @@
      :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
      :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
 
+     :cycle m/int-field-mapping
+     :passes track-pass-mapping
+
      ;; Used for orbit search
      :orbit-asc-crossing-lon (m/stored m/double-field-mapping)
      :orbit-asc-crossing-lon-doc-values (-> m/double-field-mapping m/stored m/doc-values)
@@ -663,7 +671,7 @@
    :variable-name (-> m/string-field-mapping m/stored m/doc-values)
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :alias (-> m/string-field-mapping m/stored m/doc-values)
-   :alias.lowercase (m/doc-values m/string-field-mapping) 
+   :alias.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
