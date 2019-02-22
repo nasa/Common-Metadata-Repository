@@ -1,6 +1,7 @@
 (ns cmr.ous.config
   (:require
    [clojure.string :as string]
+   [cmr.exchange.common.config :as common-config]
    [cmr.exchange.common.file :as file]
    [cmr.exchange.common.util :as util]
    [cmr.metadata.proxy.config :as config]
@@ -19,4 +20,6 @@
 
 (defn data
   []
-  (util/deep-merge (base-data)))
+  (util/deep-merge (base-data)
+                   (common-config/props-data)
+                   (common-config/env-data)))
