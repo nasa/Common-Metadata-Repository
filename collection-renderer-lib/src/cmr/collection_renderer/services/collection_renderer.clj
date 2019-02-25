@@ -41,8 +41,9 @@
   []
   (future
     (let [jruby (.. (ScriptEngineManager.)
-                    (getEngineByName "jruby"))]
-      (.eval jruby "load 'collection_preview/bootstrap.rb'")
+                    (getEngineByName "jruby"))
+          cmd (format "load '%s'" (.getFile bootstrap-rb))]
+      (.eval jruby cmd)
       (info "JRuby runtime ready for collection renderer.")
       jruby)))
 
