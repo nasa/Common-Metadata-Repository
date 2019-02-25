@@ -42,8 +42,8 @@
   [query granule-field]
   (-> query
       (dissoc :result-features)
+      (dissoc :result-format)
       (assoc :page-size :unlimited
-             :result-format :xml
              :result-fields [(query-to-elastic/query-field->elastic-field
                               :concept-id :collection)])
       query-model/query
