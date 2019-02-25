@@ -193,8 +193,12 @@
       (testing "has_granules_created_at parameter by itself"
         (util/are3
           [date-ranges expected-results]
-          (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
-            (d/assert-refs-match expected-results actual-results))
+          (let [params {:has-granules-created-at date-ranges}
+                json-search-results (search/find-concepts-json :collection params)
+                actual-results (search/find-refs :collection params)]
+            (d/assert-refs-match expected-results actual-results)
+            (is (= (set (map :concept-id expected-results))
+                   (set (map :id (get-in json-search-results [:results :entries]))))))
 
           "Single date range"
           ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
@@ -315,8 +319,12 @@
      (testing "has_granules_revised_at parameter by itself"
        (util/are3
          [date-ranges expected-results]
-         (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
-           (d/assert-refs-match expected-results actual-results))
+         (let [params {:has-granules-revised-at date-ranges}
+               json-search-results (search/find-concepts-json :collection params)
+               actual-results (search/find-refs :collection params)]
+           (d/assert-refs-match expected-results actual-results)
+           (is (= (set (map :concept-id expected-results))
+                  (set (map :id (get-in json-search-results [:results :entries]))))))
 
          "Single date range"
          ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
