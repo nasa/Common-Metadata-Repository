@@ -33,12 +33,11 @@
   "Defines the path to the UMM schema version config file within the preview gem."
   "gems/cmr_metadata_preview-0.0.1/.umm-version")
 
-(defn- create-jruby-runtime
+(def ^:private create-jruby-runtime
   "Creates and initializes a JRuby runtime. We do this as a future to speed up REPL start time
   by more than one minute. Worst case is the first request to retrieve HTML after the search app
   starts takes one minute, but in practice NGAP usually takes around one minute from the time an app
   is started to put it in the load balancer, so this is not an operational concern."
-  []
   (future
     (let [jruby (.. (ScriptEngineManager.)
                     (getEngineByName "jruby"))
@@ -57,7 +56,7 @@
 
 ;; Allows easily evaluating Ruby code in the Clojure REPL.
 (comment
- (def jruby (create-jruby-runtime))
+ (def jruby create-jruby-runtime)
 
  (defn eval-jruby
    [s]
@@ -75,7 +74,7 @@
   (start
    [this _system]
    (-> this
-       (assoc :jruby-runtime (create-jruby-runtime))
+       (assoc :jruby-runtime create-jruby-runtime)
        (assoc :preview-gem-umm-version (get-preview-gem-umm-version))))
 
 
