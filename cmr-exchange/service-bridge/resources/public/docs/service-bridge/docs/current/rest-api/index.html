@@ -1006,18 +1006,35 @@ primary different being the path segment:</p>
 <ul>
 <li><code>granules</code> which is comma-separated for two or more granules, or <code>granules[]</code>,
 which is repeated for each granule in the query string</li>
-<li><code>variables</code> which is comma-separated for two or more variables, or <code>variables[]</code>,
-which is repeated for each variable in the query string</li>
+<li><code>variables(or variable_aliases)</code>  which is comma-separated for two or more variables(or variable-aliases), 
+or <code>variables[](or variable_aliases[]</code>, which is repeated for each variable(or variable_alias) in the query string.</li>
 </ul>
 
-<p>A <code>format</code> parameter is optional; if not provided, the format of <code>nc</code> (NetCDF3) is assumed.
-Currently supported <code>format</code> values are:</p>
+<p>A <code>service_id</code> parameter is optional; if not provided, the service type of <code>opendap</code> is assumed.
+otherwise, the service type will be retrieved using the service_id through ous call to CMR.</p>
+
+<p>A <code>format</code> parameter is optional; if not provided, the format of <code>nc</code> (NetCDF3) is assumed for
+<code>opendap</code> service type and the format of <code>native</code> is assumed for <code>esi</code> service type.
+Currently supported <code>format</code> values are (case insensitive):</p>
+
+<p>For <code>opendap</code> service type:</p>
 
 <ul>
 <li><code>dods</code> (binary)</li>
 <li><code>nc</code></li>
 <li><code>nc4</code></li>
 <li><code>ascii</code></li>
+</ul>
+
+<p>For <code>esi</code> service type:</p>
+
+<ul>
+<li><code>nc</code> (or <code>netcdf</code>)</li>
+<li><code>nc4</code> (or <code>netcdf4-cf</code>,<code>netcdf4</code>,<code>netcdf-4</code>)</li>
+<li><code>tabular_ascii</code></li>
+<li><code>native</code></li>
+<li><code>geotiff</code></li>
+<li><code>shapefile</code></li>
 </ul>
 
 <p>All parameters behave as documented above in the OUS sections on <code>granules</code>, <code>variables</code>, and
