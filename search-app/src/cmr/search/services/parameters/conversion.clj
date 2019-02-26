@@ -37,6 +37,7 @@
    :has-granules-or-cwic :has-granules-or-cwic
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
+   :has-opendap-url :boolean
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
