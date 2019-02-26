@@ -12,7 +12,7 @@
     (catch Exception _ version-id)))
 
 (defn opendap-url?
-  "Determins if the related-url is a OPeNDAP service url."
+  "Determines if the related-url is a OPeNDAP service url."
   [related-url]
   (if (and (= (:URLContentType related-url)  "DistributionURL")
            (= (:Type related-url) "USE SERVICE API")
