@@ -10,12 +10,3 @@
   (try
     (str (Integer/parseInt version-id))
     (catch Exception _ version-id)))
-
-(defn opendap-url?
-  "Determines if the related-url is a OPeNDAP service url."
-  [related-url]
-  (if (and (= (:URLContentType related-url)  "DistributionURL")
-           (= (:Type related-url) "USE SERVICE API")
-           (= (:Subtype related-url) "OPENDAP DATA"))
-    true
-    false))

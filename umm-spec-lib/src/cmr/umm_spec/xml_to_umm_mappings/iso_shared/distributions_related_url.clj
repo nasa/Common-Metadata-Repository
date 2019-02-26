@@ -6,6 +6,7 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer :all]
    [cmr.umm-spec.iso19115-2-util :refer :all]
+   [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
@@ -185,7 +186,7 @@
               url-link (value-of url "gmd:linkage/gmd:URL")
               url-link (when url-link (url/format-url url-link sanitize?))
               opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
-                            "USE SERVICE API")
+                             opendap-util/opendap-url-type-str)
               types-and-desc (parse-url-types-from-description
                               (char-string-value url "gmd:description"))
               service-url (first (filter #(= url-link (:URL %)) service-urls))

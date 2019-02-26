@@ -38,6 +38,7 @@
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-collection]
+   [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.time :as spec-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
@@ -358,7 +359,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (not (empty? (filter collection-util/opendap-url? related-urls)))
+            :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
