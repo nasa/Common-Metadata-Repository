@@ -299,23 +299,24 @@
                               coll-spatial-match coll-w-june-2016-granule
                               coll-w-may-2010-granule coll-platform-match]))
 
-      (testing "has_granules_created_at success in mutliple formats with sort"
+      (testing "has_granules_created_at success in multiple formats with sort"
         (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
-          (let [results (search/search-concept-ids-in-format
-                         format
-                         :collection
-                         {:has-granules-created-at [",2015-06-01T16:13:12Z"]
-                          :sort-key "entry_title"})
-                ;; expected results sorted by entry title
-                expected-results [coll-archive-center-match
-                                  coll-platform-match
-                                  coll-spatial-match
-                                  coll-w-may-2010-granule
-                                  coll-w-may-2015-granule
-                                  coll-temporal-no-match
-                                  coll-temporal-match]]
-            (is (= (map :concept-id expected-results)
-                   results))))))))
+          (testing (str "format: " format)
+            (let [results (search/search-concept-ids-in-format
+                           format
+                           :collection
+                           {:has-granules-created-at [",2015-06-01T16:13:12Z"]
+                            :sort-key "entry_title"})
+                  ;; expected results sorted by entry title
+                  expected-results [coll-archive-center-match
+                                    coll-platform-match
+                                    coll-spatial-match
+                                    coll-w-may-2010-granule
+                                    coll-w-may-2015-granule
+                                    coll-temporal-no-match
+                                    coll-temporal-match]]
+              (is (= (mapv :concept-id expected-results)
+                     results)))))))))
 
 
 (deftest collection-has-granules-revised-at-test
@@ -359,20 +360,21 @@
          "No matches"
          [",2090-01-01T12:34:56ZZ"] []))
 
-     (testing "has_granules_revised_at success in mutliple formats with sort"
+     (testing "has_granules_revised_at success in multiple formats with sort"
        (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
-         (let [results (search/search-concept-ids-in-format
-                        format
-                        :collection
-                        {:has-granules-revised-at [",2015-06-01T16:13:12Z"]
-                         :sort-key "entry_title"})
-               ;; expected results sorted by entry title
-               expected-results [coll-archive-center-match
-                                 coll-platform-match
-                                 coll-spatial-match
-                                 coll-w-may-2010-granule
-                                 coll-w-may-2015-granule
-                                 coll-temporal-no-match
-                                 coll-temporal-match]]
-           (is (= (map :concept-id expected-results)
-                  results))))))))
+         (testing (str "format: " format)
+           (let [results (search/search-concept-ids-in-format
+                          format
+                          :collection
+                          {:has-granules-revised-at [",2015-06-01T16:13:12Z"]
+                           :sort-key "entry_title"})
+                 ;; expected results sorted by entry title
+                 expected-results [coll-archive-center-match
+                                   coll-platform-match
+                                   coll-spatial-match
+                                   coll-w-may-2010-granule
+                                   coll-w-may-2015-granule
+                                   coll-temporal-no-match
+                                   coll-temporal-match]]
+             (is (= (mapv :concept-id expected-results)
+                    results)))))))))
