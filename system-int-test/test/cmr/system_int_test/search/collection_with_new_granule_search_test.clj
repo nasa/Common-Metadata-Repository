@@ -193,12 +193,8 @@
       (testing "has_granules_created_at parameter by itself"
         (util/are3
           [date-ranges expected-results]
-          (let [params {:has-granules-created-at date-ranges}
-                json-search-results (search/find-concepts-json :collection params)
-                actual-results (search/find-refs :collection params)]
-            (d/assert-refs-match expected-results actual-results)
-            (is (= (set (map :concept-id expected-results))
-                   (set (map :id (get-in json-search-results [:results :entries]))))))
+          (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
+            (d/assert-refs-match expected-results actual-results))
 
           "Single date range"
           ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
@@ -301,7 +297,26 @@
           "Keyword"
           {:keyword "PROV1"} [coll-temporal-match coll-temporal-no-match
                               coll-spatial-match coll-w-june-2016-granule
-                              coll-w-may-2010-granule coll-platform-match])))))
+                              coll-w-may-2010-granule coll-platform-match]))
+
+      (testing "has_granules_created_at success in mutliple formats with sort"
+        (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
+          (let [results (search/search-concept-ids-in-format
+                         format
+                         :collection
+                         {:has-granules-created-at [",2015-06-01T16:13:12Z"]
+                          :sort-key "entry_title"})
+                ;; expected results sorted by entry title
+                expected-results [coll-archive-center-match
+                                  coll-platform-match
+                                  coll-spatial-match
+                                  coll-w-may-2010-granule
+                                  coll-w-may-2015-granule
+                                  coll-temporal-no-match
+                                  coll-temporal-match]]
+            (is (= (map :concept-id expected-results)
+                   results))))))))
+
 
 (deftest collection-has-granules-revised-at-test
   (s/only-with-in-memory-database
@@ -319,12 +334,8 @@
      (testing "has_granules_revised_at parameter by itself"
        (util/are3
          [date-ranges expected-results]
-         (let [params {:has-granules-revised-at date-ranges}
-               json-search-results (search/find-concepts-json :collection params)
-               actual-results (search/find-refs :collection params)]
-           (d/assert-refs-match expected-results actual-results)
-           (is (= (set (map :concept-id expected-results))
-                  (set (map :id (get-in json-search-results [:results :entries]))))))
+         (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
+           (d/assert-refs-match expected-results actual-results))
 
          "Single date range"
          ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
@@ -346,4 +357,22 @@
           coll-spatial-match coll-archive-center-match coll-platform-match]
 
          "No matches"
-         [",2090-01-01T12:34:56ZZ"] [])))))
+         [",2090-01-01T12:34:56ZZ"] []))
+
+     (testing "has_granules_revised_at success in mutliple formats with sort"
+       (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
+         (let [results (search/search-concept-ids-in-format
+                        format
+                        :collection
+                        {:has-granules-revised-at [",2015-06-01T16:13:12Z"]
+                         :sort-key "entry_title"})
+               ;; expected results sorted by entry title
+               expected-results [coll-archive-center-match
+                                 coll-platform-match
+                                 coll-spatial-match
+                                 coll-w-may-2010-granule
+                                 coll-w-may-2015-granule
+                                 coll-temporal-no-match
+                                 coll-temporal-match]]
+           (is (= (map :concept-id expected-results)
+                  results))))))))

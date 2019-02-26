@@ -41,8 +41,7 @@
   searched against."
   [query granule-field]
   (-> query
-      (dissoc :result-features)
-      (dissoc :result-format)
+      (dissoc :offset :page-num :page-size :result-features :result-format :scroll :sort-key)
       (assoc :page-size :unlimited
              :result-fields [(query-to-elastic/query-field->elastic-field
                               :concept-id :collection)])

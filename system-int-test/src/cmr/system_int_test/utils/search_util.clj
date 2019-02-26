@@ -741,3 +741,34 @@
         (tk/clear-current-time!)
         ;; Resume time on CMR side
         (side/eval-form `(tk/clear-current-time!))))))
+
+(defn- parse-xml-concept-ids
+  "Parse concept-ids from xml structure. Use 2-arity to extract from attributes.
+  3-arity from path."
+  ([response elements-path]
+   (map #(get-in % [:attrs :concept-id])
+        (cx/elements-at-path (fx/parse-str response) elements-path)))
+  ([response elements-path concept-id-path]
+   (map #(cx/string-at-path % concept-id-path)
+        (cx/elements-at-path (fx/parse-str response) elements-path))))
+
+(defn search-concept-ids-in-format
+  "Call search in format and return concept-ids from those results."
+  ([format concept-type params]
+   (search-concept-ids-in-format format concept-type params {}))
+  ([format concept-type params options]
+   (let [response (:body (find-concepts-in-format
+                          (mime-types/format->mime-type format)
+                          concept-type
+                          params
+                          options))]
+     (case format
+       :atom (parse-xml-concept-ids response [:entry] [:id])
+       :dif (parse-xml-concept-ids response [:result])
+       :dif10 (parse-xml-concept-ids response [:result])
+       :echo10 (parse-xml-concept-ids response [:result])
+       :iso19115 (parse-xml-concept-ids response [:result])
+       :json (map :id (get-in (json/decode response true) [:feed :entry]))
+       :opendata (map :identifier (:dataset (json/decode response true)))
+       :xml (parse-xml-concept-ids response [:references :reference] [:id])
+       :umm-json (map #(get-in % [:meta :concept-id]) (:items (json/decode response true)))))))
