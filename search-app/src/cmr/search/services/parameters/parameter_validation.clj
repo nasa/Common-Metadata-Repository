@@ -540,7 +540,7 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
-                                         :include-highlights :all-revisions])]
+                                         :include-highlights :all-revisions :has-opendap-url])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))

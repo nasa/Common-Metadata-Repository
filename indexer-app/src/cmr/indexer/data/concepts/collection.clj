@@ -358,6 +358,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
+            :has-opendap-url (not (empty? (filter collection-util/opendap-url? related-urls)))
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time

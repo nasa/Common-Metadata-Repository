@@ -74,6 +74,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
+    * [With/without granules Or Cwic](#c-has-granules-or-cwic)
+    * [OPeNDAP service URL](#c-has-opendap-url)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -1623,9 +1625,13 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection is tagged with the configured CWIC tag.
 
-When `has_granules_or_cwic` can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured CWIC tag.  When false, results will be restricted to collections without granules.
+The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured CWIC tag.  When false, results will be restricted to collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
+
+#### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
+
+    curl "%CMR-ENDPOINT%/collections?has_opendap_url=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
@@ -3227,7 +3233,7 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * native_id
   * options: pattern, ignore_case
-* alias 
+* alias
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
