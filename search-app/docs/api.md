@@ -3244,6 +3244,8 @@ The following fields are indexed for keyword (free text) search:
 * Variable name
 * Variable long name
 * Science keywords (category, detailed variable, term, topic, variables 1-3)
+* Variable set names
+* Associated collection concept ids
 
 ##### <a name="variable-search-response"></a> Variable Search Response
 
