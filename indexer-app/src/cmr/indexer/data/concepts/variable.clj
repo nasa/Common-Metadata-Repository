@@ -17,9 +17,12 @@
         {:keys [variable-name measurement]} extra-fields
         alias (:Alias parsed-concept)
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        schema-keys [:ScienceKeywords :measurement :variable-name]
+        schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
-                        (merge parsed-concept extra-fields) schema-keys)]
+                        (merge parsed-concept extra-fields
+                               {:variable-associations (map :associated-concept-id variable-associations)
+                                :set-names (map :Name (:Sets parsed-concept))})
+                        schema-keys)]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -44,7 +47,7 @@
        :deleted deleted
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
-       :alias alias 
+       :alias alias
        :alias.lowercase (util/safe-lowercase alias)
        :measurement measurement
        :measurement.lowercase (string/lower-case measurement)

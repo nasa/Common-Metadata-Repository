@@ -196,7 +196,9 @@
   See `fields->fn-mapper`, below."
   {;; Simple single-valued data
    :variable-name :variable-name
-   :measurement :measurement})
+   :measurement :measurement
+   :set-names :set-names
+   :variable-associations :variable-associations})
 
 (def ^:private service-fields->fn-mapper
   "A data structure that maps UMM service field names to functions that
