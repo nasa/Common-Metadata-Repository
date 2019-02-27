@@ -71,10 +71,15 @@
              nil :variable {} {:url-extension "atom"}))))))
 
 (deftest search-for-variables-test
-  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
+  (let [token (e/login (s/context) "user1")
+        variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
                                                          :Alias "Alias1"
                                                          :Name "Variable1"
                                                          :LongName "Measurement1"
+                                                         :Sets [{:Name "TESTSETNAME"
+                                                                 :Type "Science"
+                                                                 :Size 2
+                                                                 :Index 2}]
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                          :Alias "Alias2"
@@ -85,15 +90,32 @@
                                                          :Alias "Alias3"
                                                          :Name "a subsitute for variable2"
                                                          :LongName "variable1"
+                                                         :Sets [{:Name "TESTSETNAME"
+                                                                 :Type "Science"
+                                                                 :Size 2
+                                                                 :Index 2}]
                                                          :provider-id "PROV2"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
                                                          :Alias "v.other"
                                                          :Name "v.other"
                                                          :LongName "m.other"
                                                          :provider-id "PROV2"})
+
+        [coll1 coll2 coll3] (doall (for [n (range 1 4)]
+                                     (d/ingest-umm-spec-collection
+                                      "PROV1"
+                                      (data-umm-c/collection n {})
+                                      {:token token})))
+
+        var1-assoc-colls [{:concept-id (:concept-id coll1)}]
+        var3-assoc-colls [{:concept-id (:concept-id coll3)}]
         prov1-variables [variable1 variable2]
         prov2-variables [variable3 variable4]
         all-variables (concat prov1-variables prov2-variables)]
+
+    (index/wait-until-indexed)
+    (au/associate-by-concept-ids token (:concept-id variable1) var1-assoc-colls)
+    (au/associate-by-concept-ids token (:concept-id variable3) var3-assoc-colls)
     (index/wait-until-indexed)
 
     (are3 [expected-variables query]
@@ -315,6 +337,22 @@
       "By keyword match both variable_name and measurement"
       [variable1 variable3]
       {:keyword "variable1"}
+
+      "By keyword match associated collection"
+      [variable1]
+      {:keyword (:concept-id coll1)}
+
+      "By keyword match associated collection, no match"
+      []
+      {:keyword (:concept-id coll2)}
+
+      "By keyword match set name"
+      [variable1 variable3]
+      {:keyword "TESTSETNAME"}
+
+      "By keyword match set name, no match"
+      []
+      {:keyword "WRONGSETNAME"}
 
       "By keyword match tokenized variable_name and measurement"
       [variable2 variable3]
