@@ -15,6 +15,12 @@
        "should be in the format of science_keywords[0/group number (if multiple groups are present)]"
        "[category/topic/term/variable_level_1/variable_level_2/variable_level_3/detailed_variable]."))
 
+(defn passes-invalid-format-msg
+  []
+  (str "Parameter passes is invalid, "
+       "should be in the format of passes[0/group number (if multiple groups are present)]"
+       "[pass/tiles]."))
+
 (defn variable-invalid-format-msg
   []
   (str "Parameter variables is invalid, "

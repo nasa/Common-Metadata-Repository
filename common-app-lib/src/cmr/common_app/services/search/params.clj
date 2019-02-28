@@ -1,12 +1,12 @@
 (ns cmr.common-app.services.search.params
   "Contains common code for handling search parameters and converting them into a query model."
   (:require
-   [cmr.common.util :as u]
-   [cmr.common.services.errors :as errors]
+   [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
-   [camel-snake-kebab.core :as csk]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]))
 
 (defn- sanitize-sort-key
   "Sanitizes a single sort key preserving the direction character."
@@ -32,6 +32,20 @@
       (update-in [:sort-key] #(when % (if (sequential? %)
                                         (map sanitize-sort-key %)
                                         (sanitize-sort-key %))))))
+
+(defn- comma-separated-string->list
+  "Returns the list of values from a comma separated string"
+  [value]
+  (when value
+    (map string/trim (string/split value #","))))
+
+(defn normalized-list-value
+  "Returns the normalized value of a comma separated string or a list of such string."
+  [value]
+  (let [values (if (sequential? value)
+                 (mapcat comma-separated-string->list value)
+                 (comma-separated-string->list value))]
+    (distinct values)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parameter to query conversion
