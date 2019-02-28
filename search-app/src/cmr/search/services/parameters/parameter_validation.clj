@@ -7,7 +7,6 @@
    [clojure.string :as s]
    [cmr.common-app.services.search.messages :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
@@ -25,6 +24,8 @@
    [cmr.search.services.parameters.converters.attribute :as attrib]
    [cmr.search.services.parameters.converters.orbit-number :as on]
    [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.services.parameters.validation.track :as track]
+   [cmr.search.services.parameters.validation.util :as validation-util]
    [cmr.spatial.codec :as spatial-codec])
   (:import
    (clojure.lang ExceptionInfo)
@@ -374,43 +375,24 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn nested-field-validation-for-subfield
-  "Validates that the provided subfield is valid for the given nested field."
-  [field concept-type params error-msg]
-  (when-let [param-values (get params field)]
-    (if (map? param-values)
-      (let [values (vals param-values)]
-        (if (some #(not (map? %)) values)
-          [error-msg]
-          (reduce
-            (fn [errors param]
-              (if-not (some #{param} (nf/get-subfield-names field))
-                (conj errors (format "parameter [%s] is not a valid [%s] search term."
-                                     (name param)
-                                     (csk/->snake_case_string field)))
-                errors))
-            []
-            (mapcat keys values))))
-      [error-msg])))
-
 (defn science-keywords-validation-for-field
   "Performs science keywords subfield validation."
   [field concept-type params]
-  (nested-field-validation-for-subfield field concept-type params
-                                        (msg/science-keyword-invalid-format-msg)))
+  (validation-util/nested-field-validation-for-subfield
+   field concept-type params (msg/science-keyword-invalid-format-msg)))
 
 (defn variables-validation
   "Validates the variables-h search parameters are in the format of e.g.
    variables-h[0][measurement]=value."
   [concept-type params]
-  (nested-field-validation-for-subfield :variables-h concept-type params
-                                        (msg/variable-invalid-format-msg)))
+  (validation-util/nested-field-validation-for-subfield
+   :variables-h concept-type params (msg/variable-invalid-format-msg)))
 
 (defn temporal-facets-subfields-validation
   "Performs temporal facets subfield validation."
   [concept-type params]
-  (nested-field-validation-for-subfield :temporal-facet concept-type params
-                                        (msg/temporal-facets-invalid-format-msg)))
+  (validation-util/nested-field-validation-for-subfield
+   :temporal-facet concept-type params (msg/temporal-facets-invalid-format-msg)))
 
 (def max-value-for-date-field
   "Defines the maximum valid value for each date field."
@@ -755,6 +737,7 @@
               equator-crossing-longitude-validation
               equator-crossing-date-validation
               cloud-cover-validation
+              track/cycle-pass-tile-validation
               attribute-validation
               (partial science-keywords-validation-for-field :science-keywords)
               exclude-validation

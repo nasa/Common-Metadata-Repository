@@ -73,22 +73,9 @@
    (nested-field->elastic-keyword parent-field subfield-name)
    subfield-value))
 
-(defn- comma-separated-string->list
-  "Returns the list of values from a comma separated string"
-  [value]
-  (map string/trim (string/split value #",")))
-
-(defn- normalized-list-value
-  "Returns the normalized value of a comma separated string or a list of such string."
-  [value]
-  (let [values (if (sequential? value)
-                 (mapcat comma-separated-string->list value)
-                 (comma-separated-string->list value))]
-    (distinct values)))
-
 (defmethod nested-field+value->condition :list
   [parent-field subfield-name subfield-value case-sensitive? pattern?]
-  (let [normalized-values (normalized-list-value subfield-value)]
+  (let [normalized-values (p/normalized-list-value subfield-value)]
     (nested-field+value->string-condition
      parent-field subfield-name normalized-values case-sensitive? pattern?)))
 

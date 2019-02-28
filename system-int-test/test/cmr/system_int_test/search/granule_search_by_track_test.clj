@@ -264,3 +264,91 @@
                   :2 {:pass 4
                       :tiles ["8R"]}}}
         {"options[passes][AND]" "true"}))))
+
+(deftest search-with-invalid-track-parameters
+  (testing "search by passes without cycle is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:passes {:0 {:pass 3}}})]
+      (is (= 400 status))
+      (is (= ["Cycle value must be provided when searching with passes."] errors))))
+
+  (testing "search by passes with multiple cycles is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle [1 2]
+                                                              :passes {:0 {:pass 3}}})]
+      (is (= 400 status))
+      (is (= ["There can only be one cycle value when searching with passes, but was [\"1\" \"2\"]."]
+             errors))))
+
+  (testing "search by passes invalid format"
+    (are3 [passes-param]
+      (let [{:keys [status errors]} (search/find-refs :granule (merge {:cycle 1} passes-param))]
+        (is (= 400 status))
+        (is (= [(str "Parameter passes is invalid, should be in the format of passes[0/group number "
+                     "(if multiple groups are present)][pass/tiles].")]
+               errors)))
+
+      "passes param is not a map"
+      {:passes [{:pass 3}]}
+
+      "passes param does not have index"
+      {:passes {:pass 3}}))
+
+  (testing "search by passes with invalid fields"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:a-field 3}}})]
+      (is (= 400 status))
+      (is (= ["parameter [a-field] is not a valid [passes] search term."]
+             errors))))
+
+  (testing "search by non-integer cycle is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1.2
+                                                              :passes {:0 {:pass 3}}})]
+      (is (= 400 status))
+      (is (= ["cycle must be a positive integer, but was [1.2]"]
+             errors))))
+
+  (testing "search by non-integer pass is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1.3}}})]
+      (is (= 400 status))
+      (is (= ["pass must be a positive integer, but was [1.3]"]
+             errors))))
+
+  (testing "search by passes without pass is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:tiles "3R"}}})]
+      (is (= 400 status))
+      (is (= ["pass must be a positive integer, but was [null]"]
+             errors))))
+
+  (testing "search by passes without pass in one of the passes is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1 :tiles "3R"}
+                                                                       :1 {:tiles "4R"}}})]
+      (is (= 400 status))
+      (is (= ["pass must be a positive integer, but was [null]"]
+             errors))))
+
+  (testing "search by invalid tiles"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1
+                                                                           :tiles "1LR"}}})]
+      (is (= 400 status))
+      (is (= ["tile must be in the format of \"\\d+[LRF]\", but was [1LR]."]
+             errors))))
+
+  (testing "search by invalid tiles (in multiple tiles)"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1
+                                                                           :tiles "1L, 2M, 3R"}}})]
+      (is (= 400 status))
+      (is (= ["tile must be in the format of \"\\d+[LRF]\", but was [2M]."]
+             errors))))
+
+  (testing "search by options[passses][OR] is not supported"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1
+                                                                           :tiles "1L"}}
+                                                              "options[passes][OR]" "true"})]
+      (is (= 400 status))
+      (is (= ["Option [or] is not supported for param [passes]"]
+             errors)))))
