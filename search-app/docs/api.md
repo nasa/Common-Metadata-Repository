@@ -111,6 +111,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Version](#g-version)
     * [Entry title](#g-entry-title)
     * [Temporal](#g-temporal)
+    * [Cycle](#g-cycle)
+    * [Passes](#g-passes)
     * [Exclude by id](#g-exclude-by-id)
   * [Sorting granule results](#sorting-granule-results)
   * [Retrieving concepts by concept-id and revision-id](#retrieving-concepts-by-concept-id-and-revision-id)
@@ -2019,6 +2021,28 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+
+#### <a name="g-cycle"></a> Find granules by cycle
+
+Cycle is part of the track information of the granule. Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Cycle must be a positive integer.
+
+User can search granules by one or more cycles. e.g.
+
+    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&cycle[]=2"
+
+User can only search granules by exactly one cycle value when there are passes parameters in the search.
+
+#### <a name="g-passes"></a> Find granules by passes
+
+Passes is part of the track information of the granule as specified in [UMM-G Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule). Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Cycles and passes must be positive integers, tiles are in the format of an integer followed by L, R or F. e.g. 2L.
+
+User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules.  There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
+
+    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L,2F&passes[1][pass]=2&passes[1][tiles]=3R"
+
+The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L and 2F within pass 1, and 3R within pass 2.
+
+    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L&passes[1][pass]=1&passes[1][tiles]=2F&passes[2][pass]=2&passes[2][tiles]=3R&options[passes][AND]=true"
 
 #### <a name="g-exclude-by-id"></a> Exclude granules from elastic results by echo granule id and concept ids.
 
