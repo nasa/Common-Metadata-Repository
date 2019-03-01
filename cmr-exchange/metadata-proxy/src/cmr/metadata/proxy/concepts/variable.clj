@@ -83,7 +83,7 @@
   ;; aliases could be variable aliases or group nodes. If it's alias, we will
   ;; search for alias=<alias>, if it's group nodes, we will search for alias=<alias>/* 
   ;; There is no way to distinguish a true alias and a group node. So we will search for both.
-  ;; Note: we don't want to search for alias=i<alias>* because say <alias>=/a/b/c and it's a group
+  ;; Note: we don't want to search for alias=<alias>* because say <alias>=/a/b/c and it's a group
   ;; node, alias=/a/b/c* will include /a/b/c1/* /a/b/c2/* but we are only interested in /a/b/c/*
   (let [group-nodes (map #(if (= "/" (last (string/split % #""))) 
                             (str % "*")
