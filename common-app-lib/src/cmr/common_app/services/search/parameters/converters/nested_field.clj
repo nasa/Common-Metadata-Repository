@@ -39,6 +39,12 @@
              (kms/translate-keyword-scheme-to-gcmd base-parent-field))
             :any))))
 
+(defn get-printable-subfields
+  "Returns a string representation of the subfields for the given parent field."
+  [parent-field]
+  (let [sub-fields (get-subfield-names parent-field)]
+    (pr-str (mapv name sub-fields))))
+
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.
 

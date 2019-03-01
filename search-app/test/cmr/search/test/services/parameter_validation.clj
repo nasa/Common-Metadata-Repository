@@ -16,6 +16,11 @@
    :page-size 10
    :options {:entry-title {:ignore-case "true"}}})
 
+(def valid-sience-keywords-search-term-msg
+  "Valid Science Keywords search term message for error message check in tests"
+  (str "The valid search terms are [\"category\" \"topic\" \"term\" \"variable-level-1\" "
+       "\"variable-level-2\" \"variable-level-3\" \"detailed-variable\" \"uuid\" \"any\"]."))
+
 (deftest individual-parameter-validation-test
   (testing "unrecognized parameters"
     (is (= [] (cpv/unrecognized-params-validation :collection valid-params)))
@@ -228,27 +233,37 @@
 
 (deftest validate-science-keywords-is-a-map
   (is (= []
-         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:category "Cat1"}}})))
-  (are [value] (= [(msg/science-keyword-invalid-format-msg)]
-                  (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords value}))
-       "foo"
-       ["foo"]
-       {:or "true"}))
+         (pv/science-keywords-validation-for-field
+          :science-keywords :collection {:science-keywords {:0 {:category "Cat1"}}})))
+  (are [value]
+    (= [(msg/science-keyword-invalid-format-msg)]
+       (pv/science-keywords-validation-for-field
+        :science-keywords :collection {:science-keywords value}))
+    "foo"
+    ["foo"]
+    {:or "true"}))
 
 (deftest validate-science-keywords-search-terms
-  (are [term] (= []
-                 (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {term "value"}}}))
-       :category
-       :topic
-       :term
-       :variable-level-1
-       :variable-level-2
-       :variable-level-3
-       :detailed-variable)
-  (is (= ["parameter [categories] is not a valid [science_keywords] search term."]
+  (are [term]
+    (= []
+       (pv/science-keywords-validation-for-field
+        :science-keywords :collection {:science-keywords {:0 {term "value"}}}))
+
+    :category
+    :topic
+    :term
+    :variable-level-1
+    :variable-level-2
+    :variable-level-3
+    :detailed-variable)
+
+  (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
+               valid-sience-keywords-search-term-msg)]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
-  (is (= ["parameter [categories] is not a valid [science_keywords] search term."
-          "parameter [topics] is not a valid [science_keywords] search term."]
+  (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
+               valid-sience-keywords-search-term-msg)
+          (str "Parameter [topics] is not a valid [science_keywords] search term. "
+               valid-sience-keywords-search-term-msg)]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
                                                                                                          :topics "Topic1"}}}))))
 

@@ -2028,7 +2028,7 @@ Cycle is part of the track information of the granule. Track information is used
 
 User can search granules by one or more cycles. e.g.
 
-    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&cycle[]=2"
+    curl -g "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cycle[]=1&cycle[]=2"
 
 User can only search granules by exactly one cycle value when there are passes parameters in the search.
 
@@ -2038,11 +2038,11 @@ Passes is part of the track information of the granule as specified in [UMM-G Sc
 
 User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules.  There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
 
-    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L,2F&passes[1][pass]=2&passes[1][tiles]=3R"
+    curl -g "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L,2F&passes[1][pass]=2&passes[1][tiles]=3R"
 
 The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L and 2F within pass 1, and 3R within pass 2.
 
-    curl -g "%CMR-ENDPOINT%/granules?cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L&passes[1][pass]=1&passes[1][tiles]=2F&passes[2][pass]=2&passes[2][tiles]=3R&options[passes][AND]=true"
+    curl -g "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L&passes[1][pass]=1&passes[1][tiles]=2F&passes[2][pass]=2&passes[2][tiles]=3R&options[passes][AND]=true"
 
 #### <a name="g-exclude-by-id"></a> Exclude granules from elastic results by echo granule id and concept ids.
 

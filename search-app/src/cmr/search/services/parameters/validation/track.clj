@@ -21,15 +21,25 @@
   (try
     (let [num (Integer/parseInt value)]
       (when (< num 1)
-        [(format "%s must be a positive integer, but was [%s]" (name field) value)]))
+        [(format "%s must be a positive integer, but was [%s]"
+                 (string/capitalize (name field)) value)]))
     (catch NumberFormatException e
-      [(format "%s must be a positive integer, but was [%s]" (name field) value)])))
+      [(format "%s must be a positive integer, but was [%s]"
+               (string/capitalize (name field)) value)])))
 
 (defn- validate-tile
   "Validate tile is in the format of \"\\d+[LRF]\""
-  [tile]
+  [index tile]
   (when-not (re-matches #"\d+[LRF]" tile)
-    [(format "tile must be in the format of \"\\d+[LRF]\", but was [%s].", tile)]))
+    [(format "Tile must be in the format of \"\\d+[LRF]\", but was [%s] in passes[%s][tiles]"
+             tile index)]))
+
+(defn- validate-tiles
+  "Validate tiles within the given passes-obj is in the format of \"\\d+[LRF]\""
+  [passes-obj]
+  (let [[index {:keys [tiles]}] passes-obj
+        index (name index)]
+    (mapcat #(validate-tile index %) (common-params/normalized-list-value tiles))))
 
 (defn- cycle-param->cycle-values
   "Returns cycle values in a list from the given cycle parameter value"
@@ -39,20 +49,25 @@
     (when-not (string/blank? cycle)
       (vector cycle))))
 
+(defn- validatae-pass
+  "Validates the given passes, returns error when required pass is missing or not a natural number"
+  [passes-obj]
+  (let [[index {:keys [pass]}] passes-obj
+        index (name index)]
+    (if (string/blank? pass)
+      [(format "Parameter passes[%s] is missing required field passes[%s][pass]"
+               index index)]
+      (validate-natural-number (format "passes[%s][pass]" index) pass))))
+
 (defn- cycle-pass-tile-format-validation
   "Validates the formats of cycle, passes and tiles.
   cycle and pass must be natural numbers, tile is in the format of \"\\d+[LRF]\""
   [params]
   (let [{:keys [cycle passes]} params
-        cycle-values (cycle-param->cycle-values cycle)
-        pass-values (map :pass (vals passes))
-        tiles (->> passes
-                   vals
-                   (map :tiles)
-                   flatten)]
+        cycle-values (cycle-param->cycle-values cycle)]
     (concat (mapcat #(validate-natural-number :cycle %) cycle-values)
-            (mapcat #(validate-natural-number :pass %) pass-values)
-            (mapcat validate-tile (common-params/normalized-list-value tiles)))))
+            (mapcat validatae-pass passes)
+            (mapcat validate-tiles passes))))
 
 (defn- cycle-exist-with-passes-validation
   "Validates that cycle must be provided when searching with passes."

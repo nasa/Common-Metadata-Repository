@@ -15,9 +15,11 @@
           (reduce
             (fn [errors param]
               (if-not (some #{param} (nf/get-subfield-names field))
-                (conj errors (format "parameter [%s] is not a valid [%s] search term."
+                (conj errors (format (str "Parameter [%s] is not a valid [%s] search term. "
+                                          "The valid search terms are %s.")
                                      (name param)
-                                     (csk/->snake_case_string field)))
+                                     (csk/->snake_case_string field)
+                                     (nf/get-printable-subfields field)))
                 errors))
             []
             (mapcat keys values))))

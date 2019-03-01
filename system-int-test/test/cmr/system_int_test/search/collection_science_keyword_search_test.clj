@@ -261,7 +261,7 @@
   (testing "search by invalid format."
     (let [{:keys [status errors]} (search/find-refs :collection {:science-keywords {:0 {:and "true"}}})]
       (is (= 400 status))
-      (is (re-find #"parameter \[and\] is not a valid \[science_keywords\] search term." (first errors))))
+      (is (re-find #"Parameter \[and\] is not a valid \[science_keywords\] search term." (first errors))))
     (let [{:keys [status errors]} (search/find-refs :collection {:science-keywords-h {:0 {:and "true"}}})]
       (is (= 400 status))
-      (is (re-find #"parameter \[and\] is not a valid \[science_keywords_h\] search term." (first errors))))))
+      (is (re-find #"Parameter \[and\] is not a valid \[science_keywords_h\] search term." (first errors))))))
