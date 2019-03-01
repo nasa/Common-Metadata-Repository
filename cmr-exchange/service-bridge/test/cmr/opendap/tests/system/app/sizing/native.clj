@@ -17,7 +17,7 @@
 (def collection-id "C1200297231-HMR_TME")
 (def granule-id "G1200297234-HMR_TME")
 (def variable-id "V1200297235-HMR_TME")
-(def variable-alias "Test%20Alias%206")
+(def variable-alias "/Data_5HZ/Geolocation/d_lat")
 (def options (request/add-token-header {} (util/get-sit-token)))
 
 (deftest one-var-size-opendap-test
@@ -35,12 +35,13 @@
                    options)]
     (is (string/includes? (:body response) "Cannot estimate size for service type: [opendap] and format: [native]"))))
 
-(deftest one-var-size-egi-test 
+(deftest one-var-size-egi-test
   (let [response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/service-bridge/size-estimate/collection/%s"
                                 "?granules=%s"
                                 "&variable_aliases=%s"
+                                "&format=native"
                                 "&service_id=S1200341767-DEMO_PROV"
                                 "&total-granule-input-bytes=1000000")
                            (test-system/http-port)
@@ -48,7 +49,13 @@
                            granule-id
                            variable-alias)
                    options)]
-    (is (string/includes? (:body response) "[native] format is not implemented yet for service type: [ESI]."))))
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 45 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response)))))
 
 (deftest one-var-size-egi-test-2
   (let [response @(httpc/get
@@ -64,4 +71,10 @@
                            granule-id
                            variable-alias)
                    options)]
-    (is (string/includes? (:body response) "[native] format is not implemented yet for service type: [ESI]."))))
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= [{:bytes 45 
+             :mb 0.0
+             :gb 0.0}]
+           (util/parse-response response))))) 

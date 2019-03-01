@@ -316,15 +316,12 @@
       (case (keyword ses-fmt)
         :dods (estimate-dods-size granule-count vars params)
         :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
-        :nc4 
+        (or :nc4 :shapefile :native) 
           (estimate-netcdf4-shapefile-size 
             granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
         :ascii (estimate-ascii-size granule-count vars params)
-        :shapefile 
-          (estimate-netcdf4-shapefile-size 
-            granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
         :tabular_ascii (estimate-tabular-ascii-size granule-count vars params) 
-        (or :geotiff :native)
+        :geotiff
           {:errors [(not-implemented-msg ses-fmt svc-type)]}
         (do
           (let [message (not-supported-format-for-service-type-msg format svc-type)]

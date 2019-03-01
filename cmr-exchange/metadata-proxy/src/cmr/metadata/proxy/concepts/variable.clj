@@ -47,7 +47,8 @@
     "&"
     (conj
       (map #(str (codec/url-encode search-constraint) "=" %) variable-info)
-      (str "page_size=" (count variable-info)))))
+      (str "page_size=" (count variable-info))
+      (str (codec/url-encode "options[alias][pattern]") "=true"))))
 
 (defn async-get-metadata
   "Given variable-info, which could be a list of concept-ids or aliases, 
@@ -79,7 +80,16 @@
 (defn async-get-metadata-by-aliases
   "Get variables by aliases"
   [search-endpoint user-token aliases]
-  (async-get-metadata search-endpoint user-token aliases alias-search-constraint))
+  ;; aliases could be variable aliases or group nodes. If it's alias, we will
+  ;; search for alias=<alias>, if it's group nodes, we will search for alias=<alias>/* 
+  ;; There is no way to distinguish a true alias and a group node. So we will search for both.
+  ;; Note: we don't want to search for alias=i<alias>* because say <alias>=/a/b/c and it's a group
+  ;; node, alias=/a/b/c* will include /a/b/c1/* /a/b/c2/* but we are only interested in /a/b/c/*
+  (let [group-nodes (map #(if (= "/" (last (string/split % #""))) 
+                            (str % "*")
+                            (str % "/*")) aliases)
+        aliases-and-nodes (concat aliases group-nodes)] 
+    (async-get-metadata search-endpoint user-token aliases-and-nodes alias-search-constraint)))
 
 (defn extract-metadata
   [promise]

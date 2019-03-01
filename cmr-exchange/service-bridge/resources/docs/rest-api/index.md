@@ -719,6 +719,8 @@ Two parameters are required in a query string to this resource:
   which is repeated for each granule in the query string
 * `variables(or variable_aliases)`  which is comma-separated for two or more variables(or variable-aliases), 
 or `variables[](or variable_aliases[]`, which is repeated for each variable(or variable_alias) in the query string.
+Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both alias=<alias> 
+and alias=<alias>/* are searched in cmr variable search to take both alias and group nodes into account.
 
 A `service_id` parameter is optional; if not provided, the service type of `opendap` is assumed.
 otherwise, the service type will be retrieved using the service_id through ous call to CMR.
