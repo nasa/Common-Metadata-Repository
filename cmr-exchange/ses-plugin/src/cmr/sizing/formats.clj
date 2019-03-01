@@ -259,7 +259,7 @@
                    0
                    variables))))
 
-(defn- estimate-netcdf4-shapefile-size
+(defn- estimate-size-with-avg-compression-rate
   "Calculates the estimated size for NETCDF4 and shapefile format.
    total-granule-input-bytes is a value given by the client in the size estimate request."
   [granule-count variables params compression-format]
@@ -317,7 +317,7 @@
         :dods (estimate-dods-size granule-count vars params)
         :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
         (or :nc4 :shapefile :native) 
-          (estimate-netcdf4-shapefile-size 
+          (estimate-size-with-avg-compression-rate 
             granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
         :ascii (estimate-ascii-size granule-count vars params)
         :tabular_ascii (estimate-tabular-ascii-size granule-count vars params) 
