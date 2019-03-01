@@ -88,7 +88,8 @@
 
       "Invalid subfield name"
       {"temporal_facet[0][not-year]" 1922}
-      ["parameter [not-year] is not a valid [temporal_facet] search term."]
+      [(str "Parameter [not-year] is not a valid [temporal_facet] search term. "
+            "The valid search terms are [\"year\" \"month\" \"day\"].")]
 
       "Invalid year" {"temporal_facet[0][year]" -3}
       ["Year [-3] within [temporal_facet] is not a valid year. Years must be between 1 and 9999."]
