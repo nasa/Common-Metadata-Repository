@@ -1007,7 +1007,9 @@ primary different being the path segment:</p>
 <li><code>granules</code> which is comma-separated for two or more granules, or <code>granules[]</code>,
 which is repeated for each granule in the query string</li>
 <li><code>variables(or variable_aliases)</code>  which is comma-separated for two or more variables(or variable-aliases), 
-or <code>variables[](or variable_aliases[]</code>, which is repeated for each variable(or variable_alias) in the query string.</li>
+or <code>variables[](or variable_aliases[]</code>, which is repeated for each variable(or variable_alias) in the query string.
+Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both <code>alias=&lt;alias&gt;</code> 
+and <code>alias=&lt;alias&gt;/*</code> are searched in cmr variable search to take both alias and group nodes into account.</li>
 </ul>
 
 <p>A <code>service_id</code> parameter is optional; if not provided, the service type of <code>opendap</code> is assumed.
