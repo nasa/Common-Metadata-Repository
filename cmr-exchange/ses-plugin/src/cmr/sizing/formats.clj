@@ -259,7 +259,7 @@
                    0
                    variables))))
 
-(defn- estimate-netcdf4-shapefile-size
+(defn- estimate-size-with-avg-compression-rate
   "Calculates the estimated size for NETCDF4 and shapefile format.
    total-granule-input-bytes is a value given by the client in the size estimate request."
   [granule-count variables params compression-format]
@@ -316,15 +316,12 @@
       (case (keyword ses-fmt)
         :dods (estimate-dods-size granule-count vars params)
         :nc (estimate-netcdf3-size granule-count vars granule-metadata-size params)
-        :nc4 
-          (estimate-netcdf4-shapefile-size 
+        (or :nc4 :shapefile :native) 
+          (estimate-size-with-avg-compression-rate 
             granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
         :ascii (estimate-ascii-size granule-count vars params)
-        :shapefile 
-          (estimate-netcdf4-shapefile-size 
-            granule-count vars params (get ses-formats->compression-format-mapping ses-fmt))
         :tabular_ascii (estimate-tabular-ascii-size granule-count vars params) 
-        (or :geotiff :native)
+        :geotiff
           {:errors [(not-implemented-msg ses-fmt svc-type)]}
         (do
           (let [message (not-supported-format-for-service-type-msg format svc-type)]

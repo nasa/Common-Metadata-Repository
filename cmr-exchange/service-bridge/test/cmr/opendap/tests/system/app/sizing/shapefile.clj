@@ -17,7 +17,7 @@
 (def collection-id "C1200297231-HMR_TME")
 (def granule-id "G1200297234-HMR_TME")
 (def variable-id "V1200297235-HMR_TME")
-(def variable-alias "Test%20Alias%206")
+(def variable-alias "/Data_5HZ/Geolocation/d_lat")
 (def options (request/add-token-header {} (util/get-sit-token)))
 
 (deftest one-var-size-opendap-test
@@ -52,9 +52,7 @@
     (is (= 200 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    ;; Need to update the size here once the compression info becomes avaiable
-    ;; in the variables.
-    (is (= [{:bytes 0 
+    (is (= [{:bytes 45 
              :mb 0.0
              :gb 0.0}]
            (util/parse-response response)))))

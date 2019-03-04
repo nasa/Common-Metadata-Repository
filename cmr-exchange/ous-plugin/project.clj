@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.4-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.5-SNAPSHOT"
   :description "A CMR services plugin that performs URL translations for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {:name "Apache License, Version 2.0"
@@ -30,7 +30,7 @@
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.4-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.5-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
