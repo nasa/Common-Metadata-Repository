@@ -1872,3 +1872,52 @@
         result (vm/migrate-umm {} :collection "1.12" "1.11" collection)]
     (is (= (dissoc related-urls-UMM-1-11-example :RelatedUrls)
            result))))
+
+(def archive-and-distribution-information
+  {:FileDistributionInformation [{:Media "8 track"
+                                  :AverageFileSize 15.0
+                                  :AverageFileSizeUnit "KB"
+                                  :Format "Animated GIF"
+                                  :FormatType "Native"
+                                  :Fees "Gratuit-Free"}
+                                 {:Media "Download"
+                                  :AverageFileSize 1.0
+                                  :AverageFileSizeUnit "MB"
+                                  :Format "Bits"
+                                  :FormatType "Native"
+                                  :Fees "0.99"}]})
+(def distributions
+  [{:DistributionFormat "Animated GIF"
+    :Sizes [{:Unit "KB" :Size 15.0}]
+    :Fees "Gratuit-Free"
+    :DistributionMedia "8 track"}
+   {:DistributionFormat "Bits"
+    :Sizes [{:Unit "MB" :Size 1.0}]
+    :Fees "0.99"
+    :DistributionMedia "Download"}])
+
+(def example-collection-1-13-with-archive-and-distribution-information
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :ArchiveAndDistributionInformation
+           archive-and-distribution-information)))
+(def example-collection-1-12-with-distributions
+  (js/parse-umm-c
+    (assoc exp-conv/example-collection-record-edn
+           :Distributions
+           distributions)))
+
+(deftest migrate-1-12-to-1-13
+  (let [result (vm/migrate-umm {} :collection "1.12" "1.13" example-collection-1-12-with-distributions)]
+    (is (= (-> example-collection-1-12-with-distributions
+               (dissoc :Distributions)
+               (assoc :ArchiveAndDistributionInformation archive-and-distribution-information))
+           result))))
+
+(deftest migrate-1-13-to-1-12
+  (let [result (vm/migrate-umm {} :collection "1.13" "1.12"
+                               example-collection-1-13-with-archive-and-distribution-information)]
+    (is (= (-> example-collection-1-13-with-archive-and-distribution-information
+               (dissoc :ArchiveAndDistributionInformation)
+               (assoc :Distributions distributions))
+           result))))

@@ -336,7 +336,7 @@
       (assoc :TemporalKeywords nil)
       (assoc :AdditionalAttributes nil)
       (update :ProcessingLevel su/convert-empty-record-to-nil)
-      (assoc :Distributions nil)
+      ; (assoc :Distributions nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (update :RelatedUrls expected-iso-smap-related-urls)

@@ -8,19 +8,17 @@
   "Migrates Distributions from 1.12 to 1.13"
   [c]
   (let [archive-and-distribution-information
-        (for [distribution (:Distributions c)
-              :let [media (:DistributionMedia distribution)
-                    [size unit] (->> (:Sizes distribution)
-                                     (map #((comp vals select-keys) % [:Size :Unit]))
-                                     first
-                                     vec)
-                    format (:DistributionFormat distribution)
-                    fees (:Fees distribution)]]
-          {:FileDistributionInformation {:Media media
-                                         :AverageFileSize size :AverageFileSizeUnit unit
-                                         :Format format
-                                         :FormatType distribution-format-type
-                                         :Fees fees}})]
+        {:FileDistributionInformation
+         (for [distribution (:Distributions c)
+               :let [[size unit] (->> (:Sizes distribution)
+                                      (map #((comp vals select-keys) % [:Size :Unit]))
+                                      first
+                                      vec)]]
+           {:Media (:DistributionMedia distribution)
+            :AverageFileSize size :AverageFileSizeUnit unit
+            :Format (:DistributionFormat distribution)
+            :FormatType distribution-format-type
+            :Fees (:Fees distribution)})}]
     (if (empty? archive-and-distribution-information)
       (-> c
           (dissoc :Distributions))
@@ -32,17 +30,15 @@
   "Migrates ArchiveAndDistributionInformation from 1.13 to 1.12"
   [c]
   (let [distributions
-        (for [distribution (:ArchiveAndDistributionInformation c)
-              :let [media (get-in distribution [:FileDistributionInformation :Media])
-                    [size unit] (-> (:FileDistributionInformation distribution)
-                                    (comp vals select-keys) [:AverageFileSize :AverageFileSizeUnit]
-                                    vec)
-                    format (get-in distribution [:FileDistributionInformation :Format])
-                    fees (get-in distribution [:FileDistributionInformation :Fees])]]
-          {:DistributionMedia media
+        (for [distribution (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])
+              :let [select-values (comp vals select-keys)
+                    [size unit] (-> distribution
+                                    (select-values [:AverageFileSize :AverageFileSizeUnit])
+                                    vec)]]
+          {:DistributionMedia (:Media distribution)
            :Sizes [{:Size size :Unit unit}]
-           :DistributionFormat format
-           :Fees fees})]
+           :DistributionFormat (:Format distribution)
+           :Fees (:Fees distribution)})]
     (if (empty? distributions)
       (-> c
           (dissoc :ArchiveAndDistributionInformation))
