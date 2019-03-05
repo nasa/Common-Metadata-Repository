@@ -105,6 +105,11 @@
    ;; unique characteristics of the collection which extend beyond those defined).
    AdditionalAttributes
 
+   ;; This element and all of its sub elements exist for display purposes. It allows a data provider
+   ;; to provide archive and distribution information up front to an end user, to help them decide
+   ;; if they can use the product.
+   ArchiveAndDistributionInformation
+
    ;; Controlled Science Keywords describing the collection. The controlled vocabulary for Science
    ;; Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
@@ -119,10 +124,6 @@
 
    ;; The title of the collection or service described by the metadata.
    EntryTitle
-
-   ;; Describes media options, size, data format, and fees involved in distributing the data from
-   ;; this collection.
-   Distributions
 
    ;; This element describes the production status of the data set. There are four choices for Data
    ;; Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable
@@ -286,6 +287,51 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LocalCoordinateSystemType)
 
+;; This element defines a single artifact that is distributed by the data provider. This element
+;; only includes the distributable artifacts that can be obtained by the user without the user
+;; having to invoke a service. These should be documented in the UMM-S specification.
+(defrecord FileDistributionInformationType
+  [
+   ;; Allows the provider to state whether the distributable item's format is its native format or
+   ;; another supported format.
+   FormatType
+
+   ;; An approximate average size of the distributable item. This gives an end user an idea of the
+   ;; magnitude for each distributable file if more than 1 exists.
+   AverageFileSize
+
+   ;; Conveys the price one has to pay to obtain the distributable item.
+   Fees
+
+   ;; This element defines a single format for a distributable artifact. Examples of format include:
+   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml.
+   Format
+
+   ;; An approximate total size of all of the distributable items within a collection. This gives an
+   ;; end user an idea of the magnitude for all of distributable files combined.
+   TotalCollectionFileSize
+
+   ;; The date of which this collection started to collect data. This date is used by users to be
+   ;; able to calculate the current total collection file size. The date needs to be in the
+   ;; yyyy-MM-ddTHH:mm:ssZ format; for example: 2018-01-01T10:00:00Z.
+   TotalCollectionFileSizeBeginDate
+
+   ;; Unit of measure for the total collection file size.
+   TotalCollectionFileSizeUnit
+
+   ;; Provides the data provider a way to convey more information about the distributable item.
+   Description
+
+   ;; Unit of measure for the average file size.
+   AverageFileSizeUnit
+
+   ;; This element defines the media by which the end user can obtain the distributable item. Each
+   ;; media type is listed separately. Examples of media include: CD-ROM, 9 track tape, diskettes,
+   ;; hard drives, online, transparencies, hardcopy, etc.
+   Media
+  ])
+(record-pretty-printer/enable-record-pretty-printing FileDistributionInformationType)
+
 (defrecord ChronostratigraphicUnitType
   [
    Eon
@@ -402,6 +448,42 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialInformationType)
 
+;; This element defines a single archive artifact which a data provider would like to inform an end
+;; user that it exists.
+(defrecord FileArchiveInformationType
+  [
+   ;; This element defines a single format for an archival artifact. Examples of format include:
+   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml.
+   Format
+
+   ;; Allows the provider to state whether the archivable item's format is its native format or
+   ;; another supported format.
+   FormatType
+
+   ;; An approximate average size of the archivable item. This gives an end user an idea of the
+   ;; magnitude for each archivable file if more than 1 exists.
+   AverageFileSize
+
+   ;; Unit of measure for the average file size.
+   AverageFileSizeUnit
+
+   ;; An approximate total size of all of the archivable items within a collection. This gives an
+   ;; end user an idea of the magnitude for all of archivable files combined.
+   TotalCollectionFileSize
+
+   ;; Unit of measure for the total collection file size.
+   TotalCollectionFileSizeUnit
+
+   ;; Provides the data provider a way to convey more information about the archivable item.
+   Description
+
+   ;; The date of which this collection started to collect data. This date is used by users to be
+   ;; able to calculate the current total collection file size. The date needs to be in the
+   ;; yyyy-MM-ddTHH:mm:ssZ format; for example: 2018-01-01T10:00:00Z.
+   TotalCollectionFileSizeBeginDate
+  ])
+(record-pretty-printer/enable-record-pretty-printing FileArchiveInformationType)
+
 (defrecord HorizontalCoordinateSystemType
   [
    GeodeticModel
@@ -411,6 +493,22 @@
    LocalCoordinateSystem
   ])
 (record-pretty-printer/enable-record-pretty-printing HorizontalCoordinateSystemType)
+
+;; This element and all of its sub elements exist for display purposes. It allows a data provider to
+;; provide archive and distribution information up front to an end user, to help them decide if they
+;; can use the product.
+(defrecord ArchiveAndDistributionInformationType
+  [
+   ;; This element defines a single archive artifact which a data provider would like to inform an
+   ;; end user that it exists.
+   FileArchiveInformation
+
+   ;; This element defines a single artifact that is distributed by the data provider. This element
+   ;; only includes the distributable artifacts that can be obtained by the user without the user
+   ;; having to invoke a service. These should be documented in the UMM-S specification.
+   FileDistributionInformation
+  ])
+(record-pretty-printer/enable-record-pretty-printing ArchiveAndDistributionInformationType)
 
 ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
 ;; historically by the GCMD internally to identify association, responsibility and/or ownership of
