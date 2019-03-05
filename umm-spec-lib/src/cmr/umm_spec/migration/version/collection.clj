@@ -9,6 +9,7 @@
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
    [cmr.umm-spec.migration.doi-migration :as doi]
+   [cmr.umm-spec.migration.distributions-migration :as distributions-migration]
    [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
@@ -260,3 +261,11 @@
 (defmethod interface/migrate-umm-version [:collection "1.12" "1.11"]
   [context c & _]
   (related-url/migrate-down-from-1_12 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.12" "1.13"]
+  [context c & _]
+  (distributions-migration/migrate-up-to-1_13 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.13" "1.12"]
+  [context c & _]
+  (distributions-migration/migrate-down-to-1_12 c))
