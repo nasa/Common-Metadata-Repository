@@ -95,14 +95,44 @@
                                      {:Description "example-collection-record Description"})
                       :LicenseUrl (cmn/map->OnlineResourceType
                                     {:Linkage "http://example-collection-record.com"})})
-   :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
-                    :DistributionMedia "8 track"
-                    :DistributionFormat "Animated GIF"
-                    :Fees "Gratuit-Free"}
-                   {:Sizes [{:Size 1.0 :Unit "MB"}]
-                    :DistributionMedia "Download"
-                    :DistributionFormat "Bits"
-                    :Fees "0.99"}]
+
+   :ArchiveAndDistributionInformation {:FileArchiveInformation
+                                       [{:Format "Binary"
+                                         :FormatType "Native"
+                                         :AverageFileSize 3
+                                         :AverageFileSizeUnit "MB"
+                                         :TotalCollectionFileSize 1095
+                                         :TotalCollectionFileSizeUnit "MB"
+                                         :Description
+                                         "These files are very difficult to use. If you want to use the binary data then contact us. These files are archived in CUMULUS."}
+                                        {:Format "netCDF-4"
+                                         :FormatType "Supported"
+                                         :AverageFileSize 1
+                                         :AverageFileSizeUnit "MB"
+                                         :TotalCollectionFileSize 365
+                                         :TotalCollectionFileSizeUnit "MB"
+                                         :Description
+                                         "These files are archived in CUMULUS."}]
+                                       :FileDistributionInformation
+                                       [{:FormatType "Supported"
+                                         :AverageFileSize 1
+                                         :Fees "US $1.00 per CD-ROM"
+                                         :Format "netCDF-4"
+                                         :TotalCollectionFileSize 365
+                                         :TotalCollectionFileSizeUnit "MB"
+                                         :Description
+                                         "These files are available on line or CD-ROMS can be ordered for a fee."
+                                         :AverageFileSizeUnit "MB"
+                                         :Media ["Online" "CD-ROM"]}
+                                        {:Format "netCDF-5"
+                                         :FormatType "Supported"
+                                         :Media ["Online"]
+                                         :AverageFileSize 1.5
+                                         :AverageFileSizeUnit "MB"
+                                         :TotalCollectionFileSize 548
+                                         :TotalCollectionFileSizeUnit "MB"
+                                         :Description
+                                         "These files may take longer to download as they are only available on demand."}]}
    :EntryTitle "The entry title V5"
    :ShortName "Short"
    :Version "V5"
@@ -378,7 +408,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:MetadataLanguage :SpatialInformation})
+  #{:MetadataLanguage :SpatialInformation :ArchiveAndDistributionInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

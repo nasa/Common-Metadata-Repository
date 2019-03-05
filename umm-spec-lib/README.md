@@ -112,7 +112,7 @@ In `src/cmr/umm_spec/versioning.clj`, update the versions vector to include the 
 
 ### 4. Update migrations
 
-Update the `src/cmr/umm_spec/migration/version_migration.clj` file. Add new functions for going from the last version to the new version and for going backwards from the new version to the last version.
+Update the `src/cmr/umm_spec/migration/version/<concept>.clj` file. Add new functions for going from the last version to the new version and for going backwards from the new version to the last version.
 
 ### 5. Update Tests
 

@@ -187,8 +187,8 @@
                          "/Collection/CollectionState"
                          sanitize?)
    :AccessConstraints (parse-access-constraints doc sanitize?)
-   :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
-                    :Fees (value-of doc "/Collection/Price")}]
+   ; :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
+   ;                  :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (kf/get-kms-index context)

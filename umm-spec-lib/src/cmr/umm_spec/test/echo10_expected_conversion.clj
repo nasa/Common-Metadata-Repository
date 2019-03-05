@@ -307,7 +307,7 @@
       (assoc :ContactGroups nil)
       (update-in [:ContactPersons] expected-echo10-contact-persons)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in [:Distributions] echo10-expected-distributions)
+      ; (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
                       conversion-util/fix-echo10-dif10-polygon)
       (update-in [:SpatialExtent] expected-echo10-spatial-extent)
