@@ -173,11 +173,6 @@
      :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (spatial/parse-spatial-extent doc sanitize?)
-     ; :Distributions (for [distribution (select doc "/DIF/:Distribution")]
-     ;                  {:DistributionMedia (value-of distribution "Distribution_Media")
-     ;                   :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
-     ;                   :DistributionFormat (value-of distribution "Distribution_Format")
-     ;                   :Fees (value-of distribution "Fees")})
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id

@@ -34,16 +34,17 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
-(defn- lacks-dependency?
-  "Checks if property has a dependency, if it has no dependency returns false.
-   If it does then it checks whether that dependency is selected.
-   Returns false if dependency is in selected properties, true if it is not."
-  [property dependencies selected-properties]
-  (let [dependency (get dependencies property)]
-    (cond
-      (empty? dependency) false
-      (some #{dependency} selected-properties) false
-      :else true)))
+(defn- add-dependencies
+  "Checks if property has a dependency, if the dependency is not present it will add it
+   to the selected-properties collection"
+  [dependencies selected-properties]
+  (reduce
+   (fn [properties property]
+     (vec (set/union (set properties)
+                     (set (map keyword (property dependencies)))
+                     #{property})))
+   []
+   selected-properties))
 
 (defn- object-like-schema-type->generator
   "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
@@ -78,10 +79,10 @@
                                                   (subvec optional-properties
                                                           0 num-optional-fields))
                       ;; Check for dependencies, remove properties that lack their dependencies
-                      selected-properties (if (not (empty? dependencies))
-                                            (remove #(lacks-dependency? % dependencies selected-properties)
-                                                    selected-properties)
+                      selected-properties (if (seq dependencies)
+                                            (add-dependencies dependencies selected-properties)
                                             selected-properties)
+
                       ;; Create a map of property names to generators
                       selected-prop-gens (select-keys prop-gens selected-properties)]
                 ;; Generate a hash map containing the properties

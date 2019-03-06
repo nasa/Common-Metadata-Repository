@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.migration.distributions-migration
   "Contains helper functions for migrating between different versions of UMM contact information"
-  (:require [cmr.umm-spec.util :as u]))
+  (:require [cmr.common.util :as util]))
 
 (def distribution-format-type "Native")
 
@@ -13,12 +13,15 @@
                :let [[size unit] (->> (:Sizes distribution)
                                       (map #((comp vals select-keys) % [:Size :Unit]))
                                       first
-                                      vec)]]
-           {:Media (:DistributionMedia distribution)
-            :AverageFileSize size :AverageFileSizeUnit unit
-            :Format (:DistributionFormat distribution)
-            :FormatType distribution-format-type
-            :Fees (:Fees distribution)})}]
+                                      vec)
+                     media (:DistributionMedia distribution)]]
+           (util/remove-nil-keys
+            {:Media (when media
+                      [media])
+             :AverageFileSize size :AverageFileSizeUnit unit
+             :Format (:DistributionFormat distribution)
+             :FormatType distribution-format-type
+             :Fees (:Fees distribution)}))}]
     (if (empty? archive-and-distribution-information)
       (-> c
           (dissoc :Distributions))
@@ -35,10 +38,11 @@
                     [size unit] (-> distribution
                                     (select-values [:AverageFileSize :AverageFileSizeUnit])
                                     vec)]]
-          {:DistributionMedia (:Media distribution)
-           :Sizes [{:Size size :Unit unit}]
-           :DistributionFormat (:Format distribution)
-           :Fees (:Fees distribution)})]
+          (util/remove-nil-keys
+            {:DistributionMedia (first (:Media distribution))
+             :Sizes [{:Size size :Unit unit}]
+             :DistributionFormat (:Format distribution)
+             :Fees (:Fees distribution)}))]
     (if (empty? distributions)
       (-> c
           (dissoc :ArchiveAndDistributionInformation))

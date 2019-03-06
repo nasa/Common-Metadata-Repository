@@ -304,7 +304,6 @@
       (update-in [:ContactPersons] expected-dif10-contacts)
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
-      ; (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
@@ -330,4 +329,5 @@
                                (umm-c/map->UseConstraintsType
                                  ;; description from umm-coll is already an object.
                                  {:Description description})))
+      (assoc :ArchiveAndDistributionInformation nil)
       js/parse-umm-c))
