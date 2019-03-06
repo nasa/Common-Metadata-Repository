@@ -307,7 +307,6 @@
       (assoc :ContactGroups nil)
       (update-in [:ContactPersons] expected-echo10-contact-persons)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      ; (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
                       conversion-util/fix-echo10-dif10-polygon)
       (update-in [:SpatialExtent] expected-echo10-spatial-extent)
@@ -329,4 +328,5 @@
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
-      (update :DOI expected-doi)))
+      (update :DOI expected-doi)
+      (assoc :ArchiveAndDistributionInformation nil)))

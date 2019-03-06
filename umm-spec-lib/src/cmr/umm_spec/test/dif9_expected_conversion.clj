@@ -281,7 +281,6 @@
         (assoc :Version (or (:Version umm-coll) su/not-provided))
         (update-in [:TemporalExtents] dif9-temporal)
         (update-in [:SpatialExtent] expected-dif-spatial-extent)
-        ; (update-in [:Distributions] su/remove-empty-records)
         ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
         ;; unable to be implemented as specified.
         (update-in [:Platforms] expected-dif-platforms)
@@ -302,4 +301,5 @@
         (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
                                  (umm-c/map->UseConstraintsType
                                    {:Description description})))
+        (assoc :ArchiveAndDistributionInformation nil)
         js/parse-umm-c)))

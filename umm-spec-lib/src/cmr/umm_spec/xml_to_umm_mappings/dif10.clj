@@ -249,11 +249,6 @@
    :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
    :SpatialExtent (spatial/parse-spatial doc)
    :TilingIdentificationSystems (spatial/parse-tiling doc)
-   ; :Distributions (for [dist (select doc "/DIF/Distribution")]
-   ;                  {:DistributionMedia (value-of dist "Distribution_Media")
-   ;                   :Sizes (su/parse-data-sizes (value-of dist "Distribution_Size"))
-   ;                   :DistributionFormat (value-of dist "Distribution_Format")
-   ;                   :Fees (value-of dist "Fees")})
    :ProcessingLevel {:Id (su/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]

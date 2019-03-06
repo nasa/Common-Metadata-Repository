@@ -408,7 +408,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:MetadataLanguage :SpatialInformation :ArchiveAndDistributionInformation})
+  #{:MetadataLanguage :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

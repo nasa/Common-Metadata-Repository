@@ -1874,13 +1874,12 @@
            result))))
 
 (def archive-and-distribution-information
-  {:FileDistributionInformation [{:Media "8 track"
-                                  :AverageFileSize 15.0
+  {:FileDistributionInformation [{:AverageFileSize 15.0
                                   :AverageFileSizeUnit "KB"
                                   :Format "Animated GIF"
                                   :FormatType "Native"
                                   :Fees "Gratuit-Free"}
-                                 {:Media "Download"
+                                 {:Media ["Download"]
                                   :AverageFileSize 1.0
                                   :AverageFileSizeUnit "MB"
                                   :Format "Bits"
@@ -1889,8 +1888,7 @@
 (def distributions
   [{:DistributionFormat "Animated GIF"
     :Sizes [{:Unit "KB" :Size 15.0}]
-    :Fees "Gratuit-Free"
-    :DistributionMedia "8 track"}
+    :Fees "Gratuit-Free"}
    {:DistributionFormat "Bits"
     :Sizes [{:Unit "MB" :Size 1.0}]
     :Fees "0.99"

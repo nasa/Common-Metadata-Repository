@@ -252,7 +252,6 @@
                         :ProcessingLevelDescription
                         (char-string-value
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-      ; :Distributions (dru/parse-distributions doc sanitize?)
       :Platforms (platform/parse-platforms doc "" sanitize? alt-xpath-options)
       :Projects (project/parse-projects doc projects-xpath sanitize?)
 
