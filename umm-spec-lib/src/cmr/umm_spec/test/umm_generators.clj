@@ -34,12 +34,23 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
+(defn- lacks-dependency?
+  "Checks if property has a dependency, if it has no dependency returns false.
+   If it does then it checks whether that dependency is selected.
+   Returns false if dependency is in selected properties, true if it is not."
+  [property dependencies selected-properties]
+  (let [dependency (get dependencies property)]
+    (cond
+      (empty? dependency) false
+      (some #{dependency} selected-properties) false
+      :else true)))
+
 (defn- object-like-schema-type->generator
   "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
   with keys properties, required, and additionalProperties. This is used to handle a normal object
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :required :additionalProperties :not :allOf} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties :dependencies :not :allOf} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
@@ -52,7 +63,7 @@
         properties (if (= 0 (rand-int 2))
                      (dissoc properties :ComposedOf)
                      properties)
-
+        dependencies (:dependencies schema-type)
         ;; Create a map of property keys to generators for those properties
         prop-gens (into {} (for [[k subtype] properties]
                              [k (schema-type->generator schema nil subtype)]))
@@ -66,6 +77,11 @@
                 :let [selected-properties (concat required-properties
                                                   (subvec optional-properties
                                                           0 num-optional-fields))
+                      ;; Check for dependencies, remove properties that lack their dependencies
+                      selected-properties (if (not (empty? dependencies))
+                                            (remove #(lacks-dependency? % dependencies selected-properties)
+                                                    selected-properties)
+                                            selected-properties)
                       ;; Create a map of property names to generators
                       selected-prop-gens (select-keys prop-gens selected-properties)]
                 ;; Generate a hash map containing the properties
@@ -132,7 +148,7 @@
            gen/one-of)
       (object-like-schema-type->generator
        schema type-name
-       (select-keys schema-type [:properties :required :additionalProperties])))))
+       (select-keys schema-type [:properties :required :additionalProperties :dependencies])))))
 
 (defmethod schema-type->generator "oneOf"
   [schema type-name schema-type]
