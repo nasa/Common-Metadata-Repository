@@ -31,7 +31,7 @@ Every CMR application has a reset function to reset it back to it's initial stat
 
 ### Clear the cache cache
 
-    curl -i -XPOST http://localhost:3004/clear-cache?token=XXXX
+    curl -i -XPOST http://localhost:3004/caches/clear-cache?token=XXXX
 
 ### Querying caches
 
