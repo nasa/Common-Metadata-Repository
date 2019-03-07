@@ -45,7 +45,7 @@
     {"default" "Use an online web service to download this dataset's data"
      "GRADS DATA SERVER (GDS)" "Use GRADS DATA SERVER (GDS) to access the dataset's data"
      "MAP SERVICE" "Use a map service to access the dataset's data"
-     "OPENDAP DATA" "Use OPeNDATA to access the dataset's data"
+     "OPENDAP DATA" "Use OPeNDAP to access the dataset's data"
      "OpenSearch" "Use OpenSearch to download the dataset's data"
      "SERVICE CHAINING" "Use Service Chaining to download the dataset's data"
      "TABULAR DATA STREAM (TDS)" "Use Tabular Data Stream (TDS) service to download the dataset's data"
