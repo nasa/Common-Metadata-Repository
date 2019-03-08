@@ -1899,6 +1899,7 @@
     (assoc exp-conv/example-collection-record-edn
            :ArchiveAndDistributionInformation
            archive-and-distribution-information)))
+
 (def example-collection-1-12-with-distributions
   (js/parse-umm-c
     (assoc exp-conv/example-collection-record-edn

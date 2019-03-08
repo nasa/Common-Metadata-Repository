@@ -41,7 +41,7 @@
   (reduce
    (fn [properties property]
      (vec (set/union (set properties)
-                     (set (map keyword (property dependencies)))
+                     (set (map keyword (get dependencies property)))
                      #{property})))
    []
    selected-properties))
