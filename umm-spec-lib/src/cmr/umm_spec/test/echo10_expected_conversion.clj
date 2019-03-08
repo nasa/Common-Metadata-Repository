@@ -32,17 +32,6 @@
       (format "%9.2f" (Double. fees))
       (catch NumberFormatException e))))
 
-(defn- echo10-expected-distributions
-  "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
-  record. ECHO10 only has one Distribution, so here we just pick the first one."
-  [distributions]
-  (some-> distributions
-          first
-          (assoc :Sizes nil :DistributionMedia nil)
-          (update-in [:Fees] echo10-expected-fees)
-          su/convert-empty-record-to-nil
-          vector))
-
 (defn- get-url-type-by-type
  "Get the url-type based on type. Return default there is no applicable
  url content type for the type."
