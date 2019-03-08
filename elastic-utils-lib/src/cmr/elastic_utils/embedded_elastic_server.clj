@@ -34,10 +34,10 @@
         (put "http.port" (str http-port))
         (put "transport.tcp.port" (str transport-port))
         (put "index.store.type" "memory")
+        (put "index.gc_deletes" (config/elastic-garbage-collection-interval))
         ;; dynamic scripting configurations
         (put "scipt.inline" "on")
         (put "script.search" "on")
-        (put "index.gc_deletes" (config/elastic-garbage-collection-interval))
         build)))
 
 (defn- build-node
