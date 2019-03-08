@@ -4,7 +4,8 @@
    [clj-http.client :as client]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.util :as util])
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as config])
   (:import
    (org.elasticsearch.common.settings ImmutableSettings ImmutableSettings$Builder)
    (org.elasticsearch.common.logging.log4j LogConfigurator)
@@ -36,6 +37,7 @@
         ;; dynamic scripting configurations
         (put "scipt.inline" "on")
         (put "script.search" "on")
+        (put "index.gc_deletes" (config/elastic-garbage-collection-interval))
         build)))
 
 (defn- build-node

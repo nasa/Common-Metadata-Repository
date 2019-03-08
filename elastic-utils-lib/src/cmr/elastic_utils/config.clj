@@ -1,6 +1,6 @@
 (ns cmr.elastic-utils.config
   "Contains configuration functions for communicating with elastic search"
-  (:require 
+  (:require
    [clojure.data.codec.base64 :as b64]
    [cmr.common.config :as config :refer [defconfig]]))
 
@@ -16,9 +16,17 @@
     "Token used for basic auth authentication with elastic."
     {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
-(defconfig elastic-scroll-timeout 
+(defconfig elastic-scroll-timeout
   "Timeout for ES scrolling"
   {:default "5m"})
+
+(defconfig elastic-garbage-collection-interval
+  "Garbage collection interval to cleanup deleted document versions."
+  ;; Raising the default garbage collection interval from 60 seconds to 6 minutes
+  ;; in order to keep the deleted document around slightly longer than the first
+  ;; indexing retry interval (5m). This will allow granule indexing to fail in the case
+  ;; of a index granule operation being retried after a delete operation has succeeded.
+  {:default "6m"})
 
 (defconfig elastic-scroll-search-type
   "Search type to use with scrolling - either 'scan' or 'query_then_fetch'"
@@ -34,4 +42,3 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
-  
