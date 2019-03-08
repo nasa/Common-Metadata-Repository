@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.migration.distributions-migration
   "Contains helper functions for migrating between different versions of UMM contact information"
-  (:require [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]))
 
 (def distribution-format-type "Native")
 
