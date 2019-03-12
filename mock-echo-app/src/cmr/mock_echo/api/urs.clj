@@ -75,39 +75,12 @@
     (urs-db/create-users context users)
     {:status 201}))
 
-
 (defn create-users-xml
   "Processes an XML request to create one or more users."
   [context body]
   (let [{:keys [username password] :as user} (parse-create-user-xml body)]
     (urs-db/create-users context [user])
     (assoc (get-user context username) :status 201)))
-
-(def successful-login-response
-  {:status 200
-   :body "<LoginResponse><reason></reason><success>true</success><user>...</user></LoginResponse>"
-   :headers {"content-type" mt/xml}})
-
-(def unsuccessful-login-response
-  {:status 200
-   :body "<LoginResponse><reason>Invalid username or password</reason><success>false</success></LoginResponse>"
-   :headers {"content-type" mt/xml}})
-
-(defn parse-login-request
-  "Parses a login request into a map of username and password"
-  [body]
-  (let [parsed (x/parse-str body)]
-    {:username (cx/string-at-path parsed [:username])
-     :password (cx/string-at-path parsed [:password])}))
-
-(defn login-xml
-  "Processes a login request"
-  [context body]
-  (let [{:keys [username password]} (parse-login-request body)]
-    (if (and (urs-db/user-exists? context username)
-             (urs-db/password-matches? context username password))
-      successful-login-response
-      unsuccessful-login-response)))
 
 (defn decode-base64
   [^String string]
@@ -130,42 +103,53 @@
     (when-not (and (= username (transmit-config/urs-username)) (= password (transmit-config/urs-password)))
       (errors/throw-service-error :unauthorized "Bad URS authentication info"))))
 
+(def mock-urs-token
+  "A token for mock urs."
+  "mock-urs-token")
+
+(defn assert-bearer-token
+  "Assert bearer token."
+  [request]
+  (when-not (= (format "Bearer %s" mock-urs-token)
+               (get-in request [:headers "authorization"]))
+    (errors/throw-service-error :unauthorized "Bad URS bearer token")))
+
+(defmulti create-urs-token
+  (fn [request]
+    (keyword (get-in request [:params :grant_type]))))
+
+(defmethod create-urs-token :client_credentials
+  [request]
+  (assert-urs-basic-auth-info request)
+  {:status 200
+   :headers {"content-type" mt/json}
+   :body (format "{\"access_token\": \"%s\"}"
+                 mock-urs-token)})
+
+(defmethod create-urs-token :default
+  [_]
+  (errors/throw-service-error :not-found "Mock URS grant type not yet supported."))
+
 (defn build-routes [system]
   (routes
     (context "/urs" []
       ;;availability endpoint
       (GET "/" [] {:status 200})
 
-      (POST "/login" {:keys [request-context body] :as request}
-        (assert-urs-basic-auth-info request)
-        (login-xml request-context (slurp body)))
+      (context "/oauth" []
+        (POST "/token" request
+          (create-urs-token request)))
 
-      ;; echo kernel adds a / for some reason to the request it sends...
-      (POST "/login/" {:keys [request-context body content-type] :as request}
-        (assert-urs-basic-auth-info request)
-        (login-xml request-context (slurp body)))
-
-      (context "/groups/:group" [group]
-        (context "/:username" [username]
-          (DELETE "/" {context :request-context :as request}
-            (urs-db/remove-user context username))))
+      (context "/api/users" []
+        (GET "/verify_uid" {:keys [request-context params] :as request}
+          (assert-bearer-token request)
+          (get-user request-context (:uid params))))
 
       (context "/users" []
-
         ;; Create a bunch of users all at once
         ;; This is used for adding test data. Body should be a list of
         ;; maps with username, password, and other URS user fields
         (POST "/" {context :request-context body :body content-type :content-type}
           (if (= mt/xml content-type)
             (create-users-xml context (slurp body))
-            (create-users-json context (slurp body))))
-
-        (PUT "/:username" {context :request-context body :body content-type :content-type}
-          (if (= mt/xml content-type)
-            (create-users-xml context (slurp body))
-            (create-users-json context (slurp body))))
-
-        (context "/:username" [username]
-          (GET "/" {:keys [request-context] :as request}
-            (assert-urs-basic-auth-info request)
-            (get-user request-context username)))))))
+            (create-users-json context (slurp body))))))))

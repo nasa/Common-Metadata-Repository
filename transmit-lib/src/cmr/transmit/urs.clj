@@ -1,12 +1,9 @@
 (ns cmr.transmit.urs
   (:require
-   [clojure.data.xml :as x]
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
-   [cmr.common.xml :as cx]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]
+   [cmr.transmit.http-helper :as http-helper]
    [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,69 +11,53 @@
 
 (defn- get-user-url
   [conn username]
-  (format "%s/users/%s" (conn/root-url conn) username))
+  (format "%s/api/users/verify_uid?uid=%s" (conn/root-url conn) username))
 
-(defn login-url
+(defn- login-application-url
   [conn]
-  (format "%s/login" (conn/root-url conn)))
+  (format "%s/oauth/token?grant_type=client_credentials" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
+
+(defn- get-bearer-token
+  "Get CMR_SSO_APP token from EDL."
+  [context]
+  (let [{:keys [status body]} (http-helper/request
+                               context
+                               :urs
+                               {:url-fn login-application-url
+                                :method :post
+                                :raw? true
+                                :http-options {:basic-auth
+                                               [(config/urs-username)
+                                                (config/urs-password)]}})]
+    (when-not (= 200 status)
+      (errors/internal-error!
+       (format "Cannot get CMR_SSO_APP token in EDL. Failed with status code [%d]."
+               status)))
+    (:access_token body)))
+
+(defn- request-with-auth
+  "Retrieve CMR URS authentication info and submit request."
+  [context request]
+  (http-helper/request context :urs (update-in request
+                                               [:http-options :headers]
+                                               assoc
+                                               "Authorization"
+                                               (str "Bearer " (get-bearer-token context)))))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
   ([context user]
    (user-exists? context user false))
   ([context user raw?]
-   (let [response (h/request context :urs
-                             {:url-fn #(get-user-url % user)
-                              :method :get
-                              :raw? true
-                              :http-options {:basic-auth [(config/urs-username) (config/urs-password)]}})]
+   (let [response (request-with-auth context {:url-fn #(get-user-url % user)
+                                              :method :get
+                                              :raw? raw?})]
      (if raw?
        response
-       (-> response :status (= 200))))))
-
-(defn- login-xml
-  "Creates the XML necessary to login to URS"
-  [user password]
-  (x/emit-str
-   (x/element :login {}
-              (x/element :username {} user)
-              (x/element :password {} password))))
-
-(defn- assert-login-response-successful
-  "Checks that the login response from URS was successful. Throws a service error with the reason
-  from URS if not."
-  [status body]
-  ;; URS always returns a successful response code as long as the request was valid.
-  (if (= status 200)
-    (let [login-response (x/parse-str body)
-          success? (cx/bool-at-path login-response [:success])]
-      (when-not success?
-        (errors/throw-service-error :unauthorized (cx/string-at-path login-response [:reason]))))
-    (errors/internal-error!
-     (format "Unexpected status code [%d] from URS login. Response Body: [%s]"
-             status body))))
-
-(defn login
-  "Attempts to login to URS using the given username and password. Throws a service exception if login
-  is unsuccessful."
-  ([context username password]
-   (login context username password false))
-  ([context username password raw?]
-   (let [response (h/request context :urs
-                             {:url-fn login-url
-                              :method :post
-                              :raw? true
-                              :http-options {:basic-auth [(config/urs-username) (config/urs-password)]
-                                             :body (login-xml username password)
-                                             :throw-exceptions false
-                                             :content-type mt/xml}})]
-     (if raw?
-       response
-       (assert-login-response-successful (:status response)(:body response))))))
-
+       (not (nil? response))))))
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values
