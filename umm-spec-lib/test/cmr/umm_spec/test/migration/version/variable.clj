@@ -126,7 +126,7 @@
 (def variable-concept-14-only-netcdf-4
   (merge variable-concept-12
          {:Alias "Test Alias"
-          :SizeEstimation {:AverageSizeOfGranulesSampled 1   
+          :SizeEstimation {:AverageSizeOfGranulesSampled 1
                            :AverageCompressionInformation [{:Format "NetCDF-4" :Rate 3}]}
           :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"}}))
 
@@ -141,7 +141,7 @@
     (is (= [["1.2" "1.3"]] (#'vm/version-steps :variable "1.2" "1.3")))
     (is (= [["1.3" "1.2"]] (#'vm/version-steps :variable "1.3" "1.2")))
     (is (= [["1.3" "1.4"]] (#'vm/version-steps :variable "1.3" "1.4")))
-    (is (= [["1.4" "1.3"]] (#'vm/version-steps :variable "1.4" "1.3"))) 
+    (is (= [["1.4" "1.3"]] (#'vm/version-steps :variable "1.4" "1.3")))
     (is (= [["1.4" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps :variable "1.4" "1.0")))))
 
 
@@ -272,3 +272,12 @@
 (deftest migrate-14->13-only-netcdf-4
   (is (= variable-concept-13-only-netcdf-4
          (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-netcdf-4))))
+
+(deftest migrate-14->15
+  (is (= (assoc variable-concept-14 :AcquisitionSourceName "Not Provided")
+         (vm/migrate-umm {} :variable "1.4" "1.5" variable-concept-14))))
+
+(deftest migrate-15->14
+  (is (= variable-concept-14
+         (vm/migrate-umm {} :variable "1.5" "1.4"
+                         (assoc variable-concept-14  :AcquisitionSourceName "OMI")))))

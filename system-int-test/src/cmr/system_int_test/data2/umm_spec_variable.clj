@@ -29,7 +29,8 @@
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "sk-A"
                        :Topic "sk-B"
-                       :Term "sk-C"})]})
+                       :Term "sk-C"})]
+   :AcquisitionSourceName "Instrument1"})
 
 (defn variable
   "Returns a UmmVar from the given attribute map."
