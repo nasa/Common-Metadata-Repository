@@ -138,3 +138,11 @@
           (assoc-in [:SizeEstimation :AverageCompressionInformation]
                     (concat avg-comp-info-ascii avg-comp-info-netcdf4)))
       v)))
+
+(defmethod interface/migrate-umm-version [:variable "1.5" "1.4"]
+  [context v & _]
+  (dissoc v :AcquisitionSourceName))
+
+(defmethod interface/migrate-umm-version [:variable "1.4" "1.5"]
+  [context v & _]
+  (assoc v :AcquisitionSourceName "Not Provided"))

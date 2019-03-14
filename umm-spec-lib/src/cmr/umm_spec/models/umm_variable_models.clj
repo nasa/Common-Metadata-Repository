@@ -41,6 +41,12 @@
    ;; The definition of the variable.
    Definition
 
+   ;; The acquisition source name such as an instrument short name or simulation name to which the
+   ;; variable belongs. The acquisition source name is used to help determine uniqueness along with
+   ;; Name, Units, and Dimensions in the metadata content for each variable metadata record. For
+   ;; more information please see https://wiki.earthdata.nasa.gov/display/DUTRAIN/UMM-VAR+uniqueness
+   AcquisitionSourceName
+
    ;; The characteristics of a variable. The elements of this section apply to a Variable.
    Characteristics
 
@@ -109,6 +115,28 @@
    ReportingConditions
   ])
 (record-pretty-printer/enable-record-pretty-printing SamplingIdentifierType)
+
+;; Enables specification of Earth science keywords related to the collection. The Earth Science
+;; keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management
+;; System (KMS). The valid values can be found at the KMS website:
+;; https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.
+(defrecord ScienceKeywordType
+  [
+   Category
+
+   Topic
+
+   Term
+
+   VariableLevel1
+
+   VariableLevel2
+
+   VariableLevel3
+
+   DetailedVariable
+  ])
+(record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
 ;; The elements of this section apply to a measurement name. The measurement name is structured
 ;; according to the form defined by Scott Peckham. This is: <object>_<quantity>.

@@ -9,7 +9,8 @@
    [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
 
 (deftest umm-variable-creation
-  (is (= [:Alias
+  (is (= [:AcquisitionSourceName
+          :Alias
           :Characteristics
           :DataType
           :Definition
