@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--For non-false positives suppress with <suppress until="YYYY-MM-DD">...-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: clansi-1.0.0.jar
+    ]]></notes>
+    <gav regex="true">^clansi:clansi:.*$</gav>
+    <cpe>cpe:/a:style_it_project:style_it</cpe>
+  </suppress>
+
+    <!-- Suppressing git vulnerabilities -->
+  <suppress>
+     <notes><![CDATA[
+     file name: mathz-0.3.0.jar
+     ]]></notes>
+     <gav regex="true">^net\.mikera:mathz:.*$</gav>
+     <cpe>cpe:/a:git_project:git</cpe>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: mathz-0.3.0.jar
+    ]]></notes>
+    <gav regex="true">^net\.mikera:mathz:.*$</gav>
+    <cpe>cpe:/a:git:git</cpe>
+  </suppress>
+</suppressions>
