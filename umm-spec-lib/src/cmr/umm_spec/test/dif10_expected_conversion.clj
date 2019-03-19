@@ -293,6 +293,34 @@
   "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED"]))
 
+(defn- expected-dist-media
+  "Creates expected Media for FileDistributionInformation."
+  [media]
+  (when-let [media (first media)]
+    [media]))
+
+(defn- expected-file-dist-info
+  "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
+  [file-dist-infos]
+  (when file-dist-infos
+    (for [file-dist-info file-dist-infos]
+      (-> file-dist-info
+          (select-keys [:Fees :Format :FormatType
+                        :Media :AverageFileSize
+                        :AverageFileSizeUnit])
+          (assoc :FormatType "Native")
+          (update :Media expected-dist-media)
+          umm-c/map->FileDistributionInformationType))))
+
+(defn- expected-archive-dist-info
+  "Creates expected ArchiveAndDistributionInformation for dif10."
+  [archive-dist-info]
+  (when (seq (get archive-dist-info :FileDistributionInformation))
+    (-> archive-dist-info
+        (assoc :FileArchiveInformation nil)
+        (update :FileDistributionInformation expected-file-dist-info)
+        umm-c/map->ArchiveAndDistributionInformationType)))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -329,5 +357,5 @@
                                (umm-c/map->UseConstraintsType
                                  ;; description from umm-coll is already an object.
                                  {:Description description})))
-      (assoc :ArchiveAndDistributionInformation nil)
+      (update :ArchiveAndDistributionInformation expected-archive-dist-info)
       js/parse-umm-c))

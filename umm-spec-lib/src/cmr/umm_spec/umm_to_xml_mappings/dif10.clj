@@ -322,14 +322,16 @@
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     (when-let [description (get-in c [:UseConstraints :Description])]
-      [:Use_Constraints (:Description description)]) 
+      [:Use_Constraints (:Description description)])
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
-    (for [dist (:Distributions c)]
+    (for [dist (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
       [:Distribution
-       [:Distribution_Media (:DistributionMedia dist)]
-       [:Distribution_Size (u/data-size-str (:Sizes dist))]
-       [:Distribution_Format (:DistributionFormat dist)]
+       [:Distribution_Media (first (:Media dist))]
+       [:Distribution_Size (when (:AverageFileSize dist)
+                             (str (:AverageFileSize dist) " "
+                                  (:AverageFileSizeUnit dist)))]
+       [:Distribution_Format (:Format dist)]
        [:Fees (:Fees dist)]])
     (for [pub-ref (:PublicationReferences c)]
       [:Reference

@@ -171,13 +171,20 @@
        [:CollectionState c-progress])
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
-     [:Price (when-let [price-str (-> c :Distributions first :Fees)]
+     [:Price (when-let [price-str (-> c
+                                      :ArchiveAndDistributionInformation
+                                      :FileDistributionInformation
+                                      first
+                                      :Fees)]
                (try (format "%9.2f" (Double. price-str))
                  ;; If price is not a number string just ignore it. ECHO10
                  ;; expectes a string in %9.2f format, so we have to
                  ;;ignore 'Free', 'Gratis', etc.
                  (catch NumberFormatException e)))]
-     [:DataFormat (-> c :Distributions first :DistributionFormat)]
+     [:DataFormat (-> c
+                      :ArchiveAndDistributionInformation
+                      :FileDistributionInformation
+                      first :Format)]
      [:SpatialKeywords
       (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
         [:Keyword kw])]

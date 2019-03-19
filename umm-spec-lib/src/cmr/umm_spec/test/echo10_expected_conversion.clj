@@ -32,6 +32,26 @@
       (format "%9.2f" (Double. fees))
       (catch NumberFormatException e))))
 
+(defn- expected-file-dist-info
+  "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
+  [file-dist-info]
+  (when-let [file-dist-info (first file-dist-info)]
+    (-> file-dist-info
+        (select-keys [:Fees :Format :FormatType])
+        (assoc :FormatType "Native")
+        (update :Fees echo10-expected-fees)
+        umm-c/map->FileDistributionInformationType
+        vector)))
+
+(defn- expected-archive-dist-info
+  "Creates expected ArchiveAndDistributionInformation for echo10."
+  [archive-dist-info]
+  (when (seq (get archive-dist-info :FileDistributionInformation))
+    (-> archive-dist-info
+        (assoc :FileArchiveInformation nil)
+        (update :FileDistributionInformation expected-file-dist-info)
+        umm-c/map->ArchiveAndDistributionInformationType)))
+
 (defn- get-url-type-by-type
  "Get the url-type based on type. Return default there is no applicable
  url content type for the type."
@@ -318,4 +338,4 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :DOI expected-doi)
-      (assoc :ArchiveAndDistributionInformation nil)))
+      (update :ArchiveAndDistributionInformation expected-archive-dist-info)))

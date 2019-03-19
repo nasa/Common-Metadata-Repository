@@ -168,6 +168,18 @@
        {:DOI doi-value
         :Authority authority}))))
 
+(defn- parse-archive-dist-info
+  "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
+  [doc]
+  (let [price (value-of doc "Collection/Price")
+        format (value-of doc "Collection/DataFormat")]
+    (when (or price
+              format)
+      {:FileDistributionInformation [{:Fees price
+                                      :Format (or format
+                                                  u/not-provided)
+                                      :FormatType "Native"}]})))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
@@ -217,7 +229,8 @@
    :DataCenters (dc/parse-data-centers doc sanitize?)
    :ContactPersons (dc/parse-data-contact-persons doc sanitize?)
    :CollectionCitations (when-let [collection-citations (value-of doc "/Collection/CitationForExternalPublication")]
-                          [{:OtherCitationDetails collection-citations}])})
+                          [{:OtherCitationDetails collection-citations}])
+   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option
