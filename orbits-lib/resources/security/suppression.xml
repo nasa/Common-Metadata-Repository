@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--For non-false positives suppress with <suppress until="YYYY-MM-DD">...-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: clansi-1.0.0.jar
+    ]]></notes>
+    <gav regex="true">^clansi:clansi:.*$</gav>
+    <cpe>cpe:/a:style_it_project:style_it</cpe>
+  </suppress>
+
+  <!-- JRuby Suppressions bellow -->
+
+  <!-- This hash-flood vulnerability was discovered in 2012 and has been fixed
+  for jruby versions >= 1.7.1.
+  Source: https://www.jruby.org/2012/12/03/jruby-1-7-1.html  -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar
+    ]]></notes>
+    <gav regex="true">^org\.jruby:jruby-complete:.*$</gav>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+
+  <!-- Hash flood vulnerability fixed in jruby versions >= 1.6.5.1
+  Source: https://www.jruby.org/2011/12/27/jruby-1-6-5-1.html -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2011-4838</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2011-4838</cve>
+  </suppress>
+
+  <!-- JRuby-OpenSSL is not used in the orbits library -->
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:jruby:jruby</cpe>
+  </suppress>
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:openssl_project:openssl</cpe>
+  </suppress>
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:openssl:openssl</cpe>
+  </suppress>
+
+  <!-- Regex vulnerability fixed in jruby versions >= 1.4.1.
+  Source: https://www.jruby.org/2010/04/26/jruby-1-4-1-xss-vulnerability.html -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2010-1330</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2010-1330</cve>
+  </suppress>
+</suppressions>
