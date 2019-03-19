@@ -119,7 +119,7 @@
     <cve>CVE-2011-4838</cve>
   </suppress>
 
-  <!-- JRuby-OpenSSL is not used in the orbits library -->
+  <!-- JRuby-OpenSSL is not used collection-renderer-lib -->
   <suppress>
      <notes><![CDATA[
      file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
