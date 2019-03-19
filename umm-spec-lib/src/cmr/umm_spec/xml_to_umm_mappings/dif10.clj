@@ -197,6 +197,30 @@
         :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")]
                           {:Linkage linkage})}))))
 
+(defn- parse-archive-dist-info
+  "Parses ArchiveAndDistributionInformation out of DIF XML into UMM-C"
+  [doc]
+  (let [distributions
+        (for [distribution (select doc "/DIF/Distribution")
+              :let [dist-size (value-of distribution "Distribution_Size")
+                    [size unit] (when dist-size
+                                  (string/split dist-size #" "))
+                    media (value-of distribution "Distribution_Media")
+                    media (when media
+                            [media])
+                    size (when size (read-string size))
+                    format (value-of distribution "Distribution_Format")
+                    fees (value-of distribution "Fees")]]
+          (when (or fees format size unit)
+            {:Media media
+             :AverageFileSize size
+             :AverageFileSizeUnit unit
+             :Format format
+             :Fees fees
+             :FormatType "Native"}))]
+    (when (seq distributions)
+      {:FileDistributionInformation distributions})))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
@@ -289,7 +313,8 @@
                        :DetailedVariable (value-of sk "Detailed_Variable")})
    :DataCenters (center/parse-data-centers doc sanitize?)
    :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") sanitize?)
-   :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))})
+   :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))
+   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option
