@@ -6,7 +6,7 @@
 
 #### Collection
 
-  	{
+    {
       "concept-type": "collection",
       "native-id": "provider collection id",
       "concept-id": "C1-PROV1",
@@ -44,7 +44,7 @@
 
 #### Service
 
-  {
+    {    
       "concept-type": "service",
       "native-id": "service1",
       "user-id": "user101",
@@ -60,22 +60,22 @@
 
 #### Service Association
 
-  {
-    "concept-type": "service-association",
-    "native-id": "S1200000008-PROV1/C1200000005-PROV1",
-    "user-id": "user1",
-    "format": "application/edn",
-    "metadata": "{:service-concept-id \"S1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
-    "extra-fields": {
-      "service-concept-id": "S1200000008-PROV1",
-      "associated-concept-id": "C1200000005-PROV1",
-      "associated-revision-id": 1
+    {
+      "concept-type": "service-association",
+      "native-id": "S1200000008-PROV1/C1200000005-PROV1",
+      "user-id": "user1",
+      "format": "application/edn",
+      "metadata": "{:service-concept-id \"S1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+      "extra-fields": {
+        "service-concept-id": "S1200000008-PROV1",
+        "associated-concept-id": "C1200000005-PROV1",
+        "associated-revision-id": 1
+      }
     }
-  }
 
 #### Group
 
-  {
+    {
       "concept-type": "access-group",
       "native-id": "group name",
       "concept-id": "AG1-PROV1",
@@ -91,92 +91,93 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 
 #### Tag
 
-  {
-    "concept-type": "tag",
-    "native-id": "org.nasa.something.quality",
-    "user-id": "jnorton",
-    "format": "application/edn",
-    "metadata": "{:tag-key \"org.nasa.something.ozone\", :description \"A very good tag\", :originator-id \"jnorton\"}"
-  }
+    {
+      "concept-type": "tag",
+      "native-id": "org.nasa.something.quality",
+      "user-id": "jnorton",
+      "format": "application/edn",
+      "metadata": "{:tag-key \"org.nasa.something.ozone\", :description \"A very good tag\", :originator-id \"jnorton\"}"
+    }
 
 #### Tag Association
 
-  {
-    "concept-type": "tag-association",
-    "native-id": "org.nasa.something.quality/C12-PROV_A42",
-    "user-id": "jnorton",
-    "format": "application/edn",
-    "metadata": "{:tag-key \"org.nasa.something.ozone\", :associated-concept-id \"C120000000-PROV1\", :revision-id 1, :value \"string to be indexed\"}",
-    "extra-fields": {
-      "tag-key": "org.nasa.something.quality",
-      "associated-concept-id": "C12-PROV_A42",
-      "associated-revision-id": 1
+    {
+      "concept-type": "tag-association",
+      "native-id": "org.nasa.something.quality/C12-PROV_A42",
+      "user-id": "jnorton",
+      "format": "application/edn",
+      "metadata": "{:tag-key \"org.nasa.something.ozone\", :associated-concept-id \"C120000000-PROV1\", :revision-id 1, :value \"string to be indexed\"}",
+      "extra-fields": {
+        "tag-key": "org.nasa.something.quality",
+        "associated-concept-id": "C12-PROV_A42",
+        "associated-revision-id": 1
+      }
     }
-  }
 
 The tag association metadata can have "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
 
 #### Humanizer
 
-  {
-    "concept-type": "humanizer",
-    "native-id" : "humanizer",
-    "metadata" : "[{\"type\":\"trim_whitespace\",\"field\":\"platform\",\"order\":-100},{\"type\":\"priority\",\"field\":\"platform\",\"source_value\":\"Aqua\",\"order\":10,\"priority\":10}]",
-    "user-id" : "user1",
-    "deleted" : false,
-    "format" : "application/json"
-  }
+    {
+      "concept-type": "humanizer",
+      "native-id" : "humanizer",
+      "metadata" : "[{\"type\":\"trim_whitespace\",\"field\":\"platform\",\"order\":-100},{\"type\":\"priority\",\"field\":\"platform\",\"source_value\":\"Aqua\",\"order\":10,\"priority\":10}]",
+      "user-id" : "user1",
+      "deleted" : false,
+      "format" : "application/json"
+    }
 
 #### Variable
 
-  {
-  "concept-type": "variable",
-  "native-id": "MyNumberOneVariable",
-  "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
-  "user-id": "user1",
-  "deleted": false,
-  "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
-  "extra-fields": {
-    "variable-name": "totCldH2OStdErr",
-    "measurement": "totCldH2OStdErrMeasurement"
-  }
-}
+    {
+      "concept-type": "variable",
+      "native-id": "MyNumberOneVariable",
+      "metadata": "{\"VariableType\":\"\",\"DataType\":\"float\",\"Offset\":\"0.0\",\"ScienceKeywords\":[],\"Scale\":\"1.0\",\"Sets\":[{\"Name\":\"/\",\"Type\":\"General\",\"Size\":1.0,\"Index\":1.0}],\"Dimensions\":[{\"Name\":\"Solution_3_Land\",\"Size\":3,\"Type\":\"OTHER\"},{\"Name\":\"YDim\",\"Size\":180.0,\"Type\":\"LATITUDE_DIMENSION\"}],\"FillValue\":\"-9999.0 \",\"Name\":\"totCldH2OStdErr\",\"AcquisitionSourceName\":\"Instrument1\",\"Units\":\"MB\",\"LongName\":\"totCldH2OStdErr\"}",
+      "user-id": "user1",
+      "deleted": false,
+      "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
+      "extra-fields": {
+        "variable-name": "totCldH2OStdErr",
+        "measurement": "totCldH2OStdErrMeasurement"
+        "fingerprint": "7bec71103f3eada1f539acb9f1072fd7"
+      }
+    }
 
 #### Variable Association
 
-  {
-    "concept-type": "variable-association",
-    "native-id": "V1200000006-PROV1/C1200000005-PROV1",
-    "user-id": "user1",
-    "format": "application/edn",
-    "metadata": "{:variable-concept-id \"V1200000006-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
-    "extra-fields": {
-      "variable-concept-id": "V1200000006-PROV1",
-      "associated-concept-id": "C1200000005-PROV1",
-      "associated-revision-id": 1
+    {
+      "concept-type": "variable-association",
+      "native-id": "V1200000006-PROV1/C1200000005-PROV1",
+      "user-id": "user1",
+      "format": "application/edn",
+      "metadata": "{:variable-concept-id \"V1200000006-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+      "extra-fields": {
+        "variable-concept-id": "V1200000006-PROV1",
+        "associated-concept-id": "C1200000005-PROV1",
+        "associated-revision-id": 1
+      }
     }
-  }
 
 _Note the absence of provider-id for tag, tag association, humanizer and variable. These are system level entities and are always assigned the system level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
   	{
-  		"concept-type": "collection",
-  		"native-id": "provider collection id",
-     	"concept-id": "C1-PROV1",
-     	"provider-id": "PROV1",
-      "user-id": "user101", (Only for colletions)
-     	"deleted": true,
-      "transaction-id": 100005,
-     	"revision-id": 10,
-      "extra-fields": {
-        "short-name": "short",
-        "version-id": "V01",
-        "entry-id": "short_V01",
-        "entry-title": "Dataset V01"
+        "concept-type": "collection",
+        "native-id": "provider collection id",
+        "concept-id": "C1-PROV1",
+        "provider-id": "PROV1",
+        "user-id": "user101", (Only for colletions)
+        "deleted": true,
+        "transaction-id": 100005,
+        "revision-id": 10,
+        "extra-fields": {
+          "short-name": "short",
+          "version-id": "V01",
+          "entry-id": "short_V01",
+          "entry-title": "Dataset V01"
+        }
       }
-     }
 
 
 ### Setting up the database
