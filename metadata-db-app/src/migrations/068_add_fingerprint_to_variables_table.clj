@@ -8,7 +8,7 @@
   []
   (println "migrations.068-add-fingerprint-to-variables-table up...")
   (h/sql "alter table cmr_variables add fingerprint VARCHAR(64)")
-  (h/sql "CREATE INDEX variables_FPI ON cmr_variables(fingerprint)"))
+  (h/sql "CREATE INDEX variables_FPI ON cmr_variables(fingerprint, provider_id)"))
 
 (defn down
   "Migrates the database down from version 68."

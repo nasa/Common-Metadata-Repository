@@ -5,7 +5,7 @@
    [cmr.common.util :refer [defn-timed]]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm-spec.umm-spec-core :as spec]
-   [digest]))
+   [digest :as digest]))
 
 (defn- normalized-string
   "Returns the given string with leading and trailing whitespaces trimmed
