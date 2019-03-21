@@ -49,7 +49,7 @@
     (when-not (string/blank? cycle)
       (vector cycle))))
 
-(defn- validatae-pass
+(defn- validate-pass
   "Validates the given passes, returns error when required pass is missing or not a natural number"
   [passes-obj]
   (let [[index {:keys [pass]}] passes-obj
@@ -66,7 +66,7 @@
   (let [{:keys [cycle passes]} params
         cycle-values (cycle-param->cycle-values cycle)]
     (concat (mapcat #(validate-natural-number :cycle %) cycle-values)
-            (mapcat validatae-pass passes)
+            (mapcat validate-pass passes)
             (mapcat validate-tiles passes))))
 
 (defn- cycle-exist-with-passes-validation

@@ -12,6 +12,7 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [compojure "1.6.1"]
+                 [digest "1.4.8"]
                  [drift "1.5.3"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [instaparse "1.4.10"]

@@ -119,14 +119,14 @@
 (defn ingest-variable
   "A convenience function for ingesting a variable during tests."
   ([]
-    (ingest-variable (make-variable-concept)))
+   (ingest-variable (make-variable-concept)))
   ([variable-concept]
-    (ingest-variable variable-concept default-opts))
+   (ingest-variable variable-concept default-opts))
   ([variable-concept opts]
-    (let [result (ingest-util/ingest-concept variable-concept opts)
-          attrs (select-keys variable-concept
-                             [:provider-id :native-id :metadata])]
-      (merge result attrs))))
+   (let [result (ingest-util/ingest-concept variable-concept opts)
+         attrs (select-keys variable-concept
+                            [:provider-id :native-id :metadata])]
+     (merge result attrs))))
 
 (defn ingest-variable-with-attrs
   "Helper function to ingest a variable with the given variable attributes"
