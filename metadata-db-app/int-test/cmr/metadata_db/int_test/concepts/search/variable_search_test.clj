@@ -15,7 +15,7 @@
          variable2 (concepts/create-and-save-concept :variable "SMAL_PROV1" 1 2)]
     (println "Variable1 is:" variable1)
     (println "Variable2 is:" variable2)
-    (testing "find latest revsions"
+    (testing "find latest revisions"
       (are3 [variables params]
         (is (= (set variables)
                (set (->> (util/find-latest-concepts :variable params)

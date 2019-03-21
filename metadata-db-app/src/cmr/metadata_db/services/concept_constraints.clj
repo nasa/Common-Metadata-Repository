@@ -157,7 +157,8 @@
                 (unique-field-constraint :entry-id)]
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
    :acl [(unique-field-constraint :acl-identity)]
-   :service [(partial pfn-constraint :service-name)]})
+   :service [(partial pfn-constraint :service-name)]
+   :variable [(unique-field-constraint :fingerprint)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint

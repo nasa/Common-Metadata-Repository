@@ -31,7 +31,7 @@
    :service (into common-columns [:provider_id :service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
-   :variable (into common-columns [:provider_id :variable_name :measurement :user_id])
+   :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :variable_concept_id :user_id])

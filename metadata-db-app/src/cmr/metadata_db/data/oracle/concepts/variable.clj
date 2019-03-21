@@ -10,16 +10,17 @@
           (assoc :provider-id (:provider_id result))
           (assoc :user-id (:user_id result))
           (assoc-in [:extra-fields :variable-name] (:variable_name result))
-          (assoc-in [:extra-fields :measurement] (:measurement result))))
+          (assoc-in [:extra-fields :measurement] (:measurement result))
+          (assoc-in [:extra-fields :fingerprint] (:fingerprint result))))
 
 (defn- variable-concept->insert-args
   [concept]
-  (let [{{:keys [variable-name measurement]} :extra-fields
+  (let [{{:keys [variable-name measurement fingerprint]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (c/concept->common-insert-args concept)]
-    [(concat cols ["provider_id" "user_id" "variable_name" "measurement"])
-     (concat values [provider-id user-id variable-name measurement])]))
+    [(concat cols ["provider_id" "user_id" "variable_name" "measurement" "fingerprint"])
+     (concat values [provider-id user-id variable-name measurement fingerprint])]))
 
 (defmethod c/concept->insert-args [:variable false]
   [concept _]

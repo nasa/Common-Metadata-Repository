@@ -9,23 +9,82 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.variable-util :as variable-util]))
+   [cmr.system-int-test.utils.variable-util :as variable-util]
+   [cmr.umm-spec.models.umm-variable-models :as umm-v]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
+                                           "provguid2" "PROV2"}
                                           {:grant-all-ingest? false}))
 
 (deftest variable-ingest-test
   (let [{token :token} (variable-util/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")]
+                        (s/context) "PROV1" "user1" "update-group")
+        {token2 :token} (variable-util/setup-update-acl
+                         (s/context) "PROV2" "user1" "update-group")]
+
     (testing "ingest of a new variable concept"
-      (let [concept (variable-util/make-variable-concept)
+      (let [concept (variable-util/make-variable-concept
+                     {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                              :Size 3
+                                                              :Type "OTHER"})]
+                      :AcquisitionSourceName "Instrument1"}
+                     {:native-id "var1"})
             {:keys [concept-id revision-id]} (variable-util/ingest-variable
-                                               concept
-                                               (variable-util/token-opts token))]
+                                              concept
+                                              (variable-util/token-opts token))
+            var-concept-id concept-id]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= 1 revision-id))))
+        (is (= 1 revision-id))
+        (is (= "7bec71103f3eada1f539acb9f1072fd7"
+               (get-in (mdb/get-concept concept-id revision-id) [:extra-fields :fingerprint])))
+
+        (testing "ingest the same concept on a different provider is OK"
+          (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                                  (assoc concept :provider-id "PROV2")
+                                                  (variable-util/token-opts token2))]
+            (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+            (is (= 1 revision-id))
+            (is (= "7bec71103f3eada1f539acb9f1072fd7"
+                   (get-in (mdb/get-concept concept-id revision-id)
+                           [:extra-fields :fingerprint])))))
+
+        (testing "ingest of the variable with negligible changes and the same native-id becomes an update"
+          (let [concept (variable-util/make-variable-concept
+                         {:Dimensions [(umm-v/map->DimensionType {:Name " Solution_3_Land "
+                                                                  :Size 3
+                                                                  :Type "OTHER"})]
+                          :AcquisitionSourceName " Instrument1 "}
+                         {:native-id "var1"})
+                {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                                  concept
+                                                  (variable-util/token-opts token))]
+            (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+            (is (= 2 revision-id))
+            (is (= "7bec71103f3eada1f539acb9f1072fd7"
+                   (get-in (mdb/get-concept concept-id revision-id)
+                           [:extra-fields :fingerprint])))))
+
+        (testing "ingest of the existing variable with a different native-id is not allowed"
+          (let [concept (variable-util/make-variable-concept
+                         {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                                  :Size 3
+                                                                  :Type "OTHER"})]
+                          :AcquisitionSourceName "Instrument1"}
+                         {:native-id "var2"})
+                {:keys [status errors]} (variable-util/ingest-variable
+                                         concept
+                                         (variable-util/token-opts token))]
+            (is (= 409 status))
+            (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
+                                 "Instrument short name, variable short name, units and dimensions "
+                                 "must be unique. The following variable with the same fingerprint "
+                                 "but different native id was found: [%s].")
+                            var-concept-id)]
+                   errors))))))
+    
     (testing "ingest of a variable concept with a revision id"
-      (let [concept (variable-util/make-variable-concept {} {:revision-id 5})
+      (let [concept (variable-util/make-variable-concept {} {:native-id "var1"
+                                                             :revision-id 5})
             {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                               concept
                                               (variable-util/token-opts token))]
@@ -260,14 +319,19 @@
     (is (mdb/concept-exists-in-mdb? var-concept-id initial-revision-id))
     (is (= 1 initial-revision-id))
 
-    (testing "ingest of a variable with the same name but a different native id is OK"
+    (testing "ingest of a variable with the same fingerprint but a different native id is not OK"
       (let [concept (variable-util/make-variable-concept
                      {:Name "var1"} {:native-id "a-different-native-id"})
-            {:keys [concept-id revision-id]} (variable-util/ingest-variable
-                                              concept
-                                              (variable-util/token-opts token))]
-        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= 1 revision-id))))
+            {:keys [status errors]} (variable-util/ingest-variable
+                                     concept
+                                     (variable-util/token-opts token))]
+        (is (= 409 status))
+        (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
+                             "Instrument short name, variable short name, units and dimensions "
+                             "must be unique. The following variable with the same fingerprint "
+                             "but different native id was found: [%s].")
+                        var-concept-id)]
+               errors))))
 
     (let [;; variable with a different variable name, but the same native-id
            concept (variable-util/make-variable-concept
