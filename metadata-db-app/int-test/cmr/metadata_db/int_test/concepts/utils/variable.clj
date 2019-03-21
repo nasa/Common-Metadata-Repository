@@ -31,7 +31,7 @@
   (let [native-id (str "var-native" uniq-num)
         extra-fields (merge {:variable-name (str "var" uniq-num)
                              :measurement (str "measurement" uniq-num)
-                             :fingerprint "dummy"}
+                             :fingerprint (str "fingerprint" uniq-num)}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)
                            :format "application/json"

@@ -50,14 +50,16 @@
         (is (= concept1-concept-id concept-id))
         (is (= 2 revision-id))))
 
-    (testing "save variable with the same data, but a different native id creates a new variable"
+    (testing "save variable with the same data, but a different native id is not allowed"
       (let [concept2 (assoc concept1 :native-id "different-native-id")
-            {:keys [status concept-id revision-id]} (util/save-concept concept2)]
-        ;; We allow variables with the same variable name
-        ;; to be saved within the same provider using a different native id
-        (is (= 201 status))
-        (is (not= concept1-concept-id concept-id))
-        (is (= 1 revision-id))))
+            {:keys [status errors]} (util/save-concept concept2)]
+        (is (= 409 status))
+        (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
+                             "Instrument short name, variable short name, units and dimensions "
+                             "must be unique. The following variable with the same fingerprint "
+                             "but different native id was found: [%s].")
+                        concept1-concept-id)]
+               errors))))
 
     (testing "save variable with same data but different provider"
       (let [concept3 (assoc concept1 :provider-id "PROV2")
