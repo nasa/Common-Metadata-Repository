@@ -751,7 +751,15 @@
                                        :Description "Test access URL"
                                        :URLContentType "VisualizationURL"
                                        :Type "GET DATA"}]}
-          concept-umm (-> (umm-spec-collection/collection 1 related-urls)
+          data-centers {:DataCenters
+                        [(umm-spec-collection/data-center
+                          {:Roles ["ARCHIVER"]
+                           :ShortName "test-short-name"
+                           :ContactInformation {:ContactMechanisms
+                                                [{:Type "Email"
+                                                  :Value "test-address@example.com"}]}})]}
+          umm-attributes (merge related-urls data-centers)
+          concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
                           ingest/ingest-concept)
 
@@ -772,6 +780,9 @@
       (is (= 201 (:status concept-5138-1)))
       (is (= 201 (:status concept-5138-2)))
       (is (= 201 (:status concept-5138-3)))
+      (testing "Contact email in response when email is at top level DataCenter"
+        (is (= "mailto:test-address@example.com"
+               (get-in opendata-coll-umm [:contactPoint :hasEmail]))))
       (testing "distribution urls"
         (are3 [expected-distribution opendata-collection]
           (is (contains? (set (:distribution opendata-collection)) expected-distribution))
