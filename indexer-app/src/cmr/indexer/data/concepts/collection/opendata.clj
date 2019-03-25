@@ -16,7 +16,7 @@
   contact info found in the ContactPersons, ContactGroups or DataCenters."
   [collection]
   (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups (mapcat data-center/data-center-contacts DataCenters))
+        contacts (concat ContactPersons ContactGroups (mapcat data-center/data-center-contacts DataCenters) DataCenters)
         email-contact (some #(when (email-contact? %) %) contacts)]
     (when email-contact
       (let [email (some #(when (= "Email" (:Type %)) (:Value %))
