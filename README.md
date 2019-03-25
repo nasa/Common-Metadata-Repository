@@ -102,7 +102,7 @@ Here are the steps to do so:
 
 1. Ensure you have installed on your system the items listed above in the
    "Prerequisites" section.
-1. Download the Oracle JDBC JAR files into `./oracle-libs/support` by
+1. Download the Oracle JDBC JAR files into `./oracle-lib/support` by
    following instructions in `./oracle-lib/README.md`. (The CMR must have these
    libraries to build but it does not depend on Oracle DB when running
    locally. It uses a local in-memory database by default.) If you're reading this
