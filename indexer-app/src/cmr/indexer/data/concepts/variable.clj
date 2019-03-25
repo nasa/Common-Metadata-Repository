@@ -16,6 +16,7 @@
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         alias (:Alias parsed-concept)
+        instrument (:AcquisitionSourceName parsed-concept)
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
@@ -51,6 +52,8 @@
        :alias.lowercase (util/safe-lowercase alias)
        :measurement measurement
        :measurement.lowercase (string/lower-case measurement)
+       :instrument instrument
+       :instrument.lowercase (string/lower-case instrument)
        :provider-id provider-id
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
