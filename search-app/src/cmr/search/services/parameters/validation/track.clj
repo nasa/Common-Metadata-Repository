@@ -39,7 +39,10 @@
   [passes-obj]
   (let [[index {:keys [tiles]}] passes-obj
         index (name index)]
-    (mapcat #(validate-tile index %) (common-params/normalized-list-value tiles))))
+    (if (or (nil? tiles) (sequential? tiles) (string? tiles))
+      (mapcat #(validate-tile index %) (common-params/normalized-list-value tiles))
+      [(format "Tiles must be a string or list of strings, but was %s in passes[%s][tiles]"
+               tiles index)])))
 
 (defn- cycle-param->cycle-values
   "Returns cycle values in a list from the given cycle parameter value"
@@ -54,9 +57,17 @@
   [passes-obj]
   (let [[index {:keys [pass]}] passes-obj
         index (name index)]
-    (if (string/blank? pass)
+    (cond
+      ;; the pass value must be a string value represent a postive integer
+      (and (some? pass) (not (string? pass)))
+      [(format "Parameter passes[%s][pass] must be a positive integer, but was %s"
+               index pass)]
+
+      (string/blank? pass)
       [(format "Parameter passes[%s] is missing required field passes[%s][pass]"
                index index)]
+
+      :else
       (validate-natural-number (format "passes[%s][pass]" index) pass))))
 
 (defn- cycle-pass-tile-format-validation
