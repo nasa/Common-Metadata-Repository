@@ -80,11 +80,13 @@
                                                                  :Type "Science"
                                                                  :Size 2
                                                                  :Index 2}]
+                                                         :AcquisitionSourceName "Instrument1"
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                          :Alias "Alias2"
                                                          :Name "Variable2"
                                                          :LongName "Measurement2"
+                                                         :AcquisitionSourceName "Instrument2"
                                                          :provider-id "PROV1"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
                                                          :Alias "Alias3"
@@ -94,11 +96,13 @@
                                                                  :Type "Science"
                                                                  :Size 2
                                                                  :Index 2}]
+                                                         :AcquisitionSourceName "Instrument123"
                                                          :provider-id "PROV2"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
                                                          :Alias "v.other"
                                                          :Name "v.other"
                                                          :LongName "m.other"
+                                                         :AcquisitionSourceName "Instrument.other"
                                                          :provider-id "PROV2"})
 
         [coll1 coll2 coll3] (doall (for [n (range 1 4)]
@@ -237,6 +241,44 @@
       "By multiple variable-names with options"
       [variable1 variable4]
       {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; instrument Param
+      "By instrument case sensitive - exact match"
+      [variable1]
+      {:instrument "Instrument1"}
+
+      "By instrument case sensitive, default ignore-case true"
+      [variable1]
+      {:instrument "instrument1"}
+
+      "By instrument ignore case false"
+      []
+      {:instrument "instrument1" "options[instrument][ignore-case]" false}
+
+      "By instrument ignore case true"
+      [variable1]
+      {:instrument "instrument1" "options[instrument][ignore-case]" true}
+
+      "By instrument Pattern, default false"
+      []
+      {:instrument "*other"}
+
+      "By instrument Pattern true"
+      [variable4]
+      {:instrument "*other" "options[instrument][pattern]" true}
+
+      "By instrument Pattern false"
+      []
+      {:instrument "*other" "options[instrument][pattern]" false}
+
+      "By multiple instruments"
+      [variable1 variable2]
+      {:instrument ["instrument1" "instrument2"]}
+
+      "By multiple instruments with options"
+      [variable1 variable4]
+      {:instrument ["Instrument1" "*other"] "options[instrument][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; provider Param

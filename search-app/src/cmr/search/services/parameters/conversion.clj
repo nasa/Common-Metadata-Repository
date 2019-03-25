@@ -132,6 +132,7 @@
    :alias :string
    :name :string
    :measurement :string
+   :instrument :string
    :provider :string
    :native-id :string
    :concept-id :string

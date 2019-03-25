@@ -675,6 +675,8 @@
    :alias.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
+   :instrument (-> m/string-field-mapping m/stored m/doc-values)
+   :instrument.lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
