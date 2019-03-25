@@ -329,6 +329,13 @@
       (is (= ["Parameter passes[1] is missing required field passes[1][pass]"]
              errors))))
 
+  (testing "search by passes with pass not a string representing a positive integer is invalid"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass [1 2] :tiles "3R"}}})]
+      (is (= 400 status))
+      (is (= ["Parameter passes[0][pass] must be a positive integer, but was [\"1\" \"2\"]"]
+             errors))))
+
   (testing "search by invalid tiles"
     (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
                                                               :passes {:0 {:pass 1
@@ -344,6 +351,14 @@
                                                                            :tiles "1L, 2M, 3R"}}})]
       (is (= 400 status))
       (is (= ["Tile must be in the format of \"\\d+[LRF]\", but was [2M] in passes[1][tiles]"]
+             errors))))
+
+  (testing "search by invalid tiles (not in string or list of string format)"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1
+                                                              :passes {:0 {:pass 1
+                                                                           :tiles {:1 "2L"}}}})]
+      (is (= 400 status))
+      (is (= ["Tiles must be a string or list of strings, but was {:1 \"2L\"} in passes[0][tiles]"]
              errors))))
 
   (testing "search by options[passses][OR] is not supported"
