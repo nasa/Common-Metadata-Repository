@@ -242,22 +242,28 @@
   {;; Simple multi-valued data
    :ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
 
-(def fields->fn-mapper
+(def ^:private fields->fn-mapper
   "A data structure that maps UMM field names to functions that extract keyword
   data for those fields. Intended to be used instead of `case` statements for
   dispatching based upon field name.
 
   By default, the extract keyword is the same as the field name. So only fields
-  that has an extract keyword different from the field name needs to be listed.
-
-  For example, to iterate over all the science keywords in a concept and return
-  textual data that will be indexd (i.e., from sub-fields):
-
-    (map (:ScienceKeywords fields->fn-mapper) parsed-concept))"
+  that has an extract keyword different from the field name needs to be listed."
   (merge variable-fields->fn-mapper
          service-fields->fn-mapper
          collection-fields->fn-mapper
          shared-fields->fn-mapper))
+
+(defn- fields->extract-fn
+  "Returns the function that will extract the value of the given field from the augmented
+  parsed concept.
+
+  For example, to iterate over all the science keywords in a concept and return
+  textual data that will be indexd (i.e., from sub-fields):
+
+    (map (fields->extract-fn :ScienceKeywords) parsed-concept))"
+  [field]
+  (get fields->fn-mapper field field))
 
 (defn- flatten-collections
   "This function is used to conditionally prepare schema texutal field data,
@@ -275,7 +281,7 @@
   "Given a parsed concept and a single schema key, build a list of keywords
   for that key."
   [parsed-concept schema-key]
-  (let [extractor (get fields->fn-mapper schema-key schema-key)]
+  (let [extractor (fields->extract-fn schema-key)]
     (->> parsed-concept
          extractor
          flatten-collections

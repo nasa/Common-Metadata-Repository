@@ -319,87 +319,87 @@
                                              :MiddleName "D."
                                              :LastName "Eve"}]}]})
 
-(deftest fields->fn-mapper-single-valued
+(deftest extract-field-single-valued
   (is (= "An abstract summary"
-         ((:Abstract keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :Abstract) sample-umm-collection-concept)))
   (is (= "Dummy-DOI"
-         ((:DOI keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :DOI) sample-umm-collection-concept)))
   (is (= "The collection entry title."
-         ((:EntryTitle keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :EntryTitle) sample-umm-collection-concept)))
   (is (= "OPeNDAP Service for AIRS Level-3 retrieval products"
-         ((:LongName keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :LongName) sample-umm-service-concept)))
   (is (= "AIRX3STD"
-         ((:Name keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :Name) sample-umm-service-concept)))
   (is (= "4"
-         ((:ProcessingLevel keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ProcessingLevel) sample-umm-collection-concept)))
   (is (= "VIIRS"
-         ((:ShortName keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ShortName) sample-umm-collection-concept)))
   (is (= "1.9"
-         ((:Version keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :Version) sample-umm-service-concept)))
   (is (= "The beginning version of a sample collection."
-         ((:VersionDescription keyword-util/fields->fn-mapper) sample-umm-collection-concept))))
+         ((#'keyword-util/fields->extract-fn :VersionDescription) sample-umm-collection-concept))))
 
-(deftest fields->fn-mapper-multi-valued
+(deftest extract-field-multi-valued
   (is (= ["ALBEDOFILEID" "ID of the kernel albedo table used."
           "ASTERMapProjection" "The map projection of the granule"]
-         ((:AdditionalAttributes keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :AdditionalAttributes) sample-umm-collection-concept)))
   (is (= ["Data Visualization" "Data Discovery"]
-         ((:AncillaryKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :AncillaryKeywords) sample-umm-service-concept)))
   (is (= ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
-         ((:AncillaryKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :AncillaryKeywords) sample-umm-collection-concept)))
   (is (= ["Bowen Island Forest and Water Management Society (BIFWMS)"
           "U.S. Geological Survey, 1993, Digital Elevation Models--data users guide 5:[Reston, Virginia], U.S. Geological Survey, 48 p."
           "Solanki, S.K., I.G. Usoskin, B. Kromer, M. Schussler and J. Beer"
           "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce"
           "Dublin Transport Office"
           "Full report in PDF is available online"]
-         ((:CollectionCitations keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :CollectionCitations) sample-umm-collection-concept)))
   (is (= ["near_real_time" "nrt" "near real time","near-real time" "near-real-time" "near real-time"]
-         ((:CollectionDataType keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :CollectionDataType) sample-umm-collection-concept)))
   (is (= ["TEAM SPOCK" "SCIENCE CONTACT"]
-         ((:ContactGroups keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :ContactGroups) sample-umm-service-concept)))
   (is (= ["TEAM SPOCK" "SCIENCE CONTACT"]
-         ((:ContactGroups keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ContactGroups) sample-umm-collection-concept)))
   (is (= ["ncdc.orders at noaa.gov" "custserv at usgs.gov" "sample-email-one@anywhere.com" "sample-email-two@example.com"]
-         ((:ContactMechanisms keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ContactMechanisms) sample-umm-collection-concept)))
   (is (= ["Alice" "Bob" "AUTHOR"]
-         ((:ContactPersons keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :ContactPersons) sample-umm-service-concept)))
   (is (= ["Alice" "Bob" "AUTHOR"]
-         ((:ContactPersons keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ContactPersons) sample-umm-collection-concept)))
   (is (= ["John" "Doe" "Technical Contact" "Science Contact" "White Marsh Institute of Health"
           "Data Center Contact" "Technical Contact" "IRIS/PASSCAL"]
-         ((:DataCenters keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :DataCenters) sample-umm-collection-concept)))
   (is (= ["elevation" "GEOSCIENTIFIC INFORMATION" "OCEANS"]
-         ((:ISOTopicCategories keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ISOTopicCategories) sample-umm-collection-concept)))
   (is (= ["CONTINENT" "NORTH AMERICA" "UNITED STATES OF AMERICA" "MICHIGAN" "DETROIT" "MOUNTAIN"
           "OCEAN" "ATLANTIC OCEAN" "NORTH ATLANTIC OCEAN" "GULF OF MEXICO" "WATER"]
-         ((:LocationKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :LocationKeywords) sample-umm-collection-concept)))
   (is (= ["Airbus A340-600" "A340-600" "Senso-matic Wonder Eye 4B" "SMWE4B"]
-         ((:Platforms keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :Platforms) sample-umm-service-concept)))
   (is (= ["characteristic-name-one" "characteristic-description-one" "256" "characteristic-name-two"
           "characteristic-description-two" "1024.5" "LIDAR" "WCMS" "SURFACE WATER WIER"]
-         ((:CollectionPlatforms keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :CollectionPlatforms) sample-umm-collection-concept)))
   (is (= ["Earth Observing System Data Information System" "EOSDIS"
           "Global Terrestrial Observing System" "GTOS"
           "Environmental Sustainability Index" "ESI"]
-         ((:Projects keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :Projects) sample-umm-collection-concept)))
   (is (= ["OPeNDAP Service" "ACCESS WEB SERVICE" "GET SERVICE" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" "CollectionURL"]
-         ((:RelatedURLs keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :RelatedURLs) sample-umm-service-concept)))
   (is (= ["Related-url description." "EDG" "GET SERVICE" "related-url-example.com" "PublicationURL"
           "A test related url." "GENERAL DOCUMENTATION" "HOME PAGE" "related-url-example-two.com" "DataCenterURL"]
-         ((:RelatedUrls keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :RelatedUrls) sample-umm-collection-concept)))
   (is (= ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION" nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING" "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
-         ((:ScienceKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :ScienceKeywords) sample-umm-service-concept)))
   (is (= ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION" nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING" "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
-         ((:ScienceKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :ScienceKeywords) sample-umm-collection-concept)))
   (is (= ["DATA ANALYSIS AND VISUALIZATION" nil nil "VISUALIZATION/IMAGE PROCESSING" "DATA ANALYSIS AND VISUALIZATION" nil nil nil nil nil nil "STATISTICAL APPLICATIONS"]
-         ((:ServiceKeywords keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :ServiceKeywords) sample-umm-service-concept)))
   (is (= [nil "LDPAAC" "SERVICE PROVIDER" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES" "USGS/EROS" "Carol" "Eve" "PUBLISHER" "SERVICE PROVIDER"]
-         ((:ServiceOrganizations keyword-util/fields->fn-mapper) sample-umm-service-concept)))
+         ((#'keyword-util/fields->extract-fn :ServiceOrganizations) sample-umm-service-concept)))
   (is (= ["MISR" "CALIPSO"]
-         ((:TilingIdentificationSystems keyword-util/fields->fn-mapper) sample-umm-collection-concept)))
+         ((#'keyword-util/fields->extract-fn :TilingIdentificationSystems) sample-umm-collection-concept)))
   (is (= ["Composit" "Annual" "Day"]
-       ((:TemporalKeywords keyword-util/fields->fn-mapper) sample-umm-collection-concept))))
+       ((#'keyword-util/fields->extract-fn :TemporalKeywords) sample-umm-collection-concept))))
 
 (deftest concept-key->keywords
   (is (= ["OPeNDAP Service for AIRS Level-3 retrieval products"]
