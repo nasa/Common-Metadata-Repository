@@ -209,6 +209,7 @@
             :crid-id.lowercase (map string/lower-case crid-ids)
             :size size
             :size-doc-values size
+            :size-double-doc-values size
             :cloud-cover cloud-cover
             :cloud-cover-doc-values cloud-cover
             :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
