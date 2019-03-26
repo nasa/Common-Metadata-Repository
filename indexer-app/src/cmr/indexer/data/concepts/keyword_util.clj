@@ -254,14 +254,14 @@
          collection-fields->fn-mapper
          shared-fields->fn-mapper))
 
-(defn- fields->extract-fn
+(defn- field-extract-fn
   "Returns the function that will extract the value of the given field from the augmented
   parsed concept.
 
   For example, to iterate over all the science keywords in a concept and return
   textual data that will be indexd (i.e., from sub-fields):
 
-    (map (fields->extract-fn :ScienceKeywords) parsed-concept))"
+    (map (field-extract-fn :ScienceKeywords) parsed-concept))"
   [field]
   (get fields->fn-mapper field field))
 
@@ -281,7 +281,7 @@
   "Given a parsed concept and a single schema key, build a list of keywords
   for that key."
   [parsed-concept schema-key]
-  (let [extractor (fields->extract-fn schema-key)]
+  (let [extractor (field-extract-fn schema-key)]
     (->> parsed-concept
          extractor
          flatten-collections
