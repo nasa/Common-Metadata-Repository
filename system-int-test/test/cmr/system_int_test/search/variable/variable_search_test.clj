@@ -80,7 +80,7 @@
                                                                  :Type "Science"
                                                                  :Size 2
                                                                  :Index 2}]
-                                                         :AcquisitionSourceName "Instrument1"
+                                                         :AcquisitionSourceName "InstrumentX"
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                          :Alias "Alias2"
@@ -246,19 +246,19 @@
       ;; instrument Param
       "By instrument case sensitive - exact match"
       [variable1]
-      {:instrument "Instrument1"}
+      {:instrument "InstrumentX"}
 
       "By instrument case sensitive, default ignore-case true"
       [variable1]
-      {:instrument "instrument1"}
+      {:instrument "instrumentx"}
 
       "By instrument ignore case false"
       []
-      {:instrument "instrument1" "options[instrument][ignore-case]" false}
+      {:instrument "instrumentx" "options[instrument][ignore-case]" false}
 
       "By instrument ignore case true"
       [variable1]
-      {:instrument "instrument1" "options[instrument][ignore-case]" true}
+      {:instrument "instrumentx" "options[instrument][ignore-case]" true}
 
       "By instrument Pattern, default false"
       []
@@ -274,11 +274,11 @@
 
       "By multiple instruments"
       [variable1 variable2]
-      {:instrument ["instrument1" "instrument2"]}
+      {:instrument ["instrumentx" "instrument2"]}
 
       "By multiple instruments with options"
       [variable1 variable4]
-      {:instrument ["Instrument1" "*other"] "options[instrument][pattern]" true}
+      {:instrument ["InstrumentX" "*other"] "options[instrument][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; provider Param
@@ -379,6 +379,10 @@
       "By keyword match both variable_name and measurement"
       [variable1 variable3]
       {:keyword "variable1"}
+
+      "By keyword match instrument"
+      [variable1]
+      {:keyword "InstrumentX"}
 
       "By keyword match associated collection"
       [variable1]

@@ -18,7 +18,8 @@
         alias (:Alias parsed-concept)
         instrument (:AcquisitionSourceName parsed-concept)
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
+        schema-keys [:ScienceKeywords :AcquisitionSourceName
+                     :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
                         (merge parsed-concept extra-fields
                                {:variable-associations (map :associated-concept-id variable-associations)

@@ -191,14 +191,13 @@
 (def ^:private variable-fields->fn-mapper
   "A data structure that maps UMM variable field names to functions that
   extract keyword data for those fields. Intended only to be used as part
-  of a larger map for multiple field types.
+  of a larger map for multiple field types. By default, the extract keyword
+  is the same as the field name. So only fields that has an extract keyword
+  different from the field name needs to be listed.
+
 
   See `fields->fn-mapper`, below."
-  {;; Simple single-valued data
-   :variable-name :variable-name
-   :measurement :measurement
-   :set-names :set-names
-   :variable-associations :variable-associations})
+  {})
 
 (def ^:private service-fields->fn-mapper
   "A data structure that maps UMM service field names to functions that
@@ -206,13 +205,7 @@
   of a larger map for multiple field types.
 
   See `fields->fn-mapper`, below."
-  {;; Simple single-valued data
-   :LongName :LongName
-   :Name :Name
-   :Version :Version
-   ;; Simple multi-valued data
-   :AncillaryKeywords :AncillaryKeywords
-   :ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
+  {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
    :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
    :Platforms #(mapcat platform->keywords (:Platforms %))
    :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
@@ -225,13 +218,8 @@
   of a larger map for multiple field types.
 
   See `fields->fn-mapper`, below."
-  {;; Simple single-values data
-   :Abstract :Abstract
-   :DOI #(get-in % [:DOI :DOI])
-   :EntryTitle :EntryTitle
+  {:DOI #(get-in % [:DOI :DOI])
    :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
-   :ShortName :ShortName
-   :VersionDescription :VersionDescription
    ;; Simple multi-values data
    :AdditionalAttributes #(mapcat additional-attribute->keywords (:AdditionalAttributes %))
    :CollectionCitations #(mapcat collection-citation->keywords (:CollectionCitations %))
@@ -240,11 +228,9 @@
    :ContactMechanisms get-contact-mechanisms->keywords
    :DataCenters #(mapcat data-center->keywords (:DataCenters %))
    :DirectoryNames #(mapcat names->keywords (:DirectoryNames %))
-   :ISOTopicCategories :ISOTopicCategories
    :LocationKeywords #(lk/location-keywords->spatial-keywords-for-indexing (:LocationKeywords %))
    :Projects #(mapcat names->keywords (:Projects %))
    :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
-   :TemporalKeywords :TemporalKeywords
    :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))})
 
 (def ^:private shared-fields->fn-mapper
@@ -260,6 +246,9 @@
   "A data structure that maps UMM field names to functions that extract keyword
   data for those fields. Intended to be used instead of `case` statements for
   dispatching based upon field name.
+
+  By default, the extract keyword is the same as the field name. So only fields
+  that has an extract keyword different from the field name needs to be listed.
 
   For example, to iterate over all the science keywords in a concept and return
   textual data that will be indexd (i.e., from sub-fields):
@@ -286,7 +275,7 @@
   "Given a parsed concept and a single schema key, build a list of keywords
   for that key."
   [parsed-concept schema-key]
-  (let [extractor (schema-key fields->fn-mapper)]
+  (let [extractor (get fields->fn-mapper schema-key schema-key)]
     (->> parsed-concept
          extractor
          flatten-collections
