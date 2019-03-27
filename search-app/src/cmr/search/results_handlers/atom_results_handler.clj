@@ -80,6 +80,7 @@
                      "entry-title"
                      "producer-gran-id"
                      "size"
+                     "size-double-doc-values"
                      "metadata-format"
                      "provider-id"
                      "start-date"
@@ -192,7 +193,8 @@
           [update-time] :update-time
           [entry-title] :entry-title
           [producer-gran-id] :producer-gran-id
-          [size] :size
+          [size-float] :size ; TODO delete size-float when obsolete
+          [size-double] :size-double-doc-values
           [metadata-format] :metadata-format
           [provider-id] :provider-id
           [start-date] :start-date
@@ -212,6 +214,7 @@
           ords-info :ords-info
           ords :ords
           [access-value] :access-value} :fields} elastic-result
+        size (or size-double size-float)
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
