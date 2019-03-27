@@ -18,7 +18,8 @@
   :dependencies [[cheshire "5.8.1"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version :exclusions [com.fasterxml.jackson.core/jackson-databind]]
+                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
+                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [com.fasterxml.jackson.core/jackson-databind "2.9.8"]
                  [commons-codec/commons-codec "1.11"]
