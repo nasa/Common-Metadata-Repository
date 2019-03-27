@@ -557,7 +557,14 @@
                  (search/find-concepts-atom :granule
                                             {:granule-ur "Granule1"}
                                             {:url-extension "atom"})
-                 [:status :results])))))
+                 [:status :results]))))
+
+      (testing "granule size is double"
+        (let [response (search/find-concepts-atom :granule {:concept-id (:concept-id gran1)})]
+          (is (= (Double/MAX_VALUE)
+                 (-> (get-in response [:results :entries])
+                     first
+                     :size))))))
 
     (testing "json"
       (let [gran-json (dj/granules->expected-json [gran1] [coll1] "granules.json?granule_ur=Granule1")
