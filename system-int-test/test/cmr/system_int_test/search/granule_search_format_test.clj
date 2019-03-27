@@ -451,7 +451,7 @@
                                 :ending-date-time "2010-01-11T12:00:00Z"
                                 :producer-gran-id "Granule #1"
                                 :day-night "DAY"
-                                :size 100.0
+                                :size (Double/MAX_VALUE)
                                 :cloud-cover 50.0
                                 :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
                                                                     :orbit-number 2
