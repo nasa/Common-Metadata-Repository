@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.3.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-sizing-plugin "0.3.2-SNAPSHOT"
   :description "A size estimation service for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {:name "Apache License, Version 2.0"
@@ -25,8 +25,8 @@
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.5-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.5-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.6-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [org.clojure/clojure "1.10.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
@@ -48,7 +48,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.3"]]
                      :plugins [[lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.4"]]
+                               [venantius/ultra "0.6.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[clojusc/trifl "0.4.2"]
@@ -61,7 +61,7 @@
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
-                              [lein-bikeshed "0.5.1"]
+                              [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.6"]
                               [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]

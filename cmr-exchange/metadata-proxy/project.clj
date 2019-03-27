@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.5-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.6-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -33,7 +33,7 @@
                  [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
@@ -62,7 +62,7 @@
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.4"]]
+                               [venantius/ultra "0.6.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -73,7 +73,7 @@
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
-                              [lein-bikeshed "0.5.1"]
+                              [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.6"]
                               [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
