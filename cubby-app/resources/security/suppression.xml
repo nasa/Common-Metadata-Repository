@@ -10,7 +10,7 @@
   </suppress>
   <!-- Elasticsearch version < 1.6.1 suppressions:
 
-  The following suppressions all indicate vulnerabitlies in
+  The following suppressions all indicate vulnerabilities in
   elasticsearch before version 1.6.1. The version being used is 1.6.2
   so they are false positives -->
   <suppress>

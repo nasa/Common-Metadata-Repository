@@ -27,7 +27,7 @@
 
   <!-- Elasticsearch version < 1.6.1 suppressions:
 
-  The following suppressions all indicate vulnerabitlies in
+  The following suppressions all indicate vulnerabilities in
   elasticsearch before version 1.6.1. Which is before the in-use version.
   Source: https://www.elastic.co/community/security -->
   <suppress>

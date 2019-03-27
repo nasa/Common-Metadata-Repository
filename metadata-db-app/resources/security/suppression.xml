@@ -10,7 +10,7 @@
   </suppress>
   <!-- Elasticsearch version < 1.6.1 suppressions:
 
-  The following suppressions all indicate vulnerabitlies in
+  The following suppressions all indicate vulnerabilities in
   elasticsearch before version 1.6.1. The version being used is 1.6.2
   so they are false positives -->
   <suppress>
@@ -58,7 +58,8 @@
     <cve>CVE-2018-13661</cve>
   </suppress>
 
-  <!-- patched oracle vulnerability
+  <!-- Supressing oracle false positive. The fix is patched on the database server side,
+  not in the client connect JDBC jar.
   see: https://www.oracle.com/technetwork/topics/security/public-vuln-to-advisory-mapping-093627.html -->
   <suppress>
     <notes><![CDATA[
