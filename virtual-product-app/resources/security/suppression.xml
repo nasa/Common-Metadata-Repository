@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--For non-false positives suppress with <suppress until="YYYY-MM-DD">...-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: clansi-1.0.0.jar
+    ]]></notes>
+    <gav regex="true">^clansi:clansi:.*$</gav>
+    <cpe>cpe:/a:style_it_project:style_it</cpe>
+  </suppress>
+  <!-- Elasticsearch version < 1.6.1 suppressions:
+
+  The following suppressions all indicate vulnerabilities in
+  elasticsearch before version 1.6.1. The version being used is 1.6.2
+  so they are false positives -->
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2014-3120</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2014-6439</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-1427</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-3337</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-5531</cve>
+  </suppress>
+
+  <!-- mintToken vulnerability. False positive, cmr does not do this. -->
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-common-app-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-common-app-lib:.*$</gav>
+    <cve>CVE-2018-13661</cve>
+  </suppress>
+
+  <!-- Suppressing unused git vulnerabilities -->
+  <suppress>
+     <notes><![CDATA[
+     file name: mathz-0.3.0.jar
+     ]]></notes>
+     <gav regex="true">^net\.mikera:mathz:.*$</gav>
+     <cpe>cpe:/a:git_project:git</cpe>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: mathz-0.3.0.jar
+    ]]></notes>
+    <gav regex="true">^net\.mikera:mathz:.*$</gav>
+    <cpe>cpe:/a:git:git</cpe>
+  </suppress>
+</suppressions>
