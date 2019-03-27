@@ -28,7 +28,7 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.quartz-scheduler/quartz "2.3.0"]
+                 [org.quartz-scheduler/quartz "2.3.1"]
                  [org.slf4j/slf4j-api "1.7.25"]
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.1"]
