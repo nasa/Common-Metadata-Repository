@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.8-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.10-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -30,15 +30,15 @@
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.5-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.6-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.5-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.6-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.1-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.2-SNAPSHOT"]
                  [http-kit "2.3.0"]
                  [markdown-clj "1.0.7"]
-                 [metosin/reitit-core "0.2.13"]
-                 [metosin/reitit-ring "0.2.13"]
+                 [metosin/reitit-core "0.3.1"]
+                 [metosin/reitit-ring "0.3.1"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.4.490"]
@@ -48,7 +48,7 @@
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.1"]
                  [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.9"]
+                 [selmer "1.12.11"]
                  [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
@@ -74,7 +74,7 @@
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.4"]]
+                               [venantius/ultra "0.6.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -85,13 +85,13 @@
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
-                              [lein-bikeshed "0.5.1"]
+                              [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.6"]
                               [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]
-                              [venantius/ultra "0.5.4"]]
+                              [venantius/ultra "0.6.0"]]
                     :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
                     :test2junit-output-dir "junit-test-results"
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))

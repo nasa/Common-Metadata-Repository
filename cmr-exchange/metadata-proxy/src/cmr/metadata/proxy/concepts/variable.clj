@@ -26,12 +26,11 @@
                            charset))
 (def id-search-constraint "concept_id[]")
 (def alias-search-constraint "alias[]")
-
+(def max-page-size 2000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Support/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,7 +46,7 @@
     "&"
     (conj
       (map #(str (codec/url-encode search-constraint) "=" %) variable-info)
-      (str "page_size=" (count variable-info))
+      (str "page_size=" max-page-size)
       (str (codec/url-encode "options[alias][pattern]") "=true"))))
 
 (defn async-get-metadata
