@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--For non-false positives suppress with <suppress until="YYYY-MM-DD">...-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: clansi-1.0.0.jar
+    ]]></notes>
+    <gav regex="true">^clansi:clansi:.*$</gav>
+    <cpe>cpe:/a:style_it_project:style_it</cpe>
+  </suppress>
+
+  <!-- Elasticsearch version < 1.6.1 suppressions:
+
+  The following suppressions all indicate vulnerabilities in
+  elasticsearch before version 1.6.1. The version being used is 1.6.2
+  so they are false positives -->
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2014-3120</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2014-6439</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-1427</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-3337</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-elastic-utils-lib-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:cmr-elastic-utils-lib:.*$</gav>
+    <cve>CVE-2015-5531</cve>
+  </suppress>
+
+  <!-- mintToken vulnerabilities. False positive, cmr does not do this. -->
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-indexer-app-0.1.0-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^nasa-cmr:.*:.*$</gav>
+    <cve>CVE-2018-13661</cve>
+  </suppress>
+
+  <!-- Suppressing unused git vulnerabilities -->
+  <suppress>
+     <notes><![CDATA[
+     file name: mathz-0.3.0.jar
+     ]]></notes>
+     <gav regex="true">^net\.mikera:mathz:.*$</gav>
+     <cpe>cpe:/a:git_project:git</cpe>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: mathz-0.3.0.jar
+    ]]></notes>
+    <gav regex="true">^net\.mikera:mathz:.*$</gav>
+    <cpe>cpe:/a:git:git</cpe>
+  </suppress>
+
+  <!-- Supressing oracle false positive. The fix is patched on the database server side,
+  not in the client connect JDBC jar.
+  see: https://www.oracle.com/technetwork/topics/security/public-vuln-to-advisory-mapping-093627.html -->
+  <suppress>
+    <notes><![CDATA[
+    file name: ojdbc6-11.2.0.4.jar
+    ]]></notes>
+    <gav regex="true">^com\.oracle:ojdbc6:.*$</gav>
+    <cve>CVE-2016-3506</cve>
+  </suppress>
+
+  <!-- False positive drupal vulnerability in cmr-site-templates. -->
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-site-templates-0.1.1-SNAPSHOT.jar
+    ]]></notes>
+    <gav regex="true">^gov\.nasa\.earthdata:cmr-site-templates:.*$</gav>
+    <cve>CVE-2015-4370</cve>
+  </suppress>
+
+  <!-- JRuby Suppressions bellow -->
+
+  <!-- This hash-flood vulnerability was discovered in 2012 and has been fixed
+  for jruby versions >= 1.7.1.
+  Source: https://www.jruby.org/2012/12/03/jruby-1-7-1.html  -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar
+    ]]></notes>
+    <gav regex="true">^org\.jruby:jruby-complete:.*$</gav>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
+    ]]></notes>
+    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
+    <cve>CVE-2012-5370</cve>
+  </suppress>
+
+  <!-- Hash flood vulnerability fixed in jruby versions >= 1.6.5.1
+  Source: https://www.jruby.org/2011/12/27/jruby-1-6-5-1.html -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2011-4838</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2011-4838</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
+    ]]></notes>
+    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
+    <cve>CVE-2011-4838</cve>
+  </suppress>
+
+  <!-- JRuby-OpenSSL is not used collection-renderer-lib -->
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:jruby:jruby</cpe>
+  </suppress>
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:openssl_project:openssl</cpe>
+  </suppress>
+  <suppress>
+     <notes><![CDATA[
+     file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
+     ]]></notes>
+     <gav regex="true">^rubygems:jruby-openssl:.*$</gav>
+     <cpe>cpe:/a:openssl:openssl</cpe>
+  </suppress>
+
+  <!-- Regex vulnerability fixed in jruby versions >= 1.4.1.
+  Source: https://www.jruby.org/2010/04/26/jruby-1-4-1-xss-vulnerability.html -->
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: readline.jar
+    ]]></notes>
+    <gav regex="true">^rubygems:jruby-readline:.*$</gav>
+    <cve>CVE-2010-1330</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
+    ]]></notes>
+    <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
+    <cve>CVE-2010-1330</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
+    ]]></notes>
+    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
+    <cve>CVE-2010-1330</cve>
+  </suppress>
+
+  <!-- Dependency of json-schema-validator which is a subdependency of swagger.
+  json-schema-validator uses guava to validate ip addresses. We do not use swagger's
+  validation features. -->
+  <suppress>
+    <notes><![CDATA[
+    file name: guava-16.0.1.jar
+    ]]></notes>
+    <gav regex="true">^com\.google\.guava:guava:.*$</gav>
+    <cve>CVE-2018-10237</cve>
+  </suppress>
+</suppressions>
