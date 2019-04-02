@@ -10,13 +10,13 @@ There are two ways database operations can be done. It can happen through leinin
 
 1. Create the user
 
-```
+```bash
 lein create-user
 ```
 
 2. Run the migration scripts
 
-```
+```bash
 lein migrate
 ```
 
@@ -26,7 +26,7 @@ completely.
 
 3. Remove the user
 
-```
+```bash
 lein drop-user
 ```
 
@@ -34,13 +34,13 @@ lein drop-user
 
 1. Create the user
 
-```
+```bash
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db create-user
 ```
 
 2. Run db migration
 
-```
+```bash
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
 ```
 
@@ -48,7 +48,7 @@ You can provider additional arguments to migrate the database to a given version
 
 3. Remove the user
 
-```
+```bash
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
 
@@ -103,9 +103,11 @@ The provider API only supports requests and responses in JSON.
 
 Returns a list of the configured providers in the CMR.
 
+```bash
+curl %CMR-ENDPOINT%/providers 
 ```
-curl %CMR-ENDPOINT%/providers
 
+```json
 [{"provider-id":"PROV2","short-name":"Another Test Provider","cmr-only":true,"small":false},{"provider-id":"PROV1","short-name":"Test Provider","cmr-only":false,"small":false}]
 ```
 
@@ -113,7 +115,7 @@ curl %CMR-ENDPOINT%/providers
 
 Creates a provider in the CMR. The provider id specified should match that of a provider configured in ECHO.
 
-```
+```bash
 curl -i -XPOST -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT/providers -d \
 '{"provider-id": "PROV1", "short-name": "Test Provider", "cmr-only": false, "small":false}'
 ```
@@ -122,7 +124,7 @@ curl -i -XPOST -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-EN
 
 Updates the attributes of a provider in the CMR. The `small` attribute cannot be changed during update.
 
-```
+```bash
 curl -i -XPUT -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1 -d \
 '{"provider-id": "PROV1", "short-name": "Test Provider", "cmr-only":true, "small":false}'
 ```
@@ -131,7 +133,9 @@ curl -i -XPUT -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-END
 
 Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch.
 
+```bash
 curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1
+```
 
 ***
 
@@ -156,13 +160,16 @@ This curl will return the value for a specific key in the named cache:
 ### <a name="application-health"></a> Application Health
 
 
-This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing
+the response.
 
-    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+```bash
+curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+```
 
 Example healthy response body:
 
-```
+```json
 {
   "oracle" : {
     "ok?" : true
@@ -219,7 +226,7 @@ Example healthy response body:
 
 Example unhealthy response body:
 
-```
+```json
 {
   "oracle" : {
     "ok?" : false,
@@ -283,25 +290,30 @@ Ingest has internal jobs that run. They can be run manually and controlled throu
 
 #### <a name="pause-jobs"></a> Pause Jobs
 
-
-    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/pause
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/pause
+```bash
 
 ### <a name="resume-jobs"></a> Resume ingest scheduled jobs
 
-
-    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/resume
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/resume
+```
 
 ### <a name="reindex-collection-permitted-groups"></a> Run Reindex Collections Permitted Groups Job
 
 Collections which ACLs have changed can be reindexed by sending the following request.
 
-    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-collection-permitted-groups
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-collection-permitted-groups
+```
 
 ### <a name="reindex-all-collections"></a> Run Reindex All Collections Job
 
 Reindexes every collection in every provider.
-
-    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-all-collections
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-all-collections
+```
 
 It accepts an optional parameter `force_version=true`. If this option is specified then Elasticsearch will be reindexed with `force` version instead of the normal `external_gte`. See https://www.elastic.co/guide/en/elasticsearch/reference/2.2/docs-index_.html#_version_types This will cause all data in the database to overwrite the elasticsearch index even if there's a newer version in Elasticsearch. This can be used to fix issues where a newer revision was force deleted or as in the case CMR-2673 the collections were indexed with a larger version and then that was changed at the database level. There's a race condition when this is run. If a collection comes in during indexing the reindexing could overwrite that data in Elasticsearch with an older revision of the collection. The race condition can be corrected by running reindex all collections _without_ the `force_version=true` which will index any revisions with larger transaction ids over top of older data.
 
@@ -309,8 +321,9 @@ It accepts an optional parameter `force_version=true`. If this option is specifi
 
 Looks for collections that have a delete date in the past and removes them.
 
-    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/cleanup-expired-collections
-
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/cleanup-expired-collections
+```
 
 ### Refresh Collection Granule Aggregate Cache
 
@@ -318,22 +331,29 @@ The collection granule aggregate cache is used to cache information about all th
 
 There are two kinds of cache refreshes that can be triggered. The full cache refresh will refresh the entire cache. Collections must be manually reindexed after the cache has been refreshed to get the latest data indexed.
 
-    curl -i -XPOST http://localhost:3002/jobs/trigger-full-collection-granule-aggregate-cache-refresh?token=XXXX
+```bash
+curl -i -XPOST http://localhost:3002/jobs/trigger-full-collection-granule-aggregate-cache-refresh?token=XXXX
+```
 
 The partial cache refresh will look for granules ingested over the last trigger period (configurable) and expand the collection granule aggregate temporal times to cover any new data that was ingested. The collections that had changes will automatically be queued for reindexing after this runs.
 
-    curl -i -XPOST http://localhost:3002/jobs/trigger-partial-collection-granule-aggregate-cache-refresh?token=XXXX
+```bash
+curl -i -XPOST http://localhost:3002/jobs/trigger-partial-collection-granule-aggregate-cache-refresh?token=XXXX
+```
 
 ### <a name="db-migrate"></a> Run database migration
 
 Migrate database to the latest schema version:
 
-    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate
+```bash
+curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate
+```
 
 Migrate database to a specific schema version (e.g. 3):
 
-    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate?version=3
-
+```bash
+curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate?version=3
+```
 
 ## License
 
