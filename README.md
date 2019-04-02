@@ -394,10 +394,10 @@ applications, as well as several libraries and support applications.
 
 - umm-lib
   - This is the old source of UMM schemas and translation code. Since the
-    advent of umm-spec-lib we have planned to remove it
+    advent of umm-spec-lib we are planning to remove it
 
 - umm-spec-lib
-  - The UMM Spec lib contains JSON schemas that defined the Unified Metadata
+  - The UMM Spec lib contains JSON schemas that define the Unified Metadata
     Model, as well as mappings to other supported formats, and code to migrate
     collections between any supported formats.
 
