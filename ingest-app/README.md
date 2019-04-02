@@ -292,7 +292,7 @@ Ingest has internal jobs that run. They can be run manually and controlled throu
 
 ```bash
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/pause
-```bash
+```
 
 ### <a name="resume-jobs"></a> Resume ingest scheduled jobs
 
