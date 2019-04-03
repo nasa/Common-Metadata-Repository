@@ -277,10 +277,12 @@
   "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
    Replace it with a valid URI."
   [record]
-  (-> record
-      (update-in-each [:ArchiveAndDistributionInformation :FileDistributionInformation]
-        #(assoc % :Media (when (:Media %)
-                           ["Online"])))))
+  (if (seq (get-in record [:ArchiveAndDistributionInformation :FileDistributionInformation]))
+    (-> record
+        (update-in-each [:ArchiveAndDistributionInformation :FileDistributionInformation]
+          #(assoc % :Media (when (:Media %)
+                             ["Online"]))))
+    record))
 
 (defn- sanitize-umm-online-resource-function
   "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
