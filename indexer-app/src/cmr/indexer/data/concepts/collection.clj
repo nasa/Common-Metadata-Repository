@@ -160,6 +160,14 @@
                             {:variables (mapv :variable-concept-id variable-associations)
                              :services (mapv :service-concept-id service-associations)})))))
 
+(defn- variable-service-associations->elastic-docs
+  "Returns the elastic docs for variable and service assocations"
+  [context variable-associations service-associations]
+  (let [variable-docs (variable/variable-associations->elastic-doc context variable-associations)
+        service-docs (service/service-associations->elastic-doc context service-associations)
+        has-variables (or (:has-variables variable-docs) (:has-variables service-docs))]
+    (merge variable-docs service-docs {:has-variables has-variables})))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -401,8 +409,8 @@
             :associations-gzip-b64 (associations->gzip-base64-str
                                     variable-associations service-associations)}
 
-           (variable/variable-associations->elastic-doc context variable-associations)
-           (service/service-associations->elastic-doc context service-associations)
+           (variable-service-associations->elastic-docs
+            context variable-associations service-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

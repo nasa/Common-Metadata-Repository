@@ -160,7 +160,7 @@
            {:native-id "serv4"
             :Name "Service4"
             :ServiceOptions {:SupportedOutputProjections [{:ProjectionName "Mercator"}
-                                                         {:ProjectionName "Sinusoidal"}]}})]
+                                                          {:ProjectionName "Sinusoidal"}]}})]
       ;; index the collections so that they can be found during service association
       (index/wait-until-indexed)
       (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}
@@ -267,9 +267,9 @@
       (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll5)}])
       (index/wait-until-indexed)
 
-      ;; after service association is made, has-transforms is true
+      ;; after service association is made, has variables and has-transforms is true
       (service-util/assert-collection-search-result
-       coll5 {:has-spatial-subsetting false :has-transforms true} [serv10-concept-id])
+       coll5 {:has-variables true :has-spatial-subsetting false :has-transforms true} [serv10-concept-id])
 
       (testing "deletion of service affects collection search service association fields"
         ;; associate coll5 also with service11 to make other service related fields true
@@ -279,7 +279,7 @@
         ;; sanity check that all service related fields are true and service associations are present
         (service-util/assert-collection-search-result
          coll5
-         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         {:has-variables true :has-formats true :has-transforms true :has-spatial-subsetting true}
          [serv10-concept-id serv11-concept-id])
 
         ;; Delete service11
@@ -289,7 +289,7 @@
         ;; verify the service related fields affected by service11 are set properly after deletion
         (service-util/assert-collection-search-result
          coll5
-         {:has-formats false :has-transforms true :has-spatial-subsetting false}
+         {:has-variables true :has-formats false :has-transforms true :has-spatial-subsetting false}
          [serv10-concept-id])
 
         ;; Delete service10
@@ -299,7 +299,7 @@
         ;; verify service related has_* fields are false and associations is empty now
         (service-util/assert-collection-search-result
          coll5
-         {:has-formats false :has-transforms false :has-spatial-subsetting false}
+         {:has-variables false :has-formats false :has-transforms false :has-spatial-subsetting false}
          [])))))
 
 (deftest collection-service-search-test

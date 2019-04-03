@@ -14,6 +14,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.service-util :as service-util]
    [cmr.system-int-test.utils.variable-util :as vu]))
 
 (use-fixtures :each
@@ -337,15 +338,36 @@
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
                                                 :short-name "S2"
                                                 :version-id "V2"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"
+                                                :short-name "S3"
+                                                :version-id "V3"}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "ET4"
+                                                :short-name "S4"
+                                                :version-id "V4"}))
         ;; create variable
         var1-concept (vu/make-variable-concept {:native-id "var1"
                                                 :Name "Variable1"})
-        {variable1-concept-id :concept-id} (vu/ingest-variable var1-concept)]
+        {variable1-concept-id :concept-id} (vu/ingest-variable var1-concept)
+        ;; service with SubsetType of Variable, when associated with collection
+        ;; will turn the has-variables flag on the collection to true
+        {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "serv1"
+                                         :Name "service1"
+                                         :ServiceOptions {:SubsetTypes ["Variable"]}})
+        {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
+                                        {:native-id "serv2"
+                                         :Name "service2"
+                                         :ServiceOptions {:SubsetTypes ["Temporal"]}})]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
+    
     ;; create variable associations
     ;; Variable1 is associated with coll1
     (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
+    ;; associate coll3 with a service that has SubsetType that is Variable
+    (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll3)}])
+    ;; associate coll4 with a service that has SubsetType that is not Variable
+    (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
     (testing "search collections in ATOM format has-variables field"
@@ -365,7 +387,13 @@
         coll1 {:has-variables true}
 
         "has-variables false"
-        coll2 {:has-variables false}))
+        coll2 {:has-variables false}
+
+        "has-variables true through service association"
+        coll3 {:has-variables true :has-transforms true}
+
+        "has-variables false through service association"
+        coll4 {:has-variables false :has-transforms true}))
 
     (testing "search collections in JSON format has-variables field"
       (are3 [coll expected-fields]
