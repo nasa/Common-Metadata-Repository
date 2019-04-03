@@ -9,6 +9,8 @@
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]))
 
 (defn parse-formats
+  "Parses Format and FormatType values from ISO XML.
+   The block-id is used to associated the correct values for each FileDistributionInformation."
   [formats]
   (for [format formats
         :let [format-name (char-string-value format "gmd:MD_Format/gmd:name")
@@ -20,6 +22,9 @@
      :FormatType format-type}))
 
 (defn parse-transfer-options
+  "Parses Media, AverageFileSize, AverageFileSizeUnit, TotalCollectionFileSize and
+   TotalCollectionFileSizeUnit values from ISO XML.
+   The block-id is used to associated the correct values for each FileDistributionInformation."
   [transfer-options]
   (for [transfer-option transfer-options
         :let [[href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in transfer-option [:attrs :xlink/href] "")))]
@@ -42,6 +47,8 @@
                                      (char-string-value transfer-option "gmd:MD_DigitalTransferOptions/gmd:unitsOfDistribution"))})))
 
 (defn- parse-distributors
+  "Parses Fees and Description values from ISO XML.
+   The block-id is used to associated the correct values for each FileDistributionInformation."
   [distributors]
   (for [distributor distributors
         :let [[href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
@@ -51,6 +58,7 @@
      :Description (char-string-value distributor "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:orderingInstructions")}))
 
 (defn xml-dists->blocks
+  "Parses ISO XML distributionFormat, transferOptions, and distributors then groups them by block-id."
   [doc dist-info-xpath]
   (let [formats (parse-formats
                  (select doc (str dist-info-xpath "/gmd:distributionFormat")))
@@ -61,12 +69,16 @@
     (group-by :block-id (concat formats transfer-options distributors))))
 
 (defn merge-block
+  "Take each block-id block and merge the distributionFormat, transferOptions, and distributors
+   associated with that block-id into a single map."
   [block]
   (dissoc
    (reduce merge {} block)
    :block-id))
 
 (defn blocks->maps
+  "Gathers up all the UMM FileDistributionInformation values by block-id.
+   The subsequent calls to group-by THEN reduce maintains the order of the block-ids."
   [blocks]
   (when-let [blocks (vals blocks)]
     (map merge-block blocks)))
@@ -83,6 +95,9 @@
   (re-pattern "FormatType:|AverageFileSize:|AverageFileSizeUnit:|TotalCollectionFileSize:|TotalCollectionFileSizeUnit:|Description:"))
 
 (defn parse-archive-info-specification
+  "Parse all the FormatType, AverageFileSize, AverageFileSizeUnit, TotalCollectionFileSize,
+   TotalCollectionFileSizeUnit and Description for FileArchiveInformation out of then specification.
+   string."
   [archive]
   (when-let [spec-string (char-string-value archive "gmd:MD_Format/gmd:specification")]
    (let [format-type-index (util/get-index-or-nil spec-string "FormatType:")
