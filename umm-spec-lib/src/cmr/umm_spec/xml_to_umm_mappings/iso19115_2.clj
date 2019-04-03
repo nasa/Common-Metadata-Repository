@@ -16,6 +16,7 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
@@ -101,6 +102,12 @@
   "NOAA instrument xpath"
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:instrument"
        "/gmi:MI_Instrument"))
+
+(def archive-info-xpath
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceFormat")
+
+(def dist-info-xpath
+  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution")
 
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
@@ -264,7 +271,10 @@
       :RelatedUrls (dru/parse-related-urls doc sanitize?)
       :CollectionCitations (collection-citation/parse-collection-citation doc citation-base-xpath sanitize?)
       :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
-      :MetadataDates (parse-metadata-dates doc)})))
+      :MetadataDates (parse-metadata-dates doc)
+      :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
+                                                                                        archive-info-xpath
+                                                                                        dist-info-xpath)})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

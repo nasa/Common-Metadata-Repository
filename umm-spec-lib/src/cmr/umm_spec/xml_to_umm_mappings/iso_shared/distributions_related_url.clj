@@ -64,7 +64,7 @@
          ;; remove "nil" valued keys
          (util/remove-map-keys #(= "nil" %)))))
 
-(defn- convert-key-strings-to-keywords
+(defn convert-key-strings-to-keywords
   [map]
   (into {}
     (for [[k v] map]

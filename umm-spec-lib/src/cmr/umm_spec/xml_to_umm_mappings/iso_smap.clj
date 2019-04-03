@@ -11,6 +11,7 @@
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
@@ -97,6 +98,14 @@
        "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
        "/gmd:code/gco:CharacterString"))
 
+(def archive-info-xpath
+  (str base-xpath
+       "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceFormat"))
+
+(def dist-info-xpath
+  (str base-xpath
+       "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
@@ -164,4 +173,7 @@
                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
        :RelatedUrls (dru/parse-related-urls doc sanitize?)
        :CollectionCitations (collection-citation/parse-collection-citation doc collection-citation-base-xpath sanitize?)
-       :Projects (project/parse-projects doc projects-xpath sanitize?)}))))
+       :Projects (project/parse-projects doc projects-xpath sanitize?)
+       :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
+                                                                                         archive-info-xpath
+                                                                                         dist-info-xpath)}))))
