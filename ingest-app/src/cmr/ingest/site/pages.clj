@@ -13,6 +13,14 @@
    "templates/ingest-home.html"
    (data/base-page context)))
 
+(defn about
+  "Prepare the about page template."
+  [context]
+  (common-pages/render-html
+   context
+   "templates/ingest-about.html"
+   (data/base-page context)))
+
 (defn ingest-docs
   "Prepare the top-level ingest docs page."
   [context]

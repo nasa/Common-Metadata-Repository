@@ -15,6 +15,9 @@
       (GET "/"
            {ctx :request-context}
            (pages/home ctx))
+      (GET "/about"
+           {ctx :request-context}
+           (pages/about ctx))
       ;; Backwards comapatibility for old docs URLs
       (GET "/site/access_control_api_docs.html"
            {ctx :request-context}

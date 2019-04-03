@@ -17,6 +17,14 @@
    "templates/search-home.html"
    (data/base-page context)))
 
+(defn about
+  "Prepare the about page template."
+  [context]
+  (common-pages/render-html
+   context
+   "templates/search-about.html"
+   (data/base-page context)))
+
 (defn search-docs
   "Prepare the top-level search docs page."
   [context]

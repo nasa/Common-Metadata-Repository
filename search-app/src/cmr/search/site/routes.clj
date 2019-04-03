@@ -23,6 +23,9 @@
         (GET "/"
              {ctx :request-context}
              (pages/home ctx))
+        (GET "/about"
+             {ctx :request-context}
+             (pages/about ctx))
         (GET "/sitemap.xml"
              {ctx :request-context params :params}
              (content-service/retrieve-page ctx params "/sitemap.xml"))

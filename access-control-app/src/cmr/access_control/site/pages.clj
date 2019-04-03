@@ -11,6 +11,14 @@
    "templates/access-control-home.html"
    (data/base-page context)))
 
+(defn about
+  "Prepare the about page template."
+  [context]
+  (common-pages/render-html
+   context
+   "templates/access-control-about.html"
+   (data/base-page context)))
+
 (defn access-control-docs
   "Prepare the top-level access control docs page."
   [context]
