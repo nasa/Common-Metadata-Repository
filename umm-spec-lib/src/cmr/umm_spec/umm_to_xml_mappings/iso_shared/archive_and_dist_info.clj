@@ -6,6 +6,7 @@
    [cmr.umm-spec.util :refer [char-string]]))
 
 (defn generate-specification-string
+  "Parse FileArchiveInformation values out of the specification string."
   [archive]
   (let [{:keys [FormatType AverageFileSize AverageFileSizeUnit TotalCollectionFileSize
                 TotalCollectionFileSizeUnit Description]} archive
@@ -27,6 +28,7 @@
                        col-file-size-str col-file-size-unit-str description-str)))))
 
 (defn generate-file-archive-info
+  "Generate XML for each FileArchiveInformation in ArchiveAndDistributionInformation."
   [c]
   (for [archive (get-in c [:ArchiveAndDistributionInformation :FileArchiveInformation])
         :let [specification (generate-specification-string archive)
@@ -38,6 +40,8 @@
       [:gmd:specification (char-string specification)]]]))
 
 (defn- generate-format
+  "Generate Format and FormatType xml for FileDistributionInformation.
+   The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
         {:keys [Format FormatType]} dist]
@@ -51,6 +55,8 @@
          (char-string (or FormatType ""))]]])))
 
 (defn- generate-distributor
+  "Generate Fees and Description xml for FileDistributionInformation.
+   The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
         {:keys [Fees Description]} dist]
@@ -66,6 +72,8 @@
            (char-string (or Description ""))]]]]])))
 
 (defn- generate-average-file-size
+  "Generate AverageFileSize and AverageFileSizeUnit xml for FileDistributionInformation.
+   The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
         {:keys [AverageFileSize AverageFileSizeUnit]} dist]
@@ -78,6 +86,8 @@
          [:gco:Real AverageFileSize]]]])))
 
 (defn- generate-total-coll-size
+  "Generate TotalCollectionFileSize and TotalCollectionFileSizeUnit xml for FileDistributionInformation.
+   The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
         {:keys [TotalCollectionFileSize
@@ -91,6 +101,8 @@
          [:gco:Real TotalCollectionFileSize]]]])))
 
 (defn- generate-media
+  "Generate Media for FileDistributionInformation.
+   The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
         {:keys [Media]} dist]
