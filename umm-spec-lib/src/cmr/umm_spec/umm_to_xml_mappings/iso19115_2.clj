@@ -9,6 +9,7 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
@@ -324,6 +325,7 @@
           (data-contact/generate-contact-persons (:ContactPersons c))
           (data-contact/generate-contact-groups (:ContactGroups c))
           (sdru/generate-browse-urls c)
+          (archive-and-dist-info/generate-file-archive-info c)
           (generate-projects-keywords (:Projects c))
           (kws/generate-iso19115-descriptive-keywords
            kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
@@ -381,14 +383,27 @@
          [:gmd:attributeDescription ""]
          [:gmd:contentType ""]
          [:gmd:processingLevelCode
-           (proc-level/generate-iso-processing-level processing-level)]]])
-      (let [related-url-distributions (sdru/generate-distributions c)
-            data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
-        (when (or related-url-distributions data-center-distributors)
-          [:gmd:distributionInfo
-           [:gmd:MD_Distribution
-            related-url-distributions
-            data-center-distributors]]))
+           (proc-level/generate-iso-processing-level processing-level)]]]
+       (let [related-url-distributions (sdru/generate-distributions c)
+             file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
+             file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
+             file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
+             file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
+             file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)]
+         (when (or file-dist-info-formats
+                   related-url-distributions
+                   file-dist-info-distributors
+                   file-dist-info-medias
+                   file-dist-info-total-coll-sizes
+                   file-dist-info-average-sizes)
+           [:gmd:distributionInfo
+            [:gmd:MD_Distribution
+             file-dist-info-formats
+             related-url-distributions
+             file-dist-info-distributors
+             file-dist-info-medias
+             file-dist-info-total-coll-sizes
+             file-dist-info-average-sizes]])))
       [:gmd:dataQualityInfo
        [:gmd:DQ_DataQuality
         [:gmd:scope

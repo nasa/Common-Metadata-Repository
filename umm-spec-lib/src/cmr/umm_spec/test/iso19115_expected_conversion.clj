@@ -391,5 +391,5 @@
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
       (update :UseConstraints iso-shared/expected-use-constraints)
-      (assoc :ArchiveAndDistributionInformation nil)
+      (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
       js/parse-umm-c))

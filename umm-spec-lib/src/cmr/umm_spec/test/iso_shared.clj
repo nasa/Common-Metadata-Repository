@@ -109,3 +109,44 @@
     (if (seq updated-doi)
       (cmn/map->DoiType updated-doi)
       (cmn/map->DoiType {:MissingReason "Not Applicable"}))))
+
+(defn- expected-dist-media
+  "Creates expected Media for FileDistributionInformation."
+  [media]
+  (when-let [media (first media)]
+    [media]))
+
+(defn- expected-file-archive-description
+  "Creates expected Description for FileArchiveInformation"
+  [description]
+  (when description
+    (string/trim description)))
+
+(defn- expected-file-dist-info
+  "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
+  [file-dist-infos]
+  (when file-dist-infos
+    (for [file-dist-info file-dist-infos]
+      (-> file-dist-info
+          (dissoc :TotalCollectionFileSizeBeginDate)
+          (update :Media expected-dist-media)
+          umm-c/map->FileDistributionInformationType))))
+
+(defn- expected-file-archive-info
+  "Created expected FileArchiveInformation for ArchiveAndDistributionInformation map."
+  [file-archive-infos]
+  (when file-archive-infos
+    (for [file-archive-info file-archive-infos]
+      (-> file-archive-info
+          (dissoc :TotalCollectionFileSizeBeginDate)
+          (update :Description expected-file-archive-description)
+          umm-c/map->FileArchiveInformationType))))
+
+(defn expected-archive-dist-info
+  "Creates expected ArchiveAndDistributionInformation for dif10."
+  [archive-dist-info]
+  (when archive-dist-info
+    (-> archive-dist-info
+        (update :FileDistributionInformation expected-file-dist-info)
+        (update :FileArchiveInformation expected-file-archive-info)
+        umm-c/map->ArchiveAndDistributionInformationType)))

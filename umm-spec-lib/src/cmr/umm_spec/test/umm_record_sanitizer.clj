@@ -273,6 +273,15 @@
         #(assoc % :DataPresentationForm (when (:DataPresentationForm %)
                                           valid-uri)))))
 
+(defn- sanitize-umm-file-distribution-media
+  "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
+   Replace it with a valid URI."
+  [record]
+  (-> record
+      (update-in-each [:ArchiveAndDistributionInformation :FileDistributionInformation]
+        #(assoc % :Media (when (:Media %)
+                           ["Online"])))))
+
 (defn- sanitize-umm-online-resource-function
   "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
    Replace it with a valid URI."
@@ -315,7 +324,8 @@
       (update-in-each [:PublicationReferences] sanitize-online-resource)
       sanitize-umm-number-of-instruments
       sanitize-umm-data-presentation-form
-      sanitize-umm-collection-citations))
+      sanitize-umm-collection-citations
+      sanitize-umm-file-distribution-media))
 
 (defn sanitized-umm-g-record
   "Include only the sanitizers needed for a given umm-g record."

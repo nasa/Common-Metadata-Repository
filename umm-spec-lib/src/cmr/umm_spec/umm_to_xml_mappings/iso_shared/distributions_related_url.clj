@@ -242,33 +242,6 @@
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"
   [c]
-  (let [distributions (:Distributions c)
-        related-urls (online-resource-urls (:RelatedUrls c))
-        contact-element [:gmd:distributorContact {:gco:nilReason "missing"}]]
-    (when (or distributions related-urls)
-      (conj
-        (for [[d idx] (map vector distributions (range (count distributions)))]
-          [:gmd:distributor
-           [:gmd:MD_Distributor
-            contact-element
-            [:gmd:distributionOrderProcess
-             [:gmd:MD_StandardOrderProcess
-              [:gmd:fees
-               (char-string (or (:Fees d) ""))]]]
-            [:gmd:distributorFormat
-             [:gmd:MD_Format
-              [:gmd:name
-               (char-string (or (:DistributionFormat d) ""))]
-              [:gmd:version {:gco:nilReason "unknown"}]
-              [:gmd:specification
-               (char-string (or (:DistributionMedia d) ""))]]]
-            (for [size (:Sizes d)]
-              [:gmd:distributorTransferOptions
-               [:gmd:MD_DigitalTransferOptions
-                [:gmd:unitsOfDistribution
-                 (char-string (:Unit size))]
-                [:gmd:transferSize
-                 [:gco:Real (:Size size)]]]])
-            (when (zero? idx))]])
-        (for [related-url related-urls]
-          (generate-distributor-online-resource-url related-url :gmd:onLine true))))))
+  (when-let [related-urls (online-resource-urls (:RelatedUrls c))]
+    (for [related-url related-urls]
+      (generate-distributor-online-resource-url related-url :gmd:onLine true))))
