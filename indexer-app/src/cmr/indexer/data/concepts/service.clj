@@ -75,14 +75,26 @@
                                      (get-in service [:ServiceOptions :SupportedOutputFormats])))]
     (> (count supported-formats) 1)))
 
-(defn- has-spatial-subsetting?
+(defn- has-subset-type?
   "Returns true if the given service has a defined SubsetType with one of its
-  values being 'spatial'."
-  [context service-concept]
+  values matches the given subset type."
+  [context service-concept subset-type]
   (let [service (concept-parser/parse-concept context service-concept)
         {{subset-types :SubsetTypes} :ServiceOptions} service]
     (and (seq subset-types)
-         (contains? (set subset-types) "Spatial"))))
+         (contains? (set subset-types) subset-type))))
+
+(defn- has-spatial-subsetting?
+  "Returns true if the given service has a defined SubsetType with one of its
+  values being 'Spatial'."
+  [context service-concept]
+  (has-subset-type? context service-concept "Spatial"))
+
+(defn- has-variables?
+  "Returns true if the given service has a defined SubsetType with one of its
+  values being 'Variable'."
+  [context service-concept]
+  (has-subset-type? context service-concept "Variable"))
 
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
@@ -112,4 +124,5 @@
      :service-concept-ids service-concept-ids
      :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))
-     :has-transforms (boolean (some #(has-transforms? context %) service-concepts))}))
+     :has-transforms (boolean (some #(has-transforms? context %) service-concepts))
+     :has-variables (boolean (some #(has-variables? context %) service-concepts))}))
