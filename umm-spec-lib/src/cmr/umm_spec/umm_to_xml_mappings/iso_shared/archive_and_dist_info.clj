@@ -6,7 +6,9 @@
    [cmr.umm-spec.util :refer [char-string]]))
 
 (defn generate-specification-string
-  "Parse FileArchiveInformation values out of the specification string."
+  "Parse FileArchiveInformation values out of the specification string.
+   Specification string takes the format of:
+   FormatType: Native AverageFileSize: 3 AverageFileSizeUnit: MB TotalCollectionFileSize: 1095 TotalCollectionFileSizeUnit: MB Description: Description text."
   [archive]
   (let [{:keys [FormatType AverageFileSize AverageFileSizeUnit TotalCollectionFileSize
                 TotalCollectionFileSizeUnit Description]} archive
