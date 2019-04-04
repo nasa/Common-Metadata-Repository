@@ -35,7 +35,7 @@
             var-concept-id concept-id]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))
-        (is (= "7bec71103f3eada1f539acb9f1072fd7"
+        (is (= "f89e99210c80df96d6d35f005d57c5f8"
                (get-in (mdb/get-concept concept-id revision-id) [:extra-fields :fingerprint])))
 
         (testing "ingest the same concept on a different provider is OK"
@@ -44,7 +44,7 @@
                                                   (variable-util/token-opts token2))]
             (is (mdb/concept-exists-in-mdb? concept-id revision-id))
             (is (= 1 revision-id))
-            (is (= "7bec71103f3eada1f539acb9f1072fd7"
+            (is (= "f89e99210c80df96d6d35f005d57c5f8"
                    (get-in (mdb/get-concept concept-id revision-id)
                            [:extra-fields :fingerprint])))))
 
@@ -60,7 +60,7 @@
                                                   (variable-util/token-opts token))]
             (is (mdb/concept-exists-in-mdb? concept-id revision-id))
             (is (= 2 revision-id))
-            (is (= "7bec71103f3eada1f539acb9f1072fd7"
+            (is (= "f89e99210c80df96d6d35f005d57c5f8"
                    (get-in (mdb/get-concept concept-id revision-id)
                            [:extra-fields :fingerprint])))))
 
@@ -81,7 +81,7 @@
                                  "but different native id was found: [%s].")
                             var-concept-id)]
                    errors))))))
-    
+
     (testing "ingest of a variable concept with a revision id"
       (let [concept (variable-util/make-variable-concept {} {:native-id "var1"
                                                              :revision-id 5})
