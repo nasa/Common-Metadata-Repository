@@ -15,6 +15,13 @@
           string/trim
           string/lower-case))
 
+(defn- dimension->str
+  "Returns the string representation of the given Dimension object for fingerprint calculation."
+  [dimension]
+  (let [{:keys [Name Size Type]} dimension]
+    (format "{:Name %s, :Size %s, :Type %s}"
+            (normalized-string Name) Size Type)))
+
 (defn- get-variable-fingerprint
   "Returns the fingerprint of the given variable concept."
   [variable-concept]
@@ -24,7 +31,7 @@
                           (normalized-string AcquisitionSourceName)
                           (normalized-string Name)
                           (normalized-string Units)
-                          (pr-str (mapv #(update % :Name normalized-string) Dimensions)))]
+                          (mapv dimension->str Dimensions))]
     (digest/md5 id-string)))
 
 (defn add-extra-fields-for-variable
