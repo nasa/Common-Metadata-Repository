@@ -431,23 +431,6 @@
       },
       "required": ["Linkage"]
     },
-    "FileSizeType": {
-      "description": "Represents a data file size.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Size": {
-          "description": "The size of the data.",
-          "type": "number"
-        },
-        "Unit": {
-          "description": "Unit of information, together with Size determines total size in bytes of the data.",
-          "type": "string",
-          "enum": ["KB", "MB", "GB", "TB", "PB"]
-        }
-      },
-      "required": ["Size", "Unit"]
-    },
     "ResourceCitationType": {
       "type": "object",
       "additionalProperties": false,
@@ -796,38 +779,6 @@
         }
       },
       "required": ["Name", "DataType", "Description"]
-    },
-    "DistributionType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes media options, size, data format, and fees involved in distributing or accessing the data.",
-      "properties": {
-        "DistributionMedia": {
-          "description": "The distribution media for the collection data.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "Sizes": {
-          "description": "A list of file sizes indicating a single exact or approximate, or range of distribution sizes.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FileSizeType"
-          }
-        },
-        "DistributionFormat": {
-          "description": "The distribution format of the collection data (e.g., HDF, netCDF).",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
-        },
-        "Fees": {
-          "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255
-        }
-      }
     },
     "PlatformType": {
       "type": "object",

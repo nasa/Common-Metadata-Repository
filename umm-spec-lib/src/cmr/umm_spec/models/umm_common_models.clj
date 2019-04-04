@@ -212,24 +212,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing DataCenterType)
 
-;; Describes media options, size, data format, and fees involved in distributing or accessing the
-;; data.
-(defrecord DistributionType
-  [
-   ;; The distribution media for the collection data.
-   DistributionMedia
-
-   ;; A list of file sizes indicating a single exact or approximate, or range of distribution sizes.
-   Sizes
-
-   ;; The distribution format of the collection data (e.g., HDF, netCDF).
-   DistributionFormat
-
-   ;; The fee for ordering the collection data. The fee is entered as a number, in US Dollars.
-   Fees
-  ])
-(record-pretty-printer/enable-record-pretty-printing DistributionType)
-
 ;; Building block text fields used to construct the recommended language for citing the collection
 ;; in professional scientific literature. The citation language constructed from these fields
 ;; references the collection itself, and is not designed for listing bibliographic references of
@@ -557,17 +539,6 @@
    Version
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
-
-;; Represents a data file size.
-(defrecord FileSizeType
-  [
-   ;; The size of the data.
-   Size
-
-   ;; Unit of information, together with Size determines total size in bytes of the data.
-   Unit
-  ])
-(record-pretty-printer/enable-record-pretty-printing FileSizeType)
 
 ;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
 (defrecord TilingCoordinateType
