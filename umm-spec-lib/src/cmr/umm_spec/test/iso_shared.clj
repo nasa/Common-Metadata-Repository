@@ -145,8 +145,7 @@
 (defn expected-archive-dist-info
   "Creates expected ArchiveAndDistributionInformation for dif10."
   [archive-dist-info]
-  (when archive-dist-info
-    (-> archive-dist-info
-        (update :FileDistributionInformation expected-file-dist-info)
-        (update :FileArchiveInformation expected-file-archive-info)
-        umm-c/map->ArchiveAndDistributionInformationType)))
+  (some-> archive-dist-info
+      (update :FileDistributionInformation expected-file-dist-info)
+      (update :FileArchiveInformation expected-file-archive-info)
+      umm-c/map->ArchiveAndDistributionInformationType))

@@ -106,12 +106,12 @@
          total-collection-file-size-index (util/get-index-or-nil spec-string "TotalCollectionFileSize:")
          total-collection-file-size-unit-index (util/get-index-or-nil spec-string "TotalCollectionFileSizeUnit:")
          description-index (util/get-index-or-nil spec-string "Description:")]
-    (when-not (and (nil? format-type-index)
-                   (nil? average-file-size-index)
-                   (nil? average-file-size-unit-index)
-                   (nil? total-collection-file-size-index)
-                   (nil? total-collection-file-size-unit-index)
-                   (nil? description-index))
+    (when (or format-type-index
+              average-file-size-index
+              average-file-size-unit-index
+              total-collection-file-size-index
+              total-collection-file-size-unit-index
+              description-index)
      (dist-rel-url/convert-key-strings-to-keywords
       (dist-rel-url/convert-iso-description-string-to-map spec-string specification-pattern))))))
 
