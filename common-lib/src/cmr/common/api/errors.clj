@@ -27,6 +27,12 @@
              CORS_ORIGIN_HEADER "*"}
    :body {:errors ["An Internal Error has occurred."]}})
 
+(defn- mask-token-error
+ [error-string]
+ (if (re-matches #".*Token .* does not exist.*" error-string)
+  "Token does not exist"
+  error-string))
+
 (defn- keyword-path->string-path
   "Converts a set of keyword field paths into the string equivalent field paths
   to return to the user."
@@ -51,7 +57,7 @@
 
 (defmethod error->json-element String
   [error]
-  error)
+  (mask-token-error error))
 
 (defmethod error->json-element cmr.common.services.errors.PathErrors
   [error]
@@ -67,7 +73,7 @@
 
 (defmethod error->xml-element String
   [error]
-  (x/element :error {} error))
+  (x/element :error {} (mask-token-error error)))
 
 (defmethod error->xml-element cmr.common.services.errors.PathErrors
   [error]

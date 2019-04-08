@@ -70,12 +70,13 @@
                   (json/decode body true))]
      [status parsed body])))
 
-
 (defn unexpected-status-error!
   [status body]
   (errors/internal-error!
-    (format "Unexpected status %d from response. body: %s"
-            status (pr-str body))))
+    ; Don't print potentially sensitive information.
+    (if (re-matches #".*Token .* does not exist.*" body)
+     (format "Unexpected status %d from response. body: %s" status "Token does not exist")
+     (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
 (defn- get-rest-health
   "Returns the echo-rest health by calling its availability api"
