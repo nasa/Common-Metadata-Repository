@@ -44,7 +44,7 @@
                         url-path
                         (add-token-header "ABC" {:throw-exceptions? false}))]
           (is (= 401 (:status response)))
-          (is (= ["Token ABC does not exist"]
+          (is (= ["Token does not exist"]
                  (search/safe-parse-error-xml (:body response))))))
       (testing "regular user token"
         (let [response (get-search-response

@@ -76,7 +76,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token [ABC] does not exist"]}
+            :errors ["Token does not exist"]}
            (humanizer-util/update-community-usage-metrics "ABC" sample-usage-csv))))
 
   (testing "Create without permission"
