@@ -758,16 +758,25 @@
                            :ContactInformation {:ContactMechanisms
                                                 [{:Type "Email"
                                                   :Value "test-address@example.com"}]}})]}
+          collection-citations {:CollectionCitations
+                                [(umm-spec-collection/resource-citation
+                                  {:OtherCitationDetails
+                                   "This citation only contains OtherCitationDetails."})]}
           umm-attributes (merge related-urls data-centers)
           concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
                           ingest/ingest-concept)
-
+          concept-citation (-> (umm-spec-collection/collection 2 collection-citations)
+                               (umm-spec-collection/collection-concept :umm-json)
+                               ingest/ingest-concept)
           _ (index/wait-until-indexed)
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
           opendata-5138-3 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-3)})
           opendata-umm (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-umm)})
+          opendata-citation (-> (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-citation)})
+                                (get-in [:results :dataset])
+                                first)
           umm-json-5138-3 (search/find-concepts-umm-json :collection {:concept_id (:concept-id concept-5138-3)})
           opendata-coll-5138-1 (first (get-in opendata-5138-1 [:results :dataset]))
           opendata-coll-5138-2 (first (get-in opendata-5138-2 [:results :dataset]))
@@ -840,6 +849,9 @@
 
           "DataPresentationFrom in response"
           "Digital Science Data" :data-presentation-form opendata-coll-5138-1
+
+          "Only OtherCitationDetails is created for citation"
+          "This citation only contains OtherCitationDetails." :citation opendata-citation
 
           "Citation in response with missing version"
           (str "AIRS Science Team/Joao Texeira. 2013-03-12. AIRX3STD."
