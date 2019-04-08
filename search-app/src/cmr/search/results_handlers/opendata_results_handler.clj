@@ -328,15 +328,19 @@
 
 (defn citation
   "Create the citation field for the opendata response. extra-fields contain
-   information outside of CollectionCitations to create the full citation field."
+  information outside of CollectionCitations to create the full citation field.
+  When OtherCitationDetails is the ONLY provided field then do not construct
+  the citation and assume that contains the full citation."
   ([collection-citation]
    (citation collection-citation {}))
   ([collection-citation extra-fields]
-   (when-let [citation-details (->> (merge collection-citation extra-fields)
-                                    evaluate-citation
-                                    (remove nil?)
-                                    not-empty)]
-     (str (string/join ". " citation-details) "."))))
+   (if (= [:other-citation-details] (keys collection-citation))
+     (:other-citation-details collection-citation)
+     (when-let [citation-details (->> (merge collection-citation extra-fields)
+                                      evaluate-citation
+                                      (remove nil?)
+                                      not-empty)]
+       (str (string/join ". " citation-details) ".")))))
 
 (defn- score-browse-image-related-url
   "Score the related-url based off number of browse-image fields."
