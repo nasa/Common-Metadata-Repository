@@ -27,7 +27,7 @@
              CORS_ORIGIN_HEADER "*"}
    :body {:errors ["An Internal Error has occurred."]}})
 
-(defn- mask-token-error
+(defn mask-token-error
  [error-string]
  (if (re-matches #".*Token .* does not exist.*" error-string)
   "Token does not exist"
