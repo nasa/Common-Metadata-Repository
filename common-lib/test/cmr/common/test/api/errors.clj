@@ -9,4 +9,4 @@
 
 (deftest test-error-masked
   (let [error-message "Token 123 does not exist"]
-  (is (= "Token does not exist" (errors/mask-token-error error-message)))))
+    (is (= "Token does not exist" (errors/mask-token-error error-message)))))
