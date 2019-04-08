@@ -114,6 +114,12 @@
    (umm-cmn/map->RelatedUrlType (merge {:URL (d/unique-str "http://example.com/file")
                                         :Description (d/unique-str "description")}
                                        attribs))))
+
+(defn resource-citation
+  "Returns ResourceCitation"
+  [attribs]
+  (umm-cmn/map->ResourceCitationType attribs))
+
 (defn spatial
   [attributes]
   (let [{:keys [sc hsd vsds gsr orbit]} attributes]
