@@ -5,10 +5,9 @@
 
 (deftest test-error-masked
   (let [error-message "Unexpected error message: Token 123 does not exist."
-        status 500]
+        status 500
+        replacement-message "Token does not exist"]
     (is (thrown-with-msg?
         java.lang.Exception
-        ;; Fixme - (format "%d %s" status message) was getting the error:
-        ;; java.lang.ClassCastException: java.lang.String cannot be cast to java.util.regex.Pattern
-        #"Unexpected status 500 from response. body: Token does not exist"
+        (re-pattern (format "Unexpected status %d from response. body: %s" status replacement-message))
         (rest/unexpected-status-error! status error-message)))))
