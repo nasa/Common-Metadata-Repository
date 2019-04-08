@@ -30,7 +30,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token [ABC] does not exist"]}
+            :errors ["Token does not exist"]}
            (tags/create-tag "ABC" (tags/make-tag)))))
 
   (let [valid-user-token (echo-util/login (system/context) "user1")

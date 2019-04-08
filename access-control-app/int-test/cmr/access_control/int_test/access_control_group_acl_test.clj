@@ -61,7 +61,7 @@
     (let [group (u/make-group)
           response (u/create-group "nonexist-token" group {:allow-failure? true})]
       (is (= {:status 401
-              :errors ["Token [nonexist-token] does not exist"]}
+              :errors ["Token does not exist"]}
              response)))))
 
 (deftest create-provider-group-test
