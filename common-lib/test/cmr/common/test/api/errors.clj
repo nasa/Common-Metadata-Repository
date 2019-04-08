@@ -1,9 +1,6 @@
-(ns cmr.common.test.api.web-server
-  "This tests capabilities of the web server component."
+(ns cmr.common.test.api.errors
+  "This tests capabilities of the API error utilities."
   (:require
-   [clj-http.client :as h]
-   [clojure.java.io :as io]
-   [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.api.errors :as errors]))
 
