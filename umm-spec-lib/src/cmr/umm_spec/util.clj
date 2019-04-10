@@ -302,7 +302,7 @@
 (def ^:private data-size-re
   "Regular expression used to parse file sizes from a string. Supports extracting a single value
   with units as well as a range with units."
-  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((k|kb|ko|kilo|mb|mega|mbyte|mo|gbyte|gb|go|giga|tbyte|tb|tera|p|pb|peta)?(byte)?s?)\b")
+  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((na|k|kb|ko|kilo|mb|mega|mbyte|mo|gbyte|gb|go|giga|tbyte|tb|tera|p|pb|peta)?(byte)?s?)\b")
 
 (defn parse-data-sizes
   "Parses the data size and units from the provided string. Returns a sequence of maps with the Size
@@ -314,10 +314,12 @@
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (string/blank? unit-str)))]
       (if (= (string/lower-case unit-str) "bytes")
-        {:Size (/ (Double. (string/replace num-str "," "")) 1000.0)
+        {:Size (/ (read-string (string/replace num-str "," "")) 1000.0)
          :Unit "KB"}
-        {:Size (Double. (string/replace num-str "," ""))
-         :Unit (-> unit-str string/trim string/upper-case first (str "B"))}))))
+        {:Size (read-string (string/replace num-str "," ""))
+         :Unit (if (=  "na" unit-str)
+                 "NA"
+                 (-> unit-str string/trim string/upper-case first (str "B")))}))))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a

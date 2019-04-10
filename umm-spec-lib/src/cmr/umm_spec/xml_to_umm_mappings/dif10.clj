@@ -203,18 +203,17 @@
   (let [distributions
         (for [distribution (select doc "/DIF/Distribution")
               :let [dist-size (value-of distribution "Distribution_Size")
-                    [size unit] (when dist-size
-                                  (string/split dist-size #" "))
+                    {:keys [Size Unit]} (when dist-size
+                                         (first (su/parse-data-sizes dist-size)))
                     media (value-of distribution "Distribution_Media")
                     media (when media
                             [media])
-                    size (when size (read-string size))
                     format (value-of distribution "Distribution_Format")
                     fees (value-of distribution "Fees")]]
-          (when (or fees format size unit)
+          (when (or fees format Size Unit)
             {:Media media
-             :AverageFileSize size
-             :AverageFileSizeUnit unit
+             :AverageFileSize Size
+             :AverageFileSizeUnit Unit
              :Format format
              :Fees fees
              :FormatType "Native"}))]
