@@ -68,7 +68,9 @@
                            (println (slurp "resources/text/banner.txt"))
                            (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-Dclojure.compiler.direct-linking=true"]
+             "-Dclojure.compiler.direct-linking=true"
+             ;; Avoid race conditions when creating jruby context.
+             "-Dorg.jruby.embed.localcontext.scope=threadsafe"]
              ;; Uncomment to enable logging in jetty.
              ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
              ; "-Dorg.eclipse.jetty.LEVEL=INFO"
