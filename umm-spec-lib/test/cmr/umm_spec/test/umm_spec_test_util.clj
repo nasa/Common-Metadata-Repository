@@ -6,16 +6,16 @@
    [cmr.umm-spec.util :as util]))
 
 
-(deftest test-parse-data-size
+(deftest test-parse-data-sizes
   (are [s expected] (= expected
                        (util/parse-data-sizes s))
-    "2 k" [{:Size 2.0 :Unit "KB"}]
+    "2 k" [{:Size 2 :Unit "KB"}]
     "4,555.5mb" [{:Size 4555.5 :Unit "MB"}]
     "9.446 Tbytes" [{:Size 9.446 :Unit "TB"}]
     "pixel size: 1km, 500m, 250m" nil
     "4.3 GB (total volume)" [{:Size 4.3 :Unit "GB"}]
-    "79 MB compressed; 214 MB uncompressed" [{:Size 79.0 :Unit "MB"} {:Size 214.0 :Unit "MB"}]
-    "Total Volume: 40 Mbytes for XBT data; 10 Mbytes for TSG data" [{:Size 40.0 :Unit "MB"} {:Size 10.0 :Unit "MB"}]
+    "79 MB compressed; 214 MB uncompressed" [{:Size 79 :Unit "MB"} {:Size 214 :Unit "MB"}]
+    "Total Volume: 40 Mbytes for XBT data; 10 Mbytes for TSG data" [{:Size 40 :Unit "MB"} {:Size 10 :Unit "MB"}]
     "1010 files; Total size: 2351.98 MB" [{:Size 2351.98 :Unit "MB"}]
 
     "Single layer, raster format, 13.2 megabytes; vector format, 1.2 megabytes"
@@ -23,7 +23,8 @@
 
     "173.596 Gbytes" [{:Size 173.596 :Unit "GB"}]
 
-    ".5 GB" [{:Size 0.5 :Unit "GB"}])
+    ".5 GB" [{:Size '.5 :Unit "GB"}])
+
   (are3 [s expected]
     (is (= expected (util/parse-data-sizes s)))
 
@@ -34,7 +35,7 @@
     "2,894,890 bytes" [{:Size 2894.89 :Unit "KB"}]
 
     "KB with sanitize"
-    "2 k" [{:Size 2.0 :Unit "KB"}]))
+    "2 k" [{:Size 2 :Unit "KB"}]))
 
 (deftest data-size-str-test
   (is (= (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])
