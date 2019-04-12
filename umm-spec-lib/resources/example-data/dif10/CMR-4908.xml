@@ -1,0 +1,679 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>test_cmr_4908</Short_Name>
+        <Version>1</Version>
+    </Entry_ID>
+    <Version_Description>Mapping Version 1 Description</Version_Description>
+    <Entry_Title>test_cmr_4908</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Collection Citations Creators1</Dataset_Creator>
+        <Dataset_Editor>Collection Citation Editors1</Dataset_Editor>
+        <Dataset_Title>Collection Citiation Title1</Dataset_Title>
+        <Dataset_Series_Name>Series Name 1</Dataset_Series_Name>
+        <Dataset_Release_Date>2017-01-01T12:00:00.000Z</Dataset_Release_Date>
+        <Dataset_Release_Place>New York, NY</Dataset_Release_Place>
+        <Dataset_Publisher>Some Publishing Co.</Dataset_Publisher>
+        <Version>1</Version>
+        <Issue_Identification>12345</Issue_Identification>
+        <Data_Presentation_Form>Word</Data_Presentation_Form>
+        <Other_Citation_Details>Other Citation Details</Other_Citation_Details>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1234/DOIID</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>http://www.google.com?q=publishers</Online_Resource>
+    </Dataset_Citation>
+    <Dataset_Citation>
+        <Dataset_Creator>Collection Citations Creators2</Dataset_Creator>
+        <Dataset_Editor>Collection Citation Editors2</Dataset_Editor>
+        <Dataset_Title>Collection Citiation Title2</Dataset_Title>
+        <Dataset_Series_Name>Series Name 2</Dataset_Series_Name>
+        <Dataset_Release_Date>2017-01-01T13:00:00.000Z</Dataset_Release_Date>
+        <Dataset_Release_Place>New York, NY</Dataset_Release_Place>
+        <Dataset_Publisher>Some Publishing Co.</Dataset_Publisher>
+        <Version>2</Version>
+        <Issue_Identification>12345</Issue_Identification>
+        <Data_Presentation_Form>Word</Data_Presentation_Form>
+        <Other_Citation_Details>Other Citation Details</Other_Citation_Details>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1234/DOIID</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>http://www.google.com?q=publishers</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>Personnel First Name</First_Name>
+            <Middle_Name>Personnel Middle Name</Middle_Name>
+            <Last_Name>Personnel Last Name</Last_Name>
+            <Address>
+                <Street_Address>123 Main Street</Street_Address>
+                <Street_Address>Suite 5</Street_Address>
+                <City>City</City>
+                <State_Province>State</State_Province>
+                <Postal_Code>11111</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>111-222-3458</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3459</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3456</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3457</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>anEmail1@server.com</Email>
+            <Email>anEmail2@server.com</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>Personnel2 First Name</First_Name>
+            <Middle_Name>Personnel2 Middle Name</Middle_Name>
+            <Last_Name>Personnel2 Last Name</Last_Name>
+            <Address>
+                <Street_Address>223 Main Street</Street_Address>
+                <Street_Address>Suite 6</Street_Address>
+                <City>City</City>
+                <State_Province>State</State_Province>
+                <Postal_Code>21111</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>211-222-3458</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3459</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3456</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3457</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>anEmail1@server.com</Email>
+            <Email>anEmail2@server.com</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Group>
+            <Name>DAAC USER SERVICES</Name>
+            <Address>
+                <Street_Address>123 Main Street</Street_Address>
+                <Street_Address>Suite 5</Street_Address>
+                <City>City</City>
+                <State_Province>State</State_Province>
+                <Postal_Code>11111</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>111-222-3458</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3459</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3456</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>111-222-3457</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>anEmail1@server.com</Email>
+            <Email>anEmail2@server.com</Email>
+        </Contact_Group>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Group>
+            <Name>DAAC Software Development</Name>
+            <Address>
+                <Street_Address>223 Main Street</Street_Address>
+                <Street_Address>Suite 6</Street_Address>
+                <City>City</City>
+                <State_Province>State</State_Province>
+                <Postal_Code>21111</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>211-222-3458</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3459</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3456</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>211-222-3457</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>anEmail1@server.com</Email>
+            <Email>anEmail2@server.com</Email>
+        </Contact_Group>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+        <Term>SNOW/ICE</Term>
+        <Variable_Level_1>SNOW WATER EQUIVALENT</Variable_Level_1>
+        <Detailed_Variable>RAIN</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>CRYOSPHERE</Topic>
+        <Term>SNOW/ICE</Term>
+        <Variable_Level_1>SNOW WATER EQUIVALENT</Variable_Level_1>
+        <Detailed_Variable>SLEET</Detailed_Variable>
+    </Science_Keywords>
+    <ISO_Topic_Category>BOUNDARIES</ISO_Topic_Category>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>AncillaryKeyword1</Ancillary_Keyword>
+    <Ancillary_Keyword>AncillaryKeyword2</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System, AQUA</Long_Name>
+        <Characteristics>
+            <Name>PlatformCaracteristicName</Name>
+            <Description>Platform Characteristics Description</Description>
+            <DataType>INT</DataType>
+            <Unit>Degrees</Unit>
+            <Value>50</Value>
+        </Characteristics>
+        <Instrument>
+            <Short_Name>AMSR-E</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer-EOS</Long_Name>
+            <Technique>Broadband scanning radiometry</Technique>
+            <NumberOfSensors>1</NumberOfSensors>
+            <Characteristics>
+                <Name>InstrumentCaracteristicName</Name>
+                <Description>Instrument Characteristics Description</Description>
+                <DataType>INT</DataType>
+                <Unit>Calvin</Unit>
+                <Value>150</Value>
+            </Characteristics>
+            <OperationalMode>Mode1</OperationalMode>
+            <OperationalMode>Mode2</OperationalMode>
+            <Sensor>
+                <Short_Name>AMSR-E</Short_Name>
+                <Long_Name>Advanced Microwave Scanning Radiometer-EOS</Long_Name>
+                <Technique>Radiometry</Technique>
+                <Characteristics>
+                    <Name>ChildInstrumentCaracteristicName</Name>
+                    <Description>Child Instrument Characteristics Description</Description>
+                    <DataType>INT</DataType>
+                    <Unit>Pascals</Unit>
+                    <Value>250</Value>
+                </Characteristics>
+            </Sensor>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Precision_Of_Seconds>1</Precision_Of_Seconds>
+        <Ends_At_Present_Flag>false</Ends_At_Present_Flag>
+        <Range_DateTime>
+            <Beginning_Date_Time>2001-01-01T00:00:00.000Z</Beginning_Date_Time>
+            <Ending_Date_Time>2001-06-01T00:00:00.000Z</Ending_Date_Time>
+        </Range_DateTime>
+        <Temporal_Info>
+            <Ancillary_Temporal_Keyword>TemporalKeyword1</Ancillary_Temporal_Keyword>
+            <Ancillary_Temporal_Keyword>TemporalKeyword2</Ancillary_Temporal_Keyword>
+        </Temporal_Info>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Paleo_DateTime>
+            <Paleo_Start_Date>350 ka</Paleo_Start_Date>
+            <Paleo_Stop_Date>0 ka</Paleo_Stop_Date>
+            <Chronostratigraphic_Unit>
+                <Eon>PHANEROZOIC</Eon>
+                <Era>CENOZOIC</Era>
+                <Period>QUATERNARY</Period>
+                <Epoch>PLEISTONCENE</Epoch>
+                <Stage>STAGE</Stage>
+                <Detailed_Classification>SOME DEEPER CLASSIFICATION</Detailed_Classification>
+            </Chronostratigraphic_Unit>
+        </Paleo_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Zone_Identifier>1</Zone_Identifier>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Polygon>
+                <Boundary>
+                    <Point>
+                        <Point_Longitude>-10</Point_Longitude>
+                        <Point_Latitude>10</Point_Latitude>
+                    </Point>
+                    <Point>
+                        <Point_Longitude>10</Point_Longitude>
+                        <Point_Latitude>10</Point_Latitude>
+                    </Point>
+                    <Point>
+                        <Point_Longitude>10</Point_Longitude>
+                        <Point_Latitude>-10</Point_Latitude>
+                    </Point>
+                    <Point>
+                        <Point_Longitude>-10</Point_Longitude>
+                        <Point_Latitude>-10</Point_Latitude>
+                    </Point>
+                </Boundary>
+                <Exclusive_Zone>
+                    <Boundary>
+                        <Point>
+                            <Point_Longitude>-5</Point_Longitude>
+                            <Point_Latitude>-1</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>-1</Point_Longitude>
+                            <Point_Latitude>-1</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>-1</Point_Longitude>
+                            <Point_Latitude>-5</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>-5</Point_Longitude>
+                            <Point_Latitude>-5</Point_Latitude>
+                        </Point>
+                    </Boundary>
+                    <Boundary>
+                        <Point>
+                            <Point_Longitude>0</Point_Longitude>
+                            <Point_Latitude>5</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>5</Point_Longitude>
+                            <Point_Latitude>5</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>5</Point_Longitude>
+                            <Point_Latitude>0</Point_Latitude>
+                        </Point>
+                        <Point>
+                            <Point_Longitude>0</Point_Longitude>
+                            <Point_Latitude>0</Point_Latitude>
+                        </Point>
+                    </Boundary>
+                </Exclusive_Zone>
+            </Polygon>
+        </Geometry>
+        <Orbit_Parameters>
+            <Swath_Width>22</Swath_Width>
+            <Period>1</Period>
+            <Inclination_Angle>4</Inclination_Angle>
+            <Number_Of_Orbits>1</Number_Of_Orbits>
+            <Start_Circular_Latitude>1</Start_Circular_Latitude>
+        </Orbit_Parameters>
+        <Vertical_Spatial_Info>
+            <Type>Maximum_Altitude</Type>
+            <Value>100</Value>
+        </Vertical_Spatial_Info>
+        <Vertical_Spatial_Info>
+            <Type>Minimum_Altitude</Type>
+            <Value>1</Value>
+        </Vertical_Spatial_Info>
+        <Spatial_Info>
+            <Spatial_Coverage_Type>Not provided</Spatial_Coverage_Type>
+        </Spatial_Info>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>MAINE</Location_Subregion2>
+        <Location_Subregion3>PORTLAND</Location_Subregion3>
+        <Detailed_Location>LocationKeywordDetailedLocation</Detailed_Location>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>EUROPE</Location_Type>
+        <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+        <Detailed_Location>SVALBARD</Detailed_Location>
+    </Location>
+    <Project>
+        <Short_Name>AMSRICE06</Short_Name>
+        <Campaign>Campaign1</Campaign>
+        <Long_Name>Advanced Microwave Scanning Radiometer Sea Ice Product Validation</Long_Name>
+        <Start_Date>2000-01-01</Start_Date>
+        <End_Date>2018-01-01</End_Date>
+    </Project>
+    <Quality>Some quality statement</Quality>
+    <Access_Constraints>Testing</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Organization>
+        <Organization_Type>PROCESSOR</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/MSFC/AMSR-E SIPS</Short_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NSIDC</Short_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Organization>
+        <Organization_Type>ORIGINATOR</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/MSFC/AMSR-E SIPS</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer - Earth Observing System Science Investigator-led Processing System</Long_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <First_Name>Data Center Personnel First Name</First_Name>
+                <Middle_Name>Data Center Personnel Middle Name</Middle_Name>
+                <Last_Name>Data Center Personnel Last Name</Last_Name>
+                <Address>
+                    <Street_Address>123 Main Street</Street_Address>
+                    <Street_Address>Suite 5</Street_Address>
+                    <City>City</City>
+                    <State_Province>State</State_Province>
+                    <Postal_Code>11111</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>111-222-3458</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3459</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3456</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3457</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>anEmail1@server.com</Email>
+                <Email>anEmail2@server.com</Email>
+            </Contact_Person>
+        </Personnel>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <First_Name>Data Center Personnel2 First Name</First_Name>
+                <Middle_Name>Data Center Personnel2 Middle Name</Middle_Name>
+                <Last_Name>Data Center Personnel2 Last Name</Last_Name>
+                <Address>
+                    <Street_Address>223 Main Street</Street_Address>
+                    <Street_Address>Suite 6</Street_Address>
+                    <City>City</City>
+                    <State_Province>State</State_Province>
+                    <Postal_Code>21111</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>211-222-3458</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3459</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3456</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3457</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>anEmail1@server.com</Email>
+                <Email>anEmail2@server.com</Email>
+            </Contact_Person>
+        </Personnel>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Group>
+                <Name>Data Center User Services</Name>
+                <Address>
+                    <Street_Address>123 Main Street</Street_Address>
+                    <Street_Address>Suite 5</Street_Address>
+                    <City>City</City>
+                    <State_Province>State</State_Province>
+                    <Postal_Code>11111</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>111-222-3458</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3459</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3456</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>111-222-3457</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>anEmail1@server.com</Email>
+                <Email>anEmail2@server.com</Email>
+            </Contact_Group>
+        </Personnel>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Group>
+                <Name>DAAC Software Development</Name>
+                <Address>
+                    <Street_Address>223 Main Street</Street_Address>
+                    <Street_Address>Suite 6</Street_Address>
+                    <City>City</City>
+                    <State_Province>State</State_Province>
+                    <Postal_Code>21111</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>211-222-3458</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3459</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3456</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>211-222-3457</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>anEmail1@server.com</Email>
+                <Email>anEmail2@server.com</Email>
+            </Contact_Group>
+        </Personnel>
+    </Organization>
+    <Organization>
+        <Organization_Type>DISTRIBUTOR</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NSIDC</Short_Name>
+            <Long_Name>National Snow and Ice Data Center</Long_Name>
+        </Organization_Name>
+        <Hours_Of_Service>8am-5pm (Mountain Time) Monday through Friday</Hours_Of_Service>
+        <Instructions>contact by e-mail first</Instructions>
+        <Organization_URL>http://nsidc.org/data/amsre/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+      <Distribution_Media>online</Distribution_Media>
+      <Distribution_Size>10MB</Distribution_Size>
+      <Distribution_Format>netCDF-5</Distribution_Format>
+      <Fees>None</Fees>
+    </Distribution>
+    <Reference>
+        <Author>Andersen, Ole Baltazar</Author>
+        <Publication_Date>1994-01-01T00:00:00.000Z</Publication_Date>
+        <Title>ERS-1 altimetry on the Greenland ice sheet: Preliminary investigations of annual variations.</Title>
+        <Series>Geophysical Research Letters</Series>
+        <Edition>21</Edition>
+        <Volume>15</Volume>
+        <Issue>5</Issue>
+        <Report_Number>6</Report_Number>
+        <Publication_Place>New York, NY</Publication_Place>
+        <Publisher>NASA</Publisher>
+        <Pages>1655-1658</Pages>
+        <ISBN>123455666</ISBN>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1234/Ref</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>http://www.yahoo.com</Online_Resource>
+        <Other_Reference_Details>Lots of other details.</Other_Reference_Details>
+    </Reference>
+    <Reference>
+        <Online_Resource>http://www.yahoo.com</Online_Resource>
+        <Other_Reference_Details>Lots of other details 2.</Other_Reference_Details>
+    </Reference>
+    <Reference>
+        <Online_Resource>http://www.yahoo.com</Online_Resource>
+    </Reference>
+    <Summary>
+        <Abstract>This record is a Mapping Example.</Abstract>
+        <Purpose>This record is to be used to demonstrate how the CMR maps from one specification to another</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://wwwghcc.msfc.nasa.gov/AMSR/qa.html</URL>
+        <Description>quality documentation</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PUBLICATIONS</Subtype>
+        </URL_Content_Type>
+        <URL>http://wwwghcc.msfc.nasa.gov/AMSR/qa.html</URL>
+        <Description>quality documentation</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://nsidc.org/data/docs/daac/ae_swe_ease-grids.gd.html</URL>
+        <Description>Guide Document for this product at NSIDC</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://nsidc.org/data/amsre/</URL>
+        <Description>AMSR-E/AMSR Product page at NSIDC</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>http://www.foo.com</URL>
+        <Description>Testing Related url GET DATA translations</Description>
+    </Related_URL>
+    <Metadata_Association>
+        <Entry_ID>
+            <Short_Name>C1234453343-ECHO_REST</Short_Name>
+            <Version>1</Version>
+        </Entry_ID>
+        <Type>Science Associated</Type>
+        <Description>This is a description of the metadata association</Description>
+    </Metadata_Association>
+    <IDN_Node>
+        <Short_Name>GOSIC/GTOS</Short_Name>
+    </IDN_Node>
+    <IDN_Node>
+        <Short_Name>ISRO/UOPS</Short_Name>
+        <Long_Name>User Order Processing System</Long_Name>
+    </IDN_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2006-01-01</Metadata_Creation>
+        <Metadata_Last_Revision>2007-01-01</Metadata_Last_Revision>
+        <Data_Creation>2002-01-01T00:00:00.000Z</Data_Creation>
+        <Data_Last_Revision>2003-01-01T00:00:00.000Z</Data_Last_Revision>
+        <Data_Future_Review>2023-01-01T00:00:00.000Z</Data_Future_Review>
+        <Data_Delete>2024-01-01T00:00:00.000Z</Data_Delete>
+    </Metadata_Dates>
+    <Additional_Attributes>
+        <Name>SomeOtherFullElement</Name>
+        <DataType>INT</DataType>
+        <Description>Metadata Description</Description>
+        <Value>2</Value>
+    </Additional_Attributes>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Name>Restriction</Name>
+            <Value>1</Value>
+        </Metadata>
+        <Metadata>
+            <Group>Metadata Group</Group>
+            <Name>SomeOtherFullElement 2</Name>
+            <Description>Metadata Description</Description>
+            <Type>INT</Type>
+            <Value>2</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.esdis.umm.additionalattribute</Group>
+            <Name>An Additional Attribute Name</Name>
+            <Description>An Additional Attribute Description</Description>
+            <Type>INT</Type>
+            <Update_Date>2017-03-03T01:00:00.000Z</Update_Date>
+            <Value>5</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>
