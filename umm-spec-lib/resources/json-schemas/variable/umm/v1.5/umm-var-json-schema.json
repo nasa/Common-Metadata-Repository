@@ -24,7 +24,7 @@
       "description": "The definition of the variable.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 1024
+      "maxLength": 10000
     },
     "Units": {
       "description": "The units associated with a variable.",
@@ -163,7 +163,8 @@
           "items": {
             "type": "number"
           },
-          "minItems": 2
+          "minItems": 2,
+          "maxItems": 2
         },
         "LonRange": {
           "description": "The LonRange consists of an index range for longitude.",
@@ -171,7 +172,8 @@
           "items": {
             "type": "number"
           },
-          "minItems": 2
+          "minItems": 2,
+          "maxItems": 2
         }
       },
       "required": ["LatRange", "LonRange"]
