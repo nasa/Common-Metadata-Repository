@@ -92,9 +92,14 @@
     (testing "update service affect collection search has-formats field"
       ;; before update service3, collections' has formats is false
       (service-util/assert-collection-search-result
-       coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
+       coll1
+       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-variables false}
+       [serv1-concept-id serv2-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
-       coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
+       coll2
+       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-variables false}
+       [serv1-concept-id serv2-concept-id serv3-concept-id])
+
       ;; update service3 to have two supported formats and spatial subsetting
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
@@ -102,15 +107,30 @@
         :ServiceOptions {:SupportedInputFormats ["TIFF" "JPEG"]
                          :SubsetTypes ["Spatial"]}})
       (index/wait-until-indexed)
-
       ;; verify has-formats is true after the service is updated with two supported formats
+      ;; and has-spatial-subsetting is true after service is updated with Spatial SubsetTypes
+      ;; the has-transforms is not affected by the SupportedInputFormats or SubsetTypes
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats true :has-transforms true :has-spatial-subsetting true}
+       {:has-formats true :has-transforms false :has-spatial-subsetting true :has-variables false}
+       [serv1-concept-id serv2-concept-id serv3-concept-id])
+
+      ; update service3 to also have InterpolationTypes
+      (service-util/ingest-service-with-attrs
+       {:native-id "serv3"
+        :Name "service3"
+        :ServiceOptions {:SupportedInputFormats ["TIFF" "JPEG"]
+                         :SubsetTypes ["Spatial"]
+                         :InterpolationTypes ["Nearest Neighbor"]}})
+      (index/wait-until-indexed)
+      ;; verify has-transforms is true after the service is updated with InterpolationTypes
+      (service-util/assert-collection-search-result
+       coll1
+       {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
-       {:has-formats true :has-transforms true :has-spatial-subsetting true}
+       {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id]))
 
     (testing "variable associations together with service associations"
@@ -119,13 +139,15 @@
                                            :Name "Variable1"})]
         (au/associate-by-concept-ids token var-concept-id [{:concept-id (:concept-id coll1)}])
         (index/wait-until-indexed)
+        ;; verify coll1 has-variables is true after associated with a variable,
+        ;; coll2 has-variables is still false
         (service-util/assert-collection-search-result
          coll1
-         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables true}
          [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
         (service-util/assert-collection-search-result
          coll2
-         {:has-formats true :has-transforms true :has-spatial-subsetting true}
+         {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
          [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
@@ -230,11 +252,12 @@
                         {:native-id "serv11"
                          :Name "service11"
                          :ServiceOptions {:SubsetTypes ["Spatial"]
-                                          :SupportedInputFormats ["TIFF" "JPEG"]}})
+                                          :SupportedInputFormats ["TIFF" "JPEG"]
+                                          :InterpolationTypes ["Nearest Neighbor"]}})
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
 
-    (testing "SubsetType affects has-transforms"
+    (testing "SubsetType does not affect has-transforms"
       ;; sanity check before the association is made
       (service-util/assert-collection-search-result
        coll3 {:has-transforms false :has-spatial-subsetting false} [])
@@ -243,9 +266,9 @@
       (au/associate-by-concept-ids token serv8-concept-id [{:concept-id (:concept-id coll3)}])
       (index/wait-until-indexed)
 
-      ;; after service association is made, has-transforms is true
+      ;; after service association is made, has-transforms is still false
       (service-util/assert-collection-search-result
-       coll3 {:has-transforms true :has-spatial-subsetting true} [serv8-concept-id]))
+       coll3 {:has-transforms false :has-spatial-subsetting true} [serv8-concept-id]))
 
     (testing "InterpolationTypes affects has-transforms"
       ;; sanity check before the association is made
@@ -261,15 +284,15 @@
     (testing "Non-spatial SubsetType does not affect has-spatial-subsetting"
       ;; sanity check before the association is made
       (service-util/assert-collection-search-result
-       coll5 {:has-spatial-subsetting false} [])
+       coll5 {:has-variables false :has-spatial-subsetting false :has-transforms false} [])
 
-      ;; associate coll5 with a service that has SubsetTypes
+      ;; associate coll5 with a service that has SubsetTypes of Variable
       (au/associate-by-concept-ids token serv10-concept-id [{:concept-id (:concept-id coll5)}])
       (index/wait-until-indexed)
 
-      ;; after service association is made, has variables and has-transforms is true
+      ;; after service association is made, has variables is true and has-transforms is still false
       (service-util/assert-collection-search-result
-       coll5 {:has-variables true :has-spatial-subsetting false :has-transforms true} [serv10-concept-id])
+       coll5 {:has-variables true :has-spatial-subsetting false :has-transforms false} [serv10-concept-id])
 
       (testing "deletion of service affects collection search service association fields"
         ;; associate coll5 also with service11 to make other service related fields true
@@ -289,7 +312,7 @@
         ;; verify the service related fields affected by service11 are set properly after deletion
         (service-util/assert-collection-search-result
          coll5
-         {:has-variables true :has-formats false :has-transforms true :has-spatial-subsetting false}
+         {:has-variables true :has-formats false :has-transforms false :has-spatial-subsetting false}
          [serv10-concept-id])
 
         ;; Delete service10

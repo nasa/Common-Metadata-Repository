@@ -360,7 +360,7 @@
                                          :ServiceOptions {:SubsetTypes ["Temporal"]}})]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
-    
+
     ;; create variable associations
     ;; Variable1 is associated with coll1
     (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
@@ -390,10 +390,10 @@
         coll2 {:has-variables false}
 
         "has-variables true through service association"
-        coll3 {:has-variables true :has-transforms true}
+        coll3 {:has-variables true}
 
         "has-variables false through service association"
-        coll4 {:has-variables false :has-transforms true}))
+        coll4 {:has-variables false}))
 
     (testing "search collections in JSON format has-variables field"
       (are3 [coll expected-fields]
