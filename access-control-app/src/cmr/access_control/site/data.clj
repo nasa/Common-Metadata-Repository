@@ -16,7 +16,7 @@
 (defn base-page
   "Data that all app pages have in common."
   [context]
-  (assoc (common-data/base-page context) :app-title "Access Control"
+  (assoc (common-data/base-page context) :app-title "CMR Access Control"
                                          :release-version (str "v " (common-config/release-version))))
 
 (defn base-static
@@ -24,5 +24,5 @@
 
   Note that static pages don't have any context."
   []
-  (assoc (common-data/base-static) :app-title "Access Control"
+  (assoc (common-data/base-static) :app-title "CMR Access Control"
                                    :release-version (str "v " (common-config/release-version))))

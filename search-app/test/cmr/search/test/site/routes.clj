@@ -90,7 +90,7 @@
       (is (= 200 (:status response)))
       (is (string/includes?
            (:body response)
-           "Documentation for Search"))
+           "Documentation for CMR Search"))
       (is (string/includes?
            (:body response)
            "v dev"))

@@ -24,7 +24,7 @@
   [context]
   (merge (common-data/base-page context)
          data-partners-guide
-         {:app-title "Ingest" :release-version (str "v " (common-config/release-version))}))
+         {:app-title "CMR Ingest" :release-version (str "v " (common-config/release-version))}))
 
 (defn base-static
   "Data that all static pages have in common.
@@ -33,4 +33,4 @@
   []
   (merge (common-data/base-static)
          data-partners-guide
-         {:app-title "Ingest" :release-version (str "v " (common-config/release-version))}))
+         {:app-title "CMR Ingest" :release-version (str "v " (common-config/release-version))}))
