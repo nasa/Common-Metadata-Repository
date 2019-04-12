@@ -150,12 +150,12 @@
 
 (defmethod base-page :cli
   [context]
-  (assoc (common-data/base-static) :app-title "Search" 
+  (assoc (common-data/base-static) :app-title "CMR Search"
                                    :release-version (str "v " (common-config/release-version))))
 
 (defmethod base-page :default
   [context]
-  (assoc (common-data/base-page context) :app-title "Search" 
+  (assoc (common-data/base-page context) :app-title "CMR Search"
                                          :release-version (str "v " (common-config/release-version))))
 
 (defn get-directory-links
