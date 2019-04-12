@@ -102,15 +102,13 @@
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
         {service-options :ServiceOptions} service
-        {subset-types :SubsetTypes
-         interpolation-types :InterpolationTypes
+        {interpolation-types :InterpolationTypes
          input-projections :SupportedInputProjections
          output-projections :SupportedOutputProjections} service-options
         supported-projections (distinct (concat
                                          (map :ProjectionName input-projections)
                                          (map :ProjectionName output-projections)))]
-    (or (seq subset-types)
-        (seq interpolation-types)
+    (or (seq interpolation-types)
         (> (count supported-projections) 1))))
 
 (defn service-associations->elastic-doc
