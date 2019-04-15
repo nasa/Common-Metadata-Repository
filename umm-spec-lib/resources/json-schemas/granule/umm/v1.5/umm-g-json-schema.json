@@ -352,7 +352,7 @@
             "description": "The identifier value.",
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
+            "maxLength": 128
           },
           "IdentifierType": {
             "description": "The enumeration of known identifier types.",
@@ -375,7 +375,7 @@
             "description": "The identifier value.",
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
+            "maxLength": 128
           },
           "IdentifierType": {
             "description": "The enumeration of known identifier types.",
