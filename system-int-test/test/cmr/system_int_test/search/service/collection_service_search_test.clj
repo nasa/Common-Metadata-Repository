@@ -115,7 +115,7 @@
        {:has-formats true :has-transforms false :has-spatial-subsetting true :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
 
-      ; update service3 to also have InterpolationTypes
+      ;; update service3 to also have InterpolationTypes
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
