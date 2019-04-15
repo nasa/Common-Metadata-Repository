@@ -70,7 +70,7 @@
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
              ;; Avoid race conditions when creating jruby context.
-             "-Dorg.jruby.embed.localcontext.scope=threadsafe"]
+             "-Dorg.jruby.embed.localcontext.scope=concurrent"]
              ;; Uncomment to enable logging in jetty.
              ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
              ; "-Dorg.eclipse.jetty.LEVEL=INFO"
