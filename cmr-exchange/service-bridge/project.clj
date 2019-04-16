@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.10-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.11-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -34,7 +34,7 @@
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.6-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.2-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.3-SNAPSHOT"]
                  [http-kit "2.3.0"]
                  [markdown-clj "1.0.7"]
                  [metosin/reitit-core "0.3.1"]
@@ -48,7 +48,7 @@
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.1"]
                  [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.11"]
+                 [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
