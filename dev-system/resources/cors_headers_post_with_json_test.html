@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+ <!-- This is to test CORS supported request and response headers -->
+ <head>
+   <meta charset="utf-8">
+   <title>Cors Test</title>
+ </head>
+ <body>
+   <h1 id="resp"></h1>
+   <input type="text" id="scroll-id" value=""/>
+   <button onclick="submit()" id="scroll">Submit Scroll-Id</button>
+   <script>
+     function submit() {
+       var req = new XMLHttpRequest();
+       var url = 'http://localhost:3003/collections.json?scroll=true';
+       var scrollHeader = document.getElementById("scroll-id").value;
+       var body = '{"condition": { "provider": "TEST" }}';
+       req.open('POST', url, true);
+       req.setRequestHeader('Content-Type', 'application/json');
+       req.setRequestHeader('Client-Id', 'Sprint19.1.6Demo');
+       req.setRequestHeader('CMR-Request-Id', 'sprint19.1.6-demo');
+       if (scrollHeader) req.setRequestHeader('CMR-Scroll-Id', scrollHeader);
+       req.onload = function() {
+         var hits = req.getResponseHeader("CMR-Hits");
+         var requestId = req.getResponseHeader("CMR-Request-Id");
+         var scrollId = req.getResponseHeader("CMR-Scroll-Id");
+         var response = "CMR-Hits: " + hits + "\nCMR-Request-Id: " + requestId + "\nCMR-Scroll-Id: " + scrollId + "\nResult: " + req.responseText;
+         document.getElementById('resp').innerText = response;
+       };
+       req.onerror = function() {
+         document.getElementById('resp').innerText = "Fail!";
+       };
+       req.send(body);
+     }
+     submit();
+   </script>
+ </body>
+</html>
