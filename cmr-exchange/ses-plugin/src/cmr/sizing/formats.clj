@@ -90,13 +90,6 @@
     (* total-dimensionality
        (max 2 (util/data-type->bytes data-type)))))
 
-(defn- get-avg-gran-size
-  "Gets SizeEstimation value for AverageSizeOfGranulesSampled and parses it to a number."
-  [variable]
-  (-> variable
-      (get-in [:umm :SizeEstimation :AverageSizeOfGranulesSampled])
-      read-number))
-
 (defn- get-rate
   "Gets the :Rate value for compression-format in avg-comp-info."
   [avg-comp-info compression-format]
@@ -264,19 +257,17 @@
    total-granule-input-bytes is a value given by the client in the size estimate request."
   [granule-count variables params compression-format]
   (reduce (fn [total-estimate variable]
-            (let [avg-gran-size (get-avg-gran-size variable)
-                  total-granule-input-bytes (read-string (:total-granule-input-bytes params))
+            (let [total-granule-input-bytes (read-string (:total-granule-input-bytes params))
                   avg-compression-rate (get-avg-compression-rate variable compression-format)]
               (log/info (format (str "request-id: %s variable-id: %s total-estimate: %s "
-                                     "avg-gran-size: %s total-granule-input-bytes: %s "
+                                     "total-granule-input-bytes: %s "
                                      "avg-compression-rate: %s")
                                 (:request-id params) (get-in variable [:meta :concept-id])
-                                total-estimate avg-gran-size total-granule-input-bytes
+                                total-estimate total-granule-input-bytes
                                 avg-compression-rate))
               (+ total-estimate
                  (* total-granule-input-bytes
-                    (or avg-compression-rate 0) 
-                    (/ (/ total-granule-input-bytes granule-count) avg-gran-size)))))
+                    (or avg-compression-rate 0)))))
           0
           variables))
 
