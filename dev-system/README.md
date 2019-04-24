@@ -78,6 +78,11 @@ We need to keep the latest version of the umm-cmn-json-schema.json in sync for a
 $ docker build . -f Dockerfile.ecs
 ```
 
+To launch a microservice
+```
+$ docker run <IMAGEE_ID> java -cp cmr-standalone.jar clojure.main -m cmr.<SERVICE>.runner
+```
+
 ## License
 
 Copyright © 2014-2018 NASA
