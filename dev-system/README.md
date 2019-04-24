@@ -73,6 +73,11 @@ code, remove all data, etc.
 
 We need to keep the latest version of the umm-cmn-json-schema.json in sync for all concept types. When the umm-cmn-json-schema.json is updated for one concept type, the corresponding files should be updated for all concept types.
 
+## Building the ECS microservices Docker image
+```
+$ docker build . -f Dockerfile.ecs
+```
+
 ## License
 
 Copyright © 2014-2018 NASA
