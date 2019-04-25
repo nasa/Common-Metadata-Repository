@@ -5,4 +5,4 @@ EXPOSE 3002
 
 WORKDIR /app
 
-CMD "java" "-classpath" "/app/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar" "clojure.main" "-m" "cmr.ingest.runner"
+CMD "java" "-classpath" "/app/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar" "clojure.main" "-m" "cmr.ingest.runner"
