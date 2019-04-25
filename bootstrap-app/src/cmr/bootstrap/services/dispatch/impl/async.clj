@@ -87,6 +87,13 @@
     (async/go (>! channel {:provider-id provider-id
                            :entry-title entry-title}))))
 
+(defn fingerprint-variables
+  "Update fingerprint of variables."
+  [this context params]
+  (let [channel (:fingerprint-channel this)]
+    (info "Adding message to fingerprint channel.")
+    (async/go (>! channel {:provider-id (:provider params)}))))
+
 (defrecord CoreAsyncDispatcher
   [;; Channel for requesting full provider migration
    provider-db-channel
@@ -104,7 +111,9 @@
    ;; channel for processing bulk index requests by concept-id
    concept-id-channel
    ;; channel for bootstrapping virtual products
-   virtual-product-channel])
+   virtual-product-channel
+   ;; channel for fingerprinting variables
+   fingerprint-channel])
 
 (def dispatch-behavior
   "Map of protocol definitions to the implementations of that protocol for the
@@ -119,7 +128,8 @@
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
-   :bootstrap-virtual-products bootstrap-virtual-products})
+   :bootstrap-virtual-products bootstrap-virtual-products
+   :fingerprint-variables fingerprint-variables})
 
 (defn- create-default-channels
   "Creates channels needed for all bootstrapping work and returns as a map of channel name to
@@ -132,7 +142,8 @@
    :data-index-channel (async/chan 10)
    :system-concept-channel (async/chan 10)
    :concept-id-channel (async/chan 10)
-   :virtual-product-channel (async/chan)})
+   :virtual-product-channel (async/chan)
+   :fingerprint-channel (async/chan 10)})
 
 (defn create-core-async-dispatcher
   "Creates a new core async dispatcher."
@@ -145,4 +156,5 @@
                            (:data-index-channel channels)
                            (:system-concept-channel channels)
                            (:concept-id-channel channels)
-                           (:virtual-product-channel channels))))
+                           (:virtual-product-channel channels)
+                           (:fingerprint-channel channels))))

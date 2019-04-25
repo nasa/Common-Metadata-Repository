@@ -9,6 +9,7 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
+   [cmr.bootstrap.data.fingerprint :as fingerprint]
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
@@ -95,6 +96,7 @@
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
+    (fingerprint/handle-fingerprint-requests started-system)
     (when (:queue-broker this)
       (dispatch/subscribe-to-events {:system started-system}))
     (info "Bootstrap system started")

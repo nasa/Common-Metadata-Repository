@@ -3,6 +3,7 @@
   for retrieving concepts using parameters"
   (:require
    [clojure.java.jdbc :as j]
+   [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as c]
@@ -91,6 +92,31 @@
                       (from table)
                       (where params-clause))]
      (-> (su/find-one conn stmt)
+         vals
+         first))))
+
+(defn- append-stmt
+  "Returns the sql statement string with the given statement part properly appended to the statement."
+  [stmt-str part]
+  (let [stmt-str (string/replace stmt-str #"where null" "")]
+    (if (re-matches #"(?i).* where .*" stmt-str)
+      (format "%s and %s" stmt-str part)
+      (format "%s where %s" stmt-str part))))
+
+(defn- find-batch-starting-id-with-stmt
+  "Returns the first id that would be returned in a batch."
+  ([conn stmt]
+   (find-batch-starting-id-with-stmt conn stmt 0))
+  ([conn stmt min-id]
+   (let [stmt (-> stmt
+                  ; string/lower-case
+                  (string/replace #"^select \*" "select min(id)")
+                  (string/replace #"^select a\.\*" "select min(id)")
+                  ; (string/replace #"where null" "")
+                  (append-stmt (format "id >= %s" min-id))
+                  vector)]
+     (-> (su/query conn stmt)
+         first
          vals
          first))))
 
@@ -192,6 +218,44 @@
        (when-let [start-index (find-batch-starting-id db table params)]
          (lazy-find (max requested-start-index start-index)))))))
 
+(defn find-concepts-in-batches-with-stmt
+  ([db provider params stmt batch-size]
+   (find-concepts-in-batches-with-stmt db provider params stmt batch-size 0))
+  ([db provider params stmt batch-size requested-start-index]
+   (let [{:keys [provider-id]} provider
+         {:keys [concept-type]} params]
+     (letfn [(find-batch
+              [start-index]
+              (j/with-db-transaction
+               [conn db]
+               (let [_ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                                     provider-id
+                                     (name concept-type)
+                                     start-index
+                                     (+ start-index batch-size)))
+                     id-constraint (format "id >= %s and id < %s"
+                                           start-index (+ start-index batch-size))
+                     batch-result (su/query db [(append-stmt stmt id-constraint)])]
+
+                 (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
+                       batch-result))))
+             (lazy-find
+              [start-index]
+              (let [batch (find-batch start-index)]
+                (if (empty? batch)
+                  ;; We couldn't find any items  between start-index and start-index + batch-size
+                  ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+                  (do
+                    (info "Couldn't find batch so searching for more from" start-index)
+                    (when-let [next-id (find-batch-starting-id-with-stmt db stmt start-index)]
+                      (info "Found next-id of" next-id)
+                      (lazy-find next-id)))
+                  ;; We found a batch. Return it and the next batch lazily
+                  (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
+       ;; If there's no minimum found so there are no concepts that match
+       (when-let [start-index (find-batch-starting-id-with-stmt db stmt)]
+         (lazy-find (max requested-start-index start-index)))))))
+
 (defn find-latest-concepts
   [db provider params]
   {:pre [(:concept-type params)]}
@@ -211,6 +275,7 @@
 (def behaviour
   {:find-concepts find-concepts
    :find-concepts-in-batches find-concepts-in-batches
+   :find-concepts-in-batches-with-stmt find-concepts-in-batches-with-stmt
    :find-latest-concepts find-latest-concepts})
 
 (extend OracleStore
