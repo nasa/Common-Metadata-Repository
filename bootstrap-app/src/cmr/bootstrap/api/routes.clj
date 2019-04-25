@@ -4,6 +4,7 @@
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.bulk-index :as bulk-index]
    [cmr.bootstrap.api.bulk-migration :as bulk-migration]
+   [cmr.bootstrap.api.fingerprint :as fingerprint]
    [cmr.bootstrap.api.rebalancing :as rebalancing]
    [cmr.bootstrap.api.virtual-products :as virtual-products]
    [cmr.bootstrap.services.health-service :as hs]
@@ -81,6 +82,13 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (virtual-products/bootstrap request-context params)))
+      (context "/fingerprint" []
+        (POST "/variables" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (fingerprint/fingerprint-variables request-context params))
+        (POST "/variables/:concept-id" [concept-id :as {:keys [request-context]}]
+          (acl/verify-ingest-management-permission request-context :update)
+          (fingerprint/fingerprint-by-id request-context concept-id)))
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
       ;; db migration route

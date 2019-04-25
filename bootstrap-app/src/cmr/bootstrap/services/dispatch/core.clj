@@ -58,7 +58,15 @@
 
   (bootstrap-virtual-products
    [this context provider-id entry-title]
-   "Initializes virtual products for the given provider and entry title."))
+   "Initializes virtual products for the given provider and entry title.")
+
+  (fingerprint-by-id
+   [this context concept-id]
+   "Update the fingerprint of the given variable if necessary.")
+
+  (fingerprint-variables
+   [this context params]
+   "Update the fingerprint of variables specified by the params if necessary."))
 
 (extend CoreAsyncDispatcher
         Dispatch

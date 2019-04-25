@@ -3,6 +3,7 @@
   (:require
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.bulk-migration :as bulk-migration]
+   [cmr.bootstrap.data.fingerprint :as fingerprint]
    [cmr.bootstrap.data.virtual-products :as virtual-products]))
 
 (defn- migrate-provider
@@ -68,6 +69,16 @@
   [this context provider-id entry-title]
   (virtual-products/bootstrap-virtual-products (:system context) provider-id entry-title))
 
+(defn- fingerprint-by-id
+  "Update fingerprint of the variable concept for the given concept id if necessary."
+  [this context concept-id]
+  (fingerprint/fingerprint-by-id (:system context) concept-id))
+
+(defn- fingerprint-variables
+  "Update fingerprint of the variables specified by params if necessary."
+  [this context params]
+  (fingerprint/fingerprint-variables (:system context) params))
+
 (defrecord SynchronousDispatcher [])
 
 (def dispatch-behavior
@@ -82,5 +93,7 @@
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
+   :fingerprint-by-id fingerprint-by-id
+   :fingerprint-variables fingerprint-variables
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products})

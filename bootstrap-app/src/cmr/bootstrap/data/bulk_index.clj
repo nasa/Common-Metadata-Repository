@@ -134,8 +134,7 @@
         msg (format "Indexing of %s variable revisions for provider %s completed."
                     num-variables
                     (:provider-id provider))]
-    (info msg)
-    msg))
+    (info msg)))
 
 (defn index-variables
   "Bulk index variables for the given provider-id."
@@ -150,8 +149,7 @@
   (info "Indexing all variables")
   (doseq [provider (helper/get-providers system)]
     (index-variables-by-provider system provider))
-  (info "Indexing of all variables completed.")
-  "Indexing all variables completed.")
+  (info "Indexing of all variables completed."))
 
 (defn- bulk-index-service-batches
   "Bulk index the given service batches in both regular index and all revisions index."
@@ -174,8 +172,7 @@
         msg (format "Indexing of %s service revisions for provider %s completed."
                     num-services
                     (:provider-id provider))]
-    (info msg)
-    msg))
+    (info msg)))
 
 (defn index-services
   "Bulk index services for the given provider-id."
@@ -190,8 +187,7 @@
   (info "Indexing all services")
   (doseq [provider (helper/get-providers system)]
     (index-services-by-provider system provider))
-  (info "Indexing of all services completed.")
-  "Indexing of all services completed.")
+  (info "Indexing of all services completed."))
 
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
