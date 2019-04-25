@@ -1,8 +1,8 @@
-FROM cmr-base
+FROM clojure
 
 COPY target/cmr-access-control-app-0.1.0-SNAPSHOT-standalone.jar /app/
 EXPOSE 3011
 
 WORKDIR /app
 
-CMD "java" "-classpath" "/app/cmr-access-control-app-0.1.0-SNAPSHOT-standalone.jar" "cmr.access_control.runner"
+CMD "java" "-classpath" "/app/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar" "clojure.main" "-m" "cmr.access-control.runner"

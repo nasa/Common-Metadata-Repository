@@ -1,4 +1,4 @@
-FROM cmr-base
+FROM clojure
 
 COPY target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/
 EXPOSE 2999

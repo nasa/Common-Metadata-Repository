@@ -1,8 +1,8 @@
-FROM cmr-base
+FROM clojure
 
 COPY target/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar /app/
 EXPOSE 3006
 
 WORKDIR /app
 
-CMD "java" "-classpath" "/app/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar" "cmr.bootstrap_app.runner"
+CMD "java" "-classpath" "/app/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar" "clojure.main" "-m" "cmr.bootstrap.runner"
