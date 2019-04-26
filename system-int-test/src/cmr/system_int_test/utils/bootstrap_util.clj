@@ -162,6 +162,41 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn- fingerprint-by-url
+  "Calls bootstrap app on the given fingerprint url"
+  [fingerprint-url headers]
+  (let [response (client/request {:method :post
+                                  :headers headers
+                                  :url fingerprint-url
+                                  :throw-exceptions false
+                                  :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn fingerprint-variable-by-concept-id
+  "Call the bootstrap app to update variable fingerprint specified by the given concept-id."
+  ([concept-id]
+   (fingerprint-variable-by-concept-id
+    concept-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([concept-id headers]
+   (fingerprint-by-url (url/fingerprint-url concept-id) headers)))
+
+(defn fingerprint-variables-by-provider
+  "Call the bootstrap app to update fingerprints of variables for the given provider."
+  ([provider-id]
+   (fingerprint-variables-by-provider
+    provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([provider-id headers]
+   (fingerprint-by-url (url/fingerprint-by-provider-url provider-id) headers)))
+
+(defn fingerprint-all-variables
+  "Call the bootstrap app to update fingerprints of all variables."
+  ([]
+   (fingerprint-all-variables
+    {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([headers]
+   (fingerprint-by-url (url/fingerprint-all-url) headers)))
+
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]

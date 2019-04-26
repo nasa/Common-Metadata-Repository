@@ -428,6 +428,20 @@
   []
   (format "http://localhost:%s/bulk_index/system_concepts" (transmit-config/bootstrap-port)))
 
+(defn fingerprint-url
+  ([]
+   (format "http://localhost:%s/fingerprint/variables" (transmit-config/bootstrap-port)))
+  ([concept-id]
+   (format "%s/%s" (fingerprint-url) concept-id)))
+
+(defn fingerprint-by-provider-url
+  [provider-id]
+  (format "%s?provider=%s&synchronous=true" (fingerprint-url) provider-id))
+
+(defn fingerprint-all-url
+  []
+  (format "%s?synchronous=true" (fingerprint-url)))
+
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []
