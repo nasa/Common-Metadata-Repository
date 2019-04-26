@@ -3,8 +3,9 @@
   (:require
     [clojure.core.async :as ca :refer [<!!]]
     [cmr.bootstrap.embedded-system-helper :as helper]
-    [cmr.common.log :refer (debug info warn error)]
     [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.services.errors :as errors]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.umm-spec.fingerprint-util :as fingerprint-util]))
 
@@ -51,6 +52,7 @@
 (defn- fingerprint-by-provider
   "Update the fingerprint of variables of the given provider if necessary."
   [system provider]
+  (info "Updating fingerprints of variables for provider: " (:provider-id provider))
   (let [db (helper/get-metadata-db-db system)
         {:keys [provider-id]} provider
         params {:concept-type :variable
@@ -66,9 +68,10 @@
 (defn- fingerprint-by-provider-id
   "Update the fingerprint of variables of the given provider id if necessary."
   [system provider-id]
-  (let [provider (helper/get-provider system provider-id)]
-    (info "Updating fingerprint for variables of provider: " provider-id)
-    (fingerprint-by-provider system provider)))
+  (if-let [provider (helper/get-provider system provider-id)]
+    (fingerprint-by-provider system provider)
+    (errors/throw-service-error
+     :invalid-data (format "Provider [%s] does not exist" provider-id))))
 
 (defn- fingerprint-all-variables
   "Update the fingerprint of variables of the given provider if necessary."
@@ -92,7 +95,10 @@
         provider-id (concepts/concept-id->provider-id concept-id)
         provider (helper/get-provider system provider-id)
         variable (db/get-concept db :variable provider concept-id)]
-    (fingerprint-variable db provider variable)))
+    (if variable
+      (fingerprint-variable db provider variable)
+      (errors/throw-service-error
+       :invalid-data (format "Variable with concept-id [%s] does not exist" concept-id)))))
 
 (defn handle-fingerprint-requests
   "Begin listening for fingerprinting requests on the specified channel in the
