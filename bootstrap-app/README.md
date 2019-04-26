@@ -150,6 +150,20 @@ For all providers:
 
     curl -i -XPOST http://localhost:3006/bulk_index/services
 
+### Update fingerprints of variables:
+
+For a single variable:
+
+    curl -i -XPOST http://localhost:3006/fingerprint/variables/V1-PROV1
+
+For all variables:
+
+    curl -i -XPOST http://localhost:3006/fingerprint/variables
+
+For all variables of a single provider:
+
+    curl -i -XPOST http://localhost:3006/fingerprint/variables?provider=PROV1
+
 ### Initialize Virtual Products
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
