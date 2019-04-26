@@ -73,6 +73,18 @@ code, remove all data, etc.
 
 We need to keep the latest version of the umm-cmn-json-schema.json in sync for all concept types. When the umm-cmn-json-schema.json is updated for one concept type, the corresponding files should be updated for all concept types.
 
+## Building the ECS microservices Docker image
+```
+$ docker build . -f Dockerfile.ecs
+```
+
+To launch a microservice
+```
+$ docker run -e "CMR_URS_PASSWORD=<PASSWORD>" -p <SERVICE_PORT>:<SERVICE_PORT> -e "CMR_SYS_DBA_PASSWORD=<PASSWORD>" -e "CMR_ORACLE_JAR_REPO=<URL_FOR_MAVEN_REPO>" -e "CMR_INGEST_PASSWORD=<PASSWORD>" -e "CMR_BOOTSTRAP_PASSWORD=<PASSWORD>" -e "CMR_METADATA_DB_PASSWORD=<PASSWORD> <IMAGE_ID> java -cp cmr-standalone.jar clojure.main -m cmr.<SERVICE_NAME>.runner
+```
+
+Where `<IMAGE_ID>` is the ID returned from the `docker build` command.
+
 ## License
 
 Copyright © 2014-2018 NASA
