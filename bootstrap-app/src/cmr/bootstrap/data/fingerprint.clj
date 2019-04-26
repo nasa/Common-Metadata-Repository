@@ -26,7 +26,7 @@
           (info (format "Updated fingerprint for concept-id: %s" concept-id)))))))
 
 (defn- fingerprint-variable-batch
-  "Update the fingerprint of the given variable if necessary."
+  "Update the fingerprints of variables in the given variable batch if necessary."
   [db provider variable-batch]
   (dorun
    (map #(fingerprint-variable db provider %) variable-batch)))
@@ -50,7 +50,7 @@
            find-variables-sql-part1 provider-id find-variables-sql-part2)))
 
 (defn- fingerprint-by-provider
-  "Update the fingerprint of variables of the given provider if necessary."
+  "Update the fingerprints of variables of the given provider if necessary."
   [system provider]
   (info "Updating fingerprints of variables for provider: " (:provider-id provider))
   (let [db (helper/get-metadata-db-db system)
@@ -66,7 +66,7 @@
      (pmap #(fingerprint-variable-batch db provider %) variable-batches))))
 
 (defn- fingerprint-by-provider-id
-  "Update the fingerprint of variables of the given provider id if necessary."
+  "Update the fingerprints of variables for the given provider id if necessary."
   [system provider-id]
   (if-let [provider (helper/get-provider system provider-id)]
     (fingerprint-by-provider system provider)
@@ -74,15 +74,15 @@
      :invalid-data (format "Provider [%s] does not exist" provider-id))))
 
 (defn- fingerprint-all-variables
-  "Update the fingerprint of variables of the given provider if necessary."
+  "Update the fingerprints of variables of the given provider if necessary."
   [system]
-  (info "Update fingerprint for all variables")
+  (info "Updating fingerprints for all variables")
   (doseq [provider (helper/get-providers system)]
     (fingerprint-by-provider system provider))
-  (info "Updating fingerprint for all variables completed."))
+  (info "Updating fingerprints for all variables completed."))
 
 (defn fingerprint-variables
-  "Update the fingerprint of the variables specified by the given params if necessary."
+  "Update the fingerprints of variables specified by the given params if necessary."
   [system params]
   (if-let [provider (:provider params)]
     (fingerprint-by-provider-id system provider)
@@ -105,11 +105,12 @@
   bootstrap system. Used by asynchronous processing."
   [system]
   (info "Starting background task for monitoring fingerprinting channels.")
-  (let [core-async-dispatcher (:core-async-dispatcher system)]
-    (let [channel (:fingerprint-channel core-async-dispatcher)]
-      (ca/thread (while true
-                   (try ; catch any errors and log them, but don't let the thread die
-                     (let [{:keys [provider-id]} (<!! channel)]
-                       (fingerprint-variables system {:provider provider-id}))
-                     (catch Throwable e
-                       (error e (.getMessage e)))))))))
+  (let [core-async-dispatcher (:core-async-dispatcher system)
+        channel (:fingerprint-channel core-async-dispatcher)]
+    (ca/thread
+     (while true
+            (try ; catch any errors and log them, but don't let the thread die
+              (let [{:keys [provider-id]} (<!! channel)]
+                (fingerprint-variables system {:provider provider-id}))
+              (catch Throwable e
+                (error e (.getMessage e))))))))

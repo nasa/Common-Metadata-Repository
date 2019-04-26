@@ -66,7 +66,7 @@
 
   (fingerprint-variables
    [this context params]
-   "Update the fingerprint of variables specified by the params if necessary."))
+   "Update the fingerprints of variables specified by the params if necessary."))
 
 (extend CoreAsyncDispatcher
         Dispatch

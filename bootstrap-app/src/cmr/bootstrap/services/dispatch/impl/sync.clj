@@ -70,12 +70,12 @@
   (virtual-products/bootstrap-virtual-products (:system context) provider-id entry-title))
 
 (defn- fingerprint-by-id
-  "Update fingerprint of the variable concept for the given concept id if necessary."
+  "Update the fingerprint of the variable with the given concept id if necessary."
   [this context concept-id]
   (fingerprint/fingerprint-by-id (:system context) concept-id))
 
 (defn- fingerprint-variables
-  "Update fingerprint of the variables specified by params if necessary."
+  "Update the fingerprints of variables specified by params if necessary."
   [this context params]
   (fingerprint/fingerprint-variables (:system context) params))
 

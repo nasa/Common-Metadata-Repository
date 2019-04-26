@@ -7,7 +7,7 @@
 (defn fingerprint-variables
   "Calculate the fingerprint of the variables matching the given params.
   For each matched variable, if the calculated fingerprint value is different from the
-  its existing fingerprint, create a new revision of the variable concept with the new fingerprint;
+  existing fingerprint, create a new revision of the variable concept with the new fingerprint;
   otherwise, do nothing."
   [context params]
   (let [dispatcher (api-util/get-dispatcher context params :fingerprint-variables)]

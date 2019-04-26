@@ -88,7 +88,7 @@
                            :entry-title entry-title}))))
 
 (defn fingerprint-variables
-  "Update fingerprint of variables."
+  "Update the fingerprints of variables."
   [this context params]
   (let [channel (:fingerprint-channel this)]
     (info "Adding message to fingerprint channel.")
