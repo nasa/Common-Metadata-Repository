@@ -164,14 +164,21 @@
 
 (defn- fingerprint-by-url
   "Calls bootstrap app on the given fingerprint url"
-  [fingerprint-url headers]
-  (let [response (client/request {:method :post
-                                  :headers headers
-                                  :url fingerprint-url
-                                  :throw-exceptions false
-                                  :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([fingerprint-url headers]
+   (fingerprint-by-url fingerprint-url headers nil))
+  ([fingerprint-url headers provider-id]
+   (let [body (when provider-id
+                (json/generate-string {:provider_id provider-id}))
+         response (client/request {:method :post
+                                   :headers headers
+                                   :query-params {:synchronous true}
+                                   :url fingerprint-url
+                                   :body body
+                                   :content-type :json
+                                   :throw-exceptions false
+                                   :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn fingerprint-variable-by-concept-id
   "Call the bootstrap app to update variable fingerprint specified by the given concept-id."
@@ -187,7 +194,7 @@
    (fingerprint-variables-by-provider
     provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id headers]
-   (fingerprint-by-url (url/fingerprint-by-provider-url provider-id) headers)))
+   (fingerprint-by-url (url/fingerprint-url) headers provider-id)))
 
 (defn fingerprint-all-variables
   "Call the bootstrap app to update fingerprints of all variables."
@@ -195,7 +202,7 @@
    (fingerprint-all-variables
     {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([headers]
-   (fingerprint-by-url (url/fingerprint-all-url) headers)))
+   (fingerprint-by-url (url/fingerprint-url) headers)))
 
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."

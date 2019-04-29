@@ -135,9 +135,9 @@
   (dispatch/fingerprint-by-id dispatcher context concept-id))
 
 (defn fingerprint-variables
-  "Update the fingerprint of the variables specified by the given params if necessary."
-  [context dispatcher params]
-  (if-let [provider-id (:provider params)]
+  "Update the fingerprint of the variables specified by the request body if necessary."
+  [context dispatcher body]
+  (if-let [provider-id (get body "provider_id")]
     (dispatch/fingerprint-variables dispatcher context provider-id)
     (dispatch/fingerprint-variables dispatcher context)))
 
