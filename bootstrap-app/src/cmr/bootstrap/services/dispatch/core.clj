@@ -65,8 +65,9 @@
    "Update the fingerprint of the given variable if necessary.")
 
   (fingerprint-variables
-   [this context params]
-   "Update the fingerprints of variables specified by the params if necessary."))
+   [this context] [this context provider-id]
+   "Update the fingerprints of variables in CMR if necessary. Optionally, pass a provider id,
+   in which case only the fingerprints of variables for that provider will be updated."))
 
 (extend CoreAsyncDispatcher
         Dispatch

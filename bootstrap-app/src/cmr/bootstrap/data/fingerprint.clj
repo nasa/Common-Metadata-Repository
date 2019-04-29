@@ -76,17 +76,17 @@
 (defn- fingerprint-all-variables
   "Update the fingerprints of variables of the given provider if necessary."
   [system]
-  (info "Updating fingerprints for all variables")
+  (info "Updating fingerprints for all variables.")
   (doseq [provider (helper/get-providers system)]
     (fingerprint-by-provider system provider))
   (info "Updating fingerprints for all variables completed."))
 
 (defn fingerprint-variables
   "Update the fingerprints of variables specified by the given params if necessary."
-  [system params]
-  (if-let [provider (:provider params)]
-    (fingerprint-by-provider-id system provider)
-    (fingerprint-all-variables system)))
+  ([system]
+   (fingerprint-all-variables system))
+  ([system provider-id]
+   (fingerprint-by-provider-id system provider-id)))
 
 (defn fingerprint-by-id
   "Update the fingerprint of the given variable specified by its concept id if necessary."
@@ -99,18 +99,3 @@
       (fingerprint-variable db provider variable)
       (errors/throw-service-error
        :invalid-data (format "Variable with concept-id [%s] does not exist" concept-id)))))
-
-(defn handle-fingerprint-requests
-  "Begin listening for fingerprinting requests on the specified channel in the
-  bootstrap system. Used by asynchronous processing."
-  [system]
-  (info "Starting background task for monitoring fingerprinting channels.")
-  (let [core-async-dispatcher (:core-async-dispatcher system)
-        channel (:fingerprint-channel core-async-dispatcher)]
-    (ca/thread
-     (while true
-            (try ; catch any errors and log them, but don't let the thread die
-              (let [{:keys [provider-id]} (<!! channel)]
-                (fingerprint-variables system {:provider provider-id}))
-              (catch Throwable e
-                (error e (.getMessage e))))))))

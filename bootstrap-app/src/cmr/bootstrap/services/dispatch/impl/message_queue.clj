@@ -4,7 +4,10 @@
   (:require
    [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
+   [cmr.bootstrap.data.fingerprint :as fingerprint]
    [cmr.bootstrap.data.message-queue :as message-queue]
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
@@ -46,6 +49,22 @@
      context
      (message-queue/bootstrap-services-event provider-id))))
 
+(defn- fingerprint-variables
+  "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
+  variables for that provider."
+  ([this context]
+   (info "Publishing fingerprint events for all variables.")
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/fingerprint-variables-event provider-id)))
+   (info "Publishing fingerprint events for all variables completed."))
+  ([this context provider-id]
+   (message-queue/publish-bootstrap-concepts-event
+    context
+    (message-queue/fingerprint-variables-event provider-id))))
+
 (defrecord MessageQueueDispatcher
   [])
 
@@ -62,7 +81,8 @@
    :index-system-concepts (partial not-implemented :index-system-concepts)
    :index-concepts-by-id (partial not-implemented :index-concepts-by-id)
    :delete-concepts-from-index-by-id (partial not-implemented :delete-concepts-from-index-by-id)
-   :bootstrap-virtual-products (partial not-implemented :bootstrap-virtual-products)})
+   :bootstrap-virtual-products (partial not-implemented :bootstrap-virtual-products)
+   :fingerprint-variables fingerprint-variables})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Message handling
@@ -87,6 +107,10 @@
   (if-let [provider-id (:provider-id msg)]
     (bulk-index/index-services (:system context) provider-id)
     (bulk-index/index-all-services (:system context))))
+
+(defmethod handle-bootstrap-event :fingerprint-variables
+  [context msg]
+  (fingerprint/fingerprint-variables (:system context) (:provider-id msg)))
 
 (defn subscribe-to-events
   "Subscribe to event messages on bootstrap queues."
