@@ -41,3 +41,9 @@
    {:action :index-services})
   ([provider-id]
    (assoc (bootstrap-services-event) :provider-id provider-id)))
+
+(defn fingerprint-variables-event
+  "Creates an event indicating to update fingerprints of variables."
+  [provider-id]
+  {:action :fingerprint-variables
+   :provider-id provider-id})

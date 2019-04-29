@@ -109,10 +109,8 @@
    (find-batch-starting-id-with-stmt conn stmt 0))
   ([conn stmt min-id]
    (let [stmt (-> stmt
-                  ; string/lower-case
                   (string/replace #"^select \*" "select min(id)")
                   (string/replace #"^select a\.\*" "select min(id)")
-                  ; (string/replace #"where null" "")
                   (append-stmt (format "id >= %s" min-id))
                   vector)]
      (-> (su/query conn stmt)

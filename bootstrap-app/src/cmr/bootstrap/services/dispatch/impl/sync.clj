@@ -76,8 +76,10 @@
 
 (defn- fingerprint-variables
   "Update the fingerprints of variables specified by params if necessary."
-  [this context params]
-  (fingerprint/fingerprint-variables (:system context) params))
+  ([this context]
+   (fingerprint/fingerprint-variables (:system context)))
+  ([this context provider-id]
+   (fingerprint/fingerprint-variables (:system context) provider-id)))
 
 (defrecord SynchronousDispatcher [])
 

@@ -27,7 +27,7 @@
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
    :fingerprint-by-id :synchronous-dispatcher
-   :fingerprint-variables :core-async-dispatcher
+   :fingerprint-variables :message-queue-dispatcher
    :delete-concepts-from-index-by-id :core-async-dispatcher
    :bootstrap-virtual-products :core-async-dispatcher})
 
@@ -132,12 +132,14 @@
 (defn fingerprint-by-id
   "Update the fingerprint of the given variable if necessary."
   [context dispatcher concept-id]
-   (dispatch/fingerprint-by-id dispatcher context concept-id))
+  (dispatch/fingerprint-by-id dispatcher context concept-id))
 
 (defn fingerprint-variables
   "Update the fingerprint of the variables specified by the given params if necessary."
   [context dispatcher params]
-   (dispatch/fingerprint-variables dispatcher context params))
+  (if-let [provider-id (:provider params)]
+    (dispatch/fingerprint-variables dispatcher context provider-id)
+    (dispatch/fingerprint-variables dispatcher context)))
 
 (defn- wait-until-index-set-hash-cache-times-out
   "Waits until the indexer's index set cache hash codes times out so that all of the indexer's will
