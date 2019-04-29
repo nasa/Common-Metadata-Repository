@@ -22,32 +22,40 @@
   "Bulk index all the collections and granules for a provider."
   [this context provider-id start-index]
   (message-queue/publish-bootstrap-provider-event
-    context
-    (message-queue/bootstrap-provider-event provider-id start-index)))
+   context
+   (message-queue/bootstrap-provider-event provider-id start-index)))
 
 (defn- index-variables
   "Bulk index all the variables. If a provider is passed, only index the variables
   for that provider."
   ([this context]
-   (message-queue/publish-bootstrap-concepts-event
-     context
-     (message-queue/bootstrap-variables-event)))
+   (info "Publishing events to index all variables.")
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/bootstrap-variables-event provider-id)))
+   (info "Publishing events to index all variables completed."))
   ([this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
-     context
-     (message-queue/bootstrap-variables-event provider-id))))
+    context
+    (message-queue/bootstrap-variables-event provider-id))))
 
 (defn- index-services
   "Bulk index all the services. If a provider is passed, only index the services
   for that provider."
   ([this context]
-   (message-queue/publish-bootstrap-concepts-event
-     context
-     (message-queue/bootstrap-services-event)))
+   (info "Publishing events to index all services.")
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/bootstrap-services-event provider-id)))
+   (info "Publishing events to index all services completed."))
   ([this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
-     context
-     (message-queue/bootstrap-services-event provider-id))))
+    context
+    (message-queue/bootstrap-services-event provider-id))))
 
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
