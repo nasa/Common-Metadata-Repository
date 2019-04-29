@@ -9,9 +9,9 @@
   For each matched variable, if the calculated fingerprint value is different from the
   existing fingerprint, create a new revision of the variable concept with the new fingerprint;
   otherwise, do nothing."
-  [context params]
+  [context body params]
   (let [dispatcher (api-util/get-dispatcher context params :fingerprint-variables)]
-    (service/fingerprint-variables context dispatcher params)
+    (service/fingerprint-variables context dispatcher body)
     {:status 200}))
 
 (defn fingerprint-by-id

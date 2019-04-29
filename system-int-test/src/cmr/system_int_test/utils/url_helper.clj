@@ -434,14 +434,6 @@
   ([concept-id]
    (format "%s/%s" (fingerprint-url) concept-id)))
 
-(defn fingerprint-by-provider-url
-  [provider-id]
-  (format "%s?provider=%s&synchronous=true" (fingerprint-url) provider-id))
-
-(defn fingerprint-all-url
-  []
-  (format "%s?synchronous=true" (fingerprint-url)))
-
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []

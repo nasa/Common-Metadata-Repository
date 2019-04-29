@@ -83,9 +83,9 @@
         (POST "/" {:keys [request-context params]}
           (virtual-products/bootstrap request-context params)))
       (context "/fingerprint" []
-        (POST "/variables" {:keys [request-context params]}
+        (POST "/variables" {:keys [request-context body params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (fingerprint/fingerprint-variables request-context params))
+          (fingerprint/fingerprint-variables request-context body params))
         (POST "/variables/:concept-id" [concept-id :as {:keys [request-context]}]
           (acl/verify-ingest-management-permission request-context :update)
           (fingerprint/fingerprint-by-id request-context concept-id)))
