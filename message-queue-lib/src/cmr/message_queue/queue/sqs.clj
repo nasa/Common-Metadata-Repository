@@ -167,6 +167,66 @@
                      (into {}))]
    (get q-attrs queue-arn-attribute)))
 
+
+(defn set-aws-client-attr!
+  "Conditionally configure the AWS client instance with by calling the given
+  method with the given args."
+  [client-obj method args]
+  (when-not (nil? (first args))
+    (debug "\tConfig:" method "=" args)
+    (Reflector/invokeInstanceMethod
+     client-obj (name method) (object-array args))))
+
+(defn configure-aws-client
+  "Configure an AWS service client with values passed pair-wise to the methods
+  they are passed with. This function allows for the configuration of an AWS
+  service object after instantiation by passing it first an AWS service client
+  instance, and then a series of keywords and configuration values, where the
+  keywords are spelled the same as the client object's given setter method
+  and the configuration values are the results of having called a configuration
+  function that will pull a value from the environment or the default, in the
+  event of an undefined environment value.
+
+  Example usage:
+  ```
+  (configure-aws-client
+    (new AmazonSQSClient)
+    :setEndpoint (sqs-endpoint)
+    :setRegion (sqs-region)
+    :setTimeOffset (sqs-time-offset)))
+  ```
+
+  With the understanding, of course, that the configuration functions in the
+  example all have been created.
+
+  Note that since AWS service clients will set service defaults on their own,
+  it is best to define the default configuration value as nil, so as to avoid
+  unexpected client behaviour."
+  [client-obj & args]
+  (debug "Configuring client" client-obj)
+  (doseq [[config-key config-val] (partition 2 args)]
+    (set-aws-client-attr! client-obj config-key [config-val]))
+  client-obj)
+
+(defmulti create-aws-client
+  "Create an AWS service client, conditionally setting any configured values.
+
+  Note that if the configuration calls (e.g., `(sqs-endpoint)`) return `nil`,
+  the configuration operation doesn't actually take place."
+  identity)
+
+(defmethod create-aws-client :sqs
+  [^Keyword type]
+  (configure-aws-client
+    (new AmazonSQSClient)
+    :setEndpoint (sqs-endpoint)))
+
+(defmethod create-aws-client :sns
+  [^Keyword type]
+  (configure-aws-client
+    (new AmazonSNSClient)
+    :setEndpoint (sns-endpoint)))
+
 (defn- create-async-handler
   "Creates a thread that will asynchronously pull messages off the queue, pass them to the handler,
   and process the response. Throwables raised while reading the queue are caught to avoid exiting
@@ -183,15 +243,15 @@
                       ;; Tell SQS how long to wait before returning with no data (long polling).
                       (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
     (a/thread
-      (loop []
+      (loop [sqs-client-atom (atom sqs-client)]
         (try
-          (let [rec-result (.receiveMessage sqs-client rec-req)]
+          (let [rec-result (.receiveMessage @sqs-client-atom rec-req)]
             (when-let [msg (first (.getMessages rec-result))]
               (let [msg-body (.getBody msg)
                     msg-content (json/decode msg-body true)]
                 (try
                   (handler msg-content)
-                  (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
+                  (.deleteMessage @sqs-client-atom queue-url (.getReceiptHandle msg))
                   (catch Throwable e
                     (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
           ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
@@ -203,8 +263,9 @@
           (catch Throwable t
             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
-            (Thread/sleep 1000)))
-        (recur)))))
+            (Thread/sleep 1000)
+            (reset! sqs-client-atom (create-aws-client :sqs))))
+        (recur sqs-client-atom)))))
 
 (defn- create-queue
   "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
@@ -301,65 +362,6 @@
 (def get-queue-url
   "Memoized function that returns the queue url for the given name."
   (memoize -get-queue-url))
-
-(defn set-aws-client-attr!
-  "Conditionally configure the AWS client instance with by calling the given
-  method with the given args."
-  [client-obj method args]
-  (when-not (nil? (first args))
-    (debug "\tConfig:" method "=" args)
-    (Reflector/invokeInstanceMethod
-     client-obj (name method) (object-array args))))
-
-(defn configure-aws-client
-  "Configure an AWS service client with values passed pair-wise to the methods
-  they are passed with. This function allows for the configuration of an AWS
-  service object after instantiation by passing it first an AWS service client
-  instance, and then a series of keywords and configuration values, where the
-  keywords are spelled the same as the client object's given setter method
-  and the configuration values are the results of having called a configuration
-  function that will pull a value from the environment or the default, in the
-  event of an undefined environment value.
-
-  Example usage:
-  ```
-  (configure-aws-client
-    (new AmazonSQSClient)
-    :setEndpoint (sqs-endpoint)
-    :setRegion (sqs-region)
-    :setTimeOffset (sqs-time-offset)))
-  ```
-
-  With the understanding, of course, that the configuration functions in the
-  example all have been created.
-
-  Note that since AWS service clients will set service defaults on their own,
-  it is best to define the default configuration value as nil, so as to avoid
-  unexpected client behaviour."
-  [client-obj & args]
-  (debug "Configuring client" client-obj)
-  (doseq [[config-key config-val] (partition 2 args)]
-    (set-aws-client-attr! client-obj config-key [config-val]))
-  client-obj)
-
-(defmulti create-aws-client
-  "Create an AWS service client, conditionally setting any configured values.
-
-  Note that if the configuration calls (e.g., `(sqs-endpoint)`) return `nil`,
-  the configuration operation doesn't actually take place."
-  identity)
-
-(defmethod create-aws-client :sqs
-  [^Keyword type]
-  (configure-aws-client
-    (new AmazonSQSClient)
-    :setEndpoint (sqs-endpoint)))
-
-(defmethod create-aws-client :sns
-  [^Keyword type]
-  (configure-aws-client
-    (new AmazonSNSClient)
-    :setEndpoint (sns-endpoint)))
 
 (defrecord SQSQueueBroker
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
@@ -501,19 +503,19 @@
   ;; list the topics for the cmr-ingest_exchange exchange/topic
   (get-topic (:sns-client broker) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
-  (queue/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
+  (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; create a test queue
   (create-queue (:sqs-client broker) "jn_test_queue3")
   ;; create a test exchange
   (create-exchange (:sns-client broker) "jn_test_exchange3")
   (create-exchange (:sns-client broker) "jn_test_exchange3b")
   ;; list the queues for the cmr_test_exchange
-  (queue/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
+  (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; Bind the queue to the new exchange
   (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
   ;; subscribe to test queue with a simple handler that prints received messages
-  (queue/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
+  (queue-protocol/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
+  (queue-protocol/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "dummy"}))
+  (queue-protocol/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "dummy"}))
