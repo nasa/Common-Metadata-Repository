@@ -232,40 +232,44 @@
   and process the response. Throwables raised while reading the queue are caught to avoid exiting
   the thread. If an ExitException object is caught it is rethrown to cause the thread to exit - this
   is used during testing to prevent threads from persisting after tests complete."
-  [queue-broker queue-name handler]
-  (info  "Starting listener for queue: " queue-name)
-  (let [queue-name (normalize-queue-name queue-name)
-        sqs-client (get queue-broker :sqs-client)
-        queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
-        rec-req (doto (ReceiveMessageRequest. queue-url)
-                      ;; Only take one message at a time from the queue.
-                      (.setMaxNumberOfMessages (Integer. 1))
-                      ;; Tell SQS how long to wait before returning with no data (long polling).
-                      (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
-    (a/thread
-      (loop [sqs-client-atom (atom sqs-client)]
-        (try
-          (let [rec-result (.receiveMessage @sqs-client-atom rec-req)]
-            (when-let [msg (first (.getMessages rec-result))]
-              (let [msg-body (.getBody msg)
-                    msg-content (json/decode msg-body true)]
-                (try
-                  (handler msg-content)
-                  (.deleteMessage @sqs-client-atom queue-url (.getReceiptHandle msg))
-                  (catch Throwable e
-                    (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
-          ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
-          ;; by throwing an ExitException object.
-          (catch ExitException e
-            (error "Aysnc handler for queue" queue-name "exiting.")
-            ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
-            (throw e))
-          (catch Throwable t
-            (error t "Async handler for queue" queue-name "continuing after failed message receive.")
-            ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
-            (Thread/sleep 1000)
-            (reset! sqs-client-atom (create-aws-client :sqs))))
-        (recur sqs-client-atom)))))
+  ([queue-broker queue-name handler]
+   (create-async-handler queue-broker queue-name handler true))
+  ([queue-broker queue-name handler auto-reconnect?]
+   (info "Starting listener for queue: " queue-name)
+   (let [queue-name (normalize-queue-name queue-name)
+         sqs-client (get queue-broker :sqs-client)
+         queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+         rec-req (doto (ReceiveMessageRequest. queue-url)
+                       ;; Only take one message at a time from the queue.
+                       (.setMaxNumberOfMessages (Integer. 1))
+                       ;; Tell SQS how long to wait before returning with no data (long polling).
+                       (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
+     (a/thread
+       (loop [sqs-client-atom (atom sqs-client)]
+         (try
+           (let [rec-result (.receiveMessage @sqs-client-atom rec-req)]
+             (when-let [msg (first (.getMessages rec-result))]
+               (let [msg-body (.getBody msg)
+                     msg-content (json/decode msg-body true)]
+                 (try
+                   (handler msg-content)
+                   (.deleteMessage @sqs-client-atom queue-url (.getReceiptHandle msg))
+                   (catch Throwable e
+                     (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
+           ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
+           ;; by throwing an ExitException object.
+           (catch ExitException e
+             (error "Aysnc handler for queue" queue-name "exiting.")
+             ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
+             (throw e))
+           (catch Throwable t
+             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
+             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
+             (Thread/sleep 1000)
+             (when auto-reconnect?
+               (warn "Recreating SQS client.")
+               (reset! sqs-client-atom (create-aws-client :sqs)))))
+         (recur sqs-client-atom))))))
 
 (defn- create-queue
   "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
