@@ -367,7 +367,7 @@
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
   [
    ;; Connection to AWS SNS
-   ^AmazonSNSClient sns-client
+   ^AmazonSNSClient sns-client-atom
 
    ;; Connection to AWS SQS
    ^AmazonSQSClient sqs-client
@@ -411,13 +411,13 @@
               :let [exchanges (get queues-to-exchanges queue)]]
         (bind-queue-to-exchanges sns-client sqs-client exchanges queue))
       (assoc this
-             :sns-client sns-client
+             :sns-client-atom (atom sns-client)
              :sqs-client sqs-client
              :normalized-queue-names normalized-queue-names)))
 
   (stop
     [this system]
-    (.shutdown sns-client)
+    (.shutdown @sns-client-atom)
     (.shutdown sqs-client)
     this)
 
@@ -435,9 +435,9 @@
   (get-queues-bound-to-exchange
     [this exchange-name]
     (let [exchange-name (normalize-queue-name exchange-name)
-          topic (get-topic sns-client exchange-name)
+          topic (get-topic @sns-client-atom exchange-name)
           topic-arn (.getTopicArn topic)
-          subs (vec (.getSubscriptions (.listSubscriptionsByTopic sns-client topic-arn)))]
+          subs (vec (.getSubscriptions (.listSubscriptionsByTopic @sns-client-atom topic-arn)))]
       (map (fn [sub]
                (->> sub
                     .getEndpoint
@@ -449,10 +449,10 @@
     [this exchange-name msg]
     (let [msg (json/generate-string msg)
           exchange-name (normalize-queue-name exchange-name)
-          topic (get-topic sns-client exchange-name)
+          topic (get-topic @sns-client-atom exchange-name)
           topic-arn (.getTopicArn topic)]
       (debug "Publishing message" msg "to exchange" exchange-name)
-      (.publish sns-client topic-arn msg)))
+      (.publish @sns-client-atom topic-arn msg)))
 
   (subscribe
     [this queue-name handler]
@@ -501,18 +501,18 @@
 
   (def msg-cnt-atom (atom 0))
   ;; list the topics for the cmr-ingest_exchange exchange/topic
-  (get-topic (:sns-client broker) "cmr_ingest_exchange")
+  (get-topic (deref (:sns-client-atom broker)) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
   (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; create a test queue
   (create-queue (:sqs-client broker) "jn_test_queue3")
   ;; create a test exchange
-  (create-exchange (:sns-client broker) "jn_test_exchange3")
-  (create-exchange (:sns-client broker) "jn_test_exchange3b")
+  (create-exchange (deref (:sns-client-atom broker)) "jn_test_exchange3")
+  (create-exchange (deref (:sns-client-atom broker)) "jn_test_exchange3b")
   ;; list the queues for the cmr_test_exchange
   (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; Bind the queue to the new exchange
-  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
+  (bind-queue-to-exchanges (deref (:sns-client-atom broker)) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
   ;; subscribe to test queue with a simple handler that prints received messages
   (queue-protocol/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
   ;; publish a message to the queue to verify our subscribe worked
