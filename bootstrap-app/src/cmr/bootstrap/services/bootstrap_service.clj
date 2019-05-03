@@ -132,6 +132,7 @@
 (defn fingerprint-by-id
   "Update the fingerprint of the given variable if necessary."
   [context dispatcher concept-id]
+  (info "Updating fingerprint for" concept-id)
   (dispatch/fingerprint-by-id dispatcher context concept-id))
 
 (defn fingerprint-variables

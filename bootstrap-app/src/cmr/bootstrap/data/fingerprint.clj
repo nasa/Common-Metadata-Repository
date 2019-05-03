@@ -23,7 +23,7 @@
                                (assoc :revision-id (inc revision-id))
                                (assoc-in [:extra-fields :fingerprint] new-fingerprint)
                                (dissoc :revision-date)))
-          (info (format "Updated fingerprint for concept-id: %s" concept-id)))))))
+          (debug (format "Updated fingerprint for concept-id: %s" concept-id)))))))
 
 (defn- fingerprint-variable-batch
   "Update the fingerprints of variables in the given variable batch if necessary."
