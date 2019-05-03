@@ -472,6 +472,13 @@
         (.purgeQueue sqs-client q-purge-req)
         (.purgeQueue sqs-client dlq-purge-req))))
 
+  (reconnect
+    [this]
+    (warn "Recreating SNS client.")
+    (let [sns-client (create-aws-client :sns)]
+      (reset! sns-client-atom sns-client)
+      this))
+
   (health
     [this]
     ;; try to get a list of queues for the first topic (exchange) to test the connection to SNS/SQS

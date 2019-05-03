@@ -32,6 +32,8 @@
                 (error e)
                 false))
     (warn "Attempt to queue messaged failed. Retrying: " msg)
+    ;; May be a systemic problem causing the timeout. Reinitialize the queue-broker connection.
+    (queue-protocol/reconnect queue-broker)
     (Thread/sleep (config/messaging-retry-delay))
     (recur queue-broker exchange-name msg)))
 
