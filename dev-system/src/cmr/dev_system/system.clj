@@ -178,8 +178,7 @@
 (defmethod create-queue-broker :aws
   [type]
   (-> (external-queue-config [])
-      sqs/create-queue-broker
-      wrapper/create-queue-broker-wrapper))
+      sqs/create-queue-broker))
 
 (defn create-metadata-db-app
   "Create an instance of the metadata-db application."
