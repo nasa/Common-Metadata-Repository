@@ -81,7 +81,8 @@
 (defn- current-messages
   "Return a list of the current messages."
   [broker-wrapper]
-  (for [[_ queue-history] (deref (:message-queue-history-atom broker-wrapper))
+  (for [[_ queue-history] (when (:message-queue-history-atom broker-wrapper)
+                            (deref (:message-queue-history-atom broker-wrapper)))
         msg (:messages (last queue-history))]
     msg))
 
