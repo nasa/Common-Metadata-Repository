@@ -52,7 +52,7 @@
 (defn- fingerprint-by-provider
   "Update the fingerprints of variables of the given provider if necessary."
   [system provider]
-  (info "Updating fingerprints of variables for provider: " (:provider-id provider))
+  (info "Updating fingerprints of variables for provider" (:provider-id provider))
   (let [db (helper/get-metadata-db-db system)
         {:keys [provider-id]} provider
         params {:concept-type :variable
@@ -61,9 +61,15 @@
                                                                 provider
                                                                 params
                                                                 (find-variables-sql provider-id)
-                                                                (:db-batch-size system))]
-    (dorun
-     (pmap #(fingerprint-variable-batch db provider %) variable-batches))))
+                                                                (:db-batch-size system))
+        num-variables (reduce (fn [num batch]
+                                (fingerprint-variable-batch db provider batch)
+                                (+ num (count batch)))
+                              0
+                              variable-batches)]
+    (info (format "Updated fingerprints of %d variable(s) for provider %s"
+                  num-variables provider-id))
+    (info (format "Updating fingerprints of variables for provider %s completed." provider-id))))
 
 (defn- fingerprint-by-provider-id
   "Update the fingerprints of variables for the given provider id if necessary."
