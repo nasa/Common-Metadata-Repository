@@ -162,7 +162,7 @@ For all variables:
 
 For all variables of a single provider:
 
-    curl -i -XPOST -H "Concent-Type: application/json" http://localhost:3006/fingerprint/variables -d '{"provider_id": "PROV1"}'
+    curl -i -XPOST -H "Content-Type: application/json" http://localhost:3006/fingerprint/variables -d '{"provider_id": "PROV1"}'
 
 ### Initialize Virtual Products
 
