@@ -163,7 +163,7 @@
                      (assoc :sqs-client client))]
       ;; Start a worker thread so we can test its error handling
       (#'sqs/create-async-handler
-       broker (testing-queue-name) identity)
+       broker (testing-queue-name) identity false)
       ;; Wait for the readMessage calls to complete
       (wait-for-reads receive-fn-index 2)
       ;; Verify the worker thread made it past the first exception to call receiveMessage
