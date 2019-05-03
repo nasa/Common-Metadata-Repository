@@ -124,6 +124,15 @@
     ;; clear all channels
     (drain-channels (vals queues-to-channels)))
 
+  (reconnect
+    [this]
+    (try
+      (lifecycle/stop this nil)
+      (catch Exception e
+        (warn e "Failed to properly stop in call to reconnect.")))
+    (lifecycle/start this nil)
+    this)
+
   (health
     [this]
     {:ok? true}))
