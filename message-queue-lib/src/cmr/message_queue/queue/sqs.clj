@@ -169,7 +169,7 @@
 
 
 (defn set-aws-client-attr!
-  "Conditionally configure the AWS client instance with by calling the given
+  "Conditionally configure the AWS client instance by calling the given
   method with the given args."
   [client-obj method args]
   (when-not (nil? (first args))
