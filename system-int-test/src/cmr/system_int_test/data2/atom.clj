@@ -170,6 +170,7 @@
      :has-formats (cx/bool-at-path entry-elem [:hasFormats])
      :has-transforms (cx/bool-at-path entry-elem [:hasTransforms])
      :has-spatial-subsetting (cx/bool-at-path entry-elem [:hasSpatialSubsetting])
+     :has-temporal-subsetting (cx/bool-at-path entry-elem [:hasTemporalSubsetting])
      :tags (when-let [tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))]
              (into {} tags))}))
 
@@ -273,7 +274,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key has-variables has-formats has-transforms
-                has-spatial-subsetting services variables]} collection
+                has-spatial-subsetting has-temporal-subsetting services variables]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -332,6 +333,7 @@
       :has-formats (boolean has-formats)
       :has-transforms (boolean has-transforms)
       :has-spatial-subsetting (boolean has-spatial-subsetting)
+      :has-temporal-subsetting (boolean has-temporal-subsetting)
       :associations associations})))
 
 (defn collections->expected-atom

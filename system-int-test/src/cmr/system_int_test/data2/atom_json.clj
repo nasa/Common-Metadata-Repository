@@ -106,8 +106,8 @@
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
-                has-variables has-formats has-transforms has-spatial-subsetting orbit-parameters
-                highlighted-summary-snippets organizations associations]} json-entry]
+                has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
+                orbit-parameters highlighted-summary-snippets organizations associations]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -136,6 +136,7 @@
        :has-formats has-formats
        :has-transforms has-transforms
        :has-spatial-subsetting has-spatial-subsetting
+       :has-temporal-subsetting has-temporal-subsetting
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets

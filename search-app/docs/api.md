@@ -805,6 +805,7 @@ __Example__
       "has_formats" : false,
       "has_transforms" : false,
       "has_spatial_subsetting" : false,
+      "has_temporal_subsetting" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}},
@@ -848,6 +849,7 @@ __Example__
       "has-formats" : false,
       "has-transforms" : false,
       "has-spatial-subsetting": false,
+      "has-temporal-subsetting": false,
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
@@ -921,6 +923,7 @@ __Example__
       "has-formats" : false,
       "has-transforms" : false,
       "has-spatial-subsetting": false
+      "has-temporal-subsetting": false
     },
     "umm" : {
       "..."

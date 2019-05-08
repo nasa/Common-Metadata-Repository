@@ -90,6 +90,12 @@
   [context service-concept]
   (has-subset-type? context service-concept "Spatial"))
 
+(defn- has-temporal-subsetting?
+  "Returns true if the given service has a defined SubsetType with one of its
+  values being 'Temporal'."
+  [context service-concept]
+  (has-subset-type? context service-concept "Temporal"))
+
 (defn- has-variables?
   "Returns true if the given service has a defined SubsetType with one of its
   values being 'Variable'."
@@ -122,5 +128,6 @@
      :service-concept-ids service-concept-ids
      :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))
+     :has-temporal-subsetting (boolean (some #(has-temporal-subsetting? context %) service-concepts))
      :has-transforms (boolean (some #(has-transforms? context %) service-concepts))
      :has-variables (boolean (some #(has-variables? context %) service-concepts))}))

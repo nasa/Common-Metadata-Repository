@@ -366,7 +366,8 @@
     (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
     ;; associate coll3 with a service that has SubsetType that is Variable
     (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll3)}])
-    ;; associate coll4 with a service that has SubsetType that is not Variable
+    ;; associate coll4 with a service that has SubsetType that is Temporal
+    ;; has-varialbes will be false, has-temporal-subsetting will be true.
     (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
@@ -392,8 +393,8 @@
         "has-variables true through service association"
         coll3 {:has-variables true}
 
-        "has-variables false through service association"
-        coll4 {:has-variables false}))
+        "has-variables false, has-temporal-subsetting true through service association"
+        coll4 {:has-variables false :has-temporal-subsetting true}))
 
     (testing "search collections in JSON format has-variables field"
       (are3 [coll expected-fields]
