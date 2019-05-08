@@ -848,8 +848,8 @@ __Example__
       "has-variables" : true,
       "has-formats" : false,
       "has-transforms" : false,
-      "has-spatial-subsetting": false,
-      "has-temporal-subsetting": false,
+      "has-spatial-subsetting" : false,
+      "has-temporal-subsetting" : false,
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
@@ -922,8 +922,8 @@ __Example__
       "has-variables" : false,
       "has-formats" : false,
       "has-transforms" : false,
-      "has-spatial-subsetting": false
-      "has-temporal-subsetting": false
+      "has-spatial-subsetting" : false,
+      "has-temporal-subsetting" : false
     },
     "umm" : {
       "..."
