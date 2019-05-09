@@ -361,6 +361,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:hasFormats (collections only)         | true if there are multiple supported formats for any services associated with the collection                         |
 | echo:hasTransforms (collections only)      | true if there are transformations (subset, interpolation or projection) in any of its associated services            |
 | echo:hasSpatialSubsetting (collections only)| true if any of its associated services support spatial subsetting            |
+| echo:hasTemporalSubsetting (collections only)| true if any of its associated services support temporal subsetting            |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
