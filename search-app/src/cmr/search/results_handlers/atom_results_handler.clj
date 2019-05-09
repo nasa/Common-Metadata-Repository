@@ -65,6 +65,7 @@
                      "has-formats"
                      "has-transforms"
                      "has-spatial-subsetting"
+                     "has-temporal-subsetting"
                      "associations-gzip-b64"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
@@ -138,6 +139,7 @@
           [has-formats] :has-formats
           [has-transforms] :has-transforms
           [has-spatial-subsetting] :has-spatial-subsetting
+          [has-temporal-subsetting] :has-temporal-subsetting
           [associations-gzip-b64] :associations-gzip-b64} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
@@ -180,6 +182,7 @@
             :has-formats has-formats
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
+            :has-temporal-subsetting has-temporal-subsetting
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
@@ -418,7 +421,7 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters organizations tags has-variables has-formats has-transforms
-                has-spatial-subsetting]} reference
+                has-spatial-subsetting has-temporal-subsetting]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -452,6 +455,7 @@
                (x/element :echo:hasFormats {} has-formats)
                (x/element :echo:hasTransforms {} has-transforms)
                (x/element :echo:hasSpatialSubsetting {} has-spatial-subsetting)
+               (x/element :echo:hasTemporalSubsetting {} has-temporal-subsetting)
                (when score (x/element :relevance:score {} score))
                (map tag->xml-element tags))))
 

@@ -333,6 +333,7 @@
           :has-formats (m/stored m/bool-field-mapping)
           :has-transforms (m/stored m/bool-field-mapping)
           :has-spatial-subsetting (m/stored m/bool-field-mapping)
+          :has-temporal-subsetting (m/stored m/bool-field-mapping)
           :has-opendap-url m/bool-field-mapping
 
           :platform-sn                    m/string-field-mapping

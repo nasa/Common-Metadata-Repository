@@ -262,12 +262,13 @@
 
 (defn- assert-collection-atom-json-result
   "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
-  has-spatial-subsetting and associations fields"
+  has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [expected-fields (merge {:has-formats false
                                 :has-variables false
                                 :has-transforms false
-                                :has-spatial-subsetting false}
+                                :has-spatial-subsetting false
+                                :has-temporal-subsetting false}
                                {:has-variables (some? (seq var-concept-ids))}
                                expected-fields)]
     (assert-collection-atom-result coll expected-fields)
@@ -275,12 +276,13 @@
 
 (defn- assert-collection-umm-json-result
   "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
-  has-spatial-subsetting and associations fields"
+  has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [expected-fields (merge {:has-formats false
                                 :has-variables false
                                 :has-transforms false
-                                :has-spatial-subsetting false}
+                                :has-spatial-subsetting false
+                                :has-temporal-subsetting false}
                                {:has-variables (some? (seq var-concept-ids))}
                                expected-fields)
         coll-with-extra-fields (merge coll
@@ -295,7 +297,7 @@
 
 (defn assert-collection-search-result
   "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
-  has-transforms, has-spatial-subsetting and associations fields"
+  has-transforms, has-spatial-subsetting, has-temporal-subsetting and associations fields"
   ([coll expected-fields serv-concept-ids]
    (assert-collection-search-result coll expected-fields serv-concept-ids nil))
   ([coll expected-fields serv-concept-ids var-concept-ids]

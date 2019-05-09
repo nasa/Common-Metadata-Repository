@@ -93,11 +93,13 @@
       ;; before update service3, collections' has formats is false
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-variables false}
+       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false 
+        :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
-       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-variables false}
+       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false
+        :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
 
       ;; update service3 to have two supported formats and spatial subsetting
@@ -112,25 +114,28 @@
       ;; the has-transforms is not affected by the SupportedInputFormats or SubsetTypes
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats true :has-transforms false :has-spatial-subsetting true :has-variables false}
+       {:has-formats true :has-transforms false :has-spatial-subsetting true :has-temporal-subsetting false
+        :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
 
-      ;; update service3 to also have InterpolationTypes
+      ;; update service3 to temporal subsetting and  also have InterpolationTypes
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
         :ServiceOptions {:SupportedInputFormats ["TIFF" "JPEG"]
-                         :SubsetTypes ["Spatial"]
+                         :SubsetTypes ["Temporal"]
                          :InterpolationTypes ["Nearest Neighbor"]}})
       (index/wait-until-indexed)
       ;; verify has-transforms is true after the service is updated with InterpolationTypes
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
+       {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true 
+        :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
-       {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
+       {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
+        :has-variables false}
        [serv1-concept-id serv2-concept-id serv3-concept-id]))
 
     (testing "variable associations together with service associations"
@@ -143,11 +148,13 @@
         ;; coll2 has-variables is still false
         (service-util/assert-collection-search-result
          coll1
-         {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables true}
+         {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
+          :has-variables true}
          [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
         (service-util/assert-collection-search-result
          coll2
-         {:has-formats true :has-transforms true :has-spatial-subsetting true :has-variables false}
+         {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
+          :has-variables false}
          [serv1-concept-id serv2-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
