@@ -138,7 +138,7 @@
           (group-permission-permission-validation params)))
 
 (def acl-identity-type->search-value
- "Maps identity type query paremter values to the actual values used in the index."
+ "Maps identity type query parameter values to the actual values used in the index."
  {"system" "System"
   "single_instance" "Group"
   "provider" "Provider"
