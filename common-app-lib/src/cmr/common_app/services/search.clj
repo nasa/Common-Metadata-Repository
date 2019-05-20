@@ -1,6 +1,6 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
-  (:require 
+  (:require
    [cmr.common.util :as u]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -28,7 +28,7 @@
 
 (defn create-scroll-id-cache
   "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
-  cubby. This cache is used to store a map of cmr scroll-ids to ES scroll-ids in a consistent way 
+  cubby. This cache is used to store a map of cmr scroll-ids to ES scroll-ids in a consistent way
   acrosss all instances of search."
   []
   (stl-cache/create-single-thread-lookup-cache
@@ -64,7 +64,6 @@
                                       (search-results->response
                                        context query (assoc results :took query-execution-time)))]
     (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
-
     {:results result-str
      :hits (:hits results)
      :result-format (:result-format query)

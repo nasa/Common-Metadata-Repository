@@ -207,11 +207,8 @@
   (let [params (core-api/process-params :granule params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id ctx) (pr-str params)))
-        search-params (lp/process-legacy-psa params)
-        results (query-svc/get-granule-timeline ctx search-params)]
-    {:status 200
-     :headers {common-routes/CORS_ORIGIN_HEADER "*"}
-     :body results}))
+        search-params (lp/process-legacy-psa params)]
+    (core-api/search-response ctx (query-svc/get-granule-timeline ctx search-params))))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -225,16 +222,13 @@
 (defn- find-tiles
   "Retrieves all the tiles which intersect the input geometry"
   [ctx params]
-  (let [results (query-svc/find-tiles-by-geometry ctx params)]
-    {:status 200
-     :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
-     :body results}))
+  (core-api/search-response ctx {:results (query-svc/find-tiles-by-geometry ctx params)}))
+
 
 (defn- find-data-json
   "Retrieve all public collections with gov.nasa.eosdis tag as opendata."
   [ctx]
-  {:status 200
-   :body (query-svc/get-data-json-collections ctx)})
+  (core-api/search-response ctx {:results (query-svc/get-data-json-collections ctx)}))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
