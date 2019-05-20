@@ -272,4 +272,15 @@
              {:entry-title ["Dataset1" "Dataset2"]
               :start-date "1992-01-01T00:00:00Z"
               :end-date "2002-02-01T00:00:00Z"
-              :interval :month})))))
+              :interval :month}))
+      (testing "correct headers are returned"
+        (let [response (search/get-granule-timeline {:concept-id (:concept-id coll1)
+                                                     :start-date "2000-01-01T00:00:00Z"
+                                                     :end-date "2002-02-01T00:00:00Z"
+                                                     :interval :second}
+                                                    {:url-extension "json"
+                                                     :include-headers true})
+              headers (:headers response)]
+          (is (= "application/json;charset=utf-8" (get headers "Content-Type")))
+          (is (= "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id"
+                 (get headers "Access-Control-Expose-Headers"))))))))

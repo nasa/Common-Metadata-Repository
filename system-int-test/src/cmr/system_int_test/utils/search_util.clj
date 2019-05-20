@@ -270,6 +270,7 @@
    (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
          headers (get options :headers {})
+         include-headers? (get options :include-headers)
          params (if snake-kebab?
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))
                   params)
@@ -292,8 +293,10 @@
                                     :body (codec/form-encode params)
                                     :connection-manager (s/conn-mgr)})))]
      (if (= 200 (:status response))
-       {:status (:status response)
-        :results (parse-timeline-response (:body response))}
+       (if include-headers?
+        (assoc response :results (parse-timeline-response (:body response)))
+        {:status (:status response)
+         :results (parse-timeline-response (:body response))})
        response))))
 
 (defn get-granule-timeline-with-post

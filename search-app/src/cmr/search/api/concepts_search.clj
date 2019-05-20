@@ -222,13 +222,15 @@
 (defn- find-tiles
   "Retrieves all the tiles which intersect the input geometry"
   [ctx params]
-  (core-api/search-response ctx {:results (query-svc/find-tiles-by-geometry ctx params)}))
+  (core-api/search-response ctx {:results (query-svc/find-tiles-by-geometry ctx params)
+                                 :result-format mt/json}))
 
 
 (defn- find-data-json
   "Retrieve all public collections with gov.nasa.eosdis tag as opendata."
   [ctx]
-  (core-api/search-response ctx {:results (query-svc/get-data-json-collections ctx)}))
+  (core-api/search-response ctx {:results (query-svc/get-data-json-collections ctx)
+                                 :result-format mt/json}))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
