@@ -313,7 +313,7 @@
         [execution-time results] (u/time-execution
                                   (common-search/search-results->response
                                    context query (qe/execute-query context query)))]
-   {:results results :took execution-time}))
+   {:results results :took execution-time :result-format mt/json}))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
