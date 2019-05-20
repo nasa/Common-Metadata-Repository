@@ -3,18 +3,19 @@
   over granule start date and end dates. The aggregation results of start date and end dates are
   converted to a list of events of some number of granules starting and some number of granules
   ending. The events counts of granules are used to determine when intervals start and stop."
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search.query-execution :as query-execution]
-            [cmr.common-app.services.search :as qs]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.models.query :as q]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cheshire.core :as json]
-            [cmr.common-app.services.search.results-model :as r]
-            [clj-time.core :as t]
-            [clj-time.coerce :as c]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.coerce :as c]
+   [clj-time.core :as t]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-execution :as query-execution]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.services.errors :as errors]
+   [cmr.search.models.query :as q]))
 
 (defn- query-aggregations
   "Returns the elasticsearch aggregations to put in the query for finding granule timeline intervals."
@@ -225,25 +226,6 @@
     (r/map->Results {:items items
                      :result-format (:result-format query)})))
 
-(comment
-
-  (defn prettify-results
-    [{:keys [items]}]
-    (for [{:keys [concept-id intervals]} items]
-      {:concept-id concept-id
-       :intervals
-       (for [{:keys [start end num-grans]} intervals]
-         {:start (str start)
-          :end (str end)
-          :num-grans num-grans})}))
-
-  (prettify-results
-    (elastic-results/elastic-results->query-results
-      nil {:result-format :timeline
-           :interval :year} @last-elastic-results)))
-
-
-
 (defn interval->response-tuple
   "Converts an interval into the response tuple containing the start, end, and number of granules."
   [query {:keys [start end num-grans]}]
@@ -265,3 +247,20 @@
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]
     (json/generate-string response)))
+
+(comment
+
+  (defn prettify-results
+    [{:keys [items]}]
+    (for [{:keys [concept-id intervals]} items]
+      {:concept-id concept-id
+       :intervals
+       (for [{:keys [start end num-grans]} intervals]
+         {:start (str start)
+          :end (str end)
+          :num-grans num-grans})}))
+
+  (prettify-results
+    (elastic-results/elastic-results->query-results
+      nil {:result-format :timeline
+           :interval :year} @last-elastic-results)))

@@ -49,7 +49,7 @@
   "This CORS header is to define how long in seconds the response of the preflight request can be cached"
   "Access-Control-Max-Age")
 
-(defn search-response-headers
+(defn- search-response-headers
   "Generate headers for search response. CORS response headers can be tested through
   dev-system/resources/cors_headers_test.html"
   [content-type results]

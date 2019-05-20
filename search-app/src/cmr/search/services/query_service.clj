@@ -310,8 +310,10 @@
                    pv/validate-timeline-parameters
                    (p/timeline-parameters->query context)
                    (common-search/validate-query context))
-        results (qe/execute-query context query)]
-    (common-search/search-results->response context query results)))
+        [execution-time results] (u/time-execution
+                                  (common-search/search-results->response
+                                   context query (qe/execute-query context query)))]
+   {:results results :took execution-time}))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
@@ -521,7 +523,7 @@
                             (pv/validate-tile-parameters)
                             (#(select-keys % [:bounding-box :point :line :polygon])))]
     (if (seq spatial-params)
-      (apply clojure.set/union
+      (apply set/union
              (for [[param-name values] spatial-params
                    value (if (sequential? values) values [values])]
                (shape-param->tile-set param-name value)))
