@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.6-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-ous-plugin "0.3.7-SNAPSHOT"
   :description "A CMR services plugin that performs URL translations for subsetted GIS data"
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {:name "Apache License, Version 2.0"
@@ -30,7 +30,7 @@
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.7-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
@@ -40,7 +40,7 @@
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.1"]
+                 [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [tolitius/xml-in "0.1.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}

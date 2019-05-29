@@ -86,13 +86,20 @@
   (let [pattern (re-pattern (format "(.*)(%s)(.*)" (:match tag-data)))]
     (string/replace data-url pattern (str "$1" (:replace tag-data) "$3"))))
 
+(defn remove-trailing-html
+  "Takes a url and remove the .html in the end."
+  [url]
+  (log/trace "Attempting trailing .html removal from url...")
+  (when url
+    (string/replace url #"\.html$" "")))
+
 (defn granule-link->opendap-url
   "Converts a granule-link to an OPeNDAP URL."
   [granule-link tag-data]
-  (let [data-url (-> granule-link :datafile-link :href)
+  (let [data-url (-> granule-link :datafile-link :href remove-trailing-html)
         data-url-replaced-by-tags (when tag-data
                                     (process-tag-datafile-replacement data-url tag-data))
-        opendap-url (-> granule-link :opendap-link :href)]
+        opendap-url (-> granule-link :opendap-link :href remove-trailing-html)]
     (log/trace "Data file:" granule-link)
     (log/trace "Tag data:" tag-data)
     (log/trace "Data URL replaced by tags:" data-url-replaced-by-tags)

@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.11-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.12-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -30,15 +30,15 @@
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.7-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.7-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.3-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.4-SNAPSHOT"]
                  [http-kit "2.3.0"]
-                 [markdown-clj "1.0.7"]
-                 [metosin/reitit-core "0.3.1"]
-                 [metosin/reitit-ring "0.3.1"]
+                 [markdown-clj "1.10.0"]
+                 [metosin/reitit-core "0.3.7"]
+                 [metosin/reitit-ring "0.3.7"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.4.490"]
@@ -46,7 +46,7 @@
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.1"]
+                 [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
@@ -99,7 +99,7 @@
                                      :system :system
                                      :default (complement :system)}}
              :docs {:dependencies [[gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
-                    :plugins [[lein-codox "0.10.6"]
+                    :plugins [[lein-codox "0.10.7"]
                               [lein-marginalia "0.9.1"]]
                     :source-paths ["resources/docs/src"]
                     :codox {:project {:name "CMR Service-Bridge"
