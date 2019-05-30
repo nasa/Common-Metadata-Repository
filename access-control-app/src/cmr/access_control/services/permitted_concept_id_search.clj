@@ -6,10 +6,10 @@
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.transmit.metadata-db2 :as mdb2]
+    [cmr.umm-spec.legacy :as legacy]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm.start-end-date :as umm-lib-time]
-    [cmr.umm.umm-core :as umm-lib]))
+    [cmr.umm.start-end-date :as umm-lib-time]))
 
 (defn- make-keyword
   "Merges concept-type and keyword into one keyword."
@@ -148,7 +148,7 @@
 
 (defmethod get-permitted-concept-id-conditions :granule
   [context concept]
-  (let [parsed-metadata (umm-lib/parse-concept concept)
+  (let [parsed-metadata (legacy/parse-concept context concept)
         parent-collection (mdb2/get-latest-concept
                            context (get-in concept [:extra-fields :parent-collection-id]))
         parsed-collection-metadata (umm-spec/parse-metadata

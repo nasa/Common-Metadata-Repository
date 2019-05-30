@@ -161,34 +161,42 @@
                                                                   (umm-json-version :service fmt)
                                                                   umm))))))
 
-(defn parse-collection-temporal
+(defn parse-concept-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]
-  (let [{:keys [format metadata]} concept]
-    (condp = (mt/base-mime-type-of format)
-     mt/echo10 (echo10-to-umm/parse-temporal metadata)
-     mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
-     mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
-     mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
-     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
-     mt/umm-json (:TemporalExtents (json/parse-string metadata true))
-     nil)))
+  (let [{:keys [concept-type format metadata]} concept
+        mime-type (mt/base-mime-type-of format)]
+    (condp = (keyword concept-type)
+      :collection (condp = mime-type
+                    mt/echo10 (echo10-to-umm/parse-temporal metadata)
+                    mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
+                    mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
+                    mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
+                    mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
+                    mt/umm-json (:TemporalExtents (json/parse-string metadata true))
+                    nil)
+      :granule (condp = mime-type
+                 mt/umm-json (umm-g/umm-g->Temporal (json/parse-string metadata true))))))
 
-(defn parse-collection-access-value
+(defn parse-concept-access-value
   "Convert a metadata db concept map into the access value by parsing its metadata."
   [concept]
-  (let [{:keys [format metadata]} concept]
-    (condp = (mt/base-mime-type-of format)
-     mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
-     mt/dif (dif-util/parse-access-constraints metadata true)
-     mt/dif10 (dif-util/parse-access-constraints metadata true)
-     mt/iso19115 (use-constraints/parse-access-constraints
-                  metadata
-                  iso19115-2-to-umm/constraints-xpath
-                  true)
-     mt/iso-smap (use-constraints/parse-access-constraints
-                  metadata
-                  iso-smap-to-umm/constraints-xpath
-                  true)
-     mt/umm-json (:AccessConstraints (json/parse-string metadata true))
-     nil)))
+  (let [{:keys [concept-type format metadata]} concept
+        mime-type (mt/base-mime-type-of format)]
+    (condp = (keyword concept-type)
+      :collection (condp = (mt/base-mime-type-of format)
+                    mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
+                    mt/dif (dif-util/parse-access-constraints metadata true)
+                    mt/dif10 (dif-util/parse-access-constraints metadata true)
+                    mt/iso19115 (use-constraints/parse-access-constraints
+                                 metadata
+                                 iso19115-2-to-umm/constraints-xpath
+                                 true)
+                    mt/iso-smap (use-constraints/parse-access-constraints
+                                 metadata
+                                 iso-smap-to-umm/constraints-xpath
+                                 true)
+                    mt/umm-json (:AccessConstraints (json/parse-string metadata true))
+                    nil)
+      :granule (condp = mime-type
+                 mt/umm-json (get-in (json/parse-string metadata true) [:AccessConstraints :Value])))))

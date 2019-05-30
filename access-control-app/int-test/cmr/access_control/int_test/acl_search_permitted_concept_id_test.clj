@@ -94,8 +94,10 @@
                                   :provider-id "PROV1"
                                   :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
-        gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
-                                                                  :ending-date-time (t/date-time 2011)}}})
+        gran1 (u/save-granule coll1
+                              {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
+                                                            :ending-date-time (t/date-time 2011)}}}
+                              :umm-json)
         gran2 (u/save-granule coll2 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2010)}}})
         gran3 (u/save-granule coll3 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
@@ -159,7 +161,7 @@
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
-        "gran1 test"
+        "gran1 test as umm-json"
         {:permitted-concept-id gran1}
         [acl2 acl4 acl5]
 
@@ -255,7 +257,7 @@
                                   :access-value 2
                                   :provider-id "PROV2"})
 
-        gran1 (u/save-granule coll1 {:access-value 1})
+        gran1 (u/save-granule coll1 {:access-value 1} :umm-json)
         gran2 (u/save-granule coll2 {:access-value 2})
         gran3 (u/save-granule coll3 {:access-value 3})
         gran4 (u/save-granule coll4 {:access-value nil})
@@ -346,7 +348,7 @@
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
-        "gran1 test"
+        "gran1 test as umm json"
         {:permitted-concept-id gran1}
         [acl1 acl2 acl3 acl7]
 
