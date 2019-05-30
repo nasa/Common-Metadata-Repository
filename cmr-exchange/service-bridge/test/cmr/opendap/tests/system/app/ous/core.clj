@@ -54,6 +54,26 @@
     (is (= ["https://opendap.cr.usgs.gov/opendap/hyrax/DP106/MOLT/MOD13Q1.006/2000.02.18/MOD13Q1.A2000049.h23v09.006.2015136104649.hdf.nc"]
            (util/parse-response response)))))
 
+(deftest no-tag-replacement-uses-opendap-url-with-html
+  (let [collection-id "C1200354716-DEMO_PROV"
+        granule-id "G1200354717-DEMO_PROV"
+        options (-> {}
+                    (request/add-token-header (util/get-sit-token))
+                    (util/override-api-version-header "v2.1"))
+        response @(httpc/get
+                   (format (str "http://localhost:%s"
+                                "/service-bridge/ous/collection/%s"
+                                "?granules=%s")
+                           (test-system/http-port)
+                           collection-id
+                           granule-id)
+                   options)]
+    (is (= 200 (:status response)))
+    (is (= "cmr-service-bridge.v2.1; format=json"
+           (get-in response [:headers :cmr-media-type])))
+    (is (= ["https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L3U/GMI/REMSS/v8.2a/2018/331/20181127000000-REMSS-L3U_GHRSST-SSTsubskin-GMI-f35_20181127v8.2-v02.0-fv01.0.nc.nc"]
+           (util/parse-response response)))))
+
 (deftest no-tag-replacement-and-no-opendap-url
   (let [collection-id "C1200237759-DEMO_PROV"
         granule-id "G1200237760-DEMO_PROV"
