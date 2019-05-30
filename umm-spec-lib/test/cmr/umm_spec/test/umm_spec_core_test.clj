@@ -51,73 +51,77 @@
            %))
        (map util/remove-nil-keys)))
 
-(deftest parse-collection-temporal-test
-  (are3 [format expected]
-    (is (= (clean-parse expected)
-           (clean-parse
-            (core/parse-collection-temporal
-             {:metadata (core/generate-metadata context umm-c-record format)
-              :format (mt/format->mime-type format)}))))
-
-    "echo10"
-    :echo10
-    (:TemporalExtents umm-c-record)
-
-    ;; dif is coded to return a RangeDateTimes even when the umm record only contains SingleDateTimes,
-    "dif"
-    :dif
-    [{:RangeDateTimes
-      [{:BeginningDateTime "2012-01-01T00:00:00.000Z",
-        :EndingDateTime
-        #=(cmr.common.joda-time/date-time 1325376000000 "UTC")}]}]
-
-    "dif10"
-    :dif10
-    (:TemporalExtents umm-c-record)
-
-    "iso19115"
-    :iso19115
-    (:TemporalExtents umm-c-record)
-
-    "iso-smap"
-    :iso-smap
-    (:TemporalExtents umm-c-record)
-
-    "umm-json"
-    :umm-json
-    (:TemporalExtents umm-c-record)))
-
-(deftest parse-collection-access-value-test
-  (are3 [format expected]
-    (is (= (umm-cmn/map->AccessConstraintsType expected)
-           (umm-cmn/map->AccessConstraintsType
-             (core/parse-collection-access-value
+(deftest parse-concept-temporal-test
+  (testing "parse collection temporal"
+    (are3 [format expected]
+      (is (= (clean-parse expected)
+             (clean-parse
+              (core/parse-concept-temporal
                {:metadata (core/generate-metadata context umm-c-record format)
-                :format (mt/format->mime-type format)}))))
+                :format (mt/format->mime-type format)
+                :concept-type :collection}))))
 
-    "echo10"
-    :echo10
-    (:AccessConstraints umm-c-record)
+      "echo10"
+      :echo10
+      (:TemporalExtents umm-c-record)
 
-    "dif"
-    :dif
-    (:AccessConstraints umm-c-record)
+      ;; dif is coded to return a RangeDateTimes even when the umm record only contains SingleDateTimes,
+      "dif"
+      :dif
+      [{:RangeDateTimes
+        [{:BeginningDateTime "2012-01-01T00:00:00.000Z",
+          :EndingDateTime
+          #=(cmr.common.joda-time/date-time 1325376000000 "UTC")}]}]
+
+      "dif10"
+      :dif10
+      (:TemporalExtents umm-c-record)
+
+      "iso19115"
+      :iso19115
+      (:TemporalExtents umm-c-record)
+
+      "iso-smap"
+      :iso-smap
+      (:TemporalExtents umm-c-record)
+
+      "umm-json"
+      :umm-json
+      (:TemporalExtents umm-c-record))))
+
+(deftest parse-concept-access-value-test
+  (testing "parse collection access value"
+    (are3 [format expected]
+      (is (= (umm-cmn/map->AccessConstraintsType expected)
+             (umm-cmn/map->AccessConstraintsType
+               (core/parse-concept-access-value
+                 {:metadata (core/generate-metadata context umm-c-record format)
+                  :format (mt/format->mime-type format)
+                  :concept-type :collection}))))
+
+      "echo10"
+      :echo10
+      (:AccessConstraints umm-c-record)
+
+      "dif"
+      :dif
+      (:AccessConstraints umm-c-record)
 
 
-    "dif10"
-    :dif10
-    (:AccessConstraints umm-c-record)
+      "dif10"
+      :dif10
+      (:AccessConstraints umm-c-record)
 
 
-    "iso19115"
-    :iso19115
-    (:AccessConstraints umm-c-record)
+      "iso19115"
+      :iso19115
+      (:AccessConstraints umm-c-record)
 
 
-    "iso-smap"
-    :iso-smap
-    (:AccessConstraints umm-c-record)
+      "iso-smap"
+      :iso-smap
+      (:AccessConstraints umm-c-record)
 
-    "umm-json"
-    :umm-json
-    (:AccessConstraints umm-c-record)))
+      "umm-json"
+      :umm-json
+      (:AccessConstraints umm-c-record))))

@@ -18,6 +18,24 @@
     (parse-umm-json-concept context concept-map)
     (umm/parse-concept concept-map)))
 
+(defn parse-concept-temporal
+  "Returns the UMM record's temporal from a concept map. Like
+  cmr.umm.umm-core/parse-concept-temporal, but supports additional
+  formats via umm-spec lib."
+  [concept-map]
+  (if (mt/umm-json? (:format concept-map))
+    (umm-spec/parse-concept-temporal concept-map)
+    (umm/parse-concept-temporal concept-map)))
+
+(defn parse-concept-access-value
+  "Returns the UMM record's access value from a concept map. Like
+  cmr.umm.umm-core/parse-concept-access-value, but supports additional
+  formats via umm-spec lib."
+  [concept-map]
+  (if (mt/umm-json? (:format concept-map))
+    (umm-spec/parse-concept-access-value concept-map)
+    (umm/parse-concept-access-value concept-map)))
+
 (defmulti item->concept-type (fn [item] (type item)))
 
 (defmethod item->concept-type cmr.umm_spec.models.umm_collection_models.UMM-C

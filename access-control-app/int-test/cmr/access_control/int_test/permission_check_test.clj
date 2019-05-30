@@ -648,6 +648,12 @@
         gran2 (u/save-granule coll1 {:access-value 5})
         ;; high access value
         gran3 (u/save-granule coll1 {:access-value 10})
+        ;; no access value umm-g
+        gran4 (u/save-granule coll1 {} :umm-json)
+        ;; mid access value umm-g
+        gran5 (u/save-granule coll1 {:access-value 5} :umm-json)
+        ;; high access value umm-g
+        gran6 (u/save-granule coll1 {:access-value 9} :umm-json)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         ;; guest read coll1 granules with undefined access value
         acl1 (create-acl {:group_permissions [{:permissions [:read]
@@ -675,13 +681,19 @@
         _ (doseq [fixture-acl fixture-acls]
             (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
     (are [user result]
-      (= result (get-permissions user gran1 gran2 gran3))
+      (= result (get-permissions user gran1 gran2 gran3 gran4 gran5 gran6))
       :guest {gran1 ["read"]
               gran2 []
-              gran3 []}
+              gran3 []
+              gran4 ["read"]
+              gran5 []
+              gran6 []}
       :registered {gran1 []
                    gran2 ["read"]
-                   gran3 ["read"]})))
+                   gran3 ["read"]
+                   gran4 []
+                   gran5 ["read"]
+                   gran6 ["read"]})))
 
 (deftest granule-permissions-with-temporal-value-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -699,6 +711,18 @@
                                                                   :ending-date-time "2005-01-01T00:00:00Z"}}})
         ;; single date-time
         gran3 (u/save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
+
+        ;; no temporal umm-g
+        gran4 (u/save-granule coll1 {} :umm-json)
+
+        ;; temporal range umm-g
+        gran5 (u/save-granule coll1
+                              {:temporal {:range-date-time {:beginning-date-time "2002-01-01T00:00:00Z"
+                                                            :ending-date-time "2005-01-01T00:00:00Z"}}}
+                              :umm-json)
+
+        ;; single date-time umm-g
+        gran6 (u/save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}} :umm-json)
 
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
 
@@ -724,13 +748,19 @@
         _ (doseq [fixture-acl fixture-acls]
             (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
     (are [user result]
-      (= result (get-permissions user gran1 gran2 gran3))
+      (= result (get-permissions user gran1 gran2 gran3 gran4 gran5 gran6))
       :guest {gran1 []
               gran2 ["read"]
-              gran3 []}
+              gran3 []
+              gran4 []
+              gran5 ["read"]
+              gran6 []}
       :registered {gran1 []
                    gran2 []
-                   gran3 ["read"]})))
+                   gran3 ["read"]
+                   gran4 []
+                   gran5 []
+                   gran6 ["read"]})))
 
 (deftest collection-provider-level-permission-check-test
   ;; Tests ACLs which grant the provider-level update/delete permissions to collections

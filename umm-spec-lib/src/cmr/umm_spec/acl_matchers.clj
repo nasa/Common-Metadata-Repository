@@ -8,6 +8,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [update-in-each]]
+   [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
    [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
@@ -151,13 +152,16 @@
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
   (-> concept
-      (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-collection-access-value concept))
-      (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-collection-temporal concept))
+      (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-concept-access-value concept))
+      (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-concept-temporal concept))
       (assoc :EntryTitle (get-in concept [:extra-fields :entry-title]))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
   [concept]
-  (umm-lib-acl-matchers/add-acl-enforcement-fields-to-concept concept))
+  (-> concept
+      (u/lazy-assoc :access-value (legacy/parse-concept-access-value concept))
+      (u/lazy-assoc :temporal (legacy/parse-concept-temporal concept))
+      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
 
 (defn add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concepts."

@@ -1,22 +1,23 @@
 (ns cmr.umm.umm-core
   "Functions to transform concepts between formats."
-  (:require [cmr.common.mime-types :as mt]
-            [cmr.common.xml :as cx]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.echo10.echo10-collection :as echo10-c]
-            [cmr.umm.echo10.granule :as echo10-g]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.dif10.dif10-core :as dif10]
-            [cmr.umm.dif.dif-collection :as dif-c]
-            [cmr.umm.dif10.dif10-collection :as dif10-c]
-            [cmr.umm.iso-mends.iso-mends-core :as iso-mends]
-            [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
-            [cmr.umm.iso-mends.granule :as iso-mends-g]
-            [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
-            [cmr.umm.iso-smap.iso-smap-collection :as iso-smap-c]
-            [cmr.umm.iso-smap.granule :as iso-smap-g]
-            [cmr.umm.umm-collection]
-            [cmr.umm.umm-granule])
+  (:require
+   [cmr.common.mime-types :as mt]
+   [cmr.common.xml :as cx]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.echo10.echo10-collection :as echo10-c]
+   [cmr.umm.echo10.granule :as echo10-g]
+   [cmr.umm.dif.dif-core :as dif]
+   [cmr.umm.dif10.dif10-core :as dif10]
+   [cmr.umm.dif.dif-collection :as dif-c]
+   [cmr.umm.dif10.dif10-collection :as dif10-c]
+   [cmr.umm.iso-mends.iso-mends-core :as iso-mends]
+   [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
+   [cmr.umm.iso-mends.granule :as iso-mends-g]
+   [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
+   [cmr.umm.iso-smap.iso-smap-collection :as iso-smap-c]
+   [cmr.umm.iso-smap.granule :as iso-smap-g]
+   [cmr.umm.umm-collection]
+   [cmr.umm.umm-granule])
   (:import cmr.umm.umm_collection.UmmCollection
            cmr.umm.umm_granule.UmmGranule))
 
@@ -54,13 +55,6 @@
   [concept]
   (let [{:keys [concept-type format metadata]} concept]
     (condp = (keyword concept-type)
-      :collection (condp = format
-                    mt/echo10 (echo10-c/parse-collection metadata)
-                    mt/dif (dif-c/parse-collection metadata)
-                    mt/dif10 (dif10-c/parse-collection metadata)
-                    mt/iso19115 (iso-mends-c/parse-collection metadata)
-                    mt/iso-smap (iso-smap-c/parse-collection metadata))
-
       :granule (condp = format
                  mt/echo10 (echo10-g/parse-granule metadata)
                  mt/iso-smap (iso-smap-g/parse-granule metadata)))))
@@ -70,13 +64,6 @@
   [concept]
   (let [{:keys [concept-type format metadata]} concept]
     (condp = (keyword concept-type)
-      :collection (condp = format
-                    mt/echo10 (echo10-c/parse-temporal metadata)
-                    mt/dif (dif-c/parse-temporal metadata)
-                    mt/dif10 (dif10-c/parse-temporal metadata)
-                    mt/iso19115 (iso-mends-c/parse-temporal metadata)
-                    mt/iso-smap (iso-smap-c/parse-temporal metadata))
-
       :granule (condp = format
                  mt/echo10 (echo10-g/parse-temporal metadata)
                  mt/iso-smap (iso-smap-g/parse-temporal metadata)))))
@@ -86,13 +73,6 @@
   [concept]
   (let [{:keys [concept-type format metadata]} concept]
     (condp = (keyword concept-type)
-      :collection (condp = format
-                    mt/echo10 (echo10-c/parse-access-value metadata)
-                    mt/dif (dif-c/parse-access-value metadata)
-                    mt/dif10 (dif10-c/parse-access-value metadata)
-                    mt/iso19115 (iso-mends-c/parse-access-value metadata)
-                    mt/iso-smap nil)
-
       :granule (condp = format
                  mt/echo10 (echo10-g/parse-access-value metadata)
                  mt/iso-smap (iso-smap-g/parse-access-value metadata)))))

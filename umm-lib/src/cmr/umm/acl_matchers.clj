@@ -51,33 +51,10 @@
     (let [{:keys [start-date stop-date mask]} temporal-filter
           start-date (parse-date start-date)
           stop-date (parse-date stop-date)
-          umm-start (sed/start-date concept-type umm-temporal)
-          umm-end (or (sed/end-date concept-type umm-temporal) (tk/now))]
+          umm-start (parse-date (sed/start-date concept-type umm-temporal))
+          umm-end (parse-date (or (sed/end-date concept-type umm-temporal) (tk/now)))]
      (case mask
        "intersect" (t/overlaps? start-date stop-date umm-start umm-end)
        ;; Per ECHO10 API documentation disjoint is the negation of intersects
        "disjoint" (not (t/overlaps? start-date stop-date umm-start umm-end))
        "contains" (time-range1-contains-range2? start-date stop-date umm-start umm-end)))))
-;; Functions for preparing concepts to be passed to functions above.
-
-(defmulti add-acl-enforcement-fields-to-concept
-  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
-  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
-  (fn [concept]
-    (:concept-type concept)))
-
-(defmethod add-acl-enforcement-fields-to-concept :default
-  [concept]
-  concept)
-
-(defmethod add-acl-enforcement-fields-to-concept :granule
-  [concept]
-  (-> concept
-      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
-      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
-      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
-
-(defn add-acl-enforcement-fields
-  "Adds the fields necessary to enforce ACLs to the concepts."
-  [concepts]
-  (mapv add-acl-enforcement-fields-to-concept concepts))

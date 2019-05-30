@@ -15,8 +15,10 @@
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.umm-spec.versioning :as versioning]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -196,6 +198,8 @@
   ([parent-collection-id]
    (save-granule parent-collection-id {}))
   ([parent-collection-id attrs]
+   (save-granule parent-collection-id attrs :echo10))
+  ([parent-collection-id attrs format-key]
    (let [short-name (str "gran" (swap! granule-num inc))
          version-id "v1"
          provider-id (if (:provider-id attrs)
@@ -213,14 +217,18 @@
                        :data-provider-timestamps timestamps
                        :collection-ref (umm-g/map->CollectionRef
                                         {:entry-title parent-entry-title})})
-         granule-umm (merge granule-umm attrs)]
+         granule-umm (merge granule-umm attrs)
+         mime-type (if (= :umm-json format-key)
+                     (mt/format->mime-type {:format format-key :version (versioning/current-version :granule)})
+                     (mt/format->mime-type format-key))]
+
      ;; We don't want to publish messages in metadata db since different envs may or may not be running
      ;; the indexer when we run this test.
      (without-publishing-messages
       (:concept-id
        (mdb/save-concept (conn-context)
-                         {:format "application/echo10+xml"
-                          :metadata (umm-core/umm->xml granule-umm :echo10)
+                         {:format mime-type
+                          :metadata (legacy/generate-metadata (conn-context) granule-umm format-key)
                           :concept-type :granule
                           :provider-id provider-id
                           :native-id native-id
