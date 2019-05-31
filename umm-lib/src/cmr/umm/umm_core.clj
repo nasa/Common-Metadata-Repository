@@ -55,6 +55,12 @@
   [concept]
   (let [{:keys [concept-type format metadata]} concept]
     (condp = (keyword concept-type)
+      :collection (condp = format
+                    mt/echo10 (echo10-c/parse-collection metadata)
+                    mt/dif (dif-c/parse-collection metadata)
+                    mt/dif10 (dif10-c/parse-collection metadata)
+                    mt/iso19115 (iso-mends-c/parse-collection metadata)
+                    mt/iso-smap (iso-smap-c/parse-collection metadata))
       :granule (condp = format
                  mt/echo10 (echo10-g/parse-granule metadata)
                  mt/iso-smap (iso-smap-g/parse-granule metadata)))))
