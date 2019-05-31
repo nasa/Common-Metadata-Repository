@@ -45,42 +45,48 @@
                                   :native-id "coll1"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2010)
-                                                   :EndingDateTime (t/date-time 2011)}})
+                                                   :EndingDateTime (t/date-time 2011)}
+                                  :format :umm-json})
 
         coll2 (u/save-collection {:entry-title "coll2 entry title"
                                   :short-name "coll2"
                                   :native-id "coll2"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2009)
-                                                   :EndingDateTime (t/date-time 2010)}})
+                                                   :EndingDateTime (t/date-time 2010)}
+                                  :format :iso-smap})
 
         coll3 (u/save-collection {:entry-title "coll3 entry title"
                                   :short-name "coll3"
                                   :native-id "coll3"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2011)
-                                                   :EndingDateTime (t/date-time 2012)}})
+                                                   :EndingDateTime (t/date-time 2012)}
+                                  :format :iso19115})
 
         coll4 (u/save-collection {:entry-title "coll4 entry title"
                                   :short-name "coll4"
                                   :native-id "coll4"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2011 1 1 0 0 1)
-                                                   :EndingDateTime (t/date-time 2012)}})
+                                                   :EndingDateTime (t/date-time 2012)}
+                                  :format :echo10})
 
         coll5 (u/save-collection {:entry-title "coll5 entry title"
                                   :short-name "coll5"
                                   :native-id "coll5"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2009)
-                                                   :EndingDateTime (t/date-time 2009 12 31 12 59 59)}})
+                                                   :EndingDateTime (t/date-time 2009 12 31 12 59 59)}
+                                  :format :dif10})
 
         coll6 (u/save-collection {:entry-title "coll6 entry title"
                                   :short-name "coll6"
                                   :native-id "coll6"
                                   :provider-id "PROV1"
                                   :temporal-range {:BeginningDateTime (t/date-time 2009 12 31 12 59 59)
-                                                   :EndingDateTime (t/date-time 2012 1 1 0 0 1)}})
+                                                   :EndingDateTime (t/date-time 2012 1 1 0 0 1)}
+                                  :format :dif})
 
         coll7 (u/save-collection {:entry-title "coll7 entry title"
                                   :short-name "coll7"
@@ -231,31 +237,34 @@
   ;; acls granting permission to this collection by access-value
   ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
-        save-access-value-collection (fn [short-name access-value]
+        save-access-value-collection (fn [short-name access-value format]
                                        (u/save-collection {:entry-title (str short-name " entry title")
                                                            :short-name short-name
                                                            :native-id short-name
                                                            :provider-id "PROV1"
-                                                           :access-value access-value}))
+                                                           :access-value access-value
+                                                           :format format}))
         ;; one collection with a low access value
-        coll1 (save-access-value-collection "coll1" 1)
+        coll1 (save-access-value-collection "coll1" 1 :umm-json)
         ;; one with an intermediate access value
-        coll2 (save-access-value-collection "coll2" 2)
+        coll2 (save-access-value-collection "coll2" 2 :dif10)
         ;; one with a higher access value
-        coll3 (save-access-value-collection "coll3" 3)
+        coll3 (save-access-value-collection "coll3" 3 :dif)
         ;; one with no access value
-        coll4 (save-access-value-collection "coll4" nil)
+        coll4 (save-access-value-collection "coll4" nil :echo10)
         ;; one with FOO entry-title
         coll5 (u/save-collection {:entry-title "FOO"
                                   :short-name "coll5"
                                   :native-id "coll5"
-                                  :provider-id "PROV1"})
+                                  :provider-id "PROV1"
+                                  :format :iso19115})
         ;; one with a different provider, shouldn't match
         coll6 (u/save-collection {:entry-title "coll6 entry title"
                                   :short-name "coll6"
                                   :native-id "coll6"
                                   :access-value 2
-                                  :provider-id "PROV2"})
+                                  :provider-id "PROV2"
+                                  :format :iso-smap})
 
         gran1 (u/save-granule coll1 {:access-value 1} :umm-json)
         gran2 (u/save-granule coll2 {:access-value 2})

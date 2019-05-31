@@ -286,29 +286,36 @@
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
   (let [token (e/login-guest (u/conn-context))
-        save-access-value-collection (fn [short-name access-value]
+        save-access-value-collection (fn [short-name access-value format]
                                          (u/save-collection {:entry-title (str short-name " entry title")
                                                              :short-name short-name
                                                              :native-id short-name
                                                              :provider-id "PROV1"
-                                                             :access-value access-value}))
-        ;; one collection with a low access value
-        coll1 (save-access-value-collection "coll1" 1)
-        ;; one with an intermediate access value
-        coll2 (save-access-value-collection "coll2" 4)
+                                                             :access-value access-value
+                                                             :format format}))
+        ;; collection with a low access value as umm-json
+        coll1 (save-access-value-collection "coll1" 1 :umm-json)
+        ;; collection with a low access value as dif10
+        coll2 (save-access-value-collection "coll2" 1 :dif10)
+        ;; collection with an intermediate access value
+        coll3 (save-access-value-collection "coll3" 4 :iso-smap)
+        ;; collection with an intermediate access iso19115
+        coll4 (save-access-value-collection "coll4" 4 :iso19115)
         ;; one with a higher access value
-        coll3 (save-access-value-collection "coll3" 9)
+        coll5 (save-access-value-collection "coll5" 9 :echo10)
         ;; and one with no access value
-        coll4 (save-access-value-collection "coll4" nil)
+        coll6 (save-access-value-collection "coll6" nil :dif)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4 coll5 coll6)]
 
     (testing "no permissions granted"
       (is (= {coll1 []
               coll2 []
               coll3 []
-              coll4 []}
+              coll4 []
+              coll5 []
+              coll6 []}
              (get-coll-permissions))))
 
     (let [acl-id (create-acl
@@ -323,7 +330,9 @@
         (is (= {coll1 ["read"]
                 coll2 ["read"]
                 coll3 ["read"]
-                coll4 []}
+                coll4 ["read"]
+                coll5 ["read"]
+                coll6 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only high access values"
@@ -335,9 +344,11 @@
                                                     :provider_id "PROV1"}})
 
         (is (= {coll1 []
-                coll2 ["read"]
+                coll2 []
                 coll3 ["read"]
-                coll4 []}
+                coll4 ["read"]
+                coll5 ["read"]
+                coll6 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only one access value"
@@ -349,9 +360,11 @@
                                                     :provider_id "PROV1"}})
 
         (is (= {coll1 []
-                coll2 ["read"]
-                coll3 []
-                coll4 []}
+                coll2 []
+                coll3 ["read"]
+                coll4 ["read"]
+                coll5 []
+                coll6 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only collections with undefined access values"
@@ -365,7 +378,9 @@
         (is (= {coll1 []
                 coll2 []
                 coll3 []
-                coll4 ["read"]}
+                coll4 []
+                coll5 []
+                coll6 ["read"]}
                (get-coll-permissions)))))))
 
 (deftest collection-catalog-item-identifier-temporal-test

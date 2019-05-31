@@ -245,7 +245,8 @@
 (defn save-collection
   "Test helper. Saves collection to Metadata DB and returns its concept id."
   [options]
-  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal temporal-singles]} options
+  (let [{:keys [native-id entry-title short-name access-value provider-id
+                temporal-range no-temporal temporal-singles format-key]} options
         base-umm (-> example-collection-record
                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
         umm (cond-> base-umm
@@ -255,15 +256,16 @@
               no-temporal (assoc :TemporalExtents nil)
               temporal-singles (assoc-in [:TemporalExtents 0 :SingleDateTimes] temporal-singles)
               temporal-singles (assoc-in [:TemporalExtents 0 :RangeDateTimes] nil)
-              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
+              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))
+        format-key (or format-key :echo10)]
 
     ;; We don't want to publish messages in metadata db since different envs may or may not be running
     ;; the indexer when we run this test.
     (without-publishing-messages
      (:concept-id
        (mdb/save-concept (conn-context)
-                         {:format "application/echo10+xml"
-                          :metadata (umm-spec/generate-metadata (conn-context) umm :echo10)
+                         {:format (mt/format->mime-type format-key)
+                          :metadata (umm-spec/generate-metadata (conn-context) umm format-key)
                           :concept-type :collection
                           :provider-id provider-id
                           :native-id native-id
