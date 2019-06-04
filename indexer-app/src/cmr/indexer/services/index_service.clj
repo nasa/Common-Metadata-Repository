@@ -124,6 +124,10 @@
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
    (reduce (fn [num-indexed batch]
+             (map (fn [concept] 
+                    (let [cptinfo (str (:concept-id concept) "/" (:revision-id concept))]
+                      (info "Reindexing concept-id/revision-id: " cptinfo)))
+                  batch) 
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
                (+ num-indexed (count batch))))
