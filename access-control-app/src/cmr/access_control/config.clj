@@ -38,7 +38,8 @@
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name) (provider-queue-name)]
-         :exchanges [(access-control-exchange-name)]
+         :exchanges [(access-control-exchange-name) (provider-exchange-name)
+                     (concept-ingest-exchange-name)]
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
                                                    (concept-ingest-exchange-name)]
                                (provider-queue-name) [(provider-exchange-name)]}))
