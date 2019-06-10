@@ -1,15 +1,4 @@
-FROM clojure
+FROM clojure:openjdk-8-lein
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
-EXPOSE 3001
-EXPOSE 3002
-EXPOSE 3003
-EXPOSE 3004
-EXPOSE 3005
-EXPOSE 3006
-EXPOSE 3007
-EXPOSE 3008
-EXPOSE 3009
-EXPOSE 3011
-
 WORKDIR /app
