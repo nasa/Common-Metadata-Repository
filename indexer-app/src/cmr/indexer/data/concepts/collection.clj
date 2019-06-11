@@ -262,8 +262,7 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (date-util/data-update-date collection)
         update-time (index-util/date->elastic update-time)
-        index-time (tk/now)
-        index-time (index-util/date->elastic index-time)
+        index-time (index-util/date->elastic (tk/now))
         insert-time (date-util/data-create-date collection)
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
