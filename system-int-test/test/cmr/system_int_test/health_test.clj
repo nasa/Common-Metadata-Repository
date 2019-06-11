@@ -25,7 +25,7 @@
 
 (def good-metadata-db-health
   {:ok? true
-   :dependencies {:oracle {:ok? true}, :echo {:ok? true}}})
+   :dependencies {:oracle {:ok? true}}})
 
 (def good-index-set-db-health
   {:ok? true
@@ -81,7 +81,7 @@
 
 (deftest metadata-db-health-test
   (s/only-with-real-database
-    (is (= [200 {:oracle {:ok? true} :echo {:ok? true}}]
+    (is (= [200 {:oracle {:ok? true}}]
            (get-app-health (url/mdb-health-url))))))
 
 (deftest indexer-health-test

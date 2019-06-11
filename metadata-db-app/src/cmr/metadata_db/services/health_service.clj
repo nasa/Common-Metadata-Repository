@@ -2,18 +2,15 @@
   (:require
    [cmr.common.services.health-helper :as hh]
    [cmr.metadata-db.services.util :as util]
-   [cmr.oracle.connection :as conn]
-   [cmr.transmit.echo.rest :as rest]))
+   [cmr.oracle.connection :as conn]))
 
 (defn- health-fn
   "Returns the health state of the app."
   [context]
   (let [db-health (conn/health (util/context->db context))
-        echo-rest-health (rest/health context)
-        ok? (every? :ok? [db-health echo-rest-health])]
+        ok? (every? :ok? [db-health])]
     {:ok? ok?
-     :dependencies {:oracle db-health
-                    :echo echo-rest-health}}))
+     :dependencies {:oracle db-health}}))
 
 (defn health
   "Returns the metadata-db health with timeout handling."

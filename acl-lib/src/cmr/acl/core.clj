@@ -14,9 +14,7 @@
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as tc]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.acls :as echo-acls]
-   [cmr.transmit.echo.tokens :as echo-tokens]))
+   [cmr.transmit.config :as transmit-config]))
 
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
