@@ -407,6 +407,7 @@
           :summary (m/not-indexed (m/stored m/string-field-mapping))
           :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
           :update-time (m/not-indexed (m/stored m/string-field-mapping))
+          :index-time (m/not-indexed (m/stored m/string-field-mapping))
           :associated-difs (m/stored m/string-field-mapping)
           :associated-difs.lowercase m/string-field-mapping
           :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
