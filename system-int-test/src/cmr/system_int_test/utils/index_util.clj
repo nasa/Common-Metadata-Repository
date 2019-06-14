@@ -70,6 +70,41 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn reindex-concept-ignore-conflict-default
+  "Re-index concept"
+  [concept-id revision-id]
+  (let [response (client/post (url/indexer-url)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                             "content-type" "application/json"}
+                    :throw-exceptions false
+                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")})]
+    (is (= 201 (:status response)) (:body response))))
+
+(defn reindex-concept-ignore-conflict-true
+  "Re-index concept"
+  [concept-id revision-id]
+  (let [response (client/post (url/indexer-url)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                              "content-type" "application/json"}
+                    :throw-exceptions false
+                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")
+                    :query-params {:ignore_conflict "not-false"}})]
+    (is (= 201 (:status response)) (:body response))))
+
+(defn reindex-concept-ignore-conflict-false
+  "Re-index concept"
+  [concept-id revision-id]
+  (let [response (client/post (url/indexer-url)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                              "content-type" "application/json"}
+                    :throw-exceptions false
+                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")
+                    :query-params {:ignore_conflict "false"}})]
+    (is (= 409 (:status response)) (:body response))))
+
 (defn doc-present?
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]
