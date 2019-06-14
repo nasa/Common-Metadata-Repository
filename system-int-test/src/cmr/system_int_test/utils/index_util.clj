@@ -70,40 +70,22 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
-(defn reindex-concept-ignore-conflict-default
-  "Re-index concept without passing in ignore_conflict param should default to conflict being ignored."
-  [concept-id revision-id]
-  (let [response (client/post (url/indexer-url)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
-                             "content-type" "application/json"}
-                    :throw-exceptions false
-                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")})]
-    (is (= 201 (:status response)) (:body response))))
-
-(defn reindex-concept-ignore-conflict-true
-  "Re-index concept with ignore_conflict param set to anything but false should result in conflict being ignored."
-  [concept-id revision-id]
-  (let [response (client/post (url/indexer-url)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
-                              "content-type" "application/json"}
-                    :throw-exceptions false
-                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")
-                    :query-params {:ignore_conflict "not-false"}})]
-    (is (= 201 (:status response)) (:body response))))
-
-(defn reindex-concept-ignore-conflict-false
-  "Re-index concept with ignore_conflict set to false should result in conflict NOT being ignored."
-  [concept-id revision-id]
-  (let [response (client/post (url/indexer-url)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)
-                              "content-type" "application/json"}
-                    :throw-exceptions false
-                    :body (str "{\"concept-id\": " "\"" concept-id "\", " "\"revision-id\": " "\"" revision-id "\"" "}")
-                    :query-params {:ignore_conflict "false"}})]
-    (is (= 409 (:status response)) (:body response))))
+(defn reindex-concept-with-ignore-conflict-param
+  "Re-index concept with ignore_conflict param."
+  ([concept-id revision-id]
+   (reindex-concept-with-ignore-conflict-param concept-id revision-id nil))
+  ([concept-id revision-id ignore_conflict]
+   (let [query-params (if ignore_conflict
+                        {:ignore_conflict ignore_conflict}
+                        {})
+         response (client/post (url/indexer-url)
+                    {:connection-manager (s/conn-mgr)
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                               "content-type" "application/json"}
+                     :throw-exceptions false
+                     :body (json/generate-string {:concept-id concept-id :revision-id revision-id})
+                     :query-params query-params})]
+     response)))
 
 (defn doc-present?
   "If doc is present return true, otherwise return false"

@@ -71,10 +71,12 @@
       (is (= 1 revision-id1))
       (is (= 2 revision-id2))
       (is (= concept-id1 concept-id2))
-      (index/reindex-concept-ignore-conflict-default concept-id1 revision-id1)
-      (index/reindex-concept-ignore-conflict-true concept-id1 revision-id1)
-      (index/reindex-concept-ignore-conflict-false concept-id1 revision-id1)
-      )))
+      (let [response1 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1)
+            response2 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1 "not-false")
+            response3 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1 "false")]
+        (is (= 201 (:status response1)) (:body response1))
+        (is (= 201 (:status response2)) (:body response2))
+        (is (= 409 (:status response3)) (:body response3))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest collection-ingest-user-id-test
