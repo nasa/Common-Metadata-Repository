@@ -71,7 +71,7 @@
     (is (= 200 (:status response)) (:body response))))
 
 (defn reindex-concept-ignore-conflict-default
-  "Re-index concept"
+  "Re-index concept without passing in ignore_conflict param should default to conflict being ignored."
   [concept-id revision-id]
   (let [response (client/post (url/indexer-url)
                    {:connection-manager (s/conn-mgr)
@@ -82,7 +82,7 @@
     (is (= 201 (:status response)) (:body response))))
 
 (defn reindex-concept-ignore-conflict-true
-  "Re-index concept"
+  "Re-index concept with ignore_conflict param set to anything but false should result in conflict being ignored."
   [concept-id revision-id]
   (let [response (client/post (url/indexer-url)
                    {:connection-manager (s/conn-mgr)
@@ -94,7 +94,7 @@
     (is (= 201 (:status response)) (:body response))))
 
 (defn reindex-concept-ignore-conflict-false
-  "Re-index concept"
+  "Re-index concept with ignore_conflict set to false should result in conflict NOT being ignored."
   [concept-id revision-id]
   (let [response (client/post (url/indexer-url)
                    {:connection-manager (s/conn-mgr)
