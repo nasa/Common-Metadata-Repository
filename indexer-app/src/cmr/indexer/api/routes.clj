@@ -47,7 +47,7 @@
       ;; Index a concept
       (POST "/" {body :body context :request-context params :params headers :headers}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-              options {:ignore_conflict? (ignore-conflict? params)}]
+              options {:ignore-conflict? (ignore-conflict? params)}]
           ;; indexing all revisions index, does nothing for concept types that do not support all revisions index
           (index-svc/index-concept-by-concept-id-revision-id
             context concept-id revision-id (assoc options :all-revisions-index? true))

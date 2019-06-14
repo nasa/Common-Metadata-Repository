@@ -70,6 +70,23 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn reindex-concept-with-ignore-conflict-param
+  "Re-index concept with ignore_conflict param."
+  ([concept-id revision-id]
+   (reindex-concept-with-ignore-conflict-param concept-id revision-id nil))
+  ([concept-id revision-id ignore_conflict]
+   (let [query-params (if ignore_conflict
+                        {:ignore_conflict ignore_conflict}
+                        {})
+         response (client/post (url/indexer-url)
+                    {:connection-manager (s/conn-mgr)
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                               "content-type" "application/json"}
+                     :throw-exceptions false
+                     :body (json/generate-string {:concept-id concept-id :revision-id revision-id})
+                     :query-params query-params})]
+     response)))
+
 (defn doc-present?
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]

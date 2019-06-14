@@ -55,6 +55,29 @@
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
+;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status. 
+(deftest collection-ingest-test
+  (testing "ingest of a new concept twice to get two revisions, and reindex revision 1, with ignore_conflict on and off."
+    (let [concept (data-umm-c/collection-concept {})
+          ingested-concept1 (ingest/ingest-concept concept)
+          ingested-concept2 (ingest/ingest-concept concept)
+          concept-id1 (:concept-id ingested-concept1)
+          concept-id2 (:concept-id ingested-concept2)
+          revision-id1 (:revision-id ingested-concept1)
+          revision-id2 (:revision-id ingested-concept2)]
+      (index/wait-until-indexed)
+      (is (mdb/concept-exists-in-mdb? concept-id1 revision-id1))
+      (is (mdb/concept-exists-in-mdb? concept-id2 revision-id2))
+      (is (= 1 revision-id1))
+      (is (= 2 revision-id2))
+      (is (= concept-id1 concept-id2))
+      (let [response1 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1)
+            response2 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1 "not-false")
+            response3 (index/reindex-concept-with-ignore-conflict-param concept-id1 revision-id1 "false")]
+        (is (= 201 (:status response1)) (:body response1))
+        (is (= 201 (:status response2)) (:body response2))
+        (is (= 409 (:status response3)) (:body response3))))))
+
 ;; Verify that user-id is saved from User-Id or token header
 (deftest collection-ingest-user-id-test
   (testing "ingest of new concept"

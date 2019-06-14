@@ -565,3 +565,8 @@
   "URL to search or update acls"
   []
   (format "http://localhost:%s/acls" (transmit-config/access-control-port)))
+
+(defn indexer-url
+  "URL to index a concept"
+  []
+  (format "http://localhost:%s" (transmit-config/indexer-port)))
