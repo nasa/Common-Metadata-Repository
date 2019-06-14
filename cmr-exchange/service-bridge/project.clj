@@ -40,8 +40,8 @@
                  [metosin/reitit-core "0.3.7"]
                  [metosin/reitit-ring "0.3.7"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.10.0"]
-                 [org.clojure/core.async "0.4.490"]
+                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
@@ -70,7 +70,7 @@
                                      [org.slf4j/slf4j-simple]]}
              :geo {:dependencies [[gov.nasa.earthdata/cmr-exchange-geo "0.1.0"]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
-             :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :local {:dependencies [[org.clojure/tools.namespace "0.3.0" :exclusions [org.clojure/tools.reader]]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
