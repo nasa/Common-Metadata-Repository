@@ -53,7 +53,7 @@
 (defconfig provider-queue-visibility-timeout
   "Number of seconds SQS should wait after a message is read from a provider queue before making
   it visible to other readers."
-  {:default 3600
+  {:default 43200 
    :type Long})
 
 (defconfig default-num-tries
