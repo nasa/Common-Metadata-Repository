@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  browse-scaler:
+    build: ./
+    volumes:
+      - ./:/usr/src/app
+    command: cp -r /usr/src/cache/node_modules/ /usr/src/app/
