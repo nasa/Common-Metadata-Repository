@@ -4,6 +4,7 @@
 /logs
 /.lein-*
 profiles.clj
+browse-scaler/src/node_modules
 
 ###############################
 ### Test Files
@@ -16,6 +17,7 @@ profiles.clj
 /target
 pom.xml
 /ingest-app/resources/public/
+browse-scaler/src/*.zip
 
 ###############################
 ### macOS

@@ -1,0 +1,36 @@
+{
+  "feed" : {
+    "updated" : "2019-06-12T13:23:26.244Z",
+    "id" : "https://cmr.earthdata.nasa.gov:443/search/collections.json?concept_id=C1214587974-SCIOPS&pretty=true",
+    "title" : "ECHO dataset metadata",
+    "entry" : [ {
+      "time_start" : "1970-01-01T00:00:00.000Z",
+      "boxes" : [ "-77.7 162.7 -77.7 162.7" ],
+      "online_access_flag" : false,
+      "has_transforms" : false,
+      "id" : "C1214587974-SCIOPS",
+      "browse_flag" : false,
+      "has_temporal_subsetting" : false,
+      "summary" : "The data set consists of (U-Th)/He ages collected from three vertical profiles\n      from the the Kukri Hills (north side of the Ferrar Glacier) of Southern\n      Victoria Land.  The data set provides information on the cooling history and\n      hence the denduation history of the Transantarctic Mountains in this area.\n      Analyses were all carried out at the (U-Th)/He lab of Ken Farley at the\n      Californai Institute of Technology.",
+      "coordinate_system" : "CARTESIAN",
+      "original_format" : "DIF10",
+      "data_center" : "SCIOPS",
+      "has_spatial_subsetting" : false,
+      "archive_center" : "SYRACUSE/ES/TGIGRG",
+      "links" : [ {
+        "rel" : "http://esipfed.org/ns/fedsearch/1.1/documentation#",
+        "hreflang" : "en-US",
+        "href" : "http://su-thermochronology.syr.edu/"
+      } ],
+      "dataset_id" : "(U-Th)/He ages from the Kukri Hills of southern Victoria Land",
+      "title" : "(U-Th)/He ages from the Kukri Hills of southern Victoria Land",
+      "has_variables" : false,
+      "organizations" : [ "SYRACUSE/ES/TGIGRG" ],
+      "short_name" : "KUKRI_He",
+      "orbit_parameters" : { },
+      "has_formats" : false,
+      "dif_ids" : [ "KUKRI_He" ],
+      "version_id" : "Not provided"
+    } ]
+  }
+}
