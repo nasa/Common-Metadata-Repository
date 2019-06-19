@@ -1,32 +1,32 @@
-(ns config.migrate-config ^:deprecated
+(ns config.mdb-migrate-config
   "Provides the configuration for Drift migrations."
   (:require
    [clojure.java.jdbc :as j]
-   [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
-   [drift.builder :as drift-builder])
+   [drift.builder :refer [incremental-migration-number-generator]])
   (:import
    (java.sql SQLException)))
 
-(def bootstrap-db-atom (atom nil))
+(def db-atom (atom nil))
 
 (defn db
   "Lazily connects to the database and caches it"
   []
-  (when-not @bootstrap-db-atom
-    (reset! bootstrap-db-atom (lifecycle/start
-                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
-                                nil)))
-  @bootstrap-db-atom)
+  (when-not @db-atom
+    (reset! db-atom (lifecycle/start
+                      (oracle/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
+  @db-atom)
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
   [args]
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
-    (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
+    (j/db-do-commands (db) "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
     (catch SQLException e
       ;; 17081 is the error code we get if the table exists and sometimes we also get
       ;; error message for Universal Connection Pool already exists in the Universal Connection Pool Manager
@@ -35,19 +35,19 @@
         (throw e)))))
 
 (defn current-db-version []
-  (int (or (:version (first (j/query (db) ["select version from CMR_BOOTSTRAP.schema_version order by created_at desc"]))) 0)))
+  (int (or (:version (first (j/query (db) ["select version from METADATA_DB.schema_version order by created_at desc"]))) 0)))
 
 (defn update-db-version [version]
-  (j/insert! (db) "CMR_BOOTSTRAP.schema_version" ["version"] [version])
+  (j/insert! (db) "METADATA_DB.schema_version" ["version"] [version])
   ; sleep a second to workaround timestamp precision issue
   (Thread/sleep 1000))
 
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
-  {:directory "src/cmr/bootstrap/migrations/"
+  {:directory "src/migrations/"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
-   :namespace-prefix "cmr.bootstrap.migrations"
-   :migration-number-generator drift-builder/incremental-migration-number-generator
+   :namespace-prefix "migrations"
+   :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
    :current-version current-db-version
    :update-version update-db-version})
