@@ -1,4 +1,4 @@
-(ns config.migrate-config
+(ns config.migrate-config ^:deprecated
   "Provides the configuration for Drift migrations."
   (:require
    [clojure.java.jdbc :as j]

@@ -98,7 +98,7 @@
                              ["migrate" "-version" version]
                              ["migrate"])]
           (info "Running db migration:" migrate-args)
-          (drift/run (conj migrate-args "-c" "config.migrate-config/app-migrate-config")))
+          (drift/run (conj migrate-args "-c" "config.bootstrap-migrate-config/app-migrate-config")))
         {:status 204})
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))
