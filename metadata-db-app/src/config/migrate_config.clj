@@ -1,5 +1,6 @@
-(ns config.migrate-config ^:deprecated
+(ns config.migrate-config
   "Provides the configuration for Drift migrations."
+  {:deprecated true}
   (:require
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
