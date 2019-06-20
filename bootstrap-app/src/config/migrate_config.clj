@@ -1,6 +1,7 @@
 (ns config.migrate-config
-  "Provides the configuration for Drift migrations."
-  {:deprecated true}
+  "Provides the configuration for Drift migrations. When running lein create-user/drop-user/db-migrate 
+  this namespace is used. The database migration endpoints use a different namespace to avoid name conclicts
+  in the uberjar."
   (:require
    [clojure.java.jdbc :as j]
    [cmr.bootstrap.config :as bootstrap-config]
