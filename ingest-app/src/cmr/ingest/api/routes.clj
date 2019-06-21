@@ -34,7 +34,7 @@
          (conj
           migrate-args
           "-c"
-          "config.migrate-config/app-migrate-config")))
+          "config.ingest-migrate-config/app-migrate-config")))
       {:status 204}))
 
 (def job-management-routes
