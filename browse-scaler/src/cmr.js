@@ -1,13 +1,13 @@
-const fetch = require('isomorphic-unfetch');
+const fetch = require("isomorphic-unfetch");
 
 /* CMR ENVIRONMENT VARIABLES */
 const environment =
-  process.env.CMR_ENVIRONMENT !== 'sit' && process.env.CMR_ENVIRONMENT !== 'uat'
-    ? ''
+  process.env.CMR_ENVIRONMENT !== "sit" && process.env.CMR_ENVIRONMENT !== "uat"
+    ? ""
     : `${process.env.CMR_ENVIRONMENT}.`;
 const cmrRootUrl = `https://cmr.${environment}earthdata.nasa.gov/search/`;
 const cmrCollectionUrl = `${cmrRootUrl}collections.json?concept_id=`;
-const cmrGranuleUrl = `${cmrRootUrl}granules.json?collection_concept_id=`;
+const cmrGranuleUrl = `${cmrRootUrl}granules.json?concept_id=`;
 
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
   return fetch(cmrEndpoint + conceptId)
@@ -44,13 +44,24 @@ exports.getCollectionLevelBrowseImage = async collectionId => {
   // the first available granule. If that does not exist, return null, which
   // would indicate that we should return the 'image-not-found' response
 
-  const collectionConcept = await fetchConceptFromCMR(collectionId, cmrCollectionUrl).then;
-  const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
+  const collectionConcept = await fetchConceptFromCMR(
+    collectionId,
+    cmrCollectionUrl
+  );
+  const collectionImagery = await this.getBrowseImageFromConcept(
+    collectionConcept
+  );
   if (collectionImagery) {
     return collectionImagery;
   }
 
-  const granuleImagery = await this.getGranuleLevelBrowseImage(collectionId);
+  const firstGranuleFromCollection = await fetchConceptFromCMR(
+    collectionId,
+    `${cmrRootUrl}granules.json?collection_concept_id=`
+  );
+  const granuleImagery = await this.getBrowseImageFromConcept(
+    firstGranuleFromCollection
+  );
 
   return granuleImagery;
 };
