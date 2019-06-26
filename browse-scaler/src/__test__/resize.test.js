@@ -7,28 +7,34 @@ describe("Image resizing", () => {
     const image = fs.readFileSync("stars.jpg");
 
     const imageResponse = await resizeImage(image, 200, 200);
-    fs.writeFileSync("stars-resize.png", imageResponse, { encoding: "base64" });
+    fs.writeFileSync(__dirname + "stars-resize.png", imageResponse, {
+      encoding: "base64"
+    });
 
-    const imgDimensions = await sharp("stars-resize.png").metadata();
+    const imgDimensions = await sharp(
+      __dirname + "stars-resize.png"
+    ).metadata();
     expect(imgDimensions.width).toBe(200);
     expect(imgDimensions.height).toBe(200);
 
-    fs.unlinkSync("stars-resize.png");
+    fs.unlinkSync(__dirname + "stars-resize.png");
   });
 
   test("Images aspect ratios are maintained when image sizes do not match", async () => {
     const image = fs.readFileSync("desk_flip.jpg");
 
     const imageResponse = await resizeImage(image, 458, 358);
-    fs.writeFileSync("desk-flip-resize.png", imageResponse, {
+    fs.writeFileSync(__dirname + "desk-flip-resize.png", imageResponse, {
       encoding: "base64"
     });
 
-    const dimensions = await sharp("desk-flip-resize.png").metadata();
+    const dimensions = await sharp(
+      __dirname + "desk-flip-resize.png"
+    ).metadata();
     expect(dimensions.width).toBe(358);
     expect(dimensions.height).toBe(358);
 
-    fs.unlinkSync("desk-flip-resize.png");
+    fs.unlinkSync(__dirname + "desk-flip-resize.png");
   });
 
   test("Resize image to be smaller than original, then larger than original", async () => {
@@ -36,26 +42,30 @@ describe("Image resizing", () => {
 
     /* Make Image Smaller */
     const smallerImage = await resizeImage(image, 75, 90);
-    fs.writeFileSync("desk-flip-smaller.png", smallerImage, {
+    fs.writeFileSync(__dirname + "desk-flip-smaller.png", smallerImage, {
       encoding: "base64"
     });
 
-    const smallerDimensions = await sharp("desk-flip-smaller.png").metadata();
+    const smallerDimensions = await sharp(
+      __dirname + "desk-flip-smaller.png"
+    ).metadata();
     expect(smallerDimensions.width).toBe(75);
     expect(smallerDimensions.height).toBe(75);
 
-    fs.unlinkSync("desk-flip-smaller.png");
+    fs.unlinkSync(__dirname + "desk-flip-smaller.png");
 
     /* Make Image Larger */
     const largerImage = await resizeImage(image, 600, null);
-    fs.writeFileSync("desk-flip-larger.png", largerImage, {
+    fs.writeFileSync(__dirname + "desk-flip-larger.png", largerImage, {
       encoding: "base64"
     });
 
-    const largerDimensions = await sharp("desk-flip-larger.png").metadata();
+    const largerDimensions = await sharp(
+      __dirname + "desk-flip-larger.png"
+    ).metadata();
     expect(largerDimensions.width).toBe(600);
     expect(largerDimensions.height).toBe(600);
 
-    fs.unlinkSync("desk-flip-larger.png");
+    fs.unlinkSync(__dirname + "desk-flip-larger.png");
   });
 });

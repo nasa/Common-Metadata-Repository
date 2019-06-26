@@ -1,5 +1,5 @@
 /* REDIS */
-const redis = require('redis');
+const redis = require("redis");
 
 const client = redis.createClient({
   return_buffers: true,
@@ -7,7 +7,7 @@ const client = redis.createClient({
   port: 6379
 });
 
-const { promisify } = require('util');
+const { promisify } = require("util");
 
 const getAsync = promisify(client.get).bind(client);
 
@@ -22,7 +22,7 @@ exports.cacheImage = (key, image) => {
 exports.getImageFromCache = async collectionId => {
   try {
     const image = await getAsync(collectionId);
-    return image;
+    return image.toString("base64");
   } catch (err) {
     console.error(`Could not get image from cache: ${err}`);
     return null;
