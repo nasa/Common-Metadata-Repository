@@ -21,7 +21,10 @@ exports.cacheImage = (key, image) => {
 
 exports.getImageFromCache = async collectionId => {
   try {
+    console.log("attempting to get image from cache");
     const image = await getAsync(collectionId);
+
+    console.log(`got image from cache ${image}`);
     return image.toString("base64");
   } catch (err) {
     console.error(`Could not get image from cache: ${err}`);
