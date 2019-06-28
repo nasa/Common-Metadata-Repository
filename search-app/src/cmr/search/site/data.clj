@@ -126,7 +126,7 @@
   "Given a single item from a query's collections, update the item with data
   for linking to its landing page."
   [cmr-base-url item]
-  (assoc item :link-href (doi/get-landing-page cmr-base-url item)))
+  (assoc item :link-href (doi/cmr-landing-page cmr-base-url (:concept-id item))))
 
 (defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page
