@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  {% for holding in holdings %}
   <url>
-    <loc>{{ holding.link-href }}</loc>
+    <loc>{{ holding.cmr-link-href }}</loc>
     <lastmod>{{ datestamp }}</lastmod>
     <changefreq>daily</changefreq>
   </url>

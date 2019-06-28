@@ -12,7 +12,7 @@
     doi
     (format "%s/%s" doi-base-url doi)))
 
-(defn cmr-landing-page
+(defn get-cmr-landing-page
   "Given a CMR host and a concept ID, return the collection landing page for
   the given id."
   [cmr-base-url concept-id]
@@ -24,4 +24,4 @@
   [cmr-base-url item]
   (if-let [doi (:doi item)]
     (doi->url doi)
-    (cmr-landing-page cmr-base-url (:concept-id item))))
+    (get-cmr-landing-page cmr-base-url (:concept-id item))))

@@ -32,9 +32,9 @@
   (testing "DOI is not a URL"
     (is (= "https://doi.org/doi6" (doi/doi->url (:doi coll-data-2))))))
 
-(deftest cmr-landing-page-test
+(deftest get-cmr-landing-page-test
   (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
-         (doi/cmr-landing-page cmr-base-url "C1200000003-PROV1"))))
+         (doi/get-cmr-landing-page cmr-base-url "C1200000003-PROV1"))))
 
 (deftest get-landing-page-test
   (testing "with no DOI data (cmr-only)"
