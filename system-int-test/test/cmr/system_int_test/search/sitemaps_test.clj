@@ -187,8 +187,9 @@
         colls (@test-collections "PROV3")]
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
-      (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
+      (is (not (string/includes? body "http://dx.doi.org")))
+      (is (string/includes? body (format "concepts/%s.html</loc>" (second colls))))
+      (is (string/includes? body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
                 body (format "%s.html</loc>" (first colls))))))))

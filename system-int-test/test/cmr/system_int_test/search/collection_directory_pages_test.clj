@@ -82,12 +82,15 @@
 (defn expected-provider3-level-links?
   [body]
   (string/includes? body "EOSDIS holdings for the PROV3 provider")
-  (let [url "https://doi.org"]
+  (let [url "concepts"
+        colls (@test-collections "PROV3")]
     (and
-      (string/includes? body (format "%s/%s" url "doi102"))
-      (string/includes? body (format "%s/%s" url "doi103"))
+      (string/includes? body (format "%s/%s" url (nth colls 1)))
+      (string/includes? body (format "%s/%s" url (nth colls 2)))
       (string/includes? body "Collection Item 102</a>")
       (string/includes? body "Collection Item 103</a>")
+      (not (string/includes? body (format "%s/%s" url "doi102")))
+      (not (string/includes? body (format "%s/%s" url "doi103")))
       (not (string/includes? body "Collection Item 101</a>")))))
 
 (defn expected-provider1-col1-link?

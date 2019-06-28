@@ -135,7 +135,8 @@ build and run the default CMR development system (`dev-system`) from a
 `.jar` file:
 
 1. `cmr build uberjars`
-2. `cmr start uberjar dev-system`
+2. `cmr build all`
+3. `cmr start uberjar dev-system` will run the dev-system as a background task
 
 See CMR Development Guide to read about specifying options and setting
 environment variables
@@ -153,6 +154,9 @@ appropriate `target` directory for each application. The command shown in step
 Where `APP` is any supported CMR app. You can touble-tap the `TAB` key on
 your keyboard to get the `cmr` tool to show you the list of available apps
 after entering `uberjar` in each step above.
+
+Note: building uberjars will interfere with your repl. If you want to use your repl post-build you will need to,
+`rm -f ./dev-system/target/`
 
 ## Checking Dependencies, Static Analysis, and Tests
 
