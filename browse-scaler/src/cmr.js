@@ -1,13 +1,13 @@
-const fetch = require("isomorphic-unfetch");
+const fetch = require("node-fetch");
 
 /* CMR ENVIRONMENT VARIABLES */
 const environment =
   process.env.CMR_ENVIRONMENT !== "sit" && process.env.CMR_ENVIRONMENT !== "uat"
     ? ""
     : `${process.env.CMR_ENVIRONMENT}.`;
-const cmrRootUrl = `https://cmr.${environment}earthdata.nasa.gov/search/`;
-const cmrCollectionUrl = `${cmrRootUrl}collections.json?concept_id=`;
-const cmrGranuleUrl = `${cmrRootUrl}granules.json?concept_id=`;
+const cmrRootUrl = process.env.CMR_ROOT;
+const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
+const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
 
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
   return fetch(cmrEndpoint + conceptId)
@@ -21,6 +21,8 @@ exports.getBrowseImageFromConcept = async concept => {
     const imgRegex = /\b(.png|.jpg|.gif|.jpeg)$/;
     const imgurl = links.filter(link => imgRegex.test(link.href))[0];
 
+    console.log(`links from metadata ${JSON.stringify(links)}`);
+    console.log(`image link from metadata ${JSON.stringify(imgurl)}`);
     if (imgurl) {
       return imgurl.href;
     }
@@ -57,7 +59,7 @@ exports.getCollectionLevelBrowseImage = async collectionId => {
 
   const firstGranuleFromCollection = await fetchConceptFromCMR(
     collectionId,
-    `${cmrRootUrl}granules.json?collection_concept_id=`
+    cmrGranuleUrl
   );
   const granuleImagery = await this.getBrowseImageFromConcept(
     firstGranuleFromCollection

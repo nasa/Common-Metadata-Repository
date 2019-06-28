@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "dependencies": {
-    "isomorphic-unfetch": "^3.0.0",
+    "node-fetch": "^2.6.0",
     "redis": "^2.8.0",
     "sharp": "^0.22.0"
   },
