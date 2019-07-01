@@ -35,4 +35,4 @@ project.
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2014-2019 NASA
