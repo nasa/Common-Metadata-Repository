@@ -16,21 +16,18 @@ project.
 
 ### Manually installing the Oracle JDBC Jars
 
-1. Download oracle Jars from Oracle's website. You can usually google for
-   each of the jar files with a search term such as "oracle ucp jar" to find
-   the location of each jar file. You need to download the following:
+Download oracle Jars from Oracle's website. You can usually google for each of the jar files with a search term such as "oracle ucp jar" to find the location of each jar file. You need to download the following:
 
   * `ojdbc6.jar` - Orcale JDBC Driver
   * `ucp.jar` - Universal Connection Pool (not bundled with the JDBC driver)
   * `ons.jar` - Oracle Notification Services (should be on the same page as
     the JDBC driver)
 
-  In each case, be sure you get the version matching the versions specified
-  in the `project.clj`.
-2. `cd oracle-lib`
-3. `mkdir support`
-4. Put the Jars in `oracle-lib/support`
-5. From `oracle-lib`, run `./support/install_oracle_jars.sh` which will
+In each case, be sure you get the version matching the versions specified in the `project.clj`.
+1. `cd oracle-lib`
+2. `mkdir support`
+3. Put the Jars in `oracle-lib/support`
+4. In the project root directory, run `cmr install oracle-libs` which will
    install the oracle jars in your local maven repository.
 
 ## License
