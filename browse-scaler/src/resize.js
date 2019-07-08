@@ -1,5 +1,5 @@
 const sharp = require("sharp");
-const fetch = require("isomorphic-unfetch");
+const fetch = require("node-fetch");
 
 exports.slurpImageIntoBuffer = async imageUrl => {
   const thumbnail = await fetch(imageUrl)
