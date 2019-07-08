@@ -39,26 +39,26 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   const imageUrl = await getImageUrlFromConcept(conceptId, conceptType);
 
   if (imageUrl === null) {
-    // const cachedSvg = await getImageFromCache("NOT-FOUND");
-    // if (cachedSvg) {
-    //   return buildResponse(cachedSvg, "image/svg");
-    // }
+    const cachedSvg = await getImageFromCache('NOT-FOUND');
+    if (cachedSvg) {
+      return buildResponse(cachedSvg, 'image/svg');
+    }
 
     const imgNotFound = await notFound(height, width);
-    // cacheImage("NOT-FOUND", imgNotFound);
+    cacheImage('NOT-FOUND', imgNotFound);
 
     return buildResponse(imgNotFound, 'image/svg');
   }
 
-  // const cacheKey = `${conceptId}-${height}-${width}`;
-  // const imageFromCache = await getImageFromCache(cacheKey);
-  // if (imageFromCache) {
-  //   return buildResponse(imageFromCache, "image/png");
-  // }
+  const cacheKey = `${conceptId}-${height}-${width}`;
+  const imageFromCache = await getImageFromCache(cacheKey);
+  if (imageFromCache) {
+    return buildResponse(imageFromCache, 'image/png');
+  }
 
   const imageBuffer = await slurpImageIntoBuffer(imageUrl);
   const thumbnail = await resizeImage(imageBuffer, height, width);
-  // cacheImage(cacheKey, thumbnail);
+  cacheImage(cacheKey, thumbnail);
 
   return buildResponse(thumbnail, 'image/png');
 };
@@ -86,7 +86,7 @@ const parseArguments = event => {
   return args;
 };
 
-exports.handler = async (event, context) => {
+exports.handler = async event => {
   const args = parseArguments(event);
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
 
