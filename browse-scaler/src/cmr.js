@@ -1,14 +1,19 @@
 const fetch = require('node-fetch');
 
 /* CMR ENVIRONMENT VARIABLES */
-const cmrRootUrl = process.env.CMR_ROOT;
+const cmrRootUrl = `http://${process.env.CMR_ROOT}`;
 const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
 const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
 
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  return fetch(cmrEndpoint + conceptId)
-    .then(response => response.json())
-    .then(json => json.feed.entry[0]);
+  try {
+    return fetch(cmrEndpoint + conceptId)
+      .then(response => response.json())
+      .then(json => json.feed.entry[0]);
+  } catch (err) {
+    console.log(`Could not find concept ${conceptId}: ${err}`);
+    return null;
+  }
 };
 
 exports.getBrowseImageFromConcept = async concept => {

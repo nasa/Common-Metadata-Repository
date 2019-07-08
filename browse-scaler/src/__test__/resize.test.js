@@ -11,7 +11,7 @@ describe('Image resizing', () => {
       encoding: 'base64'
     });
 
-    const imgDimensions = await sharp(`${__dirname}stars-resize.png`).metadata();
+    const imgDimensions = await sharp(`${__dirname}/stars-resize.png`).metadata();
     expect(imgDimensions.width).toBe(200);
     expect(imgDimensions.height).toBe(200);
 
