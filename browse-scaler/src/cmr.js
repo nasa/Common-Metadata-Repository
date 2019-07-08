@@ -1,10 +1,6 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
 /* CMR ENVIRONMENT VARIABLES */
-const environment =
-  process.env.CMR_ENVIRONMENT !== "sit" && process.env.CMR_ENVIRONMENT !== "uat"
-    ? ""
-    : `${process.env.CMR_ENVIRONMENT}.`;
 const cmrRootUrl = process.env.CMR_ROOT;
 const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
 const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
@@ -46,24 +42,14 @@ exports.getCollectionLevelBrowseImage = async collectionId => {
   // the first available granule. If that does not exist, return null, which
   // would indicate that we should return the 'image-not-found' response
 
-  const collectionConcept = await fetchConceptFromCMR(
-    collectionId,
-    cmrCollectionUrl
-  );
-  const collectionImagery = await this.getBrowseImageFromConcept(
-    collectionConcept
-  );
+  const collectionConcept = await fetchConceptFromCMR(collectionId, cmrCollectionUrl);
+  const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;
   }
 
-  const firstGranuleFromCollection = await fetchConceptFromCMR(
-    collectionId,
-    cmrGranuleUrl
-  );
-  const granuleImagery = await this.getBrowseImageFromConcept(
-    firstGranuleFromCollection
-  );
+  const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, cmrGranuleUrl);
+  const granuleImagery = await this.getBrowseImageFromConcept(firstGranuleFromCollection);
 
   return granuleImagery;
 };

@@ -1,5 +1,5 @@
-const sharp = require("sharp");
-const fetch = require("node-fetch");
+const sharp = require('sharp');
+const fetch = require('node-fetch');
 
 exports.slurpImageIntoBuffer = async imageUrl => {
   const thumbnail = await fetch(imageUrl)
@@ -8,11 +8,7 @@ exports.slurpImageIntoBuffer = async imageUrl => {
         return response;
       }
       return Promise.reject(
-        new Error(
-          `Failed to fetch ${response.url}: ${response.status} ${
-            response.statusText
-          }`
-        )
+        new Error(`Failed to fetch ${response.url}: ${response.status} ${response.statusText}`)
       );
     })
     .then(response => response.buffer());
@@ -28,13 +24,13 @@ exports.resizeImage = async (image, height, width) => {
       .resize({
         width,
         height,
-        fit: "inside"
+        fit: 'inside'
       })
-      .toFormat("png")
+      .toFormat('png')
       .toBuffer();
 
-    console.log("imaged resized");
-    return thumbnail.toString("base64");
+    console.log('imaged resized');
+    return thumbnail.toString('base64');
   } catch (err) {
     console.log(`Could not resize image: ${err}`);
     return null;
@@ -42,9 +38,9 @@ exports.resizeImage = async (image, height, width) => {
 };
 
 exports.notFound = async (height, width) => {
-  const notFoundSvg = sharp("image-unavailable.svg")
+  const notFoundSvg = sharp('image-unavailable.svg')
     .resize(width, height)
     .toBuffer();
 
-  return notFoundSvg.toString("base64");
+  return notFoundSvg.toString('base64');
 };
