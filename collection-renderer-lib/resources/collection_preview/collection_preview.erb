@@ -5,6 +5,7 @@
 
 require 'json'
 metadata =  JSON.parse(umm_json)
+
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"  lang="en"> <![endif]-->
@@ -37,12 +38,8 @@ metadata =  JSON.parse(umm_json)
 <body class="">
 
   <main class="internal record" role="main">
-    <header>
-      <%= render partial: 'cmr_metadata_preview/metadata_header', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
-    </header>
-
     <div class="row row-content">
-      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, relative_root_url: relative_root_url, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information } %>
+      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information} %>
     </div>
   </main>
 

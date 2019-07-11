@@ -31,7 +31,7 @@
 
 (def preview-gem-umm-version-config-file
   "Defines the path to the UMM schema version config file within the preview gem."
-  "gems/cmr_metadata_preview-0.0.1/.umm-version")
+  "gems/cmr_metadata_preview-0.1.0/.umm-version")
 
 (def ^:private create-jruby-runtime
   "Creates and initializes a JRuby runtime. We do this as a future to speed up REPL start time

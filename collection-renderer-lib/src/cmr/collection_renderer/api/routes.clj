@@ -8,7 +8,7 @@
 
 (def cmr-metadata-preview-gem
   "Define the cmr_metadata_preview gem name. Update this when a new version of the gem is created."
-  "cmr_metadata_preview-0.0.1")
+  "cmr_metadata_preview-0.1.0")
 
 (def assets-path
   "Defines path to cmr_metadata_preview gem assets"
