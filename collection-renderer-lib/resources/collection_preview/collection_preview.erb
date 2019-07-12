@@ -5,6 +5,7 @@
 
 require 'json'
 metadata =  JSON.parse(umm_json)
+
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"  lang="en"> <![endif]-->
@@ -18,33 +19,26 @@ metadata =  JSON.parse(umm_json)
   <title><%= metadata['EntryTitle']%></title>
   <meta name="description" content="">
   <%= csrf_meta_tag %>
-
-  <!-- Open Sans Font - Google Font -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700">
-  <!-- Font Awesome: Use this link for development since icons do not show up properly on local dev -->
-  <!-- TODO huh? fix this ^ -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-  <!-- Font Awesome: Local file linked below for production -->
-  <!--<link rel="stylesheet" href="/dist/stylesheets/font-awesome.min.css">-->
-  <!--link rel="stylesheet" href="/dist/stylesheets/mmt.css"-->
+  <link href="https://cdn.earthdata.nasa.gov/eui/1.1.3/stylesheets/application.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,300" rel="stylesheet" type="text/css">
+  <link href="../../../site/css/eui.css" rel="stylesheet" /> 
+  <link href="../../../site/css/cmr.css" rel="stylesheet" /> 
 
   <%= stylesheet_link_tag relative_root_url + "/stylesheets/application", media: 'all' %>
-
   <%= javascript_include_tag relative_root_url + "/javascripts/application" %>
 
 </head>
 
 <body class="">
-
-  <main class="internal record" role="main">
-    <header>
-      <%= render partial: 'cmr_metadata_preview/metadata_header', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
-    </header>
-
-    <div class="row row-content">
-      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, relative_root_url: relative_root_url, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information } %>
+  <header class="doc-mast">
+    <div class="container">
+      <div class="eui-masthead-logo eui-application-logo">
+        <h1><a href="../../../">CMR Search</a></h1>
+      </div>
+     </div>
+  </header>
+  <div class="row row-content">
+      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information} %>
     </div>
-  </main>
-
 </body>
 </html>
