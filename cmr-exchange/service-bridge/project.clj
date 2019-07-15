@@ -192,6 +192,7 @@
                      ["junit" ":unit"]
                      ["ubercompile"]
                      ["build-uberjar"]]
+            ;; Build without version or security check.
             "build-no-check" ["do"
                               ["clean"]
                               ["lint"]
