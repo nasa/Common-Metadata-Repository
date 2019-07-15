@@ -687,7 +687,8 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Line 24 - cvc-complex-type.2.4.a: Invalid content"
+    (is (= [(str "Exception while parsing invalid XML: "
+                 "Line 24 - cvc-complex-type.2.4.a: Invalid content"
                  " was found starting with element 'XXXX'. One of"
                  " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
