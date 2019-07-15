@@ -263,7 +263,7 @@
   (testing "valid xml"
     (is (= 0 (count (c/validate-xml sample-collection-xml)))))
   (testing "invalid xml"
-    (is (= [(str "Line 6 - cvc-complex-type.2.4.a: Invalid content was found "
+    (is (= [(str "Exception while parsing invalid XML: Line 6 - cvc-complex-type.2.4.a: Invalid content was found "
                  "starting with element 'gmd:XXXX'. One of "
                  "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
                  "\"http://www.isotc211.org/2005/gmd\":language, "

@@ -148,7 +148,7 @@
 (defn- sax-parse-exception->str
   "Converts a SaxParseException to a String"
   [^SAXParseException e]
-  (format "Line %d - %s" (.getLineNumber e) (.getMessage e)))
+  (format "Exception while parsing invalid XML: Line %d - %s" (.getLineNumber e) (.getMessage e)))
 
 (defn- create-error-handler
   "Creates an instance of DefaultHandler2 that will save all schema errors in the errors-atom."

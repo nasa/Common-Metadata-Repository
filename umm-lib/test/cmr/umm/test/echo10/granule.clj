@@ -402,11 +402,11 @@
   (testing "valid granule collection ref with entry id"
     (is (empty? (g/validate-xml valid-granule-xml-w-entryid))))
   (testing "invalid granule collection ref with multiple choice fields"
-    (is (= ["Line 7 - cvc-complex-type.2.4.d: Invalid content was found starting with element 'EntryId'. No child element is expected at this point."]
+    (is (= ["Exception while parsing invalid XML: Line 7 - cvc-complex-type.2.4.d: Invalid content was found starting with element 'EntryId'. No child element is expected at this point."]
            (g/validate-xml invalid-collection-ref-granule-xml))))
   (testing "invalid xml"
-    (is (= ["Line 3 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
-            "Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."
-            "Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
-            "Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
+    (is (= ["Exception while parsing invalid XML: Line 3 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
+            "Exception while parsing invalid XML: Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."
+            "Exception while parsing invalid XML: Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
+            "Exception while parsing invalid XML: Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
            (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))

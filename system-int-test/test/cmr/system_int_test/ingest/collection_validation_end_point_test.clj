@@ -18,8 +18,8 @@
           {:keys [status errors]}
           (ingest/validate-concept (assoc concept
                                           :metadata "<Collection>invalid xml</Collection>"))]
-      (is (= [400 ["Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only."
-                   "Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
+      (is (= [400 ["Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only."
+                   "Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
              [status errors])))))
 
 (deftest successful-validation-with-accept-header-test
@@ -36,5 +36,5 @@
   (testing "failed validations with no accept or content-type header return xml"
     (let [concept (assoc (data-umm-c/collection-concept {}) :metadata "<Collection>invalid xml</Collection>")
           {:keys [status body]} (ingest/validate-concept concept {:raw? true})]
-      (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
+      (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
              [status body])))))

@@ -55,7 +55,7 @@
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
-;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status. 
+;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status.
 (deftest collection-ingest-test
   (testing "ingest of a new concept twice to get two revisions, and reindex revision 1, with ignore_conflict on and off."
     (let [concept (data-umm-c/collection-concept {})
@@ -619,13 +619,13 @@
          (index/wait-until-indexed)
          (= [400 validation-errors] [status errors]))
 
-       :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
-                "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
+       :echo10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
+                "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
-       :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
-               "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
+       :dif10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
+               "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
 
-       :iso19115 [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
+       :iso19115 [(str "Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
                        "starting with element 'gmd:XXXX'. One of "
                        "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
                        "\"http://www.isotc211.org/2005/gmd\":language, "
@@ -635,7 +635,7 @@
                        "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
-       :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+       :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
   (let [json (umm-spec/generate-metadata test-context expected-conversation/curr-ingest-ver-example-collection-record :umm-json)

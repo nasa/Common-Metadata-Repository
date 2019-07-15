@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.aql-search-test
   "Integration test for AQL specific search issues. General AQL search tests will be included
   in other files by condition."
-  (:require 
+  (:require
     [clojure.string :as s]
     [clojure.test :refer :all]
     [cmr.search.services.messages.common-messages :as msg]
@@ -16,13 +16,13 @@
 
 (deftest aql-validation-test
   (testing "invalid against AQL schema"
-    (is (= {:errors [(msg/invalid-aql "Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
+    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
             :status 400}
            (search/find-refs-with-aql-string "<foo/>")))
-    (is (= {:errors [(msg/invalid-aql "Line 1 - Content is not allowed in prolog.")]
+    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - Content is not allowed in prolog.")]
             :status 400}
            (search/find-refs-with-aql-string "not even valid xml")))
-    (is (= {:errors [(msg/invalid-aql (str "Line 7 - cvc-complex-type.2.4.a: Invalid content was "
+    (is (= {:errors [(msg/invalid-aql (str "Exception while parsing invalid XML: Line 7 - cvc-complex-type.2.4.a: Invalid content was "
                                            "found starting with element 'dataSetId'. One of "
                                            "'{granuleCondition, collectionCondition}' is expected."))]
             :status 400}
