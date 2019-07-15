@@ -192,6 +192,13 @@
                      ["junit" ":unit"]
                      ["ubercompile"]
                      ["build-uberjar"]]
+            "build-no-check" ["do"
+                              ["clean"]
+                              ["lint"]
+                              ["ltest" ":unit"]
+                              ["junit" ":unit"]
+                              ["ubercompile"]
+                              ["build-uberjar"]]
             "build-full" ["do"
                           ["build"]
                           ["docs"]]
