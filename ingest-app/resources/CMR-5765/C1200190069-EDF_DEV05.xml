@@ -1,0 +1,1759 @@
+        <gmi:MI_Metadata
+            xmlns:eos="http://earthdata.nasa.gov/schema/eos"
+            xmlns:gco="http://www.isotc211.org/2005/gco"
+            xmlns:gmd="http://www.isotc211.org/2005/gmd"
+            xmlns:gmi="http://www.isotc211.org/2005/gmi"
+            xmlns:gml="http://www.opengis.net/gml/3.2"
+            xmlns:gmx="http://www.isotc211.org/2005/gmx"
+            xmlns:gsr="http://www.isotc211.org/2005/gsr"
+            xmlns:gss="http://www.isotc211.org/2005/gss"
+            xmlns:gts="http://www.isotc211.org/2005/gts"
+            xmlns:srv="http://www.isotc211.org/2005/srv"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd">
+            <gmd:fileIdentifier>
+                <gco:CharacterString>ATLAS/ICESat-2 L3A Land Ice Height V001</gco:CharacterString>
+            </gmd:fileIdentifier>
+            <gmd:language>
+                <gco:CharacterString>eng; usa</gco:CharacterString>
+            </gmd:language>
+            <gmd:characterSet>
+                <gmd:MD_CharacterSetCode
+                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="UTF8">UTF8</gmd:MD_CharacterSetCode>
+            </gmd:characterSet>
+            <gmd:hierarchyLevel>
+                <gmd:MD_ScopeCode
+                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+            </gmd:hierarchyLevel>
+            <gmd:hierarchyLevelName>
+                <gco:CharacterString>ATLAS/ICESat-2 L3A Land Ice Height</gco:CharacterString>
+            </gmd:hierarchyLevelName>
+            <gmd:contact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:individualName>
+                        <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                    </gmd:individualName>
+                    <gmd:organisationName>
+                        <gco:CharacterString>NASA NSIDC DAAC</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:phone>
+                                <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                </gmd:CI_Telephone>
+                            </gmd:phone>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                            <gmd:onlineResource>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://nsidc.org/daac</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Archiving Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onlineResource>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:contact>
+            <gmd:dateStamp>
+                <gco:Date>2019-06-06</gco:Date>
+            </gmd:dateStamp>
+            <gmd:metadataStandardName>
+                <gco:CharacterString>ISO 19115-2 Geographic Information 2009 Metadata</gco:CharacterString>
+            </gmd:metadataStandardName>
+            <gmd:metadataStandardVersion>
+                <gco:CharacterString>ISO 19115-2:2009</gco:CharacterString>
+            </gmd:metadataStandardVersion>
+            <gmd:referenceSystemInfo>
+                <gmd:MD_ReferenceSystem>
+                    <gmd:referenceSystemIdentifier>
+                        <gmd:RS_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>CARTESIAN</gco:CharacterString>
+                            </gmd:code>
+                        </gmd:RS_Identifier>
+                    </gmd:referenceSystemIdentifier>
+                </gmd:MD_ReferenceSystem>
+            </gmd:referenceSystemInfo>
+            <gmd:metadataExtensionInfo>
+                <gmd:MD_MetadataExtensionInformation>
+                    <gmd:extendedElementInformation>
+                        <gmd:MD_ExtendedElementInformation>
+                            <gmd:name>
+                                <gco:CharacterString>Metadata Create Date</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:definition>
+                                <gco:CharacterString>Create Date</gco:CharacterString>
+                            </gmd:definition>
+                            <gmd:dataType>
+                                <gmd:MD_DatatypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="Date">Date</gmd:MD_DatatypeCode>
+                            </gmd:dataType>
+                            <gmd:domainValue>
+                                <gco:CharacterString>2019-05-28</gco:CharacterString>
+                            </gmd:domainValue>
+                            <gmd:parentEntity gco:nilReason="missing"/>
+                            <gmd:rule gco:nilReason="missing"/>
+                            <gmd:source gco:nilReason="missing"/>
+                        </gmd:MD_ExtendedElementInformation>
+                    </gmd:extendedElementInformation>
+                </gmd:MD_MetadataExtensionInformation>
+            </gmd:metadataExtensionInfo>
+            <gmd:metadataExtensionInfo>
+                <gmd:MD_MetadataExtensionInformation>
+                    <gmd:extendedElementInformation>
+                        <gmd:MD_ExtendedElementInformation>
+                            <gmd:name>
+                                <gco:CharacterString>Metadata Update Date</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:definition>
+                                <gco:CharacterString>Update Date</gco:CharacterString>
+                            </gmd:definition>
+                            <gmd:dataType>
+                                <gmd:MD_DatatypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="Date">Date</gmd:MD_DatatypeCode>
+                            </gmd:dataType>
+                            <gmd:domainValue>
+                                <gco:CharacterString>2019-06-06</gco:CharacterString>
+                            </gmd:domainValue>
+                            <gmd:parentEntity gco:nilReason="missing"/>
+                            <gmd:rule gco:nilReason="missing"/>
+                            <gmd:source gco:nilReason="missing"/>
+                        </gmd:MD_ExtendedElementInformation>
+                    </gmd:extendedElementInformation>
+                </gmd:MD_MetadataExtensionInformation>
+            </gmd:metadataExtensionInfo>
+            <gmd:identificationInfo>
+                <gmd:MD_DataIdentification>
+                    <gmd:citation>
+                        <gmd:CI_Citation>
+                            <gmd:title>
+                                <gco:CharacterString>ATLAS/ICESat-2 L3A Land Ice Height V001</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date>
+                                <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2019-05-28</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                </gmd:CI_Date>
+                            </gmd:date>
+                            <gmd:edition>
+                                <gco:CharacterString>001</gco:CharacterString>
+                            </gmd:edition>
+                            <gmd:editionDate>
+                                <gco:Date>2019-05-28</gco:Date>
+                            </gmd:editionDate>
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ATL06</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.shortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Data set short name</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gmx:Anchor
+                                    xlink:actuate="onRequest" xlink:href="https://doi.org/10.5067/ATLAS/ATL06.001">10.5067/ATLAS/ATL06.001</gmx:Anchor>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>A Digital Object Identifier (DOI)</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Ben Smith</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>University of Washington</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Washington</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>Department of Earth and Space Sciences</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Seattle</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>WA</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>98195</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Helen A. Fricker</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Scripps Institution of Oceanography</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of California, San Diego</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>9500 Gilman Dr.</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>La Jolla</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>California</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>92093</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Alex Gardner</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Matthew R. Siegfried</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Colorado School of Mines</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Susheel Adusumilli</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Scripps Institution of Oceanography</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Beáta M. Csathó</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>University at Buffalo</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Nick Holschuh</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>University of  Washington</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Johan Nilsson</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>Fernando S. Paolo</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>the ICESat-2 Science Team</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA Goddard Space Flight Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                            <gmd:citedResponsibleParty>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>Colorado</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher">publisher</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:citedResponsibleParty>
+                        </gmd:CI_Citation>
+                    </gmd:citation>
+                    <gmd:abstract>
+                        <gco:CharacterString>This data set (ATL06) provides geolocated, land-ice surface heights (above the WGS 84 ellipsoid, ITRF2014 reference frame), plus ancillary parameters that can be used to interpret and assess the quality of the height estimates. The data were acquired by the Advanced Topographic Laser Altimeter System (ATLAS) instrument on board the Ice, Cloud and land Elevation Satellite-2 (ICESat-2) observatory.</gco:CharacterString>
+                    </gmd:abstract>
+                    <gmd:purpose>
+                        <gco:CharacterString>Scientific Research</gco:CharacterString>
+                    </gmd:purpose>
+                    <gmd:status>
+                        <gmd:MD_ProgressCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="underdevelopment">underdevelopment</gmd:MD_ProgressCode>
+                    </gmd:status>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Ben Smith</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>University of Washington</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Washington</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>Department of Earth and Space Sciences</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Seattle</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>WA</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>98195</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Helen A. Fricker</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Scripps Institution of Oceanography</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of California, San Diego</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>9500 Gilman Dr.</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>La Jolla</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>California</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>92093</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Alex Gardner</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Matthew R. Siegfried</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Colorado School of Mines</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>Susheel Adusumilli</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Scripps Institution of Oceanography</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>et al</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:city gco:nilReason="missing"/>
+                                    <gmd:administrativeArea gco:nilReason="missing"/>
+                                    <gmd:postalCode gco:nilReason="missing"/>
+                                    <gmd:country gco:nilReason="missing"/>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>EDF_DEV05</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://nsidc.org/daac</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Archiving Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName>
+                                <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                            </gmd:individualName>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA NSIDC DAAC</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://nsidc.org/daac</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Archiving Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA/GSFC/EOS/ESDIS</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://earthdata.nasa.gov/about/esdis-project</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Originating Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:pointOfContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>NASA/GSFC/EOS/ESDIS</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://earthdata.nasa.gov/about/esdis-project</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Originating Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator">originator</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:pointOfContact>
+                    <gmd:resourceMaintenance>
+                        <gmd:MD_MaintenanceInformation>
+                            <gmd:maintenanceAndUpdateFrequency>
+                                <gmd:MD_MaintenanceFrequencyCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded">asNeeded</gmd:MD_MaintenanceFrequencyCode>
+                            </gmd:maintenanceAndUpdateFrequency>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:updateScope>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="attribute">attribute</gmd:MD_ScopeCode>
+                            </gmd:updateScope>
+                            <gmd:contact>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    <gmd:facsimile>
+                                    <gco:CharacterString>1 303 492 2468</gco:CharacterString>
+                                    </gmd:facsimile>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage gco:nilReason="missing"/>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:contact>
+                        </gmd:MD_MaintenanceInformation>
+                    </gmd:resourceMaintenance>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>GEOGRAPHIC REGION &gt; GLOBAL</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="place">place</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Location Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-02-05</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>EARTH SCIENCE &gt; CRYOSPHERE &gt; GLACIERS/ICE SHEETS &gt; GLACIER ELEVATION/ICE SHEET ELEVATION</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Science Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-02-05</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>Earth Observation Satellites &gt; ICESat-2</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="platform">platform</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Platform Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2016-06-10</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:descriptiveKeywords>
+                        <gmd:MD_Keywords>
+                            <gmd:keyword>
+                                <gco:CharacterString>ATLAS &gt; Advanced Topographic Laser Altimeter System</gco:CharacterString>
+                            </gmd:keyword>
+                            <gmd:type>
+                                <gmd:MD_KeywordTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="instrument">instrument</gmd:MD_KeywordTypeCode>
+                            </gmd:type>
+                            <gmd:thesaurusName>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>NASA / GCMD Instrument Keywords</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2016-06-01</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:thesaurusName>
+                        </gmd:MD_Keywords>
+                    </gmd:descriptiveKeywords>
+                    <gmd:resourceConstraints>
+                        <gmd:MD_LegalConstraints>
+                            <gmd:accessConstraints>
+                                <gmd:MD_RestrictionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                            </gmd:accessConstraints>
+                            <gmd:useConstraints>
+                                <gmd:MD_RestrictionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+                            </gmd:useConstraints>
+                            <gmd:otherConstraints>
+                                <gco:CharacterString>Access Constraints : none</gco:CharacterString>
+                            </gmd:otherConstraints>
+                            <gmd:otherConstraints>
+                                <gco:CharacterString>Use Constraints : none</gco:CharacterString>
+                            </gmd:otherConstraints>
+                        </gmd:MD_LegalConstraints>
+                    </gmd:resourceConstraints>
+                    <gmd:aggregationInfo>
+                        <gmd:MD_AggregateInformation>
+                            <gmd:aggregateDataSetName>
+                                <gmd:CI_Citation>
+                                    <gmd:title gco:nilReason="missing"/>
+                                    <gmd:date gco:nilReason="missing"/>
+                                    <gmd:citedResponsibleParty>
+                                    <gmd:CI_ResponsibleParty>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://doi.org/10.5067/ATLAS/ATL06.001</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Description: Provides access to data, documentation, tools, citation information, support, and other resources. URLContentType: CollectionURL Type: DATA SET LANDING PAGE</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role gco:nilReason="missing"/>
+                                    </gmd:CI_ResponsibleParty>
+                                    </gmd:citedResponsibleParty>
+                                    <gmd:citedResponsibleParty>
+                                    <gmd:CI_ResponsibleParty>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://doi.org/10.5067/ATLAS/ATL06.001</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Description: Includes a user's guide, supplemental documents like ATBDs and academic papers, How Tos, FAQs, etc. URLContentType: PublicationURL Type: VIEW RELATED INFORMATION Subtype: GENERAL DOCUMENTATION</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role gco:nilReason="missing"/>
+                                    </gmd:CI_ResponsibleParty>
+                                    </gmd:citedResponsibleParty>
+                                </gmd:CI_Citation>
+                            </gmd:aggregateDataSetName>
+                            <gmd:associationType gco:nilReason="missing"/>
+                        </gmd:MD_AggregateInformation>
+                    </gmd:aggregationInfo>
+                    <gmd:language>
+                        <gco:CharacterString>eng; usa</gco:CharacterString>
+                    </gmd:language>
+                    <gmd:characterSet>
+                        <gmd:MD_CharacterSetCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="UTF8">UTF8</gmd:MD_CharacterSetCode>
+                    </gmd:characterSet>
+                    <gmd:topicCategory>
+                        <gmd:MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</gmd:MD_TopicCategoryCode>
+                    </gmd:topicCategory>
+                    <gmd:extent>
+                        <gmd:EX_Extent id="boundingExtent">
+                            <gmd:description>
+                                <gco:CharacterString>SpatialCoverageType=HORIZONTAL, SpatialGranuleSpatialRepresentation=ORBIT, TemporalRangeType=Continuous Range, TimeType=UTC, CoordinateSystem=CARTESIAN</gco:CharacterString>
+                            </gmd:description>
+                            <gmd:geographicElement>
+                                <gmd:EX_GeographicDescription>
+                                    <gmd:geographicIdentifier>
+                                    <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>SwathWidth: 36.0 Period: 94.29 InclinationAngle: 92.0 NumberOfOrbits: 0.071428571 StartCircularLatitude: 0.0</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.orbitparameters</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>OrbitParameters</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:MD_Identifier>
+                                    </gmd:geographicIdentifier>
+                                </gmd:EX_GeographicDescription>
+                            </gmd:geographicElement>
+                            <gmd:geographicElement>
+                                <gmd:EX_GeographicBoundingBox>
+                                    <gmd:westBoundLongitude>
+                                    <gco:Decimal>-180.0</gco:Decimal>
+                                    </gmd:westBoundLongitude>
+                                    <gmd:eastBoundLongitude>
+                                    <gco:Decimal>180.0</gco:Decimal>
+                                    </gmd:eastBoundLongitude>
+                                    <gmd:southBoundLatitude>
+                                    <gco:Decimal>-90.0</gco:Decimal>
+                                    </gmd:southBoundLatitude>
+                                    <gmd:northBoundLatitude>
+                                    <gco:Decimal>90.0</gco:Decimal>
+                                    </gmd:northBoundLatitude>
+                                </gmd:EX_GeographicBoundingBox>
+                            </gmd:geographicElement>
+                            <gmd:temporalElement>
+                                <gmd:EX_TemporalExtent>
+                                    <gmd:extent>
+                                    <gml:TimePeriod gml:id="id-2a280cf7">
+                                    <gml:beginPosition>2018-10-14T00:00:00.000Z</gml:beginPosition>
+                                    <gml:endPosition/>
+                                    </gml:TimePeriod>
+                                    </gmd:extent>
+                                </gmd:EX_TemporalExtent>
+                            </gmd:temporalElement>
+                        </gmd:EX_Extent>
+                    </gmd:extent>
+                    <gmd:processingLevel>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>Level 3</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Geophysical variables mapped on a grid</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmd:processingLevel>
+                </gmd:MD_DataIdentification>
+            </gmd:identificationInfo>
+            <gmd:distributionInfo>
+                <gmd:MD_Distribution>
+                    <gmd:distributionFormat>
+                        <gmd:MD_Format>
+                            <gmd:name>
+                                <gco:CharacterString>HDF5</gco:CharacterString>
+                            </gmd:name>
+                            <gmd:version gco:nilReason="missing"/>
+                            <gmd:specification>
+                                <gco:CharacterString>HTTPS</gco:CharacterString>
+                            </gmd:specification>
+                        </gmd:MD_Format>
+                    </gmd:distributionFormat>
+                    <gmd:distributor>
+                        <gmd:MD_Distributor>
+                            <gmd:distributorContact>
+                                <gmd:CI_ResponsibleParty>
+                                    <gmd:individualName>
+                                    <gco:CharacterString>NSIDC User Services</gco:CharacterString>
+                                    </gmd:individualName>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA NSIDC DAAC</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:phone>
+                                    <gmd:CI_Telephone>
+                                    <gmd:voice>
+                                    <gco:CharacterString>1 303 492 6199</gco:CharacterString>
+                                    </gmd:voice>
+                                    </gmd:CI_Telephone>
+                                    </gmd:phone>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>National Snow and Ice Data Center</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:deliveryPoint>
+                                    <gco:CharacterString>University of Colorado</gco:CharacterString>
+                                    </gmd:deliveryPoint>
+                                    <gmd:city>
+                                    <gco:CharacterString>Boulder</gco:CharacterString>
+                                    </gmd:city>
+                                    <gmd:administrativeArea>
+                                    <gco:CharacterString>CO</gco:CharacterString>
+                                    </gmd:administrativeArea>
+                                    <gmd:postalCode>
+                                    <gco:CharacterString>80309-0449</gco:CharacterString>
+                                    </gmd:postalCode>
+                                    <gmd:country>
+                                    <gco:CharacterString>USA</gco:CharacterString>
+                                    </gmd:country>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://nsidc.org/daac</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Archiving Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                </gmd:CI_ResponsibleParty>
+                            </gmd:distributorContact>
+                            <gmd:distributorTransferOptions>
+                                <gmd:MD_DigitalTransferOptions>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://n5eil01u.ecs.nsidc.org/ATLAS/ATL06.001/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>HTTPS</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>URLContentType: DistributionURL Description: Direct download via HTTPS protocol. Type: GET DATA Subtype: DIRECT DOWNLOAD</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>http://nsidc.org/daac/subscriptions.html</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>Subscription</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>URLContentType: DistributionURL Description: Subscribe to have new data automatically sent when the data become available. Type: GET DATA Subtype: Subscribe</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://search.earthdata.nasa.gov/search/granules?p=C1511847675-NSIDC_ECS&amp;m=-87.87967837686685!9.890967019347585!1!1!0!0%2C2&amp;tl=1542476530!4!!&amp;q=atl06&amp;ok=atl06</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>Earthdata Search</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data. Type: GET DATA Subtype: Earthdata Search</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                    <gmd:onLine>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://openaltimetry.org/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                    <gco:CharacterString>OpenAltimetry</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                    <gco:CharacterString>URLContentType: DistributionURL Description: Platform for ICESat, ICESat-2 to visualize and access vector data along one or more individual tracks Type: GET DATA</gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+
+                                    <gmd:CI_OnLineFunctionCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">download</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onLine>
+                                </gmd:MD_DigitalTransferOptions>
+                            </gmd:distributorTransferOptions>
+                        </gmd:MD_Distributor>
+                    </gmd:distributor>
+                </gmd:MD_Distribution>
+            </gmd:distributionInfo>
+            <gmd:dataQualityInfo>
+                <gmd:DQ_DataQuality>
+                    <gmd:scope>
+                        <gmd:DQ_Scope>
+                            <gmd:level>
+                                <gmd:MD_ScopeCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                            </gmd:level>
+                        </gmd:DQ_Scope>
+                    </gmd:scope>
+                    <gmd:lineage>
+                        <gmd:LI_Lineage>
+                            <gmd:processStep>
+                                <gmi:LE_ProcessStep>
+                                    <gmd:description gco:nilReason="missing"/>
+                                    <gmd:processor>
+                                    <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                    <gco:CharacterString>NASA/GSFC/EOS/ESDIS</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:contactInfo>
+                                    <gmd:CI_Contact>
+                                    <gmd:onlineResource>
+                                    <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                    <gmd:URL>https://earthdata.nasa.gov/about/esdis-project</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name gco:nilReason="missing"/>
+                                    <gmd:description>
+                                    <gco:CharacterString>Originating Data Center</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                    </gmd:CI_Contact>
+                                    </gmd:contactInfo>
+                                    <gmd:role>
+                                    <gmd:CI_RoleCode
+                                    codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                    </gmd:CI_ResponsibleParty>
+                                    </gmd:processor>
+                                    <gmi:processingInformation>
+                                    <eos:EOS_Processing>
+                                    <gmi:identifier/>
+                                    <eos:otherPropertyType/>
+                                    <eos:otherProperty>
+                                    <gco:Record>
+                                    <eos:AdditionalAttributes>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>identifier_product_doi</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>Digital object identifier that uniquely identifies this data product</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    <eos:AdditionalAttribute>
+                                    <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                    <eos:type>
+
+                                    <eos:EOS_AdditionalAttributeTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                    </eos:type>
+                                    <eos:name>
+                                    <gco:CharacterString>identifier_product_doi_authority</gco:CharacterString>
+                                    </eos:name>
+                                    <eos:description>
+                                    <gco:CharacterString>URL of the digital object identifier resolving authority</gco:CharacterString>
+                                    </eos:description>
+                                    <eos:dataType>
+
+                                    <eos:EOS_AdditionalAttributeDataTypeCode
+                                    codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                    </eos:dataType>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                    </eos:reference>
+                                    </eos:AdditionalAttribute>
+                                    </eos:AdditionalAttributes>
+                                    </gco:Record>
+                                    </eos:otherProperty>
+                                    </eos:EOS_Processing>
+                                    </gmi:processingInformation>
+                                </gmi:LE_ProcessStep>
+                            </gmd:processStep>
+                        </gmd:LI_Lineage>
+                    </gmd:lineage>
+                </gmd:DQ_DataQuality>
+            </gmd:dataQualityInfo>
+            <gmi:acquisitionInformation>
+                <gmi:MI_AcquisitionInformation>
+                    <gmi:instrument>
+                        <eos:EOS_Instrument id="_ATLAS">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ATLAS</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.instrumentshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Advanced Topographic Laser Altimeter System</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:type>
+                                <gco:CharacterString>instrument</gco:CharacterString>
+                            </gmi:type>
+                            <eos:sensor>
+                                <eos:EOS_Sensor id="_ATLAS_SENSOR">
+                                    <eos:identifier>
+                                    <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ATLAS</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.instrumentshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Advanced Topographic Laser Altimeter System</gco:CharacterString>
+                                    </gmd:description>
+                                    </gmd:MD_Identifier>
+                                    </eos:identifier>
+                                    <eos:type gco:nilReason="missing"/>
+                                </eos:EOS_Sensor>
+                            </eos:sensor>
+                        </eos:EOS_Instrument>
+                    </gmi:instrument>
+                    <gmi:platform>
+                        <eos:EOS_Platform id="_ICESat-2_15703916-0eeb-4a98-b30a-1a523178a432">
+                            <gmi:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                    <gco:CharacterString>ICESat-2</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                    <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                    <gco:CharacterString>Ice, Cloud, and land Elevation Satellite-2</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmi:identifier>
+                            <gmi:description>
+                                <gco:CharacterString>Earth Observation Satellites</gco:CharacterString>
+                            </gmi:description>
+                            <gmi:instrument xlink:href="#_ATLAS"/>
+                        </eos:EOS_Platform>
+                    </gmi:platform>
+                </gmi:MI_AcquisitionInformation>
+            </gmi:acquisitionInformation>
+        </gmi:MI_Metadata>
