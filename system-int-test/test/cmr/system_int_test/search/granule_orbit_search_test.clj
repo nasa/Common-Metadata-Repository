@@ -541,6 +541,36 @@
                                                  :format-key :echo10})]
     [coll1 g1]))
 
+(defn- ingest-CMR-5765-data-1
+  []
+  (let [coll1 (d/ingest-concept-with-metadata-file "CMR-5765/C1200190069-EDF_DEV05.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :native-id "orbit3"
+                                                    :format-key :iso19115})
+        g1 (d/ingest-concept-with-metadata-file "CMR-5765/G1200355212-EDF_DEV05.xml"
+                                                {:provider-id "PROV1"
+                                                 :concept-type :granule
+                                                 :concept-id "C1-PROV1"
+                                                 :native-id "granule1"
+                                                 :format-key :iso-smap})]
+    [coll1 g1]))
+
+(defn- ingest-CMR-5765-data-2
+  []
+  (let [coll1 (d/ingest-concept-with-metadata-file "CMR-5765/C1200190069-EDF_DEV05.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :native-id "orbit3"
+                                                    :format-key :iso19115})
+        g1 (d/ingest-concept-with-metadata-file "CMR-5765/G1200355211-EDF_DEV05.xml"
+                                                {:provider-id "PROV1"
+                                                 :concept-type :granule
+                                                 :concept-id "C1-PROV1"
+                                                 :native-id "granule1"
+                                                 :format-key :iso-smap})]
+    [coll1 g1]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -601,7 +631,9 @@
     ; (ingest-orbit-coll-and-granules-prime-meridian)
     ; (ingest-orbit-coll-and-granule)
     ; (ingest-orbit-coll-and-granule-swath)
-    (ingest-CMR-4722-data))
+    ; (ingest-CMR-4722-data))
+    ; (ingest-CMR-5765-data-1)
+    (ingest-CMR-5765-data-2))
 
   ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
   (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
