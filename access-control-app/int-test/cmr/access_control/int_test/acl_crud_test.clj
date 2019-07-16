@@ -1122,7 +1122,7 @@
             {:keys [status body]} (access-control/delete-acl
                                    (test-util/conn-context)
                                    acl-concept-id
-                                   {:token token 
+                                   {:token token
                                     :raw? true})]
         (is (= 401 status))
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
@@ -1256,6 +1256,58 @@
              (actual->set
               (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
+
+(deftest CMR-5797-draft-mmt-acl-test
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        user1-token (echo-util/login (test-util/conn-context) "user1")
+        user2-token (echo-util/login (test-util/conn-context) "user2")
+        guest-token (echo-util/login-guest (test-util/conn-context))
+        group1 (test-util/ingest-group user1-token {:name "group1"} ["user1"])
+        group2 (test-util/ingest-group user1-token {:name "group2"} ["user2"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        draft-acl {:group_permissions [{:user_type "guest"
+                                        :permissions ["read"]}
+                                       {:user_type "registered"
+                                        :permissions ["read" "update"]}
+                                       {:group_id group1-concept-id
+                                        :permissions ["read" "create" "delete" "update"]}]
+                   :provider_identity {:provider_id "PROV1"
+                                       :target "NON_NASA_DRAFT_USER"}}
+        acl (access-control/create-acl (test-util/conn-context)
+                                       draft-acl
+                                       {:token token})]
+    (is (= draft-acl
+           (access-control/get-acl (test-util/conn-context)
+                                   (:concept_id acl)
+                                   {:token token})))
+
+    (is (= {"NON_NASA_DRAFT_USER" ["read" "create" "update" "delete"]}
+           (json/parse-string
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_id "user1"
+               :provider "PROV1"
+               :target "NON_NASA_DRAFT_USER"}
+              {:token token}))))
+
+    (is (= {"NON_NASA_DRAFT_USER" ["read" "create" "update" "delete"]}
+           (json/parse-string
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_type "guest"
+               :provider "PROV1"
+               :target "NON_NASA_DRAFT_USER"}
+              {:token token}))))
+
+    (is (= {"NON_NASA_DRAFT_USER" ["read" "update"]}
+           (json/parse-string
+             (access-control/get-permissions
+              (test-util/conn-context)
+              {:user_id "user2"
+               :provider "PROV1"
+               :target "NON_NASA_DRAFT_USER"}
+              {:token token}))))))
 
 (deftest CMR-5128-mmt-dashboard-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
