@@ -19,7 +19,7 @@ describe('Image resizing', () => {
   });
 
   test('Images aspect ratios are maintained when image sizes do not match', async () => {
-    const image = fs.readFileSync('desk_flip.jpg');
+    const image = fs.readFileSync(`${__dirname}/desk_flip.jpg`);
 
     const imageResponse = await resizeImage(image, 458, 358);
     fs.writeFileSync(`${__dirname}/desk-flip-resize.png`, imageResponse, {
@@ -34,7 +34,7 @@ describe('Image resizing', () => {
   });
 
   test('Resize image to be smaller than original, then larger than original', async () => {
-    const image = fs.readFileSync('desk_flip.jpg');
+    const image = fs.readFileSync(`${__dirname}/desk_flip.jpg`);
 
     /* Make Image Smaller */
     const smallerImage = await resizeImage(image, 75, 90);

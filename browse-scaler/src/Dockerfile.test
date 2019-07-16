@@ -1,0 +1,7 @@
+FROM node:8.10
+
+WORKDIR /app
+RUN mkdir /app/artifacts
+
+COPY . /app
+RUN npm install
