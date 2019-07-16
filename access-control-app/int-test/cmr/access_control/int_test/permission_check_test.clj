@@ -40,7 +40,7 @@
                              "\"PROVIDER_ORDER_CLOSURE\" \"PROVIDER_ORDER_TRACKING_ID\" \"PROVIDER_INFORMATION\" "
                              "\"PROVIDER_CONTEXT\" \"AUTHENTICATOR_DEFINITION\" \"PROVIDER_POLICIES\" \"USER\" "
                              "\"GROUP\" \"DASHBOARD_DAAC_CURATOR\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
-                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\"]")]
+                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\" \"NON_NASA_DRAFT_USER\"]")]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
          (ac/get-permissions (u/conn-context) params {:raw? true}))
