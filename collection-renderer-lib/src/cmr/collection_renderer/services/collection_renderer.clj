@@ -4,6 +4,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as l]
    [cmr.common.log :refer [info]]
    [cmr.common-app.services.search :as search]
@@ -11,7 +12,7 @@
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version]
-   [cmr.common.config :as cfg :refer [defconfig]])
+   [cmr.transmit.config :as config])
   (:import
    (java.io ByteArrayInputStream)
    (javax.script ScriptEngine ScriptEngineManager Invocable)))
@@ -148,4 +149,5 @@
                  "relative_root_url" (context->relative-root-url context)
                  "edsc_url" (search-edsc-url)
                  "concept_id" concept-id
-                 "additional_information" additional-information}))))
+                 "additional_information" additional-information
+                 "search_public_root_url" (config/application-public-root-url :search)}))))
