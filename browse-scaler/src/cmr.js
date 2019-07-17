@@ -6,21 +6,24 @@ const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
 const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
 
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  try {
-    return fetch(cmrEndpoint + conceptId)
-      .then(response => response.json())
-      .then(json => json.feed.entry[0]);
-  } catch (err) {
-    console.log(`Could not find concept ${conceptId}: ${err}`);
-    return null;
-  }
+  return fetch(cmrEndpoint + conceptId)
+    .then(response => response.json())
+    .then(json => json.feed.entry[0])
+    .catch(error => {
+      console.log(`Could not find concept ${conceptId}: ${error}`);
+      return null;
+    });
 };
 
 exports.getBrowseImageFromConcept = async concept => {
   try {
+    if (concept === null) {
+      return null;
+    }
+
     const { links } = concept;
-    const imgRegex = /\b(.png|.jpg|.gif|.jpeg)$/;
-    const imgurl = links.filter(link => imgRegex.test(link.href))[0];
+    const imgRegex = /\b(browse#)$/;
+    const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
 
     console.log(`links from metadata ${JSON.stringify(links)}`);
     console.log(`image link from metadata ${JSON.stringify(imgurl)}`);
