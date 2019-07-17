@@ -2,11 +2,12 @@ version: "3"
 
 services:
   browse-scaler-cicd:
+    image: browse-scaler:test-cicd
     build:
       context: ./
       dockerfile: Dockerfile.test
     volumes:
-      - ./:/app/artifacts
+      - ./__test__:/app/artifacts
     command: npm run test --ci --reporters=jtest-junit
     environment:
       - JEST_JUNIT_OUTPUT=./artifacts/junit.xml
