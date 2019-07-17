@@ -46,7 +46,7 @@
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
   {:directory "src/migrations/"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
-   :namespace-prefix "migrations"
+   :namespace-prefix "cmr.metadata-db.migrations"
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
    :current-version current-db-version
