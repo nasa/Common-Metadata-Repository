@@ -19,9 +19,9 @@ exports.cacheImage = (key, image) => {
   });
 };
 
-exports.getImageFromCache = async collectionId => {
+exports.getImageFromCache = async key => {
   try {
-    const image = await getAsync(collectionId);
+    const image = await getAsync(key);
     console.log(`got image from cache ${image}`);
 
     if (image) {
