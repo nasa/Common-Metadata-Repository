@@ -1282,32 +1282,32 @@
                                    (:concept_id acl)
                                    {:token token})))
 
-    (is (= {"NON_NASA_DRAFT_USER" ["read" "create" "update" "delete"]}
-           (json/parse-string
-             (access-control/get-permissions
-              (test-util/conn-context)
-              {:user_id "user1"
-               :provider "PROV1"
-               :target "NON_NASA_DRAFT_USER"}
-              {:token token}))))
+    (testing "MMT DRAFT NON NASA USERS Acl permissions"
+      (are3 [perms params]
+        (is (= {"NON_NASA_DRAFT_USER" perms}
+               (json/parse-string
+                 (access-control/get-permissions
+                  (test-util/conn-context)
+                  params
+                  {:token token}))))
 
-    (is (= {"NON_NASA_DRAFT_USER" ["read" "create" "update" "delete"]}
-           (json/parse-string
-             (access-control/get-permissions
-              (test-util/conn-context)
-              {:user_type "guest"
-               :provider "PROV1"
-               :target "NON_NASA_DRAFT_USER"}
-              {:token token}))))
+        "user1 permissions"
+        ["read" "create" "update" "delete"]
+        {:user_id "user1"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_USER"}
 
-    (is (= {"NON_NASA_DRAFT_USER" ["read" "update"]}
-           (json/parse-string
-             (access-control/get-permissions
-              (test-util/conn-context)
-              {:user_id "user2"
-               :provider "PROV1"
-               :target "NON_NASA_DRAFT_USER"}
-              {:token token}))))))
+        "guest permissions"
+        ["read"]
+        {:user_type "guest"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_USER"}
+
+        "user2 permissions"
+        ["read" "update"]
+        {:user_id "user2"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_USER"}))))
 
 (deftest CMR-5128-mmt-dashboard-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
