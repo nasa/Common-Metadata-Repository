@@ -34,9 +34,16 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
 };
 
 const resizeImageFromConceptId = async (conceptType, conceptId, height, width) => {
+  const cacheKey = `${conceptId}-${height}-${width}`;
+  const imageFromCache = await getImageFromCache(cacheKey);
+  if (imageFromCache) {
+    return buildResponse(imageFromCache, 'image/png');
+  }
+
   // If given an image url, fetch the image and resize. If no image
   // exists, return the not found response
   const imageUrl = await getImageUrlFromConcept(conceptId, conceptType);
+  console.log(`Got image url from concept ${conceptId}: ${imageUrl}`);
 
   if (imageUrl === null) {
     const cachedSvg = await getImageFromCache('NOT-FOUND');
@@ -48,12 +55,6 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
     cacheImage('NOT-FOUND', imgNotFound);
 
     return buildResponse(imgNotFound, 'image/svg');
-  }
-
-  const cacheKey = `${conceptId}-${height}-${width}`;
-  const imageFromCache = await getImageFromCache(cacheKey);
-  if (imageFromCache) {
-    return buildResponse(imageFromCache, 'image/png');
   }
 
   const imageBuffer = await slurpImageIntoBuffer(imageUrl);
