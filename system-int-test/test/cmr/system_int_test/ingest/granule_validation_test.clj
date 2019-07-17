@@ -56,8 +56,8 @@
 
 (deftest validation-endpoint-test
   (let [invalid-granule-xml "<Granule>invalid xml</Granule>"
-        expected-errors ["Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
-                         "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
+        expected-errors ["Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
+                         "Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
 
     (testing "granule with end date slightly in the future and collection with
              EndsAtPresentFlag=true and end date in the far future (see CMR-1351)"
@@ -94,7 +94,7 @@
           (assert-validation-errors
             400
             [(msg/invalid-parent-collection-for-validation
-               "Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
+               "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
             (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
             (assoc coll-concept :metadata invalid-granule-xml)))
 
