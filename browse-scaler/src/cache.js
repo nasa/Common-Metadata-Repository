@@ -34,7 +34,3 @@ exports.getImageFromCache = async key => {
     return null;
   }
 };
-
-exports.closeRedisConnection = () => {
-  client.quit();
-};
