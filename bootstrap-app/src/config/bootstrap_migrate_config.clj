@@ -45,7 +45,7 @@
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
   {:directory "src/cmr/bootstrap/migrations/"
-   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.bootstrap-migrate-config :as config])"
    :namespace-prefix "cmr.bootstrap.migrations"
    :migration-number-generator drift-builder/incremental-migration-number-generator
    :init maybe-create-schema-table
