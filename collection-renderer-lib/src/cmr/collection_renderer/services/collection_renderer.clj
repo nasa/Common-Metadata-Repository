@@ -150,4 +150,4 @@
                  "edsc_url" (search-edsc-url)
                  "concept_id" concept-id
                  "additional_information" additional-information
-                 "search_public_root_url" (config/application-public-root-url :search)}))))
+                 "search_public_root_url" (config/application-public-root-url context)}))))
