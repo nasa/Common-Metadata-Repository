@@ -1,24 +1,4 @@
 const sharp = require('sharp');
-const fetch = require('node-fetch');
-
-exports.slurpImageIntoBuffer = async imageUrl => {
-  const thumbnail = await fetch(imageUrl)
-    .then(response => {
-      if (response.ok) {
-        return response;
-      }
-      return Promise.reject(
-        new Error(`Failed to fetch ${response.url}: ${response.status} ${response.statusText}`)
-      );
-    })
-    .then(response => response.buffer())
-    .catch(error => {
-      console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
-      return null;
-    });
-  console.log(`slurped image into buffer from ${imageUrl}`);
-  return thumbnail;
-};
 
 exports.resizeImage = async (image, height, width) => {
   // If an image needs to be resized, it is because it was not available
