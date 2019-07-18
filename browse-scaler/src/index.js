@@ -3,6 +3,8 @@ const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('.
 const { cacheImage, getImageFromCache } = require('./cache');
 const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
+const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
+
 const buildResponse = image => {
   console.log(`Image for response: ${image}`);
   return {
@@ -44,7 +46,7 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   // If given an image url, fetch the image and resize. If no image
   // exists, return the not found response
   const imageUrl = await getImageUrlFromConcept(conceptId, conceptType);
-  const imageBuffer = await withTimeout(1500, slurpImageIntoBuffer(imageUrl));
+  const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
 
   if (imageUrl === null || imageBuffer === null || imageBuffer === undefined) {
     const imgNotFound = await notFound();
