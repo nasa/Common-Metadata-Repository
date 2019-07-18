@@ -62,15 +62,15 @@
             "install!"
             ["modules" "do" "clean," "install," "clean"]
             "install-with-content-no-clean!"
-            ["modules" "do" "clean," "install," "generate-static,"]
+            ["modules" "do" "clean," "generate-static," "install,"]
             "install-with-content!"
-            ["modules" "do" "clean," "install," "generate-static," "clean"]
+            ["modules" "do" "clean," "generate-static," "install," "clean"]
             ;; Install tasks using nexus .jar repos proxy
             "internal-install-no-clean!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "install,"]
             "internal-install!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "clean"]
             "internal-install-with-content-no-clean!"
-            ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static,"]
+            ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install,"]
             "internal-install-with-content!"
-            ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "generate-static," "clean"]})
+            ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install," "clean"]})
