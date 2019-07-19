@@ -1,6 +1,6 @@
 (ns config.migrate-config
   "Provides the configuration for Drift migrations. When running lein create-user/drop-user/db-migrate 
-  this namespace is used. The database migration endpoints use a different namespace to avoid name conclicts
+  this namespace is used. The database migration endpoints use a different namespace to avoid name concflicts
   in the uberjar."
   (:require
    [clojure.java.jdbc :as j]
@@ -46,9 +46,9 @@
 
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
-  {:directory "src/migrations/"
-   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
-   :namespace-prefix "migrations"
+  {:directory "src/cmr/ingest/migrations"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
+   :namespace-prefix "cmr.ingest.migrations"
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
    :current-version current-db-version
