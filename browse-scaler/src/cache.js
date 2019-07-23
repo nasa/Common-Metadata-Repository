@@ -11,6 +11,11 @@ const { promisify } = require('util');
 
 const getAsync = promisify(client.get).bind(client);
 
+/**
+ * cacheImage: Puts the given image in cache. This does not return anything.
+ * @param {[String]} key This is what you use to get the image later
+ * @param {[Buffer]} image This is what you want the key to get
+ */
 exports.cacheImage = (key, image) => {
   client.set(key, image, err => {
     if (err) {
@@ -19,6 +24,11 @@ exports.cacheImage = (key, image) => {
   });
 };
 
+/**
+ * getImageFromCache: fetches image from cache
+ * @param {[String]} key Which image do you want? This is typically ${concept-id}-${height}-${width}
+ * @returns {[Buffer]} the image associated with given cache key or null if none is found
+ */
 exports.getImageFromCache = async key => {
   try {
     const image = await getAsync(key);
