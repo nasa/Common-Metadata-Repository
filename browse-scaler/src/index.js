@@ -5,6 +5,11 @@ const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
 const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
 
+/**
+ * buildResponse: assembles response body to avoid code duplication
+ * @param {Buffer} image
+ * @returns {JSON} assembled response object with image as a base64 string
+ */
 const buildResponse = image => {
   console.log(`Image for response: ${image}`);
   return {
@@ -17,6 +22,14 @@ const buildResponse = image => {
   };
 };
 
+/**
+ * getImageUrlFromConcept: call appropriate cmr.js function based on
+ * given concept type to extract image url from metadata
+ * @param {String} conceptId CMR concept id
+ * @param {String} conceptType CMR concept type
+ * 'dataset' refers to collections
+ * @returns {String} image url or null
+ */
 const getImageUrlFromConcept = async (conceptId, conceptType) => {
   console.log(`Concept id: ${conceptId}`);
   if (conceptId === null || conceptId === undefined) {
@@ -35,6 +48,15 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
   return null;
 };
 
+/**
+ * resizeImageFromConceptId: call necessary helper functions to ultimately
+ * result in the response that the server will send
+ * @param {String} conceptType
+ * @param {String} conceptId
+ * @param {Integer} height
+ * @param {Integer} width
+ * @returns {JSON} server response object
+ */
 const resizeImageFromConceptId = async (conceptType, conceptId, height, width) => {
   const cacheKey = `${conceptId}-${height}-${width}`;
   const imageFromCache = await getImageFromCache(cacheKey);
@@ -59,6 +81,12 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   return buildResponse(thumbnail);
 };
 
+/**
+ * parseArguments: pull relevant parameters from the Lambda event
+ * object
+ * @param {JSON} event
+ * @returns {JSON} parsed arguments that were passed to the server
+ */
 const parseArguments = event => {
   const pathParams = event.path
     .split('/')
