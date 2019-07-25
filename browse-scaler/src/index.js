@@ -7,7 +7,7 @@ const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
 
 /**
  * buildResponse: assembles response body to avoid code duplication
- * @param {Buffer} image
+ * @param {Buffer<Image>} image
  * @returns {JSON} assembled response object with image as a base64 string
  */
 const buildResponse = image => {
@@ -49,8 +49,8 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
 };
 
 /**
- * resizeImageFromConceptId: call necessary helper functions to ultimately
- * result in the response that the server will send
+ * resizeImageFromConceptId: call necessary helper functions to resize an image
+ * associated with a given concept-id
  * @param {String} conceptType
  * @param {String} conceptId
  * @param {Integer} height

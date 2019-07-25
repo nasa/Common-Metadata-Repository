@@ -9,8 +9,7 @@ const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
  * the elasticsearch JSON response
  * @param {String} conceptId A collection or granule concept-id
- * @param {String} cmrEndpoint The collection or granule search URL. This is set
- * as a variable so you don't have to think about what it is
+ * @param {String} cmrEndpoint The collection or granule search URL
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
@@ -54,12 +53,12 @@ exports.getBrowseImageFromConcept = async concept => {
 
 /**
  * getGranuleLevelBrowseImage: Given a or collection id, get the first associated granule
- * @param {String} granuleId CMR concept-id. This can be a collection _or_ granule id
- * @returns {String} any image links found. If a collection id is supplied, this will
- * return any links found in the first granule associated with said collection
+ * @param {String} conceptId CMR concept-id. This can be a collection _or_ granule id
+ * @returns {String} the first of any image links found. If a collection id is supplied, this will
+ * return the first of any links found in the first granule associated with said collection
  */
-exports.getGranuleLevelBrowseImage = async granuleId => {
-  const granuleConcept = await fetchConceptFromCMR(granuleId, cmrGranuleUrl);
+exports.getGranuleLevelBrowseImage = async conceptId => {
+  const granuleConcept = await fetchConceptFromCMR(conceptId, cmrGranuleUrl);
   const granuleImagery = await this.getBrowseImageFromConcept(granuleConcept);
 
   return granuleImagery;
