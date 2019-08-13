@@ -406,6 +406,8 @@ For system, provider, and single instance identities, the grantable permissions 
 | SYSTEM_OPTION_DEFINITION_DEPRECATION | create                       |
 | INGEST_MANAGEMENT_ACL                | read, update                 |
 | SYSTEM_CALENDAR_EVENT                | create, update, delete       |
+| DASHBOARD_ADMIN                      | create, read, update, delete |
+| DASHBOARD_ARC_CURATOR                | create, read, update, delete |
 
 #### Provider Identity
 | Target                          | Grantable Permissions        |
@@ -435,6 +437,8 @@ For system, provider, and single instance identities, the grantable permissions 
 | DATA_QUALITY_SUMMARY_DEFINITION | create, update, delete       |
 | DATA_QUALITY_SUMMARY_ASSIGNMENT | create, delete               |
 | PROVIDER_CALENDAR_EVENT         | create, update, delete       |
+| DASHBOARD_DAAC_CURATOR          | create, read, update, delete |
+| NON_NASA_DRAFT_USER             | create, read, update, delete |
 
 #### Single Instance Identity
 

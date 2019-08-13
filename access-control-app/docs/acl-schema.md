@@ -187,3 +187,4 @@ This element must be one of the following enum values:
 * `DATA_QUALITY_SUMMARY_ASSIGNMENT`
 * `PROVIDER_CALENDAR_EVENT`
 * `DASHBOARD_DAAC_CURATOR`
+* `NON_NASA_DRAFT_USER`
