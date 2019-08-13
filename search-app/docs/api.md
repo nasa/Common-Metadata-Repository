@@ -184,7 +184,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
 #### <a name="maximum-url-length"></a> Maximum URL Length
 
-The Maximum URL Length supported by CMR is indirectly controlled by the Request Header Size setting in Jetty which is set to 1MB. This translates to roughly 500k characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects that the query url could be extra long so that it exceeds 500k characters, they should use the POST API for searching.
+The Maximum URL Length supported by CMR is indirectly controlled by the Request Header Size setting in Jetty which is set to 1MB. This translates to roughly 500k characters, however it is recommended that any GET request be limited to 6,000 characters, and in a web browser the recommended length is no longer than 2000 characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects that the query url could be extra long so that it exceeds 6k characters, they should use the POST API for searching.
 
 #### <a name="cors-header-support"></a> CORS Header support
 
