@@ -176,7 +176,19 @@
     :virtual-collections [
                           {:entry-title "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_Monthly) at GES DISC"
                            :short-name "GLDAS_NOAH10_Monthly"
-                           :version-id "2.0"}]}})
+                           :version-id "2.0"}]}
+   ["DEMO_PROV" "DEMO_PROV VP Test"]
+   {:short-name "VP_TEST"
+    :virtual-collections [
+                          {:entry-title "A Virtual Product test collection."
+                           :short-name "VP_TEST_DEST"
+                           :version-id "001"}]}
+   ["EEDTEST" "EEDTEST VP Test"]
+   {:short-name "VP_TEST"
+    :virtual-collections [
+                          {:entry-title "A Virtual Product test collection."
+                           :short-name "VP_TEST_DEST"
+                           :version-id "001"}]}})
 
 (def virtual-product-to-source-mapping
   "A map derived from the map source-to-virtual-product-mapping. This map consists of keys which are
