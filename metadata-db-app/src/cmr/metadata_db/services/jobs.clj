@@ -12,7 +12,7 @@
 
 (def OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup old revisions of granules and collections"
-  (* 60 5))
+  (* 3600 6))
 
 (defn expired-concept-cleanup
   [context]
