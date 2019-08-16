@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   browse-scaler-cicd:
@@ -8,6 +8,6 @@ services:
       dockerfile: Dockerfile.test
     volumes:
       - ./__test__:/app/artifacts
-    command: npm run test --ci --reporters=jtest-junit
+    command: npm run ci-test
     environment:
       - JEST_JUNIT_OUTPUT=./artifacts/junit.xml
