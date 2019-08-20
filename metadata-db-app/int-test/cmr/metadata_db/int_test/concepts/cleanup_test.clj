@@ -43,6 +43,33 @@
   [concept]
   (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
+(deftest old-acl-revisions-are-cleaned-up-1
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [acl (concepts/create-and-save-concept :acl "CMR" 1 13)]
+
+    (is (all-revisions-exist? acl))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the oldest acl revisions should have been cleaned up
+    (is (revisions-removed? acl (range 1 4)))
+
+    ;; The latest 10 revisions should be kept
+    (is (revisions-exist? acl (range 4 14)))
+  (side/eval-form `(tk/clear-current-time!))))
+
+(deftest old-acl-revisions-are-cleaned-up-2
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [acl (concepts/create-and-save-concept :acl "CMR" 1 10)]
+
+    (is (all-revisions-exist? acl))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; All revisions should be kept since it's not more than 10.
+    (is (all-revisions-exist? acl))
+  (side/eval-form `(tk/clear-current-time!))))
+
 (deftest old-collection-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 13)
