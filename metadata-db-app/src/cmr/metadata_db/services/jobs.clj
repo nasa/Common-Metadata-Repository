@@ -28,6 +28,7 @@
 (defn old-revision-concept-cleanup
   [context]
   ;; cleanup CMR system concepts
+  (concept-service/delete-old-revisions context pv/cmr-provider :acl)
   (concept-service/delete-old-revisions context pv/cmr-provider :tag-association)
   (concept-service/delete-old-revisions context pv/cmr-provider :tag)
   (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
