@@ -5,7 +5,6 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u :refer [defn-timed]]
    [cmr.message-queue.config :as queue-config]
@@ -122,9 +121,9 @@
   (let [provider-id (svm/provider-alias->provider-id provider-id)
         orig-concept (mdb/get-concept context concept-id revision-id)
         format (-> (:format orig-concept)
-                   mt/base-mime-type-of)
+                   mime-types/base-mime-type-of)
         ;; If the format is umm-json, we need to use umm-spec to parse the metadata into UMM.
-        orig-umm (if (= format mt/umm-json)
+        orig-umm (if (= format mime-types/umm-json)
                    (umm-spec/parse-metadata context (:concept-type orig-concept) format (:metadata orig-concept))
                    (umm/parse-concept orig-concept))
         vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])
@@ -135,7 +134,7 @@
       (let [new-umm (svm/generate-virtual-granule-umm provider-id source-short-name
                                                       orig-umm virtual-coll)
             new-granule-ur (:granule-ur new-umm)
-            new-metadata (if (= format mt/umm-json)
+            new-metadata (if (= format mime-types/umm-json)
                            (umm-spec/generate-metadata context new-umm (mime-types/mime-type->format
                                                                          (:format orig-concept)))
                            (umm/umm->xml new-umm (mime-types/mime-type->format
