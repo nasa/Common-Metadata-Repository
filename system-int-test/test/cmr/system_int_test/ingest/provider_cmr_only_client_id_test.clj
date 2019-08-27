@@ -5,6 +5,7 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
@@ -122,4 +123,30 @@
       (assert-ingest-success #'ingest/delete-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)
       (is (= 0 (:hits (search/find-refs :granule {:granule-ur (:granule-ur granule)
+                                                  :page-size 50}))))))
+  (testing "ingest with Virtual-Product-Service with a umm-json granule"
+    (let [psa1 (data-umm-cmn/additional-attribute {:Name "source_granule_ur" :DataType "STRING" :Description "Test"})
+          collection (d/ingest-umm-spec-collection "GES_DISC" (data-umm-c/collection
+                                                                {:EntryTitle "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
+                                                                 :ShortName "OMUVBd_ErythemalUV"
+                                                                 :AdditionalAttributes [psa1]
+                                                                 :Version "003"}))
+          concept (-> (dg/granule-with-umm-spec-collection
+                       collection
+                       (:concept-id collection)
+                       {:granule-ur "Gran1"
+                        :provider-id "GES_DISC"
+                        :collection-ref (umm-g/map->CollectionRef {:entry-title "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"})})
+                      (d/item->concept {:format :umm-json
+                                        :version "1.4"}))]
+      (ingest/clear-caches)
+      (assert-ingest-success #'ingest/validate-concept concept "Virtual-Product-Service")
+      (assert-ingest-success #'ingest/ingest-concept concept "Virtual-Product-Service")
+      (index/wait-until-indexed)
+      (is (= 1 (:hits (search/find-refs :granule {:granule-ur (:granule-ur "Gran1")
                                                   :page-size 50})))))))
+
+      ; (assert-ingest-success #'ingest/delete-concept concept "Virtual-Product-Service")
+      ; (index/wait-until-indexed)
+      ; (is (= 0 (:hits (search/find-refs :granule {:granule-ur (:granule-ur "Gran1")
+      ;                                             :page-size 50})))))))
