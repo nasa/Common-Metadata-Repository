@@ -5,6 +5,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mime-types]
+   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u :refer [defn-timed]]
    [cmr.message-queue.config :as queue-config]
@@ -12,6 +13,8 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.ingest :as ingest]
    [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-granule :as umm-g]
    [cmr.virtual-product.config :as config]
@@ -118,7 +121,12 @@
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [provider-id (svm/provider-alias->provider-id provider-id)
         orig-concept (mdb/get-concept context concept-id revision-id)
-        orig-umm (umm/parse-concept orig-concept)
+        format (-> (:format orig-concept)
+                   mt/base-mime-type-of)
+        ;; If the format is umm-json, we need to use umm-spec to parse the metadata into UMM.
+        orig-umm (if (= format mt/umm-json)
+                   (umm-spec/parse-metadata context (:concept-type orig-concept) format (:metadata orig-concept))
+                   (umm/parse-concept orig-concept))
         vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])
         source-short-name (:short-name vp-config)]
     (doseq [virtual-coll (:virtual-collections vp-config)
@@ -127,8 +135,11 @@
       (let [new-umm (svm/generate-virtual-granule-umm provider-id source-short-name
                                                       orig-umm virtual-coll)
             new-granule-ur (:granule-ur new-umm)
-            new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
-                                                 (:format orig-concept)))
+            new-metadata (if (= format mt/umm-json)
+                           (umm-spec/generate-metadata context new-umm (mime-types/mime-type->format
+                                                                         (:format orig-concept)))
+                           (umm/umm->xml new-umm (mime-types/mime-type->format
+                                                   (:format orig-concept))))
             new-concept (-> orig-concept
                             (select-keys [:format :provider-id :concept-type])
                             (assoc :native-id new-granule-ur
