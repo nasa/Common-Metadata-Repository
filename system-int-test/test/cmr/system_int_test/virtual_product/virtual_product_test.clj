@@ -1,22 +1,26 @@
 (ns cmr.system-int-test.virtual-product.virtual-product-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.virtual-product-util :as vp]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.virtual-product.config]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.umm.echo10.granule :as g]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.common.mime-types :as mt]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.virtual-product-util :as vp]
+   [cmr.umm.echo10.granule :as g]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.virtual-product.config]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"
                                                  "LP_ALIAS_guid" "LP_ALIAS"}
@@ -369,3 +373,21 @@
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                         :page-size 1000})))))))
 
+(deftest CMR-5848-umm-json-granule-virtual-product-ingest-test
+  (testing "ingest with Virtual-Product-Service with a umm-json granule"
+    (let [psa1 (data-umm-cmn/additional-attribute {:Name "source_granule_ur" :DataType "STRING" :Description "Test"})
+          collection (d/ingest-umm-spec-collection "GES_DISC" (data-umm-c/collection
+                                                                {:EntryTitle "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
+                                                                 :ShortName "OMUVBd_ErythemalUV"
+                                                                 :AdditionalAttributes [psa1]
+                                                                 :Version "003"}))
+          granule (dg/granule-with-umm-spec-collection
+                   collection
+                   (:concept-id collection)
+                   {:provider-id "GES_DISC"
+                    :collection-ref (umm-g/map->CollectionRef {:entry-title "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"})})
+          concept (d/item->concept granule {:format :umm-json
+                                            :version "1.4"})]
+      (vp/assert-matching-granule-urs
+       (:granule-ur concept)
+       (search/find-refs :granule {:page-size 50})))))
