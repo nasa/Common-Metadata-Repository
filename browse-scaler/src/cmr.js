@@ -1,9 +1,10 @@
 const fetch = require('node-fetch');
 
 /* CMR ENVIRONMENT VARIABLES */
-const cmrRootUrl = `http://${process.env.CMR_ROOT}`;
+const cmrRootUrl = `https://${process.env.CMR_ROOT}`;
 const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
 const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
+const cmrToken = process.env.ECHO_TOKEN || '';
 
 /**
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
@@ -13,7 +14,12 @@ const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  return fetch(cmrEndpoint + conceptId)
+  return fetch(cmrEndpoint + conceptId, {
+    method: 'GET',
+    headers: {
+      'Echo-Token': cmrToken
+    }
+  })
     .then(response => response.json())
     .then(json => json.feed.entry[0])
     .catch(error => {
