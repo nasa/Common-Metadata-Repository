@@ -31,7 +31,7 @@ include ActionDispatch::Routing
 include CmrMetadataPreview::DataContactsHelper
 include CmrMetadataPreview::OptionsHelper
 include CmrMetadataPreview::CmrMetadataPreviewHelper
-include CmrMetadataPreview::CitingTheseDataPreviewHelper
+include CmrMetadataPreview::CitationInformationPreviewHelper
 include CmrMetadataPreview::AdditionalInformationFieldsHelper
 include CmrMetadataPreview::RelatedUrlsPreviewHelper
 include CmrMetadataPreview::OverviewFieldsHelper
