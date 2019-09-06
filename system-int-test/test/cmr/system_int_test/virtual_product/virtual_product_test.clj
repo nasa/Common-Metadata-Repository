@@ -38,9 +38,8 @@
 
   (def isc (vp/ingest-source-collections))
 
-  (def vpc (vp/ingest-virtual-collections isc))
+  (def vpc (vp/ingest-virtual-collections isc)))
 
-  )
 
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
@@ -375,19 +374,26 @@
 
 (deftest CMR-5848-umm-json-granule-virtual-product-ingest-test
   (testing "ingest with Virtual-Product-Service with a umm-json granule"
-    (let [psa1 (data-umm-cmn/additional-attribute {:Name "source_granule_ur" :DataType "STRING" :Description "Test"})
-          collection (d/ingest-umm-spec-collection "GES_DISC" (data-umm-c/collection
-                                                                {:EntryTitle "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
-                                                                 :ShortName "OMUVBd_ErythemalUV"
-                                                                 :AdditionalAttributes [psa1]
-                                                                 :Version "003"}))
-          granule (dg/granule-with-umm-spec-collection
-                   collection
-                   (:concept-id collection)
-                   {:provider-id "GES_DISC"
-                    :collection-ref (umm-g/map->CollectionRef {:entry-title "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"})})
+    (let [[ast-coll] (vp/ingest-source-collections
+                       [(assoc
+                          (dc/collection
+                            {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                             :short-name "AST_L1A"
+                             :projects (dc/projects "proj1" "proj2" "proj3")})
+                          :provider-id "LPDAAC_ECS")])
+          vp-colls (vp/ingest-virtual-collections [ast-coll])
+          granule-ur "SC:AST_L1A.003:2006227720"
+          granule (vp/add-granule-attributes "LPDAAC_ECS"
+                                              (dg/granule ast-coll {:granule-ur granule-ur
+                                                                    :provider-id "LPDAAC_ECS"
+                                                                    :project-refs ["proj1"]}))
+
           concept (d/item->concept granule {:format :umm-json
-                                            :version "1.4"})]
+                                            :version "1.4"})
+          _ (ingest/ingest-concept concept)
+          expected-granule-urs (vp/source-granule->virtual-granule-urs granule)
+          all-expected-granule-urs (cons (:granule-ur granule) expected-granule-urs)]
+      (index/wait-until-indexed)
       (vp/assert-matching-granule-urs
-       (:granule-ur concept)
+       all-expected-granule-urs
        (search/find-refs :granule {:page-size 50})))))
