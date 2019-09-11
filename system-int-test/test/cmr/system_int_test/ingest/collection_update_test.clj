@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-update-test
   "CMR collection update integration tests"
   (:require
+   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.spatial.point :as p]
@@ -973,3 +974,20 @@
                                                        (dg/psa "daTE" ["2012-01-02Z"])
                                                        (dg/psa "tiME" ["01:02:03Z"])
                                                        (dg/psa "dTS" ["2012-01-01T01:02:03Z"])]))))
+
+(deftest CMR-5871-collection-child-instrument-update-test
+  (let [coll-metadata (-> "iso-samples/cmr-5871-coll.xml" io/resource slurp)
+        updated-coll-metadata (-> "iso-samples/cmr-5871-coll-updated.xml" io/resource slurp)
+        gran-metadata (-> "iso-samples/cmr-5871-gran.xml" io/resource slurp)]
+    (ingest/ingest-concept
+     (ingest/concept :collection "PROV1" "coll1" :iso19115 coll-metadata))
+    (let [{:keys [status]} (ingest/ingest-concept
+                            (ingest/concept
+                             :granule "PROV1" "gran1" :iso-smap gran-metadata))]
+      (is (= 201 status)))
+    (index/wait-until-indexed)
+    (testing "Update collection child instrument name that not referenced in its granule is OK"
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                     (ingest/concept
+                                      :collection "PROV1" "coll1" :iso19115 updated-coll-metadata))]
+        (is (= [200 nil] [status errors]))))))
