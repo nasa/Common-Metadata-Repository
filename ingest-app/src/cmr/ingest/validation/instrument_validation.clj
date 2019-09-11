@@ -65,6 +65,6 @@
     (for [name deleted-child-instrument-names]
       {:params {"sensor[]" name
                 :collection-concept-id concept-id
-                "options[instrument][exclude_collection]" "true"}
+                "options[sensor][exclude_collection]" "true"}
        :error-msg (format (str "Collection Child Instrument [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))
