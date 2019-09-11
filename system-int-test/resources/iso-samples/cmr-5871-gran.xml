@@ -1,0 +1,2878 @@
+<?xml version="1.0" encoding="UTF-8"?><gmd:DS_Series xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns="http://www.isotc211.org/2005/gmi" xmlns:eos="http://earthdata.nasa.gov/schema/eos" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmi http://cdn.earthdata.nasa.gov/iso/schema/1.0/ISO19115-2_EOS.xsd">
+<gmd:composedOf xlink:type="simple">
+<gmd:DS_DataSet>
+<gmd:has xlink:type="simple">
+<gmi:MI_Metadata>
+<gmd:fileIdentifier>
+<gmx:FileName>SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.h5</gmx:FileName>
+</gmd:fileIdentifier>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+<gmd:characterSet>
+<gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+</gmd:characterSet>
+<gmd:hierarchyLevel>
+<gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+</gmd:hierarchyLevel>
+<gmd:contact xlink:type="simple">
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<gco:CharacterString>NSIDC DAAC &amp;gt; National Snow and Ice Data Center DAAC</gco:CharacterString>
+</gmd:organisationName>
+<gmd:contactInfo xlink:type="simple">
+<gmd:CI_Contact>
+<gmd:address xlink:type="simple">
+<gmd:CI_Address>
+<gmd:electronicMailAddress>
+<gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+</gmd:electronicMailAddress>
+</gmd:CI_Address>
+</gmd:address>
+<gmd:onlineResource xlink:type="simple">
+<gmd:CI_OnlineResource>
+<gmd:linkage>
+<gmd:URL>http://nsidc.org/daac/</gmd:URL>
+</gmd:linkage>
+</gmd:CI_OnlineResource>
+</gmd:onlineResource>
+</gmd:CI_Contact>
+</gmd:contactInfo>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:contact>
+<gmd:dateStamp>
+<gco:Date>2014-06-17</gco:Date>
+</gmd:dateStamp>
+<gmd:metadataStandardName>
+<gco:CharacterString>ISO 19115-2 Geographic information - Metadata - Part 2: Extensions for imagery and gridded data</gco:CharacterString>
+</gmd:metadataStandardName>
+<gmd:metadataStandardVersion>
+<gco:CharacterString>ISO 19115-2:2009-02-15</gco:CharacterString>
+</gmd:metadataStandardVersion>
+<gmd:spatialRepresentationInfo xlink:type="simple">
+<gmd:MD_Georeferenceable>
+<gmd:numberOfDimensions>
+<gco:Integer>1</gco:Integer>
+</gmd:numberOfDimensions>
+<gmd:cellGeometry>
+<gmd:MD_CellGeometryCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CellGeometryCode" codeListValue="area">area</gmd:MD_CellGeometryCode>
+</gmd:cellGeometry>
+<gmd:transformationParameterAvailability>
+<gco:Boolean>false</gco:Boolean>
+</gmd:transformationParameterAvailability>
+<gmd:controlPointAvailability>
+<gco:Boolean>false</gco:Boolean>
+</gmd:controlPointAvailability>
+<gmd:orientationParameterAvailability>
+<gco:Boolean>false</gco:Boolean>
+</gmd:orientationParameterAvailability>
+<gmd:georeferencedParameters xlink:type="simple">
+<gco:Record xsi:type="gco:CharacterString_PropertyType">
+<gco:CharacterString>SMAP Fixed Earth Grids, SMAP Science Document no:  033, May 11, 2009</gco:CharacterString>
+</gco:Record>
+</gmd:georeferencedParameters>
+</gmd:MD_Georeferenceable>
+</gmd:spatialRepresentationInfo>
+<gmd:identificationInfo xlink:type="simple">
+<gmd:MD_DataIdentification>
+<gmd:citation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.h5</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>f723e738-73e5-4da3-b83f-789b2355f5db</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>Open Software Foundation</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A Universally Unique Identifier (UUID)</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SPL2SMP</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>The ECS Short Name</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>006</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>The ECS Version ID</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:citedResponsibleParty xlink:type="simple">
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+</gmd:organisationName>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator">originator</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:citedResponsibleParty>
+<gmd:series xlink:type="simple">
+<gmd:CI_Series>
+<gmd:name>
+<gco:CharacterString>L2_SM_P</gco:CharacterString>
+</gmd:name>
+</gmd:CI_Series>
+</gmd:series>
+<gmd:otherCitationDetails>
+<gco:CharacterString>The Calibration and Validation Version 2 of the SMAP Level 2 Passive Soil Moisture Science Processing Software.</gco:CharacterString>
+</gmd:otherCitationDetails>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>Passive soil moisture estimates onto a 36-km global Earth-fixed grid, based on radiometer measurements acquired when the SMAP spacecraft is travelling from North to South at approximately 6:00 AM local time.</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>The SMAP L2_SM_P effort provides soil moistures based on radiometer data on a 36 km grid.</gco:CharacterString>
+</gmd:purpose>
+<gmd:credit>
+<gco:CharacterString>The software that generates the Level 2 Passive Soil Moisture product and the data system that automates its production were designed and implemented at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
+</gmd:credit>
+<gmd:status>
+<gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing">onGoing</gmd:MD_ProgressCode>
+</gmd:status>
+<gmd:resourceMaintenance xlink:type="simple">
+<gmd:MD_MaintenanceInformation>
+<gmd:maintenanceAndUpdateFrequency>
+<gmd:MD_MaintenanceFrequencyCode codeList="undefined" codeListValue="undefined">asNeeded</gmd:MD_MaintenanceFrequencyCode>
+</gmd:maintenanceAndUpdateFrequency>
+<gmd:dateOfNextUpdate>
+<gco:Date>2016-05-01</gco:Date>
+</gmd:dateOfNextUpdate>
+</gmd:MD_MaintenanceInformation>
+</gmd:resourceMaintenance>
+<gmd:resourceFormat xlink:type="simple">
+<gmd:MD_Format>
+<gmd:name>
+<gco:CharacterString>HDF5</gco:CharacterString>
+</gmd:name>
+<gmd:version>
+<gco:CharacterString>1.8.13</gco:CharacterString>
+</gmd:version>
+</gmd:MD_Format>
+</gmd:resourceFormat>
+<gmd:aggregationInfo xlink:type="simple">
+<gmd:MD_AggregateInformation>
+<gmd:aggregateDataSetName xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.qa</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:otherCitationDetails>
+<gco:CharacterString>An ASCII product that contains statistical information on data product results.  These statistics enable data producers and users to assess the quality of the data in the data product granule.</gco:CharacterString>
+</gmd:otherCitationDetails>
+</gmd:CI_Citation>
+</gmd:aggregateDataSetName>
+<gmd:associationType>
+<gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
+</gmd:associationType>
+</gmd:MD_AggregateInformation>
+</gmd:aggregationInfo>
+<gmd:spatialRepresentationType>
+<gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">grid</gmd:MD_SpatialRepresentationTypeCode>
+</gmd:spatialRepresentationType>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+<gmd:characterSet>
+<gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+</gmd:characterSet>
+<gmd:topicCategory>
+<gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>
+</gmd:topicCategory>
+<gmd:environmentDescription>
+<gco:CharacterString>Data product generated by the SMAP mission in HDF5 format with metadata that conforms to the ISO 19115 model.</gco:CharacterString>
+</gmd:environmentDescription>
+<gmd:extent xlink:type="simple">
+<gmd:EX_Extent>
+<gmd:description>
+<gco:CharacterString>Soil moistures retrieved from brightness temperatures recorded by the SMAP radiometer over land targets on the descending (AM) SMAP half-orbits when the SMAP spacecraft is travelling from North to South, while the SMAP instruments are operating in the nominal mode.  Retrievals are performed but flagged as questionable over urban areas, mountainous areas with high elevation variability, and areas with high ( &amp;gt; 5 kg/m**2) vegetation water content; for retrievals using the high-resolution radar, cells in the nadir region are also flagged. Retrievals are inhibited for permanent snow/ice, frozen ground, and excessive static or transient open water in the cell, and for excessive RFI in the sensor data.</gco:CharacterString>
+</gmd:description>
+<gmd:geographicElement xlink:type="simple">
+<gmd:EX_BoundingPolygon>
+<gmd:extentTypeCode>
+<gco:Boolean>true</gco:Boolean>
+</gmd:extentTypeCode>
+<gmd:polygon xlink:type="simple">
+<gml:Polygon gml:id="swathPolygon">
+<gml:exterior>
+<gml:LinearRing>
+<gml:posList srsDimension="2" srsName="http://www.opengis.net/def/crs/EPSG/4326">-76.9300003051758 113.279998779297 -75.6800003051758 138.279998779297 -70 163.279998779297 -60 179.580001831055 -50 -172.529998779297 -40 -167.449996948242 -30 -163.660003662109 -20 -160.880004882812 -10 -158.110000610352 0 -156.110000610352 10 -154.110000610352 20 -152.130004882812 30 -149.910003662109 40 -147.949996948242 50 -145.529998779297 60 -142.669998168945 70 -138.470001220703 80 -127.620002746582 85.4300003051758 -105.610000610352 86.6800003051758 -81.6100006103516 87.1800003051758 -56.6100006103516 77.1800003051758 -56.6100006103516 75.6800003051758 -81.6100006103516 70 -106.610000610352 60 -122.400001525879 50 -130.039993286133 40 -135.119995117188 30 -138.669998168945 20 -141.699996948242 10 -143.960006713867 0 -146.220001220703 -10 -148.210006713867 -20 -150.199996948242 -30 -152.169998168945 -40 -154.369995117188 -50 -156.539993286133 -60 -159.399993896484 -70 -163.860000610352 -80 -174.210006713867 -85.4300003051758 162.279998779297 -86.6800003051758 138.279998779297 -86.9300003051758 113.279998779297 -76.9300003051758 113.279998779297</gml:posList>
+</gml:LinearRing>
+</gml:exterior>
+</gml:Polygon>
+</gmd:polygon>
+</gmd:EX_BoundingPolygon>
+</gmd:geographicElement>
+<gmd:temporalElement xlink:type="simple">
+<gmd:EX_TemporalExtent>
+<gmd:extent xlink:type="simple">
+<gml:TimePeriod frame="#ISO-8601" gml:id="JPL_ID_2">
+<gml:beginPosition frame="#ISO-8601">2015-03-31T16:28:51.167Z</gml:beginPosition>
+<gml:endPosition frame="#ISO-8601">2015-03-31T16:33:51.143Z</gml:endPosition>
+</gml:TimePeriod>
+</gmd:extent>
+</gmd:EX_TemporalExtent>
+</gmd:temporalElement>
+</gmd:EX_Extent>
+</gmd:extent>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>SC:SPL2SMP.006:164332854</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2019-08-26T14:31:57.566Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" xmlns="">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>GranuleUR</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>GranuleUR</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>DataSetId</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2019-08-26T14:32:30.950Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision" xmlns="">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>DataSetId</gco:CharacterString>
+</gmd:abstract>
+<gmd:aggregationInfo>
+<gmd:MD_AggregateInformation>
+<gmd:aggregateDataSetIdentifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP L2 Radiometer Half-Orbit 36 km EASE-Grid Soil Moisture V006</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:aggregateDataSetIdentifier>
+<gmd:associationType/>
+</gmd:MD_AggregateInformation>
+</gmd:aggregationInfo>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2019-08-26T14:31:57.566Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" xmlns="">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2019-08-26T14:32:30.950Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision" xmlns="">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:distributionInfo>
+<gmd:MD_Distribution>
+<gmd:distributor>
+<gmd:MD_Distributor>
+<gmd:distributorContact/>
+<gmd:distributorTransferOptions>
+<gmd:MD_DigitalTransferOptions>
+<gmd:transferSize>
+<gco:Real>0.3839998245</gco:Real>
+</gmd:transferSize>
+</gmd:MD_DigitalTransferOptions>
+</gmd:distributorTransferOptions>
+<gmd:distributorTransferOptions>
+<gmd:MD_DigitalTransferOptions>
+<gmd:onLine>
+<gmd:CI_OnlineResource>
+<gmd:linkage>
+<gmd:URL>https://n5eil01u.ecs.nsidc.org/DP4/SMAP/SPL2SMP.006/2015.03.31/SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.h5</gmd:URL>
+</gmd:linkage>
+<gmd:applicationProfile>
+<gco:CharacterString>application/x-hdfeos</gco:CharacterString>
+</gmd:applicationProfile>
+</gmd:CI_OnlineResource>
+</gmd:onLine>
+</gmd:MD_DigitalTransferOptions>
+</gmd:distributorTransferOptions>
+<gmd:distributorTransferOptions>
+<gmd:MD_DigitalTransferOptions>
+<gmd:onLine>
+<gmd:CI_OnlineResource>
+<gmd:linkage>
+<gmd:URL>https://n5eil01u.ecs.nsidc.org/DP1/AMSA/QA.001/2019.08.26/SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.qa</gmd:URL>
+</gmd:linkage>
+<gmd:applicationProfile>
+<gco:CharacterString>text/plain</gco:CharacterString>
+</gmd:applicationProfile>
+<gmd:name>
+<gco:CharacterString>Quality Assurance</gco:CharacterString>
+</gmd:name>
+</gmd:CI_OnlineResource>
+</gmd:onLine>
+</gmd:MD_DigitalTransferOptions>
+</gmd:distributorTransferOptions>
+<gmd:distributorTransferOptions>
+<gmd:MD_DigitalTransferOptions>
+<gmd:onLine>
+<gmd:CI_OnlineResource>
+<gmd:linkage>
+<gmd:URL>https://n5eil01u.ecs.nsidc.org/DP4/SMAP/SPL2SMP.006/2015.03.31/SMAP_L2_SM_P_00864_D_20150331T162851_R16510_001.h5.iso.xml</gmd:URL>
+</gmd:linkage>
+<gmd:applicationProfile>
+<gco:CharacterString>text/xml</gco:CharacterString>
+</gmd:applicationProfile>
+<gmd:name>
+<gco:CharacterString>METADATA</gco:CharacterString>
+</gmd:name>
+</gmd:CI_OnlineResource>
+</gmd:onLine>
+</gmd:MD_DigitalTransferOptions>
+</gmd:distributorTransferOptions>
+</gmd:MD_Distributor>
+</gmd:distributor>
+</gmd:MD_Distribution>
+</gmd:distributionInfo>
+<gmd:dataQualityInfo xlink:type="simple">
+<gmd:DQ_DataQuality>
+<gmd:scope xlink:type="simple">
+<gmd:DQ_Scope>
+<gmd:level>
+<gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="attribute">attribute</gmd:MD_ScopeCode>
+</gmd:level>
+<gmd:levelDescription>
+<gmd:MD_ScopeDescription>
+<gmd:dataset>
+<gco:CharacterString>soil_moisture</gco:CharacterString>
+</gmd:dataset>
+</gmd:MD_ScopeDescription>
+</gmd:levelDescription>
+</gmd:DQ_Scope>
+</gmd:scope>
+<gmd:report xlink:type="simple">
+<gmd:DQ_DomainConsistency>
+<gmd:nameOfMeasure>
+<gco:CharacterString>Percent of Missing Data</gco:CharacterString>
+</gmd:nameOfMeasure>
+<gmd:measureDescription>
+<gco:CharacterString>Percentage of EASE2 grid cells that lack soil moisture retrieval values relative to the total number of grid cells where soil moisture retrieval was attempted.</gco:CharacterString>
+</gmd:measureDescription>
+<gmd:evaluationMethodType>
+<gmd:DQ_EvaluationMethodTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+</gmd:evaluationMethodType>
+<gmd:result xlink:type="simple">
+<gmd:DQ_QuantitativeResult>
+<gmd:valueUnit xlink:type="simple">
+<gml:UnitDefinition gml:id="JPL_ID_1">
+<gml:identifier codeSpace="http://jpl.nasa.gov/undefined">*undefined*</gml:identifier>
+<gml:quantityType xlink:type="simple">percent</gml:quantityType>
+</gml:UnitDefinition>
+</gmd:valueUnit>
+<gmd:value xlink:type="simple">
+<gco:Record xsi:type="gco:Real_PropertyType">
+<gco:Real>100</gco:Real>
+</gco:Record>
+</gmd:value>
+</gmd:DQ_QuantitativeResult>
+</gmd:result>
+</gmd:DQ_DomainConsistency>
+</gmd:report>
+<gmd:lineage xlink:type="simple">
+<gmd:LI_Lineage>
+<gmd:processStep xlink:type="simple">
+<gmi:LE_ProcessStep>
+<gmd:description>
+<gco:CharacterString>Soil moisture retrieved using default retrieval algorithm from brightness temperatures acquired by the SMAP radiometer during the spacecraft descending pass.</gco:CharacterString>
+</gmd:description>
+<gmd:dateTime>
+<gco:DateTime>2019-08-26T20:27:02.765Z</gco:DateTime>
+</gmd:dateTime>
+<gmd:processor xlink:type="simple">
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<gco:CharacterString>Soil Moisture Active Passive Mission (SMAP) Science Data System (SDS) Operations Facility</gco:CharacterString>
+</gmd:organisationName>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:processor>
+<gmi:processingInformation xlink:type="simple">
+<eos:EOS_Processing>
+<gmi:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>L2_SM_P</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmi:identifier>
+<gmi:softwareReference xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>L2_SM_P_SPS</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-04-15</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>025</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:softwareReference>
+<gmi:documentation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>Algorithm Theoretical Basis Document: SMAP L2 and L3 Radiometer Soil Moisture (Passive) Data Products: L2_SM_P &amp;amp; L3_SM_P</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2012-10-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>Preliminary</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:documentation>
+<gmi:algorithm xlink:type="simple">
+<eos:EOS_Algorithm>
+<gmi:citation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>Soil Moisture Active Passive (SMAP) Radiometer processing algorithm</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-04-03</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>023</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:citation>
+<gmi:description>
+<gco:CharacterString>Soil moisture retrieval is obtained using the H-polarized TB and other ancillary data.  Other option algorithms exist that use a combinarion of V- and/or H-polarized TBs for soil moisture retrieval.</gco:CharacterString>
+</gmi:description>
+<eos:additionalCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>Algorithm Theoretical Basis Document: SMAP L2 and L3 Radiometer Soil Moisture (Passive) Data Products: L2_SM_P &amp;amp; L3_SM_P</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-03-04</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>Preliminary</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</eos:additionalCitation>
+</eos:EOS_Algorithm>
+</gmi:algorithm>
+<eos:otherProperty xlink:type="simple">
+<gco:Record xlink:type="simple" xsi:type="eos:EOS_AdditionalAttributes_PropertyType">
+<eos:EOS_AdditionalAttributes>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for SnowFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>SnowFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.5</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for SnowFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>SnowFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.05</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for IceFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>IceFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.5</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for IceFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>IceFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.05</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for MountainousTerrainUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>MountainousTerrainUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>6</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for RainFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>RainFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.00706</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for RainFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>RainFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.00027778</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for ParameterVersionID</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>ParameterVersionID</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="string">string</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>016</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for FrozenGroundFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>FrozenGroundFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.05</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for FrozenGroundFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>FrozenGroundFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.5</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for MountainousTerrainLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>MountainousTerrainLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>3</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for algorithmSelection</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>algorithmSelection</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="int">int</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for UrbanFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>UrbanFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.25</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for epochJulianDate</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>epochJulianDate</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2.45154e+06</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for VWCLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>VWCLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>5</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for WaterFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>WaterFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.5</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for timeVariableEpoch</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>timeVariableEpoch</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="string">string</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>J2000</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for WaterFractionLowerThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>WaterFractionLowerThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.05</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for UrbanFractionUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>UrbanFractionUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>1</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for epochUTCDateTime</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>epochUTCDateTime</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="dateTime">dateTime</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2000-01-01T11:58:55.816Z</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for VWCUpperThreshold</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>VWCUpperThreshold</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>30</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+</eos:EOS_AdditionalAttributes>
+</gco:Record>
+</eos:otherProperty>
+</eos:EOS_Processing>
+</gmi:processingInformation>
+</gmi:LE_ProcessStep>
+</gmd:processStep>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies representative fractions of sand that are found in each of the 3 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>sand_M03_004.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2016-03-11</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SOIL_TEXTURE_SAND</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies representative fractions of water that are found in each of the 3 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title gco:nilReason="missing"/>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date gco:nilReason="missing"/>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>WATER_FRACTION</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Provides the Euclidean distance at each grid point to the nearest significant water body.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>dist2water_M36_002.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-02-04</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>002</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>DIST2WATER</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies representative fractions of clay that are  found in each of the 3 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>clay_M03_004.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2016-03-11</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SOIL_TEXTURE_CLAY</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies the fraction of permanent water found in each of the 36 km cells in the cylindrical Equal-Area Scalable (EASE) Earth Grid. This data set was derived from the MODIS MOD44W data product.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>waterfrac_M03_002.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2013-05-09</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>002</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>WATER_FRACTION</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Predominant land cover types that appear in each of the 3 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid.  Land cover classes are based on those recommended by the International Geosphere-Biosphere Programme (IGBP).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>dominantIGBP_M03_B20120101_003.uint8</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-03-31</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>003</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>LANDCOVER_CLASS</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>A configuration file that lists the entire content of the output Level 2 Passive Soil Moisture product.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_SPS_OutputConfig_L2_SM_P.xml</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>OutputConfig</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>The SMAP Level 1C_TB product provides radiometer brightness temperatures in half-orbit granules, gridded at 36 km grid resolution, on 3 EASE2 Earth-fixed grids - 1) Cylindrical projection, 2) Northern polar projection, 3) Southern polar projection.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L1C_TB_00864_D_20150331T162851_R16010_002.h5</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2018-07-02</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16010</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gmx:Anchor xlink:type="simple">doi:10.5067/ZVILG0PS6CTI</gmx:Anchor>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A Digital Object Identifier (DOI) that provides a persistent interoperable means to locate the SMAP Radiometer Level 1C (L1C_TB) data product.</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>L1C_TB</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A short name employed by the Soil Moisture Active Passive mission to identify the Level 1C Radiometer product.</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+<gmi:processedLevel xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP L1C_TB SPS</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmi:processedLevel>
+<gmi:resolution>
+<gmi:LE_NominalResolution>
+<gmi:groundResolution>
+<gco:Distance uom="km">36</gco:Distance>
+</gmi:groundResolution>
+</gmi:LE_NominalResolution>
+</gmi:resolution>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>A configuration file that specifies the source of the values for each of the data elements that comprise the metadata in the output Level 2 Passive Soil Moisture Product.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_SPS_MetConfig_L1C_TB.xml</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>MetConfig</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative soil temperature for each of the 9 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid at approximately the same time that the SMAP radiometer data were acquired.  These data are based on the GEOS-5.7.2 TSURF data product generated by the Global Modeling and Assimilation (GMAO) office at the NASA Goddard Space Flight Center (GSFC).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>tsurfGMAO_M09_P20150331T160000_A_20150331T160000_R11851_001.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2015-08-25</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>TSURF</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative soil temperature for each of the 9 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid at approximately the same time that the SMAP radiometer data were acquired.  These data are based on the GEOS-5.7.2 TSURF data product generated by the Global Modeling and Assimilation (GMAO) office at the NASA Goddard Space Flight Center (GSFC).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>tsurfGMAO_M09_P20150331T170000_A_20150331T170000_R11851_001.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2015-08-25</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>TSURF</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative soil temperature for each of the 9 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid at approximately the same time that the SMAP radiometer data were acquired.  These data are based on the GEOS-5.7.2 TSURF data product generated by the Global Modeling and Assimilation (GMAO) office at the NASA Goddard Space Flight Center (GSFC).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>tsurfGMAO_M09_P20150331T180000_A_20150331T180000_R11851_001.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2015-08-25</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>TSURF</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>The SMAP Level 1C_TB product provides radiometer brightness temperatures in half-orbit granules, gridded at 36 km grid resolution, on 3 EASE2 Earth-fixed grids - 1) Cylindrical projection, 2) Northern polar projection, 3) Southern polar projection.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L1C_TB_00864_D_20150331T162851_R16010_002.h5</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2018-07-02</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16010</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gmx:Anchor xlink:type="simple">doi:10.5067/ZVILG0PS6CTI</gmx:Anchor>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A Digital Object Identifier (DOI) that provides a persistent interoperable means to locate the SMAP Active Level 2 Soil Moisture (L2_SM_A) data product.</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>L1C_TB</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A short name employed by the Soil Moisture Active Passive mission to identify the Active Level 2 Soil Moisture product.</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+<gmi:processedLevel xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP_L2_SM_A</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmi:processedLevel>
+<gmi:resolution>
+<gmi:LE_NominalResolution>
+<gmi:groundResolution>
+<gco:Distance uom="km">3</gco:Distance>
+</gmi:groundResolution>
+</gmi:LE_NominalResolution>
+</gmi:resolution>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>A configuration file that specifies the complete set of elements within the input SMAP L2_SM_A Product that the Level 2 Passive Soil Moisture Science Processing Software (SPS) needs in order to function.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_SPS_InputConfig_L2_SM_A.xml</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>InputConfig</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>A configuration file that specifies the complete set of elements within the input SMAP L1C Radiometer Product that the Level 2 Passive Soil Moisture Science Processing Software (SPS) needs in order to function.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_SPS_InputConfig_L1C_TB.xml</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>InputConfig</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies a representative value of Normalized Difference Vegetation Index (NDVI) for each of the 3 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid.  The dataset was processed by USDA from the MODIS MOD13A2 data product.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>NDVI_M03_090_002.int16</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2013-04-24</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>002</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>NDVI_CLIMATOLOGY</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Snow fraction data resampled to 9 km grid spacing on the cylindrical Earth Equal-Area Scalable (EASE) Grid, derived from daily NOAA IMS snow cover data.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SnowIMS_M09_P20150331T000000_R11340_001.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2015-04-01</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SNOW</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative surface slope data for each of the 36 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid. These data are based on the Global Multi-resolution Terrain Elevation 2010 (GMTED2010) data set provided by the United States Geological Service (USGS).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>DEMSLP_M03_003.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-10-08</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>003</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>DEMSLP</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative precipitation measures for each of the 9 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid at approximately the same time that the SMAP radiometer data were acquired.  These data are based on the GEOS-5.7.2 PRECTOT data product generated by the Global Modeling and Assimilation (GMAO) office at the NASA Goddard Space Flight Center (GSFC).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>PrecipGMAO_M09_P20150331T163000_A_20150331T163000_R11340_001.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2015-04-01</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>PRECIP</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Predominant land cover types that appear in each of the 36 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid.  Land cover classes are based on those recommended by the International Geosphere-Biosphere Programme (IGBP).  The data set lists multiple predominant land cover types within each 36 km cell, along with an estimated fraction of the cell covered by each predominant type.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>top3IGBPfrac_M36_B20120101_004.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-06-16</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>LANDCOVER_CLASS_FRACTION_TOP3</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Representative fraction of each of the 3 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid that is covered by Urban Area.  These data are based on the Global Urban-Rural Mapping Project (GRUMP) conducted by the Center for International Earth Science Information Network (CIESUN) at Columbia University.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>UrbanFraction_M03_002.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2013-04-25</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>002</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>URBAN_FRACTION</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>The Surface ROUGHNESS_COEFF Coefficient file contains the RMS ROUGHNESS_COEFF in cm for each 3 km grid cell on the cylindrical Earth Equal-Area Scalable (EASE) grid.  ROUGHNESS_COEFF data is in the physical unit of &amp;amp;#8220;cm&amp;amp;#8221;; and a scale factor of 10 is used to convert into unit-less coefficients. This is a static map based on MODIS IGBP land cover map.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>h_M03_004.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-04-30</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SURFACE_ROUGHNESS_COEFF</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies representative bulk density that is found in each of the 3 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>bulk_M03_004.float32</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-05-09</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SOIL_TEXTURE_BULK</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Predominant land cover types that appear in each of the 36 km cells in the cylindrical Earth Equal-Area Scalable (EASE) Grid.  Land cover classes are based on those recommended by the International Geosphere-Biosphere Programme (IGBP).  The data set lists multiple predominant land cover types within each 36 km cell, along with an estimated fraction of the cell covered by each predominant type.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>top3IGBPtype_M36_B20120101_004.uint8</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-06-16</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>004</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>LANDCOVER_CLASS_TOP3</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>A configuration file generated automatically within the SMAP data system that specifies all of the conditions required for each individual run of the Level 2 Passive Soil Moisture Software Processing Software (SPS).</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>SMAP_L2_SM_P_SPS_RunConfig_20190826T202702765.xml</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2019-08-26</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>R16510</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>RunConfig</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+<gmd:source xlink:type="simple">
+<gmi:LE_Source>
+<gmd:description>
+<gco:CharacterString>Database that specifies a representative value of Normalized Difference Vegetation Index (NDVI) for each of the 36 km cells in the cylindrical Equal-Area Scalable Earth (EASE) Grid. The dataset was processed by USDA from the MODIS MOD13A2 data product.</gco:CharacterString>
+</gmd:description>
+<gmd:sourceCitation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gmx:FileName>maxNDVI_M03_002.int16</gmx:FileName>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2013-04-24</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>002</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>NDVI_MAX</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:sourceCitation>
+</gmi:LE_Source>
+</gmd:source>
+</gmd:LI_Lineage>
+</gmd:lineage>
+</gmd:DQ_DataQuality>
+</gmd:dataQualityInfo>
+<gmi:acquisitionInformation xlink:type="simple">
+<gmi:MI_AcquisitionInformation>
+<gmi:platform xlink:type="simple">
+<eos:EOS_Platform>
+<gmi:citation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>SMAP Handbook</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-07-01</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>JPL CL#14-2285, JPL 400-1567</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:citation>
+<gmi:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</gmi:identifier>
+<gmi:description>
+<gco:CharacterString>The SMAP observatory houses an L-band radiometer that operates at 1.414 GHz and an L-band radar that operates at 1.225 GHz.  The instruments share a rotating reflector antenna with a 6 meter aperture that scans over a 1000 km swath.  The bus is a 3 axis stabilized spacecraft that provides momentum compensation for the rotating antenna.</gco:CharacterString>
+</gmi:description>
+<gmi:instrument xlink:type="simple">
+<gmi:MI_Instrument>
+<gmi:citation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>SMAP Handbook</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-07-01</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>JPL CL#14-2285, JPL 400-1567</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:citation>
+<gmi:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP SAR</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmi:identifier>
+<gmi:type>
+<gco:CharacterString>L-Band Synthetic Aperture Radar</gco:CharacterString>
+</gmi:type>
+<gmi:description>
+<gco:CharacterString>The SMAP 1.225 GHz L-Band Radar Instrument</gco:CharacterString>
+</gmi:description>
+</gmi:MI_Instrument>
+</gmi:instrument>
+<gmi:instrument xlink:type="simple">
+<gmi:MI_Instrument>
+<gmi:citation xlink:type="simple">
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>SMAP Handbook</gco:CharacterString>
+</gmd:title>
+<gmd:date xlink:type="simple">
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2014-07-01</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>JPL CL#14-2285, JPL 400-1567</gco:CharacterString>
+</gmd:edition>
+</gmd:CI_Citation>
+</gmi:citation>
+<gmi:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP RAD</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmi:identifier>
+<gmi:type>
+<gco:CharacterString>L-Band Radiometer</gco:CharacterString>
+</gmi:type>
+<gmi:description>
+<gco:CharacterString>The SMAP 1.414 GHz L-Band Radiometer</gco:CharacterString>
+</gmi:description>
+</gmi:MI_Instrument>
+</gmi:instrument>
+<eos:otherProperty xlink:type="simple">
+<gco:Record xlink:type="simple" xsi:type="eos:EOS_AdditionalAttributes_PropertyType">
+<eos:EOS_AdditionalAttributes>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for inclination</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>inclination</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>98.2048</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for halfOrbitStartDateTime</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>halfOrbitStartDateTime</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="dateTime">dateTime</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2015-03-31T15:42:31.000Z</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for eccentricity</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>eccentricity</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>0.00128248</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for cycleNumber</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>cycleNumber</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="int">int</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>6</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for equatorCrossingDateTime</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>equatorCrossingDateTime</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="dateTime">dateTime</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2015-03-31T16:07:05.853Z</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for halfOrbitEndDateTime</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>halfOrbitEndDateTime</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="dateTime">dateTime</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2015-03-31T16:31:44.000Z</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for equatorCrossingLongitude</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>equatorCrossingLongitude</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>-151.271</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for referenceCRS</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>referenceCRS</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="string">string</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>Earth Centered Rotating</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for AntennaRotationRate</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>AntennaRotationRate</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>14.6</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for epoch</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>epoch</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="dateTime">dateTime</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>2015-03-31T16:07:05.853Z</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for rightAscensionAscendingNode</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>rightAscensionAscendingNode</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>99.022</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for meanMotion</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>meanMotion</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>14.6256</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for semiMajorAxis</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>semiMajorAxis</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>7066.52</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for pathNumber</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>pathNumber</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="int">int</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>115</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for revNumber</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>revNumber</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="int">int</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>864</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for OrbitDirection</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>OrbitDirection</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="string">string</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>Descending</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for argumentOfPerigee</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>argumentOfPerigee</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>110.735</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+<eos:additionalAttribute xlink:type="simple">
+<eos:EOS_AdditionalAttribute>
+<eos:reference xlink:type="simple">
+<eos:EOS_AdditionalAttributeDescription>
+<eos:type>
+<eos:EOS_AdditionalAttributeTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+</eos:type>
+<eos:identifier xlink:type="simple">
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>uuid for period</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+</gmd:MD_Identifier>
+</eos:identifier>
+<eos:name>
+<gco:CharacterString>period</gco:CharacterString>
+</eos:name>
+<eos:dataType>
+<eos:EOS_AdditionalAttributeDataTypeCode codeList="http://cdn.earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="float">float</eos:EOS_AdditionalAttributeDataTypeCode>
+</eos:dataType>
+</eos:EOS_AdditionalAttributeDescription>
+</eos:reference>
+<eos:value>
+<gco:CharacterString>5907.47</gco:CharacterString>
+</eos:value>
+</eos:EOS_AdditionalAttribute>
+</eos:additionalAttribute>
+</eos:EOS_AdditionalAttributes>
+</gco:Record>
+</eos:otherProperty>
+</eos:EOS_Platform>
+</gmi:platform>
+</gmi:MI_AcquisitionInformation>
+</gmi:acquisitionInformation>
+</gmi:MI_Metadata>
+</gmd:has>
+</gmd:DS_DataSet>
+</gmd:composedOf>
+<gmd:seriesMetadata gco:nilReason="missing" xlink:type="simple"/>
+</gmd:DS_Series>
