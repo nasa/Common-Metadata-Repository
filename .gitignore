@@ -17,7 +17,6 @@ browse-scaler/src/__test__/junit.xml
 ###############################
 /target
 pom.xml
-/ingest-app/resources/public/
 browse-scaler/src/*.zip
 
 ###############################
