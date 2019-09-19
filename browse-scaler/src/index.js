@@ -71,6 +71,7 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
 
   if (imageUrl === null || imageBuffer === null || imageBuffer === undefined) {
+    console.log (`IMAGENOTRETURNED`);
     const imgNotFound = await notFound();
     return buildResponse(imgNotFound);
   }
