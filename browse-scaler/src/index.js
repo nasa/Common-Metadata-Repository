@@ -67,13 +67,20 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
 
   // If given an image url, fetch the image and resize. If no image
   // exists, return the not found response
-  const imageUrl = await getImageUrlFromConcept(conceptId, conceptType);
-  console.log (`BEFORE SLURPING`);
-  const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
-  console.log (`AFTER SLURPING ${imageBuffer}`);
+  console.log ("BEFORE GETING IMAGEURL"); 
+  const imageUrl = await withTimeout(timeoutInterval, getImageUrlFromConcept(conceptId, conceptType));
 
-  if (imageUrl === null || imageBuffer === null || imageBuffer === undefined) {
-    console.log (`IMAGE NOT RETURNED`);
+  if (imageUrl === null) {
+    console.log ("IMAGE URL NOT RETURNED");
+    const imgNotFound = await notFound();
+    return buildResponse(imgNotFound);
+  }
+
+  console.log ("BEFORE SLURPING");
+  const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
+
+  if (imageBuffer === null || imageBuffer === undefined) {
+    console.log ("IMAGE NOT RETURNED");
     const imgNotFound = await notFound();
     return buildResponse(imgNotFound);
   }
