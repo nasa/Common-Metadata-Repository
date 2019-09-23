@@ -35,10 +35,9 @@ exports.resizeImage = async (image, height, width) => {
  * @return {Buffer<Image>} This is what you show the user when an image cannot be found or resized
  */
 exports.notFound = async () => {
-  console.log("BEFORE sharp"); 
   const notFound = await sharp('image-unavailable.svg')
-     .toFormat('png')
-     .toBuffer();
+    .toFormat('png')
+    .toBuffer();
   console.log(`image not found. got file ${notFound}`);
   return notFound;
 };

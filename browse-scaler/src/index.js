@@ -3,8 +3,8 @@ const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('.
 const { cacheImage, getImageFromCache } = require('./cache');
 const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
-const timeoutInterval = 1000;
-
+const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 1000;
+console.log(`TIMEOUT INTERVAL IS: ${timeoutInterval}`);
 /**
  * buildResponse: assembles response body to avoid code duplication
  * @param {Buffer<Image>} image
@@ -67,30 +67,18 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
 
   // If given an image url, fetch the image and resize. If no image
   // exists, return the not found response
-  console.log ("BEFORE GETING IMAGEURL"); 
   const imageUrl = await withTimeout(timeoutInterval, getImageUrlFromConcept(conceptId, conceptType));
-
   if (imageUrl === null) {
-    console.log ("IMAGE URL NOT RETURNED");
+    console.log("IMAGE URL IS NOT RETURNED.");
     const imgNotFound = await notFound();
-    console.log ("AFTER notFound when IMAGE URL NOT RETURNED");
     return buildResponse(imgNotFound);
   }
 
-  console.log ("BEFORE SLURPING");
   const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
-
   if (imageBuffer === null || imageBuffer === undefined) {
-    console.log ("IMAGE NOT RETURNED");
+    console.log("IMAGE IS NOT RETURNED."); 
     const imgNotFound = await notFound();
-    console.log ("AFTER notFound when IMAGE NOT RETURNED");
-
-    if (imgNotFound === null) {
-      console.log ("IMAGE imgNotFound NOT RETURNED");
-      return null; 
-    }
-    console.log ("IMAGE imgNotFound RETURNED");
-    return buildResponse(imgNotFound); 
+    return buildResponse(imgNotFound);
   }
 
   const thumbnail = await resizeImage(imageBuffer, height, width);
