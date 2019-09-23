@@ -3,7 +3,7 @@ const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('.
 const { cacheImage, getImageFromCache } = require('./cache');
 const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
-const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
+const timeoutInterval = 1000;
 
 /**
  * buildResponse: assembles response body to avoid code duplication
