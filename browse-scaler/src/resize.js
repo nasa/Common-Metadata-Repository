@@ -36,9 +36,14 @@ exports.resizeImage = async (image, height, width) => {
  */
 exports.notFound = async () => {
   console.log("BEFORE sharp"); 
+  try {
   const notFound = await sharp('image-unavailable.svg')
     .toFormat('png')
     .toBuffer();
+  } catch (err) {
+    console.log(`Could not pull image-unavailable.svg file: ${err}`);
+    return null;
+  }
   console.log(`image not found. got file ${notFound}`);
   return notFound;
 };
