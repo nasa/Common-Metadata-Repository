@@ -1,5 +1,7 @@
 const sharp = require('sharp');
 
+const { withTimeout } = require('util');
+const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
 /**
  * resizeImage: Resize a given image to a given height and width
  * @param {Buffer<Image>} image An image binary contained in a buffer
@@ -36,14 +38,7 @@ exports.resizeImage = async (image, height, width) => {
  */
 exports.notFound = async () => {
   console.log("BEFORE sharp"); 
-  try {
-  const notFound = await sharp('image-unavailable.svg')
-    .toFormat('png')
-    .toBuffer();
-  } catch (err) {
-    console.log(`Could not pull image-unavailable.svg file: ${err}`);
-    return null;
-  }
+  const notFound = await withTimeout(timeoutInterval, sharp('image-unavailable.svg').toFormat('png').toBuffer());
   console.log(`image not found. got file ${notFound}`);
   return notFound;
 };
