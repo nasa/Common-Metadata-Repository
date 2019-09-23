@@ -1,6 +1,6 @@
 const sharp = require('sharp');
 
-const { withTimeout } = require('util');
+const { withTimeout } = require('./util');
 const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 2000;
 /**
  * resizeImage: Resize a given image to a given height and width
