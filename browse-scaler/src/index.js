@@ -4,7 +4,7 @@ const { cacheImage, getImageFromCache } = require('./cache');
 const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
 const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 1000;
-console.log(`TIMEOUT INTERVAL IS: ${timeoutInterval}`);
+console.log(`Timeout interval is: ${timeoutInterval}`);
 /**
  * buildResponse: assembles response body to avoid code duplication
  * @param {Buffer<Image>} image
@@ -69,14 +69,14 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   // exists, return the not found response
   const imageUrl = await withTimeout(timeoutInterval, getImageUrlFromConcept(conceptId, conceptType));
   if (imageUrl === null) {
-    console.log("IMAGE URL IS NOT RETURNED.");
+    console.log(`No image url returned for: ${conceptId}`);
     const imgNotFound = await notFound();
     return buildResponse(imgNotFound);
   }
 
   const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
   if (imageBuffer === null || imageBuffer === undefined) {
-    console.log("IMAGE IS NOT RETURNED."); 
+    console.log(`No image returned for: ${conceptId}`);
     const imgNotFound = await notFound();
     return buildResponse(imgNotFound);
   }
