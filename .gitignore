@@ -11,6 +11,7 @@ browse-scaler/src/node_modules
 ###############################
 */testreports.xml
 browse-scaler/src/__test__/junit.xml
+browse-scaler/src/coverage
 
 ###############################
 ### Build Files
