@@ -10,7 +10,7 @@ exports.withTimeout = (millis, promise) => {
   // create two promises: one that does the actual work,
   // and one that will reject them after a given number of milliseconds
   const timeout = new Promise((resolve, reject) => setTimeout(() => reject(null), millis));
-  return Promise.race([promise, timeout]).then(value => value);
+  return Promise.race([promise, timeout]).then(value => value, value => null);
 };
 
 /**
