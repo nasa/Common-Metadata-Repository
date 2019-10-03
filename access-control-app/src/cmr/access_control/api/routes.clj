@@ -139,8 +139,8 @@
 
 (defn- delete-acl
   "Returns a Ring response with the result of trying to delete the ACL with the given concept id."
-  [ctx concept-id]
-  (api-response (acl-service/delete-acl ctx concept-id)))
+  [ctx concept-id headers]
+  (api-response (acl-service/delete-acl ctx concept-id (get headers "cmr-revision-id"))))
 
 (defn- get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
@@ -334,9 +334,9 @@
 
           ;; Delete an ACL
           (DELETE "/"
-                  {ctx :request-context}
+                  {ctx :request-context headers :headers}
                   (lt-validation/validate-launchpad-token ctx)
-                  (delete-acl ctx concept-id))
+                  (delete-acl ctx concept-id headers))
 
           ;; Retrieve an ACL
           (GET "/"
