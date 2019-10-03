@@ -192,9 +192,12 @@
        (~fn-name context# concept-id# nil))
       ([context# concept-id# options#]
        (let [options# (merge options# ~default-options)
-             {raw?# :raw? token# :token http-options# :http-options} options#
+             {raw?# :raw? token# :token revision-id# :cmr-revision-id http-options# :http-options} options#
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
+             headers# (when token# {config/token-header token#})
+             headers# (if revision-id#
+                        (assoc headers# config/revision-id-header revision-id#)
+                        headers#)]
          (request context# ~app-name
                   {:url-fn #(~url-fn % concept-id#)
                    :method :delete

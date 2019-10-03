@@ -1033,6 +1033,36 @@
                                                           (test-util/conn-context)
                                                           concept-id))))))))
 
+(deftest delete-acl-with-revision-id-test
+  (let [token (echo-util/login-guest (test-util/conn-context))
+        acl-concept-id (:concept_id
+                        (access-control/create-acl
+                         (test-util/conn-context)
+                         {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "PROV1 guest read"
+                                                  :collection_applicable true
+                                                  :provider_id "PROV1"}}
+                         {:token token}))]
+    (testing "422 is returned  when revision-id is invalid"
+      (is (= {:status 422
+              :body {:errors ["Invalid revision-id [invalid]. Cmr-Revision-id in the header must be a positive integer."]}
+              :content-type :json}
+             (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true :cmr-revision-id "invalid"}))))
+
+    (testing "409 is returned  when revision is <= the current revision of the acl"
+      (is (= {:status 409
+              :body {:errors ["Expected revision-id of [2] got [1] for [ACL1200000009-CMR]"]}
+              :content-type :json}
+             (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true :cmr-revision-id 1}))))
+
+    (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
+      (is (= {:status 200
+              :body {:revision-id 2
+                     :concept-id acl-concept-id}
+              :content-type :json}
+             (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true :cmr-revision-id 2}))))))
+
 (deftest delete-acl-test
   (let [token (echo-util/login-guest (test-util/conn-context))
         acl-concept-id (:concept_id

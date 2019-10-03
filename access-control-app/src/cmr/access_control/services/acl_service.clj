@@ -64,15 +64,20 @@
         revision-id))
     (catch NumberFormatException _)))
 
+(defn- get-valid-revision-id
+  "Return the revision id if it is valid."
+  [revision-id]
+  (if-let [valid-revision-id (parse-validate-revision-id revision-id)]
+    valid-revision-id
+    (errors/throw-service-error
+      :invalid-data
+      (msg/invalid-revision-id revision-id))))
+
 (defn- set-revision-id-in-concept
   "Set the revision-id in concept if the revision-id is provided and valid."
   [concept revision-id]
   (if revision-id
-    (if-let [revision-id (parse-validate-revision-id revision-id)]
-      (assoc concept :revision-id revision-id)
-      (errors/throw-service-error
-        :invalid-data
-        (msg/invalid-revision-id revision-id)))
+    (assoc concept :revision-id (get-valid-revision-id revision-id))
     concept))
 
 (defn update-acl
@@ -111,20 +116,24 @@
        resp))))
 
 (defn delete-acl
-  "Delete the ACL with the given concept id."
-  [context concept-id]
-  (common-enabled/validate-write-enabled context "access control")
-  (let [acl-concept (fetch-acl-concept context concept-id)
-        acl (edn/read-string (:metadata acl-concept))]
-    (acl-auth/authorize-acl-action context :delete acl)
-    (let [tombstone {:concept-id (:concept-id acl-concept)
-                      :revision-id (inc (:revision-id acl-concept))
-                      :deleted true}
-          resp (mdb/save-concept context tombstone)]
-      ;; unindexing is synchronous
-      (index/unindex-acl context concept-id)
-      (info (acl-util/acl-log-message context tombstone acl-concept :delete))
-      resp)))
+  "Delete the ACL with the given concept id and revision-id"
+  ([context concept-id]
+   (delete-acl context concept-id nil))
+  ([context concept-id revision-id]
+   (common-enabled/validate-write-enabled context "access control")
+   (let [acl-concept (fetch-acl-concept context concept-id)
+         acl (edn/read-string (:metadata acl-concept))]
+     (acl-auth/authorize-acl-action context :delete acl)
+     (let [tombstone {:concept-id (:concept-id acl-concept)
+                       :revision-id (if revision-id
+                                      (get-valid-revision-id revision-id)
+                                      (inc (:revision-id acl-concept)))
+                       :deleted true}
+           resp (mdb/save-concept context tombstone)]
+       ;; unindexing is synchronous
+       (index/unindex-acl context concept-id)
+       (info (acl-util/acl-log-message context tombstone acl-concept :delete))
+       resp))))
 
 ;; Member Functions
 
