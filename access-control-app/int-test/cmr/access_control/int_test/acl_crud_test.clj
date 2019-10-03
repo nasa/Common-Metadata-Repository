@@ -1044,7 +1044,7 @@
                                                   :collection_applicable true
                                                   :provider_id "PROV1"}}
                          {:token token}))]
-    (testing "409 is returned  when revision-id is invalid"
+    (testing "422 is returned  when revision-id is invalid"
       (is (= {:status 422
               :body {:errors ["Invalid revision-id [invalid]. Cmr-Revision-id in the header must be a positive integer."]}
               :content-type :json}
