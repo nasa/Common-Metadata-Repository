@@ -439,6 +439,7 @@ For system, provider, and single instance identities, the grantable permissions 
 | PROVIDER_CALENDAR_EVENT         | create, update, delete       |
 | DASHBOARD_DAAC_CURATOR          | create, read, update, delete |
 | NON_NASA_DRAFT_USER             | create, read, update, delete |
+| NON_NASA_DRAFT_APPROVER         | create, read, update, delete |
 
 #### Single Instance Identity
 
