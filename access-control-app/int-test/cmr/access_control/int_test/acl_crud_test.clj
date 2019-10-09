@@ -1314,10 +1314,17 @@
                                         :target "NON_NASA_DRAFT_APPROVER"}}
         acl (access-control/create-acl (test-util/conn-context)
                                        draft-acl
+                                       {:token token})
+        acl2 (access-control/create-acl (test-util/conn-context)
+                                       draft-acl2
                                        {:token token})]
     (is (= draft-acl
            (access-control/get-acl (test-util/conn-context)
                                    (:concept_id acl)
+                                   {:token token})))
+    (is (= draft-acl2
+           (access-control/get-acl (test-util/conn-context)
+                                   (:concept_id acl2)
                                    {:token token})))
 
     (testing "MMT DRAFT NON NASA Acl permissions"
@@ -1345,7 +1352,15 @@
         ["read" "update"]
         {:user_id "user2"
          :provider "PROV1"
-         :target "NON_NASA_DRAFT_USER"}
+         :target "NON_NASA_DRAFT_USER"})
+
+      (are3 [perms params]
+        (is (= {"NON_NASA_DRAFT_APPROVER" perms}
+               (json/parse-string
+                 (access-control/get-permissions
+                  (test-util/conn-context)
+                  params
+                  {:token token}))))
 
         "user1 permissions NON_NASA_DRAFT_APPROVER"
         ["read" "create" "update" "delete"]
