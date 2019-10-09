@@ -18,6 +18,7 @@
   (.. (RedisServer/builder)
       (redisExecProvider exec-provider)
       (port (int port))
+      (setting "bind 127.0.0.1")
       build))
 
 (defn- create-redis-exec-provider
