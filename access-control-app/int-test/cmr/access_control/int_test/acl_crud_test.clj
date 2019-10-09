@@ -1304,6 +1304,14 @@
                                         :permissions ["read" "create" "delete" "update"]}]
                    :provider_identity {:provider_id "PROV1"
                                        :target "NON_NASA_DRAFT_USER"}}
+        draft-acl2 {:group_permissions [{:user_type "guest"
+                                         :permissions ["read"]}
+                                        {:user_type "registered"
+                                         :permissions ["read" "update"]}
+                                        {:group_id group1-concept-id
+                                         :permissions ["read" "create" "delete" "update"]}]
+                    :provider_identity {:provider_id "PROV1"
+                                        :target "NON_NASA_DRAFT_APPROVER"}}
         acl (access-control/create-acl (test-util/conn-context)
                                        draft-acl
                                        {:token token})]
@@ -1312,7 +1320,7 @@
                                    (:concept_id acl)
                                    {:token token})))
 
-    (testing "MMT DRAFT NON NASA USERS Acl permissions"
+    (testing "MMT DRAFT NON NASA Acl permissions"
       (are3 [perms params]
         (is (= {"NON_NASA_DRAFT_USER" perms}
                (json/parse-string
@@ -1321,23 +1329,42 @@
                   params
                   {:token token}))))
 
-        "user1 permissions"
+        "user1 permissions NON_NASA_DRAFT_USER"
         ["read" "create" "update" "delete"]
         {:user_id "user1"
          :provider "PROV1"
          :target "NON_NASA_DRAFT_USER"}
 
-        "guest permissions"
+        "guest permissions NON_NASA_DRAFT_USER"
         ["read"]
         {:user_type "guest"
          :provider "PROV1"
          :target "NON_NASA_DRAFT_USER"}
 
-        "user2 permissions"
+        "user2 permissions NON_NASA_DRAFT_USER"
         ["read" "update"]
         {:user_id "user2"
          :provider "PROV1"
-         :target "NON_NASA_DRAFT_USER"}))))
+         :target "NON_NASA_DRAFT_USER"}
+
+        "user1 permissions NON_NASA_DRAFT_APPROVER"
+        ["read" "create" "update" "delete"]
+        {:user_id "user1"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_APPROVER"}
+
+        "guest permissions NON_NASA_DRAFT_APPROVER"
+        ["read"]
+        {:user_type "guest"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_APPROVER"}
+
+        "user2 permissions NON_NASA_DRAFT_APPROVER"
+        ["read" "update"]
+        {:user_id "user2"
+         :provider "PROV1"
+         :target "NON_NASA_DRAFT_APPROVER"}))))
+
 
 (deftest CMR-5128-mmt-dashboard-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
