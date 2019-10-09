@@ -1,10 +1,27 @@
 const fetch = require('node-fetch');
+const { getSecureParam } = require('./util');
 
 /* CMR ENVIRONMENT VARIABLES */
 const cmrRootUrl = `http://${process.env.CMR_ROOT}`;
 const cmrCollectionUrl = `${cmrRootUrl}/search/collections.json?concept_id=`;
 const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
-const echoToken = process.env.ECHO_TOKEN || '';
+
+/**
+ * getEchoToken: Fetch token for CMR requests
+ * @returns {String} ECHO Token for CMR requests
+ * @throws {Error} If no token is found. CMR will not return anything
+ * if no token is supplied.
+ */
+const getEchoToken = async () => {
+  console.log(process.env.CMR_ENVIRONMENT);
+  const response = await getSecureParam(`/${process.env.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`);
+
+  if (response === undefined) {
+    throw new Error('ECHO Token not found. Please update config!');
+  }
+
+  return response;
+};
 
 /**
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
@@ -14,19 +31,27 @@ const echoToken = process.env.ECHO_TOKEN || '';
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-
-  return fetch(cmrEndpoint + conceptId, {
-      method: 'GET',
-      headers: {
-        'Echo-Token': echoToken
-      }
+  const token = getEchoToken();
+  const response = await fetch(cmrEndpoint + conceptId, {
+    method: 'GET',
+    headers: {
+      'Echo-Token': token
+    }
   })
-    .then(response => response.json())
-    .then(json => json.feed.entry[0])
+    .then(res => res.json())
+    .then(json => {
+      if (json.errors) {
+        throw new Error(`The following errors ocurred: ${json.errors}`);
+      } else {
+        return json.feed.entry[0];
+      }
+    })
     .catch(error => {
       console.log(`Could not find concept ${conceptId}: ${error}`);
       return null;
     });
+
+  return response;
 };
 
 /**
