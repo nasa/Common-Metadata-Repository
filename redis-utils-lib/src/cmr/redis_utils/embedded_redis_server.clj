@@ -14,7 +14,7 @@
 
 (defn- create-redis-server-with-settings
   "Create a redis server."
-  [port ^RedisExecProvider exec-provider]
+  [^RedisExecProvider exec-provider port]
   (.. (RedisServer/builder)
       (redisExecProvider exec-provider)
       (port (int port))
@@ -38,7 +38,7 @@
     [this system]
     (debug "Starting redis server on port" port)
     (let [^RedisExecProvider redis-exec-provider (create-redis-exec-provider)
-          ^RedisServer redis-server (create-redis-server-with-settings port redis-exec-provider)
+          ^RedisServer redis-server (create-redis-server-with-settings redis-exec-provider port)
           this (assoc this :redis-server redis-server)]
       (.start redis-server)
       this))

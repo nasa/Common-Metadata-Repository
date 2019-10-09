@@ -8,21 +8,21 @@
 
 (defn- embedded-redis-server-fixture
   [f]
-  (let [redis-server (embedded-redis-server/create-redis-server 6379)
-        started-redis-server (lifecycle/start redis-server nil)]
+  (try
+    ;; Check if server is already running.
+    (wcar {} (carmine/ping))
     (f)
-    (lifecycle/stop started-redis-server nil)))
+    (catch Exception _
+      (let [redis-server (embedded-redis-server/create-redis-server)
+            started-redis-server (lifecycle/start redis-server nil)]
+        (f)
+        (lifecycle/stop started-redis-server nil)))))
 
 (use-fixtures :once embedded-redis-server-fixture)
 
-(def ^:private redis-connection
-  {:pool {}
-   :spec {:host "localhost"
-          :port 6379}})
-
 (deftest test-basic-redis
   (testing "Able to reach redis server..."
-    (is (= "PONG" (wcar redis-connection (carmine/ping)))))
+    (is (= "PONG" (wcar {} (carmine/parse-raw (carmine/ping))))))
   (testing "Basic key insertion and retrieval..."
-    (is (= "OK" (wcar redis-connection (carmine/set "test" "insertion"))))
-    (is (= "insertion" (wcar redis-connection (carmine/get "test"))))))
+    (is (= "OK" (wcar {} (carmine/set "test" "insertion"))))
+    (is (= "insertion" (wcar {} (carmine/get "test"))))))
