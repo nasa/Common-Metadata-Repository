@@ -200,12 +200,12 @@
        (GET "/swagger.json" {:keys [headers]}
          (if-let [resource (site-resource "swagger.json")]
            {:status 200
-             :body (-> resource
-                       slurp
-                       (string/replace "%CMR-PROTOCOL%" public-protocol)
-                       (string/replace "%CMR-HOST%" (headers "host"))
-                       (string/replace "%CMR-BASE-PATH%" relative-root-url))
-             :headers (:headers cr/options-response)}
+            :body (-> resource
+                      slurp
+                      (string/replace "%CMR-PROTOCOL%" public-protocol)
+                      (string/replace "%CMR-HOST%" (headers "host"))
+                      (string/replace "%CMR-BASE-PATH%" relative-root-url))
+            :headers (:headers cr/options-response)}
            (route/not-found (site-resource "404.html"))))
        ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
        (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
@@ -214,13 +214,15 @@
                  site-example-provider (get site-provider-map (headers "host") "PROV1")
                  cmr-example-collection-id (str "C1234567-" site-example-provider)]
              {:status 200
-               :body (-> resource
-                         slurp
-                         (string/replace "%CMR-ENDPOINT%" cmr-root)
-                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
+              :body (-> resource
+                        slurp
+                        (string/replace "%CMR-ENDPOINT%" cmr-root)
+                        (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
        ;; Other static resources (Javascript, CSS)
        (route/resources "/" {:root resource-root})
-       (pages/not-found))))
+       (pages/not-found))
+     (context "/" []
+       (route/resources "/"))))
   ([public-protocol relative-root-url welcome-page-location]
    (routes
      ;; CMR Application Welcome Page
