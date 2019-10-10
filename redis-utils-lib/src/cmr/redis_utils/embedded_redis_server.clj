@@ -3,8 +3,10 @@
   (:require
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info]]
-   [cmr.redis-utils.config :as redis-config])
+   [cmr.redis-utils.config :as redis-config]
+   [taoensso.carmine :as carmine :refer [wcar]])
   (:import
+   (java.io EOFException)
    (redis.embedded RedisExecProvider
                    RedisServer)
    (redis.embedded.util OS)))
@@ -19,6 +21,7 @@
       (redisExecProvider exec-provider)
       (port (int port))
       (setting "bind 127.0.0.1")
+      (setting "appendonly no")
       build))
 
 (defn- create-redis-exec-provider
@@ -40,7 +43,16 @@
     (let [^RedisExecProvider redis-exec-provider (create-redis-exec-provider)
           ^RedisServer redis-server (create-redis-server-with-settings redis-exec-provider port)
           this (assoc this :redis-server redis-server)]
-      (.start redis-server)
+      (try
+        (.start redis-server)
+        (catch RuntimeException _
+          (debug "Redis server already running on specified port. Attempting to kill and restart.")
+          (try
+            (wcar {:spec {:port port}} (carmine/shutdown "NOSAVE"))
+            (catch EOFException e)
+            (finally
+              (.start redis-server)
+              (debug "Successfully restarted redis server on port " port)))))
       this))
 
   (stop
