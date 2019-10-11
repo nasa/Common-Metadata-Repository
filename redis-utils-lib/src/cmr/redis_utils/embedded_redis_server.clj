@@ -6,7 +6,6 @@
    [cmr.redis-utils.config :as redis-config]
    [taoensso.carmine :as carmine :refer [wcar]])
   (:import
-   (java.io EOFException)
    (redis.embedded RedisExecProvider
                    RedisServer)
    (redis.embedded.util OS)))
