@@ -43,16 +43,7 @@
     (let [^RedisExecProvider redis-exec-provider (create-redis-exec-provider)
           ^RedisServer redis-server (create-redis-server-with-settings redis-exec-provider port)
           this (assoc this :redis-server redis-server)]
-      (try
-        (.start redis-server)
-        (catch RuntimeException _
-          (debug "Redis server already running on specified port. Attempting to kill and restart.")
-          (try
-            (wcar {:spec {:port port}} (carmine/shutdown "NOSAVE"))
-            (catch EOFException e)
-            (finally
-              (.start redis-server)
-              (debug "Successfully restarted redis server on port " port)))))
+      (.start redis-server)
       this))
 
   (stop
