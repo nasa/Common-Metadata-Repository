@@ -4,6 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.static :as static]
    [cmr.common.log :refer :all]
    [cmr.search.site.data :as data]
@@ -32,6 +33,7 @@
                            :execution-context :cli})
           {:site-title "CMR Search"
            :page-title "API Documentation"
+           :release-version (str "v " (common-config/release-version))
            :page-content (static/md-file->html "docs/api.md")})))
 
 (defn- generate-site-docs
@@ -44,6 +46,7 @@
                            :execution-context :cli})
           {:site-title "CMR Search"
            :page-title "Site Routes & Web Resource Documentation"
+           :release-version (str "v " (common-config/release-version))
            :page-content (static/md-file->html "docs/site.md")})))
 
 (defn- generate-site-resources
