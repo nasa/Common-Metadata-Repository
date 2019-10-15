@@ -123,7 +123,9 @@
   (let [supported-input-formats (concept-type->supported-input-formats concept-type)
         supported-output-formats (concept-type->supported-output-formats concept-type)
         content-type (get headers "content-type")
-        accept-header (get headers "accept")
+        ;; CMR-5495 If we do not get an accept header, we would like to show the user an error
+        ;; describing the problem.
+        accept-header (or (get headers "accept") "")
         ;; always skip sanitize of granules for now as we have not considered sanitizing for granules yet
         skip-sanitize-umm? (= "true" (get headers "cmr-skip-sanitize-umm-c"))
         options (if (and skip-sanitize-umm? (mt/umm-json? accept-header))
@@ -132,7 +134,13 @@
 
     ;; just for validation (throws service error if invalid media type is given)
     (mt/extract-header-mime-type supported-input-formats headers "content-type" true)
-    (mt/extract-header-mime-type supported-output-formats headers "accept" true)
+    (mt/extract-header-mime-type
+     supported-output-formats
+     ;; CMR-5495 Put "" string back into the accept header if none is supplied to give proper
+     ;; error message.
+     (assoc headers "accept" accept-header)
+     "accept"
+     true)
 
     ;; Can not skip-sanitize-umm when the target format is not UMM-C
     (when (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
