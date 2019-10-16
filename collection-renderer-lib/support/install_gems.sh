@@ -47,6 +47,9 @@ java -cp $HOME/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-comp
 echo "Installing gems..."
 java -cp $HOME/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem install $gemName -i ../gems
 
+# Cannot expose hidden files to classpath. Need to have a non-dot prefix.
+cp ../gems/gems/$gemDir/.umm-version ../gems/gems/$gemDir/cmr.umm-version
+
 # cleanup temp gem directory
 cd $currDir
 remove_dir $tmpGemDir
