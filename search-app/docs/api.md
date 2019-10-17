@@ -324,7 +324,8 @@ The CMR Atom format provides search results in an XML file representing a feed o
 | summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
 | updated                     | date/time of the last update to the associated metadata                                                     |
 
-The following fields are specific to the CMR output and most correspond to ECHO10 fields of the same name:
+The following fields are specific to the CMR output and most correspond to ECHO10 fields of the same name.
+Important to note, dataCenter corresponds to the provider id while organizations will contain the data center names:
 
 |                                                                      CMR Specific Fields                                                                         ||
 |                  Field                     |                                                     Description                                                      |
@@ -337,9 +338,9 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:collectionConceptId (granules only)   | collection concept id of the granule                                                                                 |
 | echo:granuleSizeMB (granules only)         | granule size in megabytes                                                                                            |
 | echo:originalFormat                        | original metadata format                                                                                             |
-| echo:dataCenter                            | data center providing the metadata                                                                                   |
+| echo:dataCenter                            | provider id                                                                                   |
 | echo:archiveCenter (collections only)      | archive center of the metadata                                                                                       |
-| echo:organizations (collections only)      | organizations associated with the metadata                                                                           |
+| echo:organizations (collections only)      | organizations associated with the metadata, including data centers                                                                           |
 | echo:processingLevelId (collections only)  | processing level id of the metadata                                                                                  |
 | time:start                                 | start time of the metadata                                                                                           |
 | time:end                                   | end time of the metadata                                                                                             |
@@ -347,7 +348,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:orbit (granules only)                 | orbit info of the metadata                                                                                           |
 | echo:orbitCalSpatialDomain (granules only) | orbit calculated spatial domain nfo of the metadata                                                                  |
 | echo:coordinateSystem                      | coordinate system info of the metadata                                                                               |
-| echo:orbitParameters (collections only)    | fields releated to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
+| echo:orbitParameters (collections only)    | fields related to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
 | georss:point                               | spatial point info of the metadata                                                                                   |
 | georss:line                                | spatial line info of the metadata                                                                                    |
 | georss:box                                 | spatial bounding box info of the metadata                                                                            |
