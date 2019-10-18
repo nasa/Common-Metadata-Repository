@@ -19,7 +19,8 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.transmit.connection :as transmit-conn])
   (:import
-   (clojure.lang ExceptionInfo)))
+   clojure.lang.ExceptionInfo
+   java.net.UnknownHostException))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -100,12 +101,28 @@
     (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
+(defn- do-send-with-retry
+  "Sends a query to ES, either normal or using a scroll query."
+  [context index-info query max-retries]
+  (try
+    (if (> max-retries 0)
+      (if-let [scroll-id (:scroll-id query)]
+        (scroll-search context scroll-id)
+        (esd/search
+         (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
+      (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
+    (catch UnknownHostException e
+      (info (format
+             (str "Excute ES query failed due to UnknownHostException. Retry in half a second."
+                  " Will retry up to %d times.")
+             max-retries))
+      (Thread/sleep 500)
+      (do-send-with-retry context index-info query (- max-retries 1)))))
+
 (defn- do-send
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query]
-  (if-let [scroll-id (:scroll-id query)]
-    (scroll-search context scroll-id)
-    (esd/search (context->conn context) (:index-name index-info) [(:type-name index-info)] query)))
+  (do-send-with-retry context index-info query (es-config/elastic-unknown-host-retries)))
 
 (defn- send-query
   "Send the query to ES using either a normal query or a scroll query. Handle socket exceptions
