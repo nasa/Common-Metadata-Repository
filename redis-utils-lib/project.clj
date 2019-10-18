@@ -19,7 +19,6 @@
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
-  :repl-options {:init-ns user}
   :resource-paths ["resources" ~redis-install-path]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
