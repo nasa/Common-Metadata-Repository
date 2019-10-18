@@ -24,6 +24,10 @@
   "Number of times to retry on ES unknown host error"
   {:default 3 :type Long})
 
+(defconfig elastic-unknown-host-retry-interval-ms
+  "Number of milliseconds to retry an ES unknown host error"
+  {:default 500 :type Long})
+
 (defconfig elastic-scroll-search-type
   "Search type to use with scrolling - either 'scan' or 'query_then_fetch'"
   {:default "query_then_fetch"})
