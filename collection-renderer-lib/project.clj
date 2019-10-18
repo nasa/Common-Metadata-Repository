@@ -35,6 +35,7 @@
   :resource-paths ["resources" ~gem-install-path]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :jar-inclusions [#"\.umm-version"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
