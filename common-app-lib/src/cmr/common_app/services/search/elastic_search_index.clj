@@ -113,10 +113,11 @@
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
     (catch UnknownHostException e
       (info (format
-             (str "Excute ES query failed due to UnknownHostException. Retry in half a second."
+             (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
                   " Will retry up to %d times.")
+             (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
-      (Thread/sleep 500)
+      (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
       (do-send-with-retry context index-info query (- max-retries 1)))))
 
 (defn- do-send
