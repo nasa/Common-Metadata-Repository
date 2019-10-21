@@ -74,6 +74,7 @@
   * `:all VALUE` - in this case, all other keys will be set to this
     VALUE
   * `:elastic VALUE`
+  * `:redis VALUE`
   * `:echo VALUE`
   * `:db VALUE`
   * `:messaging VALUE`
@@ -101,7 +102,7 @@
   ;; Note that the keys are listed below as a means of self-documentation; they
   ;; are not actually used individually, but rather as a whole with the
   ;; `new-modes` hash map.
-  [& {:keys [all _elastic _echo _db _messaging] :as new-modes}]
+  [& {:keys [all _elastic _echo _db _messaging _redis] :as new-modes}]
   (->> new-modes
        (maybe-set-all-modes all)
        (remove #(nil? (val %)))
@@ -190,7 +191,7 @@
   ```"
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
-  [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
+  [& {:keys [_elastic _echo _db _messaging _redis] :as new-modes}]
 
   (config/reset-config-values)
 
@@ -205,6 +206,8 @@
       (apply set-modes! (mapcat seq new-modes)))
 
     (dev-config/set-dev-system-elastic-type! (:elastic run-modes))
+
+    (dev-config/set-dev-system-redis-type! (:redis run-modes))
 
     (dev-config/set-dev-system-echo-type! (:echo run-modes))
     ;; IMPORTANT: MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE
@@ -273,7 +276,7 @@
   set, the default from initialization will be used."
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
-  [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
+  [& {:keys [_elastic _echo _db _messaging _redis] :as new-modes}]
   (when-not (empty? new-modes)
     (apply set-modes! (mapcat seq new-modes)))
   ;; Stop the system integration test system

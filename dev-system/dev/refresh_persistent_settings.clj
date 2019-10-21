@@ -38,4 +38,5 @@
   (atom {:elastic default-run-mode
          :echo default-run-mode
          :db default-run-mode
-         :messaging default-run-mode}))
+         :messaging default-run-mode
+         :redis default-run-mode}))
