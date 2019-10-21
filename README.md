@@ -51,6 +51,7 @@ Search API provides access to this metadata.
 - Maven (https://maven.apache.org/install.html)
     - Mac OS X devs can use `brew install maven`
     - Linux devs can use `sudo apt-get install maven`
+- GCC and libc (used for redis installation)
 
 ## Obtaining the Code
 

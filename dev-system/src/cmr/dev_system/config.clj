@@ -60,3 +60,8 @@
   {:default :in-memory
    :parser parse-dev-system-component-type})
 
+(defconfig dev-system-redis-type
+  "Specifies whether dev system should run an in-memory redis or
+  use an external instance."
+  {:default :in-memory
+   :parser parse-dev-system-component-type})

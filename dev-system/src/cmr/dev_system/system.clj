@@ -30,6 +30,8 @@
    [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.mock-echo.system :as mock-echo-system]
+   [cmr.redis-utils.config :as redis-config]
+   [cmr.redis-utils.embedded-redis-server :as redis-server]
    [cmr.search.system :as search-system]
    [cmr.transmit.config :as transmit-config]
    [cmr.virtual-product.config :as vp-config]
@@ -118,6 +120,21 @@
 (defmethod create-elastic :external
   [_]
   (elastic-config/set-elastic-port! 9209))
+
+(defmulti create-redis
+  "Sets redis configuration values and returns an instance of a Redis component to run
+  in memory if applicable."
+  (fn [type]
+    type))
+
+(defmethod create-redis :in-memory
+  [_]
+  (let [port (redis-config/redis-port)]
+    (redis-server/create-redis-server port)))
+
+(defmethod create-redis :external
+  [_]
+  nil)
 
 (defmulti create-db
   "Returns an instance of the database component to use."
@@ -245,16 +262,18 @@
   {:elastic (dev-config/dev-system-elastic-type)
    :echo (dev-config/dev-system-echo-type)
    :db (dev-config/dev-system-db-type)
-   :message-queue (dev-config/dev-system-queue-type)})
+   :message-queue (dev-config/dev-system-queue-type)
+   :redis (dev-config/dev-system-redis-type)})
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [{:keys [elastic echo db message-queue]} (component-type-map)
+  (let [{:keys [elastic echo db message-queue redis]} (component-type-map)
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
         elastic-server (create-elastic elastic)
+        redis-server (create-redis redis)
         control-server (control/create-server)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
@@ -269,7 +288,8 @@
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
-                        :broker-wrapper queue-broker})
+                        :broker-wrapper queue-broker
+                        :redis-server redis-server})
      :post-components {:control-server control-server}}))
 
 (defn- stop-components
@@ -324,7 +344,6 @@
   and start it running. Returns an updated instance of the system."
   [this]
   (info "System starting")
-
   (-> this
       (start-components :pre-components)
       start-apps
