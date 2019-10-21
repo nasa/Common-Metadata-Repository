@@ -4,7 +4,7 @@ Provides a public search API for concepts in the CMR.
 
 ## API Documentation
 
-API docs for the search-app project are located in `api_docs.md`. They can be
+API docs for the search-app project are located in `api.md`. They can be
 generated into the static site by running the following:
 
 ```
