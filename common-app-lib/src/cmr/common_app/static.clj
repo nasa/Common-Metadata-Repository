@@ -142,6 +142,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common-app.api.routes :as cr]
+   [cmr.common-app.config :as config]
    [cmr.common-app.site.pages :as pages]
    [compojure.handler :as handler]
    [compojure.route :as route]
@@ -217,6 +218,7 @@
               :body (-> resource
                         slurp
                         (string/replace "%CMR-ENDPOINT%" cmr-root)
+                        (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
        ;; Other static resources (Javascript, CSS)
        (route/resources "/" {:root resource-root})
