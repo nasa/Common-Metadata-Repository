@@ -91,9 +91,15 @@
       (is (string/includes?
            (:body response)
            "Documentation for CMR Search"))
-      (is (string/includes?
-           (:body response)
-           "v dev"))
+      (is (or
+           ;; local build
+           (string/includes?
+            (:body response)
+            "v dev")
+           ;; ci build
+           (string/includes?
+            (:body response)
+            "v %CMR-RELEASE-VERSION%")))
       (is (string/includes?
            (:body response)
            "site/docs/search/api"))
