@@ -255,12 +255,12 @@
 
 (defn- get-elastic-version-with-associations
   "Returns the elastic version of the concept and its associations"
-  [context concept tag-associations variable-associations service-associations]
+  [context concept associations]
   (es/get-elastic-version
    (-> concept
-       (assoc :tag-associations tag-associations)
-       (assoc :variable-associations variable-associations)
-       (assoc :service-associations service-associations))))
+       (assoc :tag-associations (:tag-associations associations))
+       (assoc :variable-associations (:variable-associations associations))
+       (assoc :service-associations (:service-associations associations)))))
 
 (defmulti get-elastic-version
   "Returns the elastic version of the concept"
@@ -277,19 +277,22 @@
         variable-associations (meta-db/get-associations-for-collection
                                context concept :variable-association)
         service-associations (meta-db/get-associations-for-collection
-                              context concept :service-association)]
+                              context concept :service-association)
+        associations {:tag-associations tag-associations
+                      :variable-associations variable-associations
+                      :service-associations service-associations}]
     (get-elastic-version-with-associations
-     context concept tag-associations variable-associations service-associations)))
+     context concept associations)))
 
 (defmethod get-elastic-version :variable
   [context concept]
   (let [variable-associations (meta-db/get-associations-for-variable context concept)]
-    (get-elastic-version-with-associations context concept nil variable-associations nil)))
+    (get-elastic-version-with-associations context concept {:variable-associations variable-associations})))
 
 (defmethod get-elastic-version :service
   [context concept]
   (let [service-associations (meta-db/get-associations-for-service context concept)]
-    (get-elastic-version-with-associations context concept nil nil service-associations)))
+    (get-elastic-version-with-associations context concept {:service-associations service-associations})))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"
@@ -359,9 +362,11 @@
           (let [tag-associations (get-tag-associations context concept)
                 variable-associations (get-variable-associations context concept)
                 service-associations (get-service-associations context concept)
+                associations {:tag-associations tag-associations
+                              :variable-associations variable-associations
+                              :service-associations service-associations}
                 elastic-version (get-elastic-version-with-associations
-                                 context concept tag-associations variable-associations
-                                 service-associations)
+                                 context concept associations)
                 tag-associations (es/parse-non-tombstone-associations
                                   context tag-associations)
                 variable-associations (es/parse-non-tombstone-associations
