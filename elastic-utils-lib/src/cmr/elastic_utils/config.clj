@@ -20,6 +20,10 @@
   "Timeout for ES scrolling"
   {:default "5m"})
 
+(defconfig elastic-query-timeout
+  "Timeout for ES queries"
+  {:default "170s"})
+
 (defconfig elastic-unknown-host-retries
   "Number of times to retry on ES unknown host error"
   {:default 3 :type Long})

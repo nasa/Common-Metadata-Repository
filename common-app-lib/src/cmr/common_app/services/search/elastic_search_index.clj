@@ -68,6 +68,7 @@
                  concept-type
                  (or (:result-fields query) (concept-type+result-format->fields concept-type query)))]
     {:version true
+     :timeout (es-config/elastic-query-timeout)
      :sort sort-params
      :size page-size
      :from offset

@@ -14,6 +14,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
     * [Extensions](#extensions)
+    * [Request Timeouts](#request-timeouts)
   * [Supported Result Formats](#supported-result-formats)
     * [ATOM](#atom)
     * [CSV](#csv)
@@ -289,6 +290,12 @@ Here is a list of supported extensions and their corresponding MimeTypes:
     * The UMM JSON extension returns concepts in the latest version of the UMM.
   * `umm_json_vX_Y` "application/vnd.nasa.cmr.umm_results+json; version=X.Y"
     * X and Y should be replaced with a major and minor number of the UMM version requested.
+
+#### <a name="request-timeouts"></a> Request Timeouts
+
+The CMR operating environment imposes a hard limit of 180 seconds on any request, after which a 504 error is
+returned. To avoid this, the CMR has an internal query timeout of 170 seconds - any query taking longer will time
+out and a subset of the total hit results will be returned instead of an error.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
 
