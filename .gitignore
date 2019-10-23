@@ -5,6 +5,9 @@
 /.lein-*
 profiles.clj
 browse-scaler/src/node_modules
+.classpath
+.project
+*.prefs
 
 ###############################
 ### Test Files
