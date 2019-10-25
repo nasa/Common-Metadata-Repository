@@ -76,7 +76,8 @@
   fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
   corresponding queue event to be put back in the queue to be retried."
   [response granule-ur]
-  (let [{:keys [status body]} response]
+  (let [{:keys [status body]} response
+        no-coll-pattern (re-pattern (str ".*Collection.*referenced in granule.*" granule-ur ".*does not exist.*"))]
     (cond
       (<= 200 status 299)
       (info (format "Ingested virtual granule [%s] with the following response: [%s]"
@@ -88,6 +89,14 @@
       (= status 409)
       (info (format (str "Received a response with status code [409] and the following body when "
                          "ingesting the virtual granule [%s] : [%s]. The event will be ignored.")
+                    granule-ur (pr-str body)))
+
+      ;; Collection doesn't exist case.
+      ;; This occurs when the virtual granule is ingested for a collection that has been deleted.
+      ;; Log the info rather than throwing internal error.
+      (re-matches no-coll-pattern (pr-str body))
+      (info (format (str "Received a collection does not exist response with the following body when "
+                         "ingesting the virtual granule [%s] : [%s].")
                     granule-ur (pr-str body)))
 
       :else
