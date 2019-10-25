@@ -295,7 +295,8 @@ Here is a list of supported extensions and their corresponding MimeTypes:
 
 The CMR operating environment imposes a hard limit of 180 seconds on any request, after which a 504 error is
 returned. To avoid this, the CMR has an internal query timeout of 170 seconds - any query taking longer will time
-out and a subset of the total hit results will be returned instead of an error.
+out and a subset of the total hit results will be returned instead of an error. The response for queries that time 
+out will include the `CMR-Time-Out` header set to `true`.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
 

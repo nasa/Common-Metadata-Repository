@@ -187,7 +187,7 @@
   (when (:aggregations query)
     (errors/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
 
-  (loop [offset 0 prev-items [] took-total 0]
+  (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
                     context (assoc query :offset offset :page-size unlimited-page-size))
           total-hits (get-in results [:hits :total])
@@ -202,11 +202,13 @@
         ;; We've got enough results now. We'll return the query like we got all of them back in one request
         (-> results
             (update-in [:took] + took-total)
-            (update-in [:hits :hits] concat prev-items))
+            (update-in [:hits :hits] concat prev-items)
+            (assoc :timed_out timed-out))
         ;; We need to keep searching subsequent pages
         (recur (long (+ offset unlimited-page-size))
                (concat prev-items current-items)
-               (long (+ took-total (:took results))))))))
+               (long (+ took-total (:took results)))
+               (or timed-out (:timed_out results)))))))
 
 
 (defn execute-query

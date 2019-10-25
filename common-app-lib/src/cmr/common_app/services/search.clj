@@ -66,5 +66,6 @@
     (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
     {:results result-str
      :hits (:hits results)
+     :timed-out (:timed-out results)
      :result-format (:result-format query)
      :scroll-id (:scroll-id results)}))

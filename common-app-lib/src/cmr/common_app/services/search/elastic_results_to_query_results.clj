@@ -37,15 +37,17 @@
   "Default function for converting elastic-results to query-results"
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
+        timed-out (:timed_out elastic-results)
         scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
     (results/map->Results
-     {:aggregations (:aggregations elastic-results)
-      :hits hits 
-      :items items 
-      :result-format (:result-format query)
-      :scroll-id scroll-id})))
+      {:aggregations (:aggregations elastic-results)
+        :hits hits 
+        :timed-out timed-out
+        :items items 
+        :result-format (:result-format query)
+        :scroll-id scroll-id})))
 
 (defmethod elastic-results->query-results :default
   [context query elastic-results]

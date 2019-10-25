@@ -270,6 +270,7 @@
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits
                      :items items
+                     :timed-out (:timed_out elastic-results)
                      :result-format (:result-format query)
                      :scroll-id scroll-id})))
 
