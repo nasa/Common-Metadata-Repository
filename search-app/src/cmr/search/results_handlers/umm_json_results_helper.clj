@@ -79,6 +79,7 @@
   [context concept-type query elastic-results]
   (let [{:keys [result-format]} query
         hits (get-in elastic-results [:hits :total])
+        timed-out (:timed_out elastic-results)
         scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         ;; Get concept metadata in specified UMM format and version
@@ -94,6 +95,7 @@
                     elastic-matches
                     concepts)]
     (results/map->Results {:hits hits
+                           :timed-out timed-out
                            :items items
                            :result-format result-format
                            :scroll-id scroll-id})))

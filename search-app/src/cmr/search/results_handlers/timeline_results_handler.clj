@@ -224,6 +224,7 @@
         items (map (partial collection-bucket->intervals (:interval query) start-date end-date)
                    (get-in elastic-results [:aggregations :by-collection :buckets]))]
     (r/map->Results {:items items
+                     :timed-out (:timed_out elastic-results)
                      :result-format (:result-format query)})))
 
 (defn interval->response-tuple

@@ -24,6 +24,8 @@
 
 (def HITS_HEADER "CMR-Hits")
 
+(def TIMED_OUT_HEADER "CMR-Timed-Out")
+
 (def TOOK_HEADER "CMR-Took")
 
 (def SCROLL_ID_HEADER "CMR-Scroll-Id")
@@ -53,9 +55,11 @@
   "Generate headers for search response. CORS response headers can be tested through
   dev-system/resources/cors_headers_test.html"
   [content-type results]
+  (println (str "RESULTS: " results))
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id"
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
           CORS_ORIGIN_HEADER "*"}
+         (when (:timed-out results) {TIMED_OUT_HEADER "true"})
          (when (:hits results) {HITS_HEADER (str (:hits results))})
          (when (:took results) {TOOK_HEADER (str (:took results))})
          (when (:scroll-id results) {SCROLL_ID_HEADER (str (:scroll-id results))})))
