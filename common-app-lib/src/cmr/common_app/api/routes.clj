@@ -55,7 +55,6 @@
   "Generate headers for search response. CORS response headers can be tested through
   dev-system/resources/cors_headers_test.html"
   [content-type results]
-  (println (str "RESULTS: " results))
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
           CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
           CORS_ORIGIN_HEADER "*"}
