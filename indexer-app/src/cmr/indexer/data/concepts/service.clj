@@ -72,11 +72,9 @@
   (let [service (concept-parser/parse-concept context service-concept)
         input-formats (distinct (get-in service [:ServiceOptions :SupportedInputFormats]))
         output-formats (distinct (get-in service [:ServiceOptions :SupportedOutputFormats]))]
-    (if (or (= (count output-formats) 0)
-            (and (= (count input-formats) (count output-formats) 1)
-                 (= input-formats output-formats)))
-      false
-      true)))
+    (not (or (= (count output-formats) 0)
+             (and (= (count input-formats) (count output-formats) 1)
+                  (= input-formats output-formats))))))
 
 (defn- has-subset-type?
   "Returns true if the given service has a defined SubsetType with one of its
