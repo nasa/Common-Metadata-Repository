@@ -11,6 +11,16 @@
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.util :as u]))
 
+(defn archive-and-distrution-information
+  "Returns an ArchiveAndDistributionInformation based on given attributes"
+  [attribs]
+  (umm-c/map->ArchiveAndDistributionInformationType attribs))
+
+(defn file-distribution-information
+  "Returns a FileDistributionInformation based on given attributes"
+  [attribs]
+  (umm-c/map->FileDistributionInformationType attribs))
+
 (defn location-keyword
   "Return a location keyword based on the given attributes."
   [attribs]
