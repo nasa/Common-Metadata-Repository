@@ -94,8 +94,10 @@
                       kms-index :concepts msg/directory-name-not-matches-kms-keywords)
      :ISOTopicCategories (match-kms-keywords-validation
                           kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)
-     :ArchiveAndDistributionInformation (match-kms-keywords-validation
-                                          kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}))
+     :ArchiveAndDistributionInformation
+      {:FileDistributionInformation
+       (match-kms-keywords-validation
+        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
