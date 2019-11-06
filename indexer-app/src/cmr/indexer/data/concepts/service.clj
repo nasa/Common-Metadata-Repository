@@ -73,7 +73,7 @@
         input-formats (distinct (get-in service [:ServiceOptions :SupportedInputFormats]))
         output-formats (distinct (get-in service [:ServiceOptions :SupportedOutputFormats]))]
     (not (or (= (count output-formats) 0)
-             (and (= (count input-formats) (count output-formats) 1)
+             (and (= (count output-formats) 1)
                   (= input-formats output-formats))))))
 
 (defn- has-subset-type?
