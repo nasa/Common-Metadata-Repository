@@ -11,7 +11,6 @@ console.log(`Timeout interval is: ${timeoutInterval}`);
  * @returns {JSON} assembled response object with image as a base64 string
  */
 const buildResponse = image => {
-  console.log(`Image for response: ${image}`);
   return {
     statusCode: 200,
     headers: {
@@ -61,30 +60,39 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   const cacheKey = `${conceptId}-${height}-${width}`;
   const imageFromCache = await getImageFromCache(cacheKey);
   if (imageFromCache) {
-    console.log(`returning cached image ${cacheKey}`);
+    console.log(`Returning cached image ${cacheKey}`);
     return buildResponse(imageFromCache);
   }
 
-  // If given an image url, fetch the image and resize. If no image
+  // If given an image url, fetch the image and resize. If no valid image
   // exists, return the not found response
-  const imageUrl = await withTimeout(timeoutInterval, getImageUrlFromConcept(conceptId, conceptType));
-  if (imageUrl === null) {
-    console.log(`No image url returned for: ${conceptId}`);
-    const imgNotFound = await notFound();
-    return buildResponse(imgNotFound);
+  const imageUrl = await withTimeout(
+    timeoutInterval,
+    getImageUrlFromConcept(conceptId, conceptType)
+  );
+  // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
+  if (imageUrl) {
+    const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
+    if (imageBuffer) {
+      const thumbnail = await resizeImage(imageBuffer, height, width);
+      if (thumbnail) {
+        cacheImage(cacheKey, thumbnail);
+        return buildResponse(thumbnail);
+      }
+    }
   }
 
-  const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
-  if (imageBuffer === null || imageBuffer === undefined) {
-    console.log(`No image returned for: ${conceptId}`);
-    const imgNotFound = await notFound();
-    return buildResponse(imgNotFound);
+  console.log(`No image found for: ${conceptId}. Returning default image.`);
+  const imgNotFound = await notFound();
+  // scale to requested size
+  const thumbnail = await resizeImage(imgNotFound, height, width);
+
+  if (thumbnail) {
+    return buildResponse(thumbnail);
   }
 
-  const thumbnail = await resizeImage(imageBuffer, height, width);
-  cacheImage(cacheKey, thumbnail);
-
-  return buildResponse(thumbnail);
+  // should never reach this point, but just in case we send back the full size no-image
+  return buildResponse(imgNotFound);
 };
 
 /**
@@ -120,5 +128,5 @@ exports.handler = async event => {
   const args = parseArguments(event);
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
 
-  return await resizeImageFromConceptId(args.conceptType, args.conceptId, args.h, args.w);
+  return resizeImageFromConceptId(args.conceptType, args.conceptId, args.h, args.w);
 };

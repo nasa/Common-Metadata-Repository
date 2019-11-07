@@ -13,7 +13,8 @@
   "scripts": {
     "test": "jest --coverage",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
-    "local-test": "jest --config jest.config.js"
+    "local-test": "jest --config jest.config.js",
+    "lint": "./node_modules/.bin/eslint \"*.js\""
   },
   "devDependencies": {
     "eslint": "^5.3.0",

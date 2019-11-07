@@ -11,8 +11,8 @@ exports.resizeImage = async (image, height, width) => {
   // If an image needs to be resized, it is because it was not available
   // in cache, so we will always want to cache that image
   try {
-    const w = parseInt(width) || null;
-    const h = parseInt(height) || null;
+    const w = parseInt(width, 10) || null;
+    const h = parseInt(height, 10) || null;
     console.log(`resizing image to dimensions: {h: ${h}, w: ${w}}`);
 
     const thumbnail = await sharp(image)
@@ -38,6 +38,6 @@ exports.notFound = async () => {
   const notFound = await sharp('image-unavailable.svg')
     .toFormat('png')
     .toBuffer();
-  console.log(`image not found. got file ${notFound}`);
+  console.log(`Image not found. Using default image`);
   return notFound;
 };

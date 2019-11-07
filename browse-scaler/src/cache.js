@@ -32,12 +32,14 @@ exports.cacheImage = (key, image) => {
 exports.getImageFromCache = async key => {
   try {
     const image = await getAsync(key);
-    console.log(`got image from cache ${image}`);
 
-    if (image) {
+    // workaround for bad cache entries that have the string "null" for the value
+    if (image && image !== 'null') {
+      console.log('got image from cache');
       return image;
     }
 
+    console.log('image is not in cache');
     return null;
   } catch (err) {
     console.error(`Could not get image from cache: ${err}`);
