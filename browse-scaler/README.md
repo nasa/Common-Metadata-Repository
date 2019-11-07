@@ -18,7 +18,14 @@ For example `jest cmr.test.js` will run that test file. Test output is produced 
 
 # Testing locally using lambci
 
-The lambda can be executed locally using Docker and the lambci/lambda image. The `local_test.sh` script will do this. E
+The lambda can be executed locally using Docker and the lambci/lambda image. The `local_test.sh` script will do this.
+
+```
+./local_test.sh <event json file>
+```
+
+`event_C1000001740-NSIDC_ECS.json` and `event_C1597928934-NOAA_NCEI.json` are example event JSON files that return the "Not Found" image
+and a valid image, respectively.
 
 # Invoking
 
