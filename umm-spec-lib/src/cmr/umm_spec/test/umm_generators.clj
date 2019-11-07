@@ -51,7 +51,8 @@
   with keys properties, required, and additionalProperties. This is used to handle a normal object
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :required :additionalProperties :dependencies :not :allOf} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties :dependencies :not :allOf
+                                :anyOf} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)

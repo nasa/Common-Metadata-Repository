@@ -25,7 +25,7 @@
                                                  :Type "GET DATA"})]
      :DataCenters [u/not-provided-data-center]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+     :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
      :AccessConstraints (umm-cmn/map->AccessConstraintsType {:Description "Test AccessConstraints"
                                                              :Value 2.0})
      :ShortName "short"

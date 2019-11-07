@@ -25,7 +25,7 @@
                                                  :Type "GET DATA"})]
      :DataCenters [umm-spec-util/not-provided-data-center]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+     :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
      :ShortName "short"
      :Version "V1"
@@ -47,7 +47,7 @@
                                                  :URLContentType "DistributionURL"
                                                  :Type "GET DATA"})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+     :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
      :ShortName "short"
      :Version "V1"

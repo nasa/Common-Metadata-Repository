@@ -308,7 +308,7 @@
    (assert-invalid-spatial coord-sys umm-c-coord-sys shapes errors :echo10))
   ([coord-sys umm-c-coord-sys shapes errors metadata-format]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-     (assert-invalid {:SpatialExtent (data-umm-cmn/spatial {:gsr umm-c-coord-sys})}
+     (assert-invalid {:SpatialExtent (data-umm-c/spatial {:gsr umm-c-coord-sys})}
                      {:spatial-coverage (apply dg/spatial shapes)}
                      ["SpatialCoverage" "Geometries" 0]
                      errors
@@ -317,7 +317,7 @@
 (defn assert-valid-spatial
   [coord-sys umm-c-coord-sys shapes]
   (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-    (assert-valid {:SpatialExtent (data-umm-cmn/spatial {:gsr umm-c-coord-sys})}
+    (assert-valid {:SpatialExtent (data-umm-c/spatial {:gsr umm-c-coord-sys})}
                   {:spatial-coverage (apply dg/spatial shapes)})))
 
 (defn assert-conflict
@@ -377,7 +377,7 @@
   (testing "granule with spatial but parent collection does not"
     (are2 [coll-gsr]
           (assert-invalid
-            {:SpatialExtent (when coll-gsr (data-umm-cmn/spatial {:gsr coll-gsr}))}
+            {:SpatialExtent (when coll-gsr (data-umm-c/spatial {:gsr coll-gsr}))}
             {:spatial-coverage
              (dg/spatial
                (umm-s/set-coordinate-system
@@ -395,7 +395,7 @@
           "NO_SPATIAL")))
 
 (deftest missing-spatial-coverage-test
-  (let [collection-attrs {:SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})}
+  (let [collection-attrs {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}
         granule-attrs {:format "application/echo10+xml; charset=utf-8"}]
     (assert-invalid collection-attrs
                     granule-attrs

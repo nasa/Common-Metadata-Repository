@@ -25,12 +25,12 @@
 (deftest search-by-track
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection
-                        {:SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                          :EntryTitle "E1"
                          :ShortName "S1"}))
         coll2 (d/ingest-umm-spec-collection
                "PROV2" (data-umm-c/collection
-                        {:SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                          :EntryTitle "E2"
                          :ShortName "S2"}))
         coll1-concept-id (:concept-id coll1)

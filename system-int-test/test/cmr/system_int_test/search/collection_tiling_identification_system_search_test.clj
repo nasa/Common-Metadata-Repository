@@ -12,11 +12,11 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-tiling-identification-system-name
-  (let [tiling1 (data-umm-cmn/tiling-identification-system "MODIS Tile SIN")
-        tiling2 (data-umm-cmn/tiling-identification-system "CALIPSO")
-        tiling3 (data-umm-cmn/tiling-identification-system "CALIPSO")
-        tiling4 (data-umm-cmn/tiling-identification-system "MISR")
-        tiling5 (data-umm-cmn/tiling-identification-system "MISR")
+  (let [tiling1 (data-umm-c/tiling-identification-system "MODIS Tile SIN")
+        tiling2 (data-umm-c/tiling-identification-system "CALIPSO")
+        tiling3 (data-umm-c/tiling-identification-system "CALIPSO")
+        tiling4 (data-umm-c/tiling-identification-system "MISR")
+        tiling5 (data-umm-c/tiling-identification-system "MISR")
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:TilingIdentificationSystems [tiling1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:TilingIdentificationSystems [tiling2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:TilingIdentificationSystems [tiling3]}))

@@ -269,3 +269,11 @@
 (defmethod interface/migrate-umm-version [:collection "1.13" "1.12"]
   [context c & _]
   (distributions-migration/migrate-down-to-1_12 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.13" "1.14"]
+  [context c & _]
+  (spatial-extent/migrate-up-to-1_14 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.14" "1.13"]
+  [context c & _]
+  (spatial-extent/migrate-down-to-1_13 c))

@@ -32,19 +32,6 @@
          :DataType DataType
          :Value (aa/gen-value DataType Value)}))))
 
-(defn tiling-identification-system
-  "Creates TilingIdentificationSystem specific attribute"
-  [name]
-  (umm-cmn/map->TilingIdentificationSystemType
-    {:TilingIdentificationSystemName name
-     :Coordinate1 {:MinimumValue 0.0 :MaximumValue 0.0}
-     :Coordinate2 {:MinimumValue 0.0 :MaximumValue 0.0}}))
-
-(defn tiling-identification-systems
-  "Returns a sequence of tiling-identification-systems with the given names"
-  [& names]
-  (map tiling-identification-system names))
-
 (defn data-dates
   "Returns DataDates field of umm-spec collection"
   [datadates]
@@ -166,17 +153,6 @@
                                         :Type "GET SERVICE"
                                         :URLContentType "CollectionURL"}
                                        attribs))))
-(defn spatial
-  [attributes]
-  (let [{:keys [sc hsd vsds gsr orbit]} attributes]
-    (umm-cmn/map->SpatialExtentType {:SpatialCoverageType sc
-                                     :HorizontalSpatialDomain
-                                       (when hsd (umm-cmn/map->HorizontalSpatialDomainType hsd))
-                                     :VerticalSpatialDomains
-                                       (when vsds (map umm-cmn/map->VerticalSpatialDomainType vsds))
-                                     :GranuleSpatialRepresentation gsr
-                                     :OrbitParameters (when orbit (umm-cmn/map->OrbitParametersType orbit))})))
-
 (defn contact-person
   "Creates a Personnel record for the opendata tests."
   ([first-name last-name email]

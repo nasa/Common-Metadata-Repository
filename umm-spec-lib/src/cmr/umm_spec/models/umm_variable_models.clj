@@ -244,8 +244,8 @@
 ;; The elements of this section apply to a variable.
 (defrecord CharacteristicsType
   [
-   ;; Describes the index ranges of a variable, which consist of a LatRange and an LonRange. Each
-   ;; field consists of an index range.
+   ;; This element describes the x and y dimension ranges for this variable. Typically these values
+   ;; are 2 latitude and longitude ranges, but they don't necessarily have to be.
    IndexRanges
 
    ;; The full path to the variable within the Granule structure. For example,

@@ -65,7 +65,7 @@
 
 (defn twod-coords
   [& names]
-  {:TilingIdentificationSystems (apply umm-spec-common/tiling-identification-systems names)})
+  {:TilingIdentificationSystems (apply data-umm-spec/tiling-identification-systems names)})
 
 (defn science-keywords
   [& sks]

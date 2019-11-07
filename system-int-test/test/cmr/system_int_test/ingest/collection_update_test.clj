@@ -500,7 +500,7 @@
                     (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle entry-title
                                                                                   :ShortName (d/unique-str "short-name")
                                                                                   :SpatialExtent (when spatial-params
-                                                                                                   (data-umm-cmn/spatial spatial-params))})))
+                                                                                                   (data-umm-c/spatial spatial-params))})))
         make-gran (fn [coll spatial]
                     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
                                                                                             (when spatial (dg/spatial spatial))})))
@@ -531,7 +531,7 @@
                             (let [updated-coll (dissoc coll :revision-id)
                                   updated-coll (assoc updated-coll
                                                       :SpatialExtent (when new-spatial-params
-                                                                       (data-umm-cmn/spatial new-spatial-params)))]
+                                                                       (data-umm-c/spatial new-spatial-params)))]
                               (d/ingest-umm-spec-collection "PROV1" updated-coll {:allow-failure? true})))]
 
     (index/wait-until-indexed)
@@ -790,7 +790,7 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")}))]
+                                                     :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")}))]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
@@ -802,7 +802,7 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)}))
+                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -822,7 +822,7 @@
                                                             {:EntryTitle "parent-collection"
                                                              :ShortName "S2"
                                                              :Version "V2"
-                                                             :TilingIdentificationSystems (apply data-umm-cmn/tiling-identification-systems tile-names)})
+                                                             :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
                                {:allow-failure? true})
             {:keys [status errors]} response]
         (is (= [422 expected-errors] [status errors])))
@@ -918,7 +918,7 @@
                         :ShortName "S1"
                         :Version "V1"
                         :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
-                        :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR")
+                        :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "MISR")
                         :Projects (data-umm-cmn/projects "PROJECT")
                         :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
 
@@ -950,7 +950,7 @@
       (assoc granule-map :project-refs ["prOJecT"])
 
       "Tiling Identification Systems"
-      (assoc collection-map :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR"))
+      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "MISR"))
       (assoc granule-map :two-d-coordinate-system (dg/two-d "MISR"))
 
       "Platforms Instruments Child Instruments"

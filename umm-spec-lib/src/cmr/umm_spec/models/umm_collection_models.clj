@@ -246,6 +246,56 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing UseConstraintsDescriptionType)
 
+;; Information about a collection with horizontal spatial coverage.
+(defrecord HorizontalSpatialDomainType
+  [
+   ;; The appropriate numeric or alpha code used to identify the various zones in the collection's
+   ;; grid coordinate system.
+   ZoneIdentifier
+
+   Geometry
+
+   ;; Specifies the horizontal spatial extents coordinate system and its resolution.
+   ResolutionAndCoordinateSystem
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
+
+;; Contains the excluded boundaries from the GPolygon.
+(defrecord ExclusiveZoneType
+  [
+   Boundaries
+  ])
+(record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
+
+;; Information about a two-dimensional tiling system related to this collection.
+(defrecord TilingIdentificationSystemType
+  [
+   TilingIdentificationSystemName
+
+   Coordinate1
+
+   Coordinate2
+  ])
+(record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
+
+;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
+(defrecord SpatialExtentType
+  [
+   ;; Denotes whether the collection's spatial coverage requires horizontal, vertical, horizontal
+   ;; and vertical, orbit, or vertical and orbit in the spatial domain and coordinate system
+   ;; definitions.
+   SpatialCoverageType
+
+   HorizontalSpatialDomain
+
+   VerticalSpatialDomains
+
+   OrbitParameters
+
+   GranuleSpatialRepresentation
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
+
 ;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
 ;; SpatialKeywords. Each tier must have data in the tier above it.
 (defrecord LocationKeywordType
@@ -332,6 +382,101 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing FileDistributionInformationType)
 
+;; This class defines the horizontal spatial extents coordinate system and the data product's
+;; horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal
+;; distance between successive elements of data in a dataset. This is synonymous with terms such as
+;; ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data
+;; resolution could be different in the two horizontal dimensions. Also, it is different from the
+;; spatial resolution of an instrument, which is the minimum distance between points that an
+;; instrument can see as distinct.
+(defrecord ResolutionAndCoordinateSystemType
+  [
+   ;; This element holds a description about the resoultion and coordinate system for people to
+   ;; read.
+   Description
+
+   ;; This element describes the geodetic model for the data product.
+   GeodeticModel
+
+   ;; This class defines a number of the data products horizontal data resolution. The horizontal
+   ;; data resolution is defined as the smallest horizontal distance between successive elements of
+   ;; data in a dataset. This is synonymous with terms such as ground sample distance, sample
+   ;; spacing and pixel size. It is to be noted that the horizontal data resolution could be
+   ;; different in the two horizontal dimensions. Also, it is different from the spatial resolution
+   ;; of an instrument, which is the minimum distance between points that an instrument can see as
+   ;; distinct.
+   HorizontalDataResolutions
+
+   ;; This element describes the local coordinate system for the data product.
+   LocalCoordinateSystem
+  ])
+(record-pretty-printer/enable-record-pretty-printing ResolutionAndCoordinateSystemType)
+
+(defrecord BoundingRectangleType
+  [
+   WestBoundingCoordinate
+
+   NorthBoundingCoordinate
+
+   EastBoundingCoordinate
+
+   SouthBoundingCoordinate
+  ])
+(record-pretty-printer/enable-record-pretty-printing BoundingRectangleType)
+
+(defrecord LineType
+  [
+   Points
+  ])
+(record-pretty-printer/enable-record-pretty-printing LineType)
+
+;; This class defines a number of the data products horizontal data resolution. The horizontal data
+;; resolution is defined as the smallest horizontal distance between successive elements of data in
+;; a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel
+;; size. It is to be noted that the horizontal data resolution could be different in the two
+;; horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which
+;; is the minimum distance between points that an instrument can see as distinct.
+(defrecord HorizontalDataResolutionType
+  [
+   ;; This element describes the angle of the measurement with respect to the instrument that gives
+   ;; an understanding of the specified resolution.
+   ViewingAngleType
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+
+   ;; The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most
+   ;; cases this is along the latitudinal axis.
+   YDimension
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MaximumYDimension
+
+   ;; This element describes the instrument scanning direction.
+   ScanDirection
+
+   ;; The minimum difference between two adjacent values on a horizontal plane in the X axis. In
+   ;; most cases this is along the longitudinal axis.
+   XDimension
+
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MinimumXDimension
+
+   ;; Horizontal Resolution Level describes if the data product is gridded.
+   HorizontalResolutionProcessingLevelEnum
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MaximumXDimension
+
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MinimumYDimension
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionType)
+
 (defrecord ChronostratigraphicUnitType
   [
    Eon
@@ -347,6 +492,33 @@
    Period
   ])
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
+
+(defrecord VerticalSpatialDomainType
+  [
+   ;; Describes the type of the area of vertical space covered by the collection locality.
+   Type
+
+   ;; Describes the extent of the area of vertical space covered by the collection. Must be
+   ;; accompanied by an Altitude Encoding Method description. The datatype for this attribute is the
+   ;; value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of
+   ;; either DepthDistanceUnits or AltitudeDistanceUnits.
+   Value
+  ])
+(record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
+
+(defrecord GeometryType
+  [
+   CoordinateSystem
+
+   Points
+
+   BoundingRectangles
+
+   GPolygons
+
+   Lines
+  ])
+(record-pretty-printer/enable-record-pretty-printing GeometryType)
 
 ;; The reference frame or system from which altitude is measured. The term 'altitude' is used
 ;; instead of the common term 'elevation' to conform to the terminology in Federal Information
@@ -367,6 +539,15 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing AltitudeSystemDefinitionType)
 
+;; The longitude and latitude values of a spatially referenced point in degrees.
+(defrecord PointType
+  [
+   Longitude
+
+   Latitude
+  ])
+(record-pretty-printer/enable-record-pretty-printing PointType)
+
 ;; This element contains the Processing Level Id and the Processing Level Description
 (defrecord ProcessingLevelType
   [
@@ -381,24 +562,33 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ProcessingLevelType)
 
-(defrecord GeographicCoordinateSystemType
+;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
+(defrecord TilingCoordinateType
   [
-   ;; Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal
-   ;; degrees).
-   GeographicCoordinateUnits
+   MinimumValue
 
-   ;; The minimum difference between two adjacent latitude values in the Geographic Coordinate
-   ;; System, expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal
-   ;; number, e.g., 0.01
-   LatitudeResolution
-
-   ;; The minimum difference between two adjacent longitude values in the Geographic Coordinate
-   ;; System, expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal
-   ;; number, e.g., 0.01
-   LongitudeResolution
+   MaximumValue
   ])
-(record-pretty-printer/enable-record-pretty-printing GeographicCoordinateSystemType)
+(record-pretty-printer/enable-record-pretty-printing TilingCoordinateType)
 
+(defrecord GPolygonType
+  [
+   Boundary
+
+   ExclusiveZone
+  ])
+(record-pretty-printer/enable-record-pretty-printing GPolygonType)
+
+;; A boundary is set of points connected by straight lines representing a polygon on the earth. It
+;; takes a minimum of three points to make a boundary. Points must be specified in counter-clockwise
+;; order and closed (the first and last vertices are the same).
+(defrecord BoundaryType
+  [
+   Points
+  ])
+(record-pretty-printer/enable-record-pretty-printing BoundaryType)
+
+;; This element describes the geodetic model for the data product.
 (defrecord GeodeticModelType
   [
    ;; The identification given to the reference system used for defining the coordinates of points.
@@ -439,8 +629,6 @@
 (defrecord SpatialInformationType
   [
    VerticalCoordinateSystem
-
-   HorizontalCoordinateSystem
 
    ;; Denotes whether the spatial coverage of the collection is horizontal, vertical, horizontal and
    ;; vertical, orbit, or vertical and orbit.
@@ -484,15 +672,28 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing FileArchiveInformationType)
 
-(defrecord HorizontalCoordinateSystemType
+;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
+(defrecord OrbitParametersType
   [
-   GeodeticModel
+   ;; Width of the swath at the equator in Kilometers.
+   SwathWidth
 
-   GeographicCoordinateSystem
+   ;; Orbital period in decimal minutes.
+   Period
 
-   LocalCoordinateSystem
+   ;; Inclination of the orbit. This is the same as (180-declination) and also the same as the
+   ;; highest latitude achieved by the satellite. Data Unit: Degree.
+   InclinationAngle
+
+   ;; Indicates the number of orbits.
+   NumberOfOrbits
+
+   ;; The latitude start of the orbit relative to the equator. This is used by the backtrack search
+   ;; algorithm to treat the orbit as if it starts from the specified latitude. This is optional and
+   ;; will default to 0 if not specified.
+   StartCircularLatitude
   ])
-(record-pretty-printer/enable-record-pretty-printing HorizontalCoordinateSystemType)
+(record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
 ;; This element and all of its sub elements exist for display purposes. It allows a data provider to
 ;; provide archive and distribution information up front to an end user, to help them decide if they

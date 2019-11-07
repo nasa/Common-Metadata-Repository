@@ -29,7 +29,7 @@
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
                        :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
-   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+   :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
    :ShortName "short"
    :Version "V1"
    :EntryTitle "The entry title V5"
@@ -104,9 +104,9 @@
   "Create a SpatialExtent with spatial enums. Helper for testing."
   [{:keys [granule-spatial-representation coordinate-system]}]
   {:SpatialExtent (data-umm-c/spatial {:gsr granule-spatial-representation
-                                       :hsd {:Geometry (umm-cmn/map->GeometryType
+                                       :hsd {:Geometry (umm-c/map->GeometryType
                                                         {:CoordinateSystem coordinate-system
-                                                         :Points [(umm-cmn/map->PointType
+                                                         :Points [(umm-c/map->PointType
                                                                    {:Longitude 0 :Latitude 0})]})}})})
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -267,15 +267,15 @@
       ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
         "GEODETIC"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "GEODETIC"
-                      :GPolygons [(umm-cmn/map->GPolygonType
-                                    {:Boundary (umm-cmn/map->BoundaryType
-                                                 {:Points [(umm-cmn/map->PointType {:Longitude 180 :Latitude 90})
-                                                           (umm-cmn/map->PointType {:Longitude -180 :Latitude 90})
-                                                           (umm-cmn/map->PointType {:Longitude -180 :Latitude -90})
-                                                           (umm-cmn/map->PointType {:Longitude 180 :Latitude -90})
-                                                           (umm-cmn/map->PointType {:Longitude 180 :Latitude 90})]})})]})}
+                      :GPolygons [(umm-c/map->GPolygonType
+                                    {:Boundary (umm-c/map->BoundaryType
+                                                 {:Points [(umm-c/map->PointType {:Longitude 180 :Latitude 90})
+                                                           (umm-c/map->PointType {:Longitude -180 :Latitude 90})
+                                                           (umm-c/map->PointType {:Longitude -180 :Latitude -90})
+                                                           (umm-c/map->PointType {:Longitude 180 :Latitude -90})
+                                                           (umm-c/map->PointType {:Longitude 180 :Latitude 90})]})})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "GPolygons" 0]
         ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
          "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
@@ -287,49 +287,49 @@
       ;; Holes are ignored during validation for now.
       (assert-valid-spatial
         "GEODETIC"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "GEODETIC"
-                      :GPolygons [(umm-cmn/map->GPolygonType
-                                    {:Boundary (umm-cmn/map->BoundaryType
-                                                 {:Points [(umm-cmn/map->PointType {:Longitude 1 :Latitude 1})
-                                                           (umm-cmn/map->PointType {:Longitude -1 :Latitude 1})
-                                                           (umm-cmn/map->PointType {:Longitude -1 :Latitude -1})
-                                                           (umm-cmn/map->PointType {:Longitude 1 :Latitude -1})
-                                                           (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})]})
+                      :GPolygons [(umm-c/map->GPolygonType
+                                    {:Boundary (umm-c/map->BoundaryType
+                                                 {:Points [(umm-c/map->PointType {:Longitude 1 :Latitude 1})
+                                                           (umm-c/map->PointType {:Longitude -1 :Latitude 1})
+                                                           (umm-c/map->PointType {:Longitude -1 :Latitude -1})
+                                                           (umm-c/map->PointType {:Longitude 1 :Latitude -1})
+                                                           (umm-c/map->PointType {:Longitude 1 :Latitude 1})]})
                                      :ExclusiveZone
-                                       (umm-cmn/map->ExclusiveZoneType
-                                         {:Boundaries [(umm-cmn/map->BoundaryType
-                                                         {:Points  [(umm-cmn/map->PointType {:Longitude 0 :Latitude 0})
-                                                                    (umm-cmn/map->PointType {:Longitude 0.004 :Latitude 0})
-                                                                    (umm-cmn/map->PointType {:Longitude 0.006 :Latitude 0.005})
-                                                                    (umm-cmn/map->PointType {:Longitude 0.002 :Latitude 0.005})
-                                                                    (umm-cmn/map->PointType {:Longitude 0 :Latitude 0})]})]})})]})}))
+                                       (umm-c/map->ExclusiveZoneType
+                                         {:Boundaries [(umm-c/map->BoundaryType
+                                                         {:Points  [(umm-c/map->PointType {:Longitude 0 :Latitude 0})
+                                                                    (umm-c/map->PointType {:Longitude 0.004 :Latitude 0})
+                                                                    (umm-c/map->PointType {:Longitude 0.006 :Latitude 0.005})
+                                                                    (umm-c/map->PointType {:Longitude 0.002 :Latitude 0.005})
+                                                                    (umm-c/map->PointType {:Longitude 0 :Latitude 0})]})]})})]})}))
 
     (testing "cartesian polygon"
       ;; The same shape from geodetic is valid as a cartesian.
       ;; Cartesian validation is not supported yet. See CMR-1172
       (assert-valid-spatial
         "CARTESIAN"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "CARTESIAN"
-                      :GPolygons [(umm-cmn/map->GPolygonType
-                                    {:Boundary (umm-cmn/map->BoundaryType
-                                                 {:Points [(umm-cmn/map->PointType {:Longitude 180 :Latitude 90})
-                                                           (umm-cmn/map->PointType {:Longitude -180 :Latitude 90})
-                                                           (umm-cmn/map->PointType {:Longitude -180 :Latitude -90})
-                                                           (umm-cmn/map->PointType {:Longitude 180 :Latitude -90})
-                                                           (umm-cmn/map->PointType {:Longitude 180 :Latitude 90})]})})]})}))
+                      :GPolygons [(umm-c/map->GPolygonType
+                                    {:Boundary (umm-c/map->BoundaryType
+                                                 {:Points [(umm-c/map->PointType {:Longitude 180 :Latitude 90})
+                                                           (umm-c/map->PointType {:Longitude -180 :Latitude 90})
+                                                           (umm-c/map->PointType {:Longitude -180 :Latitude -90})
+                                                           (umm-c/map->PointType {:Longitude 180 :Latitude -90})
+                                                           (umm-c/map->PointType {:Longitude 180 :Latitude 90})]})})]})}))
 
     (testing "geodetic line"
       (assert-invalid-spatial
         "GEODETIC"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "GEODETIC"
-                      :Lines [(umm-cmn/map->LineType
-                                {:Points [(umm-cmn/map->PointType {:Longitude 0 :Latitude 0})
-                                          (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})
-                                          (umm-cmn/map->PointType {:Longitude 2 :Latitude 2})
-                                          (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})]})]})}
+                      :Lines [(umm-c/map->LineType
+                                {:Points [(umm-c/map->PointType {:Longitude 0 :Latitude 0})
+                                          (umm-c/map->PointType {:Longitude 1 :Latitude 1})
+                                          (umm-c/map->PointType {:Longitude 2 :Latitude 2})
+                                          (umm-c/map->PointType {:Longitude 1 :Latitude 1})]})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "Lines" 0]
         ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
@@ -337,17 +337,17 @@
       ;; Cartesian line validation isn't supported yet. See CMR-1172
       (assert-valid-spatial
         "CARTESIAN"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "CARTESIAN"
-                      :Lines [(umm-cmn/map->LineType
-                                {:Points [(umm-cmn/map->PointType {:Longitude 180 :Latitude 0})
-                                          (umm-cmn/map->PointType {:Longitude -180 :Latitude 0})]})]})}))
+                      :Lines [(umm-c/map->LineType
+                                {:Points [(umm-c/map->PointType {:Longitude 180 :Latitude 0})
+                                          (umm-c/map->PointType {:Longitude -180 :Latitude 0})]})]})}))
     (testing "bounding box"
       (assert-invalid-spatial
         "GEODETIC"
-        {:Geometry (umm-cmn/map->GeometryType
+        {:Geometry (umm-c/map->GeometryType
                      {:CoordinateSystem "GEODETIC"
-                      :BoundingRectangles [(umm-cmn/map->BoundingRectangleType {:WestBoundingCoordinate -180
+                      :BoundingRectangles [(umm-c/map->BoundingRectangleType {:WestBoundingCoordinate -180
                                                                                 :NorthBoundingCoordinate 45
                                                                                 :EastBoundingCoordinate 180
                                                                                 :SouthBoundingCoordinate 46})]})}
