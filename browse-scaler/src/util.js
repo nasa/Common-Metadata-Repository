@@ -9,7 +9,9 @@ const fetch = require('node-fetch');
 exports.withTimeout = (millis, promise) => {
   // create two promises: one that does the actual work,
   // and one that will reject them after a given number of milliseconds
+  // eslint-disable-next-line prefer-promise-reject-errors
   const timeout = new Promise((resolve, reject) => setTimeout(() => reject(null), millis));
+  // eslint-disable-next-line no-unused-vars
   return Promise.race([promise, timeout]).then(value => value, value => null);
 };
 

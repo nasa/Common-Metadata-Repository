@@ -1,0 +1,7 @@
+{
+    "path": "datasets/C1597928934-NOAA_NCEI",
+    "queryStringParameters": {
+        "h ": 85,
+        "w": 85
+    }
+}
