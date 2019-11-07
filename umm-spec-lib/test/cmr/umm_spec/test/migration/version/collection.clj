@@ -1920,3 +1920,62 @@
                (dissoc :ArchiveAndDistributionInformation)
                (assoc :Distributions distributions))
            result))))
+
+(def example-collection-1-13
+  {:SpatialInformation
+   {:HorizontalCoordinateSystem
+    {:GeodeticModel
+     {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+      :EllipsoidName "WGS 84"
+      :SemiMajorAxis 6378140.0
+      :DenominatorOfFlatteningRatio 298.257}
+     :LocalCoordinateSystem
+     {:GeoReferenceInformation "Just a reference."
+      :Description "Just a Description"}
+     :GeographicCoordinateSystem
+     {:GeographicCoordinateUnits "Kilometers"
+      :LongitudeResolution 5
+      :LatitudeResolution 10}}}})
+
+(def example-collection-1-14
+  {:SpatialExtent
+   {:HorizontalSpatialDomain
+    {:ResolutionAndCoordinateSystem
+     {:Description "This is a description."
+      :GeodeticModel {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+                      :EllipsoidName "WGS 84"
+                      :SemiMajorAxis 6378140.0
+                      :DenominatorOfFlatteningRatio 298.257}
+      :HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Varies"
+                                   :XDimension 5
+                                   :YDimension 10
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Point"
+                                   :XDimension 10
+                                   :YDimension 5
+                                   :Unit "Meters"}]
+      :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
+                              :Description "Just a Description"}}}}})
+
+
+
+(deftest migrate-1-13-to-1-14
+  (let [expected-1-13-1-14-result (-> example-collection-1-14
+                                      (update-in [:SpatialExtent :HorizontalSpatialDomain
+                                                  :ResolutionAndCoordinateSystem] dissoc :Description)
+                                      (update-in [:SpatialExtent :HorizontalSpatialDomain
+                                                  :ResolutionAndCoordinateSystem :HorizontalDataResolutions]
+                                                 #(vector
+                                                   (first %)))
+                                      (update-in [:SpatialExtent :HorizontalSpatialDomain
+                                                  :ResolutionAndCoordinateSystem :HorizontalDataResolutions 0] assoc :HorizontalResolutionProcessingLevelEnum "Not provided"))
+        result (vm/migrate-umm {} :collection "1.13" "1.14" example-collection-1-13)]
+    (is (= expected-1-13-1-14-result
+           result))))
+
+(deftest migrate-1-14-to-1-13
+  (let [expected-1-14-1-13-result example-collection-1-13
+        result (vm/migrate-umm {} :collection "1.14" "1.13"
+                               example-collection-1-14)]
+    (is (= expected-1-14-1-13-result
+           result))))

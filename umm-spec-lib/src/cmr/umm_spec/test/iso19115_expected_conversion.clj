@@ -165,7 +165,7 @@
                                                NorthBoundingCoordinate
                                                EastBoundingCoordinate
                                                SouthBoundingCoordinate)]
-    (cmn/map->BoundingRectangleType
+    (umm-c/map->BoundingRectangleType
       {:WestBoundingCoordinate west
        :NorthBoundingCoordinate north
        :EastBoundingCoordinate east

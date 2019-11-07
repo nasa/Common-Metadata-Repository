@@ -1,3 +1,4 @@
+
 (ns cmr.system-int-test.search.granule-retrieval-test
   "Integration test for granule retrieval with cmr-concept-id"
   (:require

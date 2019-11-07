@@ -88,7 +88,7 @@
         (update-in [:HorizontalSpatialDomain :Geometry]
                    assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
         conversion-util/prune-empty-maps)
-    (cmn/map->SpatialExtentType su/not-provided-spatial-extent)))
+    (umm-c/map->SpatialExtentType su/not-provided-spatial-extent)))
 
 (defn- expected-smap-data-dates
   "Returns the expected ISO SMAP DataDates."

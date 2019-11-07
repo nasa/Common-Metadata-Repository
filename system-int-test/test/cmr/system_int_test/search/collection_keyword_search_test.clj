@@ -102,8 +102,8 @@
         personnel1 (data-umm-cmn/contact-person "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
         personnel2 (data-umm-cmn/contact-person "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
         personnel3 (data-umm-cmn/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
-        tdcs1 (data-umm-cmn/tiling-identification-system "MISR")
-        tdcs2 (data-umm-cmn/tiling-identification-system "WRS-2")
+        tdcs1 (data-umm-c/tiling-identification-system "MISR")
+        tdcs2 (data-umm-c/tiling-identification-system "WRS-2")
         org (data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                      :ShortName "Some&Place"})
         url1 (data-umm-cmn/related-url {:URL "http://cmr.earthdata.nasa.gov"

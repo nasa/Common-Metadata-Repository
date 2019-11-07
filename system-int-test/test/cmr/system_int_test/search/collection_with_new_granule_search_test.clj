@@ -22,7 +22,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url-helper]
-   [cmr.umm-spec.models.umm-common-models :as umm-cmn]))
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"
@@ -114,9 +115,9 @@
                                                   (:concept-id coll-temporal-no-match)
                                                   {:beginning-date-time "2000-12-12T12:00:00Z"
                                                    :ending-date-time "2001-01-03T12:00:00Z"}))
-        hsd {:Geometry (umm-cmn/map->GeometryType
+        hsd {:Geometry (umm-c/map->GeometryType
                         {:CoordinateSystem "GEODETIC"
-                         :BoundingRectangles [(umm-cmn/map->BoundingRectangleType
+                         :BoundingRectangles [(umm-c/map->BoundingRectangleType
                                                {:WestBoundingCoordinate -180
                                                 :NorthBoundingCoordinate 90
                                                 :EastBoundingCoordinate 180
@@ -126,7 +127,7 @@
                                      {:EntryTitle "collspatialmatch"
                                       :ShortName "collspatialmatch"
                                       :Version "1"
-                                      :SpatialExtent (data-umm-cmn/spatial
+                                      :SpatialExtent (data-umm-c/spatial
                                                       {:gsr "GEODETIC"
                                                        :sr "GEODETIC"
                                                        :hsd hsd})}))

@@ -91,7 +91,7 @@
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
                     :Projects projects
-                    :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                     :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -109,7 +109,7 @@
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
                     :Projects projects
-                    :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                     :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -289,7 +289,7 @@
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-A]
                      :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -306,7 +306,7 @@
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-B]
                      :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -412,7 +412,7 @@
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
                      :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -429,7 +429,7 @@
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
                      :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -512,7 +512,7 @@
                                                                   :Topic "Cool"
                                                                   :Term "Mild"})]
                    :Projects projects
-                   :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                   :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                    :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -606,7 +606,7 @@
                                                                   :Topic "Cool"
                                                                   :Term "Mild"})]
                    :Projects projects
-                   :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
+                   :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
                    :TemporalExtents [(data-umm-cmn/temporal-extent
@@ -676,7 +676,7 @@
                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
-                    :SpatialExtent (data-umm-cmn/spatial {:gsr "NO_SPATIAL"})
+                    :SpatialExtent (data-umm-c/spatial {:gsr "NO_SPATIAL"})
                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}

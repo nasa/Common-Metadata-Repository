@@ -130,16 +130,29 @@
   [attribs]
   (umm-cmn/map->ResourceCitationType attribs))
 
+(defn tiling-identification-system
+  "Creates TilingIdentificationSystem specific attribute"
+  [name]
+  (umm-c/map->TilingIdentificationSystemType
+    {:TilingIdentificationSystemName name
+     :Coordinate1 {:MinimumValue 0.0 :MaximumValue 0.0}
+     :Coordinate2 {:MinimumValue 0.0 :MaximumValue 0.0}}))
+
+(defn tiling-identification-systems
+  "Returns a sequence of tiling-identification-systems with the given names"
+  [& names]
+  (map tiling-identification-system names))
+
 (defn spatial
   [attributes]
   (let [{:keys [sc hsd vsds gsr orbit]} attributes]
-    (umm-cmn/map->SpatialExtentType {:SpatialCoverageType sc
-                                     :HorizontalSpatialDomain
-                                       (when hsd (umm-cmn/map->HorizontalSpatialDomainType hsd))
-                                     :VerticalSpatialDomains
-                                       (when vsds (map umm-cmn/map->VerticalSpatialDomainType vsds))
-                                     :GranuleSpatialRepresentation gsr
-                                     :OrbitParameters (when orbit (umm-cmn/map->OrbitParametersType orbit))})))
+    (umm-c/map->SpatialExtentType {:SpatialCoverageType sc
+                                   :HorizontalSpatialDomain
+                                     (when hsd (umm-c/map->HorizontalSpatialDomainType hsd))
+                                   :VerticalSpatialDomains
+                                     (when vsds (map umm-c/map->VerticalSpatialDomainType vsds))
+                                   :GranuleSpatialRepresentation gsr
+                                   :OrbitParameters (when orbit (umm-c/map->OrbitParametersType orbit))})))
 
 (defn contact-person
   "Creates a Personnel record for the opendata tests."
@@ -195,7 +208,7 @@
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
                        :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
-   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+   :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
    :ShortName "short"
    :Version "V1"
    :EntryTitle "The entry title V5"
@@ -217,7 +230,7 @@
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
                        :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
-   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+   :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
    :ShortName "short"
    :Version "V1"
    :EntryTitle "The entry title V5"

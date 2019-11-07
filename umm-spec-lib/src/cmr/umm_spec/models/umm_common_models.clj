@@ -78,24 +78,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
-;; Information about a collection with horizontal spatial coverage.
-(defrecord HorizontalSpatialDomainType
-  [
-   ;; The appropriate numeric or alpha code used to identify the various zones in the collection's
-   ;; grid coordinate system.
-   ZoneIdentifier
-
-   Geometry
-  ])
-(record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
-
-;; Contains the excluded boundaries from the GPolygon.
-(defrecord ExclusiveZoneType
-  [
-   Boundaries
-  ])
-(record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
-
 ;; Child object on an instrument. Has all the same fields as instrument, minus the list of child
 ;; instruments.
 (defrecord InstrumentChildType
@@ -115,35 +97,6 @@
    Technique
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
-
-;; Information about a two-dimensional tiling system related to this collection.
-(defrecord TilingIdentificationSystemType
-  [
-   TilingIdentificationSystemName
-
-   Coordinate1
-
-   Coordinate2
-  ])
-(record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
-
-;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
-(defrecord SpatialExtentType
-  [
-   ;; Denotes whether the collection's spatial coverage requires horizontal, vertical, horizontal
-   ;; and vertical, orbit, or vertical and orbit in the spatial domain and coordinate system
-   ;; definitions.
-   SpatialCoverageType
-
-   HorizontalSpatialDomain
-
-   VerticalSpatialDomains
-
-   OrbitParameters
-
-   GranuleSpatialRepresentation
-  ])
-(record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
 ;; Defines the contact information of a data center or data contact.
 (defrecord ContactInformationType
@@ -291,24 +244,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing RangeDateTimeType)
 
-(defrecord BoundingRectangleType
-  [
-   WestBoundingCoordinate
-
-   NorthBoundingCoordinate
-
-   EastBoundingCoordinate
-
-   SouthBoundingCoordinate
-  ])
-(record-pretty-printer/enable-record-pretty-printing BoundingRectangleType)
-
-(defrecord LineType
-  [
-   Points
-  ])
-(record-pretty-printer/enable-record-pretty-printing LineType)
-
 ;; Method for contacting the data contact. A contact can be available via phone, email, Facebook, or
 ;; Twitter.
 (defrecord ContactMechanismType
@@ -410,19 +345,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing AccessConstraintsType)
 
-(defrecord VerticalSpatialDomainType
-  [
-   ;; Describes the type of the area of vertical space covered by the collection locality.
-   Type
-
-   ;; Describes the extent of the area of vertical space covered by the collection. Must be
-   ;; accompanied by an Altitude Encoding Method description. The datatype for this attribute is the
-   ;; value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of
-   ;; either DepthDistanceUnits or AltitudeDistanceUnits.
-   Value
-  ])
-(record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
-
 ;; Represents the information needed for a DistributionURL where data is retrieved.
 (defrecord GetDataType
   [
@@ -445,29 +367,6 @@
    Checksum
   ])
 (record-pretty-printer/enable-record-pretty-printing GetDataType)
-
-(defrecord GeometryType
-  [
-   CoordinateSystem
-
-   Points
-
-   BoundingRectangles
-
-   GPolygons
-
-   Lines
-  ])
-(record-pretty-printer/enable-record-pretty-printing GeometryType)
-
-;; The longitude and latitude values of a spatially referenced point in degrees.
-(defrecord PointType
-  [
-   Longitude
-
-   Latitude
-  ])
-(record-pretty-printer/enable-record-pretty-printing PointType)
 
 ;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType
@@ -539,32 +438,6 @@
    Version
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
-
-;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
-(defrecord TilingCoordinateType
-  [
-   MinimumValue
-
-   MaximumValue
-  ])
-(record-pretty-printer/enable-record-pretty-printing TilingCoordinateType)
-
-(defrecord GPolygonType
-  [
-   Boundary
-
-   ExclusiveZone
-  ])
-(record-pretty-printer/enable-record-pretty-printing GPolygonType)
-
-;; A boundary is set of points connected by straight lines representing a polygon on the earth. It
-;; takes a minimum of three points to make a boundary. Points must be specified in counter-clockwise
-;; order and closed (the first and last vertices are the same).
-(defrecord BoundaryType
-  [
-   Points
-  ])
-(record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
 (defrecord ContactPersonType
   [
@@ -709,29 +582,6 @@
    GetService
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
-
-;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
-(defrecord OrbitParametersType
-  [
-   ;; Width of the swath at the equator in Kilometers.
-   SwathWidth
-
-   ;; Orbital period in decimal minutes.
-   Period
-
-   ;; Inclination of the orbit. This is the same as (180-declination) and also the same as the
-   ;; highest latitude achieved by the satellite. Data Unit: Degree.
-   InclinationAngle
-
-   ;; Indicates the number of orbits.
-   NumberOfOrbits
-
-   ;; The latitude start of the orbit relative to the equator. This is used by the backtrack search
-   ;; algorithm to treat the orbit as if it starts from the specified latitude. This is optional and
-   ;; will default to 0 if not specified.
-   StartCircularLatitude
-  ])
-(record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
 ;; Information about Periodic Date Time collections, including the name of the temporal period in
 ;; addition to the start and end dates, duration unit and value, and cycle duration unit and value.
