@@ -300,6 +300,7 @@
   [provider-id target sids acls]
   (collect-permissions (fn [acl permission]
                          (and (= target (:target (:provider-identity acl)))
+                              (provider-acl? provider-id acl)
                               (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
                        acls))
 

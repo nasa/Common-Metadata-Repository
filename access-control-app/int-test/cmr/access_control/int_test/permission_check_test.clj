@@ -15,12 +15,57 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2"])
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
+                                      ["user1" "user2"])
               (fn [f]
                 (e/grant-registered-ingest (u/conn-context) "PROV1")
                 (f))
-              (fixtures/grant-all-group-fixture ["PROV1"])
+              (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
+
+(deftest multi-provider-permissions-test
+  (testing "User permissions for same target and user accross two providers"
+    (let [group1 (u/create-group
+                  (transmit-config/echo-system-token)
+                  (u/make-group
+                   {:name "test-group-1"
+                    :members ["user1"]
+                    :provider_id "PROV1"}))
+          group2 (u/create-group
+                  (transmit-config/echo-system-token)
+                  (u/make-group
+                   {:name "test-group-2"
+                    :members ["user1"]
+                    :provider_id "PROV2"}))]
+      (ac/create-acl
+       (u/conn-context)
+       {:group_permissions [{:permissions [:create]
+                             :group_id (:concept_id group1)}]
+        :provider_identity {:provider_id "PROV1"
+                            :target "NON_NASA_DRAFT_APPROVER"}}
+       {:token (transmit-config/echo-system-token)})
+      (ac/create-acl
+       (u/conn-context)
+       {:group_permissions [{:permissions [:delete]
+                             :group_id (:concept_id group2)}]
+        :provider_identity {:provider_id "PROV2"
+                            :target "NON_NASA_DRAFT_APPROVER"}}
+       {:token (transmit-config/echo-system-token)})
+
+      (is (= {"NON_NASA_DRAFT_APPROVER" ["create"]}
+             (json/parse-string
+              (ac/get-permissions
+               (u/conn-context)
+               {:target "NON_NASA_DRAFT_APPROVER"
+                :provider "PROV1"
+                :user_id "user1"}))))
+      (is (= {"NON_NASA_DRAFT_APPROVER" ["delete"]}
+             (json/parse-string
+              (ac/get-permissions
+               (u/conn-context)
+               {:target "NON_NASA_DRAFT_APPROVER"
+                :provider "PROV2"
+                :user_id "user1"})))))))
 
 (deftest invalid-params-test
   (let [target-required-err "One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."
