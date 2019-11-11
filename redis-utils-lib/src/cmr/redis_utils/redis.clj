@@ -12,11 +12,12 @@
 
 (defn healthy?
   "Returns true if able to reach Redis."
-  []
-  (try
-    (= "PONG" (wcar* (carmine/ping)))
-    (catch Exception _
-      false)))
+  [& args]
+  {:ok?
+   (try
+     (= "PONG" (wcar* (carmine/ping)))
+     (catch Exception _
+       false))})
 
 (defn reset-cache
   "Evict all keys in redis."
