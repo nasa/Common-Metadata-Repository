@@ -14,7 +14,6 @@
   :dependencies [[com.github.kstyrc/embedded-redis "0.6"]
                  [com.taoensso/carmine "2.19.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
