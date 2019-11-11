@@ -4,7 +4,6 @@
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-   [cmr.transmit.cache.cubby-cache :as cubby-cache]
    [cmr.common.cache :as cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -17,6 +16,7 @@
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
    (java.io StringWriter)))
@@ -167,10 +167,10 @@
 (defn create-report-cache
   "This function creates the composite cache that is used for caching the
   humanizer report. With the given composition we get the following features:
-  * A cubby cache that holds the generated report (centralized storage in
+  * A Redis cache that holds the generated report (centralized storage in
     an ElasticSearch backend);
-  * A fast access in-memory cache that sits on top of cubby, providing
-    quick local results after the first call to cubby; this cache is kept
+  * A fast access in-memory cache that sits on top of Redis, providing
+    quick local results after the first call to Redis; this cache is kept
     consistent across all instancs of CMR, so no matter which host the LB
     serves, all the content is the same;
   * A single-threaded cache that circumvents potential race conditions
@@ -180,7 +180,7 @@
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
     (consistent-cache/create-consistent-cache)
-    (cubby-cache/create-cubby-cache))))
+    (redis-cache/create-redis-cache))))
 
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."

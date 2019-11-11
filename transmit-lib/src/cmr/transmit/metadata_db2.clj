@@ -1,6 +1,6 @@
 (ns cmr.transmit.metadata-db2
   "This contains functions for interacting with the metadata db API. It uses the newer transmit namespace
-  style that cubby, concepts, and access control use"
+  style that concepts, and access control use"
   (:require
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]

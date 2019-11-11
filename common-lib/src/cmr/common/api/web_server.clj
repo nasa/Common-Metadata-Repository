@@ -45,7 +45,7 @@
 (def MAX_REQUEST_BODY_SIZE
  "The maximum request body size which the application will accept. This is set to prevent large,
   invalid requests coming in that cause out of memory exceptions. Requests to save the humanizer
-  report in Cubby can be in the 5 to 10 MB range."
+  report in Redis can be in the 5 to 10 MB range."
  (* 50 ONE_MB))
 
 (def buffer-size

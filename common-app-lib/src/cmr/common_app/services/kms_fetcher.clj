@@ -2,8 +2,8 @@
   "Provides functions to easily fetch keywords from the GCMD Keyword Management Service (KMS). It
   will use a cache in order to minimize calls to the GCMD KMS and improve performance. The job
   defined in this namespace should be used to keep the KMS keywords fresh. KMS keywords will be
-  cached using a fallback cache with Cubby as the backup store. See the documentation for
-  cmr.common.cache.fallback-cache for more details. As a result of persisting the keywords in Cubby,
+  cached using a fallback cache with Redis as the backup store. See the documentation for
+  cmr.common.cache.fallback-cache for more details. As a result of persisting the keywords in Redis,
   the CMR will still be able to lookup KMS keywords even when the GCMD KMS is unavailable. CMR will
   use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
 
@@ -14,8 +14,6 @@
          :providers [...]}"
   (:require
     [clojure.string :as str]
-    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-    [cmr.transmit.cache.cubby-cache :as cubby-cache]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.cache :as cache]
     [cmr.common.cache.deflating-cache :as deflating-cache]
@@ -26,6 +24,8 @@
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
+    [cmr.redis-utils.redis-cache :as redis-cache]
+    [cmr.transmit.cache.consistent-cache :as consistent-cache]
     [cmr.transmit.kms :as kms]))
 
 (def nested-fields-mappings
@@ -53,7 +53,7 @@
   :kms)
 
 (defconfig kms-cache-consistent-timeout-seconds
-  "The number of seconds between when the KMS cache should check with cubby for consistence"
+  "The number of seconds between when the KMS cache should check with redis for consistence"
   {:default 3600
    :type Long})
 
@@ -67,7 +67,7 @@
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
       (deflating-cache/create-deflating-cache
-        (cubby-cache/create-cubby-cache)
+        (redis-cache/create-redis-cache)
         kms-lookup/create-kms-index
         kms-lookup/deflate))))
 
@@ -98,7 +98,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
-;; we use a consistent cache which uses cubby to coordinate any changes to the cache.
+;; we use a consistent cache which uses redis to coordinate any changes to the cache.
 (def-stateful-job RefreshKmsCacheJob
   [_ system]
   (refresh-kms-cache {:system system}))

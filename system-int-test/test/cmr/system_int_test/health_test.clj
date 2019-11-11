@@ -31,15 +31,10 @@
   {:ok? true
    :dependencies {:elastic_search {:ok? true}, :echo {:ok? true}}})
 
-(def good-cubby-health
-  {:ok? true
-   :dependencies {:elastic_search {:ok? true}, :echo {:ok? true}}})
-
 (def good-indexer-health
   {:ok? true
    :dependencies {:elastic_search {:ok? true}
                   :echo {:ok? true}
-                  :cubby good-cubby-health
                   :message-queue {:ok? true}
                   :metadata-db good-metadata-db-health
                   :index-set good-index-set-db-health}})
@@ -50,7 +45,6 @@
                   :echo {:ok? true}
                   :metadata-db good-metadata-db-health
                   :message-queue {:ok? true}
-                  :cubby good-cubby-health
                   :indexer good-indexer-health}})
 
 (deftest robots-dot-txt-test
@@ -75,10 +69,6 @@
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
          (get-app-health (url/index-set-health-url)))))
 
-(deftest cubby-health-test
-  (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
-         (get-app-health (url/cubby-health-url)))))
-
 (deftest metadata-db-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}}]
@@ -90,8 +80,7 @@
                  :echo {:ok? true}
                  :message-queue {:ok? true}
                  :metadata-db good-metadata-db-health
-                 :index-set good-index-set-db-health
-                 :cubby good-cubby-health}]
+                 :index-set good-index-set-db-health}]
            (get-app-health (url/indexer-health-url))))))
 
 (deftest ingest-health-test
@@ -100,7 +89,6 @@
                  :echo {:ok? true}
                  :metadata-db good-metadata-db-health
                  :message-queue {:ok? true}
-                 :cubby good-cubby-health
                  :indexer good-indexer-health}]
            (get-app-health (url/ingest-health-url))))))
 

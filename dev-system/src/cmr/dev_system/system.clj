@@ -9,7 +9,6 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as u]
-   [cmr.cubby.system :as cubby-system]
    [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.control :as control]
    [cmr.elastic-utils.config :as elastic-config]
@@ -73,14 +72,12 @@
                :stop bootstrap-system/stop}
    :access-control {:start access-control-system/dev-start
                     :stop access-control-system/stop}
-   :cubby {:start cubby-system/dev-start
-           :stop cubby-system/stop}
    :virtual-product {:start vp-system/start
                      :stop vp-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :cubby :metadata-db :access-control :index-set :indexer :ingest :search :virtual-product :bootstrap])
+  [:mock-echo :metadata-db :access-control :index-set :indexer :ingest :search :virtual-product :bootstrap])
 
 (defn- update-app-web-server-options
   "Update the web configuration options for the passed app system."
@@ -278,7 +275,6 @@
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
               :access-control (create-access-control-app queue-broker)
-              :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (create-bootstrap-app queue-broker))
               :indexer (create-indexer-app queue-broker)

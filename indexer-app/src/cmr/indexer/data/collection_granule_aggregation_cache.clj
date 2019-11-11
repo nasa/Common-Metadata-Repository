@@ -10,7 +10,6 @@
    [clojurewerkz.elastisch.query :as esq]
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-   [cmr.transmit.cache.cubby-cache :as cubby-cache]
    [cmr.common-app.services.search.datetime-helper :as datetime-helper]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -23,6 +22,7 @@
    [cmr.common.util :as util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.services.index-service :as index-service]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.metadata-db :as meta-db]))
 
 (def coll-gran-aggregate-cache-key
@@ -31,7 +31,7 @@
 
 (defconfig coll-gran-agg-cache-consistent-timeout-seconds
   "The number of seconds between when the collection granule aggregate cache should check with
-   cubby for consistence."
+   redis for consistence."
   {:default (* 5 60) ; 5 minutes
    :type Long})
 
@@ -42,14 +42,14 @@
   ;; empty cache cause lots of lookups in elasticsearch.
   (stl-cache/create-single-thread-lookup-cache
     ;; Use the fall back cache so that the data is fast and available in memory
-    ;; But if it's not available we'll fetch it from cubby.
+    ;; But if it's not available we'll fetch it from redis.
     (fallback-cache/create-fallback-cache
 
       ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
       ;; have only a single indexer refreshing it's cache.
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (coll-gran-agg-cache-consistent-timeout-seconds)})
-      (cubby-cache/create-cubby-cache))))
+      (redis-cache/create-redis-cache))))
 
 (def ^:private collection-aggregations
   "Defines the aggregations to use to find information about all the granules in a collection."

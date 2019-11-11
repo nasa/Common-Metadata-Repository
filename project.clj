@@ -17,7 +17,6 @@
   :plugins [[lein-modules "0.3.11"]
             [lein-shell "0.4.0"]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
-                                        "cubby-app"
                                         "bootstrap-app"
                                         "index-set-app"
                                         "indexer-app"

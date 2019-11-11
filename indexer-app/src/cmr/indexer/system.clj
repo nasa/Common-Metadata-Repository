@@ -42,11 +42,11 @@
   (atom nil))
 
 (defconfig index-set-cache-consistent-timeout-seconds
-  "The number of seconds between when the indexer's index set cache should check with cubby for consistence"
+  "The number of seconds between when the indexer's index set cache should check with Redis for consistence"
   {:default 5
    :type Long})
 
-(def index-set-mappings-cubby-keys
+(def index-set-mappings-redis-keys
   "The list of keys related to index-set-mappings which should be deleted when we want to clear
   the index-set-mappings cache."
   [":concept-mapping-types-hash-code" ":concept-indices-hash-code"])
@@ -67,7 +67,7 @@
                                         [:catalog-item :system-object :provider-object])
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache
                                                      {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
-                                                      :keys-to-track index-set-mappings-cubby-keys})
+                                                      :keys-to-track index-set-mappings-redis-keys})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
@@ -81,7 +81,7 @@
                           jvm-info/log-jvm-statistics-job])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :access-control :echo-rest :cubby :kms :search])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :access-control :echo-rest :kms :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

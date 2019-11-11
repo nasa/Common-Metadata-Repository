@@ -122,8 +122,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
 ;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
-;; Only one node needs to refresh the cache because we're using the  fallback cache with cubby cache.
-;; The value stored in cubby will be available to all the nodes.
+;; Only one node needs to refresh the cache because we're using the  fallback cache with Redis cache.
+;; The value stored in Redis will be available to all the nodes.
 
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
@@ -137,7 +137,7 @@
 
 (defconfig bulk-update-status-table-cleanup-interval
   "Number of seconds between cleanup of the old status rows."
-  {:default 86400 ;;24 hours 
+  {:default 86400 ;;24 hours
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache

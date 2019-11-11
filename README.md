@@ -313,11 +313,6 @@ applications, as well as several libraries and support applications.
   - Main method: cmr.bootstrap.runner
   - See `/bootstrap-app/README.md` for a list of lein and uberjar commands
 
-- cubby-app
-  - Centralized caching for the CMR. Each application should manage its own
-  cache. We use Cubby for situations that need centralized caching.
-  - Main method: cmr.cubby.runner
-
 - dev-system
   - An app that combines the separate microservices of the CMR into a single
   application. We use this to simplify development

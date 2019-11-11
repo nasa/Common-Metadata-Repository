@@ -158,8 +158,6 @@ function build_docker_proj () {
 function build_uberdocker () {
     OPT=$1
     if [[ $OPT == "separate" ]]; then
-        cd $CMR_DIR/cubby-app
-        build_docker_proj cubby
         cd $CMR_DIR/metadata-db-app
         build_docker_proj metadata-db
         cd $CMR_DIR/access-control-app
