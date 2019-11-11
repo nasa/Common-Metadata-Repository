@@ -20,7 +20,6 @@
    ;; Services for reseting
    [cmr.access-control.api.routes :as access-control]
    [cmr.common.cache :as cache]
-   [cmr.cubby.api.routes :as cubby-api]
    [cmr.index-set.services.index-service :as index-set-service]
    [cmr.indexer.services.index-service :as indexer-service]
    [cmr.ingest.services.ingest-service :as ingest-service]
@@ -70,7 +69,6 @@
    :ingest ingest-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset
-   :cubby cubby-api/reset
    :access-control access-control/reset})
 
 (def service-clear-cache-fns
@@ -80,8 +78,7 @@
    :index-set cache/reset-caches
    :metadata-db cache/reset-caches
    :search cache/reset-caches
-   :ingest cache/reset-caches
-   :cubby cache/reset-caches})
+   :ingest cache/reset-caches})
 
 (defn- build-routes [system]
   (routes

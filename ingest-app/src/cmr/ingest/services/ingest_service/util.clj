@@ -11,7 +11,7 @@
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.oracle.connection :as conn]
-   [cmr.transmit.cubby :as cubby]
+   [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.indexer :as indexer]
    [cmr.transmit.metadata-db :as mdb]
@@ -40,7 +40,7 @@
    :echo rest/health
    :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
-   :cubby cubby/get-cubby-health
+   :redis redis/healthy?
    :message-queue #(queue-protocol/health (get-in % [:system :queue-broker]))})
 
 (defn health

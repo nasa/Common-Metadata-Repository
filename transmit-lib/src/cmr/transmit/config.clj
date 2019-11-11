@@ -80,7 +80,6 @@
 
 (def-app-conn-config access-control {:port 3011})
 (def-app-conn-config bootstrap {:port 3006})
-(def-app-conn-config cubby {:port 3007})
 (def-app-conn-config index-set {:port 3005})
 (def-app-conn-config indexer {:port 3004})
 (def-app-conn-config ingest {:port 3002})
@@ -204,10 +203,6 @@
                :host (bootstrap-host)
                :port (bootstrap-port)
                :context (bootstrap-relative-root-url)}
-   :cubby {:protocol (cubby-protocol)
-           :host (cubby-host)
-           :port (cubby-port)
-           :context (cubby-relative-root-url)}
    :virtual-product {:protocol (virtual-product-protocol)
                      :host (virtual-product-host)
                      :port (virtual-product-port)

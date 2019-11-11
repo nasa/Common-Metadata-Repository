@@ -68,29 +68,6 @@
   (str (elastic-root) "/1_tags/_query"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cubby URLs
-
-(defn cubby-health-url
-  "URL to check cubby health."
-  []
-  (format "http://localhost:%s/health" (transmit-config/cubby-port)))
-
-(defn cubby-reset-url
-  "Resets the cubby application Only development team to use this functionality."
-  []
-  (format "http://localhost:%s/reset" (transmit-config/cubby-port)))
-
-(defn cubby-keys-url
-  "URL to delete or get all keys"
-  []
-  (format "http://localhost:%s/keys" (transmit-config/cubby-port)))
-
-(defn cubby-key-name-url
-  "URL to get, set, or delete specific keys"
-  [key-name]
-  (format "http://localhost:%s/keys/%s" (transmit-config/cubby-port) key-name))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
 
 (defn create-provider-url

@@ -79,7 +79,7 @@
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])
              :queue-broker queue-broker}]
-    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
+    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :index-set
                                                   :indexer :access-control])))
 
 (defn start

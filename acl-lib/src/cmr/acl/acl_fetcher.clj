@@ -22,7 +22,7 @@
   :acls)
 
 (def acl-keys-to-track
-  "The collection of keys which should be deleted from cubby whenever someone attempts to clear the
+  "The collection of keys which should be deleted from redis whenever someone attempts to clear the
   ACL cache."
   [":acls-hash-code"])
 
@@ -43,12 +43,12 @@
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache) object-identity-types))
 
 (defconfig acl-cache-consistent-timeout-seconds
-  "The number of seconds between when the ACL cache should check with cubby for consistence"
+  "The number of seconds between when the ACL cache should check with redis for consistence"
   {:default 30
    :type Long})
 
 (defn create-consistent-acl-cache
-  "Creates the acl cache using the given object-identity-types that uses cubby for consistency."
+  "Creates the acl cache using the given object-identity-types that uses redis for consistency."
   [object-identity-types]
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache
                       (consistent-cache/create-consistent-cache
@@ -109,7 +109,7 @@
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
-   ACLs will check cubby for consistency."
+   ACLs will check redis for consistency."
   [context]
   (let [cache (cache/context->cache context acl-cache-key)]
     (consistent-cache/expire-hash-cache-timeouts (:delegate-cache cache))))

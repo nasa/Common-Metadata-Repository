@@ -7,8 +7,7 @@
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.cubby :as cubby]))
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
                                                                  :grant-all-ingest? false}))
@@ -100,9 +99,6 @@
         "index-set-reset"
         (url/index-set-reset-url) :post
 
-        "cubby-reset"
-        (url/cubby-reset-url) :post
-
         "reindex-collection-permitted-groups"
         (url/reindex-collection-permitted-groups-url) :post
 
@@ -113,23 +109,4 @@
         (url/cleanup-expired-collections-url) :post
 
         "access-control-reindex-acls"
-        (url/access-control-reindex-acls-url) :post))
-
-    (testing "Cubby permission test"
-      (let [tokens [prov-admin-token guest-token
-                    user-token admin-read-token admin-update-token
-                    admin-read-update-token]
-            permissions [false false false false true true]
-            permissions-map (zipmap tokens permissions)]
-        (doseq [token (keys permissions-map)
-                :let [permission (get permissions-map token)]]
-          (cubby/delete-all-values (s/context))
-          (cubby/set-value (s/context) :test-name1 "test-value1")
-          (cubby/set-value (s/context) :test-name2 "test-value2")
-          (is (and
-                (= permission
-                   (has-action-permission? (url/cubby-key-name-url :test-name3) :put token "test-value3"))
-                (= permission
-                   (has-action-permission? (url/cubby-key-name-url :test-name2) :delete token))
-                (= permission
-                   (has-action-permission? (url/cubby-keys-url) :delete token)))))))))
+        (url/access-control-reindex-acls-url) :post))))

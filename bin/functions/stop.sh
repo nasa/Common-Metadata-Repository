@@ -57,7 +57,6 @@ function stop_uberdocker () {
         stop_docker_proj search
         stop_docker_proj access-control
         stop_docker_proj metadata-db
-        stop_docker_proj cubby
     elif [[ $OPT == "together" || -z $1 ]]; then
         stop_docker_proj dev-system
     fi

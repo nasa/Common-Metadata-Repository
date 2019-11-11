@@ -58,17 +58,6 @@ Example healthy response body:
           "echo": {
             "ok?": true
           },
-          "cubby": {
-            "ok?": true,
-            "dependencies": {
-              "elastic_search": {
-                "ok?": true
-              },
-              "echo": {
-                "ok?": true
-              }
-            }
-          },
           "metadata-db": {
             "ok?": true,
             "dependencies": {
@@ -151,17 +140,6 @@ Example unhealthy response body:
           },
           "echo": {
             "ok?": true
-          },
-          "cubby": {
-            "ok?": true,
-            "dependencies": {
-              "elastic_search": {
-                "ok?": true
-              },
-              "echo": {
-                "ok?": true
-              }
-            }
           },
           "metadata-db": {
             "ok?": true,

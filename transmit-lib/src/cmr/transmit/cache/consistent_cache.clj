@@ -50,12 +50,12 @@
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.transmit.cache.cubby-cache :as cubby-cache])
+   [cmr.redis-utils.redis-cache :as redis-cache])
   (:import
    (cmr.common.cache.in_memory_cache InMemoryCache)))
 
 (defconfig consistent-cache-default-hash-timeout-seconds
-  "The length of time that the hashes will be cached to prevent too many requests to Cubby."
+  "The length of time that the hashes will be cached to prevent too many requests to Redis."
   {:default 5
    :type Long})
 
@@ -125,7 +125,7 @@
 (defn expire-hash-cache-timeouts
   "Forces the locally cached hash codes stored in the cache returned by fallback-with-timeout to expire
    by clearing the primary cache. This can be used when we occasionally need to make sure that some
-   cached data is consistent with cubby."
+   cached data is consistent with Redis."
   [consistent-cache]
   (if-let [ttl-cache (get-in consistent-cache [:hash-cache :primary-cache])]
     (if (instance? InMemoryCache ttl-cache)
@@ -138,13 +138,13 @@
 (defn create-consistent-cache
   "Creates an instance of the consistent cache. Accepts no arguments, options with :hash-timeout-seconds
    or two specific caches to use. The option :hash-timeout-seconds will configure the amount of time
-   the hash code should be cached before going to cubby to get the hash code values. Defaults to
+   the hash code should be cached before going to Redis to get the hash code values. Defaults to
    value configured in consistent-cache-default-hash-timeout-seconds"
   ([]
    (create-consistent-cache nil))
   ([options]
    (let [timeout (get options :hash-timeout-seconds (consistent-cache-default-hash-timeout-seconds))
-         hash-cache (cubby-cache/create-cubby-cache options)
+         hash-cache (redis-cache/create-redis-cache options)
          main-cache (mem-cache/create-in-memory-cache)]
      (create-consistent-cache main-cache (fallback-with-timeout hash-cache timeout))))
   ([memory-cache hash-cache]

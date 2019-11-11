@@ -2,7 +2,7 @@
   "Defines the health routes for applications."
   (:require
    [cheshire.core :as json]
-   [cmr.common-app.api.routes :as common-routes]   
+   [cmr.common-app.api.routes :as common-routes]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -24,7 +24,7 @@
   "Creates the health cache. We cache the health response for applications for a few seconds to
   prevent many health checks over a short time period to cause significant load on the system.
   This is most helpful for applications which are dependencies on several other applications such
-  as metadata-db and cubby."
+  as metadata-db and redis."
   []
   (stl-cache/create-single-thread-lookup-cache
    (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 (health-cache-time-seconds))})))

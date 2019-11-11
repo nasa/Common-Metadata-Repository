@@ -6,7 +6,6 @@
    :cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
-   :cmr-cubby-app "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-index-set-app "0.1.0-SNAPSHOT"

@@ -48,11 +48,11 @@
         (l/stop slc-cache2 nil)))))
 
 (deftest consistent-cache-with-fallback-cache-test
-  (let [fake-cubby-cache (mem-cache/create-in-memory-cache)
+  (let [fake-redis-cache (mem-cache/create-in-memory-cache)
         primary-cache (cc/create-consistent-cache
                              (mem-cache/create-in-memory-cache)
-                             fake-cubby-cache)
-        backup-cache fake-cubby-cache ;; And the backup cache
+                             fake-redis-cache)
+        backup-cache fake-redis-cache ;; And the backup cache
         fallback-cache (fallback-cache/create-fallback-cache primary-cache backup-cache)]
     (cache-spec/assert-cache fallback-cache)
     (fallback-cache-spec/assert-fallback-cache fallback-cache primary-cache backup-cache)))

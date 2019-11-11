@@ -30,7 +30,7 @@
    [cmr.message-queue.config :as qcfg]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
-   [cmr.transmit.cubby :as cubby]
+   [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.index-set :as tis]
    [cmr.transmit.metadata-db :as meta-db]
@@ -196,9 +196,9 @@
      ;; Refresh the ACL cache.
      ;; We want the latest permitted groups to be indexed with the collections
      (acl-fetcher/refresh-acl-cache context)
-     ;; Otherwise we'll make sure we check cubby to make sure we have a consistent set of ACLs.
+     ;; Otherwise we'll make sure we check Redis to make sure we have a consistent set of ACLs.
      ;; Ingest usually refreshes the cache and then sends a message without the flag relying on
-     ;; cubby to indicate to indexers that they should fetch the latest ACLs. Without expiring
+     ;; Redis to indicate to indexers that they should fetch the latest ACLs. Without expiring
      ;; these here we'll think we have the latest.
      (acl-fetcher/expire-consistent-cache-hashes context))
 
@@ -671,7 +671,7 @@
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
    :echo rest/health
-   :cubby cubby/get-cubby-health
+   :redis redis/healthy?
    :metadata-db meta-db2/get-metadata-db-health
    :index-set tis/get-index-set-health
    :message-queue (fn [context]

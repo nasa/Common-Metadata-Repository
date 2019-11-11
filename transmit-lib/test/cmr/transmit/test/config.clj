@@ -50,8 +50,6 @@
          (config/application-public-root-url :access-control)))
   (is (= "http://localhost:3006/"
          (config/application-public-root-url :bootstrap)))
-  (is (= "http://localhost:3007/"
-         (config/application-public-root-url :cubby)))
   (is (= "http://localhost:3005/"
          (config/application-public-root-url :index-set)))
   (is (= "http://localhost:3004/"
