@@ -3,18 +3,16 @@
    classpath issues"
   "9.2.6.0")
 
-(def cmr-metadata-preview-repo
-  "Defines the repo url of cmr_metadata_preview project"
-  "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git")
-
-(def metadata-preview-commit
-  "Defines the commit id of cmr_metadata_preview project that we should build the gem off.
+(def metadata-preview-info
+  "Defines the commit id, version, and repo of cmr_metadata_preview project that we should build the gem off.
    This is our contract with the MMT team in maintaining versioning of the gem without involving
    RubyGems. The environment variable CMR_METADATA_PREVIEW_COMMIT can be used to override
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
-  (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-      "6d22973623f"))
+  {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
+   :version "cmr_metadata_preview-0.1.0"
+   :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
+                  "6d22973623f")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -32,7 +30,9 @@
                  [org.jruby/jruby-complete ~jruby-version]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
-  :resource-paths ["resources" ~gem-install-path]
+  :resource-paths ["resources"
+                   ~gem-install-path
+                   ~(str gem-install-path "/gems/" (:version metadata-preview-info))]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :jar-inclusions [#"\.umm-version"]
@@ -67,8 +67,9 @@
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
-                            ~cmr-metadata-preview-repo
-                            ~metadata-preview-commit]
+                            ~(:repo metadata-preview-info)
+                            ~(:commit-id metadata-preview-info)
+                            ~(:version metadata-preview-info)]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
             "install" ["do" "clean-gems," "install-gems," "install," "clean"]
             "install!" "install"

@@ -6,7 +6,7 @@
 jruby_version=$1
 cmr_metadata_preview_repo=$2
 commit=$3
-gemDir=cmr_metadata_preview-0.1.0
+gemDir=$4
 gemName="${gemDir}.gem"
 tmpGemDir=tmp_gem_dir
 
