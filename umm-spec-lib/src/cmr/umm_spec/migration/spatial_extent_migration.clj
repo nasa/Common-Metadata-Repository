@@ -31,7 +31,6 @@
                               (get geographic-coordinate-system :LatitudeResolution))
         geographic-coordinate-unit (when geographic-coordinate-system
                                      (get geographic-coordinate-system :GeographicCoordinateUnits))]
-    (proto-repl.saved-values/save 1)
     (if geographic-coordinate-system
       (-> c
           (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
