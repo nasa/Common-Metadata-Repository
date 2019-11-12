@@ -34,7 +34,6 @@
     :ports {
       :access-control (transmit/access-control-port)
       :bootstrap (transmit/bootstrap-port)
-      :cubby (transmit/cubby-port)
       :index-set (transmit/index-set-port)
       :indexer (transmit/indexer-port)
       :ingest (transmit/ingest-port)

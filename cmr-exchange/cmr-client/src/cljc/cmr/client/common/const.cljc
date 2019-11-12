@@ -33,7 +33,6 @@
      :local ":3003"}
    ;; Local-only endpoints
    :bootstrap {:local ":3006"}
-   :cubby {:local ":3007"}
    :index-set {:local ":3005"}
    :indexer {:local ":3004"}
    :metadata-db {:local ":3001"}})
