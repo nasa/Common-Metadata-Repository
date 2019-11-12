@@ -20,6 +20,10 @@
   "Timeout for connection in ms."
   {:default 3000 :type Long})
 
+(defconfig redis-default-key-timeout-seconds
+  "The default value to use to expire keys. Default is 24 hours."
+  {:default (* 60 60 24) :type Long})
+
 (defn redis-conn-opts
   "Redis connection options to be used with wcar."
   []

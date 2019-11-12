@@ -21,6 +21,7 @@
       (port (int port))
       (setting "bind 127.0.0.1")
       (setting "appendonly no")
+      (setting "maxmemory-policy volatile-lru")
       build))
 
 (defn- create-redis-exec-provider
