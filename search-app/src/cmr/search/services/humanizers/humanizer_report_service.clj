@@ -167,11 +167,10 @@
 (defn create-report-cache
   "This function creates the composite cache that is used for caching the
   humanizer report. With the given composition we get the following features:
-  * A Redis cache that holds the generated report (centralized storage in
-    an ElasticSearch backend);
+  * A Redis cache that holds the generated report;
   * A fast access in-memory cache that sits on top of Redis, providing
     quick local results after the first call to Redis; this cache is kept
-    consistent across all instancs of CMR, so no matter which host the LB
+    consistent across all instances of CMR, so no matter which host the LB
     serves, all the content is the same;
   * A single-threaded cache that circumvents potential race conditions
     between HTTP requests for a report and Quartz cluster jobs that save
@@ -180,7 +179,7 @@
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
     (consistent-cache/create-consistent-cache)
-    (redis-cache/create-redis-cache))))
+    (redis-cache/create-redis-cache {:persist? true}))))
 
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."

@@ -67,7 +67,7 @@
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
       (deflating-cache/create-deflating-cache
-        (redis-cache/create-redis-cache)
+        (redis-cache/create-redis-cache {:persist? true})
         kms-lookup/create-kms-index
         kms-lookup/deflate))))
 

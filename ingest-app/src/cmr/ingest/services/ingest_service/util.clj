@@ -40,7 +40,6 @@
    :echo rest/health
    :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
-   :redis redis/healthy?
    :message-queue #(queue-protocol/health (get-in % [:system :queue-broker]))})
 
 (defn health

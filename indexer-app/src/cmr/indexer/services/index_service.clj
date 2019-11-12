@@ -671,7 +671,6 @@
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
    :echo rest/health
-   :redis redis/healthy?
    :metadata-db meta-db2/get-metadata-db-health
    :index-set tis/get-index-set-health
    :message-queue (fn [context]

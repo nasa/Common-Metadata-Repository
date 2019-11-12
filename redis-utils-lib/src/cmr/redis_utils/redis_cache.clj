@@ -61,7 +61,6 @@
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
     (let [f (if persist? #(carmine/set %1 %2) #(carmine/setex %1 ttl %2))]
-      (println (str "persist? " persist? " ttl: " ttl))
       (wcar* (f (serialize key) {:value value})))))
 
 (defn create-redis-cache
