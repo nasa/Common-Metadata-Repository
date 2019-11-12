@@ -25,6 +25,7 @@
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.metadata-db.services.concept-service :as mdb-service]
    [cmr.mock-echo.api.routes :as mock-echo-api]
+   [cmr.redis-utils.redis :as redis]
    [cmr.search.services.query-service :as search-service]))
 
 (defn app-context
@@ -106,6 +107,7 @@
     ;; Calls reset on all other systems internally
     (POST "/reset" []
       (debug "dev system /reset")
+      (redis/reset)
       (doseq [[service-name reset-fn] service-reset-fns
               ;; Only call reset on applications which are deployed to the current system
               :when (get-in system [:apps service-name])]
