@@ -14,7 +14,7 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-      "5eaeaafefa8"))
+      "6d22973623f"))
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
