@@ -19,7 +19,7 @@
      (catch Exception _
        false))})
 
-(defn reset-cache
-  "Evict all keys in redis."
+(defn reset
+  "Evict all keys in redis. Primarily for dev-system use."
   []
   (wcar* (carmine/flushall)))
