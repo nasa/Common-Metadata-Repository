@@ -7,15 +7,16 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
+   [cmr.redis-utils.config :as config]
    [cmr.redis-utils.redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
-(defn- serialize
+(defn serialize
   "Serializes v."
   [v]
   (pr-str v))
 
-(defn- deserialize
+(defn deserialize
   "Deserializes v."
   [v]
   (when v (edn/read-string v)))
@@ -25,7 +26,13 @@
   [
    ;; A collection of keys used by this cache. Only these keys will be deleted from the backend
    ;; store on calls to reset
-   keys-to-track]
+   keys-to-track
+
+   ;; Set key to never expire
+   persist?
+
+   ;; The time to live for the key
+   ttl]
 
   cache/CmrCache
   (get-keys
@@ -53,11 +60,25 @@
   (set-value
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
-    (wcar* (carmine/set (serialize key) {:value value}))))
+    (let [f (if persist? #(carmine/set %1 %2) #(carmine/setex %1 ttl %2))]
+      (println (str "persist? " persist? " ttl: " ttl))
+      (wcar* (f (serialize key) {:value value})))))
 
 (defn create-redis-cache
-  "Creates an instance of the redis cache."
+  "Creates an instance of the redis cache.
+  options:
+      :keys-to-track
+       The keys that are to be managed by this cache.
+      :persist?
+       Set keys to never expire and not be considered by LRU removal.
+      :ttl
+       The time to live for the key. Ignored if persist is set. Will use a
+       default value if not provided. NOTE: The key is not guaranteed to stay in
+       the cache for up to ttl. If the cache becomes full any key that is not set
+       to persist will be a candidate for eviction."
   ([]
    (create-redis-cache nil))
   ([options]
-   (->RedisCache (:keys-to-track options))))
+   (->RedisCache (:keys-to-track options)
+                 (get options :persist? false)
+                 (get options :ttl (config/redis-default-key-timeout-seconds)))))
