@@ -12,15 +12,15 @@
 
 (deftest test-redis-cache-with-expire
   (testing "Redis cache with default timeout..."
-    (let [rcache (redis-cache/create-redis-cache)]
-      (cache/set-value rcache "test" "default expire")
-      (is (= "default expire"
+    (let [rcache (redis-cache/create-redis-cache {:ttl 10000})]
+      (cache/set-value rcache "test" "expire")
+      (is (= "expire"
              (cache/get-value rcache "test")))
       (is (> (wcar {} (carmine/ttl (redis-cache/serialize "test"))) 0)))))
 
 (deftest test-redis-cache-with-persistance
   (testing "Redis cache with default timeout..."
-    (let [rcache (redis-cache/create-redis-cache {:persist? true})]
+    (let [rcache (redis-cache/create-redis-cache)]
       (cache/set-value rcache "test" "persist")
       (is (= "persist"
              (cache/get-value rcache "test")))
