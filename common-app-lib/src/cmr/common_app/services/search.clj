@@ -34,7 +34,7 @@
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
     (mem-cache/create-in-memory-cache :ttl {} {:time-to-live (scroll-id-cache-ttl)})
-    (redis-cache/create-redis-cache {:ttl (scroll-id-cache-ttl)}))))
+    (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)}))))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
