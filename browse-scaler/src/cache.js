@@ -1,10 +1,14 @@
 /* REDIS */
 const redis = require('redis');
+const redisHost = process.env.REDIS_URL || 'localhost';
+const redisPort = process.env.REDIS_PORT || 6379;
+const redisKeyExpireSeconds = process.env.REDIS_KEY_EXPIRE_SECONDS || 84000;
+
 
 const client = redis.createClient({
   return_buffers: true,
-  host: process.env.REDIS_URL,
-  port: 6379
+  host: redisHost,
+  port: redisPort
 });
 
 const { promisify } = require('util');
@@ -17,7 +21,7 @@ const getAsync = promisify(client.get).bind(client);
  * @param {Buffer<Image>} image This is what you want the key to get
  */
 exports.cacheImage = (key, image) => {
-  client.set(key, image, err => {
+  client.set(key, image, 'EX', redisKeyExpireSeconds, err => {
     if (err) {
       console.error(`Unable to cache image: ${err}`);
     }
