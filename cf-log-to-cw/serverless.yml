@@ -1,0 +1,70 @@
+service: cmr-cf-log-to-cw
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: us-east-1
+  role: IamRoleCustomResourcesLambdaExecution
+  deploymentBucket: ${cf:${opt:stage}.cmrCfLogToCwDeploymentBucket}
+  vpc:
+    securityGroupIds:
+      - ${cf:${opt:stage}.servicesSecurityGroupId}
+    subnetIds: !Split [ ",", "${cf:${opt:stage}.subnetIds}" ]
+
+custom:
+  logSubscription:
+      destinationArn: ${cf:${opt:stage}.logForwardingArn}
+
+functions:
+  export:
+    handler: handler.export
+    timeout: 900
+    events:
+      - s3:
+          bucket: ${opt:cfs3bucket}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: cmr_search/
+          existing: true
+    logSubscription: true
+
+resources:
+  Resources:
+    IamRoleCustomResourcesLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: cmrCfToCwRole-${opt:stage}
+        PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+    cmrCfToCwPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Action:
+                - "s3:GetBucketLocation"
+                - "s3:ListBucket"
+                - "s3:ListAllMyBuckets"
+                - "s3:GetObject"
+              Effect: "Allow"
+              Resource: "*"
+        PolicyName: cmrCfToCwPolicy-${opt:stage}
+        Roles:
+          - Ref: IamRoleCustomResourcesLambdaExecution
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-plugin-log-subscription
