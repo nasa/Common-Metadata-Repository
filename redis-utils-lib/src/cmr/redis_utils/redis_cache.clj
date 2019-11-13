@@ -3,7 +3,7 @@
   have multiple caches which use one instance of Redis. Therefore calling reset on
   a Redis cache should not delete all of the data stored. Instead when creating a Redis
   cache the caller must provide a list of keys which should be deleted when calling
-  reset on that particular cache."
+  reset on that particular cache. TTL MUST be set if you expect your keys to be evicted automatically."
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
@@ -28,11 +28,11 @@
    ;; store on calls to reset
    keys-to-track
 
-   ;; Set key to never expire
-   persist?
-
    ;; The time to live for the key
-   ttl]
+   ttl
+
+   ;; Refresh the time to live when GET operations are called on key.
+   refresh-ttl?]
 
   cache/CmrCache
   (get-keys
@@ -41,7 +41,12 @@
 
   (get-value
     [this key]
-    (:value (wcar* (carmine/get (serialize key)))))
+    (let [s-key (serialize key)]
+      (-> (wcar* :as-pipeline
+                 (carmine/get s-key)
+                 (when refresh-ttl? (carmine/expire s-key ttl)))
+          first
+          :value)))
 
   (get-value
     [this key lookup-fn]
@@ -60,24 +65,26 @@
   (set-value
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
-    (let [f (if persist? #(carmine/set %1 %2) #(carmine/setex %1 ttl %2))]
-      (wcar* (f (serialize key) {:value value})))))
+    (let [s-key (serialize key)]
+      (wcar* (carmine/set s-key {:value value})
+             (when ttl (carmine/expire s-key ttl))))))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.
   options:
       :keys-to-track
        The keys that are to be managed by this cache.
-      :persist?
-       Set keys to never expire and not be considered by LRU removal.
       :ttl
-       The time to live for the key. Ignored if persist is set. Will use a
-       default value if not provided. NOTE: The key is not guaranteed to stay in
-       the cache for up to ttl. If the cache becomes full any key that is not set
-       to persist will be a candidate for eviction."
+       The time to live for the key. If nil assumes key will never expire. NOTE:
+       The key is not guaranteed to stay in the cache for up to ttl. If the
+       cache becomes full any key that is not set to persist will
+       be a candidate for eviction.
+      :refresh-ttl?
+       When a GET operation is called called on the key then the ttl is refreshed
+       to the time to live set by the initial cache."
   ([]
    (create-redis-cache nil))
   ([options]
    (->RedisCache (:keys-to-track options)
-                 (get options :persist? false)
-                 (get options :ttl (config/redis-default-key-timeout-seconds)))))
+                 (get options :ttl)
+                 (get options :refresh-ttl? false))))
